@@ -3,6 +3,7 @@
 package org.jetbrains.kotlinx.libs.api.watchdog
 
 import com.autonomousapps.kit.GradleBuilder.build
+import com.autonomousapps.kit.GradleBuilder.buildAndFail
 import java.io.File
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -11,6 +12,7 @@ import kotlin.test.assertTrue
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.intellij.lang.annotations.Language
+import org.jetbrains.kotlin.compiler.plugin.devkit.test.KmpTarget
 import org.junit.Test
 
 class UpdateBackwardsCompatibilityExemptsTest {
@@ -113,7 +115,9 @@ class UpdateBackwardsCompatibilityExemptsTest {
     fun worksWithoutExplicitApiMode() {
         // The task forces -Xexplicit-api=warning for its analysis, so a library that has not
         // adopted explicit API mode yet can still prepare its exemptions ahead of time.
-        val project = object : WatchdogProject(explicitApi = false) {
+        val project = object : WatchdogProject(
+            explicitApi = false,
+        ) {
             override fun sources() = listOf(source("public class Undocumented", "undocumented"))
         }.gradleProject
 
@@ -157,37 +161,31 @@ class UpdateBackwardsCompatibilityExemptsTest {
 
         val result = build(project.rootDir, UPDATE_TASK)
 
-        assertContains(result.output, "EXEMPTION_WITHOUT_EXPLANATION")
         assertContains(result.output, "needs manual attention")
         assertContains(result.output, "DSL_MARKER_NOOP_TYPE_POSITION")
         assertContains(result.output, "SUBCLASS_OPT_IN_WITHOUT_MARKERS")
-        // The unexplained exemption is left untouched for its author.
-        assertContains(
-            project.rootDir.mainSource("manual").readText(),
-            "@IntentionallyUndocumented\npublic class UnexplainedExemption",
-        )
     }
 
     @Test
-    fun brokenCompilationIsReportedWithoutTouchingSources() {
-        // An internal declaration is not watched, so the compilation error is the only outcome
-        // the analysis can report.
+    fun brokenCompilationFailsBeforeTheFixerAndDoesNotTouchSources() {
         val brokenSource = "internal fun broken() { thisCallDoesNotResolve() }"
         val project = object : WatchdogProject() {
             override fun sources() = listOf(source(brokenSource, "broken"))
         }.gradleProject
         val original = project.rootDir.mainSource("broken").readText()
 
-        val result = build(project.rootDir, UPDATE_TASK)
+        val result = buildAndFail(project.rootDir, UPDATE_TASK)
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":$UPDATE_TASK")?.outcome)
-        assertContains(result.output, "failed before the watchdog could report anything")
+        assertContains(result.output, "thisCallDoesNotResolve")
+        assertEquals(null, result.task(":$UPDATE_TASK")?.outcome)
         assertEquals(original, project.rootDir.mainSource("broken").readText())
     }
 
     @Test
-    fun projectWithoutJvmTargetIsReported() {
-        val project = object : WatchdogProject(multiplatform = true) {
+    fun jsOnlyProjectIsFixedThroughItsRegularCompilation() {
+        val project = object : WatchdogProject(
+            multiplatform = true,
+        ) {
             override fun multiplatformTargetsBlock(): String = "kotlin {\n  js { nodejs() }\n}\n"
             override fun sources() = listOf(source("public open class JsOnly", "jsOnly"))
         }.gradleProject
@@ -195,14 +193,45 @@ class UpdateBackwardsCompatibilityExemptsTest {
         val result = build(project.rootDir, UPDATE_TASK)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$UPDATE_TASK")?.outcome)
-        assertContains(result.output, "No main JVM compilation found")
-        // The default imports mention the annotations; what matters is that none was applied.
-        assertFalse(project.rootDir.resolve("src/commonMain/kotlin/test/jsOnly.kt").readText().contains("@Intentionally"))
+        assertEquals(TaskOutcome.SUCCESS, result.task(":compileKotlinJs")?.outcome)
+        assertContains(
+            project.rootDir.resolve("src/commonMain/kotlin/test/jsOnly.kt").readText(),
+            "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+                    "@IntentionallyUndocumented(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+                    "public open class JsOnly",
+        )
+    }
+
+    @Test
+    fun nativeOnlyProjectIsFixedThroughItsRegularCompilation() {
+        val native = KmpTarget.NATIVE_HOST
+        val project = object : WatchdogProject(
+            multiplatform = true,
+        ) {
+            override fun multiplatformTargetsBlock(): String =
+                "kotlin {\n  ${native.gradleTargetName}()\n}\n"
+
+            override fun sources() = listOf(source("public open class NativeOnly", "nativeOnly"))
+        }.gradleProject
+
+        val result = build(project.rootDir, UPDATE_TASK)
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":$UPDATE_TASK")?.outcome)
+        assertEquals(TaskOutcome.SUCCESS, result.task(":${native.compileTaskName}")?.outcome)
+        assertContains(
+            project.rootDir.resolve("src/commonMain/kotlin/test/nativeOnly.kt").readText(),
+            "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+                    "@IntentionallyUndocumented(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+                    "public open class NativeOnly",
+        )
     }
 
     @Test
     fun multiplatformJvmCompilationCoversCommonSources() {
-        val project = object : WatchdogProject(multiplatform = true) {
+        val project = object : WatchdogProject(
+            multiplatform = true,
+        ) {
+            override fun multiplatformTargetsBlock(): String = "kotlin {\n  jvm()\n}\n"
             override fun sources() = listOf(source(multiplatformFile, "shared"))
         }.gradleProject
 
@@ -362,9 +391,6 @@ private val fixableFile = """
 @Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val unfixableFile = """
-    @IntentionallyUndocumented
-    public class UnexplainedExemption
-
     /** A base class whose subclass opt-in lists no markers. */
     @SubclassOptInRequired
     public open class UnmarkedOptIn
@@ -375,7 +401,7 @@ private val unfixableFile = """
     public annotation class ScopedDsl
 
     /** A parameter type carrying a DSL marker that restricts nothing. */
-    public fun processTag(tag: @ScopedDsl UnexplainedExemption): Unit = Unit
+    public fun processTag(tag: @ScopedDsl String): Unit = Unit
 """.trimIndent()
 
 @Suppress("RedundantVisibilityModifier")

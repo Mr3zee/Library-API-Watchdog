@@ -1,5 +1,8 @@
 plugins {
     kotlin("compiler.plugin.devkit.compiler-plugin")
+    // Native loads compiler plugins in an isolated process, so the dev-kit registrar runtime
+    // must travel inside the compiler plugin artifact.
+    id("com.gradleup.shadow")
 }
 
 pluginDevKit {
@@ -16,4 +19,3 @@ dependencies {
 tasks.named("animalsnifferMain") {
     enabled = false
 }
-

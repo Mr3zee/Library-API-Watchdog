@@ -25,36 +25,31 @@ class FixerProtocolTest {
             file(
                 "request.txt",
                 """
-                    source=/project/src/A.kt
-                    source=/project/src/B.kt
-                    compilerArg=-Xexplicit-api=warning
-                    compilerArg=-P
-                    compilerArg=plugin:some.id:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:none
-                    pluginId=some.id
-                    workDir=/tmp/work
+                    reportFile=/project/build/reports/jvm=main.tsv
+                    reportFile=/project/build/reports/js=main.tsv
                     responseFile=/tmp/response.txt
                 """.trimIndent(),
             )
         )
 
-        assertEquals(listOf(File("/project/src/A.kt"), File("/project/src/B.kt")), request.sources)
         assertEquals(
-            listOf("-Xexplicit-api=warning", "-P", "plugin:some.id:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:none"),
-            request.compilerArgs,
+            listOf(
+                File("/project/build/reports/jvm=main.tsv"),
+                File("/project/build/reports/js=main.tsv"),
+            ),
+            request.reportFiles,
         )
-        assertEquals("some.id", request.pluginId)
-        assertEquals(File("/tmp/work"), request.workDir)
         assertEquals(File("/tmp/response.txt"), request.responseFile)
     }
 
     @Test
     fun requestRejectsMissingAndDuplicatedSingleKeys() {
         assertFailsWith<IllegalArgumentException> {
-            FixerRequest.parse(file("missing.txt", "workDir=/tmp\nresponseFile=/tmp/r"))
+            FixerRequest.parse(file("missing.txt", "reportFile=/tmp/report"))
         }
         assertFailsWith<IllegalArgumentException> {
             FixerRequest.parse(
-                file("duplicated.txt", "pluginId=a\npluginId=b\nworkDir=/tmp\nresponseFile=/tmp/r")
+                file("duplicated.txt", "responseFile=/tmp/a\nresponseFile=/tmp/b")
             )
         }
     }
@@ -80,29 +75,45 @@ class FixerProtocolTest {
                 RecordedDiagnostic("UNDOCUMENTED_PUBLIC_API", "/p/A.kt", 10, 20),
                 RecordedDiagnostic("DATA_CLASS_PUBLIC_API", "/p/B.kt", 0, 5),
             ),
-            RecordedDiagnostic.parseReport(report),
+            RecordedDiagnostic.parseReports(listOf(report)),
+        )
+    }
+
+    @Test
+    fun reportsAreMergedAndDeduplicatedAcrossTargets() {
+        val jvm = file("jvm.tsv", "UNDOCUMENTED_PUBLIC_API\t/p/A.kt\t10\t20\n")
+        val js = file(
+            "js.tsv",
+            "UNDOCUMENTED_PUBLIC_API\t/p/A.kt\t10\t20\n" +
+                    "DATA_CLASS_PUBLIC_API\t/p/B.kt\t0\t5\n",
+        )
+
+        assertEquals(
+            listOf(
+                RecordedDiagnostic("UNDOCUMENTED_PUBLIC_API", "/p/A.kt", 10, 20),
+                RecordedDiagnostic("DATA_CLASS_PUBLIC_API", "/p/B.kt", 0, 5),
+            ),
+            RecordedDiagnostic.parseReports(listOf(jvm, js)),
         )
     }
 
     @Test
     fun missingReportMeansNoDiagnostics() {
-        assertEquals(emptyList(), RecordedDiagnostic.parseReport(File(tempDir, "absent.tsv")))
+        assertEquals(emptyList(), RecordedDiagnostic.parseReports(listOf(File(tempDir, "absent.tsv"))))
     }
 
     @Test
     fun malformedReportLineFailsLoudly() {
         val report = file("broken.tsv", "UNDOCUMENTED_PUBLIC_API\t/p/A.kt\t10\n")
-        assertFailsWith<IllegalArgumentException> { RecordedDiagnostic.parseReport(report) }
+        assertFailsWith<IllegalArgumentException> { RecordedDiagnostic.parseReports(listOf(report)) }
     }
 
     @Test
     fun responseSerializesEveryEntryKind() {
         val response = FixerResponse().apply {
-            compilationResult = "COMPILATION_ERROR"
             applied += AppliedFix("DATA_CLASS_PUBLIC_API", "IntentionallyDataClass", "/p/A.kt", 3)
             skipped += SkippedDiagnostic("EXEMPTION_WITHOUT_EXPLANATION", "/p/B.kt", 7, "needs a human")
             modifiedFiles += "/p/A.kt"
-            compilerMessages += "e: something\nbroke"
         }
         val target = File(tempDir, "response.txt")
 
@@ -111,11 +122,9 @@ class FixerProtocolTest {
         val lines = target.readLines().filter { it.isNotBlank() }
         assertEquals(
             listOf(
-                "compilationResult=COMPILATION_ERROR",
                 "fixed=DATA_CLASS_PUBLIC_API\tIntentionallyDataClass\t3\t/p/A.kt",
                 "skipped=EXEMPTION_WITHOUT_EXPLANATION\t7\t/p/B.kt\tneeds a human",
                 "modifiedFile=/p/A.kt",
-                "compilerMessage=e: something\\nbroke",
             ),
             lines,
         )

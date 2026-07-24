@@ -4,17 +4,13 @@ plugins {
     kotlin("compiler.plugin.devkit.functional-test-publishing")
 }
 
-// A standalone command-line tool, not a library: the Gradle plugin's
-// updateBackwardsCompatibilityExempts task launches its main class in a separate JVM whose
-// classpath adds kotlin-build-tools-impl of the project's Kotlin version, which provides both the
-// Build Tools API implementation and kotlin-compiler-embeddable at runtime.
+// A standalone PSI fixer, not a library. The Gradle plugin launches it in a separate JVM whose
+// classpath adds kotlin-compiler-embeddable matching the project's Kotlin Gradle plugin. Regular
+// KGP compile tasks have already performed all semantic analysis and written the reports.
 dependencies {
-    compileOnly(libs.kotlin.build.tools.api)
     compileOnly(libs.kotlin.compiler.embeddable)
 
     testImplementation(kotlin("test"))
-    testImplementation(libs.kotlin.build.tools.api)
-    testImplementation(libs.kotlin.build.tools.impl)
     testImplementation(libs.kotlin.compiler.embeddable)
 }
 
