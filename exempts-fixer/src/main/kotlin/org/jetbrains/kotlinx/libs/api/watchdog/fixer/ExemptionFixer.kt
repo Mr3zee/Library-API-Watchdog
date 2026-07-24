@@ -23,6 +23,8 @@ internal class FileFixResult(
     val newText: String?,
     val applied: List<AppliedFix>,
     val skipped: List<SkippedDiagnostic>,
+    /** Raw-source insertions, retained so tests can carry diagnostic ranges through the rewrite. */
+    internal val insertions: List<Insertion> = emptyList(),
 )
 
 /**
@@ -107,6 +109,7 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
             newText = applyInsertions(originalText, rawInsertions),
             applied = applied,
             skipped = skipped,
+            insertions = rawInsertions,
         )
     }
 }
