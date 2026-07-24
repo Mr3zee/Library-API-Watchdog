@@ -19,12 +19,13 @@ pluginDevKit {
 }
 
 // Functional test projects resolve these sibling artifacts from the shared functionalTestRepo.
-// For :plugin-annotations only the JVM and root (metadata) publications are needed, which avoids
-// building every native target just to run JVM functional tests.
+// Publish the JVM, JS, and root (metadata) variants used by the focused multiplatform functional
+// tests without adding an explicit dependency on every native target publication.
 tasks.named("installForFunctionalTest") {
     dependsOn(
         ":compiler-plugin:installForFunctionalTest",
         ":exempts-fixer:installForFunctionalTest",
+        ":plugin-annotations:publishJsPublicationToFunctionalTestRepository",
         ":plugin-annotations:publishJvmPublicationToFunctionalTestRepository",
         ":plugin-annotations:publishKotlinMultiplatformPublicationToFunctionalTestRepository",
     )

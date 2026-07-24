@@ -69,19 +69,20 @@ bootstrap/dev repositories configured in `settings.gradle.kts`.
 - `:plugin-annotations` - Kotlin Multiplatform library with the user-facing `@Intentionally*` exemption annotations,
   `@InternalAnnotationMarker`, and `ExemptionReason`. Added automatically as a dependency by the Gradle plugin.
 - `:exempts-fixer` - a standalone command-line tool (main class `ExemptsFixerMain`) behind the
-  `updateBackwardsCompatibilityExempts` task. It compiles the module through the Build Tools API (v2,
-  `KotlinToolchains`, in-process) with `diagnosticsOutputFile` set, then inserts the matching `@Intentionally*`
-  annotation with the `FOR_BACKWARDS_COMPATIBILITY` reason for each recorded diagnostic via text edits computed on
+  `updateBackwardsCompatibilityExempts` task. It merges and deduplicates the diagnostics reports written by regular
+  KGP compilation tasks, then inserts the matching `@Intentionally*` annotation with the
+  `FOR_BACKWARDS_COMPATIBILITY` reason for each recorded diagnostic via text edits computed on
   Kotlin PSI (`kotlin-compiler-embeddable`, K2 entry points only, relocated `org.jetbrains.kotlin.com.intellij`
   imports). `ExemptionRegistry` maps each diagnostic to its annotation and target strategy or marks it unfixable;
   request/response travel as `key=value` files (`FixerProtocol`). Compile-only deps; at runtime the Gradle task
-  supplies `kotlin-build-tools-impl` of the project's Kotlin version.
+  supplies `kotlin-compiler-embeddable` of the project's Kotlin version.
 - `:gradle-plugin` - `WatchdogSupportPlugin` applies the compiler plugin and the annotations dependency;
   `WatchdogGradleExtension` (`apiWatchdog { ... }`) exposes one severity `Property` per configurable diagnostic and
-  turns them into `diagnosticSeverity` subplugin options. It also registers
-  `UpdateBackwardsCompatibilityExemptsTask` (untracked), which mirrors each main JVM compilation's inputs (sources,
-  classpath, plugin classpath and options, compiler options) into a fixer request and launches `:exempts-fixer` via
-  `javaexec`, forcing `-Xexplicit-api=warning` for the analysis.
+  turns them into `diagnosticSeverity` subplugin options. Realizing `UpdateBackwardsCompatibilityExemptsTask`
+  (untracked) activates an internal collection property that injects a unique `diagnosticsOutputFile` into every main
+  KGP compilation across all targets, forces explicit API warning mode, and demotes enabled configurable watchdog
+  diagnostics to warnings for the adoption run. The task depends on those compilations and launches the PSI-only
+  `:exempts-fixer` once over all reports. There is no public collection flag; selecting the task activates it.
 
 ### Diagnostics tests
 

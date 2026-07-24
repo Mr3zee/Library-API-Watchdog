@@ -15,20 +15,19 @@ internal data class RecordedDiagnostic(
 ) {
     companion object {
         /**
-         * Parses the report, dropping exact duplicates: a multiplatform compilation records the
-         * common fragment's diagnostics once per session that revisits it.
+         * Merges the compilation reports and drops exact duplicates: multiplatform compilations
+         * revisit common source files for metadata and each platform target.
          */
-        fun parseReport(reportFile: File): List<RecordedDiagnostic> {
-            if (!reportFile.isFile) return emptyList()
-            return reportFile.readLines()
-                .filter { it.isNotBlank() }
-                .map { line ->
-                    val parts = line.split('\t')
-                    require(parts.size == 4) { "Malformed diagnostics report line: '$line'" }
-                    RecordedDiagnostic(parts[0], parts[1], parts[2].toInt(), parts[3].toInt())
-                }
-                .distinct()
-        }
+        fun parseReports(reportFiles: List<File>): List<RecordedDiagnostic> = reportFiles
+            .filter(File::isFile)
+            .flatMap(File::readLines)
+            .filter { it.isNotBlank() }
+            .map { line ->
+                val parts = line.split('\t')
+                require(parts.size == 4) { "Malformed diagnostics report line: '$line'" }
+                RecordedDiagnostic(parts[0], parts[1], parts[2].toInt(), parts[3].toInt())
+            }
+            .distinct()
     }
 }
 
@@ -38,22 +37,13 @@ internal data class RecordedDiagnostic(
  * and quoting rules.
  */
 internal class FixerRequest(
-    /** All source files of the compilation, Java files included; only Kotlin files are fixed. */
-    val sources: List<File>,
-    /** Raw Kotlin CLI compiler arguments: classpath, plugins, plugin options, language settings. */
-    val compilerArgs: List<String>,
-    /** The watchdog compiler plugin id, for the `diagnosticsOutputFile` plugin option. */
-    val pluginId: String,
-    /** Scratch directory owned by this run: compiled classes and the diagnostics report. */
-    val workDir: File,
+    /** Reports produced by the regular Kotlin compile tasks for every main target. */
+    val reportFiles: List<File>,
     /** Where the fixer writes its [FixerResponse]. */
     val responseFile: File,
 ) {
     companion object {
-        const val SOURCE = "source"
-        const val COMPILER_ARG = "compilerArg"
-        const val PLUGIN_ID = "pluginId"
-        const val WORK_DIR = "workDir"
+        const val REPORT_FILE = "reportFile"
         const val RESPONSE_FILE = "responseFile"
 
         fun parse(file: File): FixerRequest {
@@ -70,10 +60,7 @@ internal class FixerRequest(
             }
 
             return FixerRequest(
-                sources = values[SOURCE].orEmpty().map(::File),
-                compilerArgs = values[COMPILER_ARG].orEmpty(),
-                pluginId = single(PLUGIN_ID),
-                workDir = File(single(WORK_DIR)),
+                reportFiles = values[REPORT_FILE].orEmpty().map(::File),
                 responseFile = File(single(RESPONSE_FILE)),
             )
         }
@@ -104,14 +91,11 @@ internal class FixerResponse {
     val applied = mutableListOf<AppliedFix>()
     val skipped = mutableListOf<SkippedDiagnostic>()
     val modifiedFiles = mutableListOf<String>()
-    val compilerMessages = mutableListOf<String>()
-    var compilationResult: String? = null
     var error: String? = null
 
     fun writeTo(file: File) {
         file.parentFile?.mkdirs()
         file.writeText(buildString {
-            compilationResult?.let { appendLine("$COMPILATION_RESULT=$it") }
             applied.forEach {
                 appendLine("$FIXED=${it.diagnostic}\t${it.annotation}\t${it.line}\t${it.filePath}")
             }
@@ -121,7 +105,6 @@ internal class FixerResponse {
                 appendLine("$SKIPPED=${it.diagnostic}\t${it.line}\t${it.filePath}\t${it.reason.escapeNewlines()}")
             }
             modifiedFiles.forEach { appendLine("$MODIFIED_FILE=$it") }
-            compilerMessages.forEach { appendLine("$COMPILER_MESSAGE=${it.escapeNewlines()}") }
             error?.let { appendLine("$ERROR=${it.escapeNewlines()}") }
         })
     }
@@ -129,11 +112,9 @@ internal class FixerResponse {
     private fun String.escapeNewlines() = replace("\\", "\\\\").replace("\n", "\\n").replace("\r", "\\r")
 
     companion object {
-        const val COMPILATION_RESULT = "compilationResult"
         const val FIXED = "fixed"
         const val SKIPPED = "skipped"
         const val MODIFIED_FILE = "modifiedFile"
-        const val COMPILER_MESSAGE = "compilerMessage"
         const val ERROR = "error"
     }
 }

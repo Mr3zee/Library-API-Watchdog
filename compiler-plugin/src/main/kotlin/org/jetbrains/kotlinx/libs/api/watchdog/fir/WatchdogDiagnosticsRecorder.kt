@@ -16,10 +16,10 @@ import org.jetbrains.kotlin.fir.declarations.FirDeclaration
  * without re-running the analysis.
  *
  * The format is machine-readable on purpose: the Gradle plugin's
- * `updateBackwardsCompatibilityExempts` task compiles the module with this option set and turns
- * the recorded diagnostics into `@Intentionally*` exemption annotations in the sources. Tab is a
- * safe separator because tabs cannot appear in diagnostic names or offsets and are pathological
- * in file paths.
+ * `updateBackwardsCompatibilityExempts` task injects this option into the regular KGP compilation
+ * tasks and turns their merged diagnostics into `@Intentionally*` exemption annotations in the
+ * sources. Tab is a safe separator because tabs cannot appear in diagnostic names or offsets and
+ * are pathological in file paths.
  *
  * The recorder only ever appends. Whoever passes the option owns the file's lifecycle and is
  * expected to hand in a fresh path, because a single build may write from several compiler

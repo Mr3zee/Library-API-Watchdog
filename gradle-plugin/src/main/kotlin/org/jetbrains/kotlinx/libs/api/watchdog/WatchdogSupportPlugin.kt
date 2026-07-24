@@ -1,21 +1,28 @@
 package org.jetbrains.kotlinx.libs.api.watchdog
 
+import java.io.File
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitSupportPlugin
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
+import org.jetbrains.kotlin.gradle.plugin.FilesSubpluginOption
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 @Suppress("unused") // Used via reflection.
 public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO) {
+    /** Enabled lazily when Gradle realizes the update task; never exposed as user configuration. */
+    private lateinit var collectDiagnosticsForExempts: Property<Boolean>
+
     override fun apply(target: Project) {
         val extension = target.extensions.create("apiWatchdog", WatchdogGradleExtension::class.java)
+        collectDiagnosticsForExempts = target.objects.property(Boolean::class.java).convention(false)
         target.registerUpdateBackwardsCompatibilityExemptsTask()
         target.afterEvaluate { project ->
             if (!project.explicitApiWarningSuppressed() && !project.hasExplicitApiMode()) {
@@ -31,80 +38,31 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
     }
 
     /**
-     * Registers [UpdateBackwardsCompatibilityExemptsTask] over every main JVM compilation. The
-     * fixer runs on a classpath resolved here: the `exempts-fixer` artifact published next to
-     * this plugin, plus the Build Tools API implementation matching the project's Kotlin Gradle
-     * plugin version, so the analysis sees the same compiler the build uses.
+     * Registers the fixer task. [applyToCompilation] wires every main Kotlin compilation into it,
+     * so KGP itself drives JVM, JS, native, Wasm, and metadata analysis. The fixer classpath uses
+     * the compiler embeddable matching the project's Kotlin Gradle plugin for PSI parsing only.
      */
-    private fun Project.registerUpdateBackwardsCompatibilityExemptsTask() {
+    private fun Project.registerUpdateBackwardsCompatibilityExemptsTask(): TaskProvider<UpdateBackwardsCompatibilityExemptsTask> {
         val fixerClasspath = configurations.detachedConfiguration(
             dependencies.create("${info.artifact.groupId}:$FIXER_ARTIFACT_ID:${info.artifact.version}"),
         )
         fixerClasspath.dependencies.addLater(provider {
             val kotlinVersion = plugins.withType(KotlinBasePlugin::class.java).firstOrNull()?.pluginVersion
                 ?: error("The Kotlin Gradle plugin must be applied alongside libs-api-watchdog")
-            dependencies.create("org.jetbrains.kotlin:kotlin-build-tools-impl:$kotlinVersion")
+            dependencies.create("org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlinVersion")
         })
 
-        tasks.register(UPDATE_EXEMPTS_TASK_NAME, UpdateBackwardsCompatibilityExemptsTask::class.java) { task ->
+        return tasks.register(UPDATE_EXEMPTS_TASK_NAME, UpdateBackwardsCompatibilityExemptsTask::class.java) { task ->
+            // Realizing the task is the opt-in. The compile tasks consume this property lazily,
+            // after Gradle has selected the task graph.
+            collectDiagnosticsForExempts.set(true)
             task.group = "api watchdog"
-            task.description = "Acknowledges every watchdog diagnostic in the main JVM " +
+            task.description = "Acknowledges every watchdog diagnostic in the main Kotlin " +
                     "compilation sources with the matching @Intentionally* annotation and the " +
                     "FOR_BACKWARDS_COMPATIBILITY reason"
-            task.pluginId.set(info.id)
+            task.compilationNames.convention(emptyList())
             task.projectDirectory.set(layout.projectDirectory.asFile)
             task.fixerClasspath.from(fixerClasspath)
-            task.compilations.addAll(provider { collectCompilationInputs() })
-        }
-    }
-
-    private fun Project.collectCompilationInputs(): List<WatchdogCompilationInput> =
-        tasks.withType(KotlinJvmCompile::class.java)
-            .filter { it.sourceSetName.getOrElse("") == KotlinCompilation.MAIN_COMPILATION_NAME }
-            .map { compileTask ->
-                objects.newInstance(WatchdogCompilationInput::class.java).apply {
-                    compilationName.set(compileTask.name)
-                    sources.from(compileTask.sources)
-                    libraries.from(compileTask.libraries)
-                    pluginClasspath.from(compileTask.pluginClasspath)
-                    friendPaths.from(compileTask.friendPaths)
-                    compilerArgs.set(renderCompilerArgs(compileTask))
-                }
-            }
-
-    /** The compilation's settings as CLI arguments, mirroring what the compile task passes. */
-    private fun renderCompilerArgs(compileTask: KotlinJvmCompile): List<String> = buildList {
-        val options = compileTask.compilerOptions
-        // The module name only affects the mangled names of internal members; it may have no
-        // value yet at this point, and the analysis works without it.
-        options.moduleName.orNull?.let {
-            add("-module-name")
-            add(it)
-        }
-        options.jvmTarget.orNull?.let {
-            add("-jvm-target")
-            add(it.target)
-        }
-        options.languageVersion.orNull?.let {
-            add("-language-version")
-            add(it.version)
-        }
-        options.apiVersion.orNull?.let {
-            add("-api-version")
-            add(it.version)
-        }
-        options.optIn.getOrElse(emptyList()).forEach { add("-opt-in=$it") }
-        if (options.progressiveMode.getOrElse(false)) add("-progressive")
-        if (options.javaParameters.getOrElse(false)) add("-java-parameters")
-        addAll(options.freeCompilerArgs.getOrElse(emptyList()))
-        if (compileTask.multiPlatformEnabled.getOrElse(false)) add("-Xmulti-platform")
-        compileTask.pluginOptions.getOrElse(emptyList()).forEach { config ->
-            config.allOptions().forEach { (pluginId, pluginOptions) ->
-                pluginOptions.forEach { option ->
-                    add("-P")
-                    add("plugin:$pluginId:${option.key}=${option.value}")
-                }
-            }
         }
     }
 
@@ -112,9 +70,65 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         kotlinCompilation: KotlinCompilation<*>
     ): Provider<List<SubpluginOption>> {
         val extension = extensions.getByType(WatchdogGradleExtension::class.java)
+        val isMain = kotlinCompilation.name == KotlinCompilation.MAIN_COMPILATION_NAME
+        val collect = collectDiagnosticsForExempts.map { it && isMain }
+        val reportFile = layout.buildDirectory.file(
+            "reports/api-watchdog/diagnostics/${kotlinCompilation.compileKotlinTaskName}.tsv"
+        )
+
+        if (isMain) {
+            val updateTask = tasks.named(
+                UPDATE_EXEMPTS_TASK_NAME,
+                UpdateBackwardsCompatibilityExemptsTask::class.java,
+            )
+            updateTask.configure { task ->
+                task.compilationNames.add(kotlinCompilation.compileKotlinTaskName)
+                task.diagnosticReports.from(provider {
+                    if (collect.get()) reportFile.get().asFile else emptyList<File>()
+                })
+                task.dependsOn(provider {
+                    if (collect.get()) kotlinCompilation.compileTaskProvider else emptyList<Any>()
+                })
+            }
+
+            kotlinCompilation.compileTaskProvider.configure { task ->
+                task.inputs.property("apiWatchdog.collectDiagnosticsForExempts", collect)
+                // The report deliberately stays outside the task's declared outputs. JVM compile
+                // tasks prepare every extra output as a directory, while the compiler plugin
+                // needs a file. Collection mode always executes and bypasses the build cache so
+                // an internal report can never be stale or absent after an up-to-date/cache hit.
+                task.outputs.upToDateWhen { !collect.get() }
+                task.outputs.doNotCacheIf("watchdog diagnostic collection is enabled") {
+                    collect.get()
+                }
+                task.compilerOptions.freeCompilerArgs.addAll(collect.map {
+                    if (it) listOf("-Xexplicit-api=warning") else emptyList()
+                })
+                task.doFirst {
+                    if (collect.get()) {
+                        reportFile.get().asFile.apply {
+                            parentFile.mkdirs()
+                            writeText("")
+                        }
+                    }
+                }
+            }
+        }
+
         return providers.provider {
-            extension.diagnosticSeverities().map { (diagnostic, severity) ->
-                SubpluginOption("diagnosticSeverity", "$diagnostic:${severity.get().name.lowercase()}")
+            buildList {
+                extension.diagnosticSeverities().forEach { (diagnostic, severity) ->
+                    val configured = severity.get()
+                    val effective = if (collect.get() && configured != WatchdogSeverity.NONE) {
+                        WatchdogSeverity.WARNING
+                    } else {
+                        configured
+                    }
+                    add(SubpluginOption("diagnosticSeverity", "$diagnostic:${effective.name.lowercase()}"))
+                }
+                if (collect.get()) {
+                    add(FilesSubpluginOption("diagnosticsOutputFile", listOf(reportFile.get().asFile)))
+                }
             }
         }
     }

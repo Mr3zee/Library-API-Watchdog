@@ -64,14 +64,14 @@ acknowledges all of them in one sweep:
 ./gradlew updateBackwardsCompatibilityExempts
 ```
 
-The task recompiles the main JVM sources through the Kotlin Build Tools API with the watchdog
-compiler plugin recording every diagnostic it reports, and then rewrites the sources, inserting
-the matching `@Intentionally*` annotation with `reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`
-(adding imports as needed). Checks disabled through `apiWatchdog` are not exempted, and the few
-diagnostics no annotation can acknowledge are listed as warnings for manual follow-up. Run it on a
-clean working tree and review the diff; from then on the checks only guard newly added API. See
-the [Gradle plugin reference](https://mr3zee.github.io/libs-api-watchdog/gradle-plugin.html) for
-details.
+The task depends on the regular main Kotlin compilation tasks for every KGP target, including JS,
+Native, Wasm, and metadata-only projects. Those compilations record diagnostics with their exact
+source positions; the task merges and deduplicates the reports, then inserts the matching
+`@Intentionally*` annotations with `reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY` (adding
+imports as needed). Checks disabled through `apiWatchdog` are not exempted, and the few diagnostics
+no annotation can acknowledge are listed as warnings for manual follow-up. Run it on a clean
+working tree and review the diff; from then on the checks only guard newly added API. See the
+[Gradle plugin reference](https://mr3zee.github.io/libs-api-watchdog/gradle-plugin.html) for details.
 
 ## Checks
 

@@ -4,7 +4,6 @@ package org.jetbrains.kotlinx.libs.api.watchdog.fixer
 
 import java.io.File
 import kotlin.system.exitProcess
-import org.jetbrains.kotlin.buildtools.api.CompilationResult
 
 /**
  * Entry point of the backwards-compatibility exempts fixer. The single argument is the path of a
@@ -26,24 +25,10 @@ fun main(args: Array<String>) {
 }
 
 private fun run(request: FixerRequest, response: FixerResponse) {
-    val workDir = request.workDir.apply { mkdirs() }
-    val reportFile = File(workDir, "watchdog-diagnostics.tsv").apply { delete() }
-    val classesDir = File(workDir, "classes").apply { mkdirs() }
-
-    val result = compileRecordingDiagnostics(request, reportFile, classesDir) {
-        response.compilerMessages += it
-    }
-    response.compilationResult = result.name
-    if (result == CompilationResult.COMPILATION_OOM_ERROR || result == CompilationResult.COMPILER_INTERNAL_ERROR) {
-        error("The Kotlin compilation failed with $result")
-    }
-
-    val diagnosticsByFile = RecordedDiagnostic.parseReport(reportFile).groupBy { it.filePath }
+    val diagnosticsByFile = RecordedDiagnostic.parseReports(request.reportFiles).groupBy { it.filePath }
     if (diagnosticsByFile.isEmpty()) {
         return
     }
-    // Compiler messages only matter for diagnosing a compilation that recorded nothing.
-    response.compilerMessages.clear()
 
     KotlinFileParser().use { parser ->
         val fixer = ExemptionFixer(parser)
