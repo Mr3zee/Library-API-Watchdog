@@ -6,14 +6,17 @@ import org.gradle.api.provider.Provider
 import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitSupportPlugin
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 @Suppress("unused") // Used via reflection.
 public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO) {
     override fun apply(target: Project) {
         val extension = target.extensions.create("apiWatchdog", WatchdogGradleExtension::class.java)
+        target.registerUpdateBackwardsCompatibilityExemptsTask()
         target.afterEvaluate { project ->
             if (!project.explicitApiWarningSuppressed() && !project.hasExplicitApiMode()) {
                 project.logger.warn(missingExplicitApiWarning(project.path))
@@ -23,6 +26,84 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             }
             if (extension.suggestAbiValidation.get() && !project.hasAbiValidation()) {
                 project.logger.warn(abiValidationSuggestion(project.path))
+            }
+        }
+    }
+
+    /**
+     * Registers [UpdateBackwardsCompatibilityExemptsTask] over every main JVM compilation. The
+     * fixer runs on a classpath resolved here: the `exempts-fixer` artifact published next to
+     * this plugin, plus the Build Tools API implementation matching the project's Kotlin Gradle
+     * plugin version, so the analysis sees the same compiler the build uses.
+     */
+    private fun Project.registerUpdateBackwardsCompatibilityExemptsTask() {
+        val fixerClasspath = configurations.detachedConfiguration(
+            dependencies.create("${info.artifact.groupId}:$FIXER_ARTIFACT_ID:${info.artifact.version}"),
+        )
+        fixerClasspath.dependencies.addLater(provider {
+            val kotlinVersion = plugins.withType(KotlinBasePlugin::class.java).firstOrNull()?.pluginVersion
+                ?: error("The Kotlin Gradle plugin must be applied alongside libs-api-watchdog")
+            dependencies.create("org.jetbrains.kotlin:kotlin-build-tools-impl:$kotlinVersion")
+        })
+
+        tasks.register(UPDATE_EXEMPTS_TASK_NAME, UpdateBackwardsCompatibilityExemptsTask::class.java) { task ->
+            task.group = "api watchdog"
+            task.description = "Acknowledges every watchdog diagnostic in the main JVM " +
+                    "compilation sources with the matching @Intentionally* annotation and the " +
+                    "FOR_BACKWARDS_COMPATIBILITY reason"
+            task.pluginId.set(info.id)
+            task.projectDirectory.set(layout.projectDirectory.asFile)
+            task.fixerClasspath.from(fixerClasspath)
+            task.compilations.addAll(provider { collectCompilationInputs() })
+        }
+    }
+
+    private fun Project.collectCompilationInputs(): List<WatchdogCompilationInput> =
+        tasks.withType(KotlinJvmCompile::class.java)
+            .filter { it.sourceSetName.getOrElse("") == KotlinCompilation.MAIN_COMPILATION_NAME }
+            .map { compileTask ->
+                objects.newInstance(WatchdogCompilationInput::class.java).apply {
+                    compilationName.set(compileTask.name)
+                    sources.from(compileTask.sources)
+                    libraries.from(compileTask.libraries)
+                    pluginClasspath.from(compileTask.pluginClasspath)
+                    friendPaths.from(compileTask.friendPaths)
+                    compilerArgs.set(renderCompilerArgs(compileTask))
+                }
+            }
+
+    /** The compilation's settings as CLI arguments, mirroring what the compile task passes. */
+    private fun renderCompilerArgs(compileTask: KotlinJvmCompile): List<String> = buildList {
+        val options = compileTask.compilerOptions
+        // The module name only affects the mangled names of internal members; it may have no
+        // value yet at this point, and the analysis works without it.
+        options.moduleName.orNull?.let {
+            add("-module-name")
+            add(it)
+        }
+        options.jvmTarget.orNull?.let {
+            add("-jvm-target")
+            add(it.target)
+        }
+        options.languageVersion.orNull?.let {
+            add("-language-version")
+            add(it.version)
+        }
+        options.apiVersion.orNull?.let {
+            add("-api-version")
+            add(it.version)
+        }
+        options.optIn.getOrElse(emptyList()).forEach { add("-opt-in=$it") }
+        if (options.progressiveMode.getOrElse(false)) add("-progressive")
+        if (options.javaParameters.getOrElse(false)) add("-java-parameters")
+        addAll(options.freeCompilerArgs.getOrElse(emptyList()))
+        if (compileTask.multiPlatformEnabled.getOrElse(false)) add("-Xmulti-platform")
+        compileTask.pluginOptions.getOrElse(emptyList()).forEach { config ->
+            config.allOptions().forEach { (pluginId, pluginOptions) ->
+                pluginOptions.forEach { option ->
+                    add("-P")
+                    add("plugin:$pluginId:${option.key}=${option.value}")
+                }
             }
         }
     }
@@ -39,6 +120,12 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
     }
 
     private companion object {
+        /** The name of the task that acknowledges existing diagnostics as backwards-compatibility exemptions. */
+        private const val UPDATE_EXEMPTS_TASK_NAME = "updateBackwardsCompatibilityExempts"
+
+        /** The artifact carrying the standalone fixer tool, published next to this plugin. */
+        private const val FIXER_ARTIFACT_ID = "exempts-fixer"
+
         /** Tapmoc's plugin id, plus the id of its former incarnation, CompatPatrouille. */
         private val TAPMOC_PLUGIN_IDS = listOf("com.gradleup.tapmoc", "com.gradleup.compat.patrouille")
 

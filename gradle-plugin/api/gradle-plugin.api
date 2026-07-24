@@ -1,3 +1,23 @@
+public abstract class org/jetbrains/kotlinx/libs/api/watchdog/UpdateBackwardsCompatibilityExemptsTask : org/gradle/api/DefaultTask {
+	public fun <init> ()V
+	public abstract fun getCompilations ()Lorg/gradle/api/provider/ListProperty;
+	protected abstract fun getExecOperations ()Lorg/gradle/process/ExecOperations;
+	public abstract fun getFixerClasspath ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getPluginId ()Lorg/gradle/api/provider/Property;
+	public abstract fun getProjectDirectory ()Lorg/gradle/api/provider/Property;
+	public final fun updateExempts ()V
+}
+
+public abstract class org/jetbrains/kotlinx/libs/api/watchdog/WatchdogCompilationInput {
+	public fun <init> ()V
+	public abstract fun getCompilationName ()Lorg/gradle/api/provider/Property;
+	public abstract fun getCompilerArgs ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getFriendPaths ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getLibraries ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getPluginClasspath ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getSources ()Lorg/gradle/api/file/ConfigurableFileCollection;
+}
+
 public class org/jetbrains/kotlinx/libs/api/watchdog/WatchdogGradleExtension {
 	public fun <init> (Lorg/gradle/api/model/ObjectFactory;)V
 	public final fun getBooleanParameterPublicApi ()Lorg/gradle/api/provider/Property;

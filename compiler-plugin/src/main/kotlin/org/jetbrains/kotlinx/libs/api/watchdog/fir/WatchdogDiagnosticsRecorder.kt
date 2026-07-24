@@ -1,0 +1,81 @@
+package org.jetbrains.kotlinx.libs.api.watchdog.fir
+
+import java.io.File
+import org.jetbrains.kotlin.diagnostics.DiagnosticContext
+import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
+import org.jetbrains.kotlin.diagnostics.KtDiagnostic
+import org.jetbrains.kotlin.diagnostics.KtDiagnosticWithSource
+import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
+import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirDeclarationChecker
+import org.jetbrains.kotlin.fir.declarations.FirDeclaration
+
+/**
+ * Appends every reported watchdog diagnostic to [outputFile] as a tab-separated line:
+ * diagnostic name, absolute source file path, start offset, end offset. The offsets are those of
+ * the source element the diagnostic was reported on, so tooling can locate the exact declaration
+ * without re-running the analysis.
+ *
+ * The format is machine-readable on purpose: the Gradle plugin's
+ * `updateBackwardsCompatibilityExempts` task compiles the module with this option set and turns
+ * the recorded diagnostics into `@Intentionally*` exemption annotations in the sources. Tab is a
+ * safe separator because tabs cannot appear in diagnostic names or offsets and are pathological
+ * in file paths.
+ *
+ * The recorder only ever appends. Whoever passes the option owns the file's lifecycle and is
+ * expected to hand in a fresh path, because a single build may write from several compiler
+ * sessions (common and platform fragments of a multiplatform compilation, for example).
+ */
+class WatchdogDiagnosticsRecorder(private val outputFile: File) {
+    fun record(diagnostic: KtDiagnostic, context: DiagnosticContext) {
+        // The element offsets, not the rendering range: KtDiagnosticWithSource.firstRange would
+        // pull com.intellij.openapi.util.TextRange into the bytecode, which links differently in
+        // the CLI and kotlin-compiler-embeddable worlds this jar runs in.
+        val element = (diagnostic as? KtDiagnosticWithSource)?.element ?: return
+        val path = context.containingFilePath ?: return
+        val line = "${diagnostic.factoryName}\t$path\t${element.startOffset}\t${element.endOffset}\n"
+        synchronized(APPEND_LOCK) {
+            outputFile.parentFile?.mkdirs()
+            outputFile.appendText(line)
+        }
+    }
+
+    private companion object {
+        /** One lock per process: the sessions of a compilation share the output file. */
+        private val APPEND_LOCK = Any()
+    }
+}
+
+/**
+ * Runs the wrapped checker with a [DiagnosticReporter] that records every diagnostic into
+ * [recorder] before handing it to the real reporter. One generic wrapper covers every checker
+ * category [WatchdogFirCheckers] registers: they are all type aliases of [FirDeclarationChecker].
+ */
+internal class RecordingDeclarationChecker<D : FirDeclaration>(
+    private val delegate: FirDeclarationChecker<D>,
+    private val recorder: WatchdogDiagnosticsRecorder,
+) : FirDeclarationChecker<D>(delegate.mppKind) {
+    context(context: CheckerContext, reporter: DiagnosticReporter)
+    override fun check(declaration: D) {
+        val recording = RecordingDiagnosticReporter(reporter, recorder)
+        context(context, recording) { delegate.check(declaration) }
+    }
+}
+
+private class RecordingDiagnosticReporter(
+    private val delegate: DiagnosticReporter,
+    private val recorder: WatchdogDiagnosticsRecorder,
+) : DiagnosticReporter() {
+    override val hasErrors: Boolean get() = delegate.hasErrors
+    override val hasWarningsForWError: Boolean get() = delegate.hasWarningsForWError
+
+    override fun report(diagnostic: KtDiagnostic?, context: DiagnosticContext) {
+        // The suppression check sees the annotations in scope at report time. A @Suppress on an
+        // element the checkers have not visited yet (a constructor reported on while checking its
+        // class) is resolved later by the framework's pending reporter and can slip through here;
+        // that only costs a recorded entry for a diagnostic the compiler ends up not reporting.
+        if (diagnostic != null && !context.isDiagnosticSuppressed(diagnostic)) {
+            recorder.record(diagnostic, context)
+        }
+        delegate.report(diagnostic, context)
+    }
+}

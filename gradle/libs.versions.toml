@@ -4,6 +4,11 @@ kotlin = "2.4.0"
 # https://github.com/Kotlin/dokka
 dokka = "2.2.0"
 
+[libraries]
+kotlin-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
+kotlin-build-tools-api = { module = "org.jetbrains.kotlin:kotlin-build-tools-api", version.ref = "kotlin" }
+kotlin-build-tools-impl = { module = "org.jetbrains.kotlin:kotlin-build-tools-impl", version.ref = "kotlin" }
+
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

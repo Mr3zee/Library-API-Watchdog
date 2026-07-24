@@ -48,6 +48,12 @@ public data class LegacyConfig(
 )
 ```
 
+When adopting the watchdog on a library whose API has already shipped, the exemptions for the
+existing surface do not have to be written by hand: the Gradle plugin's
+[`updateBackwardsCompatibilityExempts` task](gradle-plugin.md#the-updatebackwardscompatibilityexempts-task)
+inserts them - with the self-explanatory `FOR_BACKWARDS_COMPATIBILITY` reason - for every
+diagnostic the current sources trigger.
+
 ## All exemption annotations
 
 | Annotation | Exempts |
