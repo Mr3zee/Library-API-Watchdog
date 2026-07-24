@@ -12,10 +12,19 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation(libs.kotlin.compiler.embeddable)
+    testImplementation(testFixtures(project(":compiler-plugin")))
+    testImplementation(project(":plugin-annotations"))
+}
+
+tasks.processTestResources {
+    from(project(":compiler-plugin").layout.projectDirectory.dir("src/test/data"))
 }
 
 tasks.test {
     useJUnitPlatform()
+    // Kotlin's standalone PSI application is process-global and cannot be initialized by
+    // concurrent test instances.
+    systemProperty("junit.jupiter.execution.parallel.enabled", "false")
 }
 
 publishing {
