@@ -1,11 +1,13 @@
 package org.jetbrains.kotlinx.libs.api.watchdog
 
+import java.io.File
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitCompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitComponentRegistrar
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
 import org.jetbrains.kotlinx.libs.api.watchdog.fir.WatchdogDiagnosticSeverities
+import org.jetbrains.kotlinx.libs.api.watchdog.fir.WatchdogDiagnosticsRecorder
 import org.jetbrains.kotlinx.libs.api.watchdog.fir.WatchdogFirExtensionRegistrar
 
 class WatchdogCompilerPluginRegistrar : DevKitCompilerPluginRegistrar(
@@ -20,6 +22,8 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
         val severities = WatchdogDiagnosticSeverities(
             configuration[WatchdogConfigurationKeys.DIAGNOSTIC_SEVERITIES, emptyMap()],
         )
-        FirExtensionRegistrarAdapter.registerExtension(WatchdogFirExtensionRegistrar(severities))
+        val recorder = configuration[WatchdogConfigurationKeys.DIAGNOSTICS_OUTPUT_FILE]
+            ?.let { WatchdogDiagnosticsRecorder(File(it)) }
+        FirExtensionRegistrarAdapter.registerExtension(WatchdogFirExtensionRegistrar(severities, recorder))
     }
 }

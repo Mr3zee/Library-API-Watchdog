@@ -1,9 +1,11 @@
 # Gradle plugin reference
 
 Applying the Gradle plugin (plugin id `org.jetbrains.kotlinx.libs.api.watchdog`) adds the
-`apiWatchdog` extension. It configures the severity of every check and two setup suggestions
-the plugin makes. See [Setup](setup.md) for applying the plugin and [Exemptions and internal
-API](exemptions.md) for silencing a single declaration instead of changing severity project-wide.
+`apiWatchdog` extension and the `updateBackwardsCompatibilityExempts` task. The extension
+configures the severity of every check and two setup suggestions the plugin makes; the task
+acknowledges the diagnostics of an already-shipped API in one sweep. See [Setup](setup.md) for
+applying the plugin and [Exemptions and internal API](exemptions.md) for silencing a single
+declaration instead of changing severity project-wide.
 
 ## The apiWatchdog extension
 
@@ -97,6 +99,50 @@ The last six properties live inside the `javaInterop { }` block. They only run i
 compilations, and `javaInterop.enabled` (default `true`) is a single switch for all of them: set
 it to `false` and every one of the six resolves to `NONE`, no matter what its own property says.
 See [Java interop checks](java-interop.md) for the group as a whole.
+
+## The updateBackwardsCompatibilityExempts task
+
+A library that has already shipped cannot change the shape of its public API without breaking
+clients, so the watchdog's first run typically floods it with diagnostics that are not actionable
+anymore. `updateBackwardsCompatibilityExempts` acknowledges all of them at once:
+
+```bash
+./gradlew updateBackwardsCompatibilityExempts
+```
+
+For every main JVM compilation, the task recompiles the sources through the Kotlin Build Tools
+API - in a separate JVM, with the same classpath and compiler plugins as the regular build, and
+the compilation's essential compiler settings (language and API versions, JVM target, opt-ins,
+free compiler arguments, plugin options) mirrored - while the watchdog compiler plugin records
+every diagnostic it reports together with its exact source position. The task then rewrites the sources: each diagnostic gets the
+matching `@Intentionally*` annotation with `reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`,
+placed under the declaration's KDoc and above its other annotations, with imports added as
+needed. `FOR_BACKWARDS_COMPATIBILITY` explains itself, so the inserted exemptions satisfy the
+[explanation requirement](exemption-without-explanation.md) as they are.
+
+Details worth knowing:
+
+- **Run it on a clean working tree and review the diff.** The task edits sources in place. It is
+  meant for adoption: acknowledge the shipped API wholesale, commit, and let the checks guard
+  only the API added afterwards. New code deserves a deliberate decision instead - fix the shape,
+  or pick the honest reason by hand.
+- **Severity configuration is respected.** A check set to `NONE` in `apiWatchdog` records nothing
+  and gets no exemptions; `ERROR` and `WARNING` are exempted alike.
+- **Explicit API mode is not required yet.** The analysis forces `-Xexplicit-api=warning`, so the
+  task also prepares a library that has not enabled explicit API mode - useful for adding the
+  exemptions before flipping the switch.
+- **A JVM compilation is required.** The watchdog collects its diagnostics through the main JVM
+  compilation; in a multiplatform project the JVM target's compilation covers the common source
+  sets too. A project without a JVM target is reported and left unchanged, and Android variants
+  are not analyzed.
+- **Some diagnostics have no annotation to add.** [`EXEMPTION_WITHOUT_EXPLANATION`](exemption-without-explanation.md)
+  needs a reason or description only its author can write,
+  [`SUBCLASS_OPT_IN_WITHOUT_MARKERS`](subclass-opt-in-without-markers.md) is fixed by passing
+  marker classes, [`DSL_MARKER_NOOP_TYPE_POSITION`](dsl-marker-noop-type-position.md) is fixed by
+  moving or removing the marker, and `UNDOCUMENTED_PUBLIC_API` on an enum entry has no applicable
+  annotation target. These are listed as build warnings for manual follow-up.
+- **Running it twice is safe.** Exempted diagnostics are no longer reported, so a second run
+  finds nothing left to do.
 
 ## Tapmoc suggestion
 

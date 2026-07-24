@@ -7,10 +7,12 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.DeclarationChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirBasicDeclarationChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirCallableDeclarationChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirClassChecker
+import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirDeclarationChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFileChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFunctionChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirTypeAliasChecker
 import org.jetbrains.kotlin.fir.analysis.extensions.FirAdditionalCheckersExtension
+import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.languageVersionSettings
 import org.jetbrains.kotlin.fir.moduleData
 import org.jetbrains.kotlin.platform.jvm.isJvm
@@ -26,6 +28,7 @@ import org.jetbrains.kotlin.platform.jvm.isJvm
 class WatchdogFirCheckers(
     session: FirSession,
     severities: WatchdogDiagnosticSeverities,
+    recorder: WatchdogDiagnosticsRecorder? = null,
 ) : FirAdditionalCheckersExtension(session) {
     override val declarationCheckers: DeclarationCheckers = object : DeclarationCheckers() {
         private val enabled =
@@ -38,6 +41,10 @@ class WatchdogFirCheckers(
         // with no counterpart on other backends, so they only register for JVM compilations.
         private fun <C : Any> C.onlyOnJvm(): C? = takeIf { session.moduleData.platform.isJvm() }
 
+        /** With a [recorder], every checker also records its diagnostics for external tooling. */
+        private fun <D : FirDeclaration> Set<FirDeclarationChecker<D>>.recorded(): Set<FirDeclarationChecker<D>> =
+            if (recorder == null) this else mapTo(mutableSetOf()) { RecordingDeclarationChecker(it, recorder) }
+
         override val classCheckers: Set<FirClassChecker> = setOfNotNull(
             OpenApiChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.OPEN_API_WITHOUT_SUBCLASS_OPT_IN, WatchdogDiagnostics.SUBCLASS_OPT_IN_WITHOUT_MARKERS),
@@ -49,7 +56,7 @@ class WatchdogFirCheckers(
                 .unlessDisabled(WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_TO_STRING),
             DslMarkerTargetsChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.DSL_MARKER_NOOP_TARGET, WatchdogDiagnostics.DSL_MARKER_WITHOUT_EXPLICIT_TARGETS),
-        )
+        ).recorded()
 
         // These checkers watch every declaration kind, not just classes. MutableCollectionChecker
         // is one of them because it also inspects class-level type parameter bounds.
@@ -64,7 +71,7 @@ class WatchdogFirCheckers(
                 .unlessDisabled(WatchdogDiagnostics.PAIR_OR_TRIPLE_PUBLIC_API),
             NullableBooleanChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.NULLABLE_BOOLEAN_PUBLIC_API),
-        )
+        ).recorded()
 
         // Dispatched to named functions and constructors alike: both declare parameter lists.
         override val functionCheckers: Set<FirFunctionChecker> = setOfNotNull(
@@ -80,17 +87,17 @@ class WatchdogFirCheckers(
             JvmOverloadsChecker(severities)
                 .onlyOnJvm()
                 ?.unlessDisabled(WatchdogDiagnostics.DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS),
-        )
+        ).recorded()
 
         override val fileCheckers: Set<FirFileChecker> = setOfNotNull(
             TopLevelJvmNameChecker(severities)
                 .onlyOnJvm()
                 ?.unlessDisabled(WatchdogDiagnostics.TOP_LEVEL_API_WITHOUT_JVM_NAME),
-        )
+        ).recorded()
 
         override val typeAliasCheckers: Set<FirTypeAliasChecker> = setOfNotNull(
             FunctionTypeAliasChecker(severities).unlessDisabled(WatchdogDiagnostics.FUNCTION_TYPE_ALIAS_PUBLIC_API),
-        )
+        ).recorded()
 
         // Dispatched to every callable: functions, properties, accessors, and value parameters.
         override val callableDeclarationCheckers: Set<FirCallableDeclarationChecker> = setOfNotNull(
@@ -107,6 +114,6 @@ class WatchdogFirCheckers(
                     WatchdogDiagnostics.COMPANION_API_WITHOUT_JVM_STATIC,
                     WatchdogDiagnostics.COMPANION_CONSTANT_WITHOUT_JVM_FIELD,
                 ),
-        )
+        ).recorded()
     }
 }

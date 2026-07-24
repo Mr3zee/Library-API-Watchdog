@@ -17,11 +17,19 @@ object WatchdogConfigurationKeys {
      */
     val DIAGNOSTIC_SEVERITIES: CompilerConfigurationKey<Map<String, WatchdogSeverity>> =
         CompilerConfigurationKey.create("watchdog diagnostic severities")
+
+    /**
+     * Path of the file every reported watchdog diagnostic is appended to as a tab-separated
+     * line; see [org.jetbrains.kotlinx.libs.api.watchdog.fir.WatchdogDiagnosticsRecorder].
+     */
+    val DIAGNOSTICS_OUTPUT_FILE: CompilerConfigurationKey<String> =
+        CompilerConfigurationKey.create("watchdog diagnostics output file")
 }
 
 class WatchdogCommandLineProcessor : DevKitCommandLineProcessor(WatchdogCLP::class) {
     override val pluginId: String = PluginInfo.PLUGIN_ID
-    override val pluginOptions: Collection<CliOption> = listOf(DIAGNOSTIC_SEVERITY_OPTION)
+    override val pluginOptions: Collection<CliOption> =
+        listOf(DIAGNOSTIC_SEVERITY_OPTION, DIAGNOSTICS_OUTPUT_FILE_OPTION)
 
     companion object {
         val DIAGNOSTIC_SEVERITY_OPTION: CliOption = CliOption(
@@ -33,6 +41,17 @@ class WatchdogCommandLineProcessor : DevKitCommandLineProcessor(WatchdogCLP::cla
             required = false,
             allowMultipleOccurrences = true,
         )
+
+        val DIAGNOSTICS_OUTPUT_FILE_OPTION: CliOption = CliOption(
+            optionName = "diagnosticsOutputFile",
+            valueDescription = "<path>",
+            description = "Append every reported watchdog diagnostic to the given file as a " +
+                    "tab-separated line: diagnostic name, source file path, start offset, " +
+                    "end offset. Meant for tooling; the Gradle plugin's " +
+                    "updateBackwardsCompatibilityExempts task consumes it.",
+            required = false,
+            allowMultipleOccurrences = false,
+        )
     }
 }
 
@@ -43,6 +62,9 @@ class WatchdogCLP : DevKitCLP {
                 val override = parseDiagnosticSeverity(value)
                 val severities = configuration[WatchdogConfigurationKeys.DIAGNOSTIC_SEVERITIES, emptyMap()]
                 configuration.put(WatchdogConfigurationKeys.DIAGNOSTIC_SEVERITIES, severities + override)
+            }
+            WatchdogCommandLineProcessor.DIAGNOSTICS_OUTPUT_FILE_OPTION.optionName -> {
+                configuration.put(WatchdogConfigurationKeys.DIAGNOSTICS_OUTPUT_FILE, value)
             }
             else -> error("Unexpected config option: '${option.optionName}'")
         }

@@ -36,6 +36,8 @@ rootProject.name = "libs-api-watchdog"
 
 include("compiler-plugin")
 
+include("exempts-fixer")
+
 include("gradle-plugin")
 
 include("plugin-annotations")

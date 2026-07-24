@@ -24,6 +24,7 @@ pluginDevKit {
 tasks.named("installForFunctionalTest") {
     dependsOn(
         ":compiler-plugin:installForFunctionalTest",
+        ":exempts-fixer:installForFunctionalTest",
         ":plugin-annotations:publishJvmPublicationToFunctionalTestRepository",
         ":plugin-annotations:publishKotlinMultiplatformPublicationToFunctionalTestRepository",
     )

@@ -53,6 +53,26 @@ exempted in place with the matching `@Intentionally*` annotation, which must exp
 through an `ExemptionReason` and a description. See
 [Exemptions and internal API](https://mr3zee.github.io/libs-api-watchdog/exemptions.html).
 
+## Adopting on an existing library
+
+A library that has already shipped cannot change the shape of its public API without breaking
+clients, so the watchdog's first run typically floods it with diagnostics that are not actionable
+anymore. The Gradle plugin registers an `updateBackwardsCompatibilityExempts` task that
+acknowledges all of them in one sweep:
+
+```bash
+./gradlew updateBackwardsCompatibilityExempts
+```
+
+The task recompiles the main JVM sources through the Kotlin Build Tools API with the watchdog
+compiler plugin recording every diagnostic it reports, and then rewrites the sources, inserting
+the matching `@Intentionally*` annotation with `reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`
+(adding imports as needed). Checks disabled through `apiWatchdog` are not exempted, and the few
+diagnostics no annotation can acknowledge are listed as warnings for manual follow-up. Run it on a
+clean working tree and review the diff; from then on the checks only guard newly added API. See
+the [Gradle plugin reference](https://mr3zee.github.io/libs-api-watchdog/gradle-plugin.html) for
+details.
+
 ## Checks
 
 ### API surface
