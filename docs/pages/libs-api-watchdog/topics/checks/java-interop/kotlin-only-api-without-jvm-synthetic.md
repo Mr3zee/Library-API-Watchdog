@@ -80,6 +80,7 @@ public fun onEach(action: Action) { }
 - A signature mangled by a value class is reported by [`MANGLED_JVM_NAME_PUBLIC_API`](mangled-jvm-name-public-api.md) instead.
 - A declaration already carrying `@JvmSynthetic` is skipped: the Kotlin-only shape is already
   hidden from Java on purpose.
+- Non-JVM compilations never register this check at all.
 
 ## Exemption
 
