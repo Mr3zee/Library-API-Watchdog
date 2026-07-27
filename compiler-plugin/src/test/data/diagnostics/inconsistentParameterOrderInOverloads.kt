@@ -23,7 +23,7 @@ public fun move(x: Int, y: Int, z: Int) {}
 
 public fun move(x: Long, y: Long) {}
 
-// Fewer than two shared names cannot disagree on order.
+// Fewer than two shared names can disagree on order.
 
 public fun log(message: String) {}
 
@@ -50,7 +50,7 @@ public class Turtle {
 }
 
 // An inherited overload is an ordering reference too: users see it side by side with the
-// declared ones. Only the subtype's declaration warns - the supertype cannot see it.
+// declared ones. Only the subtype's declaration warns - the supertype can see it.
 
 public interface Shape {
     public fun place(x: Int, y: Int) {}

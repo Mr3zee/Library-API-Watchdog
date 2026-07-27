@@ -57,7 +57,7 @@ public abstract class Base {
     public fun <!DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS!>walk<!>(steps: Int = 1) {}
 }
 
-// An override cannot re-declare default values: no warning.
+// An override can't re-declare default values: no warning.
 public class Runner : Base() {
     override fun run(retries: Int) {}
 }

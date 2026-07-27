@@ -54,7 +54,7 @@ public class Coordinates(
 }
 ```
 
-Notable cases:
+## Notes
 
 - `data object`s are exempt: with no constructor properties, none of `copy`, `componentN`, or a
   per-instance constructor is generated.

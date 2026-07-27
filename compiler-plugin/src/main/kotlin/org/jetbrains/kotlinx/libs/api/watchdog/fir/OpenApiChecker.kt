@@ -26,7 +26,7 @@ import org.jetbrains.kotlin.name.Name
  * either gate subclassing with [kotlin.SubclassOptInRequired] or explicitly acknowledge the
  * contract with `@IntentionallyOpen`. A `@SubclassOptInRequired` with no marker classes gates
  * nothing, so it is reported as well. Classes whose constructors are all internal or private
- * cannot be subclassed outside the library and are not reported.
+ * can't be subclassed outside the library and are not reported.
  */
 internal class OpenApiChecker(
     private val severities: WatchdogDiagnosticSeverities,
@@ -44,7 +44,7 @@ internal class OpenApiChecker(
         val session = context.session
 
         // A subclass has to delegate to some superclass constructor, so a class whose
-        // constructors are all internal or private cannot be subclassed outside the library.
+        // constructors are all internal or private can't be subclassed outside the library.
         val accessibleConstructors = if (declaration.classKind == ClassKind.CLASS) {
             declaration.constructors(session).filter {
                 it.visibility == Visibilities.Public || it.visibility == Visibilities.Protected

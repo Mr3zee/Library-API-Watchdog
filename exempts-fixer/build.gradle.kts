@@ -22,7 +22,7 @@ tasks.processTestResources {
 
 tasks.test {
     useJUnitPlatform()
-    // Kotlin's standalone PSI application is process-global and cannot be initialized by
+    // Kotlin's standalone PSI application is process-global and can't be initialized by
     // concurrent test instances.
     systemProperty("junit.jupiter.execution.parallel.enabled", "false")
 }

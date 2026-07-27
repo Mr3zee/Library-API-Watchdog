@@ -60,7 +60,7 @@ public fun connect(): Int = 0
 public fun disconnect(): Int = 0
 ```
 
-Notable cases that stay silent:
+## Notes
 
 - Files exposing only classifiers - classes, objects, type aliases - produce no facade worth
   naming.

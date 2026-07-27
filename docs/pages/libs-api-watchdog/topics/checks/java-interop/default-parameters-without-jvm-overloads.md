@@ -32,7 +32,7 @@ Kotlin's guide on
 for how `@JvmOverloads` compiles the reduced overloads Java needs.
 
 The recommendation is honest about its limits, though: `@JvmOverloads` only generates
-right-truncated overloads, so a defaulted parameter in the middle of the list still cannot be
+right-truncated overloads, so a defaulted parameter in the middle of the list still can't be
 skipped from Java, and it only improves Java call sites - it doesn't make adding a parameter
 later binary compatible for Kotlin callers either.
 
@@ -61,16 +61,16 @@ public class Connection(host: String, port: Int = 80)
 public class Connection @JvmOverloads constructor(host: String, port: Int = 80)
 ```
 
-Notable cases:
+## Notes
 
-- A defaulted parameter in the middle of the list still cannot be skipped from Java even with
+- A defaulted parameter in the middle of the list still can't be skipped from Java even with
   `@JvmOverloads`; keep optional parameters last (see `REQUIRED_PARAMETER_AFTER_OPTIONAL`) so the
   generated overloads actually cover the common call shapes.
 - Abstract and interface members, and annotation class constructors, are exempt: `@JvmOverloads`
   doesn't apply to them.
 - `suspend` functions and members of a value class are exempt: they are not Java-callable
   regardless of overloads.
-- Overrides are exempt: they cannot re-declare default values.
+- Overrides are exempt: they can't re-declare default values.
 - A function or constructor already carrying `@JvmSynthetic` is exempt: it is hidden from Java on
   purpose.
 

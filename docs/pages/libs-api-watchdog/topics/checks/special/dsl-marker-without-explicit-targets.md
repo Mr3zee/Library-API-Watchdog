@@ -60,7 +60,7 @@ A narrower, still-effective subset is fine too:
 public annotation class HtmlDsl
 ```
 
-Notable edge cases:
+## Notes
 
 - `ANNOTATION_CLASS` counts as effective too, since it is a classifier declaration:
   `@Target(AnnotationTarget.CLASS, AnnotationTarget.ANNOTATION_CLASS)` needs no exemption.

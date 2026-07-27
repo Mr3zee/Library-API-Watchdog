@@ -26,7 +26,7 @@ public fun locate(): Pair<Int, Int> = 0 to 0
 
 `Pair` and `Triple` name their components `first`/`second`/`third`, so a call site reading
 `point.first` or destructuring `val (a, b) = point` learns nothing about what the values mean.
-Worse, the shape is fixed: it cannot grow a fourth component or rename a component without
+Worse, the shape is fixed: it can't grow a fourth component or rename a component without
 breaking every user in a source-incompatible way, while a purpose-built class can add an
 optional property with a default value. See the
 [Kotlin API guidelines on object-oriented design for data and state](https://kotlinlang.org/docs/api-guidelines-consistency.html#use-object-oriented-design-for-data-and-state).
@@ -64,7 +64,7 @@ public class Anchor(public val position: Point)
 public class Point(public val x: Int, public val y: Int)
 ```
 
-Notable edge cases:
+## Notes
 
 - A tuple type parameter bound (`<T : Pair<Int, Int>>`) is reported too: it constrains every
   instantiation to the tuple shape, exposing it just like a direct mention.

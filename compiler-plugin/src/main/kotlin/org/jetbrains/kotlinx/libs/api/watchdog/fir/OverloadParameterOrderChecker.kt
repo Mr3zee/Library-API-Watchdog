@@ -35,7 +35,7 @@ import org.jetbrains.kotlin.name.Name
  * and reordering either clears both. Overloads are compared as users see them side by side -
  * the members visible in a class, inherited ones included, or the module's top-level functions
  * of the same package; constructors of a class are overloads of each other. For an inheritance
- * pair only the subtype's declaration reports: the supertype cannot see its subtypes' overloads,
+ * pair only the subtype's declaration reports: the supertype can't see its subtypes' overloads,
  * and it is the new overload that strays from the established signature. Dependencies are not
  * compared - only declarations the library author can reorder are held against each other.
  *

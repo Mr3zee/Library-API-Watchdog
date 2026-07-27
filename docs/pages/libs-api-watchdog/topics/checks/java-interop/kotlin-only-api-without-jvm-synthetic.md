@@ -14,7 +14,7 @@ can use idiomatically, while the function still lands in the API surface Java so
 ## What it reports
 
 Three shapes trigger it: a `suspend` function (Java sees a trailing `Continuation` parameter it
-cannot provide idiomatically), an `inline` function with a `reified` type parameter (calling the
+can't provide idiomatically), an `inline` function with a `reified` type parameter (calling the
 compiled method from Java fails at runtime), and a function taking a Kotlin-specific function
 type - a suspend function type, a function type with receiver, or a `Unit`-returning function
 type:
@@ -27,7 +27,7 @@ public suspend fun fetch(key: String): String = key
 ## Rationale
 
 A Kotlin-only shape still compiles a method Java sources can see and try to call, even though
-Java cannot use it the way Kotlin callers do, or cannot use it at all. Leaving it visible without
+Java can't use it the way Kotlin callers do, or can't use it at all. Leaving it visible without
 comment misleads Java-facing API browsing and, for a `reified` type parameter, produces a call
 that compiles in Java but fails at runtime. See Kotlin's
 [Java-to-Kotlin interop guide](https://kotlinlang.org/docs/java-to-kotlin-interop.html) for how
@@ -36,7 +36,7 @@ these shapes actually compile.
 ## Don't
 
 ```kotlin
-// Java sees a trailing Continuation parameter it cannot provide idiomatically.
+// Java sees a trailing Continuation parameter it can't provide idiomatically.
 // 
 // KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
 public suspend fun fetch(key: String): String = key
@@ -70,9 +70,9 @@ public fun listen(listener: Listener) {}
 Java a lambda-friendly type instead of a Kotlin function type. A suspend function can instead ship
 alongside a blocking or `CompletableFuture`-returning bridge for Java callers.
 
-Notable cases:
+## Notes
 
-- Abstract and interface members are exempt: `@JvmSynthetic` cannot hide a member that
+- Abstract and interface members are exempt: `@JvmSynthetic` can't hide a member that
   implementations must provide, so there is no non-breaking fix to suggest.
 - Overrides are exempt; the shape is reported on the base declaration instead.
 - Constructors are exempt: `@JvmSynthetic` doesn't apply to them.

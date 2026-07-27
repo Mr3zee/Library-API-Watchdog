@@ -60,7 +60,7 @@ public fun interface SuspendAction {
 }
 ```
 
-Notable points:
+## Notes
 
 - Nullable and receiver variants are caught the same way: `((String) -> Boolean)?` and
   `StringBuilder.() -> Unit` are both function types under the alias.
@@ -69,7 +69,7 @@ Notable points:
 - A function type nested inside another type, such as `List<(Int) -> Unit>`, doesn't trigger the
   check; only the type an alias directly expands to counts.
 - Deliberate exception: aliases of the reflection types `KFunction`/`KSuspendFunction` are exempt
-  and need no annotation, because a `fun interface` cannot replace a reflection type.
+  and need no annotation, because a `fun interface` can't replace a reflection type.
 
 ## Exemption
 

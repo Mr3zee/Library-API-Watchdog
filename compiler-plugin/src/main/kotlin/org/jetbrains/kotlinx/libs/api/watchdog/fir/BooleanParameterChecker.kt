@@ -23,7 +23,7 @@ import org.jetbrains.kotlin.name.StandardClassIds
 /**
  * Reports [Boolean value parameters](https://kotlinlang.org/docs/api-guidelines-readability.html#avoid-using-the-boolean-type-as-an-argument)
  * of publicly visible functions. At the call site a positional `true`/`false` argument reveals
- * nothing about what it controls, and users cannot be forced to use named arguments, so the API
+ * nothing about what it controls, and users can't be forced to use named arguments, so the API
  * should model the modes as separate, descriptively named functions or as an enum class instead.
  * Nullable Booleans are three-state flags and count too, a type alias doesn't change what
  * users pass, and a `vararg` Boolean parameter takes the same positional `true`/`false`

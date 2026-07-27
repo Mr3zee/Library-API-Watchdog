@@ -3,16 +3,16 @@
 `REQUIRED_PARAMETER_AFTER_OPTIONAL` reports required parameters of public functions and
 constructors declared after an optional (defaulted or `vararg`) parameter.
 
-| | |
-|---|---|
-| Diagnostic | `REQUIRED_PARAMETER_AFTER_OPTIONAL` |
-| Default severity | Error |
-| Gradle property | [`requiredParameterAfterOptional`](configuration.md) |
-| Exemption | [`@IntentionallyRequiredParameterAfterOptional`](exemptions.md) |
+|                  |                                                                 |
+|------------------|-----------------------------------------------------------------|
+| Diagnostic       | `REQUIRED_PARAMETER_AFTER_OPTIONAL`                             |
+| Default severity | Error                                                           |
+| Gradle property  | [`requiredParameterAfterOptional`](configuration.md)            |
+| Exemption        | [`@IntentionallyRequiredParameterAfterOptional`](exemptions.md) |
 
 ## What it reports
 
-Every required parameter (no default value) that comes after the first optional one - defaulted
+Every required parameter (one that doesn't have a default value) that comes after the first optional one - defaulted
 or `vararg` - in the parameter list of a public function or constructor:
 
 ```kotlin
@@ -23,17 +23,20 @@ public fun connect(retries: Int = 3, host: String): Unit = Unit
 All required parameters behind the first optional one are reported, not just the first:
 
 ```kotlin
-// both `host` and `port` are reported
-// 
-// REQUIRED_PARAMETER_AFTER_OPTIONAL
-public fun configure(timeout: Long = 0L, host: String, port: Int): Unit = Unit
+public fun configure(
+    timeout: Long = 0L,
+    // REQUIRED_PARAMETER_AFTER_OPTIONAL
+    host: String,
+    // REQUIRED_PARAMETER_AFTER_OPTIONAL
+    port: Int,
+): Unit = Unit
 ```
 
 ## Rationale
 
-A required parameter behind an optional one cannot be passed positionally without also re-stating
-every default in front of it, which pushes callers toward named arguments for a parameter that
-should have been trivial to supply. It also blocks the library from ever adding another optional
+A required parameter behind an optional one can't be passed positionally,
+which pushes callers toward named arguments for a parameter that should have been more trivial to supply. 
+It also blocks the library from ever adding another optional
 parameter in a natural position later. See the Kotlin library authors' guide on
 [parameter order, naming, and usage](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage):
 essential inputs first, optional inputs last.
@@ -64,7 +67,7 @@ public class Server(port: Int = 80, host: String)
 public class Server(host: String, port: Int = 80)
 ```
 
-Notable edge cases and deliberate exceptions:
+## Notes
 
 - A `vararg` parameter counts as optional too: callers can omit it entirely, so a required
   parameter after it is still reported.
@@ -75,7 +78,7 @@ Notable edge cases and deliberate exceptions:
   trailing-lambda syntax to preserve there.
 - A required parameter of a `KFunction` reflection type in the last position is not exempt: no
   lambda literal can satisfy it, so there is no call-syntax benefit to keeping it last.
-- Overrides are exempt: they cannot declare default values, and their parameter order is fixed by
+- Overrides are exempt: they can't declare default values, and their parameter order is fixed by
   the overridden declaration, which is reported where it is declared instead.
 
 ## Exemption

@@ -141,7 +141,7 @@ class CompilerPluginTestDataFixerTest {
 
     /**
      * The fixer needs the relocated compiler embeddable while Kotlin's diagnostics test framework
-     * needs the regular compiler. Their classes share package names and cannot coexist in one
+     * needs the regular compiler. Their classes share package names and can't coexist in one
      * classloader, so compile the generated expectations in a clean child JVM.
      */
     private fun validateWithCompilerPlugin(generatedFiles: List<File>) {

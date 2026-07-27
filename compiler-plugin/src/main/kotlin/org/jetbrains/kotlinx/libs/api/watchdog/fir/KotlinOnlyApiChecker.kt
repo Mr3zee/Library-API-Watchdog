@@ -27,9 +27,9 @@ import org.jetbrains.kotlin.name.JvmStandardClassIds
 /**
  * Reports publicly visible functions whose shape only Kotlin callers can use idiomatically while
  * the function still lands in the API surface Java sources see:
- * - a `suspend` function, which Java sees with a trailing `Continuation` parameter it cannot
+ * - a `suspend` function, which Java sees with a trailing `Continuation` parameter it can't
  *   provide idiomatically,
- * - an `inline` function with a `reified` type parameter, whose compiled method cannot be called
+ * - an `inline` function with a `reified` type parameter, whose compiled method can't be called
  *   from Java at all - the call fails at runtime,
  * - a function taking a Kotlin-specific function type: a suspend function type (no Java lambda
  *   can implement it), a function type with receiver (a Java lambda has to take the receiver as
@@ -45,7 +45,7 @@ import org.jetbrains.kotlin.name.JvmStandardClassIds
  * Deliberate exceptions:
  * - Non-JVM compilations: what Java sources see is a JVM-only concern, so [WatchdogFirCheckers]
  *   only registers this checker when the platform is JVM.
- * - Abstract and interface members: `@JvmSynthetic` cannot hide a member that implementations
+ * - Abstract and interface members: `@JvmSynthetic` can't hide a member that implementations
  *   must provide, so there is no non-breaking fix to suggest on the declaration itself.
  * - Overrides: their signature is fixed by the overridden declaration and is reported there.
  * - Constructors: `@JvmSynthetic` is not applicable to them, and their Kotlin-specific
@@ -105,7 +105,7 @@ internal class KotlinOnlyApiChecker(
     private fun FirNamedFunction.kotlinOnlyShape(): String? {
         if (isSuspend) {
             return "is a suspend function, which Java sees with a trailing Continuation " +
-                    "parameter it cannot provide idiomatically"
+                    "parameter it can't provide idiomatically"
         }
         if (isInline && typeParameters.any { it.symbol.isReified }) {
             return "declares a reified type parameter, which only inlining Kotlin call sites " +

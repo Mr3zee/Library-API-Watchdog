@@ -91,7 +91,7 @@ public class WithCompanion {
     }
 }
 
-// Interfaces cannot hold backing fields: no warning.
+// Interfaces can't hold backing fields: no warning.
 
 public interface Config {
     public val timeout: Int

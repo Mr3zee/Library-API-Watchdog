@@ -66,10 +66,10 @@ public class Registry {
 `const val` compiles to a real static final field but only accepts a compile-time constant
 (primitives and strings). `@JvmField` exposes any other final value the same way, as a plain
 static field. `@JvmStatic` instead compiles a static getter, useful when the value needs a
-computed default. `@get:JvmSynthetic` is a fourth option when the property should not be visible
+computed default. `@get:JvmSynthetic` is a fourth option when the property shouldn't be visible
 to Java at all.
 
-Notable cases:
+## Notes
 
 - `var` properties are not checked: they expose mutable state, not a constant.
 - A property with a custom getter or setter, or a delegate (`by lazy { }` and similar), is not

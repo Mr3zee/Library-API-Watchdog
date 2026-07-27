@@ -50,7 +50,7 @@ public inline fun <T> pass(value: T): T = value
 @JvmSynthetic
 public suspend fun hiddenFetch(key: String): String = key
 
-// Abstract and interface members cannot be hidden without breaking implementations, and an
+// Abstract and interface members can't be hidden without breaking implementations, and an
 // override repeats the shape reported on the base declaration: no warning.
 
 public interface Resolver {
@@ -67,7 +67,7 @@ public abstract class BaseResolver {
     public abstract suspend fun resolveBase(key: String): String
 }
 
-// Constructors cannot carry @JvmSynthetic: no warning.
+// Constructors can't carry @JvmSynthetic: no warning.
 public class Watcher(onChange: () -> Unit)
 
 // A signature mangled by a value class is already invisible to Java sources and reported by

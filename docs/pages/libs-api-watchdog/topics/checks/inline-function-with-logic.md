@@ -85,7 +85,7 @@ public inline var limit: Int
     }
 ```
 
-Notable cases:
+## Notes
 
 - A thin wrapper may also resolve a reified type argument and narrow the delegate's result with
   `as`/`as?`; a contract declared with `contract { ... }` doesn't count as a second statement.

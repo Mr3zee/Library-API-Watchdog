@@ -15,7 +15,7 @@ import org.jetbrains.kotlin.name.Name
  * bounds and type arguments included (`List<Pair<Int, String>>` exposes the tuple all the same;
  * see [ExposedTypeChecker] for the shared sweep). Tuple components carry no domain meaning: at
  * the use site `first`/`second`/`third` and positional destructuring reveal nothing about the
- * values, and the fixed shape cannot evolve - adding a value means switching to a different
+ * values, and the fixed shape can't evolve - adding a value means switching to a different
  * type, breaking users. The API should expose
  * [a small class with descriptively named properties](https://kotlinlang.org/docs/data-classes.html)
  * instead. Authors acknowledge a deliberate tuple with `@IntentionallyPairOrTriple`.

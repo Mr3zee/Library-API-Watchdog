@@ -1,7 +1,7 @@
 # Subclass opt-in without markers
 
 `SUBCLASS_OPT_IN_WITHOUT_MARKERS` reports `@SubclassOptInRequired` annotations that list no
-marker classes, so they gate nothing.
+marker classes.
 
 |                  |                                                                                |
 |------------------|--------------------------------------------------------------------------------|
@@ -53,7 +53,7 @@ public abstract class Connector
 public interface Plugin
 ```
 
-Notes:
+## Notes
 
 - A class or interface that is not open to external subclassing in the first place (a final
   class, a class whose constructors are all internal or private, or a sealed interface) is

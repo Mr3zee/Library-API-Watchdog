@@ -55,7 +55,7 @@ through an `ExemptionReason` and a description. See
 
 ## Adopting on an existing library
 
-A library that has already shipped cannot change the shape of its public API without breaking
+A library that has already shipped can't change the shape of its public API without breaking
 users, so the watchdog's first run typically floods it with diagnostics that are not actionable
 anymore. The Gradle plugin registers an `updateBackwardsCompatibilityExempts` task that
 acknowledges all of them in one sweep:

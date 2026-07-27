@@ -152,7 +152,7 @@ public class ConstructorPropertyDocumentedInPlace(
     public val <!UNDOCUMENTED_PUBLIC_API!>undocumentedParameter<!>: Int,
 )
 
-// The primary constructor cannot carry its own KDoc - `@constructor` and `@param` tags in the
+// The primary constructor can't carry its own KDoc - `@constructor` and `@param` tags in the
 // class KDoc describe it - so only secondary constructors are watched.
 
 /** Documented. */
@@ -219,7 +219,7 @@ internal class InternalOuter {
     fun memberOfInternal() {}
 }
 
-/** Members that users cannot see need no documentation. */
+/** Members that users can't see need no documentation. */
 public abstract class WithNonPublicMembers {
     internal fun internalFunction() {}
 

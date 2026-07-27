@@ -68,16 +68,16 @@ public class Rect(width: Int, height: Int) {
 }
 ```
 
-Notable edge cases and deliberate exceptions:
+## Notes
 
-- Overloads that share fewer than two parameter names cannot disagree on order and are never
+- Overloads that share fewer than two parameter names can't disagree on order and are never
   reported, which is why single-argument conversion overloads with the same parameter name but
   different types (`BigDecimal(value: Int)` next to `BigDecimal(value: String)`) stay silent.
 - Only declarations users see side by side are compared: the members of one class body -
   inherited members included - the top-level functions of one package, or the constructors of one
   class among each other. A class member is never compared against a same-named top-level
   function, and declarations from dependencies are never compared.
-- For an inherited pair, only the subtype's own declaration is reported: the supertype cannot see
+- For an inherited pair, only the subtype's own declaration is reported: the supertype can't see
   the subtype's overload, and it is the new declaration that strays from the established order.
 - Overrides never report - their order is fixed by the overridden declaration - but they still
   serve as an ordering reference for a new overload declared next to them.

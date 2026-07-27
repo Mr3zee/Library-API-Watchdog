@@ -1,7 +1,7 @@
 # Mangled JVM names in public API
 
 `MANGLED_JVM_NAME_PUBLIC_API` reports public functions, properties, and constructors that Java
-sources cannot call because a value class in their signature makes the JVM backend mangle the
+sources can't call because a value class in their signature makes the JVM backend mangle the
 compiled name.
 
 | | |
@@ -19,7 +19,7 @@ function or property - nullable types and type parameters bounded by a value cla
 a value class *return* type on a class, interface, or object member, makes the JVM backend append
 a hash suffix to the compiled name, and the `-` is not a legal Java identifier. A constructor with
 a value class parameter gets no such suffix; instead the visible constructor becomes private and
-the public one gains a synthetic marker parameter, which Java still cannot call:
+the public one gains a synthetic marker parameter, which Java still can't call:
 
 ```kotlin
 @JvmInline
@@ -70,7 +70,7 @@ public class Wallet(public val id: UserId)
 `@JvmExposeBoxed` generates Java-callable boxed variants alongside the mangled ones; it is the
 only fix for constructors and overridable members, since `@JvmName` doesn't accept them.
 
-Notable edge cases and deliberate exceptions:
+## Notes
 
 - A value class inside a type argument (`List<UserId>`) is boxed and keeps the JVM name; only the
   classifier itself mangles, not a type it is nested in.

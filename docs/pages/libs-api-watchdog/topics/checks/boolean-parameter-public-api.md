@@ -23,7 +23,7 @@ public fun doWork(optimizeForSpeed: Boolean): Unit {}
 ## Rationale
 
 At the call site, a positional `true`/`false` argument reads as noise: `resize(true)` says nothing
-about what turns on. Users cannot be forced to use named arguments yet, so the meaning depends on
+about what turns on. Users can't be forced to use named arguments yet, so the meaning depends on
 whoever reads the call site remembering the parameter name. See the
 [Kotlin API guidelines on avoiding Boolean arguments](https://kotlinlang.org/docs/api-guidelines-readability.html#avoid-using-the-boolean-type-as-an-argument).
 
@@ -57,7 +57,7 @@ public enum class Flag { FAST, VERBOSE }
 public fun configure(vararg flags: Flag): Unit {}
 ```
 
-Notable points:
+## Notes
 
 - A nullable `Boolean?` parameter is still a positional flag, just a three-state one, so it is
   reported the same way.

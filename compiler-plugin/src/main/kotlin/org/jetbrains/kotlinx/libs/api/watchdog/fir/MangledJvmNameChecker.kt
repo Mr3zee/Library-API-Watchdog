@@ -24,7 +24,7 @@ import org.jetbrains.kotlin.name.JvmStandardClassIds
 import org.jetbrains.kotlin.name.Name
 
 /**
- * Reports publicly visible callables that Java sources cannot call because a
+ * Reports publicly visible callables that Java sources can't call because a
  * [value class](https://kotlinlang.org/docs/inline-classes.html#mangling) appears in their
  * signature. Value classes compile to their underlying type, so the JVM backend mangles the
  * name of every affected entry point with a hash suffix (`take-4ZD5Yi0`); the `-` makes the
@@ -55,7 +55,7 @@ import org.jetbrains.kotlin.name.Name
  * - Members and constructors of the value class itself: they are Java-hostile by construction
  *   (`@JvmName` is not even applicable inside), so declaring the public value class is treated
  *   as the deliberate choice, and only its mentions in the rest of the API are watched.
- * - `suspend` functions: Java callers cannot provide the continuation idiomatically anyway, so
+ * - `suspend` functions: Java callers can't provide the continuation idiomatically anyway, so
  *   an unmangled name would not make the function Java-friendly.
  * - Overrides: their signature is fixed by the overridden declaration and is reported there.
  * - `@JvmSynthetic` declarations and accessors: they are hidden from Java on purpose.

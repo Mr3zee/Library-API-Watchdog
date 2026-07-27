@@ -1,16 +1,16 @@
 # Java interop checks
 
 %product% includes six checks that keep a JVM library ergonomic for Java consumers. They flag
-shapes that compile fine but that Java callers cannot use idiomatically, or cannot use at all. All
+shapes that compile fine but that Java callers can't use idiomatically, or can't use at all. All
 six only run in JVM compilations.
 
 ## The checks
 
 - [Mangled JVM names in public API](mangled-jvm-name-public-api.md) - a value class in a
-  signature makes the JVM backend mangle the compiled name, so Java cannot call it.
+  signature makes the JVM backend mangle the compiled name, so Java can't call it.
 - [Kotlin-only API without JvmSynthetic](kotlin-only-api-without-jvm-synthetic.md) - `suspend`
   functions, reified generics, and Kotlin-specific function types stay visible to Java even
-  though Java cannot call them idiomatically.
+  though Java can't call them idiomatically.
 - [Companion API without JvmStatic](companion-api-without-jvm-static.md) - companion object
   functions compile to instance methods, so Java has to reach them through `Outer.Companion`.
 - [Companion constants without JvmField](companion-constant-without-jvm-field.md) - constant-shaped
