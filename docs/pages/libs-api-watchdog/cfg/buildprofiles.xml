@@ -9,6 +9,7 @@
 
         <primary-color>purple</primary-color>
         <header-logo>logo.svg</header-logo>
+        <custom-favicons>logo.svg</custom-favicons>
 
         <browser-edits-url>%docs-edit-path%/</browser-edits-url>
         <enable-browser-edits>true</enable-browser-edits>
