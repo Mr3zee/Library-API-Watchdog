@@ -3,18 +3,17 @@
 `INLINE_FUNCTION_WITH_LOGIC` reports public inline functions and inline property accessors whose
 body does more than delegate to a non-inline function.
 
-| | |
-|---|---|
-| Diagnostic | `INLINE_FUNCTION_WITH_LOGIC` |
-| Default severity | Error |
-| Gradle property | [`inlineFunctionWithLogic`](configuration.md) |
-| Exemption | [`@IntentionallyInlinedLogic`](exemptions.md) |
+|                  |                                               |
+|------------------|-----------------------------------------------|
+| Diagnostic       | `INLINE_FUNCTION_WITH_LOGIC`                  |
+| Default severity | Error                                         |
+| Gradle property  | [`inlineFunctionWithLogic`](configuration.md) |
+| Exemption        | [`@IntentionallyInlinedLogic`](exemptions.md) |
 
 ## What it reports
 
-Any public `inline` function, and any inline property accessor (inline because the accessor or
-its property carries the modifier), is flagged unless its body is a thin wrapper: a single
-statement - besides an optional contract - that only reads or writes values and delegates to a
+Any public `inline` function and any inline property accessor are flagged unless their body is a thin wrapper: a single
+statement - besides an optional contract - that only performs simple operations and delegates to a
 non-inline call:
 
 ```kotlin
@@ -31,16 +30,14 @@ pick up the fix at runtime by relinking against the new library binary. See the 
 authors' guide on
 [`@PublishedApi` considerations](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#considerations-for-using-the-publishedapi-annotation).
 
+[//]: # (TODO list permitted simple operations)
+
 ### Don't
 
 ```kotlin
-// Branching here is copied into every user binary; a fix needs every user to recompile.
-// 
 // INLINE_FUNCTION_WITH_LOGIC
 public inline fun choose(value: Int): Int = if (value < 0) -1 else 1
 
-// A local variable and a separate return statement: more than one delegating expression.
-//
 // INLINE_FUNCTION_WITH_LOGIC
 public inline fun cachedLength(tag: String): Int {
     val cached = tag.length
@@ -53,49 +50,69 @@ public inline fun cachedLength(tag: String): Int {
 ```kotlin
 public inline fun choose(value: Int): Int = chooseImpl(value)
 
-public inline fun cachedLength(tag: String): Int = lengthImpl(tag)
+public inline fun cachedLength(tag: String): Int = 
+    cachedLengthImpl(tag)
 
 @PublishedApi
 internal fun chooseImpl(value: Int): Int = if (value < 0) -1 else 1
 
 @PublishedApi
-internal fun lengthImpl(tag: String): Int = tag.length
+internal fun cachedLengthImpl(tag: String): Int = withCache { 
+    tag.length 
+}
 ```
 
-Thin wrappers stay allowed: they resolve only what the call site knows and hand the actual work to
-a non-inline function - here, the wrapper's own lambda parameter, a `crossinline` parameter
-forwarded through a lambda literal, and a plain read/write of a non-inline property (the thin
-setter shape):
+### Don't {id="dont-2"}
 
 ```kotlin
 @PublishedApi
-internal var storedLimit: Int = 0
+internal val array1: Array<Int> = arrayOf()
 
 @PublishedApi
-internal fun transactImpl(work: () -> Unit): Unit = work()
+internal val array2: Array<Int> = arrayOf()
 
-public inline fun <R> once(block: () -> R): R = block()
-
-public inline fun transact(crossinline work: () -> Unit): Unit = transactImpl { work() }
-
-public inline var limit: Int
-    get() = storedLimit
-    set(value) {
-        storedLimit = value
+// INLINE_FUNCTION_WITH_LOGIC
+public inline val calculateArraysSize: Int 
+    get() { 
+        return array1.size + array2.size 
     }
+```
+
+### Do  {id="do-2"}
+
+```kotlin
+public val calculateArraysSize: Int 
+    get() = calculateArraysSizeImpl()
+```
+
+### Don't {id="dont-3"}
+
+```kotlin
+public inline fun <reified T> resolveFunctionsCount(): Int {
+    return T::class.memberFunctions.size
+}
+```
+
+### Do  {id="do-3"}
+
+```kotlin
+@PublisedApi
+public fun <T> resolveFunctionsCountImpl(kClass: KClass<T>): Int {
+    return kClass.memberFunctions.size
+}
+
+public inline fun <reified T> resolveFunctionsCount(): Int {
+    return resolveFunctionsCountImpl(T::class)
+}
 ```
 
 ## Notes
 
-- A thin wrapper may also resolve a reified type argument and narrow the delegate's result with
-  `as`/`as?`; a contract declared with `contract { ... }` doesn't count as a second statement.
+- A contract declared with `contract { ... }` doesn't count as a statement.
 - Calling another inline function, or reading or writing through an inline accessor, is logic: the
   inliner drags that body into the user transitively even with no visible control flow.
 - `@PublishedApi internal` inline functions and accessors are checked exactly like public ones: a
   public inline wrapper can call them, which inlines their body into users just as transitively.
-- Plain `internal` and `private` inline declarations are not part of the public or published API.
-- Only inline bodies freeze into users: a non-inline function or accessor keeps its logic in the
-  library binary and is never reported; on a mixed property, only the inline accessor is reported.
 
 ## Exemption
 
@@ -104,11 +121,9 @@ must run inline for non-local returns or a hot path must not pay for an extra ca
 
 ```kotlin
 @IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)
-public inline fun clamped(value: Int): Int = if (value < 0) 0 else value
+public inline fun clamped(value: Int): Int = 
+    if (value < 0) 0 else value
 ```
-
-The annotation targets the function declaration, or the property declaration to cover both of its
-accessors at once; there is no parameter- or type-level placement.
 
 ## Configuration
 
@@ -126,4 +141,4 @@ With direct compiler invocation:
 ## See also
 
 - [`@PublishedApi` considerations](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#considerations-for-using-the-publishedapi-annotation)
-- [Exemptions and internal API](exemptions.md)
+- [](exemptions.md)
