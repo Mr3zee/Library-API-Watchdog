@@ -12,7 +12,7 @@ package org.jetbrains.kotlinx.libs.api.watchdog
  * See [Exemptions and internal API](https://mr3zee.github.io/libs-api-watchdog/exemptions.html) for how reasons and descriptions are validated.
  */
 public enum class ExemptionReason {
-    /** The exempted shape is kept to stay compatible with existing clients. */
+    /** The exempted shape is kept to stay compatible with existing users. */
     FOR_BACKWARDS_COMPATIBILITY,
 
     /** The exempted shape is a deliberate part of the API design. */
@@ -77,7 +77,7 @@ public annotation class IntentionallyOpen(
  * Acknowledges that the annotated enum or sealed hierarchy is deliberately exhaustive.
  *
  * The libs-api-watchdog compiler plugin warns about publicly visible enums and sealed hierarchies,
- * because clients can
+ * because users can
  * [match on them exhaustively](https://kotlinlang.org/docs/api-guidelines-predictability.html#prevent-unwanted-and-invalid-extensions)
  * (`when` without an `else` branch), which turns adding an entry or a subtype into a breaking
  * change. Apply this annotation to suppress the warning when the set of entries/subtypes is an
@@ -102,7 +102,7 @@ public annotation class IntentionallyExhaustive(
  *
  * The libs-api-watchdog compiler plugin warns about publicly visible declarations that have no KDoc -
  * classifiers, type aliases, functions, properties, constructors, and enum entries - because
- * [undocumented API forces clients to guess the usage contract](https://kotlinlang.org/docs/api-guidelines-informative-documentation.html#thoroughly-document-your-api).
+ * [undocumented API forces users to guess the usage contract](https://kotlinlang.org/docs/api-guidelines-informative-documentation.html#thoroughly-document-your-api).
  * Apply this annotation to suppress the warning when leaving the declaration undocumented is
  * intended (for example, when it is self-explanatory or documented elsewhere).
  *
@@ -130,7 +130,7 @@ public annotation class IntentionallyUndocumented(
  * Acknowledges that the annotated type alias deliberately exposes a bare function type.
  *
  * The libs-api-watchdog compiler plugin warns about publicly visible type aliases that abbreviate
- * function types, because the alias is erased from the compiled API: clients bind to the bare
+ * function types, because the alias is erased from the compiled API: users bind to the bare
  * function shape, and the type cannot grow members or constraints later without breaking them,
  * [unlike a `fun interface`](https://kotlinlang.org/docs/fun-interfaces.html#functional-interfaces-vs-type-aliases).
  * Apply this annotation to suppress the warning when exposing the function type is intended
@@ -157,7 +157,7 @@ public annotation class IntentionallyFunctionTypeAlias(
  * [publicly visible data classes](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#avoid-using-data-classes-in-your-api),
  * because the generated `copy` and `componentN` functions and the constructor bake the exact
  * property list into the compiled API: adding, removing, or reordering a property later breaks
- * clients. Apply this annotation to suppress the warning when the property list is an intended,
+ * users. Apply this annotation to suppress the warning when the property list is an intended,
  * stable part of the API contract.
  *
  * See the [check documentation](https://mr3zee.github.io/libs-api-watchdog/data-class-public-api.html) for rationale and examples.
@@ -208,7 +208,7 @@ public annotation class IntentionallyWithoutToString(
  * types (`MutableList`, `MutableMap`, ..., their implementations, and arrays, which are mutable
  * collections too), as well as mutable bounds on type parameters.
  * [Sharing a mutable collection](https://kotlinlang.org/docs/api-guidelines-predictability.html#avoid-exposing-mutable-state)
- * across the API boundary makes it unclear whether client-side and library-side mutations affect
+ * across the API boundary makes it unclear whether user-side and library-side mutations affect
  * each other. Apply this annotation to suppress the warning when sharing the mutable collection
  * is an intended part of the API contract. On a function, a property, or a constructor it covers the
  * whole signature; on a single parameter or type parameter it covers just that parameter; on a
@@ -245,7 +245,7 @@ public annotation class IntentionallyMutableCollection(
  * the tuple all the same) - that mention `Pair` or `Triple`, as well as tuple bounds on type
  * parameters. Tuple components carry no domain meaning: at the use site `first`/`second`/`third`
  * and positional destructuring reveal nothing about the values, and the fixed shape cannot
- * evolve - adding a value means switching to a different type, breaking clients. Prefer a
+ * evolve - adding a value means switching to a different type, breaking users. Prefer a
  * [small class with descriptively named properties](https://kotlinlang.org/docs/api-guidelines-consistency.html#use-object-oriented-design-for-data-and-state).
  * Apply this annotation to suppress the warning when exposing the tuple is an intended part of
  * the API contract. On a function, a property, or a constructor it covers the whole signature;
@@ -280,7 +280,7 @@ public annotation class IntentionallyPairOrTriple(
  * The libs-api-watchdog compiler plugin warns about
  * [Boolean value parameters](https://kotlinlang.org/docs/api-guidelines-readability.html#avoid-using-the-boolean-type-as-an-argument)
  * - including nullable and `vararg` ones - in publicly visible functions, because at the call
- * site a positional `true`/`false` argument reveals nothing about its meaning, and clients
+ * site a positional `true`/`false` argument reveals nothing about its meaning, and users
  * cannot be forced to use named arguments. Prefer separate, descriptively named functions for
  * each mode, or an enum class naming the modes. Constructors and constructor functions -
  * factory functions named after the type they create - are not checked: a construction site
@@ -356,7 +356,7 @@ public annotation class IntentionallyNullableBoolean(
  * be passed positionally without re-stating the defaults in front of it. A required function-type
  * (or `fun interface`) parameter in the last position is not reported: it keeps trailing-lambda
  * call syntax available. Apply this annotation to suppress the warning when the order is intended
- * (for example, when appending a parameter anywhere else would break existing clients).
+ * (for example, when appending a parameter anywhere else would break existing users).
  *
  * See the [check documentation](https://mr3zee.github.io/libs-api-watchdog/required-parameter-after-optional.html) for rationale and examples.
  *
@@ -378,7 +378,7 @@ public annotation class IntentionallyRequiredParameterAfterOptional(
  *
  * The libs-api-watchdog compiler plugin warns about publicly visible overloads that declare the same
  * parameter names in a different relative order, because
- * [clients transfer their expectations between overloads](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage):
+ * [users transfer their expectations between overloads](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage):
  * an inconsistent order of same-named parameters invites silently swapped arguments. Apply this
  * annotation to suppress the warning when the differing order is intended; the annotated
  * declaration is also no longer used as an ordering reference for other overloads.
@@ -404,8 +404,8 @@ public annotation class IntentionallyInconsistentParameterOrder(
  * The libs-api-watchdog compiler plugin warns about publicly visible inline functions and inline
  * property accessors whose body does more than delegate to a non-inline function, because the
  * compiler
- * [copies an inline body into every client binary](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#considerations-for-using-the-publishedapi-annotation):
- * logic placed there - and its bugs - stays frozen in clients compiled against an old library
+ * [copies an inline body into every user binary](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#considerations-for-using-the-publishedapi-annotation):
+ * logic placed there - and its bugs - stays frozen in users compiled against an old library
  * version until they recompile. Keep
  * public inline functions thin wrappers that resolve what only the call site knows (a reified
  * type argument, an inlined lambda) and hand the actual work to a non-inline function, marked
@@ -437,8 +437,8 @@ public annotation class IntentionallyInlinedLogic(
  * [value class](https://kotlinlang.org/docs/inline-classes.html#mangling) in their signature - as
  * a parameter or receiver type, or as the return type of a class member. The compiler mangles the
  * JVM name of such entry points with a hash suffix (and hides such constructors behind a synthetic
- * one), so Kotlin clients are unaffected but
- * [Java clients cannot call them](https://kotlinlang.org/docs/java-to-kotlin-interop.html#inline-value-classes).
+ * one), so Kotlin users are unaffected but
+ * [Java users cannot call them](https://kotlinlang.org/docs/java-to-kotlin-interop.html#inline-value-classes).
  * Prefer giving the
  * compiled code a Java-callable shape with `@JvmName` (`@get:`/`@set:JvmName` on property
  * accessors) or `@JvmExposeBoxed`, and apply this annotation to suppress the warning when the
@@ -538,7 +538,7 @@ public annotation class IntentionallyNonStaticCompanionApi(
  * without an explicit `@file:JvmName`: the derived name (`foo.kt` → `FooKt`) leaks the file name
  * into the Java API
  * surface, and renaming the file - invisible to Kotlin callers - renames the facade and breaks
- * Java clients. Prefer choosing and pinning the facade name with `@file:JvmName`, and apply
+ * Java users. Prefer choosing and pinning the facade name with `@file:JvmName`, and apply
  * this annotation - as `@file:IntentionallyDefaultFacadeName(...)` - to suppress the warning
  * when keeping the derived name is intended.
  *
@@ -587,12 +587,12 @@ public annotation class IntentionallyWithoutJvmOverloads(
 /**
  * Acknowledges that the annotated DSL marker deliberately keeps a wrong target set - no-op
  * targets in its `@Target`, or no explicit `@Target` at all - because fixing it would break
- * existing clients.
+ * existing users.
  *
  * The libs-api-watchdog compiler plugin warns about
  * [DSL marker](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker)
  * targets on which the marker has no effect. For an already-published marker the fix is
- * breaking: removing a target rejects client
+ * breaking: removing a target rejects user
  * code that applies the marker there, and declaring an explicit `@Target` forbids the previously
  * allowed default targets. Apply this annotation to suppress the warnings for such legacy
  * markers.

@@ -28,7 +28,7 @@ import org.jetbrains.kotlin.name.Name
  * [value class](https://kotlinlang.org/docs/inline-classes.html#mangling) appears in their
  * signature. Value classes compile to their underlying type, so the JVM backend mangles the
  * name of every affected entry point with a hash suffix (`take-4ZD5Yi0`); the `-` makes the
- * name an illegal Java identifier. Kotlin clients never notice, but for Java clients the
+ * name an illegal Java identifier. Kotlin users never notice, but for Java users the
  * declaration might as well not exist. A JVM name is mangled when the callable
  * - declares a value parameter, an extension receiver, or a context parameter of a value class
  *   type - nullable types and type parameters whose JVM erasure (the first upper bound) is a

@@ -107,13 +107,13 @@ internal fun FirFunction.reportedName(): Name? = when (this) {
 }
 
 /**
- * Only declarations written in real sources and visible to library clients (public or protected)
+ * Only declarations written in real sources and visible to library users (public or protected)
  * are worth watching: everything else cannot be referenced from outside the library. Properties
  * created from constructor `val`/`var` parameters carry a fake source pointing at the parameter,
  * but they are still hand-written public API, so they count as real.
  *
  * `@PublishedApi` declarations are internal in sources but belong to the published binary API:
- * public inline functions expose them to clients, so they are watched like public declarations.
+ * public inline functions expose them to users, so they are watched like public declarations.
  *
  * Declarations marked as internal API - annotated, directly or on an enclosing declaration, with
  * an annotation whose class carries `@InternalAnnotationMarker` - offer no compatibility contract
@@ -139,7 +139,7 @@ internal fun FirMemberDeclaration.isWatchedPublicApi(): Boolean {
 
 /**
  * The marker on an enclosing declaration covers the whole subtree: an internal API class cannot
- * be used by clients, so nothing declared inside it is usable public API.
+ * be used by users, so nothing declared inside it is usable public API.
  */
 context(context: CheckerContext)
 private fun FirMemberDeclaration.isMarkedAsInternalApi(): Boolean =
@@ -251,7 +251,7 @@ private fun FirProperty.isAccessorHiddenWithJvmSynthetic(
  * Symbol-based public API gate for overload siblings, which checkers only reach as symbols. The
  * declaration under check shares the containers its own [isWatchedPublicApi] gate already vets -
  * or, for an inherited sibling, subsumes them: a supertype visible in a public class's scope is
- * itself reachable by clients. So only the sibling's own state matters here. Library symbols
+ * itself reachable by users. So only the sibling's own state matters here. Library symbols
  * carry no real source, so dependencies never pass this gate.
  */
 context(context: CheckerContext)

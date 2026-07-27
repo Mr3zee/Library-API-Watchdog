@@ -30,7 +30,7 @@ internal class FileFixResult(
 /**
  * Turns the watchdog diagnostics recorded for one source file into `@Intentionally*` annotation
  * insertions with `reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`, the reason that
- * explains itself: the shape stays as it is because changing it would break existing clients.
+ * explains itself: the shape stays as it is because changing it would break existing users.
  *
  * All insertion offsets are computed against the original text and applied from the end of the
  * file backwards, so earlier insertions never invalidate later ones.

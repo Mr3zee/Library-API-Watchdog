@@ -21,7 +21,7 @@ class WatchdogProjectTest {
 
         val result = buildAndFail(project.rootDir, "build")
         result.assertDiagnosticReported("e: ", "can be subclassed outside the library without restriction")
-        result.assertDiagnosticReported("e: ", "can be matched exhaustively by clients")
+        result.assertDiagnosticReported("e: ", "can be matched exhaustively by users")
         result.assertDiagnosticReported("e: ", "has no KDoc")
         result.assertDiagnosticReported("e: ", "abbreviates a function type")
         result.assertDiagnosticReported("e: ", "bakes its constructor property list")
@@ -81,7 +81,7 @@ class WatchdogProjectTest {
 
         val result = build(project.rootDir, "build")
         result.assertDiagnosticReported("w: ", "can be subclassed outside the library without restriction")
-        result.assertDiagnosticReported("w: ", "can be matched exhaustively by clients")
+        result.assertDiagnosticReported("w: ", "can be matched exhaustively by users")
         result.assertDiagnosticReported("w: ", "has no KDoc")
         result.assertDiagnosticReported("w: ", "abbreviates a function type")
         result.assertDiagnosticReported("w: ", "bakes its constructor property list")
@@ -121,7 +121,7 @@ class WatchdogProjectTest {
 
         val result = buildAndFail(project.rootDir, "build")
         result.assertDiagnosticReported("e: ", "can be subclassed outside the library without restriction")
-        result.assertDiagnosticReported("e: ", "can be matched exhaustively by clients")
+        result.assertDiagnosticReported("e: ", "can be matched exhaustively by users")
         result.assertDiagnosticReported("w: ", "has no KDoc")
     }
 
@@ -169,7 +169,7 @@ class WatchdogProjectTest {
         val result = buildAndFail(project.rootDir, "build")
         // The remaining diagnostics still fail the build...
         result.assertDiagnosticReported("e: ", "can be subclassed outside the library without restriction")
-        result.assertDiagnosticReported("e: ", "can be matched exhaustively by clients")
+        result.assertDiagnosticReported("e: ", "can be matched exhaustively by users")
         // ...while the disabled ones are not reported at all.
         assertFalse(result.output.contains("has no KDoc"))
         assertFalse(result.output.contains("neither declares nor inherits a `toString`"))
@@ -215,7 +215,7 @@ class WatchdogProjectTest {
 
         val result = build(project.rootDir, "build")
         assertFalse(result.output.contains("can be subclassed outside the library"))
-        assertFalse(result.output.contains("can be matched exhaustively by clients"))
+        assertFalse(result.output.contains("can be matched exhaustively by users"))
         assertFalse(result.output.contains("has no KDoc"))
         assertFalse(result.output.contains("abbreviates a function type"))
         assertFalse(result.output.contains("bakes its constructor property list"))
@@ -243,7 +243,7 @@ class WatchdogProjectTest {
 
         val result = build(project.rootDir, "build")
         assertFalse(result.output.contains("can be subclassed outside the library"))
-        assertFalse(result.output.contains("can be matched exhaustively by clients"))
+        assertFalse(result.output.contains("can be matched exhaustively by users"))
         assertFalse(result.output.contains("has no KDoc"))
         assertFalse(result.output.contains("abbreviates a function type"))
         assertFalse(result.output.contains("bakes its constructor property list"))
@@ -289,7 +289,7 @@ class WatchdogProjectTest {
         assertFalse(result.output.contains("INTERNAL_ENTRY"))
         assertFalse(result.output.contains("internalFunction"))
         assertFalse(result.output.contains("can be subclassed outside the library"))
-        assertFalse(result.output.contains("can be matched exhaustively by clients"))
+        assertFalse(result.output.contains("can be matched exhaustively by users"))
     }
 
     @Test

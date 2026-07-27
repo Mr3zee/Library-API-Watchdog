@@ -56,7 +56,7 @@ through an `ExemptionReason` and a description. See
 ## Adopting on an existing library
 
 A library that has already shipped cannot change the shape of its public API without breaking
-clients, so the watchdog's first run typically floods it with diagnostics that are not actionable
+users, so the watchdog's first run typically floods it with diagnostics that are not actionable
 anymore. The Gradle plugin registers an `updateBackwardsCompatibilityExempts` task that
 acknowledges all of them in one sweep:
 
@@ -83,7 +83,7 @@ working tree and review the diff; from then on the checks only guard newly added
 - [`SUBCLASS_OPT_IN_WITHOUT_MARKERS`](https://mr3zee.github.io/libs-api-watchdog/subclass-opt-in-without-markers.html) -
   `@SubclassOptInRequired` annotations that list no marker classes and so restrict nothing.
 - [`EXHAUSTIVE_PUBLIC_API`](https://mr3zee.github.io/libs-api-watchdog/exhaustive-public-api.html) -
-  enums and sealed hierarchies, which clients can match exhaustively, so adding an entry or a
+  enums and sealed hierarchies, which users can match exhaustively, so adding an entry or a
   subtype later breaks them.
 - [`UNDOCUMENTED_PUBLIC_API`](https://mr3zee.github.io/libs-api-watchdog/undocumented-public-api.html) -
   public declarations of every kind without KDoc.
@@ -110,7 +110,7 @@ working tree and review the diff; from then on the checks only guard newly added
   same-named parameters ordered differently across overloads, inviting silently swapped
   arguments.
 - [`INLINE_FUNCTION_WITH_LOGIC`](https://mr3zee.github.io/libs-api-watchdog/inline-function-with-logic.html) -
-  public inline bodies that do more than delegate; the logic freezes into client binaries.
+  public inline bodies that do more than delegate; the logic freezes into user binaries.
 
 ### Java interop
 

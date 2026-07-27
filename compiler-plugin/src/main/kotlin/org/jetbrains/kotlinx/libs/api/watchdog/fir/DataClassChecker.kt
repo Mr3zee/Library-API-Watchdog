@@ -14,7 +14,7 @@ import org.jetbrains.kotlin.fir.declarations.utils.isData
 /**
  * Reports publicly visible data classes: the generated `copy` and `componentN` functions and the
  * constructor bake the exact property list into the compiled API, so adding, removing, or
- * reordering a property later breaks clients. Authors acknowledge the contract with
+ * reordering a property later breaks users. Authors acknowledge the contract with
  * `@IntentionallyDataClass`.
  *
  * `data object`s are exempt: without constructor properties none of the hazardous members are

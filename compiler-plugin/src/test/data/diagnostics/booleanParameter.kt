@@ -19,7 +19,7 @@ public fun withDefault(<!BOOLEAN_PARAMETER_PUBLIC_API!>eager<!>: Boolean = false
 // A nullable Boolean is a three-state flag: still opaque at the call site.
 public fun tristate(<!BOOLEAN_PARAMETER_PUBLIC_API!>flag<!>: Boolean?) {}
 
-// A type alias does not change what clients pass.
+// A type alias does not change what users pass.
 public typealias Flag = Boolean
 
 public fun aliased(<!BOOLEAN_PARAMETER_PUBLIC_API!>flag<!>: Flag) {}

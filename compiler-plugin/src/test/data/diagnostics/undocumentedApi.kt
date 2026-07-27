@@ -219,7 +219,7 @@ internal class InternalOuter {
     fun memberOfInternal() {}
 }
 
-/** Members that clients cannot see need no documentation. */
+/** Members that users cannot see need no documentation. */
 public abstract class WithNonPublicMembers {
     internal fun internalFunction() {}
 
@@ -228,7 +228,7 @@ public abstract class WithNonPublicMembers {
     protected abstract fun <!UNDOCUMENTED_PUBLIC_API!>protectedFunction<!>(): Int
 }
 
-/** Local declarations are invisible to clients: no warning inside. */
+/** Local declarations are invisible to users: no warning inside. */
 public fun documentedFunction() {
     val localProperty: Int = 0
 

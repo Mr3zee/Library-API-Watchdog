@@ -70,7 +70,7 @@ Notable edge cases and deliberate exceptions:
 - A `vararg` parameter needs no special casing: the array carrying the arguments is never a
   nullable Boolean itself, and a `Boolean?` element type is still found as its type argument.
 - Extension receivers are not flagged: an extension on `Boolean?`, typically a remedial helper
-  like `fun Boolean?.orFalse()`, serves values the client already holds.
+  like `fun Boolean?.orFalse()`, serves values the user already holds.
 - Overrides are not flagged: their signature is fixed by the overridden declaration and reported
   there instead.
 - Java platform types are not flagged: their nullability is not declared in Kotlin sources.

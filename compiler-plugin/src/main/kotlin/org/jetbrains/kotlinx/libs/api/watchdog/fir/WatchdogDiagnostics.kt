@@ -235,7 +235,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         )
         map.put(
             diagnostic = WatchdogDiagnostics.EXHAUSTIVE_PUBLIC_API,
-            message = "The {0} ''{1}'' can be matched exhaustively by clients, so adding {2} later is " +
+            message = "The {0} ''{1}'' can be matched exhaustively by users, so adding {2} later is " +
                     "a breaking change. Mark it with @IntentionallyExhaustive if this " +
                     "exhaustive shape is an intended part of the API. See " +
                     "https://mr3zee.github.io/libs-api-watchdog/exhaustive-public-api.html " +
@@ -247,7 +247,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         map.put(
             diagnostic = WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API,
             message = "The {0} ''{1}'' is part of the public API but has no KDoc. Document it " +
-                    "so clients do not have to guess its purpose and usage contract, or mark it " +
+                    "so users do not have to guess its purpose and usage contract, or mark it " +
                     "with @IntentionallyUndocumented if leaving it undocumented is intended. See " +
                     "https://mr3zee.github.io/libs-api-watchdog/undocumented-public-api.html " +
                     "for details.",
@@ -256,7 +256,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         )
         map.put(
             diagnostic = WatchdogDiagnostics.FUNCTION_TYPE_ALIAS_PUBLIC_API,
-            message = "The type alias ''{0}'' abbreviates a function type, so clients bind to the " +
+            message = "The type alias ''{0}'' abbreviates a function type, so users bind to the " +
                     "bare function shape: the alias is erased from the compiled API and cannot " +
                     "evolve into a richer abstraction later. Declare a `fun interface` instead to " +
                     "keep lambda ergonomics behind a stable nominal type, or mark the alias with " +
@@ -294,7 +294,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             diagnostic = WatchdogDiagnostics.MUTABLE_COLLECTION_PUBLIC_API,
             message = "The {0} ''{1}'' exposes the mutable collection type ''{2}''. Once a " +
                     "mutable collection is shared across the API boundary, it is unclear whether " +
-                    "client-side and library-side mutations affect each other, and the library " +
+                    "user-side and library-side mutations affect each other, and the library " +
                     "can no longer evolve its internal representation freely. Accept and return " +
                     "read-only types instead (arrays count as mutable collections too), handing " +
                     "out defensive copies where needed, or mark the declaration with " +
@@ -311,7 +311,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
                     "no domain meaning: at the use site `first`/`second`/`third` and positional " +
                     "destructuring reveal nothing about the values, and the fixed shape cannot " +
                     "evolve - adding a value means switching to a different type, breaking " +
-                    "clients. Declare a small class with descriptively named properties " +
+                    "users. Declare a small class with descriptively named properties " +
                     "instead, or mark the declaration with @IntentionallyPairOrTriple if " +
                     "exposing the tuple is intended. See " +
                     "https://mr3zee.github.io/libs-api-watchdog/pair-or-triple-public-api.html " +
@@ -337,7 +337,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         map.put(
             diagnostic = WatchdogDiagnostics.INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS,
             message = "The parameters ''{0}'' and ''{1}'' of ''{2}'' appear in the opposite " +
-                    "order in another overload. Clients transfer their expectations between " +
+                    "order in another overload. Users transfer their expectations between " +
                     "overloads, so an inconsistent order of same-named parameters invites " +
                     "silently swapped arguments. Keep shared parameters in the same relative " +
                     "order across overloads, or mark the declaration with " +
@@ -352,7 +352,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             diagnostic = WatchdogDiagnostics.BOOLEAN_PARAMETER_PUBLIC_API,
             message = "The function ''{0}'' takes the Boolean parameter ''{1}''. At the call " +
                     "site a positional `true`/`false` argument reveals nothing about its " +
-                    "meaning, and clients cannot be forced to use named arguments. Introduce " +
+                    "meaning, and users cannot be forced to use named arguments. Introduce " +
                     "separate, descriptively named functions for each mode, or replace the " +
                     "parameter with an enum class, or mark it with " +
                     "@IntentionallyBooleanParameter if the Boolean parameter is intended. See " +
@@ -377,8 +377,8 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         map.put(
             diagnostic = WatchdogDiagnostics.INLINE_FUNCTION_WITH_LOGIC,
             message = "The {0} ''{1}'' does more than delegate to a non-inline " +
-                    "function. The compiler copies an inline body into every client binary, so " +
-                    "logic placed there - and its bugs - stays frozen in clients compiled " +
+                    "function. The compiler copies an inline body into every user binary, so " +
+                    "logic placed there - and its bugs - stays frozen in users compiled " +
                     "against an old library version until they recompile. Extract the logic " +
                     "into a non-inline function (@PublishedApi internal if it should stay out " +
                     "of the public API) and delegate to it, or mark the declaration with " +
@@ -407,7 +407,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
                     "marker restricts nothing and only gives a false sense of receiver scope " +
                     "control. Remove the target from @Target, or mark the marker with " +
                     "@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility if the target " +
-                    "must stay for compatibility with existing clients. See " +
+                    "must stay for compatibility with existing users. See " +
                     "https://mr3zee.github.io/libs-api-watchdog/dsl-marker-noop-target.html " +
                     "for details.",
             rendererA = NAME,
@@ -420,7 +420,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
                     "the effective type usage (TYPE) and type alias (TYPEALIAS) targets stay " +
                     "unavailable. Declare @Target(CLASS, TYPE, TYPEALIAS) or a subset of it, or " +
                     "mark the marker with @IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility " +
-                    "if the default targets must stay for compatibility with existing clients. " +
+                    "if the default targets must stay for compatibility with existing users. " +
                     "See https://mr3zee.github.io/libs-api-watchdog/dsl-marker-without-explicit-targets.html " +
                     "for details.",
             rendererA = NAME,
@@ -441,7 +441,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             diagnostic = WatchdogDiagnostics.MANGLED_JVM_NAME_PUBLIC_API,
             message = "The {0} ''{1}'' has the value class ''{2}'' in its signature, so its " +
                     "compiled JVM name is mangled - or, for a constructor, hidden behind a " +
-                    "synthetic one - and Java sources cannot call it. Kotlin clients are " +
+                    "synthetic one - and Java sources cannot call it. Kotlin users are " +
                     "unaffected. Give the compiled code a Java-callable shape with @JvmName " +
                     "(@get:JvmName/@set:JvmName on property accessors) or with @JvmExposeBoxed, " +
                     "or mark the declaration with @IntentionallyMangledJvmName if Java callers " +

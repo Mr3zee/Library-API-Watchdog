@@ -24,9 +24,9 @@ public inline fun choose(value: Int): Int = if (value < 0) -1 else 1
 
 ## Rationale
 
-The compiler copies an inline function's body into every call site at compile time. Once a client
-compiles against a library version, that copy - and any bug in it - is frozen in the client's
-binary until the client recompiles against a fixed version; a regular function call would instead
+The compiler copies an inline function's body into every call site at compile time. Once a user
+compiles against a library version, that copy - and any bug in it - is frozen in the user's
+binary until the user recompiles against a fixed version; a regular function call would instead
 pick up the fix at runtime by relinking against the new library binary. See the Kotlin library
 authors' guide on
 [`@PublishedApi` considerations](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#considerations-for-using-the-publishedapi-annotation).
@@ -34,7 +34,7 @@ authors' guide on
 ## Don't
 
 ```kotlin
-// Branching here is copied into every client binary; a fix needs every client to recompile.
+// Branching here is copied into every user binary; a fix needs every user to recompile.
 // 
 // INLINE_FUNCTION_WITH_LOGIC
 public inline fun choose(value: Int): Int = if (value < 0) -1 else 1
@@ -90,11 +90,11 @@ Notable cases:
 - A thin wrapper may also resolve a reified type argument and narrow the delegate's result with
   `as`/`as?`; a contract declared with `contract { ... }` does not count as a second statement.
 - Calling another inline function, or reading or writing through an inline accessor, is logic: the
-  inliner drags that body into the client transitively even with no visible control flow.
+  inliner drags that body into the user transitively even with no visible control flow.
 - `@PublishedApi internal` inline functions and accessors are checked exactly like public ones: a
-  public inline wrapper can call them, which inlines their body into clients just as transitively.
+  public inline wrapper can call them, which inlines their body into users just as transitively.
 - Plain `internal` and `private` inline declarations are not part of the public or published API.
-- Only inline bodies freeze into clients: a non-inline function or accessor keeps its logic in the
+- Only inline bodies freeze into users: a non-inline function or accessor keeps its logic in the
   library binary and is never reported; on a mixed property, only the inline accessor is reported.
 
 ## Exemption

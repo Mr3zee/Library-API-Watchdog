@@ -14,7 +14,7 @@ names a target the marker has no effect on.
 
 Receiver scope control only reacts to a `@DslMarker` found on a classifier declaration (`CLASS`,
 `ANNOTATION_CLASS`), a type usage (`TYPE`), or a type alias (`TYPEALIAS`). Any other target listed
-in the marker's `@Target` lets a client apply the marker somewhere it silently restricts nothing,
+in the marker's `@Target` lets a user apply the marker somewhere it silently restricts nothing,
 giving a false sense of scope control. The check only looks at `@DslMarker`-annotated annotation
 classes that declare an explicit `@Target`, and reports each no-op entry separately:
 
@@ -86,7 +86,7 @@ Notable cases:
 
 ## Exemption
 
-For a marker that already shipped with a no-op target, narrowing `@Target` rejects client code
+For a marker that already shipped with a no-op target, narrowing `@Target` rejects user code
 that applied the marker there - a breaking change. Acknowledge the legacy shape instead:
 
 ```kotlin

@@ -46,11 +46,11 @@ import org.jetbrains.kotlin.name.Name
  * - Overrides are skipped: their signature is fixed by the overridden declaration and is
  *   reported there.
  * - Extension receivers are skipped: an extension on the hunted type provides functionality for
- *   values the client already holds instead of exposing new ones.
+ *   values the user already holds instead of exposing new ones.
  * - A `val`/`var` primary constructor parameter is watched through the property it creates, so
  *   the shared parameter/property text is reported once - even when only the property is public.
  * - Type aliases are expanded before the classifier judgement: an alias does not change what
- *   clients see. Flexible (Java platform) types are inspected through [declaredBound] only.
+ *   users see. Flexible (Java platform) types are inspected through [declaredBound] only.
  * - The exemption annotation is honored on the whole declaration, on a single (type) parameter,
  *   or on a type usage, where it covers the annotated type and everything nested in it. Type-use
  *   exemptions never reach [ExemptionExplanationChecker], so the sweep enforces the explanation

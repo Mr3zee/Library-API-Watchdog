@@ -50,7 +50,7 @@ public fun schedule(task: <!MUTABLE_COLLECTION_PUBLIC_API!>suspend () -> Mutable
 public fun callbackFactory(): <!MUTABLE_COLLECTION_PUBLIC_API!>(MutableList<Int>) -> Unit<!> = {}
 
 // ...or given a mutable receiver: unlike an extension declared on a mutable collection, a
-// builder lambda receives mutable state the client did not hold before.
+// builder lambda receives mutable state the user did not hold before.
 
 public fun assemble(block: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int>.() -> Unit<!>): List<Int> =
     mutableListOf<Int>().apply(block).toList()
@@ -126,7 +126,7 @@ public fun snapshots(): List<@IntentionallyMutableCollection MutableList<Int>> =
 
 public fun buffered(): @IntentionallyMutableCollection MutableList<Int> = mutableListOf()
 
-// Extensions on mutable collections provide functionality for values the client already
+// Extensions on mutable collections provide functionality for values the user already
 // holds instead of sharing new mutable state: no warning on the receiver.
 
 public fun MutableList<Int>.compact(): List<Int> = toList()

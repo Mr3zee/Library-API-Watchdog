@@ -110,7 +110,7 @@ other declaration, so it still needs a KDoc comment and the rest.
 
 Note that `@PublishedApi` declarations are not affected by this distinction between source
 visibility and API surface in the opposite direction: they are `internal` in source, but a public
-inline function can expose them to clients, so they are watched exactly like public declarations.
+inline function can expose them to users, so they are watched exactly like public declarations.
 
 ## Where the annotations come from
 

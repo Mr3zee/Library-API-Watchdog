@@ -28,11 +28,11 @@ public fun nested(): List<MutableList<Int>> = emptyList()
 
 ## Rationale
 
-A mutable return type or property lets clients mutate a collection they do not own; a mutable
-parameter lets the library mutate an argument the client still holds. Either way, once a mutable
+A mutable return type or property lets users mutate a collection they do not own; a mutable
+parameter lets the library mutate an argument the user still holds. Either way, once a mutable
 collection crosses the API boundary it is unclear whose mutations are safe, and the library can
 no longer swap its internal representation for a different collection type without risking a
-behavioral change for clients that relied on mutating the exposed instance. See the Kotlin guide on
+behavioral change for users that relied on mutating the exposed instance. See the Kotlin guide on
 [avoiding exposing mutable state](https://kotlinlang.org/docs/api-guidelines-predictability.html#avoid-exposing-mutable-state).
 
 ## Don't
@@ -68,7 +68,7 @@ Notable edge cases and deliberate exceptions:
 - `vararg` parameters are not flagged themselves - the compiler already passes a defensive copy of
   the array - but a mutable element type still is (`vararg groups: MutableList<Int>`).
 - Extension receivers are not flagged: an extension on a mutable collection serves values the
-  client already holds, unlike a builder lambda receiver, which is flagged.
+  user already holds, unlike a builder lambda receiver, which is flagged.
 - Overrides are not flagged: their signature is fixed by the overridden declaration and reported
   there instead.
 - Java platform types are not flagged: their mutability is not declared in Kotlin sources, so only

@@ -92,7 +92,7 @@ public inline fun <R> measured(block: () -> R): R {
 
 public inline fun transact(crossinline work: () -> Unit): Unit = transactImpl { work() }
 
-// Branching is logic compiled into every client binary: should warn.
+// Branching is logic compiled into every user binary: should warn.
 
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>choose<!>(value: Int): Int = if (value < 0) negImpl() else posImpl()
 
@@ -124,11 +124,11 @@ public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>cachedLength<!>(tag: String): In
     return cached
 }
 
-// Operators compute in the client binary: should warn.
+// Operators compute in the user binary: should warn.
 
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>doubled<!>(value: Int): Int = value + value
 
-// A string template builds the string in the client binary: should warn.
+// A string template builds the string in the user binary: should warn.
 
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>greeting<!>(name: String): String = "Hello, $name"
 
@@ -140,18 +140,18 @@ public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>guardedLength<!>(tag: String): I
     0
 }
 
-// Delegating to another inline function drags its body into the client just as transitively:
+// Delegating to another inline function drags its body into the user just as transitively:
 // should warn.
 
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>onceMore<!>(block: () -> Int): Int = once(block)
 
-// A lambda literal with logic is regenerated into the client binary: should warn.
+// A lambda literal with logic is regenerated into the user binary: should warn.
 
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>transactChecked<!>(crossinline work: () -> Unit): Unit = transactImpl {
     if (ready()) work()
 }
 
-// A @PublishedApi internal inline function backs public wrappers, so its body reaches client
+// A @PublishedApi internal inline function backs public wrappers, so its body reaches user
 // binaries transitively: should warn.
 
 @PublishedApi
@@ -171,7 +171,7 @@ internal inline fun internalChoose(value: Int): Int = if (value < 0) negImpl() e
 
 private inline fun privateChoose(value: Int): Int = if (value < 0) negImpl() else posImpl()
 
-// Only inline bodies freeze into clients; a non-inline function or accessor keeps its logic in
+// Only inline bodies freeze into users; a non-inline function or accessor keeps its logic in
 // the library binary. No warning.
 
 public fun regularChoose(value: Int): Int = if (value < 0) negImpl() else posImpl()
@@ -223,7 +223,7 @@ public inline var tagged: String
     get() = storedTag
     set(value) = logImpl("tag", value)
 
-// Logic in an inline accessor is compiled into clients like any inline function body: should
+// Logic in an inline accessor is compiled into users like any inline function body: should
 // warn - whether the modifier sits on the property or on the single accessor.
 
 public inline val <!INLINE_FUNCTION_WITH_LOGIC!>threshold<!>: Int
@@ -290,7 +290,7 @@ public inline val <!INLINE_FUNCTION_WITH_LOGIC!>cachedThreshold<!>: Int
         return cached
     }
 
-// A string template builds the string in the client binary: should warn.
+// A string template builds the string in the user binary: should warn.
 
 public inline val <!INLINE_FUNCTION_WITH_LOGIC!>limitLine<!>: String
     get() = "limit: $storedLimit"
@@ -304,7 +304,7 @@ public inline val <!INLINE_FUNCTION_WITH_LOGIC!>guardedThreshold<!>: Int
         0
     }
 
-// Calling an inline function from an accessor drags its body into the client too: should warn.
+// Calling an inline function from an accessor drags its body into the user too: should warn.
 
 public inline val <!INLINE_FUNCTION_WITH_LOGIC!>onceThreshold<!>: Int
     get() = once { 1 }
@@ -321,7 +321,7 @@ public inline var <!INLINE_FUNCTION_WITH_LOGIC!>relayedLimit<!>: Int
         clampedLimit = value
     }
 
-// A @PublishedApi internal inline accessor reaches client binaries transitively: should warn.
+// A @PublishedApi internal inline accessor reaches user binaries transitively: should warn.
 
 @PublishedApi
 internal inline val <!INLINE_FUNCTION_WITH_LOGIC!>publishedThreshold<!>: Int
