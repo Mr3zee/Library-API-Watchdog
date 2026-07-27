@@ -46,26 +46,26 @@ Root (`topics/`):
 
 Checks (`topics/checks/`):
 
-| File                                                  | Title                                     |
-|-------------------------------------------------------|-------------------------------------------|
-| `open-api-without-subclass-opt-in.md`                 | Open API without subclass opt-in          |
-| `subclass-opt-in-without-markers.md`                  | Subclass opt-in without markers           |
-| `exhaustive-public-api.md`                            | Exhaustive public API                     |
-| `undocumented-public-api.md`                          | Undocumented public API                   |
-| `function-type-alias-public-api.md`                   | Function type aliases in public API       |
-| `data-class-public-api.md`                            | Data classes in public API                |
-| `stateful-class-without-equals-hashcode-to-string.md` | Stateful classes without toString         |
-| `mutable-collection-public-api.md`                    | Mutable collections in public API         |
-| `pair-or-triple-public-api.md`                        | Pair and Triple in public API             |
-| `boolean-parameter-public-api.md`                     | Boolean parameters in public API          |
-| `nullable-boolean-public-api.md`                      | Nullable Booleans in public API           |
-| `required-parameter-after-optional.md`                | Required parameters after optional ones   |
-| `inconsistent-parameter-order-in-overloads.md`        | Inconsistent parameter order in overloads |
-| `inline-function-with-logic.md`                       | Inline functions with logic               |
-| `exemption-without-explanation.md`                    | Exemptions without explanation            |
-| `dsl-marker-noop-target.md`                           | DSL markers with no-op targets            |
-| `dsl-marker-without-explicit-targets.md`              | DSL markers without explicit targets      |
-| `dsl-marker-noop-type-position.md`                    | DSL markers on no-op type positions       |
+| File                                                  | Title                                                  |
+|-------------------------------------------------------|--------------------------------------------------------|
+| `open-api-without-subclass-opt-in.md`                 | Open API without subclass opt-in                       |
+| `subclass-opt-in-without-markers.md`                  | Subclass opt-in without markers                        |
+| `exhaustive-public-api.md`                            | Exhaustive public API                                  |
+| `undocumented-public-api.md`                          | Undocumented public API                                |
+| `function-type-alias-public-api.md`                   | Function type aliases in public API                    |
+| `data-class-public-api.md`                            | Data classes in public API                             |
+| `stateful-class-without-equals-hashcode-to-string.md` | Stateful classes without equals, hashCode, or toString |
+| `mutable-collection-public-api.md`                    | Mutable collections in public API                      |
+| `pair-or-triple-public-api.md`                        | Pair and Triple in public API                          |
+| `boolean-parameter-public-api.md`                     | Boolean parameters in public API                       |
+| `nullable-boolean-public-api.md`                      | Nullable Booleans in public API                        |
+| `required-parameter-after-optional.md`                | Required parameters after optional ones                |
+| `inconsistent-parameter-order-in-overloads.md`        | Inconsistent parameter order in overloads              |
+| `inline-function-with-logic.md`                       | Inline functions with logic                            |
+| `exemption-without-explanation.md`                    | Exemptions without explanation                         |
+| `dsl-marker-noop-target.md`                           | DSL markers with no-op targets                         |
+| `dsl-marker-without-explicit-targets.md`              | DSL markers without explicit targets                   |
+| `dsl-marker-noop-type-position.md`                    | DSL markers on no-op type positions                    |
 
 Java interop (`topics/checks/java-interop/`):
 
