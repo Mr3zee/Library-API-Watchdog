@@ -55,21 +55,19 @@ public sealed interface Event {
 ### Do
 
 ```kotlin
-@SubclassOptInRequired(InternalMyLibrarySubclassApi::class)
-public interface LogLevel {
+public class LogLevel {
     public companion object {
-        public val DEBUG = object : LogLevel {}
-        public val INFO = object : LogLevel {}
-        public val ERROR = object : LogLevel {}
+        public val DEBUG = LogLevel()
+        public val INFO = LogLevel()
+        public val ERROR = LogLevel()
     }
 }
 
 @SubclassOptInRequired(InternalMyLibrarySubclassApi::class)
 public interface Event {
-    public companion object {
-        public val Started = object : Event {}
-        public val Stopted = object : Event {}
-    }
+    public class Started : Event
+
+    public class Stopped : Event
 }
 ```
 
