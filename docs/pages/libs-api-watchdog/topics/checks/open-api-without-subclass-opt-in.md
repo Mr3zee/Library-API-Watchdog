@@ -3,36 +3,30 @@
 `OPEN_API_WITHOUT_SUBCLASS_OPT_IN` reports public open or abstract classes and interfaces that
 can be subclassed outside the library without any restriction.
 
-| | |
-|---|---|
-| Diagnostic | `OPEN_API_WITHOUT_SUBCLASS_OPT_IN` |
-| Default severity | Error |
-| Gradle property | [`openApiWithoutSubclassOptIn`](configuration.md) |
-| Exemption | [`@IntentionallyOpen`](exemptions.md) |
+|                  |                                                   |
+|------------------|---------------------------------------------------|
+| Diagnostic       | `OPEN_API_WITHOUT_SUBCLASS_OPT_IN`                |
+| Default severity | Error                                             |
+| Gradle property  | [`openApiWithoutSubclassOptIn`](configuration.md) |
+| Exemption        | [`@IntentionallyOpen`](exemptions.md)             |
 
 ## What it reports
 
 A public `open`/`abstract` class with at least one public or protected constructor, or a public
-non-sealed interface, lets any external caller subclass it. Every such subclass constrains how
-the declaration can evolve later, so the checker flags the declaration unless subclassing is
-gated or acknowledged:
+non-sealed interface. User-side subclasses constrain how
+the declaration can evolve later.
 
 ```kotlin
 // OPEN_API_WITHOUT_SUBCLASS_OPT_IN
 public open class Widget
 ```
 
-If the class has no public primary constructor, the diagnostic is anchored on each accessible
-(public or protected) constructor instead of on the class declaration, since those constructors
-are what actually opens it to subclassing.
-
 ## Rationale
 
 Once external code subclasses a type, the library can no longer freely add abstract members,
 change existing members' signatures, or tighten invariants without breaking those subclasses.
 Unrestricted open API is one of the classic ways a
-[public declaration becomes hard to evolve](https://kotlinlang.org/docs/api-guidelines-predictability.html#prevent-unwanted-and-invalid-extensions):
-every unreviewed subclass is an implicit contract the author never agreed to.
+[public declaration becomes hard to evolve](https://kotlinlang.org/docs/api-guidelines-predictability.html#prevent-unwanted-and-invalid-extensions).
 
 ### Don't
 
@@ -100,7 +94,7 @@ With direct compiler invocation:
 
 ## See also
 
-- [Subclass opt-in without markers](subclass-opt-in-without-markers.md)
-- [Exhaustive public API](exhaustive-public-api.md)
+- [](subclass-opt-in-without-markers.md)
+- [](exhaustive-public-api.md)
 - [Kotlin API guidelines: prevent unwanted and invalid extensions](https://kotlinlang.org/docs/api-guidelines-predictability.html#prevent-unwanted-and-invalid-extensions)
 - [`SubclassOptInRequired`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-subclass-opt-in-required/)
