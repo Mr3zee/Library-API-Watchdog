@@ -7,7 +7,7 @@ constructors declared after an optional (defaulted or `vararg`) parameter.
 |---|---|
 | Diagnostic | `REQUIRED_PARAMETER_AFTER_OPTIONAL` |
 | Default severity | Error |
-| Gradle property | [`requiredParameterAfterOptional`](gradle-plugin.md) |
+| Gradle property | [`requiredParameterAfterOptional`](configuration.md) |
 | Exemption | [`@IntentionallyRequiredParameterAfterOptional`](exemptions.md) |
 
 ## What it reports
@@ -78,7 +78,7 @@ Notable edge cases and deliberate exceptions:
 - Overrides are exempt: they cannot declare default values, and their parameter order is fixed by
   the overridden declaration, which is reported where it is declared instead.
 
-## When to exempt
+## Exemption
 
 Apply `@IntentionallyRequiredParameterAfterOptional` to the function or constructor when the order
 is a deliberate, stable part of the contract, for example an old parameter list kept for source

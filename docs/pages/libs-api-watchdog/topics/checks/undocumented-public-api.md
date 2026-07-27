@@ -6,7 +6,7 @@
 |---|---|
 | Diagnostic | `UNDOCUMENTED_PUBLIC_API` |
 | Default severity | Error |
-| Gradle property | [`undocumentedPublicApi`](gradle-plugin.md) |
+| Gradle property | [`undocumentedPublicApi`](configuration.md) |
 | Exemption | [`@IntentionallyUndocumented`](exemptions.md) |
 
 ## What it reports
@@ -87,7 +87,7 @@ Notable exceptions the checker applies on its own, so no annotation is needed:
 - A plain `//` or `/* */` comment does not count; only a KDoc block (`/** ... */`) satisfies the
   check.
 
-## When to exempt
+## Exemption
 
 Apply `@IntentionallyUndocumented` directly on the class, type alias, function, property,
 constructor, or enum entry that stays undocumented; it does not cover nested or member

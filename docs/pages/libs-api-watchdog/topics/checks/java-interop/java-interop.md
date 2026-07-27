@@ -37,7 +37,7 @@ apiWatchdog {
 
 The `enabled` switch wins over the per-check severities configured inside the same `javaInterop { }`
 block: once it is `false`, none of the six diagnostics run, no matter what their individual
-severity properties are set to. See the [Gradle plugin reference](gradle-plugin.md) for the full
+severity properties are set to. See the [](configuration.md) for the full
 list of severity properties.
 
 ## Per-declaration exceptions

@@ -7,7 +7,7 @@ signatures.
 |---|---|
 | Diagnostic | `PAIR_OR_TRIPLE_PUBLIC_API` |
 | Default severity | Error |
-| Gradle property | [`pairOrTriplePublicApi`](gradle-plugin.md) |
+| Gradle property | [`pairOrTriplePublicApi`](configuration.md) |
 | Exemption | [`@IntentionallyPairOrTriple`](exemptions.md) |
 
 ## What it reports
@@ -75,7 +75,7 @@ Notable edge cases:
 - Overrides are exempt: their signature is fixed by the overridden declaration and reported
   there.
 
-## When to exempt
+## Exemption
 
 Apply `@IntentionallyPairOrTriple` on the whole declaration, on a single parameter or type
 parameter, or on a type usage, where it covers the annotated type and everything nested in it:

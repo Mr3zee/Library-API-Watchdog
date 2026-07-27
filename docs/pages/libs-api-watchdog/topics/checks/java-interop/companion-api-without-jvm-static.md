@@ -9,7 +9,7 @@ class.
 | Diagnostic | `COMPANION_API_WITHOUT_JVM_STATIC` |
 | Default severity | Error |
 | Applies to | JVM compilations only |
-| Gradle property | [`companionApiWithoutJvmStatic`](gradle-plugin.md) |
+| Gradle property | [`companionApiWithoutJvmStatic`](configuration.md) |
 | Exemption | [`@IntentionallyNonStaticCompanionApi`](exemptions.md) |
 
 ## What it reports
@@ -67,7 +67,7 @@ Notable edge cases and deliberate exceptions:
 - Interface companions compile the same way and are checked identically to class companions.
 - Internal functions are skipped unless marked `@PublishedApi`.
 
-## When to exempt
+## Exemption
 
 Apply `@IntentionallyNonStaticCompanionApi` on the function itself, or on a containing class - the
 companion object or its outer class - where it covers every member inside:

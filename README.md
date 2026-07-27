@@ -26,7 +26,7 @@ kotlin {
 ```
 
 Applying the Gradle plugin registers the compiler plugin for every compilation and automatically
-adds the `plugin-annotations` dependency with the `@Intentionally*` exemption annotations. The
+adds the `org.jetbrains.kotlin:libs-api-watchdog-plugin-annotations` dependency with the `@Intentionally*` exemption annotations. The
 plugin is intentionally restrictive by default: every check reports a compilation error until it
 is individually demoted to a warning or disabled through the `apiWatchdog` extension:
 

@@ -1,4 +1,4 @@
-# Stateful classes without toString
+# Stateful classes without equals, hashCode, and toString
 
 `STATEFUL_CLASS_WITHOUT_TO_STRING` reports a public stateful class that neither declares nor
 inherits a `toString` implementation.
@@ -7,7 +7,7 @@ inherits a `toString` implementation.
 |---|---|
 | Diagnostic | `STATEFUL_CLASS_WITHOUT_TO_STRING` |
 | Default severity | Error |
-| Gradle property | [`statefulClassWithoutToString`](gradle-plugin.md) |
+| Gradle property | [`statefulClassWithoutToString`](configuration.md) |
 | Exemption | [`@IntentionallyWithoutToString`](exemptions.md) |
 
 ## What it reports
@@ -73,7 +73,7 @@ Edge cases and deliberate exceptions:
   make a class stateful on its own.
 - `@PublishedApi` internal classes are checked too, since they belong to the published binary API.
 
-## When to exempt
+## Exemption
 
 When the opaque rendering is intended, for example because the state is sensitive and must not
 leak into logs, acknowledge it on the class:

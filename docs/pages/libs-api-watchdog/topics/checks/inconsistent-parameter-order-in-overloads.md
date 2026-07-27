@@ -7,7 +7,7 @@ whose shared parameter names appear in a different relative order.
 |---|---|
 | Diagnostic | `INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS` |
 | Default severity | Error |
-| Gradle property | [`inconsistentParameterOrderInOverloads`](gradle-plugin.md) |
+| Gradle property | [`inconsistentParameterOrderInOverloads`](configuration.md) |
 | Exemption | [`@IntentionallyInconsistentParameterOrder`](exemptions.md) |
 
 ## What it reports
@@ -82,7 +82,7 @@ Notable edge cases and deliberate exceptions:
 - Overrides never report - their order is fixed by the overridden declaration - but they still
   serve as an ordering reference for a new overload declared next to them.
 
-## When to exempt
+## Exemption
 
 Apply `@IntentionallyInconsistentParameterOrder` to the function or constructor when the differing
 order is a deliberate, stable part of the contract, for example an old overload kept for source

@@ -7,7 +7,7 @@ marker classes, so they gate nothing.
 |---|---|
 | Diagnostic | `SUBCLASS_OPT_IN_WITHOUT_MARKERS` |
 | Default severity | Error |
-| Gradle property | [`subclassOptInWithoutMarkers`](gradle-plugin.md) |
+| Gradle property | [`subclassOptInWithoutMarkers`](configuration.md) |
 | Exemption | none |
 
 ## What it reports
@@ -65,7 +65,7 @@ Notes:
   outside the scope of this check regardless of what `@SubclassOptInRequired` lists.
 - Multiple marker classes are allowed, and each further constrains who may subclass.
 
-## When to exempt
+## Exemption
 
 There is no `@Intentionally*` annotation for this diagnostic: an unmarkered
 `@SubclassOptInRequired` never restricts anything, so keeping it as-is is never a valid design

@@ -9,7 +9,7 @@ that Java can only read through the companion instance getter.
 | Diagnostic | `COMPANION_CONSTANT_WITHOUT_JVM_FIELD` |
 | Default severity | Error |
 | Applies to | JVM compilations only |
-| Gradle property | [`companionConstantWithoutJvmField`](gradle-plugin.md) |
+| Gradle property | [`companionConstantWithoutJvmField`](configuration.md) |
 | Exemption | [`@IntentionallyNonStaticCompanionApi`](exemptions.md) |
 
 ## What it reports
@@ -78,7 +78,7 @@ Notable cases:
 - Overrides are exempt: their Java-facing shape is fixed by the overridden declaration.
 - Non-JVM compilations never register this check at all.
 
-## When to exempt
+## Exemption
 
 Acknowledge the companion-instance access path with `@IntentionallyNonStaticCompanionApi` when
 keeping it is a deliberate choice. Apply it to the property itself, or to an enclosing class - the

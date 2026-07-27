@@ -6,7 +6,7 @@
 |---|---|
 | Diagnostic | `MUTABLE_COLLECTION_PUBLIC_API` |
 | Default severity | Error |
-| Gradle property | [`mutableCollectionPublicApi`](gradle-plugin.md) |
+| Gradle property | [`mutableCollectionPublicApi`](configuration.md) |
 | Exemption | [`@IntentionallyMutableCollection`](exemptions.md) |
 
 ## What it reports
@@ -76,7 +76,7 @@ Notable edge cases and deliberate exceptions:
 - A type alias resolves to its expansion, and a mutable bound on a type parameter
   (`<T : MutableList<Int>>`) is flagged the same as a direct mention of the bound.
 
-## When to exempt
+## Exemption
 
 Use `@IntentionallyMutableCollection` when sharing the mutable collection is a deliberate part of
 the API contract. It applies on the whole declaration (function, property, or constructor - covering

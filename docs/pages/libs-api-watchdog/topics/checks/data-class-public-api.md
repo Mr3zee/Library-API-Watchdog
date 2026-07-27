@@ -7,7 +7,7 @@ constructor property list as part of the compiled API.
 |---|---|
 | Diagnostic | `DATA_CLASS_PUBLIC_API` |
 | Default severity | Error |
-| Gradle property | [`dataClassPublicApi`](gradle-plugin.md) |
+| Gradle property | [`dataClassPublicApi`](configuration.md) |
 | Exemption | [`@IntentionallyDataClass`](exemptions.md) |
 
 ## What it reports
@@ -62,7 +62,7 @@ Notable cases:
 - An `internal` data class annotated `@PublishedApi` is still reported, since it belongs to the
   published binary API.
 
-## When to exempt
+## Exemption
 
 Apply `@IntentionallyDataClass` to the class declaration when the property list is a deliberate,
 stable part of the contract:
@@ -90,5 +90,5 @@ With direct compiler invocation:
 ## See also
 
 - [Avoid using data classes in your API](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#avoid-using-data-classes-in-your-api)
-- [Stateful classes without toString](stateful-class-without-to-string.md)
+- [Stateful classes without toString](stateful-class-without-equals-hashcode-to-string.md)
 - [Exemptions and internal API](exemptions.md)
