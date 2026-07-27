@@ -24,8 +24,8 @@ internal class KotlinFileParser : AutoCloseable {
     init {
         setupIdeaStandaloneExecution()
         val applicationEnvironment = KotlinCoreApplicationEnvironment.create(
-            disposable,
-            KotlinCoreApplicationEnvironmentMode.Production,
+            parentDisposable = disposable,
+            environmentMode = KotlinCoreApplicationEnvironmentMode.Production,
         )
         applicationEnvironment.registerFileType(KotlinFileType.INSTANCE, KotlinFileType.EXTENSION)
         applicationEnvironment.registerParserDefinition(KotlinParserDefinition())
@@ -33,7 +33,7 @@ internal class KotlinFileParser : AutoCloseable {
         psiFactory = KtPsiFactory(projectEnvironment.project, markGenerated = false)
     }
 
-    /** Parses [text], which must use `\n` line endings; PSI rejects anything else. */
+    /** Parses [text], which must use `\n` line endings. PSI rejects anything else. */
     fun parse(fileName: String, text: String): KtFile = psiFactory.createFile(fileName, text)
 
     override fun close() {

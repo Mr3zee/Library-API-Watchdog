@@ -1,9 +1,12 @@
+@file:Suppress("RedundantVisibilityModifier")
+
 package org.jetbrains.kotlinx.libs.api.watchdog.fixer
 
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.intellij.lang.annotations.Language
@@ -53,10 +56,68 @@ class ExemptionFixerTest {
             result.newText,
         )
         assertEquals(
-            listOf(AppliedFix("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", "IntentionallyOpen", FILE_PATH, 4)),
+            listOf(AppliedFix("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", "IntentionallyOpen", FILE_PATH, 8)),
             result.applied,
         )
         assertEquals(emptyList(), result.skipped)
+    }
+
+    @Test
+    fun reportedLinesIncludeEveryEarlierMultilineInsertion() {
+        @Language("kotlin")
+        val text = """
+            package com.example
+
+            public open class Service
+
+            public data class Point(val x: Int)
+
+            public class NeedsDocumentation
+        """.trimIndent()
+
+        val result = fix(
+            text,
+            diagnostic("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", text, "public open class Service"),
+            diagnostic("DATA_CLASS_PUBLIC_API", text, "public data class Point"),
+            diagnostic("UNDOCUMENTED_PUBLIC_API", text, "public class NeedsDocumentation"),
+        )
+
+        val newText = result.newText!!
+        val appliedByDiagnostic = result.applied.associateBy { it.diagnostic }
+        assertEquals(
+            lineOf(newText, "public open class Service"),
+            appliedByDiagnostic.getValue("OPEN_API_WITHOUT_SUBCLASS_OPT_IN").line,
+        )
+        assertEquals(
+            lineOf(newText, "public data class Point"),
+            appliedByDiagnostic.getValue("DATA_CLASS_PUBLIC_API").line,
+        )
+        assertEquals(
+            lineOf(newText, "public class NeedsDocumentation"),
+            result.skipped.single().line,
+        )
+    }
+
+    @Test
+    fun inlineInsertionsDoNotShiftReportedLines() {
+        @Language("kotlin")
+        val text = """
+            package org.jetbrains.kotlinx.libs.api.watchdog
+
+            public class Retry(retries: Int = 3, host: String)
+
+            public data class Point(val x: Int)
+        """.trimIndent()
+
+        val result = fix(
+            text,
+            diagnostic("REQUIRED_PARAMETER_AFTER_OPTIONAL", text, "host: String"),
+            diagnostic("DATA_CLASS_PUBLIC_API", text, "public data class Point"),
+        )
+
+        val appliedByDiagnostic = result.applied.associateBy { it.diagnostic }
+        assertEquals(3, appliedByDiagnostic.getValue("REQUIRED_PARAMETER_AFTER_OPTIONAL").line)
+        assertEquals(6, appliedByDiagnostic.getValue("DATA_CLASS_PUBLIC_API").line)
     }
 
     @Test
@@ -134,7 +195,6 @@ class ExemptionFixerTest {
 
     @Test
     fun fileAnnotationJoinsExistingFileAnnotations() {
-        @Language("kotlin")
         val text = """
             @file:JvmName("Explicit")
 
@@ -152,7 +212,7 @@ class ExemptionFixerTest {
                         "@file:JvmName(\"Explicit\")"
             ),
         )
-        assertContains(result.newText!!, "import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyDefaultFacadeName")
+        assertContains(result.newText, "import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyDefaultFacadeName")
     }
 
     @Test
@@ -177,15 +237,10 @@ class ExemptionFixerTest {
         assertEquals(1, Regex.escape("import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyOpen").toRegex().findAll(newText).count())
         assertContains(
             newText,
-            "import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyOpen\n" +
-                    "import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyUndocumented\n",
+            "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic open class Documented",
         )
-        assertContains(
-            newText,
-            "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
-                    "@IntentionallyUndocumented(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
-                    "public open class Documented",
-        )
+        assertFalse("IntentionallyUndocumented" in newText)
+        assertEquals("UNDOCUMENTED_PUBLIC_API", result.skipped.single().diagnostic)
     }
 
     @Test
@@ -301,6 +356,7 @@ class ExemptionFixerTest {
 
     @Test
     fun explicitPrimaryConstructorIsAnnotatedInline() {
+        @Suppress("RedundantConstructorKeyword")
         @Language("kotlin")
         val text = """
             package com.example
@@ -378,7 +434,7 @@ class ExemptionFixerTest {
 
         assertNull(result.newText)
         assertEquals(1, result.skipped.size)
-        assertContains(result.skipped.single().reason, "IntentionallyUndocumented")
+        assertContains(result.skipped.single().reason, "KDocs")
     }
 
     @Test
@@ -398,8 +454,8 @@ class ExemptionFixerTest {
             result.newText!!,
             "@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility\n@DslMarker\npublic annotation class TargetlessDsl",
         )
-        assertContains(result.newText!!, "import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility")
-        assertTrue(result.newText!!.lines().none { "ExemptionReason" in it })
+        assertContains(result.newText, "import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility")
+        assertTrue(result.newText.lines().none { "ExemptionReason" in it })
     }
 
     @Test
@@ -414,6 +470,7 @@ class ExemptionFixerTest {
         val result = fix(
             text,
             diagnostic("SUBCLASS_OPT_IN_WITHOUT_MARKERS", text, "public class Anything"),
+            diagnostic("UNDOCUMENTED_PUBLIC_API", text, "public class Anything"),
             diagnostic("EXEMPTION_WITHOUT_EXPLANATION", text, "public class Anything"),
             diagnostic("DSL_MARKER_NOOP_TYPE_POSITION", text, "public class Anything"),
             diagnostic("SOME_FUTURE_DIAGNOSTIC", text, "public class Anything"),
@@ -421,11 +478,12 @@ class ExemptionFixerTest {
 
         assertNull(result.newText)
         val reasonsByDiagnostic = result.skipped.associate { it.diagnostic to it.reason }
-        assertEquals(4, reasonsByDiagnostic.size)
+        assertEquals(5, reasonsByDiagnostic.size)
         assertContains(reasonsByDiagnostic.getValue("SUBCLASS_OPT_IN_WITHOUT_MARKERS"), "@SubclassOptInRequired")
+        assertContains(reasonsByDiagnostic.getValue("UNDOCUMENTED_PUBLIC_API"), "KDocs")
         assertContains(reasonsByDiagnostic.getValue("EXEMPTION_WITHOUT_EXPLANATION"), "author")
         assertContains(reasonsByDiagnostic.getValue("DSL_MARKER_NOOP_TYPE_POSITION"), "DSL marker")
-        assertContains(reasonsByDiagnostic.getValue("SOME_FUTURE_DIAGNOSTIC"), "unknown diagnostic")
+        assertContains(reasonsByDiagnostic.getValue("SOME_FUTURE_DIAGNOSTIC"), "Unknown diagnostic")
     }
 
     @Test
@@ -468,12 +526,14 @@ class ExemptionFixerTest {
             diagnostic("REQUIRED_PARAMETER_AFTER_OPTIONAL", text, "host: String"),
         )
 
+        val newText = result.newText!!
         assertContains(
-            result.newText!!,
+            newText,
             "    @IntentionallyRequiredParameterAfterOptional(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
-                    "    @IntentionallyUndocumented(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
                     "    public constructor(retries: Int = 3, host: String) : this()",
         )
+        assertFalse("IntentionallyUndocumented" in newText)
+        assertEquals("UNDOCUMENTED_PUBLIC_API", result.skipped.single().diagnostic)
     }
 
     @Test
@@ -558,6 +618,7 @@ class ExemptionFixerTest {
 
         // CRLF dominates, so the inserted lines use it, while the existing bare-LF line keeps
         // its ending: nothing but the insertions changes.
+        val newText = result.newText!!
         assertEquals(
             "package com.example\r\n" +
                     "\r\n" +
@@ -567,8 +628,9 @@ class ExemptionFixerTest {
                     "/** Doc. */\n" +
                     "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\r\n" +
                     "public open class Service\r\n",
-            result.newText,
+            newText,
         )
+        assertEquals(lineOf(newText, "public open class Service"), result.applied.single().line)
     }
 
     @Test
@@ -578,7 +640,7 @@ class ExemptionFixerTest {
         val result = fix(text, diagnostic("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", text, "public open class Service"))
 
         val newText = result.newText!!
-        assertTrue(newText.count { it == '\n' } == newText.windowed(2).count { it == "\r\n" })
+        assertEquals(newText.count { it == '\n' }, newText.windowed(2).count { it == "\r\n" })
         assertContains(
             newText,
             "/** Doc. */\r\n@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\r\npublic open class Service",
@@ -623,6 +685,7 @@ class ExemptionFixerTest {
 
     @Test
     fun companionMembersAreAnnotatedInPlace() {
+        @Suppress("MayBeConstant")
         @Language("kotlin")
         val text = """
             package com.example
@@ -732,5 +795,11 @@ class ExemptionFixerTest {
 
     private companion object {
         const val FILE_PATH = "/project/src/main/kotlin/com/example/Sample.kt"
+
+        fun lineOf(text: String, snippet: String): Int {
+            val offset = text.indexOf(snippet)
+            require(offset >= 0) { "Snippet not found: $snippet" }
+            return text.take(offset).count { it == '\n' } + 1
+        }
     }
 }

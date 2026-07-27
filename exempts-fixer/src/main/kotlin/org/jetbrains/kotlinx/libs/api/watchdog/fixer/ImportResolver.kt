@@ -51,7 +51,10 @@ internal class ImportResolver(private val ktFile: KtFile) {
 
     /** The insertions that add the registered imports, empty when none are needed. */
     fun importInsertions(ktFile: KtFile): List<Insertion> {
-        if (importsToAdd.isEmpty()) return emptyList()
+        if (importsToAdd.isEmpty()) {
+            return emptyList()
+        }
+
         val importLines = importsToAdd.joinToString("\n") { "import $it" }
 
         val lastImport = ktFile.importList?.imports?.lastOrNull()

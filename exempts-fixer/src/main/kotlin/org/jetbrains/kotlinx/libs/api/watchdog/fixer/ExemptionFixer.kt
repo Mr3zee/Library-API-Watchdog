@@ -1,8 +1,11 @@
 package org.jetbrains.kotlinx.libs.api.watchdog.fixer
 
+import java.nio.file.Paths
 import org.jetbrains.kotlin.com.intellij.psi.PsiComment
 import org.jetbrains.kotlin.com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.com.intellij.psi.PsiWhiteSpace
+import org.jetbrains.kotlin.psi.KtAnnotated
+import org.jetbrains.kotlin.psi.KtAnnotationsContainer
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtDeclaration
@@ -43,21 +46,20 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
         // file's existing line endings survive untouched, whatever mix they are.
         val mapping = LineEndingMapping.of(originalText)
         val text = mapping.normalizedText
-        val ktFile = parser.parse(filePath.substringAfterLast('/'), text)
+        val ktFile = parser.parse(Paths.get(filePath).fileName.toString(), text)
 
-        val applied = mutableListOf<AppliedFix>()
-        val skipped = mutableListOf<SkippedDiagnostic>()
+        val skipped = mutableListOf<PlannedSkip>()
         val plannedFixes = mutableMapOf<FixTarget, MutableMap<String, PlannedFix>>()
 
-        for (diagnostic in diagnostics.sortedWith(compareBy({ it.startOffset }, { it.name }))) {
-            val startOffset = mapping.toNormalizedOffset(diagnostic.startOffset.coerceAtLeast(0))
-            val line = text.take(startOffset.coerceIn(0, text.length)).count { it == '\n' } + 1
+        for ((name, _, recordedStartOffset) in diagnostics.sortedWith(compareBy({ it.startOffset }, { it.name }))) {
+            val sourceOffset = recordedStartOffset.coerceAtLeast(0)
+            val startOffset = mapping.toNormalizedOffset(sourceOffset)
 
             fun skip(reason: String) {
-                skipped += SkippedDiagnostic(diagnostic.name, filePath, line, reason)
+                skipped += PlannedSkip(name, sourceOffset, reason)
             }
 
-            val fix = when (val resolution = ExemptionRegistry.resolutionFor(diagnostic.name)) {
+            val fix = when (val resolution = ExemptionRegistry.resolutionFor(name)) {
                 is FixResolution.Unfixable -> {
                     skip(resolution.reason)
                     continue
@@ -66,57 +68,94 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
             }
 
             if (startOffset !in text.indices) {
-                skip("the recorded source position is outside the file; it was probably edited during the build")
+                skip("The recorded source position is outside the file. It was probably edited during the build")
                 continue
             }
 
             val element = ktFile.findElementAt(startOffset) ?: run {
-                skip("no source element found at the recorded position")
+                skip("No source element found at the recorded position")
                 continue
             }
             val target = resolveTarget(element, fix.targetStrategy, ktFile) ?: run {
-                skip("no declaration accepting @${fix.annotationShortName} encloses the reported position")
+                skip("No declaration accepting @${fix.annotationShortName} encloses the reported position")
                 continue
             }
             if (target.alreadyAnnotated(fix.annotationShortName)) {
-                skip("the target already carries @${fix.annotationShortName}")
+                skip("The target already carries @${fix.annotationShortName}")
                 continue
             }
 
             plannedFixes.getOrPut(target) { mutableMapOf() }
-                .getOrPut(fix.annotationShortName) { PlannedFix(fix, diagnostic.name, line) }
+                .getOrPut(fix.annotationShortName) { PlannedFix(fix, name, sourceOffset) }
         }
 
         if (plannedFixes.isEmpty()) {
-            return FileFixResult(newText = null, applied = applied, skipped = skipped)
+            val locations = RewrittenLocations(originalText, originalText, emptyList())
+            return FileFixResult(
+                newText = null,
+                applied = emptyList(),
+                skipped = skipped.map { it.toDiagnostic(filePath, locations) },
+            )
         }
 
         val imports = ImportResolver(ktFile)
         val insertions = mutableListOf<Insertion>()
+        val applied = mutableListOf<PlannedFix>()
         for ((target, fixesByAnnotation) in plannedFixes) {
             val fixes = fixesByAnnotation.values.sortedBy { it.fix.annotationShortName }
             insertions += target.render(fixes, text, imports)
-            fixes.forEach {
-                applied += AppliedFix(it.diagnostic, it.fix.annotationShortName, filePath, it.line)
-            }
+            applied += fixes
         }
         insertions += imports.importInsertions(ktFile)
 
         val rawInsertions = insertions.map {
             Insertion(mapping.toRawOffset(it.offset), it.text.replace("\n", mapping.newline))
         }
+        val newText = applyInsertions(originalText, rawInsertions)
+        val locations = RewrittenLocations(originalText, newText, rawInsertions)
         return FileFixResult(
-            newText = applyInsertions(originalText, rawInsertions),
-            applied = applied,
-            skipped = skipped,
+            newText = newText,
+            applied = applied.map {
+                AppliedFix(
+                    it.diagnostic,
+                    it.fix.annotationShortName,
+                    filePath,
+                    locations.lineAt(it.sourceOffset),
+                )
+            },
+            skipped = skipped.map { it.toDiagnostic(filePath, locations) },
             insertions = rawInsertions,
         )
     }
 }
 
-private class PlannedFix(val fix: ExemptionFix, val diagnostic: String, val line: Int)
+private class PlannedFix(val fix: ExemptionFix, val diagnostic: String, val sourceOffset: Int)
 
-/** A pure text insertion; [text] goes in front of whatever is at [offset]. */
+private class PlannedSkip(val diagnostic: String, val sourceOffset: Int, val reason: String) {
+    fun toDiagnostic(filePath: String, locations: RewrittenLocations) =
+        SkippedDiagnostic(diagnostic, filePath, locations.lineAt(sourceOffset), reason)
+}
+
+/** Maps an original source position to its line after all insertions have been applied. */
+private class RewrittenLocations(
+    private val originalText: String,
+    rewrittenText: String,
+    private val insertions: List<Insertion>,
+) {
+    private val rewrittenMapping = LineEndingMapping.of(rewrittenText)
+
+    fun lineAt(sourceOffset: Int): Int {
+        val boundedOffset = sourceOffset.coerceIn(0, originalText.length)
+        val rewrittenOffset = boundedOffset + insertions.sumOf { insertion ->
+            // An insertion at the diagnostic offset is in front of the original source token too.
+            if (insertion.offset <= boundedOffset) insertion.text.length else 0
+        }
+        val normalizedOffset = rewrittenMapping.toNormalizedOffset(rewrittenOffset)
+        return rewrittenMapping.normalizedText.take(normalizedOffset).count { it == '\n' } + 1
+    }
+}
+
+/** A pure text insertion. [text] goes in front of whatever is at [offset]. */
 internal class Insertion(val offset: Int, val text: String)
 
 /**
@@ -145,8 +184,12 @@ private sealed interface FixTarget {
         override fun render(fixes: List<PlannedFix>, text: String, imports: ImportResolver): List<Insertion> {
             var anchor: PsiElement = declaration
             var child = declaration.firstChild
-            while (child is PsiComment || child is PsiWhiteSpace) child = child.nextSibling
-            if (child != null) anchor = child
+            while (child is PsiComment || child is PsiWhiteSpace) {
+                child = child.nextSibling
+            }
+            if (child != null) {
+                anchor = child
+            }
 
             val anchorOffset = anchor.textRange.startOffset
             val lineStart = text.lastIndexOf('\n', anchorOffset - 1) + 1
@@ -188,8 +231,7 @@ private sealed interface FixTarget {
     /** The whole file, annotated with a `@file:` annotation above the package directive. */
     data class WholeFile(val file: KtFile) : FixTarget {
         override fun alreadyAnnotated(annotationShortName: String) =
-            file.fileAnnotationList?.annotationEntries.orEmpty()
-                .any { it.shortName?.asString() == annotationShortName }
+            file.fileAnnotationList?.hasAnnotationNamed(annotationShortName) ?: false
 
         override fun render(fixes: List<PlannedFix>, text: String, imports: ImportResolver): List<Insertion> {
             val annotationList = file.fileAnnotationList
@@ -204,6 +246,7 @@ private sealed interface FixTarget {
                     while (child is PsiComment || child is PsiWhiteSpace) child = child.nextSibling
                     child?.textRange?.startOffset ?: 0
                 }
+
             return fixes.map {
                 Insertion(anchorOffset, it.annotationText(imports, useSite = "file:") + "\n\n")
             }
@@ -221,7 +264,10 @@ private fun PlannedFix.annotationText(imports: ImportResolver, useSite: String =
     return "@$useSite$name$arguments"
 }
 
-private fun KtDeclaration.hasAnnotationNamed(shortName: String): Boolean =
+private fun KtAnnotationsContainer.hasAnnotationNamed(shortName: String): Boolean =
+    annotationEntries.any { it.shortName?.asString() == shortName }
+
+private fun KtAnnotated.hasAnnotationNamed(shortName: String): Boolean =
     annotationEntries.any { it.shortName?.asString() == shortName }
 
 private fun resolveTarget(element: PsiElement, strategy: TargetStrategy, ktFile: KtFile): FixTarget? =

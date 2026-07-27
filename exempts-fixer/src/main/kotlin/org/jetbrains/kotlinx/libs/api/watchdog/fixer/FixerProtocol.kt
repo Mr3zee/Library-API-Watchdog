@@ -1,6 +1,8 @@
 package org.jetbrains.kotlinx.libs.api.watchdog.fixer
 
-import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 
 /**
  * A watchdog diagnostic recorded by the compiler plugin's `diagnosticsOutputFile` option: one
@@ -18,9 +20,10 @@ internal data class RecordedDiagnostic(
          * Merges the compilation reports and drops exact duplicates: multiplatform compilations
          * revisit common source files for metadata and each platform target.
          */
-        fun parseReports(reportFiles: List<File>): List<RecordedDiagnostic> = reportFiles
-            .filter(File::isFile)
-            .flatMap(File::readLines)
+        fun parseReports(reportFiles: List<Path>): List<RecordedDiagnostic> = reportFiles
+            .asSequence()
+            .filter { Files.isRegularFile(it) }
+            .flatMap { Files.readAllLines(it) }
             .filter { it.isNotBlank() }
             .map { line ->
                 val parts = line.split('\t')
@@ -28,6 +31,7 @@ internal data class RecordedDiagnostic(
                 RecordedDiagnostic(parts[0], parts[1], parts[2].toInt(), parts[3].toInt())
             }
             .distinct()
+            .toList()
     }
 }
 
@@ -38,17 +42,17 @@ internal data class RecordedDiagnostic(
  */
 internal class FixerRequest(
     /** Reports produced by the regular Kotlin compile tasks for every main target. */
-    val reportFiles: List<File>,
+    val reportFiles: List<Path>,
     /** Where the fixer writes its [FixerResponse]. */
-    val responseFile: File,
+    val responseFile: Path,
 ) {
     companion object {
         const val REPORT_FILE = "reportFile"
         const val RESPONSE_FILE = "responseFile"
 
-        fun parse(file: File): FixerRequest {
+        fun parse(file: Path): FixerRequest {
             val values = mutableMapOf<String, MutableList<String>>()
-            file.readLines().forEach { line ->
+            Files.readAllLines(file).forEach { line ->
                 if (line.isBlank()) return@forEach
                 val key = line.substringBefore('=')
                 require(key != line) { "Malformed fixer request line: '$line'" }
@@ -60,14 +64,14 @@ internal class FixerRequest(
             }
 
             return FixerRequest(
-                reportFiles = values[REPORT_FILE].orEmpty().map(::File),
-                responseFile = File(single(RESPONSE_FILE)),
+                reportFiles = values[REPORT_FILE].orEmpty().map(Paths::get),
+                responseFile = Paths.get(single(RESPONSE_FILE)),
             )
         }
     }
 }
 
-/** An exemption annotation the fixer added to a source file. */
+/** An exemption annotation the fixer added, located in the rewritten source file. */
 internal data class AppliedFix(
     val diagnostic: String,
     val annotation: String,
@@ -75,7 +79,7 @@ internal data class AppliedFix(
     val line: Int,
 )
 
-/** A recorded diagnostic the fixer could not resolve into an annotation insertion. */
+/** A diagnostic the fixer could not resolve, located after any other fixes to its source file. */
 internal data class SkippedDiagnostic(
     val diagnostic: String,
     val filePath: String,
@@ -93,9 +97,9 @@ internal class FixerResponse {
     val modifiedFiles = mutableListOf<String>()
     var error: String? = null
 
-    fun writeTo(file: File) {
-        file.parentFile?.mkdirs()
-        file.writeText(buildString {
+    fun writeTo(file: Path) {
+        file.parent?.let { Files.createDirectories(it) }
+        Files.writeString(file, buildString {
             applied.forEach {
                 appendLine("$FIXED=${it.diagnostic}\t${it.annotation}\t${it.line}\t${it.filePath}")
             }
@@ -109,7 +113,10 @@ internal class FixerResponse {
         })
     }
 
-    private fun String.escapeNewlines() = replace("\\", "\\\\").replace("\n", "\\n").replace("\r", "\\r")
+    private fun String.escapeNewlines() =
+        replace("\\", "\\\\")
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
 
     companion object {
         const val FIXED = "fixed"

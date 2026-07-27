@@ -227,7 +227,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         )
         map.put(
             diagnostic = WatchdogDiagnostics.SUBCLASS_OPT_IN_WITHOUT_MARKERS,
-            message = "@SubclassOptInRequired lists no marker classes, so it doesn't restrict " +
+            message = "@SubclassOptInRequired lists no marker classes, so it doesn''t restrict " +
                     "external subclassing. Pass at least one opt-in marker class " +
                     "with a description of why the subclassing is restricted. See " +
                     "https://mr3zee.github.io/libs-api-watchdog/subclass-opt-in-without-markers.html " +
@@ -247,7 +247,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         map.put(
             diagnostic = WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API,
             message = "The {0} ''{1}'' is part of the public API but has no KDoc. Document it " +
-                    "so users don't have to guess its purpose and usage contract, or mark it " +
+                    "so users don''t have to guess its purpose and usage contract, or mark it " +
                     "with @IntentionallyUndocumented if leaving it undocumented is intended. See " +
                     "https://mr3zee.github.io/libs-api-watchdog/undocumented-public-api.html " +
                     "for details.",
@@ -257,7 +257,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         map.put(
             diagnostic = WatchdogDiagnostics.FUNCTION_TYPE_ALIAS_PUBLIC_API,
             message = "The type alias ''{0}'' abbreviates a function type, so users bind to the " +
-                    "bare function shape: the alias is erased from the compiled API and can't " +
+                    "bare function shape: the alias is erased from the compiled API and can''t " +
                     "evolve into a richer abstraction later. Declare a `fun interface` instead to " +
                     "keep lambda ergonomics behind a stable nominal type, or mark the alias with " +
                     "@IntentionallyFunctionTypeAlias if exposing the function type is intended. See " +
@@ -323,7 +323,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         map.put(
             diagnostic = WatchdogDiagnostics.REQUIRED_PARAMETER_AFTER_OPTIONAL,
             message = "The parameter ''{0}'' of ''{1}'' is required but declared after an " +
-                    "optional parameter, so it can't be passed positionally without re-stating " +
+                    "optional parameter, so it can''t be passed positionally without re-stating " +
                     "the defaults in front of it. Declare parameters from the general to the " +
                     "specific: essential inputs first, optional inputs - defaulted and vararg " +
                     "parameters - last. Move the required parameter in front of the optional " +
@@ -352,7 +352,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             diagnostic = WatchdogDiagnostics.BOOLEAN_PARAMETER_PUBLIC_API,
             message = "The function ''{0}'' takes the Boolean parameter ''{1}''. At the call " +
                     "site a positional `true`/`false` argument reveals nothing about its " +
-                    "meaning, and users can't be forced to use named arguments. Introduce " +
+                    "meaning, and users can''t be forced to use named arguments. Introduce " +
                     "separate, descriptively named functions for each mode, or replace the " +
                     "parameter with an enum class, or mark it with " +
                     "@IntentionallyBooleanParameter if the Boolean parameter is intended. See " +
@@ -390,7 +390,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         )
         map.put(
             WatchdogDiagnostics.EXEMPTION_WITHOUT_EXPLANATION,
-            "The @{0} exemption doesn't explain why it is applied: the {1} reason doesn't " +
+            "The @{0} exemption doesn''t explain why it is applied: the {1} reason doesn't " +
                     "speak for itself, and the description is empty. Pass a self-explanatory " +
                     "reason (FOR_BACKWARDS_COMPATIBILITY, API_DESIGN), or describe the " +
                     "motivation in the description argument. See " +
@@ -441,7 +441,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             diagnostic = WatchdogDiagnostics.MANGLED_JVM_NAME_PUBLIC_API,
             message = "The {0} ''{1}'' has the value class ''{2}'' in its signature, so its " +
                     "compiled JVM name is mangled - or, for a constructor, hidden behind a " +
-                    "synthetic one - and Java sources can't call it. Kotlin users are " +
+                    "synthetic one - and Java sources can''t call it. Kotlin users are " +
                     "unaffected. Give the compiled code a Java-callable shape with @JvmName " +
                     "(@get:JvmName/@set:JvmName on property accessors) or with @JvmExposeBoxed, " +
                     "or mark the declaration with @IntentionallyMangledJvmName if Java callers " +
@@ -510,11 +510,11 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         map.put(
             diagnostic = WatchdogDiagnostics.DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS,
             message = "The {0} ''{1}'' declares default parameter values, but for Java callers " +
-                    "the defaults don't exist: only the full signature is compiled, and every " +
+                    "the defaults don''t exist: only the full signature is compiled, and every " +
                     "argument must be spelled out. Mark the {0} with @JvmOverloads to also " +
                     "compile the overloads that let Java callers omit defaulted parameters - " +
                     "trailing ones only: a defaulted parameter in the middle of the list still " +
-                    "can't be skipped from Java, and adding a parameter later stays binary " +
+                    "can''t be skipped from Java, and adding a parameter later stays binary " +
                     "incompatible either way - or mark the {0} with " +
                     "@IntentionallyWithoutJvmOverloads if serving Java callers the full " +
                     "signature only is intended. See " +

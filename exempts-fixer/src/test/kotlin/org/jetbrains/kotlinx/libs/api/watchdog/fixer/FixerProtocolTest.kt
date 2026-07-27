@@ -1,7 +1,9 @@
 package org.jetbrains.kotlinx.libs.api.watchdog.fixer
 
-import java.io.File
-import kotlin.io.path.createTempDirectory
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.util.Comparator
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -9,15 +11,17 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class FixerProtocolTest {
-    private val tempDir = createTempDirectory("fixer-protocol-test").toFile()
+    private val tempDir = Files.createTempDirectory("fixer-protocol-test")
 
     @AfterTest
     fun tearDown() {
-        tempDir.deleteRecursively()
+        Files.walk(tempDir).use { paths ->
+            paths.sorted(Comparator.reverseOrder()).forEach { Files.deleteIfExists(it) }
+        }
     }
 
-    private fun file(name: String, content: String): File =
-        File(tempDir, name).apply { writeText(content) }
+    private fun file(name: String, content: String): Path =
+        tempDir.resolve(name).also { Files.writeString(it, content) }
 
     @Test
     fun requestRoundTripsListsAndValuesWithEqualsSigns() {
@@ -34,12 +38,12 @@ class FixerProtocolTest {
 
         assertEquals(
             listOf(
-                File("/project/build/reports/jvm=main.tsv"),
-                File("/project/build/reports/js=main.tsv"),
+                Paths.get("/project/build/reports/jvm=main.tsv"),
+                Paths.get("/project/build/reports/js=main.tsv"),
             ),
             request.reportFiles,
         )
-        assertEquals(File("/tmp/response.txt"), request.responseFile)
+        assertEquals(Paths.get("/tmp/response.txt"), request.responseFile)
     }
 
     @Test
@@ -99,7 +103,7 @@ class FixerProtocolTest {
 
     @Test
     fun missingReportMeansNoDiagnostics() {
-        assertEquals(emptyList(), RecordedDiagnostic.parseReports(listOf(File(tempDir, "absent.tsv"))))
+        assertEquals(emptyList(), RecordedDiagnostic.parseReports(listOf(tempDir.resolve("absent.tsv"))))
     }
 
     @Test
@@ -115,11 +119,11 @@ class FixerProtocolTest {
             skipped += SkippedDiagnostic("EXEMPTION_WITHOUT_EXPLANATION", "/p/B.kt", 7, "needs a human")
             modifiedFiles += "/p/A.kt"
         }
-        val target = File(tempDir, "response.txt")
+        val target = tempDir.resolve("response.txt")
 
         response.writeTo(target)
 
-        val lines = target.readLines().filter { it.isNotBlank() }
+        val lines = Files.readAllLines(target).filter { it.isNotBlank() }
         assertEquals(
             listOf(
                 "fixed=DATA_CLASS_PUBLIC_API\tIntentionallyDataClass\t3\t/p/A.kt",
@@ -135,13 +139,13 @@ class FixerProtocolTest {
         val response = FixerResponse().apply {
             skipped += SkippedDiagnostic("SOME_DIAGNOSTIC", "/p/B.kt", 7, "line one\nline two")
         }
-        val target = File(tempDir, "multiline.txt")
+        val target = tempDir.resolve("multiline.txt")
 
         response.writeTo(target)
 
         assertEquals(
             listOf("skipped=SOME_DIAGNOSTIC\t7\t/p/B.kt\tline one\\nline two"),
-            target.readLines().filter { it.isNotBlank() },
+            Files.readAllLines(target).filter { it.isNotBlank() },
         )
     }
 
@@ -179,7 +183,12 @@ class FixerProtocolTest {
             ExemptionRegistry.resolutionFor(it) is FixResolution.Unfixable
         }
         assertEquals(
-            setOf("SUBCLASS_OPT_IN_WITHOUT_MARKERS", "EXEMPTION_WITHOUT_EXPLANATION", "DSL_MARKER_NOOP_TYPE_POSITION"),
+            setOf(
+                "SUBCLASS_OPT_IN_WITHOUT_MARKERS",
+                "UNDOCUMENTED_PUBLIC_API",
+                "EXEMPTION_WITHOUT_EXPLANATION",
+                "DSL_MARKER_NOOP_TYPE_POSITION",
+            ),
             unfixable.toSet(),
         )
     }
@@ -187,6 +196,6 @@ class FixerProtocolTest {
     @Test
     fun unknownDiagnosticResolvesToUnfixable() {
         val resolution = ExemptionRegistry.resolutionFor("NOT_A_DIAGNOSTIC")
-        assertContains((resolution as FixResolution.Unfixable).reason, "unknown diagnostic")
+        assertContains((resolution as FixResolution.Unfixable).reason, "Unknown diagnostic")
     }
 }
