@@ -112,7 +112,7 @@ consumers. The whole group is disabled with `javaInterop { enabled = false }`. S
 - [](top-level-api-without-jvm-name.md): files whose public top-level
   API compiles into a file facade class without a pinned `@file:JvmName`, so renaming the file
   breaks Java sources and binaries built against it.
-- [](default-parameters-without-jvm-overloads.md): default parameter values without `@JvmOverloads`, forcing Java callers to spell out every argument.
+- [](default-parameters-without-jvm-overloads.md): default parameter values without `@JvmOverloads`, forcing Java callers to pass every argument.
 
 ### DSL marker checks
 

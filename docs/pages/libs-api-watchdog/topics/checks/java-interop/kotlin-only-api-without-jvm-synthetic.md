@@ -75,7 +75,7 @@ public fun onEach(action: Action) { }
 
 - Abstract and interface members are exempt: `@JvmSynthetic` can't hide a member that
   implementations must provide.
-- Overrides are exempt; the shape is reported on the base declaration instead.
+- Overrides are exempt, the shape is reported on the base declaration instead.
 - Constructors are exempt: `@JvmSynthetic` doesn't apply to them.
 - A signature mangled by a value class is reported by [`MANGLED_JVM_NAME_PUBLIC_API`](mangled-jvm-name-public-api.md) instead.
 - `@JvmSynthetic` declarations are hidden from Java on purpose and are not flagged.
@@ -101,7 +101,7 @@ apiWatchdog {
 }
 ```
 
-The property lives inside the `javaInterop { }` block; `javaInterop { enabled = false }` turns off
+The property lives inside the `javaInterop { }` block. `javaInterop { enabled = false }` turns off
 this check along with the rest of the [](java-interop.md) group.
 
 With direct compiler invocation:

@@ -95,7 +95,7 @@ a value whose type carries the marker can still become a scoped implicit receive
 type inference (`with(value) { ... }`), even though the position itself is inert. Suppress the
 diagnostic on that declaration with `@Suppress("DSL_MARKER_NOOP_TYPE_POSITION")` if that flow-through
 use is intended. To silence the check project-wide instead, lower its severity with the Gradle
-property below; there is no other per-declaration escape hatch.
+property below, there is no other per-declaration escape hatch.
 
 ## Configuration
 

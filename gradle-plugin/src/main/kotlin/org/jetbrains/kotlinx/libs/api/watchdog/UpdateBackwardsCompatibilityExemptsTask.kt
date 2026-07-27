@@ -53,7 +53,7 @@ public abstract class UpdateBackwardsCompatibilityExemptsTask : DefaultTask() {
     @TaskAction
     public fun updateExempts() {
         if (compilationNames.get().isEmpty()) {
-            logger.warn("No main Kotlin compilation found; there are no watchdog diagnostics to exempt.")
+            logger.warn("No main Kotlin compilation found. There are no watchdog diagnostics to exempt.")
             return
         }
 
@@ -107,8 +107,8 @@ public abstract class UpdateBackwardsCompatibilityExemptsTask : DefaultTask() {
         } else {
             logger.lifecycle(
                 "Added $appliedCount backwards-compatibility exemption(s) in " +
-                        "${modifiedFiles.size} file(s)" +
-                        if (skipped.isEmpty()) "." else "; ${skipped.size} diagnostic(s) need manual attention."
+                        "${modifiedFiles.size} file(s)." +
+                        if (skipped.isEmpty()) "" else " ${skipped.size} diagnostic(s) need manual attention."
             )
         }
     }
@@ -116,8 +116,8 @@ public abstract class UpdateBackwardsCompatibilityExemptsTask : DefaultTask() {
     private fun parseResponse(responseFile: File, exitValue: Int): Map<String, List<String>> {
         if (!responseFile.isFile) {
             throw GradleException(
-                "The exempts fixer produced no response (exit code $exitValue); " +
-                        "see the process output above."
+                "The exempts fixer produced no response (exit code $exitValue). " +
+                        "See the process output above."
             )
         }
         return responseFile.readLines()

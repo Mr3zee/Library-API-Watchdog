@@ -79,7 +79,7 @@ public class Connection @JvmOverloads constructor(
 ## Notes
 
 - A defaulted parameter in the middle of the list still can't be skipped from Java even with
-  `@JvmOverloads`; keep optional parameters last (see [`REQUIRED_PARAMETER_AFTER_OPTIONAL`](required-parameter-after-optional.md)) so the
+  `@JvmOverloads`. Keep optional parameters last (see [`REQUIRED_PARAMETER_AFTER_OPTIONAL`](required-parameter-after-optional.md)) so the
   generated overloads actually cover the common call shapes.
 - Abstract and interface members, and annotation class constructors, are exempt: `@JvmOverloads`
   doesn't apply to them.
@@ -119,7 +119,7 @@ apiWatchdog {
 }
 ```
 
-The property lives inside the `javaInterop { }` block; `javaInterop { enabled = false }` turns off
+The property lives inside the `javaInterop { }` block. `javaInterop { enabled = false }` turns off
 this check along with the rest of the [](java-interop.md) group.
 
 With direct compiler invocation:

@@ -719,7 +719,7 @@ private val acknowledgedFile = """
     public fun legacyRetry(retries: Int = 3, host: String) {}
 
     /** A deliberately Kotlin-only refresher left visible to Java. */
-    @IntentionallyKotlinOnlyApi(reason = ExemptionReason.IGNORE_JAVA_INTEROP, description = "Coroutine-first API; Java is served by a blocking facade.")
+    @IntentionallyKotlinOnlyApi(reason = ExemptionReason.IGNORE_JAVA_INTEROP, description = "Coroutine-first API. Java is served by a blocking facade.")
     public suspend fun refreshAccounts(): Int = 0
 
     /** A holder whose companion deliberately serves Java callers through the instance. */

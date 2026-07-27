@@ -29,7 +29,7 @@ public class Registry {
 ## Rationale
 
 A companion function without `@JvmStatic` compiles only as an instance method on the generated
-`Companion` class, so Java code must spell out `Outer.Companion.member(...)` for what looks, from
+`Companion` class, so Java code must call `Outer.Companion.member(...)` for what looks, from
 Kotlin, like a plain static factory or utility.
 `@JvmStatic` additionally compiles a static `Outer.member(...)` entry point for Java, without
 changing how Kotlin resolves the same call. See the Kotlin guide on
@@ -103,7 +103,7 @@ With direct compiler invocation:
 -P plugin:org.jetbrains.kotlinx.libs.api.watchdog:diagnosticSeverity=COMPANION_API_WITHOUT_JVM_STATIC:warning
 ```
 
-The property lives inside the `javaInterop { }` block; `javaInterop { enabled = false }` turns off
+The property lives inside the `javaInterop { }` block. `javaInterop { enabled = false }` turns off
 this check along with the rest of the [](java-interop.md) group.
 
 ## See also

@@ -23,7 +23,7 @@ public typealias Callback = (Int) -> Unit
 
 A type alias is not a real type: it is erased at compile time, so a user compiled against
 `Callback` really binds to `(Int) -> Unit`. The alias can never grow a second member, a default
-implementation, or a name that documents intent; the only way to change the shape later is a
+implementation, or a name that documents intent. The only way to change the shape later is a
 breaking change to the bare function type. A
 [`fun interface`](https://kotlinlang.org/docs/fun-interfaces.html#functional-interfaces-vs-type-aliases)
 keeps the same lambda call-site ergonomics (SAM conversion) behind a real type that can
@@ -64,7 +64,7 @@ public fun interface SuspendAction {
 - Nullable and receiver variants are caught the same way: `public typealias Some = ((String) -> Boolean)?` and
   `public typealias Some = StringBuilder.() -> Unit` are both function types under the alias.
 - A function type nested inside another type, such as `List<(Int) -> Unit>`, doesn't trigger the
-  check; only the type an alias directly expands to counts.
+  check, only the type an alias directly expands to counts.
 
 ## Exemption
 
