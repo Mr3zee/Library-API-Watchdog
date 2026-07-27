@@ -3,17 +3,17 @@
 `EXHAUSTIVE_PUBLIC_API` reports public enums and sealed hierarchies, which users can match
 exhaustively with a `when` expression that has no `else` branch.
 
-| | |
-|---|---|
-| Diagnostic | `EXHAUSTIVE_PUBLIC_API` |
-| Default severity | Error |
-| Gradle property | [`exhaustivePublicApi`](configuration.md) |
-| Exemption | [`@IntentionallyExhaustive`](exemptions.md) |
+|                  |                                             |
+|------------------|---------------------------------------------|
+| Diagnostic       | `EXHAUSTIVE_PUBLIC_API`                     |
+| Default severity | Error                                       |
+| Gradle property  | [`exhaustivePublicApi`](configuration.md)   |
+| Exemption        | [`@IntentionallyExhaustive`](exemptions.md) |
 
 ## What it reports
 
 The check flags every public or protected `enum class`, `sealed class`, and `sealed interface`
-declaration (including `@PublishedApi` internal ones). A minimal triggering example:
+declaration.
 
 ```kotlin
 // EXHAUSTIVE_PUBLIC_API
@@ -56,6 +56,15 @@ public sealed interface Event {
 
 ```kotlin
 @SubclassOptInRequired(InternalMyLibrarySubclassApi::class)
+public interface LogLevel {
+    public companion object {
+        public val DEBUG = object : LogLevel {}
+        public val INFO = object : LogLevel {}
+        public val ERROR = object : LogLevel {}
+    }
+}
+
+@SubclassOptInRequired(InternalMyLibrarySubclassApi::class)
 public interface Event {
     public companion object {
         public val Started = object : Event {}
@@ -68,12 +77,12 @@ public interface Event {
 
 A non-final member of a sealed hierarchy (an `abstract` or `sealed` subclass)
 is itself unrestricted, subclassable API and is reported separately by
-[Open API without subclass opt-in](open-api-without-subclass-opt-in.md), on top of this check.
+[](open-api-without-subclass-opt-in.md), on top of this check.
 
 ## Exemption
 
-Apply `@IntentionallyExhaustive` on the enum or sealed class/interface declaration when the fixed
-set of entries or subtypes is a deliberate, stable part of the contract:
+Apply `@IntentionallyExhaustive` on the enum or sealed class/interface, for example, when a declaration has a fixed
+set of entries, or subtypes is a deliberate, stable part of the contract:
 
 ```kotlin
 @IntentionallyExhaustive(reason = ExemptionReason.API_DESIGN)
@@ -101,5 +110,5 @@ With direct compiler invocation:
 ## See also
 
 - [Prevent unwanted and invalid extensions](https://kotlinlang.org/docs/api-guidelines-predictability.html#prevent-unwanted-and-invalid-extensions)
-- [Open API without subclass opt-in](open-api-without-subclass-opt-in.md)
-- [Exemptions and internal API](exemptions.md)
+- [](open-api-without-subclass-opt-in.md)
+- [](exemptions.md)
