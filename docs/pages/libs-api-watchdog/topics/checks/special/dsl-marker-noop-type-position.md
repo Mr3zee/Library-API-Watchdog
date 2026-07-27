@@ -3,24 +3,26 @@
 `DSL_MARKER_NOOP_TYPE_POSITION` reports a `@DslMarker` annotation written directly on a type
 position where it has no effect on scope control.
 
-| | |
-|---|---|
-| Diagnostic | `DSL_MARKER_NOOP_TYPE_POSITION` |
-| Default severity | Error |
-| Gradle property | [`dslMarkerNoopTypePosition`](configuration.md) |
-| Exemption | none |
+|                  |                                                 |
+|------------------|-------------------------------------------------|
+| Diagnostic       | `DSL_MARKER_NOOP_TYPE_POSITION`                 |
+| Default severity | Error                                           |
+| Gradle property  | [`dslMarkerNoopTypePosition`](configuration.md) |
+| Exemption        | none                                            |
 
 ## What it reports
 
-Scope control from a `@DslMarker` only reacts to a marker found on the type of an implicit value:
-a receiver type, a context parameter type, or a function type that itself has such an implicit
-value (there the marker propagates to it). A marker written on a plain parameter type, a return
-type, or a property or variable type marks a value that is only ever accessed by name, so it
+A `@DslMarker` written on a function, a property, a plain parameter type, a return
+type, or a property or variable type marks a value that is only ever accessed by name, thus it
 restricts nothing:
 
 ```kotlin
 @DslMarker
-@Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPEALIAS)
+@Target(
+    AnnotationTarget.CLASS, 
+    AnnotationTarget.TYPE, 
+    AnnotationTarget.TYPEALIAS,
+)
 public annotation class TreeDsl
 
 public open class Tag
@@ -36,39 +38,37 @@ inert marker misleads the library's own authors just as much as its users.
 
 A marker in a no-op position gives none of the protection `@DslMarker` exists for: inside a nested
 builder lambda, an outer builder's members stay implicitly callable, so code can silently call the
-wrong scope's functions. That mistake only surfaces as confusing runtime behavior, not as a compile
-error, so it is expensive to debug - and it defeats the whole point of writing scope control in the
-first place. See the Kotlin guide on
-[scope control for DSL markers](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker).
+wrong scope's functions. See the Kotlin guide on [scope control for DSL markers](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker).
 
 ### Don't
+
+```kotlin
+// DSL_MARKER_NOOP_TYPE_POSITION
+@TreeDsl
+public fun configure(block: Tag.() -> Unit) { } 
+```
+
+### Do
+
+```kotlin
+@TreeDsl
+public class Tag
+
+public fun configure(block: Tag.() -> Unit) { }
+```
+
+### Don't  {id="dont-2"}
 
 ```kotlin
 // DSL_MARKER_NOOP_TYPE_POSITION
 public fun process(tag: @TreeDsl Tag) { }
 ```
 
-### Do
+### Do {id="do-2"}
 
 ```kotlin
 // no scope control needed for a named value
 public fun process(tag: Tag) { }
-```
-
-### Don't {id="dont-2"}
-
-```kotlin
-// A function type without a receiver has no implicit value to propagate the marker to.
-// 
-// DSL_MARKER_NOOP_TYPE_POSITION
-public fun configure(block: @TreeDsl () -> Unit): Unit = block()
-```
-
-### Do {id="do-2"}
-
-```kotlin
-// The marker on the function type now propagates to its receiver.
-public fun configure(block: @TreeDsl Tag.() -> Unit): Unit = Tag().block()
 ```
 
 ## Notes
@@ -79,8 +79,8 @@ public fun configure(block: @TreeDsl Tag.() -> Unit): Unit = Tag().block()
   and stay exempt: `class Div : @TreeDsl Tag()`, `typealias MarkedTag = @TreeDsl Tag`.
 - A marker nested inside a type argument is not analyzed at all (`List<@TreeDsl Tag>` triggers
   nothing), which is a known limitation rather than an endorsement.
-- A `val`/`var` primary constructor parameter is reported once, not twice, even though it also
-  produces a matching property under the hood.
+
+[//]: # (TODO known limittaion? `List<@TreeDsl Tag>`)
 
 ## Exemption
 
@@ -89,6 +89,7 @@ never restricts anything, so keeping it there as-is is never a deliberate design
 moving the marker to an effective position (a receiver, a context parameter, or a supertype) or by
 removing it.
 
+[//]: # (TODO huh? - investigate)
 The one legitimate reason to keep a marker exactly where it is reported is deliberate flow-through:
 a value whose type carries the marker can still become a scoped implicit receiver later through
 type inference (`with(value) { ... }`), even though the position itself is inert. Suppress the
@@ -112,5 +113,5 @@ With direct compiler invocation:
 ## See also
 
 - [Scope control for DSL markers](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker)
-- [DSL markers with no-op targets](dsl-marker-noop-target.md)
-- [DSL markers without explicit targets](dsl-marker-without-explicit-targets.md)
+- [](dsl-marker-noop-target.md)
+- [](dsl-marker-without-explicit-targets.md)

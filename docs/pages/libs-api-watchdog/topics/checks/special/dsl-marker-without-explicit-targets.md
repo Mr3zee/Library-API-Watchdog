@@ -43,10 +43,10 @@ public annotation class HtmlDsl
 ```kotlin
 @DslMarker
 @Target(
-  AnnotationTarget.CLASS, 
-  AnnotationTarget.ANNOTATION_CLASS, 
-  AnnotationTarget.TYPE, 
-  AnnotationTarget.TYPEALIAS,
+    AnnotationTarget.CLASS, 
+    AnnotationTarget.ANNOTATION_CLASS, 
+    AnnotationTarget.TYPE, 
+    AnnotationTarget.TYPEALIAS,
 )
 public annotation class HtmlDsl
 
