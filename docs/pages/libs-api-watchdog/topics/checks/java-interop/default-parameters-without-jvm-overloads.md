@@ -86,8 +86,7 @@ public class Connection @JvmOverloads constructor(
 - `suspend` functions and members of a value class are exempt: they are not Java-callable
   regardless of overloads.
 - Overrides are exempt: they can't re-declare default values.
-- A function or constructor already carrying `@JvmSynthetic` is exempt: it is hidden from Java on
-  purpose.
+- `@JvmSynthetic` functions and constructors are hidden from Java on purpose and are not flagged.
 - Non-JVM compilations never register this check at all.
 
 ## Exemption

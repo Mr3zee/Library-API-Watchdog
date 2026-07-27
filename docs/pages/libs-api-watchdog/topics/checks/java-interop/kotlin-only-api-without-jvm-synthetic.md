@@ -78,8 +78,7 @@ public fun onEach(action: Action) { }
 - Overrides are exempt; the shape is reported on the base declaration instead.
 - Constructors are exempt: `@JvmSynthetic` doesn't apply to them.
 - A signature mangled by a value class is reported by [`MANGLED_JVM_NAME_PUBLIC_API`](mangled-jvm-name-public-api.md) instead.
-- A declaration already carrying `@JvmSynthetic` is skipped: the Kotlin-only shape is already
-  hidden from Java on purpose.
+- `@JvmSynthetic` declarations are hidden from Java on purpose and are not flagged.
 - Non-JVM compilations never register this check at all.
 
 ## Exemption
