@@ -126,12 +126,12 @@ authors' guidelines page.
     <example-do>
     ```
 
-Repeat Don't/Do pairs for distinct scenarios when the check has several. Cover the notable
-edge cases and the deliberate exceptions the checker implements (a short list is fine).
+Repeat Don't/Do pairs for distinct scenarios when the check has several. 
 
 ## Notes
 
 Any notes about the behaviour worth adding.
+Cover the notable edge cases and the deliberate exceptions the checker implements (a short list is fine).
 
 ## Exemption
 

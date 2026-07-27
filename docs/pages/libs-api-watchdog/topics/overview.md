@@ -76,7 +76,7 @@ See [](configuration.md) for full configuration options and build suggestions ov
 - [](undocumented-public-api.md): public declarations of every kind that
   have no KDoc.
 - [](function-type-alias-public-api.md): type aliases that
-  abbreviate function types erase from the compiled API, so the type cannot evolve
+  abbreviate function types erase from the compiled API, so the type can't evolve
   into a richer abstraction later.
 - [](stateful-class-without-equals-hashcode-to-string.md): classes with a
   backing-field property that neither declare nor inherit `equals`, `hashCode`, and `toString`,
@@ -85,11 +85,11 @@ See [](configuration.md) for full configuration options and build suggestions ov
   types in public signatures leave it unclear whether user-side and library-side
   mutations affect each other.
 - [](pair-or-triple-public-api.md): the tuple types `Pair` and
-  `Triple`, whose components carry no domain meaning and whose fixed shape cannot evolve.
+  `Triple`, whose components carry no domain meaning and whose fixed shape can't evolve.
 - [](boolean-parameter-public-api.md): Boolean value parameters,
   whose positional `true`/`false` argument reveals nothing about its meaning at the call site.
 - [](nullable-boolean-public-api.md): nullable `Boolean`s in public signatures model three states while naming only two.
-- [](required-parameter-after-optional.md): required parameters declared after an optional one cannot be passed positionally without
+- [](required-parameter-after-optional.md): required parameters declared after an optional one can't be passed positionally without
   restating the earlier defaults.
 - [](inconsistent-parameter-order-in-overloads.md): overloads whose same-named parameters appear in a different relative order, inviting silently
   swapped arguments.
@@ -103,7 +103,7 @@ consumers. The whole group is disabled with `javaInterop { enabled = false }`. S
 [](java-interop.md) for the group overview.
 
 - [](mangled-jvm-name-public-api.md): public API that Java sources
-  cannot call because a value class in the signature gets its JVM name mangled.
+  can't call because a value class in the signature gets its JVM name mangled.
 - [](kotlin-only-api-without-jvm-synthetic.md): functions whose shape only Kotlin callers can use idiomatically, 
   yet still land in the API surface Java sources see.
 - [](companion-api-without-jvm-static.md): public companion object functions without `@JvmStatic`, 
@@ -125,7 +125,7 @@ consumers. The whole group is disabled with `javaInterop { enabled = false }`. S
 ### Exemption hygiene
 
 - [](exemption-without-explanation.md): `@Intentionally*` exemption annotations left with the default `OTHER` reason and a blank description 
-  explains nothing. Always an error. it cannot be configured like the other diagnostics.
+  explains nothing. Always an error. it can't be configured like the other diagnostics.
 
 ## Next steps
 

@@ -3,12 +3,12 @@
 `STATEFUL_CLASS_WITHOUT_TO_STRING` reports a public stateful class that neither declares nor
 inherits a `toString` implementation.
 
-| | |
-|---|---|
-| Diagnostic | `STATEFUL_CLASS_WITHOUT_TO_STRING` |
-| Default severity | Error |
-| Gradle property | [`statefulClassWithoutToString`](configuration.md) |
-| Exemption | [`@IntentionallyWithoutToString`](exemptions.md) |
+|                  |                                                    |
+|------------------|----------------------------------------------------|
+| Diagnostic       | `STATEFUL_CLASS_WITHOUT_TO_STRING`                 |
+| Default severity | Error                                              |
+| Gradle property  | [`statefulClassWithoutToString`](configuration.md) |
+| Exemption        | [`@IntentionallyWithoutToString`](exemptions.md)   |
 
 ## What it reports
 
@@ -59,7 +59,7 @@ public abstract class StatefulBase(public val id: Int) {
 }
 ```
 
-Edge cases and deliberate exceptions:
+## Notes
 
 - A `toString` inherited from any supertype other than `kotlin.Any` counts as provided, so a
   subclass that adds its own state is not flagged; whether that inherited `toString` should be
@@ -68,7 +68,7 @@ Edge cases and deliberate exceptions:
   classes are reported by `DATA_CLASS_PUBLIC_API` instead).
 - Enum entries, objects (including companion objects), interfaces, and annotation classes are not
   checked: enum entries render their name, objects typically hold constants rather than
-  per-instance state, and interfaces and annotation classes cannot hold backing fields.
+  per-instance state, and interfaces and annotation classes can't hold backing fields.
 - A delegated property stores its value in the delegate, not in a backing field, so it doesn't
   make a class stateful on its own.
 - `@PublishedApi` internal classes are checked too, since they belong to the published binary API.

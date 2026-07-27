@@ -131,7 +131,7 @@ public annotation class IntentionallyUndocumented(
  *
  * The libs-api-watchdog compiler plugin warns about publicly visible type aliases that abbreviate
  * function types, because the alias is erased from the compiled API: users bind to the bare
- * function shape, and the type cannot grow members or constraints later without breaking them,
+ * function shape, and the type can't grow members or constraints later without breaking them,
  * [unlike a `fun interface`](https://kotlinlang.org/docs/fun-interfaces.html#functional-interfaces-vs-type-aliases).
  * Apply this annotation to suppress the warning when exposing the function type is intended
  * (for example, for lambdas that only travel through inline functions).
@@ -244,7 +244,7 @@ public annotation class IntentionallyMutableCollection(
  * types, and parameter types, including their type arguments (`List<Pair<Int, String>>` exposes
  * the tuple all the same) - that mention `Pair` or `Triple`, as well as tuple bounds on type
  * parameters. Tuple components carry no domain meaning: at the use site `first`/`second`/`third`
- * and positional destructuring reveal nothing about the values, and the fixed shape cannot
+ * and positional destructuring reveal nothing about the values, and the fixed shape can't
  * evolve - adding a value means switching to a different type, breaking users. Prefer a
  * [small class with descriptively named properties](https://kotlinlang.org/docs/api-guidelines-consistency.html#use-object-oriented-design-for-data-and-state).
  * Apply this annotation to suppress the warning when exposing the tuple is an intended part of
@@ -281,7 +281,7 @@ public annotation class IntentionallyPairOrTriple(
  * [Boolean value parameters](https://kotlinlang.org/docs/api-guidelines-readability.html#avoid-using-the-boolean-type-as-an-argument)
  * - including nullable and `vararg` ones - in publicly visible functions, because at the call
  * site a positional `true`/`false` argument reveals nothing about its meaning, and users
- * cannot be forced to use named arguments. Prefer separate, descriptively named functions for
+ * can't be forced to use named arguments. Prefer separate, descriptively named functions for
  * each mode, or an enum class naming the modes. Constructors and constructor functions -
  * factory functions named after the type they create - are not checked: a construction site
  * stores data in the named type rather than switching an operation mode. Apply this annotation
@@ -352,7 +352,7 @@ public annotation class IntentionallyNullableBoolean(
  * declare a required parameter - one without a default value - after an optional (defaulted or
  * `vararg`) parameter, because
  * [parameters should go from the general to the specific](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage):
- * essential inputs first, optional inputs last. A required parameter behind optional ones cannot
+ * essential inputs first, optional inputs last. A required parameter behind optional ones can't
  * be passed positionally without re-stating the defaults in front of it. A required function-type
  * (or `fun interface`) parameter in the last position is not reported: it keeps trailing-lambda
  * call syntax available. Apply this annotation to suppress the warning when the order is intended
@@ -430,7 +430,7 @@ public annotation class IntentionallyInlinedLogic(
 
 /**
  * Acknowledges that the annotated declaration deliberately compiles to a JVM shape that Java
- * sources cannot call.
+ * sources can't call.
  *
  * The libs-api-watchdog compiler plugin warns, in JVM compilations, about publicly visible functions,
  * properties, and constructors that have a
@@ -438,7 +438,7 @@ public annotation class IntentionallyInlinedLogic(
  * a parameter or receiver type, or as the return type of a class member. The compiler mangles the
  * JVM name of such entry points with a hash suffix (and hides such constructors behind a synthetic
  * one), so Kotlin users are unaffected but
- * [Java users cannot call them](https://kotlinlang.org/docs/java-to-kotlin-interop.html#inline-value-classes).
+ * [Java users can't call them](https://kotlinlang.org/docs/java-to-kotlin-interop.html#inline-value-classes).
  * Prefer giving the
  * compiled code a Java-callable shape with `@JvmName` (`@get:`/`@set:JvmName` on property
  * accessors) or `@JvmExposeBoxed`, and apply this annotation to suppress the warning when the
@@ -473,7 +473,7 @@ public annotation class IntentionallyMangledJvmName(
  * whose shape
  * [only Kotlin callers can use idiomatically](https://kotlinlang.org/docs/java-to-kotlin-interop.html):
  * `suspend` functions (Java sees a
- * trailing `Continuation` parameter it cannot provide idiomatically), `inline` functions with a
+ * trailing `Continuation` parameter it can't provide idiomatically), `inline` functions with a
  * `reified` type parameter (calling the compiled method from Java fails at runtime), and
  * functions taking a Kotlin-specific function type - a suspend function type, a function type
  * with receiver, or a `Unit`-returning function type. Prefer hiding such members from Java with
@@ -620,7 +620,7 @@ public annotation class IntentionallyWrongDslMarkerTargetsForBackwardsCompatibil
  * Libraries sometimes expose declarations that are public for technical reasons but are not part
  * of the supported API surface, and flag them with a dedicated annotation (usually one that also
  * requires opt-in). Such declarations carry no compatibility contract, so the libs-api-watchdog
- * compiler plugin should not demand documentation or evolution safeguards for them:
+ * compiler plugin shouldn't demand documentation or evolution safeguards for them:
  *
  * ```
  * @InternalAnnotationMarker

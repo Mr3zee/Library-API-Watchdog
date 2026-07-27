@@ -61,7 +61,7 @@ public enum class CheckState { CHECKED, UNCHECKED, UNKNOWN }
 public class Holder(public val checked: CheckState)
 ```
 
-Notable edge cases and deliberate exceptions:
+## Notes
 
 - Unlike `BOOLEAN_PARAMETER_PUBLIC_API`, constructors are checked too: a stored three-state flag
   is as opaque to its readers as a passed one.

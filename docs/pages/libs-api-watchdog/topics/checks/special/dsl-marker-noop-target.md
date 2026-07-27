@@ -71,7 +71,7 @@ public annotation class TidyDsl
 public annotation class ClassOnlyDsl
 ```
 
-Notable cases:
+## Notes
 
 - `ANNOTATION_CLASS` is effective too: it is a classifier declaration like `CLASS`.
 - The named array form, `@Target(allowedTargets = [...])`, is checked the same way as the

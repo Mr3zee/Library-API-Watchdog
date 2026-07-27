@@ -34,7 +34,7 @@ import org.jetbrains.kotlin.util.OperatorNameConventions
  *
  * Only regular classes are checked. Data and value classes receive a compiler-generated
  * `toString` (data classes are reported by [DataClassChecker] anyway), enum entries render their
- * name, interfaces and annotation classes cannot hold backing fields, and objects - companion
+ * name, interfaces and annotation classes can't hold backing fields, and objects - companion
  * objects in particular - typically hold constants rather than per-instance state.
  */
 internal class StatefulClassWithoutToStringChecker(

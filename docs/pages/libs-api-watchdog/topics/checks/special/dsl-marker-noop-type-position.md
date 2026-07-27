@@ -71,7 +71,7 @@ public fun configure(block: @TreeDsl () -> Unit): Unit = block()
 public fun configure(block: @TreeDsl Tag.() -> Unit): Unit = Tag().block()
 ```
 
-Notable edge cases and deliberate exceptions:
+## Notes
 
 - A context parameter's type is an implicit value just like a receiver, so a marker there is
   effective and not flagged.

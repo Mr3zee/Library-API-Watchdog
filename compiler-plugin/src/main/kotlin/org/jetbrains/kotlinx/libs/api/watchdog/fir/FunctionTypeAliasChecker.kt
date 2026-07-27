@@ -12,7 +12,7 @@ import org.jetbrains.kotlin.fir.types.functionTypeKind
 
 /**
  * Reports publicly visible type aliases that abbreviate function types: the alias is erased from
- * the compiled API, so users bind to the bare function shape and the type cannot evolve into a
+ * the compiled API, so users bind to the bare function shape and the type can't evolve into a
  * richer abstraction later. A `fun interface` keeps the lambda ergonomics of a function type
  * behind a stable nominal type that can grow members without breaking users. Authors
  * acknowledge a deliberate function type alias with `@IntentionallyFunctionTypeAlias`.
@@ -29,7 +29,7 @@ internal class FunctionTypeAliasChecker(
         }
 
         // `functionTypeKind` expands nested aliases, so aliases of aliases are seen through.
-        // Reflection kinds (KFunction/KSuspendFunction) stay exempt: a fun interface cannot
+        // Reflection kinds (KFunction/KSuspendFunction) stay exempt: a fun interface can't
         // replace them.
         val kind = declaration.expandedTypeRef.coneType.functionTypeKind(context.session)
         if (kind == null || kind.isReflectType) {

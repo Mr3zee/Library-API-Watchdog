@@ -32,9 +32,9 @@ public open class Widget
 
 An exemption is supposed to be a deliberate, documented decision, not a silent escape hatch. A
 bare `@Intentionally*` call with no self-explanatory reason and no description records nothing for
-the next reader: a reviewer cannot tell whether the shape was chosen on purpose or the warning was
+the next reader: a reviewer can't tell whether the shape was chosen on purpose or the warning was
 just muted to make the build pass. Requiring an explanation is what keeps every other exemption in
-this plugin trustworthy, so this check is always an error and cannot be turned off.
+this plugin trustworthy, so this check is always an error and can't be turned off.
 
 ## Don't
 
@@ -72,7 +72,7 @@ Satisfy the check either way:
 - Any other reason - `INTEROP`, `EXTERNAL_CONTRACT`, `IGNORE_JAVA_INTEROP`, or `OTHER` - only
   categorizes the exemption, so it still needs a non-blank `description` next to it.
 
-## Edge cases
+## Notes
 
 - Checked wherever an `@Intentionally*` call appears, including type parameters
   (`<@IntentionallyMutableCollection T : MutableList<Int>>`) and type usages

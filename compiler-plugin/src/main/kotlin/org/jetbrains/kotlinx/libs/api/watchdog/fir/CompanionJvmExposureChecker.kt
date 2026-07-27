@@ -38,7 +38,7 @@ import org.jetbrains.kotlin.name.Name
  * - Non-JVM compilations: how Java reaches a companion member is a JVM-only concern, so
  *   [WatchdogFirCheckers] only registers this checker when the platform is JVM.
  * - Overrides: their Java-facing shape is fixed by the overridden declaration, and `@JvmStatic`
- *   members cannot override anything.
+ *   members can't override anything.
  * - `suspend` functions: not Java-callable regardless of placement - [KotlinOnlyApiChecker]
  *   reports them with the fitting fix.
  * - `@JvmSynthetic` members: they are hidden from Java on purpose.

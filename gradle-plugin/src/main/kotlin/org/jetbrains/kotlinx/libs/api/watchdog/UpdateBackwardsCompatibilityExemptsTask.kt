@@ -20,7 +20,7 @@ import org.gradle.process.ExecOperations
  * `reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`.
  *
  * The task is meant for adopting the watchdog on an existing library: the already-shipped API
- * cannot change shape without breaking users, so its diagnostics are acknowledged wholesale
+ * can't change shape without breaking users, so its diagnostics are acknowledged wholesale
  * and the checks keep guarding only the API added afterwards. New code should get a deliberate
  * decision instead: fix the shape, or pick the honest reason by hand.
  *

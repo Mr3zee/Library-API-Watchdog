@@ -23,14 +23,14 @@ import org.jetbrains.kotlin.fir.types.functionTypeKind
  * after an optional (defaulted or `vararg`) parameter:
  * [parameters should go from the general to the specific](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage),
  * essential inputs first and optional inputs last. A required parameter behind optional ones
- * cannot be passed positionally without re-stating the defaults in front of it. Authors
+ * can't be passed positionally without re-stating the defaults in front of it. Authors
  * acknowledge a deliberate order with `@IntentionallyRequiredParameterAfterOptional`.
  *
  * A required function-type or `fun interface` parameter in the last position is exempt: keeping
  * it last is what makes trailing-lambda call syntax available, and the stdlib itself places such
  * parameters after defaulted ones (`joinToString(separator = ..., transform)`).
  *
- * Overrides are exempt as well: they cannot declare default values, and their parameter order is
+ * Overrides are exempt as well: they can't declare default values, and their parameter order is
  * fixed by the overridden declaration, which is reported where it is declared.
  */
 internal class RequiredParameterAfterOptionalChecker(

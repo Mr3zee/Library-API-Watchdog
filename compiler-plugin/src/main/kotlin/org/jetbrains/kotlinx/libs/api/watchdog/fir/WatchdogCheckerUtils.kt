@@ -108,7 +108,7 @@ internal fun FirFunction.reportedName(): Name? = when (this) {
 
 /**
  * Only declarations written in real sources and visible to library users (public or protected)
- * are worth watching: everything else cannot be referenced from outside the library. Properties
+ * are worth watching: everything else can't be referenced from outside the library. Properties
  * created from constructor `val`/`var` parameters carry a fake source pointing at the parameter,
  * but they are still hand-written public API, so they count as real.
  *
@@ -138,7 +138,7 @@ internal fun FirMemberDeclaration.isWatchedPublicApi(): Boolean {
 }
 
 /**
- * The marker on an enclosing declaration covers the whole subtree: an internal API class cannot
+ * The marker on an enclosing declaration covers the whole subtree: an internal API class can't
  * be used by users, so nothing declared inside it is usable public API.
  */
 context(context: CheckerContext)
@@ -201,7 +201,7 @@ internal fun FirNamedFunction.mangledValueClassInSignature(): Name? =
         ?: returnValueClassIfMember()
 
 /**
- * Whether Java sources cannot see this declaration because it is marked `@JvmSynthetic`. A
+ * Whether Java sources can't see this declaration because it is marked `@JvmSynthetic`. A
  * property is hidden when its every Java entry point is: the getter - and the setter of a
  * `var` - via `@get:`/`@set:JvmSynthetic`, while a `const` or `@JvmField` property stays
  * visible as a field regardless of accessor annotations.
@@ -279,7 +279,7 @@ private val selfSufficientReasons = setOf(
  * argument is absent), or null when the exemption is explained - by a self-sufficient reason or
  * by a non-blank description. Shared between [ExemptionExplanationChecker], which validates
  * exemptions on declarations, and the checkers that honor exemptions in positions declaration
- * checkers cannot see (type-use annotations).
+ * checkers can't see (type-use annotations).
  */
 internal fun FirAnnotation.unexplainedExemptionReason(): Name? {
     val reasonArgument = findArgumentByName(reasonParameter, returnFirstWhenNotFound = false)

@@ -62,12 +62,12 @@ public interface Plugin {
 
 `@SubclassOptInRequired` marks the api as internal to opt-in for, preventing unexpected breaking changes.  
 
-## Edge cases
+## Notes
 
 - A `@SubclassOptInRequired` annotation with no marker classes gates nothing; it is reported by
   the separate [`SUBCLASS_OPT_IN_WITHOUT_MARKERS`](subclass-opt-in-without-markers.md) check
   instead of this one.
-- A class whose constructors are all `internal` or `private` cannot be subclassed outside the
+- A class whose constructors are all `internal` or `private` can't be subclassed outside the
   library, so it is never reported, even if it is `open` or `abstract`.
 - `fun interface`s are checked like any other interface.
 - Sealed interfaces are exempt here; they are covered by

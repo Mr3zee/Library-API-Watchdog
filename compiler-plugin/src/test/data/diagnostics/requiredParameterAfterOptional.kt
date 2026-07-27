@@ -56,7 +56,7 @@ public fun allRequired(host: String, port: Int) {}
 
 public fun allOptional(host: String = "localhost", port: Int = 80) {}
 
-// Overrides cannot declare defaults, and their parameter order is fixed by the overridden
+// Overrides can't declare defaults, and their parameter order is fixed by the overridden
 // declaration, which is reported where it is declared.
 
 public abstract class Transport {

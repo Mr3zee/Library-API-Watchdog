@@ -89,7 +89,7 @@ internal class UndocumentedApiChecker(
 
     /**
      * The declaration kind for the message and the name to report, or null when the declaration
-     * is not watched: either users cannot reference it directly, or its documentation lives on
+     * is not watched: either users can't reference it directly, or its documentation lives on
      * another declaration - overrides and `actual`s inherit it, and the primary constructor is
      * described by the class KDoc. Secondary constructors report the class name because their
      * own name is the internal `<init>`.

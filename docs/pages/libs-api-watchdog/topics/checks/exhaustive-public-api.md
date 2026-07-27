@@ -64,7 +64,9 @@ public interface Event {
 }
 ```
 
-Notable edge case: a non-final member of a sealed hierarchy (an `abstract` or `sealed` subclass)
+## Notes
+
+A non-final member of a sealed hierarchy (an `abstract` or `sealed` subclass)
 is itself unrestricted, subclassable API and is reported separately by
 [Open API without subclass opt-in](open-api-without-subclass-opt-in.md), on top of this check.
 

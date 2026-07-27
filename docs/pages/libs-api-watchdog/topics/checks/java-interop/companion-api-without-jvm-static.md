@@ -57,13 +57,13 @@ public class Registry {
 }
 ```
 
-Notable edge cases and deliberate exceptions:
+## Notes
 
 - `@JvmSynthetic` members are hidden from Java on purpose and are not flagged.
 - `suspend` companion functions are exempt here - they are not Java-callable regardless of
   placement, and `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC` reports them with the fitting fix.
 - Overrides are not flagged: their Java-facing shape is fixed by the overridden declaration, and
-  `@JvmStatic` cannot be applied to an override anyway.
+  `@JvmStatic` can't be applied to an override anyway.
 - Interface companions compile the same way and are checked identically to class companions.
 - Internal functions are skipped unless marked `@PublishedApi`.
 

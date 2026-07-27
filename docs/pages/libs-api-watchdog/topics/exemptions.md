@@ -32,7 +32,7 @@ Every `@Intentionally*` annotation takes a `reason: ExemptionReason` (default `O
 
 A bare `@IntentionallyOpen` (reason left at `OTHER`, description left empty) explains nothing and is rejected by the
 [](exemption-without-explanation.md) check. That check is always an
-error and cannot be configured or disabled. It fires on every exemption annotation usage, even on
+error and can't be configured or disabled. It fires on every exemption annotation usage, even on
 non-public declarations, because leaving any exemption unexplained defeats the point of exemptions.
 
 A well-explained exemption:

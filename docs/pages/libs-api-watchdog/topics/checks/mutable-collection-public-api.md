@@ -63,7 +63,7 @@ public fun consume(items: MutableSet<Int>): Unit = items.clear()
 public fun consume(items: Set<Int>): Unit = Unit // copy internally before mutating, if needed
 ```
 
-Notable edge cases and deliberate exceptions:
+## Notes
 
 - `vararg` parameters are not flagged themselves - the compiler already passes a defensive copy of
   the array - but a mutable element type still is (`vararg groups: MutableList<Int>`).
