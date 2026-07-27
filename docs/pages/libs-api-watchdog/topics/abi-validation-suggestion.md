@@ -37,6 +37,5 @@ apiWatchdog {
 
 ## See also
 
-- [Tapmoc suggestion](tapmoc-suggestion.md), the other build-level check
 - [ABI validation in the Kotlin Gradle plugin](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html)
 - [Binary Compatibility Validator](https://github.com/Kotlin/binary-compatibility-validator)

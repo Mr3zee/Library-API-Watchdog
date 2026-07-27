@@ -7,7 +7,7 @@ names a target the marker has no effect on.
 |---|---|
 | Diagnostic | `DSL_MARKER_NOOP_TARGET` |
 | Default severity | Error |
-| Gradle property | [`dslMarkerNoopTarget`](gradle-plugin.md) |
+| Gradle property | [`dslMarkerNoopTarget`](configuration.md) |
 | Exemption | [`@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility`](exemptions.md) |
 
 ## What it reports
@@ -84,7 +84,7 @@ Notable cases:
   [`DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`](dsl-marker-without-explicit-targets.md), because the
   default target set has its own no-op entries plus forbids `TYPE`/`TYPEALIAS`.
 
-## When to exempt
+## Exemption
 
 For a marker that already shipped with a no-op target, narrowing `@Target` rejects client code
 that applied the marker there - a breaking change. Acknowledge the legacy shape instead:

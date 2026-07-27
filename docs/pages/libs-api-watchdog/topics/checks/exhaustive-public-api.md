@@ -7,7 +7,7 @@ exhaustively with a `when` expression that has no `else` branch.
 |---|---|
 | Diagnostic | `EXHAUSTIVE_PUBLIC_API` |
 | Default severity | Error |
-| Gradle property | [`exhaustivePublicApi`](gradle-plugin.md) |
+| Gradle property | [`exhaustivePublicApi`](configuration.md) |
 | Exemption | [`@IntentionallyExhaustive`](exemptions.md) |
 
 ## What it reports
@@ -68,7 +68,7 @@ Notable edge case: a non-final member of a sealed hierarchy (an `abstract` or `s
 is itself unrestricted, subclassable API and is reported separately by
 [Open API without subclass opt-in](open-api-without-subclass-opt-in.md), on top of this check.
 
-## When to exempt
+## Exemption
 
 Apply `@IntentionallyExhaustive` on the enum or sealed class/interface declaration when the fixed
 set of entries or subtypes is a deliberate, stable part of the contract:

@@ -8,7 +8,7 @@ can use idiomatically, while the function still lands in the API surface Java so
 | Diagnostic | `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC` |
 | Default severity | Error |
 | Applies to | JVM compilations only |
-| Gradle property | [`kotlinOnlyApiWithoutJvmSynthetic`](gradle-plugin.md) |
+| Gradle property | [`kotlinOnlyApiWithoutJvmSynthetic`](configuration.md) |
 | Exemption | [`@IntentionallyKotlinOnlyApi`](exemptions.md) |
 
 ## What it reports
@@ -82,7 +82,7 @@ Notable cases:
 - A declaration already carrying `@JvmSynthetic` is skipped: the Kotlin-only shape is already
   hidden from Java on purpose.
 
-## When to exempt
+## Exemption
 
 Apply `@IntentionallyKotlinOnlyApi` to the function, or to an enclosing class to cover every
 function inside, when leaving the Kotlin-only shape visible to Java is intended:

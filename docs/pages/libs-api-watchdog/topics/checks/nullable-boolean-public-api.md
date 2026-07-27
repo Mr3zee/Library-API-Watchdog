@@ -6,7 +6,7 @@
 |---|---|
 | Diagnostic | `NULLABLE_BOOLEAN_PUBLIC_API` |
 | Default severity | Error |
-| Gradle property | [`nullableBooleanPublicApi`](gradle-plugin.md) |
+| Gradle property | [`nullableBooleanPublicApi`](configuration.md) |
 | Exemption | [`@IntentionallyNullableBoolean`](exemptions.md) |
 
 ## What it reports
@@ -75,7 +75,7 @@ Notable edge cases and deliberate exceptions:
   there instead.
 - Java platform types are not flagged: their nullability is not declared in Kotlin sources.
 
-## When to exempt
+## Exemption
 
 Use `@IntentionallyNullableBoolean` when the nullable Boolean is a deliberate part of the API
 contract. It applies on the whole declaration (function, property, or constructor, covering the

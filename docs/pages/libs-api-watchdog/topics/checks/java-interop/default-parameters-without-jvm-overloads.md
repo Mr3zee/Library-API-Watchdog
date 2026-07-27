@@ -8,7 +8,7 @@ default parameter values without `@JvmOverloads`.
 | Diagnostic | `DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS` |
 | Default severity | Error |
 | Applies to | JVM compilations only |
-| Gradle property | [`defaultParametersWithoutJvmOverloads`](gradle-plugin.md) |
+| Gradle property | [`defaultParametersWithoutJvmOverloads`](configuration.md) |
 | Exemption | [`@IntentionallyWithoutJvmOverloads`](exemptions.md) |
 
 ## What it reports
@@ -74,7 +74,7 @@ Notable cases:
 - A function or constructor already carrying `@JvmSynthetic` is exempt: it is hidden from Java on
   purpose.
 
-## When to exempt
+## Exemption
 
 Apply `@IntentionallyWithoutJvmOverloads` to the function or constructor when serving Java callers
 the full signature only is intended, for example when the defaulted parameters make no sense

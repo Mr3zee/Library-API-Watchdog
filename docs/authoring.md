@@ -36,48 +36,47 @@ reference served under `/api`.
 
 Root (`topics/`):
 
-| File | Title |
-|---|---|
-| `overview.md` | Get started |
-| `setup.md` | Setup |
-| `gradle-plugin.md` | Gradle plugin reference |
-| `exemptions.md` | Exemptions and internal API |
-| `tapmoc-suggestion.md` | Tapmoc suggestion |
+| File                           | Title                                      |
+|--------------------------------|--------------------------------------------|
+| `overview.md`                  | Get started                                |
+| `configuration.md`             | Configuration                              |
+| `exemptions.md`                | Exemptions and internal API                |
+| `tapmoc-suggestion.md`         | Tapmoc suggestion                          |
 | `abi-validation-suggestion.md` | Binary compatibility validation suggestion |
 
 Checks (`topics/checks/`):
 
-| File | Title |
-|---|---|
-| `open-api-without-subclass-opt-in.md` | Open API without subclass opt-in |
-| `subclass-opt-in-without-markers.md` | Subclass opt-in without markers |
-| `exhaustive-public-api.md` | Exhaustive public API |
-| `undocumented-public-api.md` | Undocumented public API |
-| `function-type-alias-public-api.md` | Function type aliases in public API |
-| `data-class-public-api.md` | Data classes in public API |
-| `stateful-class-without-to-string.md` | Stateful classes without toString |
-| `mutable-collection-public-api.md` | Mutable collections in public API |
-| `pair-or-triple-public-api.md` | Pair and Triple in public API |
-| `boolean-parameter-public-api.md` | Boolean parameters in public API |
-| `nullable-boolean-public-api.md` | Nullable Booleans in public API |
-| `required-parameter-after-optional.md` | Required parameters after optional ones |
-| `inconsistent-parameter-order-in-overloads.md` | Inconsistent parameter order in overloads |
-| `inline-function-with-logic.md` | Inline functions with logic |
-| `exemption-without-explanation.md` | Exemptions without explanation |
-| `dsl-marker-noop-target.md` | DSL markers with no-op targets |
-| `dsl-marker-without-explicit-targets.md` | DSL markers without explicit targets |
-| `dsl-marker-noop-type-position.md` | DSL markers on no-op type positions |
+| File                                                  | Title                                     |
+|-------------------------------------------------------|-------------------------------------------|
+| `open-api-without-subclass-opt-in.md`                 | Open API without subclass opt-in          |
+| `subclass-opt-in-without-markers.md`                  | Subclass opt-in without markers           |
+| `exhaustive-public-api.md`                            | Exhaustive public API                     |
+| `undocumented-public-api.md`                          | Undocumented public API                   |
+| `function-type-alias-public-api.md`                   | Function type aliases in public API       |
+| `data-class-public-api.md`                            | Data classes in public API                |
+| `stateful-class-without-equals-hashcode-to-string.md` | Stateful classes without toString         |
+| `mutable-collection-public-api.md`                    | Mutable collections in public API         |
+| `pair-or-triple-public-api.md`                        | Pair and Triple in public API             |
+| `boolean-parameter-public-api.md`                     | Boolean parameters in public API          |
+| `nullable-boolean-public-api.md`                      | Nullable Booleans in public API           |
+| `required-parameter-after-optional.md`                | Required parameters after optional ones   |
+| `inconsistent-parameter-order-in-overloads.md`        | Inconsistent parameter order in overloads |
+| `inline-function-with-logic.md`                       | Inline functions with logic               |
+| `exemption-without-explanation.md`                    | Exemptions without explanation            |
+| `dsl-marker-noop-target.md`                           | DSL markers with no-op targets            |
+| `dsl-marker-without-explicit-targets.md`              | DSL markers without explicit targets      |
+| `dsl-marker-noop-type-position.md`                    | DSL markers on no-op type positions       |
 
 Java interop (`topics/checks/java-interop/`):
 
-| File | Title |
-|---|---|
-| `java-interop.md` | Java interop checks |
-| `mangled-jvm-name-public-api.md` | Mangled JVM names in public API |
-| `kotlin-only-api-without-jvm-synthetic.md` | Kotlin-only API without JvmSynthetic |
-| `companion-api-without-jvm-static.md` | Companion API without JvmStatic |
-| `companion-constant-without-jvm-field.md` | Companion constants without JvmField |
-| `top-level-api-without-jvm-name.md` | Top-level API without JvmName |
+| File                                          | Title                                   |
+|-----------------------------------------------|-----------------------------------------|
+| `java-interop.md`                             | Java interop checks                     |
+| `mangled-jvm-name-public-api.md`              | Mangled JVM names in public API         |
+| `kotlin-only-api-without-jvm-synthetic.md`    | Kotlin-only API without JvmSynthetic    |
+| `companion-api-without-jvm-static.md`         | Companion API without JvmStatic         |
+| `companion-constant-without-jvm-field.md`     | Companion constants without JvmField    |
+| `top-level-api-without-jvm-name.md`           | Top-level API without JvmName           |
 | `default-parameters-without-jvm-overloads.md` | Default parameters without JvmOverloads |
 
 ## Check page template
@@ -89,12 +88,12 @@ Use exactly this structure and section order for every page under `checks/`:
 
 `<DIAGNOSTIC_NAME>` reports <one sentence: what shape is flagged>.
 
-| | |
-|---|---|
-| Diagnostic | `<DIAGNOSTIC_NAME>` |
-| Default severity | Error |
-| Gradle property | [`<propertyName>`](gradle-plugin.md) |
-| Exemption | [`@Intentionally<X>`](exemptions.md) |
+|                  |                                      |
+|------------------|--------------------------------------|
+| Diagnostic       | `<DIAGNOSTIC_NAME>`                  |
+| Default severity | Error                                |
+| Gradle property  | [`<propertyName>`](configuration.md) |
+| Exemption        | [`@Intentionally<X>`](exemptions.md) |
 
 ## What it reports
 
@@ -171,6 +170,6 @@ Adjustments:
 
 ## Structural pages
 
-`overview.md`, `setup.md`, `gradle-plugin.md`, `exemptions.md`, `tapmoc-suggestion.md`, and
+`overview.md`, `configuration.md`, `configuration.md`, `exemptions.md`, `tapmoc-suggestion.md`, and
 `java-interop.md` do not use the check template. They follow the hard rules and keep the same
 tone; their outlines are defined by the task that produces them.

@@ -7,7 +7,7 @@ explicit `@Target`.
 |---|---|
 | Diagnostic | `DSL_MARKER_WITHOUT_EXPLICIT_TARGETS` |
 | Default severity | Error |
-| Gradle property | [`dslMarkerWithoutExplicitTargets`](gradle-plugin.md) |
+| Gradle property | [`dslMarkerWithoutExplicitTargets`](configuration.md) |
 | Exemption | [`@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility`](exemptions.md) |
 
 ## What it reports
@@ -68,7 +68,7 @@ Notable edge cases:
   [DSL markers with no-op targets](dsl-marker-noop-target.md).
 - A plain annotation class without `@DslMarker` is never checked here.
 
-## When to exempt
+## Exemption
 
 For an already-published marker, adding a `@Target` at all is a breaking change: it rejects
 client code that currently applies the marker to a now-disallowed target. Acknowledge the legacy

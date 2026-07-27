@@ -7,7 +7,7 @@ body does more than delegate to a non-inline function.
 |---|---|
 | Diagnostic | `INLINE_FUNCTION_WITH_LOGIC` |
 | Default severity | Error |
-| Gradle property | [`inlineFunctionWithLogic`](gradle-plugin.md) |
+| Gradle property | [`inlineFunctionWithLogic`](configuration.md) |
 | Exemption | [`@IntentionallyInlinedLogic`](exemptions.md) |
 
 ## What it reports
@@ -97,7 +97,7 @@ Notable cases:
 - Only inline bodies freeze into clients: a non-inline function or accessor keeps its logic in the
   library binary and is never reported; on a mixed property, only the inline accessor is reported.
 
-## When to exempt
+## Exemption
 
 Apply `@IntentionallyInlinedLogic` when inlining the logic is intended, for example when a lambda
 must run inline for non-local returns or a hot path must not pay for an extra call:

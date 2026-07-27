@@ -6,7 +6,7 @@
 |---|---|
 | Diagnostic | `FUNCTION_TYPE_ALIAS_PUBLIC_API` |
 | Default severity | Error |
-| Gradle property | [`functionTypeAliasPublicApi`](gradle-plugin.md) |
+| Gradle property | [`functionTypeAliasPublicApi`](configuration.md) |
 | Exemption | [`@IntentionallyFunctionTypeAlias`](exemptions.md) |
 
 ## What it reports
@@ -71,7 +71,7 @@ Notable points:
 - Deliberate exception: aliases of the reflection types `KFunction`/`KSuspendFunction` are exempt
   and need no annotation, because a `fun interface` cannot replace a reflection type.
 
-## When to exempt
+## Exemption
 
 Apply `@IntentionallyFunctionTypeAlias` when exposing the bare function type is intended, for
 example when the lambda only ever travels through an inline function and a nominal type would add

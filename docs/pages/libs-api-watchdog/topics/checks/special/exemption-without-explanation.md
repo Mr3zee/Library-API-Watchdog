@@ -93,5 +93,5 @@ non-blank `description` next to any other reason.
 ## See also
 
 - [Exemptions and internal API](exemptions.md)
-- [Data classes in public API](data-class-public-api.md) for an example check that defines an
+- [Data classes in public API](../data-class-public-api.md) for an example check that defines an
   exemption annotation

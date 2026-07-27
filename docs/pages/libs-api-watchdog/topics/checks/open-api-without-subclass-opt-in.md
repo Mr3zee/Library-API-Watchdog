@@ -7,7 +7,7 @@ can be subclassed outside the library without any restriction.
 |---|---|
 | Diagnostic | `OPEN_API_WITHOUT_SUBCLASS_OPT_IN` |
 | Default severity | Error |
-| Gradle property | [`openApiWithoutSubclassOptIn`](gradle-plugin.md) |
+| Gradle property | [`openApiWithoutSubclassOptIn`](configuration.md) |
 | Exemption | [`@IntentionallyOpen`](exemptions.md) |
 
 ## What it reports
@@ -73,7 +73,7 @@ public interface Plugin {
 - Sealed interfaces are exempt here; they are covered by
   [`EXHAUSTIVE_PUBLIC_API`](exhaustive-public-api.md) instead.
 
-## When to exempt
+## Exemption
 
 When unrestricted subclassing is an intended, stable part of the contract, acknowledge it
 instead of adding an opt-in marker:

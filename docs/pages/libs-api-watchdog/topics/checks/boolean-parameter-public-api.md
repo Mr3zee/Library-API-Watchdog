@@ -6,7 +6,7 @@
 |---|---|
 | Diagnostic | `BOOLEAN_PARAMETER_PUBLIC_API` |
 | Default severity | Error |
-| Gradle property | [`booleanParameterPublicApi`](gradle-plugin.md) |
+| Gradle property | [`booleanParameterPublicApi`](configuration.md) |
 | Exemption | [`@IntentionallyBooleanParameter`](exemptions.md) |
 
 ## What it reports
@@ -70,7 +70,7 @@ Notable points:
 - Context parameters are exempt: implicit values are never passed as positional arguments.
 - Boolean return types and Boolean properties are not arguments and are not checked.
 
-## When to exempt
+## Exemption
 
 Apply `@IntentionallyBooleanParameter` when the parameter's meaning is unmistakable from the
 function name, such as `setEnabled(enabled: Boolean)`. On the function it covers every parameter;

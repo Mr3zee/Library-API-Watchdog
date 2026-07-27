@@ -9,7 +9,7 @@ compiled name.
 | Diagnostic | `MANGLED_JVM_NAME_PUBLIC_API` |
 | Default severity | Error |
 | Applies to | JVM compilations only |
-| Gradle property | [`mangledJvmNamePublicApi`](gradle-plugin.md) |
+| Gradle property | [`mangledJvmNamePublicApi`](configuration.md) |
 | Exemption | [`@IntentionallyMangledJvmName`](exemptions.md) |
 
 ## What it reports
@@ -84,7 +84,7 @@ Notable edge cases and deliberate exceptions:
 - Overrides are exempt; the fixed signature is reported on the base declaration.
 - `@JvmSynthetic` declarations and accessors are exempt: already hidden from Java on purpose.
 
-## When to exempt
+## Exemption
 
 Apply `@IntentionallyMangledJvmName` when Java callers are not supported for this declaration. It
 targets the declaration itself, a primary constructor `val`/`var` parameter (covering the property

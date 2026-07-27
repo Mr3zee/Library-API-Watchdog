@@ -7,7 +7,7 @@ position where it has no effect on scope control.
 |---|---|
 | Diagnostic | `DSL_MARKER_NOOP_TYPE_POSITION` |
 | Default severity | Error |
-| Gradle property | [`dslMarkerNoopTypePosition`](gradle-plugin.md) |
+| Gradle property | [`dslMarkerNoopTypePosition`](configuration.md) |
 | Exemption | none |
 
 ## What it reports
@@ -82,7 +82,7 @@ Notable edge cases and deliberate exceptions:
 - A `val`/`var` primary constructor parameter is reported once, not twice, even though it also
   produces a matching property under the hood.
 
-## When to exempt
+## Exemption
 
 There is no `@Intentionally*` annotation for this diagnostic: a marker on a no-op type position
 never restricts anything, so keeping it there as-is is never a deliberate design choice. Fix it by

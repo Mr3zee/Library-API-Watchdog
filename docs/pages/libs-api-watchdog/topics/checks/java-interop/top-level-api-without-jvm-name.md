@@ -8,7 +8,7 @@ compile into a file facade class without an explicit `@file:JvmName`.
 | Diagnostic | `TOP_LEVEL_API_WITHOUT_JVM_NAME` |
 | Default severity | Error |
 | Applies to | JVM compilations only |
-| Gradle property | [`topLevelApiWithoutJvmName`](gradle-plugin.md) |
+| Gradle property | [`topLevelApiWithoutJvmName`](configuration.md) |
 | Exemption | [`@IntentionallyDefaultFacadeName`](exemptions.md) |
 
 ## What it reports
@@ -68,7 +68,7 @@ Notable cases that stay silent:
   Java-visible facade member to anchor on.
 - A file that already carries `@file:JvmName` has already pinned the name deliberately.
 
-## When to exempt
+## Exemption
 
 `@IntentionallyDefaultFacadeName` is a file-target annotation, applied once per file as
 `@file:IntentionallyDefaultFacadeName(...)`, when keeping the derived facade name is intended:
