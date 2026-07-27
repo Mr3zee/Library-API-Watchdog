@@ -7,15 +7,15 @@ reference served under `/api`.
 ## Hard rules
 
 - Never use the em dash character (U+2014). Use a plain hyphen, a colon, or rewrite the sentence.
-  Also avoid smart quotes; use straight ASCII quotes.
+  Also avoid smart quotes. Use straight ASCII quotes.
 - Naming: the product is `libs-api-watchdog`. The Gradle plugin id is
   `org.jetbrains.kotlinx.libs.api.watchdog`. The Gradle extension is `apiWatchdog`. The
   annotations package is `org.jetbrains.kotlinx.libs.api.watchdog`.
 - Every Kotlin API example must compile in explicit API mode: `public` modifiers and explicit
   return types on all API declarations.
 - Exemption examples must satisfy `EXEMPTION_WITHOUT_EXPLANATION`: `reason =
-  ExemptionReason.FOR_BACKWARDS_COMPATIBILITY` or `ExemptionReason.API_DESIGN` may stand alone;
-  every other reason (`INTEROP`, `EXTERNAL_CONTRACT`, `IGNORE_JAVA_INTEROP`, `OTHER`) also needs a
+  ExemptionReason.FOR_BACKWARDS_COMPATIBILITY` or `ExemptionReason.API_DESIGN` may stand alone.
+  Every other reason (`INTEROP`, `EXTERNAL_CONTRACT`, `IGNORE_JAVA_INTEROP`, `OTHER`) also needs a
   non-empty `description`.
 - Exactly one `#` heading per page, at the top. It is the topic title shown in the TOC.
 - Link between topics by bare file name, regardless of folder: `[Exemptions](exemptions.md)`.
@@ -161,7 +161,7 @@ With direct compiler invocation:
 Adjustments:
 
 - Java interop checks add a table row `| Applies to | JVM compilations only |` and a sentence in
-  Configuration: the whole group is disabled with `javaInterop { enabled = false }`; the property
+  Configuration: the whole group is disabled with `javaInterop { enabled = false }`. The property
   lives inside the `javaInterop { }` block. Link [Java interop checks](java-interop.md) in the
   intro or See also.
 - `EXEMPTION_WITHOUT_EXPLANATION` is always an error: its table says
@@ -169,11 +169,11 @@ Adjustments:
   `| Exemption | none |`, and it has no Configuration section.
 - Checks without an exemption annotation write `| Exemption | none |` and replace the
   "When to exempt" section with how to legitimately silence the check, if anything.
-- Target length 60 to 140 lines. Prefer fewer, sharper examples over exhaustive enumeration;
-  the deliberate-exception lists from README.md can be compressed to bullets.
+- Target length 60 to 140 lines. Prefer fewer, sharper examples over exhaustive enumeration.
+  The deliberate-exception lists from README.md can be compressed to bullets.
 
 ## Structural pages
 
 `overview.md`, `configuration.md`, `configuration.md`, `exemptions.md`, `tapmoc-suggestion.md`, and
 `java-interop.md` don't use the check template. They follow the hard rules and keep the same
-tone; their outlines are defined by the task that produces them.
+tone. Their outlines are defined by the task that produces them.

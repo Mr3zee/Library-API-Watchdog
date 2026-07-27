@@ -59,8 +59,8 @@ public annotation class KtorDsl
 ## Notes
 
 - `ANNOTATION_CLASS` counts as effective too, since it is a classifier declaration.
-- An explicit `@Target` that still lists no-op targets is a separate, related check; see
-  [](dsl-marker-noop-target.md).
+- An explicit `@Target` that still lists no-op targets is a separate, related check. See
+  [](dsl-marker-noop-target.md) for more details.
 - A plain annotation class without `@DslMarker` is never checked here.
 
 ## Exemption

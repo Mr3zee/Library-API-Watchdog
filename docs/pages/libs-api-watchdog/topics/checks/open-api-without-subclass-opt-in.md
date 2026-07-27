@@ -58,13 +58,13 @@ public interface Plugin {
 
 ## Notes
 
-- A `@SubclassOptInRequired` annotation with no marker classes gates nothing; it is reported by
+- A `@SubclassOptInRequired` annotation with no marker classes gates nothing. It is reported by
   the separate [`SUBCLASS_OPT_IN_WITHOUT_MARKERS`](subclass-opt-in-without-markers.md) check
   instead of this one.
 - A class whose constructors are all `internal` or `private` can't be subclassed outside the
   library, so it is never reported, even if it is `open` or `abstract`.
 - `fun interface`s are checked like any other interface.
-- Sealed interfaces are exempt here; they are covered by
+- Sealed interfaces are exempt here, they are covered by
   [`EXHAUSTIVE_PUBLIC_API`](exhaustive-public-api.md) instead.
 
 ## Exemption

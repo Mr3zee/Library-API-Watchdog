@@ -25,7 +25,7 @@ public inline fun choose(value: Int): Int = if (value < 0) -1 else 1
 
 The compiler copies an inline function's body into every call site at compile time. Once a user
 compiles against a library version, that copy - and any bug in it - is frozen in the user's
-binary until the user recompiles against a fixed version; a regular function call would instead
+binary until the user recompiles against a fixed version. A regular function call would instead
 pick up the fix at runtime by relinking against the new library binary. See the Kotlin library
 authors' guide on
 [`@PublishedApi` considerations](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#considerations-for-using-the-publishedapi-annotation).

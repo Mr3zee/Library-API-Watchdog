@@ -32,7 +32,7 @@ above its other annotations, with imports added as needed.
   demotes every enabled configurable watchdog diagnostic to a warning so the fixer can run.
   Ordinary compilation tasks are unchanged when the update task is not in the task graph.
 - **Severity configuration is respected.** A check set to `NONE` in `apiWatchdog` records nothing
-  and gets no exemptions; `ERROR` and `WARNING` are exempted alike.
+  and gets no exemptions. `ERROR` and `WARNING` are exempted alike.
 - **Real compilation errors still stop the task.** Since these are the project's regular compiler
   tasks, unresolved references, syntax errors, and the always-error
   [`EXEMPTION_WITHOUT_EXPLANATION`](exemption-without-explanation.md) must be fixed before the

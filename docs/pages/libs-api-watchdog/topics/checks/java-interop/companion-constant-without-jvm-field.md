@@ -104,7 +104,7 @@ apiWatchdog {
 }
 ```
 
-The property lives inside the `javaInterop { }` block; `javaInterop { enabled = false }` turns off
+The property lives inside the `javaInterop { }` block. `javaInterop { enabled = false }` turns off
 this check along with the rest of the [](java-interop.md) group.
 
 With direct compiler invocation:

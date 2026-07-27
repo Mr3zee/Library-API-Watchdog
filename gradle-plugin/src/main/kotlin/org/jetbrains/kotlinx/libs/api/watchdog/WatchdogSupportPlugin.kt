@@ -17,7 +17,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 @Suppress("unused") // Used via reflection.
 public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO) {
-    /** Enabled lazily when Gradle realizes the update task; never exposed as user configuration. */
+    /** Enabled lazily when Gradle realizes the update task. Never exposed as user configuration. */
     private lateinit var collectDiagnosticsForExempts: Property<Boolean>
 
     override fun apply(target: Project) {
@@ -198,8 +198,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 return (enabled as? Provider<*>)?.orNull == true
             }
             // Kotlin 2.4+ activates ABI validation the moment the `abiValidation` DSL property
-            // is touched (its getter has that side effect, so it must not be called here);
-            // activation is observed through the tasks it registers instead.
+            // is touched (its getter has that side effect, so it must not be called here).
+            // Activation is observed through the tasks it registers instead.
             return ABI_VALIDATION_TASK_NAMES.any(tasks.names::contains)
         }
 

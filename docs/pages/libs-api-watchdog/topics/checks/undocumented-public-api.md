@@ -90,7 +90,7 @@ public class Profile(
 - Overrides and `actual` declarations inherit the KDoc of the declaration they implement.
 - Compiler-generated members (data class `copy`/`componentN`, enum `values`/`valueOf`/`entries`)
   have no source of their own and are never reported.
-- A plain `//` or `/* */` comment doesn't count; only a KDoc block (`/** ... */`) satisfies the
+- A plain `//` or `/* */` comment doesn't count, only a KDoc block (`/** ... */`) satisfies the
   check.
 - `@PublishedApi` annotated declarations are skipped during this check.
 

@@ -64,21 +64,21 @@ public class Wallet(public val id: UserId)
 public class Wallet(public val id: UserId)
 ```
 
-`@JvmExposeBoxed` generates Java-callable boxed variants alongside the mangled ones; it is the
+`@JvmExposeBoxed` generates Java-callable boxed variants alongside the mangled ones. It is the
 only fix for constructors and overridable members, since `@JvmName` doesn't accept them.
 
 ## Notes
 
-- A value class inside a type argument (`List<UserId>`) is boxed and keeps the JVM name; only the
+- A value class inside a type argument (`List<UserId>`) is boxed and keeps the JVM name. Only the
   classifier itself mangles, not a type it is nested in.
-- A top-level callable that merely *returns* a value class keeps its JVM name; the return type
+- A top-level callable that merely *returns* a value class keeps its JVM name. The return type
   only mangles for members, where the dispatch receiver makes the difference.
 - A `var` property's setter mangles independently of the getter - renaming or hiding one accessor
   leaves the other checked on its own.
 - Members and constructors of the value class itself are exempt: declaring the public value class
   is the deliberate choice, and `@JvmName` is not even applicable inside it.
 - `suspend` functions are exempt: an unmangled name would not make them Java-callable anyway.
-- Overrides are exempt; the fixed signature is reported on the base declaration.
+- Overrides are exempt, the fixed signature is reported on the base declaration.
 - `@JvmSynthetic` declarations are hidden from Java on purpose and are not flagged.
 - Non-JVM compilations never register this check at all.
 
@@ -101,7 +101,7 @@ apiWatchdog {
 }
 ```
 
-The property lives inside the `javaInterop { }` block; `javaInterop { enabled = false }` turns off
+The property lives inside the `javaInterop { }` block. `javaInterop { enabled = false }` turns off
 this check along with the rest of the [](java-interop.md) group.
 
 With direct compiler invocation:

@@ -105,7 +105,7 @@ apiWatchdog {
     dslMarkerNoopTypePosition = WatchdogSeverity.ERROR
 
     javaInterop {
-        // One switch for the whole Java interop group; 
+        // One switch for the whole Java interop group, 
         // it overrides the severities below.
         enabled = true
 
@@ -126,7 +126,7 @@ Each check's severity is a `WatchdogSeverity`:
 | Value     | Effect                                                                        |
 |-----------|-------------------------------------------------------------------------------|
 | `ERROR`   | Fails the compilation. This is the default for every configurable diagnostic. |
-| `WARNING` | Reported as a compiler warning; the build still succeeds.                     |
+| `WARNING` | Reported as a compiler warning, the build still succeeds.                     |
 | `NONE`    | The check is disabled entirely.                                               |
 
 The only exception is `EXEMPTION_WITHOUT_EXPLANATION` which has no matching property and is always an error.

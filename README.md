@@ -129,7 +129,7 @@ Only run in JVM compilations; a Kotlin-only library disables the group with
 - [`TOP_LEVEL_API_WITHOUT_JVM_NAME`](https://mr3zee.github.io/libs-api-watchdog/top-level-api-without-jvm-name.html) -
   file facades without `@file:JvmName`, leaking the file name into the Java API surface.
 - [`DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS`](https://mr3zee.github.io/libs-api-watchdog/default-parameters-without-jvm-overloads.html) -
-  default parameter values without `@JvmOverloads`; Java callers must spell out every argument.
+  for functions with default parameter values without `@JvmOverloads` Java callers must pass every argument.
 
 ### DSL markers
 

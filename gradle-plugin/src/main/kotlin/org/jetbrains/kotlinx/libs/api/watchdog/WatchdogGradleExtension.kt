@@ -98,7 +98,7 @@ public open class WatchdogGradleExtension(objectFactory: ObjectFactory) {
      * [Binary Compatibility Validator](https://github.com/Kotlin/binary-compatibility-validator)
      * plugin is active. The watchdog reviews the shape of new API declarations, while binary
      * compatibility validation guards the API that already shipped, so the plugin recommends it
-     * with a build warning. `true` by default; set to `false` to silence the suggestion.
+     * with a build warning. `true` by default, set to `false` to silence the suggestion.
      */
     public val suggestAbiValidation: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(true)
 
@@ -144,7 +144,7 @@ public open class WatchdogGradleExtension(objectFactory: ObjectFactory) {
  */
 public open class WatchdogJavaInteropExtension @Inject constructor(objectFactory: ObjectFactory) {
     /**
-     * Whether the Java-interop diagnostics run at all. `true` by default; a library with a
+     * Whether the Java-interop diagnostics run at all. `true` by default. A library with a
      * Kotlin-only audience sets it to `false` instead of disabling the six diagnostics one by
      * one - the switch wins over the individual severities.
      */
