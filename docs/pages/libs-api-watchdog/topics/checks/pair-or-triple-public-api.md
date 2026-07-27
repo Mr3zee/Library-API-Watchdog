@@ -85,7 +85,7 @@ public fun rawLocation(): Pair<Int, Int> = 0 to 0
 public fun draw(
   @IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN) 
   at: Pair<Int, Int>,
-): Unit = Unit
+) { }
 
 @IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN)
 public fun corners(): List<Pair<Int, Int>> =

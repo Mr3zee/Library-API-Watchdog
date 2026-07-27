@@ -8,7 +8,6 @@ FILE: pairOrTriple.kt
         ^dimensions R|kotlin/Triple.Triple|<R|kotlin/Int|, R|kotlin/Int|, R|kotlin/Int|>(Int(0), Int(0), Int(0))
     }
     public final fun plot(point: R|kotlin/Pair<kotlin/Int, kotlin/Int>|): R|kotlin/Unit| {
-        ^plot Q|kotlin/Unit|
     }
     public final val origin: R|kotlin/Pair<kotlin/Int, kotlin/Int>| = Int(0).R|kotlin/to|<R|kotlin/Int|, R|kotlin/Int|>(Int(0))
         public get(): R|kotlin/Pair<kotlin/Int, kotlin/Int>|
@@ -41,7 +40,6 @@ FILE: pairOrTriple.kt
         ^aliased Int(0).R|kotlin/to|<R|kotlin/Int|, R|kotlin/Int|>(Int(0))
     }
     public final fun onMove(callback: R|(kotlin/Pair<kotlin/Int, kotlin/Int>) -> kotlin/Unit|): R|kotlin/Unit| {
-        ^onMove Q|kotlin/Unit|
     }
     public final fun pointFactory(): R|() -> kotlin/Pair<kotlin/Int, kotlin/Int>| {
         ^pointFactory fun <anonymous>(): R|kotlin/Pair<kotlin/Int, kotlin/Int>| <inline=NoInline>  {
@@ -50,7 +48,6 @@ FILE: pairOrTriple.kt
 
     }
     public final fun path(vararg points: R|kotlin/Array<out kotlin/Pair<kotlin/Int, kotlin/Int>>|): R|kotlin/Unit| {
-        ^path Q|kotlin/Unit|
     }
     public final fun <T : R|kotlin/Pair<kotlin/Int, kotlin/Int>|> firstOf(value: R|T|): R|kotlin/Int| {
         ^firstOf R|<local>/value|.R|SubstitutionOverride<kotlin/Pair.first: R|kotlin/Int|>|
@@ -97,7 +94,6 @@ FILE: pairOrTriple.kt
         ^rawLocation Int(0).R|kotlin/to|<R|kotlin/Int|, R|kotlin/Int|>(Int(0))
     }
     public final fun draw(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyPairOrTriple|() at: R|kotlin/Pair<kotlin/Int, kotlin/Int>|): R|kotlin/Unit| {
-        ^draw Q|kotlin/Unit|
     }
     public final class Route : R|kotlin/Any| {
         public constructor(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyPairOrTriple|() waypoint: R|kotlin/Pair<kotlin/Int, kotlin/Int>|): R|foo/bar/Route| {

@@ -585,7 +585,7 @@ private val unacknowledgedFile = """
     public annotation class ScopedDsl
 
     /** A parameter type carrying a DSL marker that restricts nothing. */
-    public fun processTag(tag: @ScopedDsl UnprotectedOpenClass): Unit = Unit
+    public fun processTag(tag: @ScopedDsl UnprotectedOpenClass) { }
 
     /**
      * A user handle compiled to its underlying type.

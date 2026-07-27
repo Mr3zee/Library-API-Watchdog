@@ -401,7 +401,7 @@ private val unfixableFile = """
     public annotation class ScopedDsl
 
     /** A parameter type carrying a DSL marker that restricts nothing. */
-    public fun processTag(tag: @ScopedDsl String): Unit = Unit
+    public fun processTag(tag: @ScopedDsl String) { }
 """.trimIndent()
 
 @Suppress("RedundantVisibilityModifier")

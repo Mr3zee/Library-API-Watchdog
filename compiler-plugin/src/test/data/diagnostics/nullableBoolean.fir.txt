@@ -41,7 +41,6 @@ FILE: nullableBoolean.kt
         ^aliasedNullable Null(null)
     }
     public final fun onDecision(callback: R|(kotlin/Boolean?) -> kotlin/Unit|): R|kotlin/Unit| {
-        ^onDecision Q|kotlin/Unit|
     }
     public final fun decider(): R|() -> kotlin/Boolean?| {
         ^decider fun <anonymous>(): R|kotlin/Boolean?| <inline=NoInline>  {
@@ -50,7 +49,6 @@ FILE: nullableBoolean.kt
 
     }
     public final fun varargFlags(vararg flags: R|kotlin/Array<out kotlin/Boolean?>|): R|kotlin/Unit| {
-        ^varargFlags Q|kotlin/Unit|
     }
     public final fun <T : R|kotlin/Boolean?|> narrow(value: R|T|): R|T| {
         ^narrow R|<local>/value|

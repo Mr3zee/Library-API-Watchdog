@@ -39,13 +39,13 @@ public typealias Flag = Boolean
 
 public fun aliasedNullable(): <!NULLABLE_BOOLEAN_PUBLIC_API!>Flag?<!> = null
 
-public fun onDecision(callback: <!NULLABLE_BOOLEAN_PUBLIC_API!>(Boolean?) -> Unit<!>): Unit = Unit
+public fun onDecision(callback: <!NULLABLE_BOOLEAN_PUBLIC_API!>(Boolean?) -> Unit<!>) { }
 
 public fun decider(): <!NULLABLE_BOOLEAN_PUBLIC_API!>() -> Boolean?<!> = { null }
 
 // A vararg parameter still passes the three-state values one by one.
 
-public fun varargFlags(vararg flags: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!>): Unit = Unit
+public fun varargFlags(vararg flags: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!>) { }
 
 // A nullable bound constrains every instantiation of the type parameter to the same
 // three-state values as a direct mention of the bound.

@@ -26,7 +26,7 @@ the public one gains a synthetic marker parameter, which Java still can't call:
 public value class UserId(public val raw: String)
 
 // MANGLED_JVM_NAME_PUBLIC_API
-public fun take(id: UserId): Unit = Unit
+public fun take(id: UserId) { }
 ```
 
 ## Rationale
@@ -43,14 +43,14 @@ Kotlin guide on
 
 ```kotlin
 // Compiles to take-4ZD5Yi0(...): an illegal Java identifier.
-public fun take(id: UserId): Unit = Unit
+public fun take(id: UserId) { }
 ```
 
 ### Do
 
 ```kotlin
 @JvmName("take")
-public fun take(id: UserId): Unit = Unit
+public fun take(id: UserId) { }
 ```
 
 ### Don't {id="dont-2"}
@@ -92,7 +92,7 @@ made from it), or a containing class (covering every declaration inside):
 
 ```kotlin
 @IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN)
-public fun acknowledged(id: UserId): Unit = Unit
+public fun acknowledged(id: UserId) { }
 ```
 
 ## Configuration

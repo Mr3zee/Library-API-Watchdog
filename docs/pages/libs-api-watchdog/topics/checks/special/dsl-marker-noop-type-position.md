@@ -26,7 +26,7 @@ public annotation class TreeDsl
 public open class Tag
 
 // DSL_MARKER_NOOP_TYPE_POSITION
-public fun process(tag: @TreeDsl Tag): Unit = Unit
+public fun process(tag: @TreeDsl Tag) { }
 ```
 
 Unlike the API-surface checks, this one also fires on non-public and even internal declarations: an
@@ -45,14 +45,14 @@ first place. See the Kotlin guide on
 
 ```kotlin
 // DSL_MARKER_NOOP_TYPE_POSITION
-public fun process(tag: @TreeDsl Tag): Unit = Unit
+public fun process(tag: @TreeDsl Tag) { }
 ```
 
 ### Do
 
 ```kotlin
 // no scope control needed for a named value
-public fun process(tag: Tag): Unit = Unit
+public fun process(tag: Tag) { }
 ```
 
 ### Don't {id="dont-2"}

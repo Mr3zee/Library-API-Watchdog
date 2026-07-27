@@ -3,12 +3,12 @@
 `INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS` reports two overloads of the same public callable
 whose shared parameter names appear in a different relative order.
 
-| | |
-|---|---|
-| Diagnostic | `INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS` |
-| Default severity | Error |
-| Gradle property | [`inconsistentParameterOrderInOverloads`](configuration.md) |
-| Exemption | [`@IntentionallyInconsistentParameterOrder`](exemptions.md) |
+|                  |                                                             |
+|------------------|-------------------------------------------------------------|
+| Diagnostic       | `INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS`                 |
+| Default severity | Error                                                       |
+| Gradle property  | [`inconsistentParameterOrderInOverloads`](configuration.md) |
+| Exemption        | [`@IntentionallyInconsistentParameterOrder`](exemptions.md) |
 
 ## What it reports
 
@@ -18,10 +18,10 @@ of a disagreeing pair are reported, and reordering either one clears both.
 
 ```kotlin
 // INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
-public fun draw(x: Int, y: Int): Unit = Unit
+public fun draw(x: Int, y: Int) { }
 
 // INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
-public fun draw(y: Int, x: Int, scale: Double): Unit = Unit
+public fun draw(y: Int, x: Int, scale: Double) { }
 ```
 
 ## Rationale
@@ -36,18 +36,18 @@ authors' guide on
 
 ```kotlin
 // INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
-public fun draw(x: Int, y: Int): Unit = Unit
+public fun draw(x: Int, y: Int) { }
 
 // INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
-public fun draw(y: Int, x: Int, scale: Double): Unit = Unit
+public fun draw(y: Int, x: Int, scale: Double) { }
 ```
 
 ### Do
 
 ```kotlin
-public fun draw(x: Int, y: Int): Unit = Unit
+public fun draw(x: Int, y: Int) { }
 
-public fun draw(x: Int, y: Int, scale: Double): Unit = Unit
+public fun draw(x: Int, y: Int, scale: Double) { }
 ```
 
 ### Don't {id="dont-2"}
@@ -56,7 +56,11 @@ public fun draw(x: Int, y: Int, scale: Double): Unit = Unit
 // INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
 public class Rect(width: Int, height: Int) {
     // INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
-    public constructor(height: Int, width: Int, scale: Double) : this(width, height)
+    public constructor(
+        height: Int, 
+        width: Int, 
+        scale: Double,
+    ) : this(width, height)
 }
 ```
 
@@ -64,7 +68,11 @@ public class Rect(width: Int, height: Int) {
 
 ```kotlin
 public class Rect(width: Int, height: Int) {
-    public constructor(width: Int, height: Int, scale: Double) : this(width, height)
+    public constructor(
+        width: Int, 
+        height: Int, 
+        scale: Double,
+    ) : this(width, height)
 }
 ```
 
@@ -91,14 +99,13 @@ both as a reporter and as a comparison target, so one acknowledged legacy overlo
 its order onto otherwise-consistent newer ones.
 
 ```kotlin
-public fun render(x: Int, y: Int): Unit = Unit
+public fun render(x: Int, y: Int) { }
 
-@IntentionallyInconsistentParameterOrder(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)
-public fun render(y: Int, x: Int, alpha: Long): Unit = Unit
+@IntentionallyInconsistentParameterOrder(
+    reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY,
+)
+public fun render(y: Int, x: Int, alpha: Long) { }
 ```
-
-The annotation targets the function or constructor declaration only; there is no parameter- or
-type-level placement.
 
 ## Configuration
 
@@ -116,6 +123,6 @@ With direct compiler invocation:
 ## See also
 
 - [Preserve parameter order, naming, and usage](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage)
-- [Required parameters after optional ones](required-parameter-after-optional.md), a sibling check
+- [](required-parameter-after-optional.md), a sibling check
   on parameter order within one declaration
-- [Exemptions and internal API](exemptions.md)
+- [](exemptions.md)
