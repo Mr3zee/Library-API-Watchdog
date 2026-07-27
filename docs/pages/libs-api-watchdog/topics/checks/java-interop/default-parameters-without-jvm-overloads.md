@@ -3,31 +3,32 @@
 `DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS` reports public functions and constructors that declare
 default parameter values without `@JvmOverloads`.
 
-| | |
-|---|---|
-| Diagnostic | `DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS` |
-| Default severity | Error |
-| Applies to | JVM compilations only |
-| Gradle property | [`defaultParametersWithoutJvmOverloads`](configuration.md) |
-| Exemption | [`@IntentionallyWithoutJvmOverloads`](exemptions.md) |
+|                  |                                                            |
+|------------------|------------------------------------------------------------|
+| Diagnostic       | `DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS`                 |
+| Default severity | Error                                                      |
+| Applies to       | JVM compilations only                                      |
+| Gradle property  | [`defaultParametersWithoutJvmOverloads`](configuration.md) |
+| Exemption        | [`@IntentionallyWithoutJvmOverloads`](exemptions.md)       |
 
 ## What it reports
 
 A public function or constructor that declares at least one default parameter value but carries
-no `@JvmOverloads`. Defaults are a Kotlin-frontend feature: only the full signature is compiled as
-a callable JVM entry point, so for Java callers the defaults don't exist and every argument must
-be spelled out:
+no `@JvmOverloads`. 
 
 ```kotlin
 // DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS
-public fun connect(host: String, port: Int = 80, timeout: Int = 30) { } 
+public fun connect(
+    host: String,
+    port: Int = 80,
+    timeout: Int = 30,
+) { }
 ```
 
 ## Rationale
 
 Without `@JvmOverloads`, Java callers of a function with three defaulted parameters have to spell
-out all three at every call site, which is unreadable and invites mistakes at the call site. See
-Kotlin's guide on
+out all three at every call site. See Kotlin's guide on
 [overloads generation](https://kotlinlang.org/docs/java-to-kotlin-interop.html#overloads-generation)
 for how `@JvmOverloads` compiles the reduced overloads Java needs.
 
@@ -39,32 +40,46 @@ later binary compatible for Kotlin callers either.
 ### Don't
 
 ```kotlin
-public fun connect(host: String, port: Int = 80, timeout: Int = 30) { }
+public fun connect(
+    host: String, 
+    port: Int = 80, 
+    timeout: Int = 30,
+) { }
 ```
 
 ### Do
 
 ```kotlin
 @JvmOverloads
-public fun connect(host: String, port: Int = 80, timeout: Int = 30) { }
+public fun connect(
+    host: String, 
+    port: Int = 80, 
+    timeout: Int = 30,
+) { }
 ```
 
 ### Don't {id="dont-2"}
 
 ```kotlin
-public class Connection(host: String, port: Int = 80)
+public class Connection(
+    host: String, 
+    port: Int = 80,
+)
 ```
 
 ### Do {id="do-2"}
 
 ```kotlin
-public class Connection @JvmOverloads constructor(host: String, port: Int = 80)
+public class Connection @JvmOverloads constructor(
+    host: String, 
+    port: Int = 80,
+)
 ```
 
 ## Notes
 
 - A defaulted parameter in the middle of the list still can't be skipped from Java even with
-  `@JvmOverloads`; keep optional parameters last (see `REQUIRED_PARAMETER_AFTER_OPTIONAL`) so the
+  `@JvmOverloads`; keep optional parameters last (see [`REQUIRED_PARAMETER_AFTER_OPTIONAL`](required-parameter-after-optional.md)) so the
   generated overloads actually cover the common call shapes.
 - Abstract and interface members, and annotation class constructors, are exempt: `@JvmOverloads`
   doesn't apply to them.
@@ -83,13 +98,16 @@ without Kotlin's named arguments:
 ```kotlin
 @IntentionallyWithoutJvmOverloads(
     reason = ExemptionReason.IGNORE_JAVA_INTEROP,
-    description = "Kotlin-only client; Java callers are expected to use the builder instead.",
+    description = "Kotlin-only function. " +
+            "Java callers are expected to use the builder instead.",
 )
-public fun connect(host: String, port: Int = 80, timeout: Int = 30) { }
+public fun connectDsl(
+    host: String, 
+    port: Int = 80, 
+    timeout: Int = 30,
+    builder: Connection.() -> Unit,
+) { }
 ```
-
-The annotation targets the function or constructor declaration only; there is no parameter- or
-type-level placement.
 
 ## Configuration
 
@@ -112,7 +130,7 @@ With direct compiler invocation:
 ## See also
 
 - [Overloads generation](https://kotlinlang.org/docs/java-to-kotlin-interop.html#overloads-generation)
-- [Java interop checks](java-interop.md)
-- [Required parameters after optional ones](required-parameter-after-optional.md), which keeps
+- [](java-interop.md)
+- [](required-parameter-after-optional.md), which keeps
   defaulted parameters last so the generated overloads are useful
-- [Exemptions and internal API](exemptions.md)
+- [](exemptions.md)
