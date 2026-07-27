@@ -9,7 +9,7 @@ import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyOpen
 import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyUndocumented
 
 // A @PublishedApi declaration is internal in sources but part of the published binary API:
-// public inline functions expose it to clients, so every check treats it as public API.
+// public inline functions expose it to users, so every check treats it as public API.
 
 // Undocumented published declarations: should warn.
 

@@ -129,7 +129,7 @@ authors' guidelines page.
 Repeat Don't/Do pairs for distinct scenarios when the check has several. Cover the notable
 edge cases and the deliberate exceptions the checker implements (a short list is fine).
 
-## When to exempt
+## Exemption
 
 When keeping the shape is a deliberate decision. Show the exemption annotation with a
 fitting reason and description. Mention the supported placements (declaration, single

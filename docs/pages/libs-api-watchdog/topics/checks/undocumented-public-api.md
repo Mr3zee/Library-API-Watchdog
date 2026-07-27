@@ -2,16 +2,16 @@
 
 `UNDOCUMENTED_PUBLIC_API` reports public declarations that have no KDoc.
 
-| | |
-|---|---|
-| Diagnostic | `UNDOCUMENTED_PUBLIC_API` |
-| Default severity | Error |
-| Gradle property | [`undocumentedPublicApi`](configuration.md) |
-| Exemption | [`@IntentionallyUndocumented`](exemptions.md) |
+|                  |                                               |
+|------------------|-----------------------------------------------|
+| Diagnostic       | `UNDOCUMENTED_PUBLIC_API`                     |
+| Default severity | Error                                         |
+| Gradle property  | [`undocumentedPublicApi`](configuration.md)   |
+| Exemption        | [`@IntentionallyUndocumented`](exemptions.md) |
 
 ## What it reports
 
-Every publicly visible declaration a client can reference - classes, interfaces, objects, enum
+Every publicly visible declaration a user can reference - classes, interfaces, objects, enum
 classes, annotation classes, type aliases, functions, properties, secondary constructors, and enum
 entries - is flagged when it carries no KDoc. Only the presence of a KDoc is checked, not its
 content:
@@ -23,10 +23,10 @@ public class Cache
 
 ## Rationale
 
-A KDoc is the contract a client can rely on. Without one, callers can only guess intent from the
+A KDoc is the contract a user can rely on. Without one, callers can only guess intent from the
 implementation, and any later change - even a bug fix - risks breaking a usage nobody wrote down as
 supported. Writing the contract down first is what lets the library author change the
-implementation later without guessing what clients depend on. See the
+implementation later without guessing what users depend on. See the
 [Kotlin API guidelines on documenting your API](https://kotlinlang.org/docs/api-guidelines-informative-documentation.html#thoroughly-document-your-api).
 
 ## Don't

@@ -1,6 +1,6 @@
 # Exhaustive public API
 
-`EXHAUSTIVE_PUBLIC_API` reports public enums and sealed hierarchies, which clients can match
+`EXHAUSTIVE_PUBLIC_API` reports public enums and sealed hierarchies, which users can match
 exhaustively with a `when` expression that has no `else` branch.
 
 | | |
@@ -25,8 +25,8 @@ public enum class Status {
 
 ## Rationale
 
-A client can write a `when` over an enum or a sealed hierarchy without an `else` branch and have
-the compiler check exhaustiveness for them. That is convenient, but it also means the client code
+A user can write a `when` over an enum or a sealed hierarchy without an `else` branch and have
+the compiler check exhaustiveness for them. That is convenient, but it also means the user code
 depends on today's exact set of entries or subtypes. Adding a new enum entry or a new subtype
 later makes every such `when` at every call site stop compiling: a source-incompatible change the
 library author did not think of as breaking. See the

@@ -25,9 +25,9 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.text
 
 /**
- * Reports publicly visible declarations that have no KDoc: undocumented API forces clients to
+ * Reports publicly visible declarations that have no KDoc: undocumented API forces users to
  * guess the usage contract. Only KDoc presence is checked, not its content. Every declaration
- * kind a client can reference is watched: classifiers, type aliases, functions, properties,
+ * kind a user can reference is watched: classifiers, type aliases, functions, properties,
  * constructors, and enum entries.
  *
  * Declarations whose documentation lives on another declaration are exempt: overrides and
@@ -89,7 +89,7 @@ internal class UndocumentedApiChecker(
 
     /**
      * The declaration kind for the message and the name to report, or null when the declaration
-     * is not watched: either clients cannot reference it directly, or its documentation lives on
+     * is not watched: either users cannot reference it directly, or its documentation lives on
      * another declaration - overrides and `actual`s inherit it, and the primary constructor is
      * described by the class KDoc. Secondary constructors report the class name because their
      * own name is the internal `<init>`.

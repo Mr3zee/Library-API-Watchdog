@@ -22,7 +22,7 @@ public typealias Callback = (Int) -> Unit
 
 ## Rationale
 
-A type alias is not a real type: it is erased at compile time, so a client compiled against
+A type alias is not a real type: it is erased at compile time, so a user compiled against
 `Callback` really binds to `(Int) -> Unit`. The alias can never grow a second member, a default
 implementation, or a name that documents intent; the only way to change the shape later is a
 breaking change to the bare function type. A

@@ -13,9 +13,9 @@ import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.utils.modality
 
 /**
- * Reports publicly visible enums and sealed hierarchies: clients can match on them
+ * Reports publicly visible enums and sealed hierarchies: users can match on them
  * exhaustively (`when` without an `else` branch), so adding an entry or a subtype later breaks
- * client code. Authors acknowledge the contract with `@IntentionallyExhaustive`.
+ * user code. Authors acknowledge the contract with `@IntentionallyExhaustive`.
  */
 internal class ExhaustiveApiChecker(
     private val severities: WatchdogDiagnosticSeverities,

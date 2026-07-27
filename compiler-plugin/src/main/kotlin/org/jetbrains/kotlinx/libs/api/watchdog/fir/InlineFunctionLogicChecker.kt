@@ -39,8 +39,8 @@ import org.jetbrains.kotlin.fir.references.toResolvedPropertySymbol
  * Reports publicly visible
  * [inline functions](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#considerations-for-using-the-publishedapi-annotation)
  * - and inline property accessors, which inline the same way - whose body does more than delegate
- * to a non-inline function. The compiler copies an inline body into every client binary, so logic
- * placed there - and its bugs - stays frozen in clients compiled against an old library version
+ * to a non-inline function. The compiler copies an inline body into every user binary, so logic
+ * placed there - and its bugs - stays frozen in users compiled against an old library version
  * until they recompile. A public inline function should be a thin wrapper: it resolves what only
  * the call site knows - a reified type argument, an inlined lambda - and hands the actual work to
  * a non-inline function (`@PublishedApi internal` when it should stay out of the public API),
@@ -54,13 +54,13 @@ import org.jetbrains.kotlin.fir.references.toResolvedPropertySymbol
  * an `as`/`as?` cast on a read (reified wrappers narrow their delegate's result that way). A
  * lambda literal passed along counts too when its own body is such a thin statement - the
  * `impl { block() }` shape a `crossinline` wrapper needs. Everything else is logic frozen into
- * clients: control flow of any kind, operator and infix calls (arithmetic compiles inline into
- * the client), string templates, local variables, multiple statements, object literals - and
+ * users: control flow of any kind, operator and infix calls (arithmetic compiles inline into
+ * the user), string templates, local variables, multiple statements, object literals - and
  * calls to inline functions or inline property accessors, whose bodies the inliner drags into the
- * client binary transitively.
+ * user binary transitively.
  *
  * `@PublishedApi internal` inline functions are checked like public ones: a public inline wrapper
- * may call them, which inlines their body into clients just as transitively. Bodiless functions
+ * may call them, which inlines their body into users just as transitively. Bodiless functions
  * (`expect`, `external`) and non-inline accessors freeze nothing and are skipped.
  */
 internal class InlineFunctionLogicChecker(
@@ -179,7 +179,7 @@ internal class InlineFunctionLogicChecker(
 
     /**
      * A call delegates cleanly when the callee is not inline (an inline callee's body would be
-     * inlined into the client right through the wrapper) and its receiver and arguments only
+     * inlined into the user right through the wrapper) and its receiver and arguments only
      * read values. Constructor calls resolve to never-inline constructors and pass the same way.
      */
     private fun FirFunctionCall.isPlainCall(): Boolean =
@@ -187,7 +187,7 @@ internal class InlineFunctionLogicChecker(
                 explicitReceiver?.isPlain() != false &&
                 arguments.all { it.isPlain() }
 
-    /** Accessing a property through an inline accessor inlines that accessor's body into the client. */
+    /** Accessing a property through an inline accessor inlines that accessor's body into the user. */
     private fun FirPropertyAccessExpression.usesInlineAccessor(write: Boolean): Boolean {
         val property = calleeReference.toResolvedPropertySymbol() ?: return false
         if (property.isInline) {

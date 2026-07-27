@@ -1,7 +1,7 @@
 # Adding the plugin to existing libraries
 
 A library that has already shipped cannot change the shape of its public API without breaking
-clients, so the Watchdog's first run typically floods it with diagnostics that are not actionable.
+users, so the Watchdog's first run typically floods it with diagnostics that are not actionable.
 `updateBackwardsCompatibilityExempts` acknowledges all of them at once by applying respectful 
 `@Intentionally*` annotation:
 

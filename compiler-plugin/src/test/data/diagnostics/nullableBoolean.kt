@@ -64,7 +64,7 @@ public fun snapshots(): List<@IntentionallyNullableBoolean Boolean?> = emptyList
 
 public fun buffered(): @IntentionallyNullableBoolean Boolean? = null
 
-// Extensions on nullable Booleans provide functionality for values the client already holds -
+// Extensions on nullable Booleans provide functionality for values the user already holds -
 // typically remedial helpers: no warning on the receiver.
 
 public fun Boolean?.orFalse(): Boolean = this ?: false

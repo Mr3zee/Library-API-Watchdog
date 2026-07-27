@@ -263,7 +263,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
 
         val WATCHDOG_MESSAGES = listOf(
             "can be subclassed outside the library",
-            "can be matched exhaustively by clients",
+            "can be matched exhaustively by users",
             "has no KDoc",
             "abbreviates a function type",
             "bakes its constructor property list",

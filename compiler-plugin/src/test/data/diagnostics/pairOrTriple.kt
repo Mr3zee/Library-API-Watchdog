@@ -64,7 +64,7 @@ public fun corners(): List<@IntentionallyPairOrTriple Pair<Int, Int>> = emptyLis
 
 public fun anchorPoint(): @IntentionallyPairOrTriple Pair<Int, Int> = 0 to 0
 
-// Extensions on tuples provide functionality for values the client already holds instead of
+// Extensions on tuples provide functionality for values the user already holds instead of
 // handing out new tuples: no warning on the receiver.
 
 public fun Pair<Int, Int>.manhattanLength(): Int = first + second

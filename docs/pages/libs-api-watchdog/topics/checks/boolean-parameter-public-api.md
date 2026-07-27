@@ -23,7 +23,7 @@ public fun doWork(optimizeForSpeed: Boolean): Unit {}
 ## Rationale
 
 At the call site, a positional `true`/`false` argument reads as noise: `resize(true)` says nothing
-about what turns on. Clients cannot be forced to use named arguments, so the meaning depends on
+about what turns on. Users cannot be forced to use named arguments yet, so the meaning depends on
 whoever reads the call site remembering the parameter name. See the
 [Kotlin API guidelines on avoiding Boolean arguments](https://kotlinlang.org/docs/api-guidelines-readability.html#avoid-using-the-boolean-type-as-an-argument).
 
@@ -61,7 +61,7 @@ Notable points:
 
 - A nullable `Boolean?` parameter is still a positional flag, just a three-state one, so it is
   reported the same way.
-- A type alias to `Boolean` does not change what clients pass and is still reported.
+- A type alias to `Boolean` does not change what users pass and is still reported.
 - Overrides are never reported: their signature is fixed by the overridden declaration, which is
   reported there instead.
 - Constructors, and constructor functions - factory functions named after the type they create,

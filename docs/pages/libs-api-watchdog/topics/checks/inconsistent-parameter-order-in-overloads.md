@@ -73,7 +73,7 @@ Notable edge cases and deliberate exceptions:
 - Overloads that share fewer than two parameter names cannot disagree on order and are never
   reported, which is why single-argument conversion overloads with the same parameter name but
   different types (`BigDecimal(value: Int)` next to `BigDecimal(value: String)`) stay silent.
-- Only declarations clients see side by side are compared: the members of one class body -
+- Only declarations users see side by side are compared: the members of one class body -
   inherited members included - the top-level functions of one package, or the constructors of one
   class among each other. A class member is never compared against a same-named top-level
   function, and declarations from dependencies are never compared.

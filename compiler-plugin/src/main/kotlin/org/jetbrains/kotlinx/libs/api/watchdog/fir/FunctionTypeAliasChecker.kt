@@ -12,9 +12,9 @@ import org.jetbrains.kotlin.fir.types.functionTypeKind
 
 /**
  * Reports publicly visible type aliases that abbreviate function types: the alias is erased from
- * the compiled API, so clients bind to the bare function shape and the type cannot evolve into a
+ * the compiled API, so users bind to the bare function shape and the type cannot evolve into a
  * richer abstraction later. A `fun interface` keeps the lambda ergonomics of a function type
- * behind a stable nominal type that can grow members without breaking clients. Authors
+ * behind a stable nominal type that can grow members without breaking users. Authors
  * acknowledge a deliberate function type alias with `@IntentionallyFunctionTypeAlias`.
  */
 internal class FunctionTypeAliasChecker(

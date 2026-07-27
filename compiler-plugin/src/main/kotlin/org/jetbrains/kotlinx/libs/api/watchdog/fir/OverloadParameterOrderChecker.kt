@@ -24,7 +24,7 @@ import org.jetbrains.kotlin.name.Name
 /**
  * Reports publicly visible overloads whose same-named parameters appear in a different relative
  * order than in another overload:
- * [clients transfer their expectations between overloads](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage),
+ * [users transfer their expectations between overloads](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage),
  * so an inconsistent order of same-named parameters invites silently swapped arguments -
  * especially when the parameters share a type and the call still compiles. Same-named parameters
  * with different types stay legal: conversion overloads like `BigDecimal(Int)`/`BigDecimal(String)`
@@ -32,7 +32,7 @@ import org.jetbrains.kotlin.name.Name
  * `@IntentionallyInconsistentParameterOrder`.
  *
  * No overload is preferred as the canonical order: every member of an inconsistent pair reports,
- * and reordering either clears both. Overloads are compared as clients see them side by side -
+ * and reordering either clears both. Overloads are compared as users see them side by side -
  * the members visible in a class, inherited ones included, or the module's top-level functions
  * of the same package; constructors of a class are overloads of each other. For an inheritance
  * pair only the subtype's declaration reports: the supertype cannot see its subtypes' overloads,
@@ -83,7 +83,7 @@ internal class OverloadParameterOrderChecker(
 
     /**
      * The callables this declaration overloads: same-named functions visible in the class -
-     * declared and inherited alike, since clients see them side by side - or the module's
+     * declared and inherited alike, since users see them side by side - or the module's
      * top-level functions of the same package, or the sibling constructors of the class, which
      * are not inherited. Inherited members surface as fake overrides and are unwrapped to the
      * original declaration, whose source, visibility, and exemption the sibling gate inspects;

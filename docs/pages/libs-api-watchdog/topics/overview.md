@@ -11,7 +11,7 @@ demoted to a warning, disabled, or exempted in place.
 A public data class that hands out a mutable collection, without documentation, triggers three
 diagnostics at once:
 
-[//]: # (TODO: CodeHiek like extension to writerside for check's diagnostic messages)
+[//]: # (TODO: CodeHike like extension to writerside for check's diagnostic messages)
 
 ```kotlin
 // DATA_CLASS_PUBLIC_API, UNDOCUMENTED_PUBLIC_API
@@ -23,7 +23,7 @@ public data class Config(
 
 - The generated `copy` and `componentN` functions and the constructor bake the exact property
   list into the compiled API.
-- `tags` shares a mutable collection across the API boundary: it is unclear whether client-side
+- `tags` shares a mutable collection across the API boundary: it is unclear whether user-side
   and library-side mutations affect each other.
 - Neither the class nor the property has KDoc.
 
@@ -71,8 +71,8 @@ See [](configuration.md) for full configuration options and build suggestions ov
   classes and interfaces that any outside code can subclass without restriction.
 - [](subclass-opt-in-without-markers.md): `@SubclassOptInRequired`
   annotations that list no marker classes do not actually restrict subclassing.
-- [](exhaustive-public-api.md): enums and sealed hierarchies, which clients
-  can match exhaustively, thus adding an entry or a subtype later breaks client code.
+- [](exhaustive-public-api.md): enums and sealed hierarchies, which users
+  can match exhaustively, thus adding an entry or a subtype later breaks user code.
 - [](undocumented-public-api.md): public declarations of every kind that
   have no KDoc.
 - [](function-type-alias-public-api.md): type aliases that
@@ -82,7 +82,7 @@ See [](configuration.md) for full configuration options and build suggestions ov
   backing-field property that neither declare nor inherit `equals`, `hashCode`, and `toString`,
   so instances render as an opaque default in logs and debuggers, and comparison is reference based.
 - [](mutable-collection-public-api.md): mutable collection
-  types in public signatures leave it unclear whether client-side and library-side
+  types in public signatures leave it unclear whether user-side and library-side
   mutations affect each other.
 - [](pair-or-triple-public-api.md): the tuple types `Pair` and
   `Triple`, whose components carry no domain meaning and whose fixed shape cannot evolve.
@@ -94,7 +94,7 @@ See [](configuration.md) for full configuration options and build suggestions ov
 - [](inconsistent-parameter-order-in-overloads.md): overloads whose same-named parameters appear in a different relative order, inviting silently
   swapped arguments.
 - [](inline-function-with-logic.md): public inline functions, whose body does more than delegate, 
-  since the compiler copies that logic, and its bugs, into every client binary.
+  since the compiler copies that logic, and its bugs, into every user binary.
 
 ### Java interop checks
 

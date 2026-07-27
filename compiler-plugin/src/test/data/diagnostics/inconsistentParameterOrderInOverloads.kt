@@ -49,7 +49,7 @@ public class Turtle {
     public fun draw(y: Int, x: Int) {}
 }
 
-// An inherited overload is an ordering reference too: clients see it side by side with the
+// An inherited overload is an ordering reference too: users see it side by side with the
 // declared ones. Only the subtype's declaration warns - the supertype cannot see it.
 
 public interface Shape {
@@ -78,7 +78,7 @@ public fun render(y: Int, x: Int, alpha: Long) {}
 
 public fun render(x: Int, y: Int, scale: Double) {}
 
-// Overloads hidden from clients are not compared in either direction.
+// Overloads hidden from users are not compared in either direction.
 
 private fun helper(first: Int, second: Int) {}
 

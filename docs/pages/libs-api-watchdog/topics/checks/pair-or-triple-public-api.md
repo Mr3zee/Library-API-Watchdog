@@ -14,7 +14,7 @@ signatures.
 
 The check flags `Pair` and `Triple` in return types, property types, parameter types, and type
 parameter bounds, including their type arguments (`List<Pair<Int, String>>` exposes the tuple all
-the same) and behind a type alias (an alias does not change what clients see). A minimal
+the same) and behind a type alias (an alias does not change what users see). A minimal
 triggering example:
 
 ```kotlin
@@ -27,7 +27,7 @@ public fun locate(): Pair<Int, Int> = 0 to 0
 `Pair` and `Triple` name their components `first`/`second`/`third`, so a call site reading
 `point.first` or destructuring `val (a, b) = point` learns nothing about what the values mean.
 Worse, the shape is fixed: it cannot grow a fourth component or rename a component without
-breaking every client in a source-incompatible way, while a purpose-built class can add an
+breaking every user in a source-incompatible way, while a purpose-built class can add an
 optional property with a default value. See the
 [Kotlin API guidelines on object-oriented design for data and state](https://kotlinlang.org/docs/api-guidelines-consistency.html#use-object-oriented-design-for-data-and-state).
 
@@ -71,7 +71,7 @@ Notable edge cases:
 - A `vararg` parameter's array type is not itself a tuple, but a `Pair`/`Triple` element type
   still is.
 - Extension receivers are exempt: `fun Pair<Int, Int>.manhattanLength(): Int` serves a value the
-  client already holds instead of handing out a new tuple.
+  user already holds instead of handing out a new tuple.
 - Overrides are exempt: their signature is fixed by the overridden declaration and reported
   there.
 

@@ -30,7 +30,7 @@ public fun process(tag: @TreeDsl Tag): Unit = Unit
 ```
 
 Unlike the API-surface checks, this one also fires on non-public and even internal declarations: an
-inert marker misleads the library's own authors just as much as its clients.
+inert marker misleads the library's own authors just as much as its users.
 
 ## Rationale
 

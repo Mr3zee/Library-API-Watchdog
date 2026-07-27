@@ -37,7 +37,7 @@ import org.jetbrains.kotlin.name.StandardClassIds
  * suppress the diagnostic where such flow-through marking is intended.
  *
  * Unlike the API-surface checkers, this one is not limited to public declarations: an inert
- * marker misleads the library's own authors just as much as its clients.
+ * marker misleads the library's own authors just as much as its users.
  */
 internal class DslMarkerTypePositionChecker(
     private val severities: WatchdogDiagnosticSeverities,
