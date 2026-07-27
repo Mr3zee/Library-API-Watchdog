@@ -50,7 +50,7 @@ public class Registry {
 ```kotlin
 public class Registry {
     public companion object {
-        public const val VERSION: Int = 1
+        public const val DEFAULT_NAME: String = "registry"
 
         @JvmField
         public val ORIGIN: String = "field"
@@ -64,8 +64,7 @@ public class Registry {
 `const val` compiles to a real static final field but only accepts a compile-time constant
 (primitives and strings). `@JvmField` exposes any other final value the same way, as a plain
 static field. `@JvmStatic` instead compiles a static getter, useful when the value needs a
-computed default. `@get:JvmSynthetic` is a fourth option when the property shouldn't be visible
-to Java at all.
+computed default. 
 
 ## Notes
 
@@ -74,6 +73,7 @@ to Java at all.
   checked: it exposes behavior rather than a fixed value, and `@JvmField` would not apply to most
   of these shapes anyway.
 - Overrides are exempt: their Java-facing shape is fixed by the overridden declaration.
+- `@JvmSynthetic` members are hidden from Java on purpose and are not flagged.
 - Non-JVM compilations never register this check at all.
 
 ## Exemption
@@ -92,8 +92,7 @@ public class Registry {
 }
 ```
 
-The same annotation also covers [`COMPANION_API_WITHOUT_JVM_STATIC`](companion-api-without-jvm-static.md)
-on functions in the same companion object.
+The same annotation also acknowledges [`COMPANION_API_WITHOUT_JVM_STATIC`](companion-api-without-jvm-static.md).
 
 ## Configuration
 

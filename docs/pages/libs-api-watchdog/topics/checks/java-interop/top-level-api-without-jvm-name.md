@@ -63,8 +63,7 @@ public fun disconnect(): Int = 0
 
 - Files exposing only classifiers - classes, objects, type aliases - produce no facade worth
   naming.
-- Files whose every top-level callable is hidden from Java with `@JvmSynthetic` have no
-  Java-visible facade member to anchor on.
+- Files where every top-level callable is hidden from Java with `@JvmSynthetic` are not flagged.
 - Non-JVM compilations never register this check at all.
 
 ## Exemption
