@@ -1,26 +1,21 @@
 # Java interop checks
 
-%product% includes six checks that keep a JVM library ergonomic for Java consumers. They flag
+`%product%` includes six checks that keep a JVM library ergonomic for Java consumers. They flag
 shapes that compile fine but that Java callers can't use idiomatically, or can't use at all. All
 six only run in JVM compilations.
 
 ## The checks
 
-- [Mangled JVM names in public API](mangled-jvm-name-public-api.md) - a value class in a
-  signature makes the JVM backend mangle the compiled name, so Java can't call it.
-- [Kotlin-only API without JvmSynthetic](kotlin-only-api-without-jvm-synthetic.md) - `suspend`
-  functions, reified generics, and Kotlin-specific function types stay visible to Java even
-  though Java can't call them idiomatically.
-- [Companion API without JvmStatic](companion-api-without-jvm-static.md) - companion object
-  functions compile to instance methods, so Java has to reach them through `Outer.Companion`.
-- [Companion constants without JvmField](companion-constant-without-jvm-field.md) - constant-shaped
-  companion properties are only reachable from Java through the companion instance getter.
-- [Top-level API without JvmName](top-level-api-without-jvm-name.md) - a file's public top-level
-  declarations compile into a facade class named after the file, so renaming the file breaks Java
-  callers.
-- [Default parameters without JvmOverloads](default-parameters-without-jvm-overloads.md) - default
-  parameter values are a Kotlin-only feature; without `@JvmOverloads` Java callers must specify
-  every argument.
+- [](mangled-jvm-name-public-api.md) - a value class in a signature makes the JVM backend mangle the compiled name, so Java can't call it.
+- [](kotlin-only-api-without-jvm-synthetic.md) - `suspend` functions, reified generics, and Kotlin-specific function types 
+  stay visible to Java even though Java can't call them idiomatically.
+- [](companion-api-without-jvm-static.md) - companion object functions compile to instance methods and 
+  are only reachable from Java through the companion instance getter.
+- [](companion-constant-without-jvm-field.md) - constant-shaped companion properties are only reachable from Java through the companion instance getter.
+- [](top-level-api-without-jvm-name.md) - a file's public top-level declarations compile into a facade class named after the file, 
+  so renaming the file breaks Java callers.
+- [](default-parameters-without-jvm-overloads.md) - default parameter values are a Kotlin-only feature. 
+  Without `@JvmOverloads` Java callers must specify every argument.
 
 ## Kotlin-only audience
 
@@ -51,16 +46,23 @@ callers:
 ```kotlin
 @IntentionallyKotlinOnlyApi(
     reason = ExemptionReason.IGNORE_JAVA_INTEROP,
-    description = "Coroutine-only API, no blocking or CompletableFuture bridge planned.",
+    description = "Coroutine-only API," +
+            "no blocking or CompletableFuture bridge planned.",
 )
 public suspend fun refresh(): String = fetchLatest()
 ```
 
-`IGNORE_JAVA_INTEROP` only categorizes the exemption; the description still has to spell out the
-reason. See [Exemptions and internal API](exemptions.md) for the full exemption model, including
-`EXEMPTION_WITHOUT_EXPLANATION`, which rejects a bare exemption.
+`IGNORE_JAVA_INTEROP` only categorizes the exemption. The description still has to state the
+reason. See [](exemptions.md) for the full exemption model, including
+[`EXEMPTION_WITHOUT_EXPLANATION`](exemption-without-explanation.md).
 
 ## See also
 
 - [Kotlin's Java-to-Kotlin interop guide](https://kotlinlang.org/docs/java-to-kotlin-interop.html)
   for background on how Kotlin declarations compile for Java callers.
+- [](mangled-jvm-name-public-api.md)
+- [](kotlin-only-api-without-jvm-synthetic.md)
+- [](companion-api-without-jvm-static.md)
+- [](companion-constant-without-jvm-field.md)
+- [](top-level-api-without-jvm-name.md)
+- [](default-parameters-without-jvm-overloads.md)
