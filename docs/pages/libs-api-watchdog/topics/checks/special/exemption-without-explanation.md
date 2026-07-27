@@ -1,26 +1,19 @@
 # Exemptions without explanation
 
 `EXEMPTION_WITHOUT_EXPLANATION` reports any `@Intentionally*` exemption annotation usage whose
-`reason` doesn't explain itself (anything other than `FOR_BACKWARDS_COMPATIBILITY` or
-`API_DESIGN`, including the default `OTHER`, `INTEROP`, `EXTERNAL_CONTRACT`, and
-`IGNORE_JAVA_INTEROP`) while `description` is empty or blank: such a bare exemption explains
-nothing. See
-[Exemptions and internal API](exemptions.md) for the full exemption mechanism this check enforces.
+`reason` doesn't explain itself.
 
-| | |
-|---|---|
-| Diagnostic | `EXEMPTION_WITHOUT_EXPLANATION` |
-| Default severity | Error (not configurable) |
-| Gradle property | none |
-| Exemption | none |
+|                  |                                 |
+|------------------|---------------------------------|
+| Diagnostic       | `EXEMPTION_WITHOUT_EXPLANATION` |
+| Default severity | Error (not configurable)        |
+| Gradle property  | none                            |
+| Exemption        | none                            |
 
 ## What it reports
 
-Every `@Intentionally*` annotation call must explain itself, wherever it is written: on a
-declaration, a single parameter, a type parameter, or a type usage. This check validates the
-annotation call itself, not the annotated declaration, so it fires on every usage regardless of
-the annotated declaration's visibility - including `internal` and `private` declarations, and
-declarations inside a subtree marked `@InternalAnnotationMarker`:
+This check fires on the annotation call of `@Intentionally*` annotations with reasons other than
+`ExemptionReason.FOR_BACKWARD_COMPATIBILITY` or `ExemptionReason.API_DESIGN` and a blank `description`:
 
 ```kotlin
 // EXEMPTION_WITHOUT_EXPLANATION
@@ -35,6 +28,25 @@ bare `@Intentionally*` call with no self-explanatory reason and no description r
 the next reader: a reviewer can't tell whether the shape was chosen on purpose or the warning was
 just muted to make the build pass. Requiring an explanation is what keeps every other exemption in
 this plugin trustworthy, so this check is always an error and can't be turned off.
+
+Self-explanatory reasons are:
+- `ExemptionReason.FOR_BACKWARDS_COMPATIBILITY` - The exempted shape is kept to stay compatible with existing users.
+- `ExemptionReason.API_DESIGN` - The exempted shape is a deliberate part of the API design.
+
+Non-self-explanatory reasons are:
+- `ExemptionReason.INTEROP` - The exempted shape is dictated by interoperability with another language, platform, or
+  framework. Which interop constraint applies is not obvious from the entry alone, so the
+  `description` must still name it.
+- `ExemptionReason.EXTERNAL_CONTRACT` - The exempted shape mirrors an externally defined contract - a specification, a protocol,
+  or a closed real-world domain. Which contract is mirrored is not obvious from the entry
+  alone, so the `description` must still name it.
+- `ExemptionReason.IGNORE_JAVA_INTEROP` - The exempted declaration deliberately ignores Java interoperability. This reason marks the
+  handful of spots where Java ergonomics are knowingly sacrificed - a library that doesn't
+  support Java callers at all disables the Java-interop diagnostics wholesale in its build
+  configuration instead. Why this particular declaration gets to ignore Java callers is not
+  obvious from the entry alone, so the `description` must still explain it.
+- `ExemptionReason.OTHER` - None of the other entries fits. This is the default, and it explains nothing by itself,
+  so the exemption annotation must spell the motivation out in its `description`.
 
 ### Don't
 
@@ -52,25 +64,15 @@ public open class OtherWidget
 public class UndocumentedThing
 ```
 
-None of these say anything: the default reason `OTHER` doesn't speak for itself, and an empty or
-whitespace-only `description` adds nothing next to it.
-
 ### Do
 
 ```kotlin
 @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public open class Widget
 
-@IntentionallyOpen(description = "kept open for mocking")
+@IntentionallyOpen(description = "Kept open for internal testing")
 public open class OtherWidget
 ```
-
-Satisfy the check either way:
-
-- Pick a reason that explains itself: `FOR_BACKWARDS_COMPATIBILITY` or `API_DESIGN`. The
-  description can then stay empty.
-- Any other reason - `INTEROP`, `EXTERNAL_CONTRACT`, `IGNORE_JAVA_INTEROP`, or `OTHER` - only
-  categorizes the exemption, so it still needs a non-blank `description` next to it.
 
 ## Notes
 
@@ -92,6 +94,5 @@ non-blank `description` next to any other reason.
 
 ## See also
 
-- [Exemptions and internal API](exemptions.md)
-- [Data classes in public API](../data-class-public-api.md) for an example check that defines an
-  exemption annotation
+- [](exemptions.md)
+- [Data class exemption](data-class-public-api.md#exemption) for an example check that defines an exemption annotation
