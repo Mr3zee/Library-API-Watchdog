@@ -36,26 +36,26 @@ right-truncated overloads, so a defaulted parameter in the middle of the list st
 skipped from Java, and it only improves Java call sites - it doesn't make adding a parameter
 later binary compatible for Kotlin callers either.
 
-## Don't
+### Don't
 
 ```kotlin
 public fun connect(host: String, port: Int = 80, timeout: Int = 30): Unit = Unit
 ```
 
-## Do
+### Do
 
 ```kotlin
 @JvmOverloads
 public fun connect(host: String, port: Int = 80, timeout: Int = 30): Unit = Unit
 ```
 
-## Don't {id="dont-2"}
+### Don't {id="dont-2"}
 
 ```kotlin
 public class Connection(host: String, port: Int = 80)
 ```
 
-## Do {id="do-2"}
+### Do {id="do-2"}
 
 ```kotlin
 public class Connection @JvmOverloads constructor(host: String, port: Int = 80)

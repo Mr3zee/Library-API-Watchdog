@@ -28,7 +28,7 @@ implementation, and any later change - even a bug fix - risks breaking a usage n
 supported. Writing the contract down helps your library avoid these issues. See the
 [Kotlin API guidelines on documenting your API](https://kotlinlang.org/docs/api-guidelines-informative-documentation.html#thoroughly-document-your-api).
 
-## Don't
+### Don't
 
 ```kotlin
 // UNDOCUMENTED_PUBLIC_API
@@ -40,7 +40,7 @@ public class Cache {
 }
 ```
 
-## Do
+### Do
 
 ```kotlin
 /** An in-memory string cache. */
@@ -55,7 +55,7 @@ public class Cache {
 }
 ```
 
-## Don't {id="dont-2"}
+### Don't {id="dont-2"}
 
 A class KDoc alone doesn't document its constructor properties. Each one still needs a matching
 `@property` tag (or `@param` for a `val`/`var` declared in the primary constructor):
@@ -70,7 +70,7 @@ public class Profile(
 ) 
 ```
 
-## Do {id="do-2"}
+### Do {id="do-2"}
 
 ```kotlin
 /**

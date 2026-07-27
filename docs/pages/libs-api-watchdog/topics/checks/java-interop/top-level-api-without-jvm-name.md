@@ -36,7 +36,7 @@ against it. See Kotlin's
 [Java-to-Kotlin interop guide](https://kotlinlang.org/docs/java-to-kotlin-interop.html#package-level-functions)
 for how top-level declarations actually compile.
 
-## Don't
+### Don't
 
 ```kotlin
 // Network.kt
@@ -47,7 +47,7 @@ public fun connect(): Int = 0
 public fun disconnect(): Int = 0
 ```
 
-## Do
+### Do
 
 ```kotlin
 // Network.kt

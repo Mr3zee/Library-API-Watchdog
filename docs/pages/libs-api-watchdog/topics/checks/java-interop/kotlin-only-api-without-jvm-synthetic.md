@@ -33,7 +33,7 @@ that compiles in Java but fails at runtime. See Kotlin's
 [Java-to-Kotlin interop guide](https://kotlinlang.org/docs/java-to-kotlin-interop.html) for how
 these shapes actually compile.
 
-## Don't
+### Don't
 
 ```kotlin
 // Java sees a trailing Continuation parameter it can't provide idiomatically.
@@ -53,7 +53,7 @@ public inline fun <reified T> instantiate(): T? = null
 public fun onEach(action: (Int) -> Unit) {}
 ```
 
-## Do
+### Do
 
 ```kotlin
 @JvmSynthetic

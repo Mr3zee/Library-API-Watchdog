@@ -32,7 +32,7 @@ to opt out of. See the
 [opt-in requirements guide](https://kotlinlang.org/docs/opt-in-requirements.html#require-opt-in-to-extend-api)
 for the intended pattern.
 
-## Don't
+### Don't
 
 ```kotlin
 // SUBCLASS_OPT_IN_WITHOUT_MARKERS
@@ -40,7 +40,7 @@ for the intended pattern.
 public abstract class Connector
 ```
 
-## Do
+### Do
 
 ```kotlin
 @RequiresOptIn

@@ -110,7 +110,7 @@ Why this shape is hard to evolve or hurts API quality. Ground it in binary or so
 compatibility, call-site readability, or debuggability. Link the relevant Kotlin library
 authors' guidelines page.
 
-## Don't
+### Don't
 
     ```kotlin
     // the hazardous shape, possibly annotated with a comment on what breaks later
@@ -119,7 +119,7 @@ authors' guidelines page.
     <example-dont>
     ```
 
-## Do
+### Do
 
     ```kotlin
     // the evolvable alternative

@@ -29,7 +29,7 @@ which breaks source and binary compatibility for callers who use named-argument 
 destructuring declarations, or positional construction. See the Kotlin library authors' guide on
 [avoiding data classes in your API](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#avoid-using-data-classes-in-your-api).
 
-## Don't
+### Don't
 
 ```kotlin
 // Adding a `z` property later changes copy() and destructuring - a breaking change.
@@ -38,7 +38,7 @@ destructuring declarations, or positional construction. See the Kotlin library a
 public data class Coordinates(public val x: Int, public val y: Int)
 ```
 
-## Do
+### Do
 
 ```kotlin
 public class Coordinates(

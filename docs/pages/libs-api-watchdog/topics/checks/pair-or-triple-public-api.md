@@ -31,7 +31,7 @@ breaking every user in a source-incompatible way, while a purpose-built class ca
 optional property with a default value. See the
 [Kotlin API guidelines on object-oriented design for data and state](https://kotlinlang.org/docs/api-guidelines-consistency.html#use-object-oriented-design-for-data-and-state).
 
-## Don't
+### Don't
 
 ```kotlin
 // PAIR_OR_TRIPLE_PUBLIC_API
@@ -52,7 +52,7 @@ public fun aliased(): Point = 0 to 0
 public fun edges(): List<Pair<Int, Int>> = emptyList() 
 ```
 
-## Do
+### Do
 
 ```kotlin
 public class Dimensions(public val width: Int, public val height: Int, public val depth: Int)

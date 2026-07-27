@@ -36,7 +36,7 @@ the next reader: a reviewer can't tell whether the shape was chosen on purpose o
 just muted to make the build pass. Requiring an explanation is what keeps every other exemption in
 this plugin trustworthy, so this check is always an error and can't be turned off.
 
-## Don't
+### Don't
 
 ```kotlin
 // EXEMPTION_WITHOUT_EXPLANATION
@@ -55,7 +55,7 @@ public class UndocumentedThing
 None of these say anything: the default reason `OTHER` doesn't speak for itself, and an empty or
 whitespace-only `description` adds nothing next to it.
 
-## Do
+### Do
 
 ```kotlin
 @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)

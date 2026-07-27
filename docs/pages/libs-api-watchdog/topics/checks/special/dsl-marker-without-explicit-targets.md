@@ -36,7 +36,7 @@ explicit `@Target` can never be applied where it would restrict an implicit rece
 free to sprinkle it on parameters, properties, or return types instead, where it silently
 restricts nothing and gives a false sense of scope control.
 
-## Don't
+### Don't
 
 ```kotlin
 // DSL_MARKER_WITHOUT_EXPLICIT_TARGETS
@@ -44,7 +44,7 @@ restricts nothing and gives a false sense of scope control.
 public annotation class HtmlDsl
 ```
 
-## Do
+### Do
 
 ```kotlin
 @DslMarker

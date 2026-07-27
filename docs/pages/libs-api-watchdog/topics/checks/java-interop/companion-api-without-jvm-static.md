@@ -36,7 +36,7 @@ Kotlin, like a plain static factory or utility - an unidiomatic and easy-to-miss
 changing how Kotlin resolves the same call. See the Kotlin guide on
 [static methods](https://kotlinlang.org/docs/java-to-kotlin-interop.html#static-methods).
 
-## Don't
+### Don't
 
 ```kotlin
 public class Registry {
@@ -46,7 +46,7 @@ public class Registry {
 }
 ```
 
-## Do
+### Do
 
 ```kotlin
 public class Registry {

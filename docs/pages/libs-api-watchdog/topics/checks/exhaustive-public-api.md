@@ -32,7 +32,7 @@ later makes every such `when` at every call site stop compiling: a source-incomp
 library author did not think of as breaking. See the
 [Kotlin API guidelines on preventing unwanted extensions](https://kotlinlang.org/docs/api-guidelines-predictability.html#prevent-unwanted-and-invalid-extensions).
 
-## Don't
+### Don't
 
 ```kotlin
 // EXHAUSTIVE_PUBLIC_API
@@ -52,7 +52,7 @@ public sealed interface Event {
 }
 ```
 
-## Do
+### Do
 
 ```kotlin
 @SubclassOptInRequired(InternalMyLibrarySubclassApi::class)
