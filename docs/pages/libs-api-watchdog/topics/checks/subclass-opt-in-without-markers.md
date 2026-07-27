@@ -3,20 +3,18 @@
 `SUBCLASS_OPT_IN_WITHOUT_MARKERS` reports `@SubclassOptInRequired` annotations that list no
 marker classes, so they gate nothing.
 
-| | |
-|---|---|
-| Diagnostic | `SUBCLASS_OPT_IN_WITHOUT_MARKERS` |
-| Default severity | Error |
-| Gradle property | [`subclassOptInWithoutMarkers`](configuration.md) |
-| Exemption | none |
+|                  |                                                                                |
+|------------------|--------------------------------------------------------------------------------|
+| Diagnostic       | `SUBCLASS_OPT_IN_WITHOUT_MARKERS`                                              |
+| Default severity | Error                                                                          |
+| Gradle property  | [`subclassOptInWithoutMarkers`](configuration.md)                              |
+| Exemption        | none, replace with [`@IntentionallyOpen`](open-api-without-subclass-opt-in.md) |
 
 ## What it reports
 
 `markerClass` is a vararg parameter, so `@SubclassOptInRequired` compiles fine with zero
-arguments, or with empty parentheses. Either way, the annotation restricts nothing: the class or
-interface stays open to external subclassing exactly as if it were unannotated. The check only
-looks at declarations that would otherwise need subclass opt-in at all - see
-[Open API without subclass opt-in](open-api-without-subclass-opt-in.md) for that scope.
+arguments. The annotation restricts nothing in this case: the class or
+interface stays open to external subclassing exactly as if it were unannotated. 
 
 ```kotlin
 // SUBCLASS_OPT_IN_WITHOUT_MARKERS
@@ -28,7 +26,7 @@ public abstract class Connector
 
 `@SubclassOptInRequired` exists so a library can add abstract members or otherwise change a
 contract later, because every external subclasser had to explicitly opt in to that instability
-first. An annotation with no marker classes gives none of that protection: any external class can
+first. An annotation with no marker doesn't protect against this. Any external class can
 extend the type without acknowledging anything, so the library keeps the evolution risk it meant
 to opt out of. See the
 [opt-in requirements guide](https://kotlinlang.org/docs/opt-in-requirements.html#require-opt-in-to-extend-api)
@@ -37,12 +35,9 @@ for the intended pattern.
 ## Don't
 
 ```kotlin
-@RequiresOptIn
-public annotation class UnstableApi
-
 // SUBCLASS_OPT_IN_WITHOUT_MARKERS
 @SubclassOptInRequired
-public abstract class Connector // any external class can still extend it
+public abstract class Connector
 ```
 
 ## Do
@@ -69,9 +64,17 @@ Notes:
 
 There is no `@Intentionally*` annotation for this diagnostic: an unmarkered
 `@SubclassOptInRequired` never restricts anything, so keeping it as-is is never a valid design
-choice. Fix it by listing at least one marker class in `@SubclassOptInRequired`. To silence the
-check project-wide instead (for example, temporarily during a migration), lower the severity with
-the Gradle property below; there is no per-declaration escape hatch.
+choice. Fix it by listing at least one marker class in `@SubclassOptInRequired`. 
+
+To exempt this check for binary compatibility reasons, replace the `@SubclassOptInRequired` with
+`@IntentionallyOpen`:
+
+```kotlin
+@IntentionallyOpen(
+    reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY,
+)
+public abstract class Connector
+```
 
 ## Configuration
 
@@ -89,4 +92,4 @@ With direct compiler invocation:
 ## See also
 
 - [Require opt-in to extend an API](https://kotlinlang.org/docs/opt-in-requirements.html#require-opt-in-to-extend-api)
-- [Open API without subclass opt-in](open-api-without-subclass-opt-in.md)
+- [](open-api-without-subclass-opt-in.md)

@@ -26,12 +26,12 @@ api_docs_dir=$2
 
 # Check if the files/directories exist
 if [ ! -f "$sitemap_file" ]; then
-  echo "Error: Sitemap file '$sitemap_file' does not exist."
+  echo "Error: Sitemap file '$sitemap_file' doesn't exist."
   exit 1
 fi
 
 if [ ! -d "$api_docs_dir" ]; then
-  echo "Error: API docs directory '$api_docs_dir' does not exist."
+  echo "Error: API docs directory '$api_docs_dir' doesn't exist."
   exit 1
 fi
 

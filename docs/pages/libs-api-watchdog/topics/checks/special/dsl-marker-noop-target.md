@@ -39,7 +39,7 @@ Kotlin docs on [scope control with `@DslMarker`](https://kotlinlang.org/docs/typ
 ## Don't
 
 ```kotlin
-// This is the shape that broke Ktor's @KtorDsl (KTOR-8901): FUNCTION does nothing.
+// This is the shape that broke Ktor's @KtorDsl (KTOR-8901): FUNCTION doesn'thing.
 @DslMarker
 // DSL_MARKER_NOOP_TARGET
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPEALIAS, AnnotationTarget.TYPE, AnnotationTarget.FUNCTION)

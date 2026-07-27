@@ -1,5 +1,7 @@
 # Configuration
 
+Configuration options for `%product%`.
+
 ## Apply the Gradle plugin
 
 ```kotlin

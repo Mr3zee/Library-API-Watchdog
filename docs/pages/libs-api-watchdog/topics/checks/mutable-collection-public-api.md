@@ -28,7 +28,7 @@ public fun nested(): List<MutableList<Int>> = emptyList()
 
 ## Rationale
 
-A mutable return type or property lets users mutate a collection they do not own; a mutable
+A mutable return type or property lets users mutate a collection they don't own; a mutable
 parameter lets the library mutate an argument the user still holds. Either way, once a mutable
 collection crosses the API boundary it is unclear whose mutations are safe, and the library can
 no longer swap its internal representation for a different collection type without risking a

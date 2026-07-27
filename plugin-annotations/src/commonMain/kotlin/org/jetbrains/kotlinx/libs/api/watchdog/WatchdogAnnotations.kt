@@ -34,7 +34,7 @@ public enum class ExemptionReason {
 
     /**
      * The exempted declaration deliberately ignores Java interoperability. This reason marks the
-     * handful of spots where Java ergonomics are knowingly sacrificed - a library that does not
+     * handful of spots where Java ergonomics are knowingly sacrificed - a library that doesn't
      * support Java callers at all disables the Java-interop diagnostics wholesale in its build
      * configuration instead. Why this particular declaration gets to ignore Java callers is not
      * obvious from the entry alone, so the `description` must still explain it.
@@ -562,7 +562,7 @@ public annotation class IntentionallyDefaultFacadeName(
  *
  * The libs-api-watchdog compiler plugin warns, in JVM compilations, about publicly visible functions
  * and constructors that declare default parameter values without `@JvmOverloads`: only the full
- * signature is compiled, so for Java callers the defaults do not exist and every argument must
+ * signature is compiled, so for Java callers the defaults don't exist and every argument must
  * be spelled out. Prefer
  * [`@JvmOverloads`](https://kotlinlang.org/docs/java-to-kotlin-interop.html#overloads-generation),
  * which additionally compiles the overloads that omit defaulted parameters from the right, and

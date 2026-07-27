@@ -14,7 +14,7 @@ signatures.
 
 The check flags `Pair` and `Triple` in return types, property types, parameter types, and type
 parameter bounds, including their type arguments (`List<Pair<Int, String>>` exposes the tuple all
-the same) and behind a type alias (an alias does not change what users see). A minimal
+the same) and behind a type alias (an alias doesn't change what users see). A minimal
 triggering example:
 
 ```kotlin

@@ -132,7 +132,7 @@ public class DocumentedThroughClassKDocTags(
 }
 
 // A class KDoc covers a property only through a matching `@property` tag; the KDoc's mere
-// presence does not document the properties.
+// presence doesn't document the properties.
 
 /**
  * Documented, but the tags cover only one of the two properties.

@@ -88,7 +88,7 @@ public inline var limit: Int
 Notable cases:
 
 - A thin wrapper may also resolve a reified type argument and narrow the delegate's result with
-  `as`/`as?`; a contract declared with `contract { ... }` does not count as a second statement.
+  `as`/`as?`; a contract declared with `contract { ... }` doesn't count as a second statement.
 - Calling another inline function, or reading or writing through an inline accessor, is logic: the
   inliner drags that body into the user transitively even with no visible control flow.
 - `@PublishedApi internal` inline functions and accessors are checked exactly like public ones: a

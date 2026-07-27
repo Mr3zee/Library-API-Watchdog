@@ -23,7 +23,7 @@ import org.jetbrains.kotlin.name.JvmStandardClassIds
  * name from the file name and lets the author choose a deliberate, Java-idiomatic one.
  *
  * The diagnostic fires once per file, anchored on the first public top-level function or
- * property. Files exposing only classifiers do not produce a facade worth naming, and neither do
+ * property. Files exposing only classifiers don't produce a facade worth naming, and neither do
  * files whose every top-level callable is hidden from Java with `@JvmSynthetic`. Authors
  * acknowledge a deliberately derived facade name with `@file:IntentionallyDefaultFacadeName`.
  * Non-JVM compilations have no facade classes at all, so [WatchdogFirCheckers] only registers

@@ -96,7 +96,7 @@ internal object ExemptionRegistry {
 
     fun resolutionFor(diagnostic: String): FixResolution =
         resolutions[diagnostic] ?: FixResolution.Unfixable(
-            "unknown diagnostic; this fixer version does not know how to exempt it"
+            "unknown diagnostic; this fixer version doesn't know how to exempt it"
         )
 
     private fun fixable(

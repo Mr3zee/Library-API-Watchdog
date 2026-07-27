@@ -68,7 +68,7 @@ public class Wallet(public val id: UserId)
 ```
 
 `@JvmExposeBoxed` generates Java-callable boxed variants alongside the mangled ones; it is the
-only fix for constructors and overridable members, since `@JvmName` does not accept them.
+only fix for constructors and overridable members, since `@JvmName` doesn't accept them.
 
 Notable edge cases and deliberate exceptions:
 

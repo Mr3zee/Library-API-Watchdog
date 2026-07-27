@@ -13,7 +13,7 @@ inherits a `toString` implementation.
 ## What it reports
 
 The check flags a public or protected regular class that has at least one property storing its
-value in a backing field, and that does not declare or inherit any `toString` implementation
+value in a backing field, and that doesn't declare or inherit any `toString` implementation
 besides the opaque default from `kotlin.Any`:
 
 ```kotlin
@@ -69,7 +69,7 @@ Edge cases and deliberate exceptions:
 - Enum entries, objects (including companion objects), interfaces, and annotation classes are not
   checked: enum entries render their name, objects typically hold constants rather than
   per-instance state, and interfaces and annotation classes cannot hold backing fields.
-- A delegated property stores its value in the delegate, not in a backing field, so it does not
+- A delegated property stores its value in the delegate, not in a backing field, so it doesn't
   make a class stateful on its own.
 - `@PublishedApi` internal classes are checked too, since they belong to the published binary API.
 

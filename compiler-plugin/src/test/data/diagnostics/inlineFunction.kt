@@ -79,7 +79,7 @@ public inline fun <reified T> lookup(name: String): T = Registry.lookup(name, T:
 
 public inline fun <R> once(block: () -> R): R = block()
 
-// A contract does not count against the single delegating statement. No warning.
+// A contract doesn't count against the single delegating statement. No warning.
 
 @OptIn(ExperimentalContracts::class)
 public inline fun <R> measured(block: () -> R): R {

@@ -49,7 +49,7 @@ import org.jetbrains.kotlin.name.Name
  *   values the user already holds instead of exposing new ones.
  * - A `val`/`var` primary constructor parameter is watched through the property it creates, so
  *   the shared parameter/property text is reported once - even when only the property is public.
- * - Type aliases are expanded before the classifier judgement: an alias does not change what
+ * - Type aliases are expanded before the classifier judgement: an alias doesn't change what
  *   users see. Flexible (Java platform) types are inspected through [declaredBound] only.
  * - The exemption annotation is honored on the whole declaration, on a single (type) parameter,
  *   or on a type usage, where it covers the annotated type and everything nested in it. Type-use
@@ -75,7 +75,7 @@ internal abstract class ExposedTypeChecker(
     protected abstract fun report(source: KtSourceElement?, kind: String, name: Name, violation: Name)
 
     /**
-     * The bound a flexible (Java platform) type is inspected through. A platform type does not
+     * The bound a flexible (Java platform) type is inspected through. A platform type doesn't
      * declare the watched trait in Kotlin sources, so each check picks the bound where the trait
      * is absent - [NullableBooleanChecker] the non-nullable lower bound, everything else the
      * read-only upper bound - keeping platform types unreported.

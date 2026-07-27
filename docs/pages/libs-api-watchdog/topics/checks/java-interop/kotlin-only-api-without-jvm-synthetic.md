@@ -75,7 +75,7 @@ Notable cases:
 - Abstract and interface members are exempt: `@JvmSynthetic` cannot hide a member that
   implementations must provide, so there is no non-breaking fix to suggest.
 - Overrides are exempt; the shape is reported on the base declaration instead.
-- Constructors are exempt: `@JvmSynthetic` does not apply to them.
+- Constructors are exempt: `@JvmSynthetic` doesn't apply to them.
 - A signature mangled by a value class is reported by `MANGLED_JVM_NAME_PUBLIC_API` instead.
 - A member declared inside a value class is exempt from both checks: the public value class itself
   is the deliberate choice.

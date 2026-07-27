@@ -23,7 +23,7 @@ reference served under `/api`.
 - Writerside substitutes `%var%` variables everywhere, including fenced code blocks. Available:
   `%product%`, `%libs-api-watchdog-version%`, `%kotlin-version%`, `%repo-root-path%`, `%host%`.
   Escape a literal percent sign as `%%`.
-- American English. Concise, active voice, no marketing fluff. Do not mention implementation
+- American English. Concise, active voice, no marketing fluff. don't mention implementation
   details (FIR, checker class names) on user-facing pages.
 - Facts must match the sources of truth: `README.md`, the checker sources in
   `compiler-plugin/src/main/kotlin/org/jetbrains/kotlinx/libs/api/watchdog/fir/`, the diagnostic
@@ -129,6 +129,10 @@ authors' guidelines page.
 Repeat Don't/Do pairs for distinct scenarios when the check has several. Cover the notable
 edge cases and the deliberate exceptions the checker implements (a short list is fine).
 
+## Notes
+
+Any notes about the behaviour worth adding.
+
 ## Exemption
 
 When keeping the shape is a deliberate decision. Show the exemption annotation with a
@@ -171,5 +175,5 @@ Adjustments:
 ## Structural pages
 
 `overview.md`, `configuration.md`, `configuration.md`, `exemptions.md`, `tapmoc-suggestion.md`, and
-`java-interop.md` do not use the check template. They follow the hard rules and keep the same
+`java-interop.md` don't use the check template. They follow the hard rules and keep the same
 tone; their outlines are defined by the task that produces them.

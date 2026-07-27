@@ -270,7 +270,7 @@ private fun PsiElement.resolveDeclarationTarget(): FixTarget? {
 /**
  * The callable whose signature contains the reported element. Type parameters take their
  * annotation inline: their mutable/tuple/nullable-Boolean bounds may belong to a class, which
- * the signature-level exemption annotations do not target.
+ * the signature-level exemption annotations don't target.
  */
 private fun PsiElement.resolveCallableTarget(): FixTarget? {
     for (candidate in ancestorsWithSelf()) {

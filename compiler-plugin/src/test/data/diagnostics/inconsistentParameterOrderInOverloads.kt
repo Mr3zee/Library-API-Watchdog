@@ -43,7 +43,7 @@ public class Rect<!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>(width: Int, heigh
     <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>public constructor(height: Int, width: Int, scale: Double) : this(width, height)<!>
 }
 
-// A member does not overload a same-named top-level function.
+// A member doesn't overload a same-named top-level function.
 
 public class Turtle {
     public fun draw(y: Int, x: Int) {}

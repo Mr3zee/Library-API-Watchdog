@@ -13,13 +13,13 @@ public fun doWork(<!BOOLEAN_PARAMETER_PUBLIC_API!>optimizeForSpeed<!>: Boolean) 
 
 public fun mixed(<!BOOLEAN_PARAMETER_PUBLIC_API!>first<!>: Boolean, count: Int, <!BOOLEAN_PARAMETER_PUBLIC_API!>second<!>: Boolean) {}
 
-// A default value does not make the positional call site any clearer.
+// A default value doesn't make the positional call site any clearer.
 public fun withDefault(<!BOOLEAN_PARAMETER_PUBLIC_API!>eager<!>: Boolean = false) {}
 
 // A nullable Boolean is a three-state flag: still opaque at the call site.
 public fun tristate(<!BOOLEAN_PARAMETER_PUBLIC_API!>flag<!>: Boolean?) {}
 
-// A type alias does not change what users pass.
+// A type alias doesn't change what users pass.
 public typealias Flag = Boolean
 
 public fun aliased(<!BOOLEAN_PARAMETER_PUBLIC_API!>flag<!>: Flag) {}
@@ -36,7 +36,7 @@ public abstract class Base {
 @PublishedApi
 internal fun published(<!BOOLEAN_PARAMETER_PUBLIC_API!>flag<!>: Boolean) {}
 
-// Operator conventions do not exempt: `bits.set(0, true)` is as opaque as any other call.
+// Operator conventions don't exempt: `bits.set(0, true)` is as opaque as any other call.
 public class Bits {
     public operator fun set(index: Int, <!BOOLEAN_PARAMETER_PUBLIC_API!>value<!>: Boolean) {}
 }
@@ -84,7 +84,7 @@ public typealias Toggle = Widget
 
 public fun Toggle(on: Boolean, brightness: Int): Toggle = Widget(on)
 
-// A factory whose name does not match the returned type reads as an ordinary call: should warn.
+// A factory whose name doesn't match the returned type reads as an ordinary call: should warn.
 public fun createWidget(<!BOOLEAN_PARAMETER_PUBLIC_API!>visible<!>: Boolean): Widget = Widget(visible)
 
 // Acknowledged Boolean parameters: no warning.

@@ -44,7 +44,7 @@ import org.jetbrains.kotlin.name.Name
  *
  * The fix is an explicit Java-facing shape: `@JvmName` on the function (`@get:`/`@set:JvmName`
  * on property accessors) unmangles the name, and `@JvmExposeBoxed` generates Java-callable boxed
- * variants - the only option for constructors and overridable members, which `@JvmName` does not
+ * variants - the only option for constructors and overridable members, which `@JvmName` doesn't
  * accept. Authors acknowledge a deliberately Kotlin-only shape with `@IntentionallyMangledJvmName`
  * - on the declaration, on a constructor `val`/`var` parameter for the property made from it, or
  * on a class, where it covers every declaration inside.

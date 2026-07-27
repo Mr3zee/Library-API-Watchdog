@@ -87,7 +87,7 @@ Notable edge cases and deliberate exceptions:
 Apply `@IntentionallyInconsistentParameterOrder` to the function or constructor when the differing
 order is a deliberate, stable part of the contract, for example an old overload kept for source
 compatibility. The annotation also removes the declaration as an ordering reference: it is skipped
-both as a reporter and as a comparison target, so one acknowledged legacy overload does not force
+both as a reporter and as a comparison target, so one acknowledged legacy overload doesn't force
 its order onto otherwise-consistent newer ones.
 
 ```kotlin

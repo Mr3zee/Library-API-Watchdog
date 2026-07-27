@@ -25,7 +25,7 @@ import org.jetbrains.kotlin.name.StandardClassIds
  * of publicly visible functions. At the call site a positional `true`/`false` argument reveals
  * nothing about what it controls, and users cannot be forced to use named arguments, so the API
  * should model the modes as separate, descriptively named functions or as an enum class instead.
- * Nullable Booleans are three-state flags and count too, a type alias does not change what
+ * Nullable Booleans are three-state flags and count too, a type alias doesn't change what
  * users pass, and a `vararg` Boolean parameter takes the same positional `true`/`false`
  * arguments (only the declared element type matters there, not the array carrying it). Authors
  * acknowledge a deliberate Boolean parameter with `@IntentionallyBooleanParameter` - on the

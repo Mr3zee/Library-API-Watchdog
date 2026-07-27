@@ -21,7 +21,7 @@ public fun tag(vararg values: String, <!REQUIRED_PARAMETER_AFTER_OPTIONAL!>name<
 // A function-type parameter that is not last has no trailing-lambda syntax to preserve.
 public fun schedule(delay: Long = 0L, <!REQUIRED_PARAMETER_AFTER_OPTIONAL!>action<!>: () -> Unit, <!REQUIRED_PARAMETER_AFTER_OPTIONAL!>name<!>: String) {}
 
-// No lambda literal satisfies a KFunction reflection type, so the last position does not excuse it.
+// No lambda literal satisfies a KFunction reflection type, so the last position doesn't excuse it.
 public fun bind(priority: Int = 0, <!REQUIRED_PARAMETER_AFTER_OPTIONAL!>handler<!>: KFunction1<Int, Unit>) {}
 
 // Constructors declare parameter lists too.

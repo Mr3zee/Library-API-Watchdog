@@ -2,7 +2,7 @@
 
 package foo.bar
 
-// Without explicit API mode the plugin does not run: none of the declarations below are reported
+// Without explicit API mode the plugin doesn't run: none of the declarations below are reported
 // even though each would trigger a checker otherwise.
 
 open class UnprotectedOpenClass
