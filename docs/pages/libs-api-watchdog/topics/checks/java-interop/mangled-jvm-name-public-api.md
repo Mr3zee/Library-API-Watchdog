@@ -4,22 +4,18 @@
 sources can't call because a value class in their signature makes the JVM backend mangle the
 compiled name.
 
-| | |
-|---|---|
-| Diagnostic | `MANGLED_JVM_NAME_PUBLIC_API` |
-| Default severity | Error |
-| Applies to | JVM compilations only |
-| Gradle property | [`mangledJvmNamePublicApi`](configuration.md) |
-| Exemption | [`@IntentionallyMangledJvmName`](exemptions.md) |
+|                  |                                                 |
+|------------------|-------------------------------------------------|
+| Diagnostic       | `MANGLED_JVM_NAME_PUBLIC_API`                   |
+| Default severity | Error                                           |
+| Applies to       | JVM compilations only                           |
+| Gradle property  | [`mangledJvmNamePublicApi`](configuration.md)   |
+| Exemption        | [`@IntentionallyMangledJvmName`](exemptions.md) |
 
 ## What it reports
 
 A value class among the value parameters, the extension receiver, or the context parameters of a
-function or property - nullable types and type parameters bounded by a value class included - or
-a value class *return* type on a class, interface, or object member, makes the JVM backend append
-a hash suffix to the compiled name, and the `-` is not a legal Java identifier. A constructor with
-a value class parameter gets no such suffix; instead the visible constructor becomes private and
-the public one gains a synthetic marker parameter, which Java still can't call:
+function or property - nullable types and type parameters bounded by a value class included.
 
 ```kotlin
 @JvmInline
@@ -56,7 +52,8 @@ public fun take(id: UserId) { }
 ### Don't {id="dont-2"}
 
 ```kotlin
-// The public constructor is replaced: a private one plus a synthetic marker-parameter overload.
+// The public constructor is replaced by 
+// a private one and a synthetic marker-parameter overload.
 public class Wallet(public val id: UserId)
 ```
 
@@ -82,13 +79,11 @@ only fix for constructors and overridable members, since `@JvmName` doesn't acce
   is the deliberate choice, and `@JvmName` is not even applicable inside it.
 - `suspend` functions are exempt: an unmangled name would not make them Java-callable anyway.
 - Overrides are exempt; the fixed signature is reported on the base declaration.
-- `@JvmSynthetic` declarations and accessors are exempt: already hidden from Java on purpose.
+- `@JvmSynthetic` declarations and accessors are exempt.
 
 ## Exemption
 
-Apply `@IntentionallyMangledJvmName` when Java callers are not supported for this declaration. It
-targets the declaration itself, a primary constructor `val`/`var` parameter (covering the property
-made from it), or a containing class (covering every declaration inside):
+Apply `@IntentionallyMangledJvmName` when Java callers are not supported for this declaration:
 
 ```kotlin
 @IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN)
@@ -116,7 +111,7 @@ With direct compiler invocation:
 ## See also
 
 - [Inline value classes and mangling](https://kotlinlang.org/docs/java-to-kotlin-interop.html#inline-value-classes)
-- [Java interop checks](java-interop.md)
-- [Kotlin-only API without JvmSynthetic](kotlin-only-api-without-jvm-synthetic.md), the sibling
+- [](java-interop.md)
+- [](kotlin-only-api-without-jvm-synthetic.md), the sibling
   check for shapes that stay visible to Java but are not idiomatically callable
-- [Exemptions and internal API](exemptions.md)
+- [](exemptions.md)
