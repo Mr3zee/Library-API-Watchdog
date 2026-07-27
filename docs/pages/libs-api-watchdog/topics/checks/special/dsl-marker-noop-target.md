@@ -36,7 +36,7 @@ it is. See the
 [DSL marker design note](https://github.com/Kotlin/KEEP/blob/main/notes/0005-dsl-marker.md) and the
 Kotlin docs on [scope control with `@DslMarker`](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker).
 
-## Don't
+### Don't
 
 ```kotlin
 // This is the shape that broke Ktor's @KtorDsl (KTOR-8901): FUNCTION doesn'thing.
@@ -59,7 +59,7 @@ public annotation class KtorDsl
 public annotation class ManyNoopsDsl
 ```
 
-## Do
+### Do
 
 ```kotlin
 @DslMarker

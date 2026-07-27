@@ -29,14 +29,14 @@ state turns that noise into something you can act on, and it costs nothing to ev
 Kotlin library authors' guidelines on
 [providing a toString method for stateful types](https://kotlinlang.org/docs/api-guidelines-debuggability.html#provide-a-tostring-method-for-stateful-types).
 
-## Don't
+### Don't
 
 ```kotlin
 // STATEFUL_CLASS_WITHOUT_TO_STRING
 public class Connection(public val host: String)
 ```
 
-## Do
+### Do
 
 ```kotlin
 public class Connection(public val host: String) {
@@ -44,14 +44,14 @@ public class Connection(public val host: String) {
 }
 ```
 
-## Don't {id="dont-2"}
+### Don't {id="dont-2"}
 
 ```kotlin
 // STATEFUL_CLASS_WITHOUT_TO_STRING
 public abstract class StatefulBase(public val id: Int)
 ```
 
-## Do {id="do-2"}
+### Do {id="do-2"}
 
 ```kotlin
 public abstract class StatefulBase(public val id: Int) {

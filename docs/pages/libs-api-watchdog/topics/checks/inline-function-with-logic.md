@@ -31,7 +31,7 @@ pick up the fix at runtime by relinking against the new library binary. See the 
 authors' guide on
 [`@PublishedApi` considerations](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#considerations-for-using-the-publishedapi-annotation).
 
-## Don't
+### Don't
 
 ```kotlin
 // Branching here is copied into every user binary; a fix needs every user to recompile.
@@ -48,7 +48,7 @@ public inline fun cachedLength(tag: String): Int {
 }
 ```
 
-## Do
+### Do
 
 ```kotlin
 public inline fun choose(value: Int): Int = chooseImpl(value)

@@ -36,7 +36,7 @@ because none of them is the default. See Kotlin's guide to
 [static fields](https://kotlinlang.org/docs/java-to-kotlin-interop.html#static-fields) for how
 `@JvmField`, `const val`, and `@JvmStatic` each compile.
 
-## Don't
+### Don't
 
 ```kotlin
 public class Registry {
@@ -47,7 +47,7 @@ public class Registry {
 }
 ```
 
-## Do
+### Do
 
 ```kotlin
 public class Registry {

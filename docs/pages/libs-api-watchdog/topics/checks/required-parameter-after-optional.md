@@ -41,27 +41,27 @@ parameter in a natural position later. See the Kotlin library authors' guide on
 [parameter order, naming, and usage](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage):
 essential inputs first, optional inputs last.
 
-## Don't
+### Don't
 
 ```kotlin
 // REQUIRED_PARAMETER_AFTER_OPTIONAL
 public fun connect(retries: Int = 3, host: String): Unit = Unit
 ```
 
-## Do
+### Do
 
 ```kotlin
 public fun connect(host: String, retries: Int = 3): Unit = Unit
 ```
 
-## Don't {id="dont-2"}
+### Don't {id="dont-2"}
 
 ```kotlin
 // REQUIRED_PARAMETER_AFTER_OPTIONAL
 public class Server(port: Int = 80, host: String)
 ```
 
-## Do {id="do-2"}
+### Do {id="do-2"}
 
 ```kotlin
 public class Server(host: String, port: Int = 80)
@@ -71,13 +71,11 @@ public class Server(host: String, port: Int = 80)
 
 - A `vararg` parameter counts as optional too: callers can omit it entirely, so a required
   parameter after it is still reported.
-- A required function-type or `fun interface` parameter in the *last* position is exempt: keeping
+- A required function-type or `fun interface` parameter in the **last** position is exempt: keeping
   it last is what makes trailing-lambda call syntax available, and the standard library itself
   places such parameters after defaulted ones (`joinToString(separator = ..., transform)`). The
   same required function-type parameter is still reported when it is *not* last, since there is no
   trailing-lambda syntax to preserve there.
-- A required parameter of a `KFunction` reflection type in the last position is not exempt: no
-  lambda literal can satisfy it, so there is no call-syntax benefit to keeping it last.
 - Overrides are exempt: they can't declare default values, and their parameter order is fixed by
   the overridden declaration, which is reported where it is declared instead.
 
@@ -88,12 +86,11 @@ is a deliberate, stable part of the contract, for example an old parameter list 
 compatibility:
 
 ```kotlin
-@IntentionallyRequiredParameterAfterOptional(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)
+@IntentionallyRequiredParameterAfterOptional(
+    reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY,
+)
 public fun legacyConnect(retries: Int = 3, host: String): Unit = Unit
 ```
-
-The annotation targets the function or constructor declaration only; there is no parameter- or
-type-level placement.
 
 ## Configuration
 
@@ -111,6 +108,5 @@ With direct compiler invocation:
 ## See also
 
 - [Preserve parameter order, naming, and usage](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage)
-- [Inconsistent parameter order in overloads](inconsistent-parameter-order-in-overloads.md), a
-  sibling check on parameter order across overloads
-- [Exemptions and internal API](exemptions.md)
+- [](inconsistent-parameter-order-in-overloads.md), a sibling check on parameter order across overloads
+- [](exemptions.md)

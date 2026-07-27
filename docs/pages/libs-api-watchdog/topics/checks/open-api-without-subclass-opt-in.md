@@ -34,7 +34,7 @@ Unrestricted open API is one of the classic ways a
 [public declaration becomes hard to evolve](https://kotlinlang.org/docs/api-guidelines-predictability.html#prevent-unwanted-and-invalid-extensions):
 every unreviewed subclass is an implicit contract the author never agreed to.
 
-## Don't
+### Don't
 
 ```kotlin
 // OPEN_API_WITHOUT_SUBCLASS_OPT_IN
@@ -46,7 +46,7 @@ public interface Plugin {
 }
 ```
 
-## Do
+### Do
 
 ```kotlin
 public open class Widget internal constructor()

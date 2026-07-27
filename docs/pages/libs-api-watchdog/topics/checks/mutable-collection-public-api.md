@@ -35,14 +35,14 @@ no longer swap its internal representation for a different collection type witho
 behavioral change for users that relied on mutating the exposed instance. See the Kotlin guide on
 [avoiding exposing mutable state](https://kotlinlang.org/docs/api-guidelines-predictability.html#avoid-exposing-mutable-state).
 
-## Don't
+### Don't
 
 ```kotlin
 // MUTABLE_COLLECTION_PUBLIC_API
 public class Holder(public val items: MutableList<Int>)
 ```
 
-## Do
+### Do
 
 ```kotlin
 public class Holder(items: List<Int>) {
@@ -50,14 +50,14 @@ public class Holder(items: List<Int>) {
 }
 ```
 
-## Don't {id="dont-2"}
+### Don't {id="dont-2"}
 
 ```kotlin
 // MUTABLE_COLLECTION_PUBLIC_API
 public fun consume(items: MutableSet<Int>): Unit = items.clear()
 ```
 
-## Do {id="do-2"}
+### Do {id="do-2"}
 
 ```kotlin
 public fun consume(items: Set<Int>): Unit = Unit // copy internally before mutating, if needed

@@ -32,7 +32,7 @@ when the swapped parameters share a type and the mistake still compiles. See the
 authors' guide on
 [preserving parameter order, naming, and usage](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage).
 
-## Don't
+### Don't
 
 ```kotlin
 // INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
@@ -42,7 +42,7 @@ public fun draw(x: Int, y: Int): Unit = Unit
 public fun draw(y: Int, x: Int, scale: Double): Unit = Unit
 ```
 
-## Do
+### Do
 
 ```kotlin
 public fun draw(x: Int, y: Int): Unit = Unit
@@ -50,7 +50,7 @@ public fun draw(x: Int, y: Int): Unit = Unit
 public fun draw(x: Int, y: Int, scale: Double): Unit = Unit
 ```
 
-## Don't {id="dont-2"}
+### Don't {id="dont-2"}
 
 ```kotlin
 // INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
@@ -60,7 +60,7 @@ public class Rect(width: Int, height: Int) {
 }
 ```
 
-## Do {id="do-2"}
+### Do {id="do-2"}
 
 ```kotlin
 public class Rect(width: Int, height: Int) {

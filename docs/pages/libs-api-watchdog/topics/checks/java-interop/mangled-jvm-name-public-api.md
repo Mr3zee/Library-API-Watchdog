@@ -39,28 +39,28 @@ by the source signature and never notice, but for Java the declaration is unreac
 Kotlin guide on
 [inline value classes and mangling](https://kotlinlang.org/docs/java-to-kotlin-interop.html#inline-value-classes).
 
-## Don't
+### Don't
 
 ```kotlin
 // Compiles to take-4ZD5Yi0(...): an illegal Java identifier.
 public fun take(id: UserId): Unit = Unit
 ```
 
-## Do
+### Do
 
 ```kotlin
 @JvmName("take")
 public fun take(id: UserId): Unit = Unit
 ```
 
-## Don't {id="dont-2"}
+### Don't {id="dont-2"}
 
 ```kotlin
 // The public constructor is replaced: a private one plus a synthetic marker-parameter overload.
 public class Wallet(public val id: UserId)
 ```
 
-## Do {id="do-2"}
+### Do {id="do-2"}
 
 ```kotlin
 @JvmExposeBoxed

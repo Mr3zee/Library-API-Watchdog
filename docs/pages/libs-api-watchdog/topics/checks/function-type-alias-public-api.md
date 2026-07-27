@@ -30,14 +30,14 @@ breaking change to the bare function type. A
 keeps the same lambda call-site ergonomics (SAM conversion) behind a real, nominal type that can
 add members without breaking binary compatibility.
 
-## Don't
+### Don't
 
 ```kotlin
 // FUNCTION_TYPE_ALIAS_PUBLIC_API
 public typealias Callback = (Int) -> Unit
 ```
 
-## Do
+### Do
 
 ```kotlin
 public fun interface Callback {
@@ -45,14 +45,14 @@ public fun interface Callback {
 }
 ```
 
-## Don't {id="dont-2"}
+### Don't {id="dont-2"}
 
 ```kotlin
 // FUNCTION_TYPE_ALIAS_PUBLIC_API
 public typealias SuspendAction = suspend () -> Unit
 ```
 
-## Do {id="do-2"}
+### Do {id="do-2"}
 
 ```kotlin
 public fun interface SuspendAction {

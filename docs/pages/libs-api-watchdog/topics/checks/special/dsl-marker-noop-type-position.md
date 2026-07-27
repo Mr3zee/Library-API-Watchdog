@@ -41,21 +41,21 @@ error, so it is expensive to debug - and it defeats the whole point of writing s
 first place. See the Kotlin guide on
 [scope control for DSL markers](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker).
 
-## Don't
+### Don't
 
 ```kotlin
 // DSL_MARKER_NOOP_TYPE_POSITION
 public fun process(tag: @TreeDsl Tag): Unit = Unit
 ```
 
-## Do
+### Do
 
 ```kotlin
 // no scope control needed for a named value
 public fun process(tag: Tag): Unit = Unit
 ```
 
-## Don't {id="dont-2"}
+### Don't {id="dont-2"}
 
 ```kotlin
 // A function type without a receiver has no implicit value to propagate the marker to.
@@ -64,7 +64,7 @@ public fun process(tag: Tag): Unit = Unit
 public fun configure(block: @TreeDsl () -> Unit): Unit = block()
 ```
 
-## Do {id="do-2"}
+### Do {id="do-2"}
 
 ```kotlin
 // The marker on the function type now propagates to its receiver.

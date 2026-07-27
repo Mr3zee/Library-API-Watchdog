@@ -29,7 +29,7 @@ two-branch `if` where the real logic needs three branches, and the meaning of `n
 learned from documentation. See the Kotlin library authors' guide on
 [avoiding the Boolean type as an argument](https://kotlinlang.org/docs/api-guidelines-readability.html#avoid-using-the-boolean-type-as-an-argument).
 
-## Don't
+### Don't
 
 ```kotlin
 // true, false, or... what does null mean here?
@@ -38,7 +38,7 @@ learned from documentation. See the Kotlin library authors' guide on
 public fun connectionState(): Boolean? = null
 ```
 
-## Do
+### Do
 
 ```kotlin
 public enum class ConnectionState { CONNECTED, DISCONNECTED, UNKNOWN }
@@ -46,14 +46,14 @@ public enum class ConnectionState { CONNECTED, DISCONNECTED, UNKNOWN }
 public fun connectionState(): ConnectionState = ConnectionState.UNKNOWN
 ```
 
-## Don't {id="dont-2"}
+### Don't {id="dont-2"}
 
 ```kotlin
 // NULLABLE_BOOLEAN_PUBLIC_API
 public class Holder(public val checked: Boolean?)
 ```
 
-## Do {id="do-2"}
+### Do {id="do-2"}
 
 ```kotlin
 public enum class CheckState { CHECKED, UNCHECKED, UNKNOWN }

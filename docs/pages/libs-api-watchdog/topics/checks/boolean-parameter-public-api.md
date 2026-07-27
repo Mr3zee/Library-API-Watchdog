@@ -27,14 +27,14 @@ about what turns on. Users can't be forced to use named arguments yet, so the me
 whoever reads the call site remembering the parameter name. See the
 [Kotlin API guidelines on avoiding Boolean arguments](https://kotlinlang.org/docs/api-guidelines-readability.html#avoid-using-the-boolean-type-as-an-argument).
 
-## Don't
+### Don't
 
 ```kotlin
 // BOOLEAN_PARAMETER_PUBLIC_API
 public fun setLogging(enabled: Boolean): Unit {}
 ```
 
-## Do
+### Do
 
 ```kotlin
 public fun enableLogging(): Unit {}
@@ -42,14 +42,14 @@ public fun enableLogging(): Unit {}
 public fun disableLogging(): Unit {}
 ```
 
-## Don't {id="dont-2"}
+### Don't {id="dont-2"}
 
 ```kotlin
 // BOOLEAN_PARAMETER_PUBLIC_API
 public fun configure(vararg flags: Boolean): Unit {}
 ```
 
-## Do {id="do-2"}
+### Do {id="do-2"}
 
 ```kotlin
 public enum class Flag { FAST, VERBOSE }
