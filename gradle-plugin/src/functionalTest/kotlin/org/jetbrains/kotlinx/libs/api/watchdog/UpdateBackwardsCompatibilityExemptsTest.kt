@@ -29,7 +29,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
         val fixedText = project.rootDir.mainSource("legacy").readText()
         val reason = "reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY"
         assertTrue(fixedText.startsWith("@file:IntentionallyDefaultFacadeName($reason)"))
-        assertContains(fixedText, "@IntentionallyOpen($reason)\n@IntentionallyUndocumented($reason)\npublic open class UnprotectedOpenClass")
+        assertContains(fixedText, "@IntentionallyOpen($reason)\npublic open class UnprotectedOpenClass")
         assertContains(fixedText, "@IntentionallyExhaustive($reason)\npublic enum class UnmarkedEnum")
         assertContains(fixedText, "@IntentionallyFunctionTypeAlias($reason)\npublic typealias UnacknowledgedCallback")
         assertContains(fixedText, "@IntentionallyDataClass($reason)\npublic data class UnmarkedData")
@@ -38,10 +38,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
         assertContains(fixedText, "@IntentionallyPairOrTriple($reason)\npublic fun locateOrigin()")
         assertContains(fixedText, "@IntentionallyBooleanParameter($reason)\npublic fun toggleWork(enabled: Boolean)")
         assertContains(fixedText, "@IntentionallyNullableBoolean($reason)\npublic fun lastKnownState()")
-        assertContains(
-            fixedText,
-            "@IntentionallyRequiredParameterAfterOptional($reason)\n@IntentionallyWithoutJvmOverloads($reason)\npublic fun retryWork",
-        )
+        assertContains(fixedText, "@IntentionallyRequiredParameterAfterOptional($reason)\n@IntentionallyWithoutJvmOverloads($reason)\npublic fun retryWork",)
         assertContains(fixedText, "@IntentionallyInconsistentParameterOrder($reason)\npublic fun drawShape(y: Int, x: Int, scale: Double)")
         assertContains(fixedText, "@IntentionallyInlinedLogic($reason)\n@Suppress(\"NOTHING_TO_INLINE\")\npublic inline fun squared")
         assertContains(fixedText, "@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility\n@DslMarker\n@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)\npublic annotation class NoopTargetDsl")
@@ -80,7 +77,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
                 }
             """.trimIndent(),
         ) {
-            override fun sources() = listOf(source(fixableFile, "legacy"))
+            override fun sources() = listOf(source("public open class UndocumentedOpen", "legacy"))
         }.gradleProject
 
         build(project.rootDir, UPDATE_TASK)
@@ -96,18 +93,18 @@ class UpdateBackwardsCompatibilityExemptsTest {
         val project = object : WatchdogProject(
             extraBuildScript = """
                 apiWatchdog {
-                    undocumentedPublicApi = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
+                    openApiWithoutSubclassOptIn = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                 }
             """.trimIndent(),
         ) {
-            override fun sources() = listOf(source("public class Undocumented", "undocumented"))
+            override fun sources() = listOf(source("/** A warning-only class. */\npublic open class WarningOnly", "warningOnly"))
         }.gradleProject
 
         build(project.rootDir, UPDATE_TASK)
 
         assertContains(
-            project.rootDir.mainSource("undocumented").readText(),
-            "@IntentionallyUndocumented(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic class Undocumented",
+            project.rootDir.mainSource("warningOnly").readText(),
+            "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic open class WarningOnly",
         )
     }
 
@@ -118,14 +115,14 @@ class UpdateBackwardsCompatibilityExemptsTest {
         val project = object : WatchdogProject(
             explicitApi = false,
         ) {
-            override fun sources() = listOf(source("public class Undocumented", "undocumented"))
+            override fun sources() = listOf(source("/** An open class. */\npublic open class Open", "open"))
         }.gradleProject
 
         build(project.rootDir, UPDATE_TASK)
 
         assertContains(
-            project.rootDir.mainSource("undocumented").readText(),
-            "@IntentionallyUndocumented(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic class Undocumented",
+            project.rootDir.mainSource("open").readText(),
+            "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic open class Open",
         )
     }
 
@@ -134,7 +131,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
         val project = object : WatchdogProject() {
             override fun sources() = listOf(
                 source(
-                    "public open class Bare",
+                    "/** A bare open class. */\npublic open class Bare",
                     "bare",
                     includeDefaultImports = false,
                 )
@@ -146,7 +143,6 @@ class UpdateBackwardsCompatibilityExemptsTest {
         val fixedText = project.rootDir.mainSource("bare").readText()
         assertContains(fixedText, "import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason")
         assertContains(fixedText, "import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyOpen")
-        assertContains(fixedText, "import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyUndocumented")
         assertContains(fixedText, "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)")
 
         val buildResult = build(project.rootDir, "build")
@@ -164,6 +160,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
         assertContains(result.output, "needs manual attention")
         assertContains(result.output, "DSL_MARKER_NOOP_TYPE_POSITION")
         assertContains(result.output, "SUBCLASS_OPT_IN_WITHOUT_MARKERS")
+        assertContains(result.output, "UNDOCUMENTED_PUBLIC_API")
     }
 
     @Test
@@ -187,7 +184,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
             multiplatform = true,
         ) {
             override fun multiplatformTargetsBlock(): String = "kotlin {\n  js { nodejs() }\n}\n"
-            override fun sources() = listOf(source("public open class JsOnly", "jsOnly"))
+            override fun sources() = listOf(source("/** A JS class. */\npublic open class JsOnly", "jsOnly"))
         }.gradleProject
 
         val result = build(project.rootDir, UPDATE_TASK)
@@ -197,7 +194,6 @@ class UpdateBackwardsCompatibilityExemptsTest {
         assertContains(
             project.rootDir.resolve("src/commonMain/kotlin/test/jsOnly.kt").readText(),
             "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
-                    "@IntentionallyUndocumented(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
                     "public open class JsOnly",
         )
     }
@@ -211,7 +207,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
             override fun multiplatformTargetsBlock(): String =
                 "kotlin {\n  ${native.gradleTargetName}()\n}\n"
 
-            override fun sources() = listOf(source("public open class NativeOnly", "nativeOnly"))
+            override fun sources() = listOf(source("/** A native class. */\npublic open class NativeOnly", "nativeOnly"))
         }.gradleProject
 
         val result = build(project.rootDir, UPDATE_TASK)
@@ -221,7 +217,6 @@ class UpdateBackwardsCompatibilityExemptsTest {
         assertContains(
             project.rootDir.resolve("src/commonMain/kotlin/test/nativeOnly.kt").readText(),
             "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
-                    "@IntentionallyUndocumented(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
                     "public open class NativeOnly",
         )
     }
@@ -288,13 +283,13 @@ class UpdateBackwardsCompatibilityExemptsTest {
 }
 
 /**
- * One specimen of every diagnostic the fixer can acknowledge automatically. Everything except
- * `UnprotectedOpenClass` is documented so `UNDOCUMENTED_PUBLIC_API` only fires where the test
- * expects it.
+ * One specimen of every diagnostic the fixer can acknowledge automatically. Every declaration is
+ * documented because `UNDOCUMENTED_PUBLIC_API` requires manual attention.
  */
 @Suppress("RedundantVisibilityModifier", "RedundantSuspendModifier", "MayBeConstant")
 @Language("kotlin")
 private val fixableFile = """
+    /** A deliberately unrestricted base class. */
     public open class UnprotectedOpenClass
 
     /** A deliberately matchable enum. */
@@ -391,6 +386,8 @@ private val fixableFile = """
 @Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val unfixableFile = """
+    public class NeedsDocumentation
+
     /** A base class whose subclass opt-in lists no markers. */
     @SubclassOptInRequired
     public open class UnmarkedOptIn

@@ -53,8 +53,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         })
 
         return tasks.register(UPDATE_EXEMPTS_TASK_NAME, UpdateBackwardsCompatibilityExemptsTask::class.java) { task ->
-            // Realizing the task is the opt-in. The compile tasks consume this property lazily,
-            // after Gradle has selected the task graph.
+            // Realizing the task enables collection. Compile-task inputs and options
+            // consume this property lazily during task-graph construction and execution.
             collectDiagnosticsForExempts.set(true)
             task.group = "api watchdog"
             task.description = "Acknowledges every watchdog diagnostic in the main Kotlin " +
@@ -170,8 +170,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         private fun Project.hasExplicitApiMode(): Boolean {
             val kotlin = extensions.findByName("kotlin") as? KotlinBaseExtension ?: return false
             val mode = kotlin.explicitApi
-            if (mode != null && mode != ExplicitApiMode.Disabled) return true
-            return tasks.withType(KotlinCompilationTask::class.java).any { task ->
+            return mode != null && mode != ExplicitApiMode.Disabled || tasks.withType(KotlinCompilationTask::class.java).any { task ->
                 task.compilerOptions.freeCompilerArgs.orNull.orEmpty()
                     .any { it.startsWith("-Xexplicit-api=") && it != "-Xexplicit-api=disable" }
             }

@@ -2,8 +2,10 @@
 
 package org.jetbrains.kotlinx.libs.api.watchdog.fixer
 
-import java.io.File
-import kotlin.io.path.createTempDirectory
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.util.Comparator
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -19,6 +21,9 @@ import org.jetbrains.kotlin.test.directives.JvmEnvironmentConfigurationDirective
 import org.jetbrains.kotlin.test.runners.AbstractFirPhasedDiagnosticTest
 import org.jetbrains.kotlin.test.services.KotlinTestInfo
 import org.jetbrains.kotlinx.libs.api.watchdog.WatchdogCompilerPluginRegistrar
+import java.io.File
+
+private val PATH_SEPARATOR = File.pathSeparator
 
 /**
  * Runs the fixer over the compiler plugin's own diagnostics fixtures.
@@ -27,17 +32,19 @@ import org.jetbrains.kotlinx.libs.api.watchdog.WatchdogCompilerPluginRegistrar
  * markers gives the source handed to [ExemptionFixer], and their ranges become
  * [RecordedDiagnostic] offsets. The fixed source is then compiled by the same diagnostics test
  * runner. Only markers for deliberately unfixable diagnostics are carried into that generated
- * expectation; every fixable diagnostic must have disappeared because of the inserted exemption.
+ * expectation. Every fixable diagnostic must have disappeared because of the inserted exemption.
  */
 class CompilerPluginTestDataFixerTest {
     private val parser = KotlinFileParser()
     private val fixer = ExemptionFixer(parser)
-    private val tempDir = createTempDirectory("watchdog-fixer-compiler-data").toFile()
+    private val tempDir = Files.createTempDirectory("watchdog-fixer-compiler-data")
 
     @AfterTest
     fun tearDownFixerTestData() {
         parser.close()
-        tempDir.deleteRecursively()
+        Files.walk(tempDir).use { paths ->
+            paths.sorted(Comparator.reverseOrder()).forEach { Files.deleteIfExists(it) }
+        }
     }
 
     @Test
@@ -45,28 +52,31 @@ class CompilerPluginTestDataFixerTest {
         val diagnosticsDirectory = assertNotNull(
             javaClass.getResource("/diagnostics"),
             "compiler-plugin/src/test/data must be on the exempts-fixer test classpath",
-        ).let { File(it.toURI()) }
-        val fixtures = diagnosticsDirectory.listFiles { file -> file.extension == "kt" }
-            .orEmpty()
-            .sortedBy(File::getName)
+        ).let { Paths.get(it.toURI()) }
+        val fixtures = Files.list(diagnosticsDirectory).use { paths ->
+            paths.filter { it.fileName.toString().endsWith(".kt") }
+                .sorted(compareBy { it.fileName.toString() })
+                .iterator()
+                .asSequence()
+                .toList()
+        }
 
         assertTrue(fixtures.isNotEmpty(), "No compiler-plugin diagnostics fixtures found")
         val generatedFiles = fixtures.map { fixture ->
             val generatedExpectation = fixFixture(fixture)
-            File(tempDir, fixture.name).apply {
-                writeText(generatedExpectation)
-            }
+            tempDir.resolve(fixture.fileName).also { Files.writeString(it, generatedExpectation) }
         }
         validateWithCompilerPlugin(generatedFiles)
     }
 
-    private fun fixFixture(fixture: File): String {
-        val fixtureText = fixture.readText()
-        val sections = TestDataSection.split(fixtureText, fixture.name)
+    private fun fixFixture(fixture: Path): String {
+        val fixtureName = fixture.fileName.toString()
+        val fixtureText = Files.readString(fixture)
+        val sections = TestDataSection.split(fixtureText, fixtureName)
         val generated = buildString {
             sections.forEach { section ->
                 append(section.prefix)
-                append(fixSourceFile(fixture.name, section.fileName, section.markedText))
+                append(fixSourceFile(fixtureName, section.fileName, section.markedText))
             }
         }
         // These sources retain the original fixture's deliberately muted diagnostics, so a clean
@@ -76,7 +86,9 @@ class CompilerPluginTestDataFixerTest {
 
     private fun fixSourceFile(fixtureName: String, fileName: String, markedText: String): String {
         val source = MarkedSource.parse(markedText)
-        if (source.diagnostics.isEmpty()) return source.text
+        if (source.diagnostics.isEmpty()) {
+            return source.text
+        }
 
         val filePath = "/compiler-plugin-test-data/$fixtureName/$fileName"
         val diagnostics = source.diagnostics.map {
@@ -88,15 +100,13 @@ class CompilerPluginTestDataFixerTest {
         result.skipped.forEach { skipped ->
             val resolution = ExemptionRegistry.resolutionFor(skipped.diagnostic)
             assertTrue(
-                resolution is FixResolution.Unfixable ||
-                        skipped.diagnostic == "UNDOCUMENTED_PUBLIC_API" &&
-                        skipped.reason.contains("no declaration accepting @IntentionallyUndocumented"),
+                resolution is FixResolution.Unfixable,
                 "A fixable marker in $fixtureName/$fileName was unexpectedly skipped: " +
                         "${skipped.diagnostic}: ${skipped.reason}",
             )
         }
 
-        val remainingDiagnostics = diagnosticsThatWereSkipped(source, result.skipped)
+        val remainingDiagnostics = diagnosticsThatWereSkipped(source, fixedText, result, result.skipped)
             .map { diagnostic ->
                 diagnostic.copy(
                     startOffset = result.mapOffset(diagnostic.startOffset, afterInsertionsAtOffset = true),
@@ -109,11 +119,16 @@ class CompilerPluginTestDataFixerTest {
 
     private fun diagnosticsThatWereSkipped(
         source: MarkedSource,
+        fixedText: String,
+        result: FileFixResult,
         skipped: List<SkippedDiagnostic>,
     ): List<MarkedDiagnostic> {
         val remainingByNameAndLine = skipped.groupingBy { it.diagnostic to it.line }.eachCount().toMutableMap()
         val remaining = source.diagnostics.filter { diagnostic ->
-            val line = diagnostic.lineIn(source.text)
+            val relocatedDiagnostic = diagnostic.copy(
+                startOffset = result.mapOffset(diagnostic.startOffset, afterInsertionsAtOffset = true),
+            )
+            val line = relocatedDiagnostic.lineIn(fixedText)
             val key = diagnostic.name to line
             val count = remainingByNameAndLine.getOrDefault(key, 0)
             if (count == 0) {
@@ -144,21 +159,24 @@ class CompilerPluginTestDataFixerTest {
      * needs the regular compiler. Their classes share package names and can't coexist in one
      * classloader, so compile the generated expectations in a clean child JVM.
      */
-    private fun validateWithCompilerPlugin(generatedFiles: List<File>) {
+    private fun validateWithCompilerPlugin(generatedFiles: List<Path>) {
         val runtimeClasspath = System.getProperty("java.class.path")
-            .split(File.pathSeparator)
-            .map(::File)
+            .split(PATH_SEPARATOR)
+            .map(Paths::get)
         val compilerClasspath = runtimeClasspath
-            .filterNot { it.name.contains("compiler-embeddable") || it.name.contains("daemon-embeddable") }
-            .joinToString(File.pathSeparator, transform = File::getAbsolutePath)
+            .filterNot {
+                val name = it.fileName.toString()
+                name.contains("compiler-embeddable") || name.contains("daemon-embeddable")
+            }
+            .joinToString(PATH_SEPARATOR) { it.toAbsolutePath().toString() }
         val annotationsClasspath = runtimeClasspath
-            .filter { "plugin-annotations" in it.path }
-            .joinToString(File.pathSeparator, transform = File::getAbsolutePath)
+            .filter { "plugin-annotations" in it.toString() }
+            .joinToString(PATH_SEPARATOR) { it.toAbsolutePath().toString() }
 
         assertTrue(annotationsClasspath.isNotEmpty(), "plugin-annotations is missing from the test runtime")
-        val javaExecutable = File(System.getProperty("java.home"), "bin/java")
+        val javaExecutable = Paths.get(System.getProperty("java.home"), "bin", "java")
         val command = mutableListOf(
-            javaExecutable.absolutePath,
+            javaExecutable.toAbsolutePath().toString(),
             "-DdefaultTestDataLibraries.jvm.classpath=$annotationsClasspath",
             "-DdefaultTestDataLibraries.js.classpath=$annotationsClasspath",
         )
@@ -168,17 +186,21 @@ class CompilerPluginTestDataFixerTest {
             compilerClasspath,
             FixedOutputCompilerTestMain::class.java.name,
         )
-        command += generatedFiles.map(File::getAbsolutePath)
+        command += generatedFiles.map { it.toAbsolutePath().toString() }
 
         val process = ProcessBuilder(command).redirectErrorStream(true).start()
         val output = process.inputStream.bufferedReader().readText()
         assertEquals(0, process.waitFor(), output)
     }
 
-    private fun standardLibraryProperties(runtimeClasspath: List<File>): List<String> {
+    private fun standardLibraryProperties(runtimeClasspath: List<Path>): List<String> {
         fun jarMatching(description: String, predicate: (String) -> Boolean): String {
-            val file = runtimeClasspath.firstOrNull { it.isFile && predicate(it.name) }
-            return assertNotNull(file, "$description is missing from the test runtime").absolutePath
+            val file = runtimeClasspath.firstOrNull {
+                Files.isRegularFile(it) && predicate(it.fileName.toString())
+            }
+            return assertNotNull(file, "$description is missing from the test runtime")
+                .toAbsolutePath()
+                .toString()
         }
 
         val stdlib = jarMatching("kotlin-stdlib") {
@@ -204,7 +226,6 @@ class CompilerPluginTestDataFixerTest {
 }
 
 /** Entry point for the non-embeddable compiler process launched by the fixer test. */
-@OptIn(ExperimentalCompilerApi::class)
 object FixedOutputCompilerTestMain {
     @JvmStatic
     fun main(args: Array<String>) {
@@ -213,7 +234,7 @@ object FixedOutputCompilerTestMain {
             runner.initTestInfo(
                 KotlinTestInfo(
                     className = CompilerPluginTestDataFixerTest::class.java.name,
-                    methodName = File(filePath).nameWithoutExtension,
+                    methodName = Paths.get(filePath).fileName.toString().substringBeforeLast('.'),
                     tags = emptySet(),
                 )
             )
@@ -327,7 +348,7 @@ private data class MarkedSource(
                 for (offset in 0..text.length) {
                     closings[offset].orEmpty()
                         .sortedByDescending(DiagnosticRange::startOffset)
-                        .forEach { append("<!>") }
+                        .forEach { _ -> append("<!>") }
                     openings[offset].orEmpty()
                         .sortedByDescending(DiagnosticRange::endOffset)
                         .forEach { append("<!${it.names.joinToString()}!>") }

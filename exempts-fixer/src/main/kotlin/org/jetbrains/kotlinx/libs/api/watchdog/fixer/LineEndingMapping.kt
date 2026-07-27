@@ -5,12 +5,12 @@ package org.jetbrains.kotlinx.libs.api.watchdog.fixer
  * text, and the compiler records offsets against the original bytes, so the fixer resolves
  * targets on [normalizedText] and then maps each insertion offset back with [toRawOffset],
  * applying the insertions to the untouched original. That way the fix never rewrites existing
- * line endings, whichever mix of `\r\n`, `\n`, and stray `\r` the file carries; only the inserted
+ * line endings, whichever mix of `\r\n`, `\n`, and stray `\r` the file carries. Only the inserted
  * text itself uses [newline], the file's dominant separator.
  */
 internal class LineEndingMapping private constructor(
     val normalizedText: String,
-    /** Original-text offset of each normalized-text offset; null when the text needed no work. */
+    /** Original-text offset of each normalized-text offset. `null` when the text needed no work. */
     private val rawOffsets: IntArray?,
     val newline: String,
 ) {
@@ -34,7 +34,9 @@ internal class LineEndingMapping private constructor(
 
     companion object {
         fun of(text: String): LineEndingMapping {
-            if ('\r' !in text) return LineEndingMapping(text, rawOffsets = null, newline = "\n")
+            if ('\r' !in text) {
+                return LineEndingMapping(text, rawOffsets = null, newline = "\n")
+            }
 
             val crlfPairs = generateSequence(text.indexOf("\r\n").takeIf { it >= 0 }) { previous ->
                 text.indexOf("\r\n", previous + 2).takeIf { it >= 0 }
