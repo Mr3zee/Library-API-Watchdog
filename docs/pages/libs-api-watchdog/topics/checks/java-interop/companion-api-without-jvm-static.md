@@ -101,8 +101,8 @@ With direct compiler invocation:
 -P plugin:org.jetbrains.kotlinx.libs.api.watchdog:diagnosticSeverity=COMPANION_API_WITHOUT_JVM_STATIC:warning
 ```
 
-Turn off the whole Java interop group at once with `javaInterop { enabled = false }`; see
-[Java interop checks](java-interop.md).
+The property lives inside the `javaInterop { }` block; `javaInterop { enabled = false }` turns off
+this check along with the rest of the [](java-interop.md) group.
 
 ## See also
 
