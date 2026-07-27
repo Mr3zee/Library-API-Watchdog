@@ -23,7 +23,7 @@ public annotation class DefaultTargetsDsl
 Without an explicit `@Target`, the annotation falls back to the default target set, which allows
 nine targets on which a DSL marker has no effect (functions, properties, and the like) while
 forbidding the two targets that are actually effective: `TYPE` and `TYPEALIAS`. The marker's own
-visibility does not matter - even an internal or private marker is applied across the library's
+visibility doesn't matter - even an internal or private marker is applied across the library's
 possibly public DSL classes, so it is checked all the same.
 
 ## Rationale

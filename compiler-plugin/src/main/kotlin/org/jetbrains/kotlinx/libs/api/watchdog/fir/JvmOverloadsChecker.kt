@@ -18,14 +18,14 @@ import org.jetbrains.kotlin.name.JvmStandardClassIds
 /**
  * Reports publicly visible functions and constructors that declare default parameter values
  * without `@JvmOverloads`. Defaults are a Kotlin-frontend feature: only the full signature is
- * compiled as a callable JVM entry point, so for Java callers the defaults do not exist and
+ * compiled as a callable JVM entry point, so for Java callers the defaults don't exist and
  * every argument must be spelled out. `@JvmOverloads` additionally compiles the overloads that
  * omit defaulted parameters from the right.
  *
  * The recommendation is honest about its limits: `@JvmOverloads` generates right-truncated
  * overloads only - a defaulted parameter in the middle of the list still cannot be skipped from
  * Java (which is why [RequiredParameterAfterOptionalChecker] pushes optional parameters to the
- * end) - and it only improves Java call sites; it does not make adding a parameter later binary
+ * end) - and it only improves Java call sites; it doesn't make adding a parameter later binary
  * compatible for Kotlin callers.
  *
  * Authors acknowledge deliberately Kotlin-only defaults with `@IntentionallyWithoutJvmOverloads`

@@ -191,7 +191,7 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = buildAndFail(project.rootDir, "build")
-        result.assertDiagnosticReported("e: ", "exemption does not explain why it is applied")
+        result.assertDiagnosticReported("e: ", "exemption doesn't explain why it is applied")
     }
 
     @Test
@@ -298,7 +298,7 @@ class WatchdogProjectTest {
         val project = WatchdogProject(explicitApi = false).gradleProject
 
         val result = build(project.rootDir, "help")
-        assertTrue(result.output.contains("does not enable explicit API mode"))
+        assertTrue(result.output.contains("doesn't enable explicit API mode"))
         assertTrue(result.output.contains("explicitApi()"))
     }
 
@@ -307,7 +307,7 @@ class WatchdogProjectTest {
         val project = WatchdogProject().gradleProject
 
         val result = build(project.rootDir, "help")
-        assertFalse(result.output.contains("does not enable explicit API mode"))
+        assertFalse(result.output.contains("doesn't enable explicit API mode"))
     }
 
     @Test
@@ -322,7 +322,7 @@ class WatchdogProjectTest {
         ).gradleProject
 
         val result = build(project.rootDir, "help")
-        assertFalse(result.output.contains("does not enable explicit API mode"))
+        assertFalse(result.output.contains("doesn't enable explicit API mode"))
     }
 
     @Test
@@ -334,7 +334,7 @@ class WatchdogProjectTest {
             "help",
             "-Porg.jetbrains.kotlinx.libs.api.watchdog.suppressExplicitApiWarning=true",
         )
-        assertFalse(result.output.contains("does not enable explicit API mode"))
+        assertFalse(result.output.contains("doesn't enable explicit API mode"))
     }
 
     @Test
@@ -611,7 +611,7 @@ private val unacknowledgedFile = """
     /** A suspend function left visible to Java sources. */
     public suspend fun refreshState(): Int = 0
 
-    /** A function whose default parameter values do not exist for Java callers. */
+    /** A function whose default parameter values don't exist for Java callers. */
     public fun openPort(host: String, port: Int = 8080) {}
 """.trimIndent()
 

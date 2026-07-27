@@ -15,7 +15,7 @@ default parameter values without `@JvmOverloads`.
 
 A public function or constructor that declares at least one default parameter value but carries
 no `@JvmOverloads`. Defaults are a Kotlin-frontend feature: only the full signature is compiled as
-a callable JVM entry point, so for Java callers the defaults do not exist and every argument must
+a callable JVM entry point, so for Java callers the defaults don't exist and every argument must
 be spelled out:
 
 ```kotlin
@@ -33,7 +33,7 @@ for how `@JvmOverloads` compiles the reduced overloads Java needs.
 
 The recommendation is honest about its limits, though: `@JvmOverloads` only generates
 right-truncated overloads, so a defaulted parameter in the middle of the list still cannot be
-skipped from Java, and it only improves Java call sites - it does not make adding a parameter
+skipped from Java, and it only improves Java call sites - it doesn't make adding a parameter
 later binary compatible for Kotlin callers either.
 
 ## Don't
@@ -67,7 +67,7 @@ Notable cases:
   `@JvmOverloads`; keep optional parameters last (see `REQUIRED_PARAMETER_AFTER_OPTIONAL`) so the
   generated overloads actually cover the common call shapes.
 - Abstract and interface members, and annotation class constructors, are exempt: `@JvmOverloads`
-  does not apply to them.
+  doesn't apply to them.
 - `suspend` functions and members of a value class are exempt: they are not Java-callable
   regardless of overloads.
 - Overrides are exempt: they cannot re-declare default values.

@@ -66,7 +66,7 @@ Notable points:
   `StringBuilder.() -> Unit` are both function types under the alias.
 - An alias of an alias (`public typealias CallbackAlias = Callback`) is still reported: the
   expansion is followed through nested aliases.
-- A function type nested inside another type, such as `List<(Int) -> Unit>`, does not trigger the
+- A function type nested inside another type, such as `List<(Int) -> Unit>`, doesn't trigger the
   check; only the type an alias directly expands to counts.
 - Deliberate exception: aliases of the reflection types `KFunction`/`KSuspendFunction` are exempt
   and need no annotation, because a `fun interface` cannot replace a reflection type.

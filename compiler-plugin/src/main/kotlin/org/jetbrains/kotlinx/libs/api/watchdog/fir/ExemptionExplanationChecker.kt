@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
 
 /**
- * Reports watchdog exemption annotations that do not explain why they are applied. Every
+ * Reports watchdog exemption annotations that don't explain why they are applied. Every
  * exemption defaults to `reason = ExemptionReason.OTHER` with an empty `description`, and such a
  * bare acknowledgement documents nothing: authors either pick a reason that speaks for itself or
  * spell the motivation out in `description`. Only `FOR_BACKWARDS_COMPATIBILITY` and `API_DESIGN`

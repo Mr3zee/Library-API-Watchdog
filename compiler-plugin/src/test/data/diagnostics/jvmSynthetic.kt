@@ -21,10 +21,10 @@ public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>configure<!>(block: Config.(
 
 public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>onEach<!>(action: (Int) -> Unit) {}
 
-// Nullability does not matter: the parameter is still a Kotlin function type.
+// Nullability doesn't matter: the parameter is still a Kotlin function type.
 public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>onEachOrNot<!>(action: ((Int) -> Unit)?) {}
 
-// A type alias does not change what Java sees: the expansion is a Unit-returning function type.
+// A type alias doesn't change what Java sees: the expansion is a Unit-returning function type.
 public typealias Callback = (Int) -> Unit
 
 public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>onEvent<!>(callback: Callback) {}

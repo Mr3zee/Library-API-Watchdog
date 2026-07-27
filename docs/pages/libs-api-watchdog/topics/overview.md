@@ -70,7 +70,7 @@ See [](configuration.md) for full configuration options and build suggestions ov
 - [](open-api-without-subclass-opt-in.md): open or abstract
   classes and interfaces that any outside code can subclass without restriction.
 - [](subclass-opt-in-without-markers.md): `@SubclassOptInRequired`
-  annotations that list no marker classes do not actually restrict subclassing.
+  annotations that list no marker classes don't actually restrict subclassing.
 - [](exhaustive-public-api.md): enums and sealed hierarchies, which users
   can match exhaustively, thus adding an entry or a subtype later breaks user code.
 - [](undocumented-public-api.md): public declarations of every kind that
@@ -120,7 +120,7 @@ consumers. The whole group is disabled with `javaInterop { enabled = false }`. S
   which the marker has no effect, giving a false sense of scope control.
 - [](dsl-marker-without-explicit-targets.md): `@DslMarker`
   annotations without an explicit `@Target`, whose default target set allows mostly no-op targets.
-- [](dsl-marker-noop-type-position.md): DSL markers written on type positions where scope control does not react to them.
+- [](dsl-marker-noop-type-position.md): DSL markers written on type positions where scope control doesn't react to them.
 
 ### Exemption hygiene
 

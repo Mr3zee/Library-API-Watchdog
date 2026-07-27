@@ -32,7 +32,7 @@ public val strength: Int = 256
 // FILE: classifiers.kt
 package foo.bar
 
-// Classifiers do not compile into a file facade: no warning.
+// Classifiers don't compile into a file facade: no warning.
 
 public class Session
 

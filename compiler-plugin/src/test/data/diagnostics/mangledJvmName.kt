@@ -14,7 +14,7 @@ public value class UserId(public val raw: String)
 
 public fun <!MANGLED_JVM_NAME_PUBLIC_API!>take<!>(id: UserId) {}
 
-// Nullability does not matter: the boxed parameter still mangles the name.
+// Nullability doesn't matter: the boxed parameter still mangles the name.
 public fun <!MANGLED_JVM_NAME_PUBLIC_API!>find<!>(id: UserId?) {}
 
 // An extension receiver is a parameter on the JVM and mangles the name too.

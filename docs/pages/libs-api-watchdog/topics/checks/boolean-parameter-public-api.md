@@ -61,7 +61,7 @@ Notable points:
 
 - A nullable `Boolean?` parameter is still a positional flag, just a three-state one, so it is
   reported the same way.
-- A type alias to `Boolean` does not change what users pass and is still reported.
+- A type alias to `Boolean` doesn't change what users pass and is still reported.
 - Overrides are never reported: their signature is fixed by the overridden declaration, which is
   reported there instead.
 - Constructors, and constructor functions - factory functions named after the type they create,

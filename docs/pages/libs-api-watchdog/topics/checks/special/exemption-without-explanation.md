@@ -1,7 +1,7 @@
 # Exemptions without explanation
 
 `EXEMPTION_WITHOUT_EXPLANATION` reports any `@Intentionally*` exemption annotation usage whose
-`reason` does not explain itself (anything other than `FOR_BACKWARDS_COMPATIBILITY` or
+`reason` doesn't explain itself (anything other than `FOR_BACKWARDS_COMPATIBILITY` or
 `API_DESIGN`, including the default `OTHER`, `INTEROP`, `EXTERNAL_CONTRACT`, and
 `IGNORE_JAVA_INTEROP`) while `description` is empty or blank: such a bare exemption explains
 nothing. See
@@ -52,7 +52,7 @@ public open class OtherWidget
 public class UndocumentedThing
 ```
 
-None of these say anything: the default reason `OTHER` does not speak for itself, and an empty or
+None of these say anything: the default reason `OTHER` doesn't speak for itself, and an empty or
 whitespace-only `description` adds nothing next to it.
 
 ## Do

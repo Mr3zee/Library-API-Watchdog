@@ -165,7 +165,7 @@ public open class WatchdogJavaInteropExtension @Inject constructor(objectFactory
     /** Severity of `TOP_LEVEL_API_WITHOUT_JVM_NAME`: file facades leaking the file name to Java. */
     public val topLevelApiWithoutJvmName: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS`: defaults that do not exist for Java callers. */
+    /** Severity of `DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS`: defaults that don't exist for Java callers. */
     public val defaultParametersWithoutJvmOverloads: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
     /** The severity the compiler plugin sees: the diagnostic's own, or NONE when switched off. */

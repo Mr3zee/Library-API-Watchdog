@@ -42,7 +42,7 @@ import org.jetbrains.kotlin.name.Name
  * Overrides never report - their parameter order is fixed by the overridden declaration - but
  * they still serve as ordering references: a new overload next to an inherited signature should
  * follow it. An exempt declaration is skipped entirely, as reporter and as reference, so one
- * acknowledged legacy overload does not spread its order to consistent newer ones.
+ * acknowledged legacy overload doesn't spread its order to consistent newer ones.
  */
 internal class OverloadParameterOrderChecker(
     private val severities: WatchdogDiagnosticSeverities,

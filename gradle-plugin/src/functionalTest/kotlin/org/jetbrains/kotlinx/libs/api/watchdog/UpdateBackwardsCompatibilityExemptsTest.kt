@@ -282,7 +282,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
             "declares default parameter values",
             "allows the FUNCTION annotation target",
             "declares no explicit @Target",
-            "exemption does not explain why it is applied",
+            "exemption doesn't explain why it is applied",
         )
     }
 }
@@ -383,7 +383,7 @@ private val fixableFile = """
     /** A suspend function left visible to Java sources. */
     public suspend fun refreshState(): Int = 0
 
-    /** A function whose default parameter values do not exist for Java callers. */
+    /** A function whose default parameter values don't exist for Java callers. */
     public fun openPort(host: String, port: Int = 8080) {}
 """.trimIndent()
 

@@ -164,7 +164,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         /**
          * Whether explicit API mode (strict or warning) is enabled: through the `kotlin` DSL, or
          * through a raw `-Xexplicit-api` flag in the effective free compiler arguments of any
-         * Kotlin compile task. The DSL check comes first so that the common case does not force
+         * Kotlin compile task. The DSL check comes first so that the common case doesn't force
          * task realization.
          */
         private fun Project.hasExplicitApiMode(): Boolean {
@@ -204,7 +204,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         }
 
         private fun missingExplicitApiWarning(projectPath: String): String = """
-            |Project '$projectPath' applies libs-api-watchdog but does not enable explicit API mode, so the
+            |Project '$projectPath' applies libs-api-watchdog but doesn't enable explicit API mode, so the
             |watchdog registers no checks: there is no declared public API contract to watch. Enable it in
             |the module's build script:
             |

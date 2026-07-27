@@ -60,7 +60,7 @@ class ConfigurableWatchdogDiagnostic<out F : AbstractKtDiagnosticFactory>(
 /**
  * Per-compilation severity overrides keyed by diagnostic name; unlisted diagnostics are errors.
  * Returns null for diagnostics overridden to [WatchdogSeverity.NONE]: their check is disabled,
- * and [WatchdogFirCheckers] does not even register a checker all of whose diagnostics are
+ * and [WatchdogFirCheckers] doesn't even register a checker all of whose diagnostics are
  * disabled.
  */
 class WatchdogDiagnosticSeverities(private val overrides: Map<String, WatchdogSeverity>) {
@@ -227,7 +227,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         )
         map.put(
             diagnostic = WatchdogDiagnostics.SUBCLASS_OPT_IN_WITHOUT_MARKERS,
-            message = "@SubclassOptInRequired lists no marker classes, so it does not restrict " +
+            message = "@SubclassOptInRequired lists no marker classes, so it doesn't restrict " +
                     "external subclassing. Pass at least one opt-in marker class " +
                     "with a description of why the subclassing is restricted. See " +
                     "https://mr3zee.github.io/libs-api-watchdog/subclass-opt-in-without-markers.html " +
@@ -247,7 +247,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         map.put(
             diagnostic = WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API,
             message = "The {0} ''{1}'' is part of the public API but has no KDoc. Document it " +
-                    "so users do not have to guess its purpose and usage contract, or mark it " +
+                    "so users don't have to guess its purpose and usage contract, or mark it " +
                     "with @IntentionallyUndocumented if leaving it undocumented is intended. See " +
                     "https://mr3zee.github.io/libs-api-watchdog/undocumented-public-api.html " +
                     "for details.",
@@ -390,7 +390,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         )
         map.put(
             WatchdogDiagnostics.EXEMPTION_WITHOUT_EXPLANATION,
-            "The @{0} exemption does not explain why it is applied: the {1} reason does not " +
+            "The @{0} exemption doesn't explain why it is applied: the {1} reason doesn't " +
                     "speak for itself, and the description is empty. Pass a self-explanatory " +
                     "reason (FOR_BACKWARDS_COMPATIBILITY, API_DESIGN), or describe the " +
                     "motivation in the description argument. See " +
@@ -510,7 +510,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         map.put(
             diagnostic = WatchdogDiagnostics.DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS,
             message = "The {0} ''{1}'' declares default parameter values, but for Java callers " +
-                    "the defaults do not exist: only the full signature is compiled, and every " +
+                    "the defaults don't exist: only the full signature is compiled, and every " +
                     "argument must be spelled out. Mark the {0} with @JvmOverloads to also " +
                     "compile the overloads that let Java callers omit defaulted parameters - " +
                     "trailing ones only: a defaulted parameter in the middle of the list still " +

@@ -132,7 +132,7 @@ internal class InlineFunctionLogicChecker(
 
     /**
      * An empty body freezes nothing. Otherwise the single statement - a contract declared in the
-     * old statement syntax stays in the body as a [FirContractCallBlock] and does not count - must
+     * old statement syntax stays in the body as a [FirContractCallBlock] and doesn't count - must
      * be a plain delegation.
      */
     private fun FirBlock.isThinWrapper(): Boolean {

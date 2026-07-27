@@ -7,7 +7,7 @@ package foo.bar
 import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason
 import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyWithoutJvmOverloads
 
-// For Java callers the defaults do not exist: should warn.
+// For Java callers the defaults don't exist: should warn.
 
 public fun <!DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS!>connect<!>(host: String, port: Int = 80, timeout: Int = 30) {}
 

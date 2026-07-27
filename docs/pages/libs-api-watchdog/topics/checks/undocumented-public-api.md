@@ -11,7 +11,7 @@
 
 ## What it reports
 
-Every publicly visible declaration a user can reference - classes, interfaces, objects, enum
+Each publicly visible declaration a user can reference - classes, interfaces, objects, enum
 classes, annotation classes, type aliases, functions, properties, secondary constructors, and enum
 entries - is flagged when it carries no KDoc. Only the presence of a KDoc is checked, not its
 content:
@@ -25,8 +25,7 @@ public class Cache
 
 A KDoc is the contract a user can rely on. Without one, callers can only guess intent from the
 implementation, and any later change - even a bug fix - risks breaking a usage nobody wrote down as
-supported. Writing the contract down first is what lets the library author change the
-implementation later without guessing what users depend on. See the
+supported. Writing the contract down helps your library avoid these issues. See the
 [Kotlin API guidelines on documenting your API](https://kotlinlang.org/docs/api-guidelines-informative-documentation.html#thoroughly-document-your-api).
 
 ## Don't
@@ -44,16 +43,21 @@ public class Cache {
 ## Do
 
 ```kotlin
-/** An in-memory string cache keyed by an opaque key. */
+/** An in-memory string cache. */
 public class Cache {
-    /** Returns the cached value for [key], or null when nothing is cached under it. */
+    /**
+     * Returns the cached value for [key], 
+     * or null when nothing is cached under it. 
+     */
     public fun get(key: String): String? = store[key]
 
     private val store: MutableMap<String, String> = mutableMapOf()
 }
 ```
 
-A class KDoc alone does not document its constructor properties; each one still needs a matching
+## Don't {id="dont-2"}
+
+A class KDoc alone doesn't document its constructor properties. Each one still needs a matching
 `@property` tag (or `@param` for a `val`/`var` declared in the primary constructor):
 
 ```kotlin
@@ -65,6 +69,8 @@ public class Profile(
     public val age: Int,
 ) 
 ```
+
+## Do {id="do-2"}
 
 ```kotlin
 /**
@@ -79,23 +85,24 @@ public class Profile(
 )
 ```
 
-Notable exceptions the checker applies on its own, so no annotation is needed:
+## Notes
 
 - Overrides and `actual` declarations inherit the KDoc of the declaration they implement.
 - Compiler-generated members (data class `copy`/`componentN`, enum `values`/`valueOf`/`entries`)
   have no source of their own and are never reported.
-- A plain `//` or `/* */` comment does not count; only a KDoc block (`/** ... */`) satisfies the
+- A plain `//` or `/* */` comment doesn't count; only a KDoc block (`/** ... */`) satisfies the
   check.
+- `@PublishedApi` annotated declarations are skipped during this check.
 
 ## Exemption
 
 Apply `@IntentionallyUndocumented` directly on the class, type alias, function, property,
-constructor, or enum entry that stays undocumented; it does not cover nested or member
+constructor, or enum entry that stays undocumented. It doesn't cover nested or member
 declarations:
 
 ```kotlin
-@IntentionallyUndocumented(description = "Self-explanatory one-line getter.")
-public fun currentTimestamp(): Long = System.currentTimeMillis()
+// No example here, because I couldn't find a good one when an API
+// shouldn't be documented. 
 ```
 
 ## Configuration
@@ -114,4 +121,4 @@ With direct compiler invocation:
 ## See also
 
 - [Kotlin API guidelines: thoroughly document your API](https://kotlinlang.org/docs/api-guidelines-informative-documentation.html#thoroughly-document-your-api)
-- [Exemptions and internal API](exemptions.md)
+- [](exemptions.md)

@@ -35,7 +35,7 @@ public typealias MarkedSuspendAction = suspend () -> Unit
 
 public typealias StringList = List<String>
 
-// A function type only occurring inside the expansion does not count.
+// A function type only occurring inside the expansion doesn't count.
 public typealias Callbacks = List<(Int) -> Unit>
 
 // Reflection function types have no fun interface counterpart.

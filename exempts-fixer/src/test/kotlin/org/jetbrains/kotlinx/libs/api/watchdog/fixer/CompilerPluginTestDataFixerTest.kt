@@ -70,7 +70,7 @@ class CompilerPluginTestDataFixerTest {
             }
         }
         // These sources retain the original fixture's deliberately muted diagnostics, so a clean
-        // expected marker set does not necessarily mean that code generation can run.
+        // expected marker set doesn't necessarily mean that code generation can run.
         return "// DISABLE_NEXT_PHASE_SUGGESTION\n$generated"
     }
 
