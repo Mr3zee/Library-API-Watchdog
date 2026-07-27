@@ -3,25 +3,25 @@
 `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC` reports public functions whose shape only Kotlin callers
 can use idiomatically, while the function still lands in the API surface Java sources see.
 
-| | |
-|---|---|
-| Diagnostic | `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC` |
-| Default severity | Error |
-| Applies to | JVM compilations only |
-| Gradle property | [`kotlinOnlyApiWithoutJvmSynthetic`](configuration.md) |
-| Exemption | [`@IntentionallyKotlinOnlyApi`](exemptions.md) |
+|                  |                                                        |
+|------------------|--------------------------------------------------------|
+| Diagnostic       | `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`                |
+| Default severity | Error                                                  |
+| Applies to       | JVM compilations only                                  |
+| Gradle property  | [`kotlinOnlyApiWithoutJvmSynthetic`](configuration.md) |
+| Exemption        | [`@IntentionallyKotlinOnlyApi`](exemptions.md)         |
 
 ## What it reports
 
-Three shapes trigger it: a `suspend` function (Java sees a trailing `Continuation` parameter it
-can't provide idiomatically), an `inline` function with a `reified` type parameter (calling the
-compiled method from Java fails at runtime), and a function taking a Kotlin-specific function
-type - a suspend function type, a function type with receiver, or a `Unit`-returning function
-type:
+Three shapes trigger it: 
+- A `suspend` function (Java sees a trailing `Continuation` parameter it can't provide idiomatically)
+- An `inline` function with a `reified` type parameter (calling the compiled method from Java fails at runtime)
+- A function taking a Kotlin-specific function type - a suspend function type, a
+  function type with receiver, or a `Unit`-returning function type
 
 ```kotlin
 // KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
-public suspend fun fetch(key: String): String = key
+public suspend fun refresh(key: String) { }
 ```
 
 ## Rationale
@@ -36,13 +36,14 @@ these shapes actually compile.
 ### Don't
 
 ```kotlin
-// Java sees a trailing Continuation parameter it can't provide idiomatically.
+// Java sees a trailing Continuation parameter 
+// it can't provide idiomatically.
 // 
 // KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
-public suspend fun fetch(key: String): String = key
+public suspend fun refresh(key: String) { }
 
-// Only inlining Kotlin call sites can substitute T; calling the compiled method from Java
-// fails at runtime.
+// Only inlining Kotlin call sites can substitute T. 
+// Calling the compiled method from Java fails at runtime.
 // 
 // KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
 public inline fun <reified T> instantiate(): T? = null
@@ -50,35 +51,33 @@ public inline fun <reified T> instantiate(): T? = null
 // A Java lambda has to return the Unit.INSTANCE token explicitly.
 // 
 // KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
-public fun onEach(action: (Int) -> Unit) {}
+public fun onEach(action: (Int) -> Unit) { }
 ```
 
 ### Do
 
 ```kotlin
 @JvmSynthetic
-public suspend fun fetch(key: String): String = key
+public suspend fun refresh(key: String) { }
 
-public fun interface Listener {
-    public fun onChange(value: Int)
+public fun interface Action {
+    public fun doAction(value: Int)
 }
 
-public fun listen(listener: Listener) {}
+public fun onEach(action: Action) { }
 ```
 
-`@JvmSynthetic` hides the Kotlin-only member from Java entirely; a `fun interface` parameter gives
-Java a lambda-friendly type instead of a Kotlin function type. A suspend function can instead ship
-alongside a blocking or `CompletableFuture`-returning bridge for Java callers.
+- `@JvmSynthetic` hides the Kotlin-only member from Java entirely. 
+  (A `suspend` function can instead ship alongside a blocking or `CompletableFuture`-returning bridge for Java callers.)
+- A `fun interface` parameter gives Java a lambda-friendly type instead of a Kotlin function type. 
 
 ## Notes
 
 - Abstract and interface members are exempt: `@JvmSynthetic` can't hide a member that
-  implementations must provide, so there is no non-breaking fix to suggest.
+  implementations must provide.
 - Overrides are exempt; the shape is reported on the base declaration instead.
 - Constructors are exempt: `@JvmSynthetic` doesn't apply to them.
-- A signature mangled by a value class is reported by `MANGLED_JVM_NAME_PUBLIC_API` instead.
-- A member declared inside a value class is exempt from both checks: the public value class itself
-  is the deliberate choice.
+- A signature mangled by a value class is reported by [`MANGLED_JVM_NAME_PUBLIC_API`](mangled-jvm-name-public-api.md) instead.
 - A declaration already carrying `@JvmSynthetic` is skipped: the Kotlin-only shape is already
   hidden from Java on purpose.
 
@@ -89,7 +88,7 @@ function inside, when leaving the Kotlin-only shape visible to Java is intended:
 
 ```kotlin
 @IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)
-public suspend fun refresh(key: String): String = key
+public suspend fun refresh(key: String) {}
 ```
 
 ## Configuration
@@ -113,6 +112,6 @@ With direct compiler invocation:
 ## See also
 
 - [Java-to-Kotlin interop guide](https://kotlinlang.org/docs/java-to-kotlin-interop.html)
-- [Java interop checks](java-interop.md)
-- [Mangled JVM names in public API](mangled-jvm-name-public-api.md)
-- [Exemptions and internal API](exemptions.md)
+- [](java-interop.md)
+- [](mangled-jvm-name-public-api.md)
+- [](exemptions.md)
