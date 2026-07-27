@@ -3,19 +3,17 @@
 `PAIR_OR_TRIPLE_PUBLIC_API` reports the tuple types `Pair` and `Triple` in publicly visible
 signatures.
 
-| | |
-|---|---|
-| Diagnostic | `PAIR_OR_TRIPLE_PUBLIC_API` |
-| Default severity | Error |
-| Gradle property | [`pairOrTriplePublicApi`](configuration.md) |
-| Exemption | [`@IntentionallyPairOrTriple`](exemptions.md) |
+|                  |                                               |
+|------------------|-----------------------------------------------|
+| Diagnostic       | `PAIR_OR_TRIPLE_PUBLIC_API`                   |
+| Default severity | Error                                         |
+| Gradle property  | [`pairOrTriplePublicApi`](configuration.md)   |
+| Exemption        | [`@IntentionallyPairOrTriple`](exemptions.md) |
 
 ## What it reports
 
 The check flags `Pair` and `Triple` in return types, property types, parameter types, and type
-parameter bounds, including their type arguments (`List<Pair<Int, String>>` exposes the tuple all
-the same) and behind a type alias (an alias doesn't change what users see). A minimal
-triggering example:
+parameter bounds, including their type arguments (like `List<Pair<Int, String>>`):
 
 ```kotlin
 // PAIR_OR_TRIPLE_PUBLIC_API
@@ -39,37 +37,37 @@ public fun dimensions(): Triple<Int, Int, Int> = Triple(0, 0, 0)
 
 // PAIR_OR_TRIPLE_PUBLIC_API
 public class Anchor(public val position: Pair<Int, Int>)
-```
-
-```kotlin
-// The tuple hides behind a type alias and inside a type argument all the same.
-public typealias Point = Pair<Int, Int>
 
 // PAIR_OR_TRIPLE_PUBLIC_API
-public fun aliased(): Point = 0 to 0
+public fun edges(): List<Pair<Int, Int>> = emptyList()
 
-// PAIR_OR_TRIPLE_PUBLIC_API
-public fun edges(): List<Pair<Int, Int>> = emptyList() 
 ```
 
 ### Do
 
 ```kotlin
-public class Dimensions(public val width: Int, public val height: Int, public val depth: Int)
+public class Dimensions(
+    public val width: Int, 
+    public val height: Int, 
+    public val depth: Int,
+)
 
 public fun dimensions(): Dimensions = Dimensions(0, 0, 0)
 
+public class Point(
+    public val x: Int, 
+    public val y: Int,
+)
+
 public class Anchor(public val position: Point)
 
-public class Point(public val x: Int, public val y: Int)
+public fun edges(): List<Point> = emptyList()
 ```
 
 ## Notes
 
 - A tuple type parameter bound (`<T : Pair<Int, Int>>`) is reported too: it constrains every
   instantiation to the tuple shape, exposing it just like a direct mention.
-- A `vararg` parameter's array type is not itself a tuple, but a `Pair`/`Triple` element type
-  still is.
 - Extension receivers are exempt: `fun Pair<Int, Int>.manhattanLength(): Int` serves a value the
   user already holds instead of handing out a new tuple.
 - Overrides are exempt: their signature is fixed by the overridden declaration and reported
@@ -84,11 +82,17 @@ parameter, or on a type usage, where it covers the annotated type and everything
 @IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN)
 public fun rawLocation(): Pair<Int, Int> = 0 to 0
 
-public fun draw(@IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN) at: Pair<Int, Int>): Unit = Unit
+public fun draw(
+  @IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN) 
+  at: Pair<Int, Int>,
+): Unit = Unit
 
-public fun corners(): List<@IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN) Pair<Int, Int>> =
+@IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN)
+public fun corners(): List<Pair<Int, Int>> =
     emptyList()
 ```
+
+[//]: # (TODO check ^ works)
 
 ## Configuration
 
@@ -106,5 +110,5 @@ With direct compiler invocation:
 ## See also
 
 - [Use object-oriented design for data and state](https://kotlinlang.org/docs/api-guidelines-consistency.html#use-object-oriented-design-for-data-and-state)
-- [Data classes in public API](data-class-public-api.md)
-- [Exemptions and internal API](exemptions.md)
+- [](data-class-public-api.md)
+- [](exemptions.md)
