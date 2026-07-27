@@ -2,12 +2,12 @@
 
 `MUTABLE_COLLECTION_PUBLIC_API` reports mutable collection and array types in public signatures.
 
-| | |
-|---|---|
-| Diagnostic | `MUTABLE_COLLECTION_PUBLIC_API` |
-| Default severity | Error |
-| Gradle property | [`mutableCollectionPublicApi`](configuration.md) |
-| Exemption | [`@IntentionallyMutableCollection`](exemptions.md) |
+|                  |                                                    |
+|------------------|----------------------------------------------------|
+| Diagnostic       | `MUTABLE_COLLECTION_PUBLIC_API`                    |
+| Default severity | Error                                              |
+| Gradle property  | [`mutableCollectionPublicApi`](configuration.md)   |
+| Exemption        | [`@IntentionallyMutableCollection`](exemptions.md) |
 
 ## What it reports
 
@@ -28,7 +28,7 @@ public fun nested(): List<MutableList<Int>> = emptyList()
 
 ## Rationale
 
-A mutable return type or property lets users mutate a collection they don't own; a mutable
+A mutable return type or property lets users mutate a collection they don't own. A mutable
 parameter lets the library mutate an argument the user still holds. Either way, once a mutable
 collection crosses the API boundary it is unclear whose mutations are safe, and the library can
 no longer swap its internal representation for a different collection type without risking a
@@ -45,7 +45,7 @@ public class Holder(public val items: MutableList<Int>)
 ### Do
 
 ```kotlin
-public class Holder(items: List<Int>) {
+public class Holder(items: MutableList<Int>) {
     public val items: List<Int> = items.toList()
 }
 ```
@@ -54,13 +54,17 @@ public class Holder(items: List<Int>) {
 
 ```kotlin
 // MUTABLE_COLLECTION_PUBLIC_API
-public fun consume(items: MutableSet<Int>): Unit = items.clear()
+public fun consume(items: MutableSet<Int>) {
+    items.clear()
+}
 ```
 
 ### Do {id="do-2"}
 
 ```kotlin
-public fun consume(items: Set<Int>): Unit = Unit // copy internally before mutating, if needed
+public fun consume(items: Set<Int>) {
+    // copy internally before mutating, if needed
+}  
 ```
 
 ## Notes
@@ -79,24 +83,24 @@ public fun consume(items: Set<Int>): Unit = Unit // copy internally before mutat
 ## Exemption
 
 Use `@IntentionallyMutableCollection` when sharing the mutable collection is a deliberate part of
-the API contract. It applies on the whole declaration (function, property, or constructor - covering
-the whole signature), on a single parameter or type parameter, or on a type usage, where it covers
-the annotated type and everything nested in it:
+the API contract.
 
 ```kotlin
 @IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)
 public fun sharedRegistry(): MutableList<String> = mutableListOf()
 
 public fun fill(
-    @IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN) target: MutableList<Int>,
+    @IntentionallyMutableCollection(
+      reason = ExemptionReason.API_DESIGN,
+    ) 
+    target: MutableList<Int>,
 ): Unit = target.add(1)
 
-public fun snapshots(): List<@IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN) MutableList<Int>> =
-    emptyList()
+@IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)
+public fun snapshots(): List<MutableList<Int>> = emptyList()
 ```
 
-For a `val`/`var` primary constructor parameter, put the annotation on the parameter - the
-default use-site target - not on the property it generates; it still covers the property.
+[//]: # (TODO check ^ works)
 
 ## Configuration
 
@@ -114,6 +118,6 @@ With direct compiler invocation:
 ## See also
 
 - [Avoid exposing mutable state](https://kotlinlang.org/docs/api-guidelines-predictability.html#avoid-exposing-mutable-state)
-- [Pair and Triple in public API](pair-or-triple-public-api.md), a sibling check for tuple types
+- [](pair-or-triple-public-api.md), a sibling check for tuple types
   found by the same signature sweep.
-- [Exemptions and internal API](exemptions.md)
+- [](exemptions.md)

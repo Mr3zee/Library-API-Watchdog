@@ -400,10 +400,11 @@ class WatchdogProjectTest {
 
                                     import org.gradle.api.Plugin;
                                     import org.gradle.api.Project;
+                                    import org.jspecify.annotations.NonNull;
 
                                     public class FakeTapmocPlugin implements Plugin<Project> {
                                         @Override
-                                        public void apply(Project project) {}
+                                        public void apply(@NonNull Project project) {}
                                     }
                                 """.trimIndent()
                             ).withPath("test", "FakeTapmocPlugin").build()
@@ -494,10 +495,11 @@ class WatchdogProjectTest {
 
                                     import org.gradle.api.Plugin;
                                     import org.gradle.api.Project;
+                                    import org.jspecify.annotations.NonNull;
 
                                     public class FakeBcvPlugin implements Plugin<Project> {
                                         @Override
-                                        public void apply(Project project) {}
+                                        public void apply(@NonNull Project project) {}
                                     }
                                 """.trimIndent()
                             ).withPath("test", "FakeBcvPlugin").build()
