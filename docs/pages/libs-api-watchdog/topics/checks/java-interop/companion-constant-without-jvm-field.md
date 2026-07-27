@@ -4,19 +4,17 @@
 - a final `val`, initialized in place, with the default getter, neither `const` nor delegated -
 that Java can only read through the companion instance getter.
 
-| | |
-|---|---|
-| Diagnostic | `COMPANION_CONSTANT_WITHOUT_JVM_FIELD` |
-| Default severity | Error |
-| Applies to | JVM compilations only |
-| Gradle property | [`companionConstantWithoutJvmField`](configuration.md) |
-| Exemption | [`@IntentionallyNonStaticCompanionApi`](exemptions.md) |
+|                  |                                                        |
+|------------------|--------------------------------------------------------|
+| Diagnostic       | `COMPANION_CONSTANT_WITHOUT_JVM_FIELD`                 |
+| Default severity | Error                                                  |
+| Applies to       | JVM compilations only                                  |
+| Gradle property  | [`companionConstantWithoutJvmField`](configuration.md) |
+| Exemption        | [`@IntentionallyNonStaticCompanionApi`](exemptions.md) |
 
 ## What it reports
 
-A companion `val` that just holds a constant value - no `const`, no custom getter, no delegate -
-still compiles to an instance getter on the nested `Companion` class unless an annotation says
-otherwise. Java callers have to go through `Outer.Companion` to read it:
+A companion `val` that just holds a constant value - no `const`, no custom getter, no delegate.
 
 ```kotlin
 public class Registry {
@@ -29,8 +27,8 @@ public class Registry {
 
 ## Rationale
 
-Java has no notion of a companion instance: `Outer.Companion.getDEFAULT_NAME()` reads as an
-implementation detail rather than the static field or constant a Java caller expects on `Outer`
+Java has no notion of a companion object instance: `Registry.Companion.getDEFAULT_NAME()` reads as an
+implementation detail rather than the static field or constant a Java caller expects on `Registry`
 itself. Kotlin has three ways to put the value on the outer class instead, and this check exists
 because none of them is the default. See Kotlin's guide to
 [static fields](https://kotlinlang.org/docs/java-to-kotlin-interop.html#static-fields) for how
@@ -40,8 +38,8 @@ because none of them is the default. See Kotlin's guide to
 
 ```kotlin
 public class Registry {
+    // Java only sees Registry.Companion.getDEFAULT_NAME().
     public companion object {
-        // Java only sees Registry.Companion.getDEFAULT_NAME().
         public val DEFAULT_NAME: String = "registry"
     }
 }
@@ -81,20 +79,21 @@ to Java at all.
 ## Exemption
 
 Acknowledge the companion-instance access path with `@IntentionallyNonStaticCompanionApi` when
-keeping it is a deliberate choice. Apply it to the property itself, or to an enclosing class - the
-companion object or its outer class - to cover every member inside:
+keeping it is a deliberate choice:
 
 ```kotlin
 public class Registry {
     public companion object {
-        @IntentionallyNonStaticCompanionApi(reason = ExemptionReason.API_DESIGN)
+        @IntentionallyNonStaticCompanionApi(
+            reason = ExemptionReason.API_DESIGN,
+        )
         public val DEFAULT_NAME: String = "registry"
     }
 }
 ```
 
-The same annotation also covers `COMPANION_API_WITHOUT_JVM_STATIC` on functions in the same
-companion, so one class-level placement can acknowledge a companion that mixes both shapes.
+The same annotation also covers [`COMPANION_API_WITHOUT_JVM_STATIC`](companion-api-without-jvm-static.md)
+on functions in the same companion object.
 
 ## Configuration
 
@@ -117,6 +116,6 @@ With direct compiler invocation:
 ## See also
 
 - [Static fields in Java-to-Kotlin interop](https://kotlinlang.org/docs/java-to-kotlin-interop.html#static-fields)
-- [Java interop checks](java-interop.md)
-- [Companion API without JvmStatic](companion-api-without-jvm-static.md)
-- [Exemptions and internal API](exemptions.md)
+- [](java-interop.md)
+- [](companion-api-without-jvm-static.md)
+- [](exemptions.md)

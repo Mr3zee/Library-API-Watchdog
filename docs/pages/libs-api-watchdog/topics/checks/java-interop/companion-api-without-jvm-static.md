@@ -66,6 +66,7 @@ public class Registry {
   `@JvmStatic` can't be applied to an override anyway.
 - Interface companions compile the same way and are checked identically to class companions.
 - Internal functions are skipped unless marked `@PublishedApi`.
+- Non-JVM compilations never register this check at all.
 
 ## Exemption
 

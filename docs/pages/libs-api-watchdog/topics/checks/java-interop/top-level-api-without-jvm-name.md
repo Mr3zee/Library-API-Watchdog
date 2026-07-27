@@ -65,6 +65,7 @@ public fun disconnect(): Int = 0
   naming.
 - Files whose every top-level callable is hidden from Java with `@JvmSynthetic` have no
   Java-visible facade member to anchor on.
+- Non-JVM compilations never register this check at all.
 
 ## Exemption
 

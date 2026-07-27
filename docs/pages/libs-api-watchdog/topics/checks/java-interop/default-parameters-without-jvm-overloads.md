@@ -88,6 +88,7 @@ public class Connection @JvmOverloads constructor(
 - Overrides are exempt: they can't re-declare default values.
 - A function or constructor already carrying `@JvmSynthetic` is exempt: it is hidden from Java on
   purpose.
+- Non-JVM compilations never register this check at all.
 
 ## Exemption
 

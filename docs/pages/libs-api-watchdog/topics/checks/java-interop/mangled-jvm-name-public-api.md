@@ -80,6 +80,7 @@ only fix for constructors and overridable members, since `@JvmName` doesn't acce
 - `suspend` functions are exempt: an unmangled name would not make them Java-callable anyway.
 - Overrides are exempt; the fixed signature is reported on the base declaration.
 - `@JvmSynthetic` declarations and accessors are exempt.
+- Non-JVM compilations never register this check at all.
 
 ## Exemption
 
