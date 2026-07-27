@@ -12,7 +12,7 @@ public fun locate(): <!PAIR_OR_TRIPLE_PUBLIC_API!>Pair<Int, Int><!> = 0 to 0
 
 public fun dimensions(): <!PAIR_OR_TRIPLE_PUBLIC_API!>Triple<Int, Int, Int><!> = Triple(0, 0, 0)
 
-public fun plot(point: <!PAIR_OR_TRIPLE_PUBLIC_API!>Pair<Int, Int><!>): Unit = Unit
+public fun plot(point: <!PAIR_OR_TRIPLE_PUBLIC_API!>Pair<Int, Int><!>) { }
 
 public val origin: <!PAIR_OR_TRIPLE_PUBLIC_API!>Pair<Int, Int><!> = 0 to 0
 
@@ -34,13 +34,13 @@ public typealias Point = Pair<Int, Int>
 
 public fun aliased(): <!PAIR_OR_TRIPLE_PUBLIC_API!>Point<!> = 0 to 0
 
-public fun onMove(callback: <!PAIR_OR_TRIPLE_PUBLIC_API!>(Pair<Int, Int>) -> Unit<!>): Unit = Unit
+public fun onMove(callback: <!PAIR_OR_TRIPLE_PUBLIC_API!>(Pair<Int, Int>) -> Unit<!>) { }
 
 public fun pointFactory(): <!PAIR_OR_TRIPLE_PUBLIC_API!>() -> Pair<Int, Int><!> = { 0 to 0 }
 
 // A vararg parameter's array is not a tuple, but a tuple element type is still exposed.
 
-public fun path(vararg points: <!PAIR_OR_TRIPLE_PUBLIC_API!>Pair<Int, Int><!>): Unit = Unit
+public fun path(vararg points: <!PAIR_OR_TRIPLE_PUBLIC_API!>Pair<Int, Int><!>) { }
 
 // A tuple bound constrains every instantiation of the type parameter to the tuple shape,
 // exposing the same shape as a direct mention of the bound.
@@ -84,7 +84,7 @@ public class Dot : Positioned {
 @IntentionallyPairOrTriple
 public fun rawLocation(): Pair<Int, Int> = 0 to 0
 
-public fun draw(@IntentionallyPairOrTriple at: Pair<Int, Int>): Unit = Unit
+public fun draw(@IntentionallyPairOrTriple at: Pair<Int, Int>) { }
 
 public class Route(@IntentionallyPairOrTriple public val waypoint: Pair<Int, Int>)
 

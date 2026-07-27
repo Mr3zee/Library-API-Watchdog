@@ -14,7 +14,6 @@ FILE: dslMarkerTypePosition.kt
 
     }
     public final fun process(tag: R|@R|foo/bar/TreeDsl|()  foo/bar/Tag|): R|kotlin/Unit| {
-        ^process Q|kotlin/Unit|
     }
     public final fun make(): R|@R|foo/bar/TreeDsl|()  foo/bar/Tag| {
         ^make R|foo/bar/Tag.Tag|()
@@ -38,7 +37,6 @@ FILE: dslMarkerTypePosition.kt
         ^run R|<local>/block|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()
     }
     internal final fun internalProcess(tag: R|@R|foo/bar/TreeDsl|()  foo/bar/Tag|): R|kotlin/Unit| {
-        ^internalProcess Q|kotlin/Unit|
     }
     public final fun tree(block: R|@R|foo/bar/TreeDsl|()  foo/bar/Tag.() -> kotlin/Unit|): R|kotlin/Unit| {
         ^tree R|<local>/block|.R|SubstitutionOverride<kotlin/Function1.invoke: R|kotlin/Unit|>|(R|foo/bar/Tag.Tag|())
@@ -47,7 +45,6 @@ FILE: dslMarkerTypePosition.kt
         ^tree2 R|<local>/block|.R|SubstitutionOverride<kotlin/Function1.invoke: R|kotlin/Unit|>|(R|foo/bar/Tag.Tag|())
     }
     public final fun R|@R|foo/bar/TreeDsl|()  foo/bar/Tag|.build(): R|kotlin/Unit| {
-        ^build Q|kotlin/Unit|
     }
     public final class Div : R|@R|foo/bar/TreeDsl|()  foo/bar/Tag| {
         public constructor(): R|foo/bar/Div| {
@@ -63,7 +60,6 @@ FILE: dslMarkerTypePosition.kt
 
     }
     public final fun plain(tag: R|@R|foo/bar/PlainTypeAnnotation|()  foo/bar/Tag|): R|kotlin/Unit| {
-        ^plain Q|kotlin/Unit|
     }
     public final val tags: R|kotlin/collections/List<@R|foo/bar/TreeDsl|()  foo/bar/Tag>| = R|kotlin/collections/emptyList|<R|@R|foo/bar/TreeDsl|()  foo/bar/Tag|>()
         public get(): R|kotlin/collections/List<@R|foo/bar/TreeDsl|()  foo/bar/Tag>|

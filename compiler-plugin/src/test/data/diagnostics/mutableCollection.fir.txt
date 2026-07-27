@@ -46,13 +46,10 @@ FILE: mutableCollection.kt
 
         public get(): R|() -> kotlin/collections/MutableList<kotlin/Int>|
     public final fun onBatch(action: R|(kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit|): R|kotlin/Unit| {
-        ^onBatch Q|kotlin/Unit|
     }
     public final fun provider(factory: R|() -> kotlin/collections/MutableSet<kotlin/String>|): R|kotlin/Unit| {
-        ^provider Q|kotlin/Unit|
     }
     public final fun schedule(task: R|suspend () -> kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit| {
-        ^schedule Q|kotlin/Unit|
     }
     public final fun callbackFactory(): R|(kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit| {
         ^callbackFactory fun <anonymous>(it: R|kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit| <inline=NoInline>  {
@@ -67,10 +64,8 @@ FILE: mutableCollection.kt
         ^buildInto R|kotlin/collections/mutableListOf|<R|kotlin/Int|>().R|kotlin/apply|<R|kotlin/collections/MutableList<kotlin/Int>|>(R|<local>/block|).R|kotlin/collections/toList|<R|kotlin/Int|>()
     }
     public final fun onEachBatch(action: R|(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|()  kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit|): R|kotlin/Unit| {
-        ^onEachBatch Q|kotlin/Unit|
     }
     public final fun drainWith(action: R|@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|()  (kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit|): R|kotlin/Unit| {
-        ^drainWith Q|kotlin/Unit|
     }
     @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|() public final fun batchCallbackFactory(): R|(kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit| {
         ^batchCallbackFactory fun <anonymous>(it: R|kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit| <inline=NoInline>  {
@@ -84,7 +79,6 @@ FILE: mutableCollection.kt
 
         public get(): R|(kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit|
     public final fun transform(f: R|(kotlin/collections/List<kotlin/Int>) -> kotlin/collections/Set<kotlin/String>|): R|kotlin/Unit| {
-        ^transform Q|kotlin/Unit|
     }
     public final fun grow(): R|{kotlin/collections/ArrayList<kotlin/String>=} java/util/ArrayList<kotlin/String>| {
         ^grow R|java/util/ArrayList.ArrayList|<R|kotlin/String|>()
@@ -108,7 +102,6 @@ FILE: mutableCollection.kt
         ^joined R|<local>/parts|.R|kotlin/collections/joinToString|<R|kotlin/String|>()
     }
     public final fun batches(vararg groups: R|kotlin/Array<out kotlin/collections/MutableList<kotlin/Int>>|): R|kotlin/Unit| {
-        ^batches Q|kotlin/Unit|
     }
     public final fun <T : R|kotlin/collections/MutableList<kotlin/Int>|> drain(source: R|T|): R|kotlin/collections/List<kotlin/Int>| {
         ^drain R|<local>/source|.R|kotlin/collections/toList|<R|kotlin/Int|>()

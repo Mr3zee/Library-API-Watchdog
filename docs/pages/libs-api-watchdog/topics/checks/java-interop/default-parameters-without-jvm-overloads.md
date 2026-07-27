@@ -20,7 +20,7 @@ be spelled out:
 
 ```kotlin
 // DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS
-public fun connect(host: String, port: Int = 80, timeout: Int = 30): Unit = Unit 
+public fun connect(host: String, port: Int = 80, timeout: Int = 30) { } 
 ```
 
 ## Rationale
@@ -39,14 +39,14 @@ later binary compatible for Kotlin callers either.
 ### Don't
 
 ```kotlin
-public fun connect(host: String, port: Int = 80, timeout: Int = 30): Unit = Unit
+public fun connect(host: String, port: Int = 80, timeout: Int = 30) { }
 ```
 
 ### Do
 
 ```kotlin
 @JvmOverloads
-public fun connect(host: String, port: Int = 80, timeout: Int = 30): Unit = Unit
+public fun connect(host: String, port: Int = 80, timeout: Int = 30) { }
 ```
 
 ### Don't {id="dont-2"}
@@ -85,7 +85,7 @@ without Kotlin's named arguments:
     reason = ExemptionReason.IGNORE_JAVA_INTEROP,
     description = "Kotlin-only client; Java callers are expected to use the builder instead.",
 )
-public fun connect(host: String, port: Int = 80, timeout: Int = 30): Unit = Unit
+public fun connect(host: String, port: Int = 80, timeout: Int = 30) { }
 ```
 
 The annotation targets the function or constructor declaration only; there is no parameter- or

@@ -12,7 +12,7 @@ public open class Tag
 
 // Inert type positions: the value is only ever accessed by name, so the marker restricts nothing.
 
-public fun process(tag: <!DSL_MARKER_NOOP_TYPE_POSITION!>@TreeDsl<!> Tag): Unit = Unit
+public fun process(tag: <!DSL_MARKER_NOOP_TYPE_POSITION!>@TreeDsl<!> Tag) { }
 
 public fun make(): <!DSL_MARKER_NOOP_TYPE_POSITION!>@TreeDsl<!> Tag = Tag()
 
@@ -29,7 +29,7 @@ public fun local(): Unit {
 public fun run(block: <!DSL_MARKER_NOOP_TYPE_POSITION!>@TreeDsl<!> () -> Unit): Unit = block()
 
 // Use sites are checked regardless of visibility: an inert marker misleads the authors too.
-internal fun internalProcess(tag: <!DSL_MARKER_NOOP_TYPE_POSITION!>@TreeDsl<!> Tag): Unit = Unit
+internal fun internalProcess(tag: <!DSL_MARKER_NOOP_TYPE_POSITION!>@TreeDsl<!> Tag) { }
 
 // Effective type positions: no warning.
 
@@ -40,7 +40,7 @@ public fun tree(block: @TreeDsl Tag.() -> Unit): Unit = Tag().block()
 public fun tree2(block: (@TreeDsl Tag).() -> Unit): Unit = Tag().block()
 
 // The marker on an extension receiver type marks `this` inside the body.
-public fun (@TreeDsl Tag).build(): Unit = Unit
+public fun (@TreeDsl Tag).build() { }
 
 // A marked supertype marks every instance of the subclass.
 public class Div : @TreeDsl Tag()
@@ -53,7 +53,7 @@ public typealias MarkedTag = @TreeDsl Tag
 @Target(AnnotationTarget.TYPE)
 public annotation class PlainTypeAnnotation
 
-public fun plain(tag: @PlainTypeAnnotation Tag): Unit = Unit
+public fun plain(tag: @PlainTypeAnnotation Tag) { }
 
 // Known limitation: markers nested in type arguments are not analyzed.
 public val tags: List<@TreeDsl Tag> = emptyList()

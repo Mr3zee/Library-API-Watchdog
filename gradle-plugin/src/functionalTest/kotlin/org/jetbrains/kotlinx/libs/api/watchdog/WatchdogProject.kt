@@ -5,7 +5,6 @@ import com.autonomousapps.kit.gradle.Repositories
 import com.autonomousapps.kit.gradle.Repository
 import org.jetbrains.kotlin.compiler.plugin.devkit.test.AbstractDevKitGradleProject
 import org.jetbrains.kotlin.compiler.plugin.devkit.test.pluginUnderTestVersion
-import kotlin.reflect.full.memberFunctions
 
 open class WatchdogProject(
     multiplatform: Boolean = false,

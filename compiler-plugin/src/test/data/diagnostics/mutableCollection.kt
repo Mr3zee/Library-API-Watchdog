@@ -39,11 +39,11 @@ public val makeBuffer: <!MUTABLE_COLLECTION_PUBLIC_API!>() -> MutableList<Int><!
 // Function types are FunctionN classifiers, so mutable state hidden in a lambda's parameter,
 // return, or receiver position is found the same way - whether the lambda is accepted...
 
-public fun onBatch(action: <!MUTABLE_COLLECTION_PUBLIC_API!>(MutableList<Int>) -> Unit<!>): Unit = Unit
+public fun onBatch(action: <!MUTABLE_COLLECTION_PUBLIC_API!>(MutableList<Int>) -> Unit<!>) { }
 
-public fun provider(factory: <!MUTABLE_COLLECTION_PUBLIC_API!>() -> MutableSet<String><!>): Unit = Unit
+public fun provider(factory: <!MUTABLE_COLLECTION_PUBLIC_API!>() -> MutableSet<String><!>) { }
 
-public fun schedule(task: <!MUTABLE_COLLECTION_PUBLIC_API!>suspend () -> MutableList<Int><!>): Unit = Unit
+public fun schedule(task: <!MUTABLE_COLLECTION_PUBLIC_API!>suspend () -> MutableList<Int><!>) { }
 
 // ...returned...
 
@@ -61,9 +61,9 @@ public fun assemble(block: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int>.() 
 public fun buildInto(@IntentionallyMutableCollection block: MutableList<Int>.() -> Unit): List<Int> =
     mutableListOf<Int>().apply(block).toList()
 
-public fun onEachBatch(action: (@IntentionallyMutableCollection MutableList<Int>) -> Unit): Unit = Unit
+public fun onEachBatch(action: (@IntentionallyMutableCollection MutableList<Int>) -> Unit) { }
 
-public fun drainWith(action: @IntentionallyMutableCollection (MutableList<Int>) -> Unit): Unit = Unit
+public fun drainWith(action: @IntentionallyMutableCollection (MutableList<Int>) -> Unit) { }
 
 @IntentionallyMutableCollection
 public fun batchCallbackFactory(): (MutableList<Int>) -> Unit = {}
@@ -73,7 +73,7 @@ public val batchSink: (MutableList<Int>) -> Unit = {}
 
 // Lambdas over read-only types stay clean.
 
-public fun transform(f: (List<Int>) -> Set<String>): Unit = Unit
+public fun transform(f: (List<Int>) -> Set<String>) { }
 
 // Concrete implementations expose the same mutators as the interfaces they implement.
 
@@ -95,7 +95,7 @@ public fun joined(vararg parts: String): String = parts.joinToString()
 
 // ...but a mutable element type is still shared.
 
-public fun batches(vararg groups: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int><!>): Unit = Unit
+public fun batches(vararg groups: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int><!>) { }
 
 // A mutable bound constrains every instantiation of the type parameter to mutable state,
 // exposing the same mutability as a direct mention of the bound.

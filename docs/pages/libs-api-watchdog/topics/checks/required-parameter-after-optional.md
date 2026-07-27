@@ -17,7 +17,7 @@ or `vararg` - in the parameter list of a public function or constructor:
 
 ```kotlin
 // REQUIRED_PARAMETER_AFTER_OPTIONAL
-public fun connect(retries: Int = 3, host: String): Unit = Unit
+public fun connect(retries: Int = 3, host: String) { }
 ```
 
 All required parameters behind the first optional one are reported, not just the first:
@@ -29,7 +29,7 @@ public fun configure(
     host: String,
     // REQUIRED_PARAMETER_AFTER_OPTIONAL
     port: Int,
-): Unit = Unit
+) { }
 ```
 
 ## Rationale
@@ -45,13 +45,13 @@ essential inputs first, optional inputs last.
 
 ```kotlin
 // REQUIRED_PARAMETER_AFTER_OPTIONAL
-public fun connect(retries: Int = 3, host: String): Unit = Unit
+public fun connect(retries: Int = 3, host: String) { }
 ```
 
 ### Do
 
 ```kotlin
-public fun connect(host: String, retries: Int = 3): Unit = Unit
+public fun connect(host: String, retries: Int = 3) { }
 ```
 
 ### Don't {id="dont-2"}
@@ -89,7 +89,7 @@ compatibility:
 @IntentionallyRequiredParameterAfterOptional(
     reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY,
 )
-public fun legacyConnect(retries: Int = 3, host: String): Unit = Unit
+public fun legacyConnect(retries: Int = 3, host: String) { }
 ```
 
 ## Configuration
