@@ -7,8 +7,8 @@ exhaustively with a `when` expression that has no `else` branch.
 |------------------|---------------------------------------------|
 | Diagnostic       | `EXHAUSTIVE_PUBLIC_API`                     |
 | Default severity | Error                                       |
-| Gradle property  | [`exhaustivePublicApi`](configuration.md)   |
-| Exemption        | [`@IntentionallyExhaustive`](exemptions.md) |
+| Gradle property  | [`exhaustivePublicApi`](../configuration.md)   |
+| Exemption        | [`@IntentionallyExhaustive`](../exemptions.md) |
 
 ## What it reports
 
@@ -75,7 +75,7 @@ public interface Event {
 
 A non-final member of a sealed hierarchy (an `abstract` or `sealed` subclass)
 is itself unrestricted, subclassable API and is reported separately by
-[](open-api-without-subclass-opt-in.md), on top of this check.
+[Open API without subclass opt-in](./open-api-without-subclass-opt-in.md), on top of this check.
 
 ## Exemption
 
@@ -108,5 +108,5 @@ With direct compiler invocation:
 ## See also
 
 - [Prevent unwanted and invalid extensions](https://kotlinlang.org/docs/api-guidelines-predictability.html#prevent-unwanted-and-invalid-extensions)
-- [](open-api-without-subclass-opt-in.md)
-- [](exemptions.md)
+- [Open API without subclass opt-in](./open-api-without-subclass-opt-in.md)
+- [Exemptions and internal API](../exemptions.md)

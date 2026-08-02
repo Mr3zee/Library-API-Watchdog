@@ -7,8 +7,8 @@ signatures.
 |------------------|-----------------------------------------------|
 | Diagnostic       | `PAIR_OR_TRIPLE_PUBLIC_API`                   |
 | Default severity | Error                                         |
-| Gradle property  | [`pairOrTriplePublicApi`](configuration.md)   |
-| Exemption        | [`@IntentionallyPairOrTriple`](exemptions.md) |
+| Gradle property  | [`pairOrTriplePublicApi`](../configuration.md)   |
+| Exemption        | [`@IntentionallyPairOrTriple`](../exemptions.md) |
 
 ## What it reports
 
@@ -47,15 +47,15 @@ public fun edges(): List<Pair<Int, Int>> = emptyList()
 
 ```kotlin
 public class Dimensions(
-    public val width: Int, 
-    public val height: Int, 
+    public val width: Int,
+    public val height: Int,
     public val depth: Int,
 )
 
 public fun dimensions(): Dimensions = Dimensions(0, 0, 0)
 
 public class Point(
-    public val x: Int, 
+    public val x: Int,
     public val y: Int,
 )
 
@@ -83,7 +83,7 @@ parameter, or on a type usage, where it covers the annotated type and everything
 public fun rawLocation(): Pair<Int, Int> = 0 to 0
 
 public fun draw(
-  @IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN) 
+  @IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN)
   at: Pair<Int, Int>,
 ) { }
 
@@ -110,5 +110,5 @@ With direct compiler invocation:
 ## See also
 
 - [Use object-oriented design for data and state](https://kotlinlang.org/docs/api-guidelines-consistency.html#use-object-oriented-design-for-data-and-state)
-- [](data-class-public-api.md)
-- [](exemptions.md)
+- [Data classes in public API](./data-class-public-api.md)
+- [Exemptions and internal API](../exemptions.md)

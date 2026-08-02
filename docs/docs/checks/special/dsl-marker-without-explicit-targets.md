@@ -7,8 +7,8 @@ explicit `@Target`.
 |------------------|---------------------------------------------------------------------------------|
 | Diagnostic       | `DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`                                           |
 | Default severity | Error                                                                           |
-| Gradle property  | [`dslMarkerWithoutExplicitTargets`](configuration.md)                           |
-| Exemption        | [`@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility`](exemptions.md) |
+| Gradle property  | [`dslMarkerWithoutExplicitTargets`](../../configuration.md)                           |
+| Exemption        | [`@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility`](../../exemptions.md) |
 
 ## What it reports
 
@@ -43,9 +43,9 @@ public annotation class HtmlDsl
 ```kotlin
 @DslMarker
 @Target(
-    AnnotationTarget.CLASS, 
-    AnnotationTarget.ANNOTATION_CLASS, 
-    AnnotationTarget.TYPE, 
+    AnnotationTarget.CLASS,
+    AnnotationTarget.ANNOTATION_CLASS,
+    AnnotationTarget.TYPE,
     AnnotationTarget.TYPEALIAS,
 )
 public annotation class HtmlDsl
@@ -60,7 +60,7 @@ public annotation class KtorDsl
 
 - `ANNOTATION_CLASS` counts as effective too, since it is a classifier declaration.
 - An explicit `@Target` that still lists no-op targets is a separate, related check. See
-  [](dsl-marker-noop-target.md) for more details.
+  [DSL markers with no-op targets](./dsl-marker-noop-target.md) for more details.
 - A plain annotation class without `@DslMarker` is never checked here.
 
 ## Exemption
@@ -98,6 +98,6 @@ With direct compiler invocation:
 ## See also
 
 - [Scope control: @DslMarker](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker)
-- [](dsl-marker-noop-target.md), the sibling check for markers that
+- [DSL markers with no-op targets](./dsl-marker-noop-target.md), the sibling check for markers that
   declare an explicit `@Target` but still list ineffective ones
-- [](exemptions.md)
+- [Exemptions and internal API](../../exemptions.md)

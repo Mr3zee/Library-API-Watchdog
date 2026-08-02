@@ -6,8 +6,8 @@
 |------------------|-----------------------------------------------|
 | Diagnostic       | `UNDOCUMENTED_PUBLIC_API`                     |
 | Default severity | Error                                         |
-| Gradle property  | [`undocumentedPublicApi`](configuration.md)   |
-| Exemption        | [`@IntentionallyUndocumented`](exemptions.md) |
+| Gradle property  | [`undocumentedPublicApi`](../configuration.md)   |
+| Exemption        | [`@IntentionallyUndocumented`](../exemptions.md) |
 
 ## What it reports
 
@@ -35,7 +35,7 @@ supported. Writing the contract down helps your library avoid these issues. See 
 public class Cache {
     // UNDOCUMENTED_PUBLIC_API
     public fun get(key: String): String? = store[key]
-  
+
     private val store: MutableMap<String, String> = mutableMapOf()
 }
 ```
@@ -46,8 +46,8 @@ public class Cache {
 /** An in-memory string cache. */
 public class Cache {
     /**
-     * Returns the cached value for [key], 
-     * or null when nothing is cached under it. 
+     * Returns the cached value for [key],
+     * or null when nothing is cached under it.
      */
     public fun get(key: String): String? = store[key]
 
@@ -55,7 +55,7 @@ public class Cache {
 }
 ```
 
-### Don't {id="dont-2"}
+### Don't {#dont-2}
 
 A class KDoc alone doesn't document its constructor properties. Each one still needs a matching
 `@property` tag (or `@param` for a `val`/`var` declared in the primary constructor):
@@ -67,10 +67,10 @@ public class Profile(
     public val name: String,
     // UNDOCUMENTED_PUBLIC_API
     public val age: Int,
-) 
+)
 ```
 
-### Do {id="do-2"}
+### Do {#do-2}
 
 ```kotlin
 /**
@@ -80,7 +80,7 @@ public class Profile(
  * @property age the user's age in years.
  */
 public class Profile(
-  public val name: String, 
+  public val name: String,
   public val age: Int,
 )
 ```
@@ -105,7 +105,7 @@ declarations:
 
 ```kotlin
 // No example here, because I couldn't find a good one when an API
-// shouldn't be documented. 
+// shouldn't be documented.
 ```
 
 ## Configuration
@@ -124,4 +124,4 @@ With direct compiler invocation:
 ## See also
 
 - [Kotlin API guidelines: thoroughly document your API](https://kotlinlang.org/docs/api-guidelines-informative-documentation.html#thoroughly-document-your-api)
-- [](exemptions.md)
+- [Exemptions and internal API](../exemptions.md)

@@ -9,8 +9,8 @@ compiled name.
 | Diagnostic       | `MANGLED_JVM_NAME_PUBLIC_API`                   |
 | Default severity | Error                                           |
 | Applies to       | JVM compilations only                           |
-| Gradle property  | [`mangledJvmNamePublicApi`](configuration.md)   |
-| Exemption        | [`@IntentionallyMangledJvmName`](exemptions.md) |
+| Gradle property  | [`mangledJvmNamePublicApi`](../../configuration.md)   |
+| Exemption        | [`@IntentionallyMangledJvmName`](../../exemptions.md) |
 
 ## What it reports
 
@@ -49,15 +49,15 @@ public fun take(id: UserId) { }
 public fun take(id: UserId) { }
 ```
 
-### Don't {id="dont-2"}
+### Don't {#dont-2}
 
 ```kotlin
-// The public constructor is replaced by 
+// The public constructor is replaced by
 // a private one and a synthetic marker-parameter overload.
 public class Wallet(public val id: UserId)
 ```
 
-### Do {id="do-2"}
+### Do {#do-2}
 
 ```kotlin
 @JvmExposeBoxed
@@ -102,7 +102,7 @@ apiWatchdog {
 ```
 
 The property lives inside the `javaInterop { }` block. `javaInterop { enabled = false }` turns off
-this check along with the rest of the [](java-interop.md) group.
+this check along with the rest of the [Java interop checks](./java-interop.md) group.
 
 With direct compiler invocation:
 ```
@@ -112,7 +112,7 @@ With direct compiler invocation:
 ## See also
 
 - [Inline value classes and mangling](https://kotlinlang.org/docs/java-to-kotlin-interop.html#inline-value-classes)
-- [](java-interop.md)
-- [](kotlin-only-api-without-jvm-synthetic.md), the sibling
+- [Java interop checks](./java-interop.md)
+- [Kotlin-only API without JvmSynthetic](./kotlin-only-api-without-jvm-synthetic.md), the sibling
   check for shapes that stay visible to Java but are not idiomatically callable
-- [](exemptions.md)
+- [Exemptions and internal API](../../exemptions.md)

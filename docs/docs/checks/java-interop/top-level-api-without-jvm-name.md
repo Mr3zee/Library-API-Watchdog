@@ -8,8 +8,8 @@ compile into a file facade class without an explicit `@file:JvmName`.
 | Diagnostic       | `TOP_LEVEL_API_WITHOUT_JVM_NAME`                   |
 | Default severity | Error                                              |
 | Applies to       | JVM compilations only                              |
-| Gradle property  | [`topLevelApiWithoutJvmName`](configuration.md)    |
-| Exemption        | [`@IntentionallyDefaultFacadeName`](exemptions.md) |
+| Gradle property  | [`topLevelApiWithoutJvmName`](../../configuration.md)    |
+| Exemption        | [`@IntentionallyDefaultFacadeName`](../../exemptions.md) |
 
 ## What it reports
 
@@ -39,7 +39,7 @@ for how top-level declarations actually compile.
 // Network.kt
 package com.example
 
-// Facade class NetworkKt 
+// Facade class NetworkKt
 // renaming this file to NetworkClient.kt breaks every Java caller.
 public fun connect(): Int = 0
 public fun disconnect(): Int = 0
@@ -53,7 +53,7 @@ public fun disconnect(): Int = 0
 
 package com.example
 
-// Java callers write Network.connect(), 
+// Java callers write Network.connect(),
 // the file can be renamed freely.
 public fun connect(): Int = 0
 public fun disconnect(): Int = 0
@@ -95,7 +95,7 @@ apiWatchdog {
 ```
 
 The property lives inside the `javaInterop { }` block. `javaInterop { enabled = false }` turns off
-this check along with the rest of the [](java-interop.md) group.
+this check along with the rest of the [Java interop checks](./java-interop.md) group.
 
 With direct compiler invocation:
 ```
@@ -105,5 +105,5 @@ With direct compiler invocation:
 ## See also
 
 - [Kotlin's Java-to-Kotlin interop guide: package-level functions](https://kotlinlang.org/docs/java-to-kotlin-interop.html#package-level-functions)
-- [](java-interop.md)
-- [](exemptions.md)
+- [Java interop checks](./java-interop.md)
+- [Exemptions and internal API](../../exemptions.md)

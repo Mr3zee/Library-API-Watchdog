@@ -8,13 +8,13 @@ default parameter values without `@JvmOverloads`.
 | Diagnostic       | `DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS`                 |
 | Default severity | Error                                                      |
 | Applies to       | JVM compilations only                                      |
-| Gradle property  | [`defaultParametersWithoutJvmOverloads`](configuration.md) |
-| Exemption        | [`@IntentionallyWithoutJvmOverloads`](exemptions.md)       |
+| Gradle property  | [`defaultParametersWithoutJvmOverloads`](../../configuration.md) |
+| Exemption        | [`@IntentionallyWithoutJvmOverloads`](../../exemptions.md)       |
 
 ## What it reports
 
 A public function or constructor that declares at least one default parameter value but carries
-no `@JvmOverloads`. 
+no `@JvmOverloads`.
 
 ```kotlin
 // DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS
@@ -41,8 +41,8 @@ later binary compatible for Kotlin callers either.
 
 ```kotlin
 public fun connect(
-    host: String, 
-    port: Int = 80, 
+    host: String,
+    port: Int = 80,
     timeout: Int = 30,
 ) { }
 ```
@@ -52,26 +52,26 @@ public fun connect(
 ```kotlin
 @JvmOverloads
 public fun connect(
-    host: String, 
-    port: Int = 80, 
+    host: String,
+    port: Int = 80,
     timeout: Int = 30,
 ) { }
 ```
 
-### Don't {id="dont-2"}
+### Don't {#dont-2}
 
 ```kotlin
 public class Connection(
-    host: String, 
+    host: String,
     port: Int = 80,
 )
 ```
 
-### Do {id="do-2"}
+### Do {#do-2}
 
 ```kotlin
 public class Connection @JvmOverloads constructor(
-    host: String, 
+    host: String,
     port: Int = 80,
 )
 ```
@@ -79,7 +79,7 @@ public class Connection @JvmOverloads constructor(
 ## Notes
 
 - A defaulted parameter in the middle of the list still can't be skipped from Java even with
-  `@JvmOverloads`. Keep optional parameters last (see [`REQUIRED_PARAMETER_AFTER_OPTIONAL`](required-parameter-after-optional.md)) so the
+  `@JvmOverloads`. Keep optional parameters last (see [`REQUIRED_PARAMETER_AFTER_OPTIONAL`](../required-parameter-after-optional.md)) so the
   generated overloads actually cover the common call shapes.
 - Abstract and interface members, and annotation class constructors, are exempt: `@JvmOverloads`
   doesn't apply to them.
@@ -102,8 +102,8 @@ without Kotlin's named arguments:
             "Java callers are expected to use the builder instead.",
 )
 public fun connectDsl(
-    host: String, 
-    port: Int = 80, 
+    host: String,
+    port: Int = 80,
     timeout: Int = 30,
     builder: Connection.() -> Unit,
 ) { }
@@ -120,7 +120,7 @@ apiWatchdog {
 ```
 
 The property lives inside the `javaInterop { }` block. `javaInterop { enabled = false }` turns off
-this check along with the rest of the [](java-interop.md) group.
+this check along with the rest of the [Java interop checks](./java-interop.md) group.
 
 With direct compiler invocation:
 ```
@@ -130,7 +130,7 @@ With direct compiler invocation:
 ## See also
 
 - [Overloads generation](https://kotlinlang.org/docs/java-to-kotlin-interop.html#overloads-generation)
-- [](java-interop.md)
-- [](required-parameter-after-optional.md), which keeps
+- [Java interop checks](./java-interop.md)
+- [Required parameters after optional ones](../required-parameter-after-optional.md), which keeps
   defaulted parameters last so the generated overloads are useful
-- [](exemptions.md)
+- [Exemptions and internal API](../../exemptions.md)

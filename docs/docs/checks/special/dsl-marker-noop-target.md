@@ -7,8 +7,8 @@ names a target the marker has no effect on.
 |------------------|---------------------------------------------------------------------------------|
 | Diagnostic       | `DSL_MARKER_NOOP_TARGET`                                                        |
 | Default severity | Error                                                                           |
-| Gradle property  | [`dslMarkerNoopTarget`](configuration.md)                                       |
-| Exemption        | [`@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility`](exemptions.md) |
+| Gradle property  | [`dslMarkerNoopTarget`](../../configuration.md)                                       |
+| Exemption        | [`@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility`](../../exemptions.md) |
 
 ## What it reports
 
@@ -26,7 +26,7 @@ public annotation class MyDsl
 
 `@DslMarker` exists to make [type-safe builder](https://kotlinlang.org/docs/type-safe-builders.html)
 receivers unambiguous by hiding outer receivers from an inner scope. That mechanism only looks at
-the marker's placement on a class, a type, or a type alias. 
+the marker's placement on a class, a type, or a type alias.
 It misleads callers into thinking annotating a function or a property also
 scopes something, and it misleads the marker's author into thinking the surface is narrower than
 it is. See the
@@ -40,9 +40,9 @@ Kotlin docs on [scope control with `@DslMarker`](https://kotlinlang.org/docs/typ
 @DslMarker
 // DSL_MARKER_NOOP_TARGET
 @Target(
-    AnnotationTarget.CLASS, 
-    AnnotationTarget.TYPEALIAS, 
-    AnnotationTarget.TYPE, 
+    AnnotationTarget.CLASS,
+    AnnotationTarget.TYPEALIAS,
+    AnnotationTarget.TYPE,
     AnnotationTarget.FUNCTION,
 )
 public annotation class KtorDsl
@@ -53,8 +53,8 @@ public annotation class KtorDsl
 ```kotlin
 @DslMarker
 @Target(
-    AnnotationTarget.CLASS, 
-    AnnotationTarget.TYPE, 
+    AnnotationTarget.CLASS,
+    AnnotationTarget.TYPE,
     AnnotationTarget.TYPEALIAS,
 )
 public annotation class KtorDsl
@@ -68,7 +68,7 @@ public annotation class KtorDsl
 - An annotation class without `@DslMarker` is out of scope entirely, no matter what its `@Target`
   allows.
 - A marker with no explicit `@Target` at all is a different diagnostic,
-  [`DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`](dsl-marker-without-explicit-targets.md), because the
+  [`DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`](./dsl-marker-without-explicit-targets.md), because the
   default target set has its own no-op entries plus forbids `TYPE`/`TYPEALIAS`.
 
 ## Exemption
@@ -105,5 +105,5 @@ With direct compiler invocation:
 
 - [Scope control with @DslMarker](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker)
 - [DSL marker design note](https://github.com/Kotlin/KEEP/blob/main/notes/0005-dsl-marker.md)
-- [](dsl-marker-without-explicit-targets.md)
-- [](exemptions.md)
+- [DSL markers without explicit targets](./dsl-marker-without-explicit-targets.md)
+- [Exemptions and internal API](../../exemptions.md)

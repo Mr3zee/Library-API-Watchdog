@@ -9,8 +9,8 @@ class.
 | Diagnostic       | `COMPANION_API_WITHOUT_JVM_STATIC`                     |
 | Default severity | Error                                                  |
 | Applies to       | JVM compilations only                                  |
-| Gradle property  | [`companionApiWithoutJvmStatic`](configuration.md)     |
-| Exemption        | [`@IntentionallyNonStaticCompanionApi`](exemptions.md) |
+| Gradle property  | [`companionApiWithoutJvmStatic`](../../configuration.md)     |
+| Exemption        | [`@IntentionallyNonStaticCompanionApi`](../../exemptions.md) |
 
 ## What it reports
 
@@ -84,7 +84,7 @@ public class Registry {
 }
 ```
 
-The same annotation also acknowledges [`COMPANION_CONSTANT_WITHOUT_JVM_FIELD`](companion-constant-without-jvm-field.md).
+The same annotation also acknowledges [`COMPANION_CONSTANT_WITHOUT_JVM_FIELD`](./companion-constant-without-jvm-field.md).
 
 ## Configuration
 
@@ -104,12 +104,12 @@ With direct compiler invocation:
 ```
 
 The property lives inside the `javaInterop { }` block. `javaInterop { enabled = false }` turns off
-this check along with the rest of the [](java-interop.md) group.
+this check along with the rest of the [Java interop checks](./java-interop.md) group.
 
 ## See also
 
 - [Static methods](https://kotlinlang.org/docs/java-to-kotlin-interop.html#static-methods)
-- [](companion-constant-without-jvm-field.md), the sibling
+- [Companion constants without JvmField](./companion-constant-without-jvm-field.md), the sibling
   check for constant-shaped companion properties
-- [](java-interop.md)
-- [](exemptions.md)
+- [Java interop checks](./java-interop.md)
+- [Exemptions and internal API](../../exemptions.md)

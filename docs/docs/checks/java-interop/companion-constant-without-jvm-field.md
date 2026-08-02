@@ -9,8 +9,8 @@ that Java can only read through the companion instance getter.
 | Diagnostic       | `COMPANION_CONSTANT_WITHOUT_JVM_FIELD`                 |
 | Default severity | Error                                                  |
 | Applies to       | JVM compilations only                                  |
-| Gradle property  | [`companionConstantWithoutJvmField`](configuration.md) |
-| Exemption        | [`@IntentionallyNonStaticCompanionApi`](exemptions.md) |
+| Gradle property  | [`companionConstantWithoutJvmField`](../../configuration.md) |
+| Exemption        | [`@IntentionallyNonStaticCompanionApi`](../../exemptions.md) |
 
 ## What it reports
 
@@ -20,7 +20,7 @@ A companion `val` that just holds a constant value - no `const`, no custom gette
 public class Registry {
     public companion object {
         // COMPANION_CONSTANT_WITHOUT_JVM_FIELD
-        public val DEFAULT_NAME: String = "registry" 
+        public val DEFAULT_NAME: String = "registry"
     }
 }
 ```
@@ -64,7 +64,7 @@ public class Registry {
 `const val` compiles to a real static final field but only accepts a compile-time constant
 (primitives and strings). `@JvmField` exposes any other final value the same way, as a plain
 static field. `@JvmStatic` instead compiles a static getter, useful when the value needs a
-computed default. 
+computed default.
 
 ## Notes
 
@@ -92,7 +92,7 @@ public class Registry {
 }
 ```
 
-The same annotation also acknowledges [`COMPANION_API_WITHOUT_JVM_STATIC`](companion-api-without-jvm-static.md).
+The same annotation also acknowledges [`COMPANION_API_WITHOUT_JVM_STATIC`](./companion-api-without-jvm-static.md).
 
 ## Configuration
 
@@ -105,7 +105,7 @@ apiWatchdog {
 ```
 
 The property lives inside the `javaInterop { }` block. `javaInterop { enabled = false }` turns off
-this check along with the rest of the [](java-interop.md) group.
+this check along with the rest of the [Java interop checks](./java-interop.md) group.
 
 With direct compiler invocation:
 ```
@@ -115,6 +115,6 @@ With direct compiler invocation:
 ## See also
 
 - [Static fields in Java-to-Kotlin interop](https://kotlinlang.org/docs/java-to-kotlin-interop.html#static-fields)
-- [](java-interop.md)
-- [](companion-api-without-jvm-static.md)
-- [](exemptions.md)
+- [Java interop checks](./java-interop.md)
+- [Companion API without JvmStatic](./companion-api-without-jvm-static.md)
+- [Exemptions and internal API](../../exemptions.md)

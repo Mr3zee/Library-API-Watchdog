@@ -7,8 +7,8 @@ constructors declared after an optional (defaulted or `vararg`) parameter.
 |------------------|-----------------------------------------------------------------|
 | Diagnostic       | `REQUIRED_PARAMETER_AFTER_OPTIONAL`                             |
 | Default severity | Error                                                           |
-| Gradle property  | [`requiredParameterAfterOptional`](configuration.md)            |
-| Exemption        | [`@IntentionallyRequiredParameterAfterOptional`](exemptions.md) |
+| Gradle property  | [`requiredParameterAfterOptional`](../configuration.md)            |
+| Exemption        | [`@IntentionallyRequiredParameterAfterOptional`](../exemptions.md) |
 
 ## What it reports
 
@@ -35,7 +35,7 @@ public fun configure(
 ## Rationale
 
 A required parameter behind an optional one can't be passed positionally,
-which pushes callers toward named arguments for a parameter that should have been more trivial to supply. 
+which pushes callers toward named arguments for a parameter that should have been more trivial to supply.
 It also blocks the library from ever adding another optional
 parameter in a natural position later. See the Kotlin library authors' guide on
 [parameter order, naming, and usage](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage):
@@ -54,14 +54,14 @@ public fun connect(retries: Int = 3, host: String) { }
 public fun connect(host: String, retries: Int = 3) { }
 ```
 
-### Don't {id="dont-2"}
+### Don't {#dont-2}
 
 ```kotlin
 // REQUIRED_PARAMETER_AFTER_OPTIONAL
 public class Server(port: Int = 80, host: String)
 ```
 
-### Do {id="do-2"}
+### Do {#do-2}
 
 ```kotlin
 public class Server(host: String, port: Int = 80)
@@ -108,5 +108,5 @@ With direct compiler invocation:
 ## See also
 
 - [Preserve parameter order, naming, and usage](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage)
-- [](inconsistent-parameter-order-in-overloads.md), a sibling check on parameter order across overloads
-- [](exemptions.md)
+- [Inconsistent parameter order in overloads](./inconsistent-parameter-order-in-overloads.md), a sibling check on parameter order across overloads
+- [Exemptions and internal API](../exemptions.md)

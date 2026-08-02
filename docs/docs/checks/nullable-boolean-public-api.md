@@ -6,8 +6,8 @@
 |------------------|--------------------------------------------------|
 | Diagnostic       | `NULLABLE_BOOLEAN_PUBLIC_API`                    |
 | Default severity | Error                                            |
-| Gradle property  | [`nullableBooleanPublicApi`](configuration.md)   |
-| Exemption        | [`@IntentionallyNullableBoolean`](exemptions.md) |
+| Gradle property  | [`nullableBooleanPublicApi`](../configuration.md)   |
+| Exemption        | [`@IntentionallyNullableBoolean`](../exemptions.md) |
 
 ## What it reports
 
@@ -45,14 +45,14 @@ public enum class ConnectionState { CONNECTED, DISCONNECTED, UNKNOWN }
 public fun connectionState(): ConnectionState = ConnectionState.UNKNOWN
 ```
 
-### Don't {id="dont-2"}
+### Don't {#dont-2}
 
 ```kotlin
 // NULLABLE_BOOLEAN_PUBLIC_API
 public class Holder(public val checked: Boolean?)
 ```
 
-### Do {id="do-2"}
+### Do {#do-2}
 
 ```kotlin
 public enum class CheckState { CHECKED, UNCHECKED, UNKNOWN }
@@ -97,6 +97,6 @@ With direct compiler invocation:
 ## See also
 
 - [Avoid using the Boolean type as an argument](https://kotlinlang.org/docs/api-guidelines-readability.html#avoid-using-the-boolean-type-as-an-argument)
-- [](boolean-parameter-public-api.md), a sibling check that skips
+- [Boolean parameters in public API](./boolean-parameter-public-api.md), a sibling check that skips
   constructors and only looks at parameters, not return types or properties.
-- [](exemptions.md)
+- [Exemptions and internal API](../exemptions.md)

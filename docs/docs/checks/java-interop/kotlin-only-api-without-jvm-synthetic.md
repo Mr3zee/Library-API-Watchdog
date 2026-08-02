@@ -8,12 +8,12 @@ can use idiomatically, while the function still lands in the API surface Java so
 | Diagnostic       | `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`                |
 | Default severity | Error                                                  |
 | Applies to       | JVM compilations only                                  |
-| Gradle property  | [`kotlinOnlyApiWithoutJvmSynthetic`](configuration.md) |
-| Exemption        | [`@IntentionallyKotlinOnlyApi`](exemptions.md)         |
+| Gradle property  | [`kotlinOnlyApiWithoutJvmSynthetic`](../../configuration.md) |
+| Exemption        | [`@IntentionallyKotlinOnlyApi`](../../exemptions.md)         |
 
 ## What it reports
 
-Three shapes trigger it: 
+Three shapes trigger it:
 - A `suspend` function (Java sees a trailing `Continuation` parameter it can't provide idiomatically)
 - An `inline` function with a `reified` type parameter (calling the compiled method from Java fails at runtime)
 - A function taking a Kotlin-specific function type - a suspend function type, a
@@ -36,20 +36,20 @@ these shapes actually compile.
 ### Don't
 
 ```kotlin
-// Java sees a trailing Continuation parameter 
+// Java sees a trailing Continuation parameter
 // it can't provide idiomatically.
-// 
+//
 // KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
 public suspend fun refresh(key: String) { }
 
-// Only inlining Kotlin call sites can substitute T. 
+// Only inlining Kotlin call sites can substitute T.
 // Calling the compiled method from Java fails at runtime.
-// 
+//
 // KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
 public inline fun <reified T> instantiate(): T? = null
 
 // A Java lambda has to return the Unit.INSTANCE token explicitly.
-// 
+//
 // KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
 public fun onEach(action: (Int) -> Unit) { }
 ```
@@ -67,9 +67,9 @@ public fun interface Action {
 public fun onEach(action: Action) { }
 ```
 
-- `@JvmSynthetic` hides the Kotlin-only member from Java entirely. 
+- `@JvmSynthetic` hides the Kotlin-only member from Java entirely.
   (A `suspend` function can instead ship alongside a blocking or `CompletableFuture`-returning bridge for Java callers.)
-- A `fun interface` parameter gives Java a lambda-friendly type instead of a Kotlin function type. 
+- A `fun interface` parameter gives Java a lambda-friendly type instead of a Kotlin function type.
 
 ## Notes
 
@@ -77,7 +77,7 @@ public fun onEach(action: Action) { }
   implementations must provide.
 - Overrides are exempt, the shape is reported on the base declaration instead.
 - Constructors are exempt: `@JvmSynthetic` doesn't apply to them.
-- A signature mangled by a value class is reported by [`MANGLED_JVM_NAME_PUBLIC_API`](mangled-jvm-name-public-api.md) instead.
+- A signature mangled by a value class is reported by [`MANGLED_JVM_NAME_PUBLIC_API`](./mangled-jvm-name-public-api.md) instead.
 - `@JvmSynthetic` declarations are hidden from Java on purpose and are not flagged.
 - Non-JVM compilations never register this check at all.
 
@@ -102,7 +102,7 @@ apiWatchdog {
 ```
 
 The property lives inside the `javaInterop { }` block. `javaInterop { enabled = false }` turns off
-this check along with the rest of the [](java-interop.md) group.
+this check along with the rest of the [Java interop checks](./java-interop.md) group.
 
 With direct compiler invocation:
 ```
@@ -112,6 +112,6 @@ With direct compiler invocation:
 ## See also
 
 - [Java-to-Kotlin interop guide](https://kotlinlang.org/docs/java-to-kotlin-interop.html)
-- [](java-interop.md)
-- [](mangled-jvm-name-public-api.md)
-- [](exemptions.md)
+- [Java interop checks](./java-interop.md)
+- [Mangled JVM names in public API](./mangled-jvm-name-public-api.md)
+- [Exemptions and internal API](../../exemptions.md)

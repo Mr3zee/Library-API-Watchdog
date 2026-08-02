@@ -11,8 +11,8 @@ npm start    # dev server with hot reload
 npm run build
 ```
 
-`npm run build` fails on a broken link, a broken anchor, an unknown `%variable%`, and a code sample
-comment that names a diagnostic missing from `diagnostics.json`, so it is the docs check as well.
+`npm run build` fails on a broken link, a broken anchor, and a code sample comment that names a
+diagnostic missing from `diagnostics.json`, so it is the docs check as well.
 
 ## Hard rules
 
@@ -28,13 +28,10 @@ comment that names a diagnostic missing from `diagnostics.json`, so it is the do
   Every other reason (`INTEROP`, `EXTERNAL_CONTRACT`, `IGNORE_JAVA_INTEROP`, `OTHER`) also needs a
   non-empty `description`.
 - Exactly one `#` heading per page, at the top. It is the page title shown in the sidebar.
-- Link between pages by bare file name, regardless of folder: `[Exemptions](exemptions.md)`.
-  Never use relative paths like `../exemptions.md`. Leave the link text empty to have the title of
-  the target page, or of the target section, filled in: `[](exemptions.md#internal-api)`.
-- `%var%` substitutions work everywhere, including fenced code blocks. Declare them in
-  `docs/variables.mjs`; the current set is `%product%`, `%libs-api-watchdog-version%`,
-  `%kotlin-version%`, `%repo-root-path%`, `%repo-tree-path%`, `%docs-raw-path%`,
-  `%docs-edit-path%`, and `%host%`.
+- Use standard Docusaurus relative links between pages, including the path from the current file:
+  `[Exemptions](../exemptions.md)`. Always provide descriptive link text.
+- Write product names, versions, and URLs directly in page content. `docs/variables.mjs` is only
+  for shared site configuration in `docusaurus.config.ts` and `sidebars.ts`.
 - American English. Concise, active voice, no marketing fluff. Don't mention implementation
   details (FIR, checker class names) on user-facing pages.
 - Facts must match the sources of truth: `README.md`, the shared diagnostic registry
@@ -125,8 +122,8 @@ Use exactly this structure and section order for every page under `checks/`:
 |------------------|--------------------------------------|
 | Diagnostic       | `<DIAGNOSTIC_NAME>`                  |
 | Default severity | Error                                |
-| Gradle property  | [`<propertyName>`](configuration.md) |
-| Exemption        | [`@Intentionally<X>`](exemptions.md) |
+| Gradle property  | [`<propertyName>`](../configuration.md) |
+| Exemption        | [`@Intentionally<X>`](../exemptions.md) |
 
 ## What it reports
 
@@ -160,7 +157,7 @@ authors' guidelines page.
     ```
 
 Repeat Don't/Do pairs for distinct scenarios when the check has several. A repeated heading needs
-an explicit id, spelled `### Don't {id="dont-2"}`.
+an explicit Docusaurus id, spelled `### Don't {#dont-2}`.
 
 ## Notes
 
@@ -196,8 +193,10 @@ Adjustments:
 
 - Java interop checks add a table row `| Applies to | JVM compilations only |` and a sentence in
   Configuration: the whole group is disabled with `javaInterop { enabled = false }`. The property
-  lives inside the `javaInterop { }` block. Link [Java interop checks](java-interop.md) in the
-  intro or See also.
+  lives inside the `javaInterop { }` block. Link [Java interop checks](./java-interop.md) in the
+  intro or See also. Since these pages are nested one level deeper, their links to root pages use
+  `../../`, such as `../../configuration.md`.
+- Special-check pages are also nested one level deeper and use `../../` for links to root pages.
 - `EXEMPTION_WITHOUT_EXPLANATION` is always an error: its table says
   `| Default severity | Error (not configurable) |`, `| Gradle property | none |`,
   `| Exemption | none |`, and it has no Configuration section.

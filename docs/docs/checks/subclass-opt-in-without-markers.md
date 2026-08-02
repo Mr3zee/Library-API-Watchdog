@@ -7,14 +7,14 @@ marker classes.
 |------------------|--------------------------------------------------------------------------------|
 | Diagnostic       | `SUBCLASS_OPT_IN_WITHOUT_MARKERS`                                              |
 | Default severity | Error                                                                          |
-| Gradle property  | [`subclassOptInWithoutMarkers`](configuration.md)                              |
-| Exemption        | none, replace with [`@IntentionallyOpen`](open-api-without-subclass-opt-in.md) |
+| Gradle property  | [`subclassOptInWithoutMarkers`](../configuration.md)                              |
+| Exemption        | none, replace with [`@IntentionallyOpen`](./open-api-without-subclass-opt-in.md) |
 
 ## What it reports
 
 `markerClass` is a vararg parameter, so `@SubclassOptInRequired` compiles fine with zero
 arguments. The annotation restricts nothing in this case: the class or
-interface stays open to external subclassing exactly as if it were unannotated. 
+interface stays open to external subclassing exactly as if it were unannotated.
 
 ```kotlin
 // SUBCLASS_OPT_IN_WITHOUT_MARKERS
@@ -64,7 +64,7 @@ public interface Plugin
 
 There is no `@Intentionally*` annotation for this diagnostic: an unmarkered
 `@SubclassOptInRequired` never restricts anything, so keeping it as-is is never a valid design
-choice. Fix it by listing at least one marker class in `@SubclassOptInRequired`. 
+choice. Fix it by listing at least one marker class in `@SubclassOptInRequired`.
 
 To exempt this check for binary compatibility reasons, replace the `@SubclassOptInRequired` with
 `@IntentionallyOpen`:
@@ -76,7 +76,7 @@ To exempt this check for binary compatibility reasons, replace the `@SubclassOpt
 public abstract class Connector
 ```
 
-[`updateBackwardsCompatibilityExempts`](existing-libs.md) performs exactly this replacement: it
+[`updateBackwardsCompatibilityExempts`](../existing-libs.md) performs exactly this replacement: it
 drops the markerless `@SubclassOptInRequired` and puts `@IntentionallyOpen` in its place.
 
 ## Configuration
@@ -95,4 +95,4 @@ With direct compiler invocation:
 ## See also
 
 - [Require opt-in to extend an API](https://kotlinlang.org/docs/opt-in-requirements.html#require-opt-in-to-extend-api)
-- [](open-api-without-subclass-opt-in.md)
+- [Open API without subclass opt-in](./open-api-without-subclass-opt-in.md)

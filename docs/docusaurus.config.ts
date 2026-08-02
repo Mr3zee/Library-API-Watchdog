@@ -1,16 +1,8 @@
-import path from 'node:path';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import {remarkCodeHike, type CodeHikeConfig} from 'codehike/mdx';
-import {
-  parseWritersideFrontMatter,
-  preprocessWriterside,
-  remarkFlatLinks,
-} from './plugins/writerside.mjs';
 import {remarkCodeSamples} from './plugins/remark-code-samples.mjs';
 import {variables} from './variables.mjs';
-
-const docsDirectory = path.join(__dirname, 'docs');
 
 // "github-from-css" resolves every colour to a --ch-* CSS variable (see src/css/custom.css), so
 // one build-time highlighting pass serves both the light and the dark theme.
@@ -33,13 +25,6 @@ const config: Config = {
   onBrokenLinks: 'throw',
   onBrokenAnchors: 'throw',
 
-  markdown: {
-    preprocessor: preprocessWriterside,
-    parseFrontMatter: parseWritersideFrontMatter,
-    // The pages carry a couple of placeholder links whose target is still a TODO.
-    hooks: {onBrokenMarkdownLinks: 'warn'},
-  },
-
   presets: [
     [
       'classic',
@@ -49,10 +34,8 @@ const config: Config = {
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',
           editUrl: `${variables['repo-tree-path'].replace('/tree/', '/edit/')}/docs/docs/`,
-          // Ours have to see the markdown before the Docusaurus ones resolve the links and turn
-          // the code blocks into <Code> elements.
+          // These have to run before the Docusaurus plugins turn code blocks into <Code> elements.
           beforeDefaultRemarkPlugins: [
-            [remarkFlatLinks, {docsDirectory}],
             remarkCodeSamples,
             [remarkCodeHike, codeHike],
           ],

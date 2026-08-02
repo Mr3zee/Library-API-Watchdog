@@ -7,8 +7,8 @@ whose shared parameter names appear in a different relative order.
 |------------------|-------------------------------------------------------------|
 | Diagnostic       | `INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS`                 |
 | Default severity | Error                                                       |
-| Gradle property  | [`inconsistentParameterOrderInOverloads`](configuration.md) |
-| Exemption        | [`@IntentionallyInconsistentParameterOrder`](exemptions.md) |
+| Gradle property  | [`inconsistentParameterOrderInOverloads`](../configuration.md) |
+| Exemption        | [`@IntentionallyInconsistentParameterOrder`](../exemptions.md) |
 
 ## What it reports
 
@@ -50,33 +50,33 @@ public fun draw(x: Int, y: Int) { }
 public fun draw(x: Int, y: Int, scale: Double) { }
 ```
 
-### Don't {id="dont-2"}
+### Don't {#dont-2}
 
 ```kotlin
 // INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
 public class Rect(width: Int, height: Int) {
     // INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
     public constructor(
-        height: Int, 
-        width: Int, 
+        height: Int,
+        width: Int,
         scale: Double,
     ) : this(width, height)
 }
 ```
 
-### Do {id="do-2"}
+### Do {#do-2}
 
 ```kotlin
 public class Rect(width: Int, height: Int) {
     public constructor(
-        width: Int, 
-        height: Int, 
+        width: Int,
+        height: Int,
         scale: Double,
     ) : this(width, height)
 }
 ```
 
-### Don't {id="dont-3"}
+### Don't {#dont-3}
 
 ```kotlin
 public class Grid {
@@ -91,7 +91,7 @@ public fun Grid.fill(
 ) { }
 ```
 
-### Do {id="do-3"}
+### Do {#do-3}
 
 ```kotlin
 public class Grid {
@@ -159,6 +159,6 @@ With direct compiler invocation:
 ## See also
 
 - [Preserve parameter order, naming, and usage](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage)
-- [](required-parameter-after-optional.md), a sibling check
+- [Required parameters after optional ones](./required-parameter-after-optional.md), a sibling check
   on parameter order within one declaration
-- [](exemptions.md)
+- [Exemptions and internal API](../exemptions.md)

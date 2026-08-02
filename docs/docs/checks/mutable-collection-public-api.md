@@ -6,8 +6,8 @@
 |------------------|----------------------------------------------------|
 | Diagnostic       | `MUTABLE_COLLECTION_PUBLIC_API`                    |
 | Default severity | Error                                              |
-| Gradle property  | [`mutableCollectionPublicApi`](configuration.md)   |
-| Exemption        | [`@IntentionallyMutableCollection`](exemptions.md) |
+| Gradle property  | [`mutableCollectionPublicApi`](../configuration.md)   |
+| Exemption        | [`@IntentionallyMutableCollection`](../exemptions.md) |
 
 ## What it reports
 
@@ -50,7 +50,7 @@ public class Holder(items: MutableList<Int>) {
 }
 ```
 
-### Don't {id="dont-2"}
+### Don't {#dont-2}
 
 ```kotlin
 // MUTABLE_COLLECTION_PUBLIC_API
@@ -59,12 +59,12 @@ public fun consume(items: MutableSet<Int>) {
 }
 ```
 
-### Do {id="do-2"}
+### Do {#do-2}
 
 ```kotlin
 public fun consume(items: Set<Int>) {
     // copy internally before mutating, if needed
-}  
+}
 ```
 
 ## Notes
@@ -92,7 +92,7 @@ public fun sharedRegistry(): MutableList<String> = mutableListOf()
 public fun fill(
     @IntentionallyMutableCollection(
       reason = ExemptionReason.API_DESIGN,
-    ) 
+    )
     target: MutableList<Int>,
 ): Unit = target.add(1)
 
@@ -118,6 +118,6 @@ With direct compiler invocation:
 ## See also
 
 - [Avoid exposing mutable state](https://kotlinlang.org/docs/api-guidelines-predictability.html#avoid-exposing-mutable-state)
-- [](pair-or-triple-public-api.md), a sibling check for tuple types
+- [Pair and Triple in public API](./pair-or-triple-public-api.md), a sibling check for tuple types
   found by the same signature sweep.
-- [](exemptions.md)
+- [Exemptions and internal API](../exemptions.md)

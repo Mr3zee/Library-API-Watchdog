@@ -7,12 +7,12 @@ constructor property list as part of the compiled API.
 |------------------|--------------------------------------------|
 | Diagnostic       | `DATA_CLASS_PUBLIC_API`                    |
 | Default severity | Error                                      |
-| Gradle property  | [`dataClassPublicApi`](configuration.md)   |
-| Exemption        | [`@IntentionallyDataClass`](exemptions.md) |
+| Gradle property  | [`dataClassPublicApi`](../configuration.md)   |
+| Exemption        | [`@IntentionallyDataClass`](../exemptions.md) |
 
 ## What it reports
 
-Any `data class` reachable from the public API - top-level, nested inside another public class 
+Any `data class` reachable from the public API - top-level, nested inside another public class
 - is flagged, regardless of nesting depth:
 
 ```kotlin
@@ -77,5 +77,5 @@ With direct compiler invocation:
 ## See also
 
 - [Avoid using data classes in your API](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#avoid-using-data-classes-in-your-api)
-- [](stateful-class-without-equals-hashcode-to-string.md)
-- [](exemptions.md)
+- [Stateful classes without equals, hashCode, and toString](./stateful-class-without-equals-hashcode-to-string.md)
+- [Exemptions and internal API](../exemptions.md)

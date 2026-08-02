@@ -288,10 +288,9 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             rendererB = NAME,
         )
         map.put(
-            WatchdogDiagnostics.EXEMPTION_WITHOUT_EXPLANATION,
-            WatchdogDiagnosticMessages.messageFor(WatchdogDiagnostics.EXEMPTION_WITHOUT_EXPLANATION.name),
-            NAME,
-            NAME,
+            diagnostic = WatchdogDiagnostics.EXEMPTION_WITHOUT_EXPLANATION,
+            rendererA = NAME,
+            rendererB = NAME,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.DSL_MARKER_NOOP_TARGET,
@@ -364,6 +363,15 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         val message = WatchdogDiagnosticMessages.messageFor(diagnostic.name)
         put(diagnostic.error, message, rendererA, rendererB)
         put(diagnostic.warning, message, rendererA, rendererB)
+    }
+
+    private fun <A, B> KtDiagnosticFactoryToRendererMap.put(
+        diagnostic: KtDiagnosticFactory2<A, B>,
+        rendererA: DiagnosticParameterRenderer<A>?,
+        rendererB: DiagnosticParameterRenderer<B>?,
+    ) {
+        val message = WatchdogDiagnosticMessages.messageFor(diagnostic.name)
+        put(diagnostic, message, rendererA, rendererB)
     }
 
     private fun <A, B, C> KtDiagnosticFactoryToRendererMap.put(

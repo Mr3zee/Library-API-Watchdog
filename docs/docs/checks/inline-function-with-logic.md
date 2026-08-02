@@ -7,8 +7,8 @@ body does more than delegate to a non-inline function.
 |------------------|-----------------------------------------------|
 | Diagnostic       | `INLINE_FUNCTION_WITH_LOGIC`                  |
 | Default severity | Error                                         |
-| Gradle property  | [`inlineFunctionWithLogic`](configuration.md) |
-| Exemption        | [`@IntentionallyInlinedLogic`](exemptions.md) |
+| Gradle property  | [`inlineFunctionWithLogic`](../configuration.md) |
+| Exemption        | [`@IntentionallyInlinedLogic`](../exemptions.md) |
 
 ## What it reports
 
@@ -50,19 +50,19 @@ public inline fun cachedLength(tag: String): Int {
 ```kotlin
 public inline fun choose(value: Int): Int = chooseImpl(value)
 
-public inline fun cachedLength(tag: String): Int = 
+public inline fun cachedLength(tag: String): Int =
     cachedLengthImpl(tag)
 
 @PublishedApi
 internal fun chooseImpl(value: Int): Int = if (value < 0) -1 else 1
 
 @PublishedApi
-internal fun cachedLengthImpl(tag: String): Int = withCache { 
-    tag.length 
+internal fun cachedLengthImpl(tag: String): Int = withCache {
+    tag.length
 }
 ```
 
-### Don't {id="dont-2"}
+### Don't {#dont-2}
 
 ```kotlin
 @PublishedApi
@@ -72,20 +72,20 @@ internal val array1: Array<Int> = arrayOf()
 internal val array2: Array<Int> = arrayOf()
 
 // INLINE_FUNCTION_WITH_LOGIC
-public inline val calculateArraysSize: Int 
-    get() { 
-        return array1.size + array2.size 
+public inline val calculateArraysSize: Int
+    get() {
+        return array1.size + array2.size
     }
 ```
 
-### Do  {id="do-2"}
+### Do {#do-2}
 
 ```kotlin
-public val calculateArraysSize: Int 
+public val calculateArraysSize: Int
     get() = calculateArraysSizeImpl()
 ```
 
-### Don't {id="dont-3"}
+### Don't {#dont-3}
 
 ```kotlin
 public inline fun <reified T> resolveFunctionsCount(): Int {
@@ -93,7 +93,7 @@ public inline fun <reified T> resolveFunctionsCount(): Int {
 }
 ```
 
-### Do  {id="do-3"}
+### Do {#do-3}
 
 ```kotlin
 @PublisedApi
@@ -121,7 +121,7 @@ must run inline for non-local returns or a hot path must not pay for an extra ca
 
 ```kotlin
 @IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)
-public inline fun clamped(value: Int): Int = 
+public inline fun clamped(value: Int): Int =
     if (value < 0) 0 else value
 ```
 
@@ -141,4 +141,4 @@ With direct compiler invocation:
 ## See also
 
 - [`@PublishedApi` considerations](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#considerations-for-using-the-publishedapi-annotation)
-- [](exemptions.md)
+- [Exemptions and internal API](../exemptions.md)

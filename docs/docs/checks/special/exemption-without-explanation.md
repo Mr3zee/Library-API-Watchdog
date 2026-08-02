@@ -94,5 +94,5 @@ non-blank `description` next to any other reason.
 
 ## See also
 
-- [](exemptions.md)
-- [Data class exemption](data-class-public-api.md#exemption) for an example check that defines an exemption annotation
+- [Exemptions and internal API](../../exemptions.md)
+- [Data class exemption](../data-class-public-api.md#exemption) for an example check that defines an exemption annotation

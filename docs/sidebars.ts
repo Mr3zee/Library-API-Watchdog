@@ -1,7 +1,7 @@
 import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
 import {variables} from './variables.mjs';
 
-// The order is the one the Writerside lw.tree had.
+// Keep the navigation order explicit so related checks stay grouped together.
 const sidebars: SidebarsConfig = {
   docs: [
     'overview',

@@ -7,8 +7,8 @@ inherits a `toString` implementation.
 |------------------|----------------------------------------------------|
 | Diagnostic       | `STATEFUL_CLASS_WITHOUT_TO_STRING`                 |
 | Default severity | Error                                              |
-| Gradle property  | [`statefulClassWithoutToString`](configuration.md) |
-| Exemption        | [`@IntentionallyWithoutToString`](exemptions.md)   |
+| Gradle property  | [`statefulClassWithoutToString`](../configuration.md) |
+| Exemption        | [`@IntentionallyWithoutToString`](../exemptions.md)   |
 
 ## What it reports
 
@@ -44,14 +44,14 @@ public class Connection(public val host: String) {
 }
 ```
 
-### Don't {id="dont-2"}
+### Don't {#dont-2}
 
 ```kotlin
 // STATEFUL_CLASS_WITHOUT_TO_STRING
 public abstract class StatefulBase(public val id: Int)
 ```
 
-### Do {id="do-2"}
+### Do {#do-2}
 
 ```kotlin
 public abstract class StatefulBase(public val id: Int) {
@@ -101,5 +101,5 @@ With direct compiler invocation:
 
 ## See also
 
-- [Data classes in public API](data-class-public-api.md)
-- [Exemptions and internal API](exemptions.md)
+- [Data classes in public API](./data-class-public-api.md)
+- [Exemptions and internal API](../exemptions.md)

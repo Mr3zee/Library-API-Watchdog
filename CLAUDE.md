@@ -108,11 +108,9 @@ bootstrap/dev repositories configured in `settings.gradle.kts`.
 ### Documentation website
 
 `docs/` is a Docusaurus project (pages in `docs/docs/`, sidebar order in `docs/sidebars.ts`), built together with the
-Dokka API reference by `.github/workflows/docs.yml`. `docs/plugins/writerside.mjs` keeps the authoring conventions
-inherited from Writerside: `%variable%` substitution from `docs/variables.mjs`, `{id="..."}` heading ids, and flat
-bare-file-name links whose text is filled in from the target heading. Code samples render through Code Hike. The rules
-and the check page template live in `docs/authoring.md`; `npm run build` in `docs/` fails on broken links, anchors,
-unknown variables, and unknown diagnostic names.
+Dokka API reference by `.github/workflows/docs.yml`. Pages use Docusaurus-native relative links and `{#id}` explicit
+heading ids. Code samples render through Code Hike. The rules and the check page template live in `docs/authoring.md`;
+`npm run build` in `docs/` fails on broken links, anchors, and unknown diagnostic names.
 
 ### Diagnostics tests
 

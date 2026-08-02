@@ -7,8 +7,8 @@ can be subclassed outside the library without any restriction.
 |------------------|---------------------------------------------------|
 | Diagnostic       | `OPEN_API_WITHOUT_SUBCLASS_OPT_IN`                |
 | Default severity | Error                                             |
-| Gradle property  | [`openApiWithoutSubclassOptIn`](configuration.md) |
-| Exemption        | [`@IntentionallyOpen`](exemptions.md)             |
+| Gradle property  | [`openApiWithoutSubclassOptIn`](../configuration.md) |
+| Exemption        | [`@IntentionallyOpen`](../exemptions.md)             |
 
 ## What it reports
 
@@ -54,18 +54,18 @@ public interface Plugin {
 }
 ```
 
-`@SubclassOptInRequired` marks the api as internal to opt-in for, preventing unexpected breaking changes.  
+`@SubclassOptInRequired` marks the api as internal to opt-in for, preventing unexpected breaking changes.
 
 ## Notes
 
 - A `@SubclassOptInRequired` annotation with no marker classes gates nothing. It is reported by
-  the separate [`SUBCLASS_OPT_IN_WITHOUT_MARKERS`](subclass-opt-in-without-markers.md) check
+  the separate [`SUBCLASS_OPT_IN_WITHOUT_MARKERS`](./subclass-opt-in-without-markers.md) check
   instead of this one.
 - A class whose constructors are all `internal` or `private` can't be subclassed outside the
   library, so it is never reported, even if it is `open` or `abstract`.
 - `fun interface`s are checked like any other interface.
 - Sealed interfaces are exempt here, they are covered by
-  [`EXHAUSTIVE_PUBLIC_API`](exhaustive-public-api.md) instead.
+  [`EXHAUSTIVE_PUBLIC_API`](./exhaustive-public-api.md) instead.
 
 ## Exemption
 
@@ -94,7 +94,7 @@ With direct compiler invocation:
 
 ## See also
 
-- [](subclass-opt-in-without-markers.md)
-- [](exhaustive-public-api.md)
+- [Subclass opt-in without markers](./subclass-opt-in-without-markers.md)
+- [Exhaustive public API](./exhaustive-public-api.md)
 - [Kotlin API guidelines: prevent unwanted and invalid extensions](https://kotlinlang.org/docs/api-guidelines-predictability.html#prevent-unwanted-and-invalid-extensions)
 - [`SubclassOptInRequired`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-subclass-opt-in-required/)

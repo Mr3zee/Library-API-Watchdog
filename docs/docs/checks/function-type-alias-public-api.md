@@ -6,8 +6,8 @@
 |------------------|----------------------------------------------------|
 | Diagnostic       | `FUNCTION_TYPE_ALIAS_PUBLIC_API`                   |
 | Default severity | Error                                              |
-| Gradle property  | [`functionTypeAliasPublicApi`](configuration.md)   |
-| Exemption        | [`@IntentionallyFunctionTypeAlias`](exemptions.md) |
+| Gradle property  | [`functionTypeAliasPublicApi`](../configuration.md)   |
+| Exemption        | [`@IntentionallyFunctionTypeAlias`](../exemptions.md) |
 
 ## What it reports
 
@@ -44,14 +44,14 @@ public fun interface Callback {
 }
 ```
 
-### Don't {id="dont-2"}
+### Don't {#dont-2}
 
 ```kotlin
 // FUNCTION_TYPE_ALIAS_PUBLIC_API
 public typealias SuspendAction = suspend () -> Unit
 ```
 
-### Do {id="do-2"}
+### Do {#do-2}
 
 ```kotlin
 public fun interface SuspendAction {
@@ -91,5 +91,5 @@ With direct compiler invocation:
 ## See also
 
 - [Functional interfaces vs. type aliases](https://kotlinlang.org/docs/fun-interfaces.html#functional-interfaces-vs-type-aliases)
-- [](exemptions.md)
-- [](data-class-public-api.md)
+- [Exemptions and internal API](../exemptions.md)
+- [Data classes in public API](./data-class-public-api.md)

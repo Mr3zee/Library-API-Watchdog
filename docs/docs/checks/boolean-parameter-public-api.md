@@ -6,8 +6,8 @@
 |------------------|---------------------------------------------------|
 | Diagnostic       | `BOOLEAN_PARAMETER_PUBLIC_API`                    |
 | Default severity | Error                                             |
-| Gradle property  | [`booleanParameterPublicApi`](configuration.md)   |
-| Exemption        | [`@IntentionallyBooleanParameter`](exemptions.md) |
+| Gradle property  | [`booleanParameterPublicApi`](../configuration.md)   |
+| Exemption        | [`@IntentionallyBooleanParameter`](../exemptions.md) |
 
 ## What it reports
 
@@ -44,7 +44,7 @@ public fun disableLogging(): Unit {}
 ## Notes
 
 - A nullable `Boolean?` parameter is still a positional flag, just a three-state one, so it is
-  reported the same way. It is also reported in [](nullable-boolean-public-api.md).
+  reported the same way. It is also reported in [Nullable Booleans in public API](./nullable-boolean-public-api.md).
 - A type alias to `Boolean` doesn't change what users pass and is still reported.
 - A `Boolean` context parameter is reported too, and it hides the flag even better than a
   positional argument: the caller writes nothing at the call site, and the value is picked up
@@ -90,5 +90,5 @@ With direct compiler invocation:
 ## See also
 
 - [Avoid using the Boolean type as an argument](https://kotlinlang.org/docs/api-guidelines-readability.html#avoid-using-the-boolean-type-as-an-argument)
-- [](nullable-boolean-public-api.md)
-- [](exemptions.md)
+- [Nullable Booleans in public API](./nullable-boolean-public-api.md)
+- [Exemptions and internal API](../exemptions.md)

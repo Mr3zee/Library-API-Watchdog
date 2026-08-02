@@ -7,7 +7,7 @@ position where it has no effect on scope control.
 |------------------|-------------------------------------------------|
 | Diagnostic       | `DSL_MARKER_NOOP_TYPE_POSITION`                 |
 | Default severity | Error                                           |
-| Gradle property  | [`dslMarkerNoopTypePosition`](configuration.md) |
+| Gradle property  | [`dslMarkerNoopTypePosition`](../../configuration.md) |
 | Exemption        | none                                            |
 
 ## What it reports
@@ -19,8 +19,8 @@ restricts nothing:
 ```kotlin
 @DslMarker
 @Target(
-    AnnotationTarget.CLASS, 
-    AnnotationTarget.TYPE, 
+    AnnotationTarget.CLASS,
+    AnnotationTarget.TYPE,
     AnnotationTarget.TYPEALIAS,
 )
 public annotation class TreeDsl
@@ -45,7 +45,7 @@ wrong scope's functions. See the Kotlin guide on [scope control for DSL markers]
 ```kotlin
 // DSL_MARKER_NOOP_TYPE_POSITION
 @TreeDsl
-public fun configure(block: Tag.() -> Unit) { } 
+public fun configure(block: Tag.() -> Unit) { }
 ```
 
 ### Do
@@ -57,14 +57,14 @@ public class Tag
 public fun configure(block: Tag.() -> Unit) { }
 ```
 
-### Don't  {id="dont-2"}
+### Don't {#dont-2}
 
 ```kotlin
 // DSL_MARKER_NOOP_TYPE_POSITION
 public fun process(tag: @TreeDsl Tag) { }
 ```
 
-### Do {id="do-2"}
+### Do {#do-2}
 
 ```kotlin
 // no scope control needed for a named value
@@ -113,5 +113,5 @@ With direct compiler invocation:
 ## See also
 
 - [Scope control for DSL markers](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker)
-- [](dsl-marker-noop-target.md)
-- [](dsl-marker-without-explicit-targets.md)
+- [DSL markers with no-op targets](./dsl-marker-noop-target.md)
+- [DSL markers without explicit targets](./dsl-marker-without-explicit-targets.md)
