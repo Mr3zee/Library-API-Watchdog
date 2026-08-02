@@ -1,3 +1,7 @@
+---
+slug: /
+---
+
 # Get started
 
 `%product%` helps library authors to detect public API declarations
@@ -10,8 +14,6 @@ demoted to a warning, disabled, or exempted in place.
 
 A public data class that hands out a mutable collection, without documentation, triggers three
 diagnostics at once:
-
-[//]: # (TODO: CodeHike like extension to writerside for check's diagnostic messages)
 
 ```kotlin
 // DATA_CLASS_PUBLIC_API, UNDOCUMENTED_PUBLIC_API

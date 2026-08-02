@@ -192,6 +192,6 @@ Modules:
 - [`:gradle-plugin`](gradle-plugin/src) - applies the compiler plugin and the annotations
   dependency (plugin id `org.jetbrains.kotlinx.libs.api.watchdog`).
 
-The documentation site is built from [docs/pages](docs/pages) (Writerside) by
+The documentation site is a [Docusaurus](https://docusaurus.io/) project in [docs](docs), built by
 [docs.yml](.github/workflows/docs.yml); see [docs/authoring.md](docs/authoring.md) for the page
 template and rules.

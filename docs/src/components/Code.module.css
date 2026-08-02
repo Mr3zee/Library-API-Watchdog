@@ -1,0 +1,39 @@
+.pre {
+  margin-bottom: var(--ifm-leading);
+  padding: var(--ifm-pre-padding);
+  border-radius: var(--ifm-code-border-radius);
+  font-size: var(--ifm-code-font-size);
+  line-height: var(--ifm-pre-line-height);
+  overflow: auto;
+}
+
+/* The markers of one line, stacked under it and indented to line up with the code. */
+.diagnostics {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.diagnostic {
+  color: var(--watchdog-diagnostic-color);
+  font-weight: 500;
+  white-space: pre;
+  text-decoration: none;
+}
+
+.diagnostic:hover {
+  color: var(--watchdog-diagnostic-color);
+  text-decoration: underline;
+}
+
+.branch {
+  color: var(--ch-24);
+  padding-right: 0.4em;
+}
+
+.icon {
+  padding-right: 0.3em;
+  /* Keep the emoji from stretching the line height of the code block. */
+  font-size: 0.9em;
+  line-height: 1;
+}

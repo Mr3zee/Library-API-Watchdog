@@ -51,7 +51,11 @@ bootstrap/dev repositories configured in `settings.gradle.kts`.
     - Entry points: `WatchdogCompilerPluginRegistrar` and `WatchdogCommandLineProcessor` (single repeatable option
       `diagnosticSeverity=<DIAGNOSTIC_NAME>:error|warning|none`, where `none` disables the check).
     - `fir/WatchdogFirCheckers` registers the checkers, and only when explicit API mode is enabled.
-    - `fir/WatchdogDiagnostics` - a diagnostic factory bakes its severity in at construction, so each configurable
+    - `fir/WatchdogDiagnostics` - the message text of every diagnostic comes from the generated
+      `WatchdogDiagnosticMessages` object, which the `generateDiagnosticMessages` task builds out of the shared
+      `diagnostics.json` (see [Shared diagnostics registry](#shared-diagnostics-registry)); `WatchdogErrorMessages`
+      only resolves each factory's name against it. A diagnostic factory bakes its severity in at construction, so each
+      configurable
       diagnostic is a `ConfigurableWatchdogDiagnostic` holding an error+warning factory pair under one name; checkers
       pick the factory at report time via `WatchdogDiagnosticSeverities` (default: everything is an error). A
       diagnostic configured to `WatchdogSeverity.NONE` resolves to no factory, and `WatchdogFirCheckers` skips
@@ -88,6 +92,28 @@ bootstrap/dev repositories configured in `settings.gradle.kts`.
   diagnostics to warnings for the adoption run. The task depends on those compilations and launches the PSI-only
   `:exempts-fixer` once over all reports. There is no public collection flag; selecting the task activates it.
 
+### Shared diagnostics registry
+
+`diagnostics.json` in the repository root is the single source of truth for diagnostic texts. Each entry holds the
+`name`, the `title` and `docs` path of its documentation page, the `message` template, and an optional
+`messageTrailer`. Two consumers read it:
+
+- `:compiler-plugin`'s `generateDiagnosticMessages` task emits `WatchdogDiagnosticMessages.kt` into a generated source
+  dir. It appends `See <docsBaseUrl><docs> for details.` to every message, then the trailer, and doubles `'` for
+  `java.text.MessageFormat` in parameterized messages.
+- The documentation website: `docs/plugins/diagnostics.mjs` and `docs/src/components/Code.tsx` turn the
+  `// DIAGNOSTIC_NAME` comments in Kotlin samples into markers linking to the matching check page, failing the docs
+  build on an unknown name.
+
+### Documentation website
+
+`docs/` is a Docusaurus project (pages in `docs/docs/`, sidebar order in `docs/sidebars.ts`), built together with the
+Dokka API reference by `.github/workflows/docs.yml`. `docs/plugins/writerside.mjs` keeps the authoring conventions
+inherited from Writerside: `%variable%` substitution from `docs/variables.mjs`, `{id="..."}` heading ids, and flat
+bare-file-name links whose text is filled in from the target heading. Code samples render through Code Hike. The rules
+and the check page template live in `docs/authoring.md`; `npm run build` in `docs/` fails on broken links, anchors,
+unknown variables, and unknown diagnostic names.
+
 ### Diagnostics tests
 
 Kotlin-compiler-style data-driven tests. Each `compiler-plugin/src/test/data/diagnostics/*.kt` file carries directive
@@ -103,9 +129,11 @@ native targets).
 
 ### Adding a new diagnostic
 
-Touch all of: the diagnostic and its message in `WatchdogDiagnostics`, a checker in `fir/`, registration in
-`WatchdogFirCheckers`, the severity property and name mapping in `WatchdogGradleExtension`, the checker list and
-severity sample in README.md, test data with regenerated tests, and the severity assertions in `WatchdogProjectTest`.
-Also map the diagnostic in `:exempts-fixer`'s `ExemptionRegistry` (to its exemption annotation or an `Unfixable`
-reason), extend the expected-names set in `FixerProtocolTest`, and cover the fix in
-`UpdateBackwardsCompatibilityExemptsTest`'s specimen file.
+Touch all of: the entry in `diagnostics.json` (name, title, docs path, message), the diagnostic factory in
+`WatchdogDiagnostics`, a checker in `fir/`, registration in `WatchdogFirCheckers`, the severity property and name
+mapping in `WatchdogGradleExtension`, the checker list and severity sample in README.md, test data with regenerated
+tests, and the severity assertions in `WatchdogProjectTest`. Also map the diagnostic in `:exempts-fixer`'s
+`ExemptionRegistry` (to its exemption annotation or an `Unfixable` reason), extend the expected-names set in
+`FixerProtocolTest`, and cover the fix in `UpdateBackwardsCompatibilityExemptsTest`'s specimen file. On the
+documentation side, add the check page at the `docs` path from `diagnostics.json`, list it in `docs/sidebars.ts`,
+`docs/authoring.md`'s page map, and the check list in `docs/docs/overview.md`.

@@ -4,3 +4,5 @@ build/
 .kotlin/
 *.iml
 local.properties
+node_modules/
+.docusaurus/

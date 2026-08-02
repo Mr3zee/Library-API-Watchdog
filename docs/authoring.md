@@ -1,8 +1,18 @@
 # Documentation authoring guide
 
-Rules and templates for the Writerside topics under `docs/pages/libs-api-watchdog/topics/`.
-The site is built by `.github/workflows/docs.yml`: Writerside instance `lw` plus a Dokka API
-reference served under `/api`.
+Rules and templates for the pages under `docs/docs/`. The site is a [Docusaurus](https://docusaurus.io/)
+project rooted at `docs/`, built by `.github/workflows/docs.yml` together with a Dokka API reference
+served under `/api`.
+
+```bash
+cd docs
+npm install
+npm start    # dev server with hot reload
+npm run build
+```
+
+`npm run build` fails on a broken link, a broken anchor, an unknown `%variable%`, and a code sample
+comment that names a diagnostic missing from `diagnostics.json`, so it is the docs check as well.
 
 ## Hard rules
 
@@ -17,34 +27,50 @@ reference served under `/api`.
   ExemptionReason.FOR_BACKWARDS_COMPATIBILITY` or `ExemptionReason.API_DESIGN` may stand alone.
   Every other reason (`INTEROP`, `EXTERNAL_CONTRACT`, `IGNORE_JAVA_INTEROP`, `OTHER`) also needs a
   non-empty `description`.
-- Exactly one `#` heading per page, at the top. It is the topic title shown in the TOC.
-- Link between topics by bare file name, regardless of folder: `[Exemptions](exemptions.md)`.
-  Never use relative paths like `../exemptions.md`.
-- Writerside substitutes `%var%` variables everywhere, including fenced code blocks. Available:
-  `%product%`, `%libs-api-watchdog-version%`, `%kotlin-version%`, `%repo-root-path%`, `%host%`.
-  Escape a literal percent sign as `%%`.
-- American English. Concise, active voice, no marketing fluff. don't mention implementation
+- Exactly one `#` heading per page, at the top. It is the page title shown in the sidebar.
+- Link between pages by bare file name, regardless of folder: `[Exemptions](exemptions.md)`.
+  Never use relative paths like `../exemptions.md`. Leave the link text empty to have the title of
+  the target page, or of the target section, filled in: `[](exemptions.md#internal-api)`.
+- `%var%` substitutions work everywhere, including fenced code blocks. Declare them in
+  `docs/variables.mjs`; the current set is `%product%`, `%libs-api-watchdog-version%`,
+  `%kotlin-version%`, `%repo-root-path%`, `%repo-tree-path%`, `%docs-raw-path%`,
+  `%docs-edit-path%`, and `%host%`.
+- American English. Concise, active voice, no marketing fluff. Don't mention implementation
   details (FIR, checker class names) on user-facing pages.
-- Facts must match the sources of truth: `README.md`, the checker sources in
-  `compiler-plugin/src/main/kotlin/org/jetbrains/kotlinx/libs/api/watchdog/fir/`, the diagnostic
-  messages in `WatchdogDiagnostics.kt` there, the annotation KDoc in
+- Facts must match the sources of truth: `README.md`, the shared diagnostic registry
+  `diagnostics.json` at the repository root, the checker sources in
+  `compiler-plugin/src/main/kotlin/org/jetbrains/kotlinx/libs/api/watchdog/fir/`, the annotation KDoc in
   `plugin-annotations/src/commonMain/kotlin/org/jetbrains/kotlinx/libs/api/watchdog/WatchdogAnnotations.kt`,
   and the extension in `gradle-plugin/src/main/kotlin/org/jetbrains/kotlinx/libs/api/watchdog/WatchdogGradleExtension.kt`.
 - No imports in code snippets
 
-## Topic map
+## Code samples
 
-Root (`topics/`):
+Fenced Kotlin blocks are rendered by [Code Hike](https://codehike.org/). A comment line holding
+nothing but diagnostic names is turned into markers under the line it precedes, each linking to its
+check page:
+
+```kotlin
+// DATA_CLASS_PUBLIC_API, UNDOCUMENTED_PUBLIC_API
+public data class Point(public val x: Int, public val y: Int)
+```
+
+The names have to exist in `diagnostics.json`, otherwise the build fails. Every other comment is
+left as written and shown as part of the sample.
+
+## Page map
+
+Root (`docs/docs/`):
 
 | File                           | Title                                      |
 |--------------------------------|--------------------------------------------|
 | `overview.md`                  | Get started                                |
 | `configuration.md`             | Configuration                              |
+| `existing-libs.md`             | Adding the plugin to existing libraries    |
 | `exemptions.md`                | Exemptions and internal API                |
-| `tapmoc-suggestion.md`         | Tapmoc suggestion                          |
 | `abi-validation-suggestion.md` | Binary compatibility validation suggestion |
 
-Checks (`topics/checks/`):
+Checks (`docs/docs/checks/`):
 
 | File                                                  | Title                                                  |
 |-------------------------------------------------------|--------------------------------------------------------|
@@ -54,7 +80,7 @@ Checks (`topics/checks/`):
 | `undocumented-public-api.md`                          | Undocumented public API                                |
 | `function-type-alias-public-api.md`                   | Function type aliases in public API                    |
 | `data-class-public-api.md`                            | Data classes in public API                             |
-| `stateful-class-without-equals-hashcode-to-string.md` | Stateful classes without equals, hashCode, or toString |
+| `stateful-class-without-equals-hashcode-to-string.md` | Stateful classes without equals, hashCode, and toString |
 | `mutable-collection-public-api.md`                    | Mutable collections in public API                      |
 | `pair-or-triple-public-api.md`                        | Pair and Triple in public API                          |
 | `boolean-parameter-public-api.md`                     | Boolean parameters in public API                       |
@@ -62,12 +88,17 @@ Checks (`topics/checks/`):
 | `required-parameter-after-optional.md`                | Required parameters after optional ones                |
 | `inconsistent-parameter-order-in-overloads.md`        | Inconsistent parameter order in overloads              |
 | `inline-function-with-logic.md`                       | Inline functions with logic                            |
-| `exemption-without-explanation.md`                    | Exemptions without explanation                         |
-| `dsl-marker-noop-target.md`                           | DSL markers with no-op targets                         |
-| `dsl-marker-without-explicit-targets.md`              | DSL markers without explicit targets                   |
-| `dsl-marker-noop-type-position.md`                    | DSL markers on no-op type positions                    |
 
-Java interop (`topics/checks/java-interop/`):
+Special checks (`docs/docs/checks/special/`):
+
+| File                                     | Title                                |
+|------------------------------------------|--------------------------------------|
+| `exemption-without-explanation.md`       | Exemptions without explanation       |
+| `dsl-marker-noop-target.md`              | DSL markers with no-op targets       |
+| `dsl-marker-without-explicit-targets.md` | DSL markers without explicit targets |
+| `dsl-marker-noop-type-position.md`       | DSL markers on no-op type positions  |
+
+Java interop (`docs/docs/checks/java-interop/`):
 
 | File                                          | Title                                   |
 |-----------------------------------------------|-----------------------------------------|
@@ -79,12 +110,14 @@ Java interop (`topics/checks/java-interop/`):
 | `top-level-api-without-jvm-name.md`           | Top-level API without JvmName           |
 | `default-parameters-without-jvm-overloads.md` | Default parameters without JvmOverloads |
 
+A new page also needs an entry in `docs/sidebars.ts`, which defines the order of the sidebar.
+
 ## Check page template
 
 Use exactly this structure and section order for every page under `checks/`:
 
 ```markdown
-# <Human title from the topic map>
+# <Human title from the page map>
 
 `<DIAGNOSTIC_NAME>` reports <one sentence: what shape is flagged>.
 
@@ -126,7 +159,8 @@ authors' guidelines page.
     <example-do>
     ```
 
-Repeat Don't/Do pairs for distinct scenarios when the check has several. 
+Repeat Don't/Do pairs for distinct scenarios when the check has several. A repeated heading needs
+an explicit id, spelled `### Don't {id="dont-2"}`.
 
 ## Notes
 
@@ -174,6 +208,6 @@ Adjustments:
 
 ## Structural pages
 
-`overview.md`, `configuration.md`, `configuration.md`, `exemptions.md`, `tapmoc-suggestion.md`, and
-`java-interop.md` don't use the check template. They follow the hard rules and keep the same
-tone. Their outlines are defined by the task that produces them.
+`overview.md`, `configuration.md`, `existing-libs.md`, `exemptions.md`,
+`abi-validation-suggestion.md`, and `java-interop.md` don't use the check template. They follow the
+hard rules and keep the same tone. Their outlines are defined by the task that produces them.

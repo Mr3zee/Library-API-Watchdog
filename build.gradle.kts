@@ -9,12 +9,12 @@ plugins {
 }
 
 // Aggregated API reference. The output is published to GitHub Pages under /api
-// next to the Writerside website (see .github/workflows/docs.yml).
+// next to the documentation website (see .github/workflows/docs.yml).
 dokka {
     moduleVersion = version.toString()
 
     pluginsConfiguration.html {
-        customAssets.from("docs/pages/assets/logo-icon.svg")
+        customAssets.from("docs/static/img/logo-icon.svg")
         footerMessage = "© ${Year.now()} JetBrains s.r.o and contributors."
         homepageLink = "https://mr3zee.github.io/libs-api-watchdog/"
     }

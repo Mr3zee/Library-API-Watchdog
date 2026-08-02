@@ -1,0 +1,97 @@
+/* Purple, the primary colour the Writerside build used. */
+:root {
+  --ifm-color-primary: #7048e8;
+  --ifm-color-primary-dark: #5f34e4;
+  --ifm-color-primary-darker: #562ade;
+  --ifm-color-primary-darkest: #4622b7;
+  --ifm-color-primary-light: #855cec;
+  --ifm-color-primary-lighter: #9066ee;
+  --ifm-color-primary-lightest: #ab8bf2;
+  --ifm-code-font-size: 92%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #b197fc;
+  --ifm-color-primary-dark: #9a78fb;
+  --ifm-color-primary-darker: #8e68fa;
+  --ifm-color-primary-darkest: #6b38f8;
+  --ifm-color-primary-light: #c8b6fd;
+  --ifm-color-primary-lighter: #d4c6fe;
+  --ifm-color-primary-lightest: #f4f0ff;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/*
+ * The palette of the Code Hike "github-from-css" theme, which resolves every colour to one of
+ * these variables. The values are the ones github-light and github-dark give the same token
+ * scopes, so a single build-time highlighting pass serves both themes.
+ */
+:root {
+  --ch-1: #6e7781;
+  --ch-2: #24292f;
+  --ch-3: #953800;
+  --ch-4: #24292f;
+  --ch-5: #8250df;
+  --ch-6: #116329;
+  --ch-7: #cf222e;
+  --ch-8: #0a3069;
+  --ch-9: #82071e;
+  --ch-10: #f6f8fa;
+  --ch-11: #ffebe9;
+  --ch-12: #dafbe1;
+  --ch-13: #ffd8b5;
+  --ch-14: #eaeef2;
+  --ch-15: #57606a;
+  --ch-16: #f6f8fa;
+  --ch-17: #eaeef280;
+  --ch-18: #eaeef280;
+  --ch-19: #0969da;
+  --ch-20: #0969da26;
+  --ch-21: #0969da;
+  --ch-22: #f6f8fa;
+  --ch-23: #d0d7de;
+  --ch-24: #8c959f;
+  --ch-25: #afb8c133;
+  --ch-26: #afb8c133;
+  --watchdog-diagnostic-color: #cf222e;
+}
+
+[data-theme='dark'] {
+  --ch-1: #8b949e;
+  --ch-2: #c9d1d9;
+  --ch-3: #ffa657;
+  --ch-4: #c9d1d9;
+  --ch-5: #d2a8ff;
+  --ch-6: #7ee787;
+  --ch-7: #ff7b72;
+  --ch-8: #a5d6ff;
+  --ch-9: #ffa198;
+  --ch-10: #f0f6fc;
+  --ch-11: #490202;
+  --ch-12: #04260f;
+  --ch-13: #5a1e02;
+  --ch-14: #161b22;
+  --ch-15: #8b949e;
+  --ch-16: #161b22;
+  --ch-17: #6e76811a;
+  --ch-18: #6e76811a;
+  --ch-19: #58a6ff;
+  --ch-20: #1f6feb44;
+  --ch-21: #1f6feb;
+  --ch-22: #010409;
+  --ch-23: #30363d;
+  --ch-24: #6e7681;
+  --ch-25: #6e768166;
+  --ch-26: #6e768166;
+  --watchdog-diagnostic-color: #ff7b72;
+}
+
+/*
+ * Code Hike colours the tokens but leaves the block itself to the site, so it gets the same
+ * palette as the tokens do.
+ */
+pre[data-ch] {
+  background: var(--ch-16);
+  color: var(--ch-4);
+}

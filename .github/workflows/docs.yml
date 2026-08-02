@@ -3,7 +3,8 @@ name: Build docs website
 on:
   pull_request:
     paths:
-      - 'docs/pages/**'
+      - 'docs/**'
+      - 'diagnostics.json'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
     inputs:
@@ -19,9 +20,7 @@ permissions:
   contents: read
 
 env:
-  INSTANCE: 'libs-api-watchdog/lw'
-  ARTIFACT: 'webHelpLW2-all.zip'
-  DOCKER_VERSION: '243.22562'
+  DOCS_OUTPUT: 'docs/build'
   DOKKA_OUTPUT: 'build/dokka/html'
   ASSEMBLE_DIR: '__docs_assembled'
   ASSEMBLE_ARTIFACT: 'assembled.zip'
@@ -35,13 +34,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build docs using Writerside Docker builder
-        uses: JetBrains/writerside-github-action@v4
+      - name: Set up Node
+        uses: actions/setup-node@v6
         with:
-          instance: ${{ env.INSTANCE }}
-          artifact: ${{ env.ARTIFACT }}
-          docker-version: ${{ env.DOCKER_VERSION }}
-          location: docs/pages/libs-api-watchdog/
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: docs/package-lock.json
+
+      - name: Install docs dependencies
+        working-directory: docs
+        run: npm ci
+
+      # Docusaurus fails on a broken link or anchor, so this is the docs check as well.
+      - name: Build the docs website
+        working-directory: docs
+        run: npm run build
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -84,12 +91,10 @@ jobs:
       - name: Build Dokka API reference
         run: ./gradlew :dokkaGenerate
 
-      - name: Unzip Writerside artifacts
-        run: unzip -O UTF-8 -qq 'artifacts/${{ env.ARTIFACT }}' -d ${{ env.ASSEMBLE_DIR }}
-
       - name: Add Dokka to the assembled website
         run: |
           mkdir -p ${{ env.ASSEMBLE_DIR }}/api
+          cp -r ${{ env.DOCS_OUTPUT }}/. ${{ env.ASSEMBLE_DIR }}/
           cp -r ${{ env.DOKKA_OUTPUT }}/. ${{ env.ASSEMBLE_DIR }}/api/
 
       - name: Update sitemap.xml
@@ -98,15 +103,6 @@ jobs:
       - name: Assemble file
         run: cd ${{ env.ASSEMBLE_DIR }} && zip -r ../${{ env.ASSEMBLE_ARTIFACT }} .
 
-      - name: Save artifact with build results
-        uses: actions/upload-artifact@v6
-        with:
-          name: libs-api-watchdog-docs
-          path: |
-            artifacts/${{ env.ARTIFACT }}
-            artifacts/report.json
-          retention-days: 7
-
       - name: Save assembled artifact
         uses: actions/upload-artifact@v6
         with:
@@ -114,27 +110,12 @@ jobs:
           path: ${{ env.ASSEMBLE_ARTIFACT }}
           retention-days: 7
 
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v6
-        with:
-          name: libs-api-watchdog-docs
-          path: artifacts
-
-      - name: Test documentation
-        uses: JetBrains/writerside-checker-action@v1
-        with:
-          instance: ${{ env.INSTANCE }}
-
   deploy:
     if: github.event_name == 'workflow_dispatch' && !inputs.dry_run
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    needs: [ build, test ]
+    needs: [ build ]
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts

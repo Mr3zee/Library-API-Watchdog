@@ -1,0 +1,122 @@
+import path from 'node:path';
+import type {Config} from '@docusaurus/types';
+import type * as Preset from '@docusaurus/preset-classic';
+import {remarkCodeHike, type CodeHikeConfig} from 'codehike/mdx';
+import {
+  parseWritersideFrontMatter,
+  preprocessWriterside,
+  remarkFlatLinks,
+} from './plugins/writerside.mjs';
+import {remarkCodeSamples} from './plugins/remark-code-samples.mjs';
+import {variables} from './variables.mjs';
+
+const docsDirectory = path.join(__dirname, 'docs');
+
+// "github-from-css" resolves every colour to a --ch-* CSS variable (see src/css/custom.css), so
+// one build-time highlighting pass serves both the light and the dark theme.
+const codeHike: CodeHikeConfig = {
+  components: {code: 'Code'},
+  syntaxHighlighting: {theme: 'github-from-css'},
+};
+
+const config: Config = {
+  title: variables.product,
+  tagline: 'Warns library authors about public API that is hard to evolve',
+  favicon: 'img/logo.svg',
+
+  url: variables.host,
+  baseUrl: '/libs-api-watchdog/',
+  organizationName: 'Mr3zee',
+  projectName: 'libs-api-watchdog',
+  trailingSlash: false,
+
+  onBrokenLinks: 'throw',
+  onBrokenAnchors: 'throw',
+
+  markdown: {
+    preprocessor: preprocessWriterside,
+    parseFrontMatter: parseWritersideFrontMatter,
+    // The pages carry a couple of placeholder links whose target is still a TODO.
+    hooks: {onBrokenMarkdownLinks: 'warn'},
+  },
+
+  presets: [
+    [
+      'classic',
+      {
+        docs: {
+          path: 'docs',
+          routeBasePath: '/',
+          sidebarPath: './sidebars.ts',
+          editUrl: `${variables['repo-tree-path'].replace('/tree/', '/edit/')}/docs/docs/`,
+          // Ours have to see the markdown before the Docusaurus ones resolve the links and turn
+          // the code blocks into <Code> elements.
+          beforeDefaultRemarkPlugins: [
+            [remarkFlatLinks, {docsDirectory}],
+            remarkCodeSamples,
+            [remarkCodeHike, codeHike],
+          ],
+        },
+        blog: false,
+        pages: false,
+        theme: {
+          customCss: './src/css/custom.css',
+        },
+      } satisfies Preset.Options,
+    ],
+  ],
+
+  themeConfig: {
+    image: 'img/logo.svg',
+    colorMode: {
+      respectPrefersColorScheme: true,
+    },
+    navbar: {
+      title: variables.product,
+      logo: {
+        alt: `${variables.product} logo`,
+        src: 'img/logo.svg',
+      },
+      items: [
+        {
+          href: `${variables.host}/libs-api-watchdog/api/`,
+          label: 'API Reference',
+          position: 'right',
+        },
+        {
+          href: variables['repo-root-path'],
+          label: 'GitHub',
+          position: 'right',
+        },
+      ],
+    },
+    footer: {
+      style: 'dark',
+      links: [
+        {
+          title: 'Docs',
+          items: [
+            {label: 'Get started', to: '/'},
+            {label: 'Configuration', to: '/configuration'},
+            {label: 'Exemptions', to: '/exemptions'},
+          ],
+        },
+        {
+          title: 'More',
+          items: [
+            {label: 'API Reference', href: `${variables.host}/libs-api-watchdog/api/`},
+            {label: 'GitHub', href: variables['repo-root-path']},
+          ],
+        },
+      ],
+      copyright: `Copyright © ${new Date().getFullYear()} JetBrains s.r.o.`,
+    },
+    prism: {
+      // Code Hike renders every fenced block, so Prism only ever sees the theme defaults.
+      theme: require('prism-react-renderer').themes.github,
+      darkTheme: require('prism-react-renderer').themes.dracula,
+    },
+  } satisfies Preset.ThemeConfig,
+};
+
+export default config;
