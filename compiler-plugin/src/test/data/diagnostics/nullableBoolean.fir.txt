@@ -6,6 +6,15 @@ FILE: nullableBoolean.kt
     }
     public final fun tristate(flag: R|kotlin/Boolean?|): R|kotlin/Unit| {
     }
+    context(state: R|kotlin/Boolean?|)
+    public final fun contextualFunction(): R|kotlin/String| {
+        ^contextualFunction R|<local>/state|.R|kotlin/toString|()
+    }
+    context(state: R|kotlin/Boolean?|)
+    public final val contextualProperty: R|kotlin/String|
+        public get(): R|kotlin/String| {
+            ^ R|<local>/state|.R|kotlin/toString|()
+        }
     public final val lastOutcome: R|kotlin/Boolean?| = Null(null)
         public get(): R|kotlin/Boolean?|
     public final var cachedDecision: R|kotlin/Boolean?| = Null(null)
@@ -89,6 +98,14 @@ FILE: nullableBoolean.kt
         ^legacyProbe Null(null)
     }
     public final fun acknowledgedParameter(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNullableBoolean|() flag: R|kotlin/Boolean?|): R|kotlin/Unit| {
+    }
+    context(state: R|kotlin/Boolean?|)
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNullableBoolean|() public final fun acknowledgedContext(): R|kotlin/String| {
+        ^acknowledgedContext R|<local>/state|.R|kotlin/toString|()
+    }
+    context(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNullableBoolean|() state: R|kotlin/Boolean?|)
+    public final fun acknowledgedContextParameter(): R|kotlin/String| {
+        ^acknowledgedContextParameter R|<local>/state|.R|kotlin/toString|()
     }
     public final class Settings : R|kotlin/Any| {
         public constructor(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNullableBoolean|() checked: R|kotlin/Boolean?|): R|foo/bar/Settings| {

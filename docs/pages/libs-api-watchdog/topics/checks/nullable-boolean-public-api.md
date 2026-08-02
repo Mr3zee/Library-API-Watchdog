@@ -11,8 +11,8 @@
 
 ## What it reports
 
-Flags return types, property types, parameter types (constructors included), and type parameter
-bounds that mention `Boolean?`.
+Flags return types, property types, value parameter types (constructors included), context
+parameter types, and type parameter bounds that mention `Boolean?`.
 
 ```kotlin
 // NULLABLE_BOOLEAN_PUBLIC_API

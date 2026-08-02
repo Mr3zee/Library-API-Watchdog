@@ -12,6 +12,14 @@ public fun probe(): <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!> = null
 
 public fun tristate(flag: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!>) {}
 
+// Context parameters are signature parameters too, whether they belong to a function or property.
+
+context(state: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!>)
+public fun contextualFunction(): String = state.toString()
+
+context(state: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!>)
+public val contextualProperty: String get() = state.toString()
+
 public val lastOutcome: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!> = null
 
 public var cachedDecision: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!> = null
@@ -85,6 +93,13 @@ public class DefaultProbe : Probe {
 public fun legacyProbe(): Boolean? = null
 
 public fun acknowledgedParameter(@IntentionallyNullableBoolean flag: Boolean?) {}
+
+@IntentionallyNullableBoolean
+context(state: Boolean?)
+public fun acknowledgedContext(): String = state.toString()
+
+context(@IntentionallyNullableBoolean state: Boolean?)
+public fun acknowledgedContextParameter(): String = state.toString()
 
 public class Settings(@IntentionallyNullableBoolean public val checked: Boolean?)
 

@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.fir.declarations.FirTypeParameter
 import org.jetbrains.kotlin.fir.declarations.FirTypeParameterRef
 import org.jetbrains.kotlin.fir.declarations.FirValueParameter
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
+import org.jetbrains.kotlin.fir.declarations.isLegacyContextReceiver
 import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
 import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
 import org.jetbrains.kotlin.fir.declarations.utils.correspondingValueParameterFromPrimaryConstructor
@@ -34,15 +35,16 @@ import org.jetbrains.kotlin.name.Name
 
 /**
  * Base class for the checkers that hunt a type down in publicly visible signatures - return
- * types, property types, value parameter types, and type parameter bounds (`<T : X>` constrains
- * every instantiation to the same shape as a direct mention of `X`), including their type
- * arguments (`List<X>` exposes `X` all the same). Subclasses supply the classifier judgement
+ * types, property types, value and context parameter types, and type parameter bounds (`<T : X>`
+ * constrains every instantiation to the same shape as a direct mention of `X`), including their
+ * type arguments (`List<X>` exposes `X` all the same). Subclasses supply the classifier judgement
  * ([violatingClassifier]), the annotation authors acknowledge a deliberate use with
  * ([exemption]), and the diagnostic to report ([report]).
  *
  * Shared sweep rules:
- * - Value parameters are swept from their containing callable, where the public API gate and the
- *   signature-wide exemption are evaluated once per callable.
+ * - Value and context parameters are swept from their containing callable, where the public API
+ *   gate and the signature-wide exemption are evaluated once per callable. Legacy context
+ *   receivers are skipped because K2 no longer resolves them into published API.
  * - Overrides are skipped: their signature is fixed by the overridden declaration and is
  *   reported there.
  * - Extension receivers are skipped: an extension on the hunted type provides functionality for
@@ -123,6 +125,7 @@ internal abstract class ExposedTypeChecker(
 
         // Extension properties can declare their own type parameters.
         checkTypeParameters(declaration.typeParameters)
+        declaration.contextParameters.forEach { checkParameter(it) }
         checkSignatureType(declaration.returnTypeRef, "property", declaration.name, declaration)
     }
 
@@ -134,7 +137,7 @@ internal abstract class ExposedTypeChecker(
 
         checkTypeParameters(declaration.typeParameters)
         checkSignatureType(declaration.returnTypeRef, "function", declaration.name, declaration)
-        declaration.valueParameters.forEach { checkParameter(it) }
+        (declaration.contextParameters + declaration.valueParameters).forEach { checkParameter(it) }
     }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
@@ -155,7 +158,7 @@ internal abstract class ExposedTypeChecker(
             }
         }
 
-        for (parameter in declaration.valueParameters) {
+        for (parameter in declaration.contextParameters + declaration.valueParameters) {
             if (parameter.symbol !in propertyParameters) {
                 checkParameter(parameter)
             }
@@ -172,7 +175,7 @@ internal abstract class ExposedTypeChecker(
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun checkParameter(parameter: FirValueParameter) {
-        if (parameter.isExempt()) {
+        if (parameter.isLegacyContextReceiver() || parameter.isExempt()) {
             return
         }
 
