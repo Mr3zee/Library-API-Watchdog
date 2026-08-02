@@ -30,6 +30,9 @@ class UpdateBackwardsCompatibilityExemptsTest {
         val reason = "reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY"
         assertTrue(fixedText.startsWith("@file:IntentionallyDefaultFacadeName($reason)"))
         assertContains(fixedText, "@IntentionallyOpen($reason)\npublic open class UnprotectedOpenClass")
+        // The markerless @SubclassOptInRequired is replaced, not joined, by the exemption.
+        assertContains(fixedText, "@IntentionallyOpen($reason)\npublic open class UnmarkedOptIn")
+        assertFalse(fixedText.contains("@SubclassOptInRequired"))
         assertContains(fixedText, "@IntentionallyExhaustive($reason)\npublic enum class UnmarkedEnum")
         assertContains(fixedText, "@IntentionallyFunctionTypeAlias($reason)\npublic typealias UnacknowledgedCallback")
         assertContains(fixedText, "@IntentionallyDataClass($reason)\npublic data class UnmarkedData")
@@ -160,7 +163,6 @@ class UpdateBackwardsCompatibilityExemptsTest {
 
         assertContains(result.output, "needs manual attention")
         assertContains(result.output, "DSL_MARKER_NOOP_TYPE_POSITION")
-        assertContains(result.output, "SUBCLASS_OPT_IN_WITHOUT_MARKERS")
         assertContains(result.output, "UNDOCUMENTED_PUBLIC_API")
     }
 
@@ -293,6 +295,10 @@ private val fixableFile = """
     /** A deliberately unrestricted base class. */
     public open class UnprotectedOpenClass
 
+    /** A base class whose subclass opt-in lists no markers and so restricts nothing. */
+    @SubclassOptInRequired
+    public open class UnmarkedOptIn
+
     /** A deliberately matchable enum. */
     public enum class UnmarkedEnum {
         /** The first entry. */
@@ -392,10 +398,6 @@ private val fixableFile = """
 @Language("kotlin")
 private val unfixableFile = """
     public class NeedsDocumentation
-
-    /** A base class whose subclass opt-in lists no markers. */
-    @SubclassOptInRequired
-    public open class UnmarkedOptIn
 
     /** A DSL marker with tidy targets, misapplied to an inert type position below. */
     @DslMarker

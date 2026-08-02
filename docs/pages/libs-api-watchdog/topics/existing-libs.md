@@ -37,9 +37,12 @@ above its other annotations, with imports added as needed.
   tasks, unresolved references, syntax errors, and the always-error
   [`EXEMPTION_WITHOUT_EXPLANATION`](exemption-without-explanation.md) must be fixed before the
   fixer can run.
+- **One diagnostic is fixed by a replacement.** A markerless `@SubclassOptInRequired`
+  ([`SUBCLASS_OPT_IN_WITHOUT_MARKERS`](subclass-opt-in-without-markers.md)) gates nothing, so the
+  fixer drops it and puts [`@IntentionallyOpen`](open-api-without-subclass-opt-in.md) in its
+  place: the class stays open to everyone, now stated outright.
 - **Some diagnostics have no annotation to add.**
-  [`SUBCLASS_OPT_IN_WITHOUT_MARKERS`](subclass-opt-in-without-markers.md) is fixed by passing
-  marker classes, [`DSL_MARKER_NOOP_TYPE_POSITION`](dsl-marker-noop-type-position.md) is fixed by
-  moving or removing the marker. These cases are listed as build warnings for manual follow-up.
+  [`DSL_MARKER_NOOP_TYPE_POSITION`](dsl-marker-noop-type-position.md) is fixed by moving or
+  removing the marker. Such cases are listed as build warnings for manual follow-up.
 - **Running it twice is safe.** Exempted diagnostics are no longer reported, so a second run
   finds nothing left to do.

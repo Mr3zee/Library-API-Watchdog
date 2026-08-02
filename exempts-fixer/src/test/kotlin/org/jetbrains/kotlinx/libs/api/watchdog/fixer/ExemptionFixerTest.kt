@@ -459,6 +459,184 @@ class ExemptionFixerTest {
     }
 
     @Test
+    fun markerlessSubclassOptInIsReplacedByTheExemption() {
+        @Language("kotlin")
+        val text = """
+            package com.example
+
+            /** A connector nobody may extend. Except everybody can. */
+            @SubclassOptInRequired
+            public abstract class Connector
+        """.trimIndent()
+
+        val result = fix(text, diagnostic("SUBCLASS_OPT_IN_WITHOUT_MARKERS", text, "@SubclassOptInRequired"))
+
+        // The markerless annotation restricts nothing, so the exemption takes its place instead
+        // of joining it: the class is open to everyone either way, now on purpose.
+        assertEquals(
+            """
+                package com.example
+
+                import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason
+                import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyOpen
+
+                /** A connector nobody may extend. Except everybody can. */
+                @IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)
+                public abstract class Connector
+            """.trimIndent(),
+            result.newText,
+        )
+        assertEquals(
+            listOf(AppliedFix("SUBCLASS_OPT_IN_WITHOUT_MARKERS", "IntentionallyOpen", FILE_PATH, 7)),
+            result.applied,
+        )
+        assertEquals(emptyList(), result.skipped)
+    }
+
+    @Test
+    fun markerlessSubclassOptInWithEmptyArgumentsIsReplacedInline() {
+        @Language("kotlin")
+        val text = """
+            package com.example
+
+            /** A plugin contract. */
+            @SubclassOptInRequired() public interface Plugin
+        """.trimIndent()
+
+        val result = fix(text, diagnostic("SUBCLASS_OPT_IN_WITHOUT_MARKERS", text, "@SubclassOptInRequired()"))
+
+        assertContains(
+            result.newText!!,
+            "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY) public interface Plugin",
+        )
+    }
+
+    @Test
+    fun markerlessSubclassOptInInsideAnAnnotationListKeepsTheListSyntax() {
+        @Language("kotlin")
+        val text = """
+            package com.example
+
+            /** A connector. */
+            @[SubclassOptInRequired Suppress("unused")]
+            public abstract class Connector
+        """.trimIndent()
+
+        val result = fix(text, diagnostic("SUBCLASS_OPT_IN_WITHOUT_MARKERS", text, "SubclassOptInRequired"))
+
+        // Entries of an `@[...]` list carry no `@` of their own.
+        assertContains(
+            result.newText!!,
+            "@[IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY) Suppress(\"unused\")]",
+        )
+    }
+
+    @Test
+    fun markerlessSubclassOptInIsRemovedWhenTheClassIsAlreadyExempt() {
+        @Language("kotlin")
+        val text = """
+            package com.example
+
+            import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason
+            import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyOpen
+
+            /** A connector. */
+            @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
+            @SubclassOptInRequired
+            public abstract class Connector
+        """.trimIndent()
+
+        val result = fix(text, diagnostic("SUBCLASS_OPT_IN_WITHOUT_MARKERS", text, "@SubclassOptInRequired"))
+
+        // A second @IntentionallyOpen would not even compile, so the pointless annotation just
+        // goes, taking its line with it.
+        assertEquals(
+            """
+                package com.example
+
+                import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason
+                import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyOpen
+
+                /** A connector. */
+                @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
+                public abstract class Connector
+            """.trimIndent(),
+            result.newText,
+        )
+        assertEquals(emptyList(), result.skipped)
+    }
+
+    @Test
+    fun markerlessSubclassOptInIsRemovedInlineWhenTheClassIsAlreadyExempt() {
+        @Language("kotlin")
+        val text = """
+            package com.example
+
+            import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason
+            import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyOpen
+
+            /** A plugin contract. */
+            @SubclassOptInRequired @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
+            public interface Plugin
+        """.trimIndent()
+
+        val result = fix(text, diagnostic("SUBCLASS_OPT_IN_WITHOUT_MARKERS", text, "@SubclassOptInRequired"))
+
+        assertContains(
+            result.newText!!,
+            "/** A plugin contract. */\n" +
+                    "@IntentionallyOpen(reason = ExemptionReason.API_DESIGN)\n" +
+                    "public interface Plugin",
+        )
+    }
+
+    @Test
+    fun theReplacedAnnotationStillMakesRoomForOtherExemptions() {
+        @Language("kotlin")
+        val text = """
+            package com.example
+
+            /**
+             * A session.
+             *
+             * @param id the session identifier.
+             */
+            @SubclassOptInRequired
+            public abstract class Session(public val id: Int)
+        """.trimIndent()
+
+        val result = fix(
+            text,
+            diagnostic("SUBCLASS_OPT_IN_WITHOUT_MARKERS", text, "@SubclassOptInRequired"),
+            diagnostic("STATEFUL_CLASS_WITHOUT_TO_STRING", text, "public abstract class Session(public val id: Int)"),
+        )
+
+        // The class-level exemption is inserted where the replaced annotation starts, and lands
+        // in front of it rather than inside it.
+        assertContains(
+            result.newText!!,
+            "@IntentionallyWithoutToString(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+                    "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+                    "public abstract class Session(public val id: Int)",
+        )
+        assertEquals(2, result.applied.size)
+    }
+
+    @Test
+    fun replacedAnnotationsSurviveCrlfLineEndings() {
+        val text = "package com.example\r\n\r\n/** Doc. */\r\n@SubclassOptInRequired\r\npublic interface Plugin\r\n"
+
+        val result = fix(text, diagnostic("SUBCLASS_OPT_IN_WITHOUT_MARKERS", text, "@SubclassOptInRequired"))
+
+        val newText = result.newText!!
+        assertEquals(newText.count { it == '\n' }, newText.windowed(2).count { it == "\r\n" })
+        assertContains(
+            newText,
+            "/** Doc. */\r\n@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\r\npublic interface Plugin",
+        )
+    }
+
+    @Test
     fun unfixableDiagnosticsAreSkippedWithReasons() {
         @Language("kotlin")
         val text = """
@@ -469,7 +647,6 @@ class ExemptionFixerTest {
 
         val result = fix(
             text,
-            diagnostic("SUBCLASS_OPT_IN_WITHOUT_MARKERS", text, "public class Anything"),
             diagnostic("UNDOCUMENTED_PUBLIC_API", text, "public class Anything"),
             diagnostic("EXEMPTION_WITHOUT_EXPLANATION", text, "public class Anything"),
             diagnostic("DSL_MARKER_NOOP_TYPE_POSITION", text, "public class Anything"),
@@ -478,8 +655,7 @@ class ExemptionFixerTest {
 
         assertNull(result.newText)
         val reasonsByDiagnostic = result.skipped.associate { it.diagnostic to it.reason }
-        assertEquals(5, reasonsByDiagnostic.size)
-        assertContains(reasonsByDiagnostic.getValue("SUBCLASS_OPT_IN_WITHOUT_MARKERS"), "@SubclassOptInRequired")
+        assertEquals(4, reasonsByDiagnostic.size)
         assertContains(reasonsByDiagnostic.getValue("UNDOCUMENTED_PUBLIC_API"), "KDocs")
         assertContains(reasonsByDiagnostic.getValue("EXEMPTION_WITHOUT_EXPLANATION"), "author")
         assertContains(reasonsByDiagnostic.getValue("DSL_MARKER_NOOP_TYPE_POSITION"), "DSL marker")
@@ -786,9 +962,18 @@ class ExemptionFixerTest {
 
     @Test
     fun insertionsAtTheSameOffsetKeepTextOrder() {
-        val result = applyInsertions(
+        val result = applyEdits(
             "cd",
-            listOf(Insertion(0, "a"), Insertion(0, "b"), Insertion(2, "e")),
+            listOf(TextEdit(0, "a"), TextEdit(0, "b"), TextEdit(2, "e")),
+        )
+        assertEquals("abcde", result)
+    }
+
+    @Test
+    fun insertionsAtAReplacementOffsetLandInFrontOfIt() {
+        val result = applyEdits(
+            "xd",
+            listOf(TextEdit(0, "a"), TextEdit(0, 1, "bc"), TextEdit(2, "e")),
         )
         assertEquals("abcde", result)
     }

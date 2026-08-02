@@ -73,7 +73,9 @@ bootstrap/dev repositories configured in `settings.gradle.kts`.
   KGP compilation tasks, then inserts the matching `@Intentionally*` annotation with the
   `FOR_BACKWARDS_COMPATIBILITY` reason for each recorded diagnostic via text edits computed on
   Kotlin PSI (`kotlin-compiler-embeddable`, K2 entry points only, relocated `org.jetbrains.kotlin.com.intellij`
-  imports). `ExemptionRegistry` maps each diagnostic to its annotation and target strategy or marks it unfixable;
+  imports). The `REPORTED_ANNOTATION` target strategy replaces the reported annotation instead of adding one, which
+  is how a markerless `@SubclassOptInRequired` becomes `@IntentionallyOpen`.
+  `ExemptionRegistry` maps each diagnostic to its annotation and target strategy or marks it unfixable;
   request/response travel as `key=value` files (`FixerProtocol`). Compile-only deps; at runtime the Gradle task
   supplies `kotlin-compiler-embeddable` of the project's Kotlin version.
 - `:gradle-plugin` - `WatchdogSupportPlugin` applies the compiler plugin and the annotations dependency to every

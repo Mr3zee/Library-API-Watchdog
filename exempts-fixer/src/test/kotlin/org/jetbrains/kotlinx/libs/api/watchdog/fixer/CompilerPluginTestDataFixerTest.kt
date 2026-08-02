@@ -109,8 +109,8 @@ class CompilerPluginTestDataFixerTest {
         val remainingDiagnostics = diagnosticsThatWereSkipped(source, fixedText, result, result.skipped)
             .map { diagnostic ->
                 diagnostic.copy(
-                    startOffset = result.mapOffset(diagnostic.startOffset, afterInsertionsAtOffset = true),
-                    endOffset = result.mapOffset(diagnostic.endOffset, afterInsertionsAtOffset = false),
+                    startOffset = result.mapOffset(diagnostic.startOffset, afterEditsAtOffset = true),
+                    endOffset = result.mapOffset(diagnostic.endOffset, afterEditsAtOffset = false),
                 )
             }
 
@@ -126,7 +126,7 @@ class CompilerPluginTestDataFixerTest {
         val remainingByNameAndLine = skipped.groupingBy { it.diagnostic to it.line }.eachCount().toMutableMap()
         val remaining = source.diagnostics.filter { diagnostic ->
             val relocatedDiagnostic = diagnostic.copy(
-                startOffset = result.mapOffset(diagnostic.startOffset, afterInsertionsAtOffset = true),
+                startOffset = result.mapOffset(diagnostic.startOffset, afterEditsAtOffset = true),
             )
             val line = relocatedDiagnostic.lineIn(fixedText)
             val key = diagnostic.name to line
@@ -145,10 +145,10 @@ class CompilerPluginTestDataFixerTest {
         return remaining
     }
 
-    private fun FileFixResult.mapOffset(offset: Int, afterInsertionsAtOffset: Boolean): Int =
-        offset + insertions.sumOf { insertion ->
-            if (insertion.offset < offset || afterInsertionsAtOffset && insertion.offset == offset) {
-                insertion.text.length
+    private fun FileFixResult.mapOffset(offset: Int, afterEditsAtOffset: Boolean): Int =
+        offset + edits.sumOf { edit ->
+            if (edit.endOffset < offset || afterEditsAtOffset && edit.endOffset == offset) {
+                edit.lengthDelta
             } else {
                 0
             }

@@ -50,7 +50,7 @@ internal class ImportResolver(private val ktFile: KtFile) {
     }
 
     /** The insertions that add the registered imports, empty when none are needed. */
-    fun importInsertions(ktFile: KtFile): List<Insertion> {
+    fun importInsertions(ktFile: KtFile): List<TextEdit> {
         if (importsToAdd.isEmpty()) {
             return emptyList()
         }
@@ -59,16 +59,16 @@ internal class ImportResolver(private val ktFile: KtFile) {
 
         val lastImport = ktFile.importList?.imports?.lastOrNull()
         if (lastImport != null) {
-            return listOf(Insertion(lastImport.textRange.endOffset, "\n$importLines"))
+            return listOf(TextEdit(lastImport.textRange.endOffset, "\n$importLines"))
         }
 
         val packageDirective = ktFile.packageDirective?.takeIf { it.textLength > 0 }
         if (packageDirective != null) {
-            return listOf(Insertion(packageDirective.textRange.endOffset, "\n\n$importLines"))
+            return listOf(TextEdit(packageDirective.textRange.endOffset, "\n\n$importLines"))
         }
 
         // No package and no imports: the imports open the file, before the first declaration.
         val firstDeclarationOffset = ktFile.declarations.firstOrNull()?.textRange?.startOffset ?: 0
-        return listOf(Insertion(firstDeclarationOffset, "$importLines\n\n"))
+        return listOf(TextEdit(firstDeclarationOffset, "$importLines\n\n"))
     }
 }

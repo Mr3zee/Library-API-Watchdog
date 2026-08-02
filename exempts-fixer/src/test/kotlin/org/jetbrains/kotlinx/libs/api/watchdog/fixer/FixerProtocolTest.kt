@@ -184,7 +184,6 @@ class FixerProtocolTest {
         }
         assertEquals(
             setOf(
-                "SUBCLASS_OPT_IN_WITHOUT_MARKERS",
                 "UNDOCUMENTED_PUBLIC_API",
                 "EXEMPTION_WITHOUT_EXPLANATION",
                 "DSL_MARKER_NOOP_TYPE_POSITION",

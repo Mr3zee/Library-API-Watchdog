@@ -11,6 +11,12 @@ internal enum class TargetStrategy {
     /** The reported declaration itself: class, type alias, function, property, or constructor. */
     REPORTED_DECLARATION,
 
+    /**
+     * The annotation entry the diagnostic was reported on. The reported annotation is the problem
+     * itself, so the exemption replaces it instead of joining it.
+     */
+    REPORTED_ANNOTATION,
+
     /** The callable whose signature contains the reported type, parameter, or bound. */
     ENCLOSING_CALLABLE,
 
@@ -50,6 +56,9 @@ internal object ExemptionRegistry {
 
     private val resolutions: Map<String, FixResolution> = mapOf(
         "OPEN_API_WITHOUT_SUBCLASS_OPT_IN" to fixable("IntentionallyOpen", TargetStrategy.ENCLOSING_CLASS),
+        // A markerless @SubclassOptInRequired gates nothing, so the exemption takes its place:
+        // the class stays open to everyone, now stated outright.
+        "SUBCLASS_OPT_IN_WITHOUT_MARKERS" to fixable("IntentionallyOpen", TargetStrategy.REPORTED_ANNOTATION),
         "EXHAUSTIVE_PUBLIC_API" to fixable("IntentionallyExhaustive", TargetStrategy.ENCLOSING_CLASS),
         "FUNCTION_TYPE_ALIAS_PUBLIC_API" to fixable("IntentionallyFunctionTypeAlias", TargetStrategy.REPORTED_DECLARATION),
         "DATA_CLASS_PUBLIC_API" to fixable("IntentionallyDataClass", TargetStrategy.ENCLOSING_CLASS),
@@ -71,7 +80,6 @@ internal object ExemptionRegistry {
         "DSL_MARKER_NOOP_TARGET" to fixable("IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility", TargetStrategy.ENCLOSING_ANNOTATION_CLASS, hasReasonParameter = false),
         "DSL_MARKER_WITHOUT_EXPLICIT_TARGETS" to fixable("IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility", TargetStrategy.ENCLOSING_ANNOTATION_CLASS, hasReasonParameter = false),
 
-        "SUBCLASS_OPT_IN_WITHOUT_MARKERS" to FixResolution.Unfixable("No exemption annotation exists. Pass at least one opt-in marker class to @SubclassOptInRequired"),
         "UNDOCUMENTED_PUBLIC_API" to FixResolution.Unfixable("Adding KDocs is not backwards incompatible. Please, add them."),
         "EXEMPTION_WITHOUT_EXPLANATION" to FixResolution.Unfixable("The existing exemption needs a reason or description only its author can write"),
         "DSL_MARKER_NOOP_TYPE_POSITION" to FixResolution.Unfixable("No exemption annotation exists. Move the DSL marker to an effective position or remove it"),
