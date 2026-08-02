@@ -76,6 +76,35 @@ public class Rect(width: Int, height: Int) {
 }
 ```
 
+### Don't {id="dont-3"}
+
+```kotlin
+public class Grid {
+    public fun fill(startIndex: Int, endIndex: Int) { }
+}
+
+// INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+public fun Grid.fill(
+    endIndex: Int,
+    startIndex: Int,
+    color: Long,
+) { }
+```
+
+### Do {id="do-3"}
+
+```kotlin
+public class Grid {
+    public fun fill(startIndex: Int, endIndex: Int) { }
+}
+
+public fun Grid.fill(
+    startIndex: Int,
+    endIndex: Int,
+    color: Long,
+) { }
+```
+
 ## Notes
 
 - Overloads that share fewer than two parameter names can't disagree on order and are never
@@ -85,8 +114,15 @@ public class Rect(width: Int, height: Int) {
   inherited members included - the top-level functions of one package, or the constructors of one
   class among each other. A class member is never compared against a same-named top-level
   function, and declarations from dependencies are never compared.
+- An extension is called like a member of the type it extends, so the members of its receiver
+  class - inherited ones included - are its overloads too, wherever in the library the extension
+  is declared. A receiver reached through a type alias, a nullable type, or a type parameter
+  bound still leads back to the extended class; an unbounded type parameter is no class and has
+  no members to compare against.
 - For an inherited pair, only the subtype's own declaration is reported: the supertype can't see
   the subtype's overload, and it is the new declaration that strays from the established order.
+  An extension next to the members of its receiver is reported the same way: only the extension,
+  since the class can't see the extensions declared on it.
 - Overrides never report - their order is fixed by the overridden declaration - but they still
   serve as an ordering reference for a new overload declared next to them.
 

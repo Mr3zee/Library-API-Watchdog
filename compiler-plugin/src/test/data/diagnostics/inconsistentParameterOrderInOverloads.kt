@@ -2,6 +2,8 @@
 // EXPLICIT_API_MODE: WARNING
 // DIAGNOSTICS: -UNDOCUMENTED_PUBLIC_API -EXEMPTION_WITHOUT_EXPLANATION -OPEN_API_WITHOUT_SUBCLASS_OPT_IN -STATEFUL_CLASS_WITHOUT_TO_STRING -TOP_LEVEL_API_WITHOUT_JVM_NAME
 
+// FILE: overloads.kt
+
 package foo.bar
 
 import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason
@@ -83,3 +85,40 @@ public fun render(x: Int, y: Int, scale: Double) {}
 private fun helper(first: Int, second: Int) {}
 
 public fun helper(second: Int, first: Int, extra: Long) {}
+
+// An extension is called like a member of the type it extends, so the receiver's members are
+// overloads of it. Only the extension warns - the class can't see the extensions declared on
+// it, and it is the extension that strays from the established order.
+
+public class Grid {
+    public fun fill(startIndex: Int, endIndex: Int) {}
+}
+
+public fun Grid.<!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>fill<!>(endIndex: Int, startIndex: Int, color: Long) {}
+
+// The receiver's inherited members are references too: users see them on the receiver just the same.
+
+public fun Widget.<!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>place<!>(y: Int, x: Int, alpha: Long) {}
+
+// A receiver reached through a type alias, a nullable type, or a type parameter bound still
+// leads back to the extended class.
+
+public typealias Board = Grid
+
+public fun Board?.<!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>fill<!>(endIndex: Int, startIndex: Int, alpha: Long) {}
+
+public fun <T : Shape> T.<!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>place<!>(y: Int, x: Int, tint: Int) {}
+
+// A receiver that is no class - an unbounded type parameter - has no members to compare against.
+
+public fun <T> T.fill(endIndex: Int, startIndex: Int, gamma: Int) {}
+
+// FILE: extensions.kt
+
+// An extension is compared with its receiver's members wherever in the module it is declared.
+
+package foo.baz
+
+import foo.bar.Grid
+
+public fun Grid.<!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>fill<!>(endIndex: Int, startIndex: Int, beta: Int) {}

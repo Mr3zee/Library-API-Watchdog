@@ -1,4 +1,4 @@
-FILE: inconsistentParameterOrderInOverloads.kt
+FILE: overloads.kt
     package foo.bar
 
     public final fun draw(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
@@ -81,4 +81,29 @@ FILE: inconsistentParameterOrderInOverloads.kt
     private final fun helper(first: R|kotlin/Int|, second: R|kotlin/Int|): R|kotlin/Unit| {
     }
     public final fun helper(second: R|kotlin/Int|, first: R|kotlin/Int|, extra: R|kotlin/Long|): R|kotlin/Unit| {
+    }
+    public final class Grid : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Grid| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun fill(startIndex: R|kotlin/Int|, endIndex: R|kotlin/Int|): R|kotlin/Unit| {
+        }
+
+    }
+    public final fun R|foo/bar/Grid|.fill(endIndex: R|kotlin/Int|, startIndex: R|kotlin/Int|, color: R|kotlin/Long|): R|kotlin/Unit| {
+    }
+    public final fun R|foo/bar/Widget|.place(y: R|kotlin/Int|, x: R|kotlin/Int|, alpha: R|kotlin/Long|): R|kotlin/Unit| {
+    }
+    public final typealias Board = R|foo/bar/Grid|
+    public final fun R|{foo/bar/Board?=} foo/bar/Grid?|.fill(endIndex: R|kotlin/Int|, startIndex: R|kotlin/Int|, alpha: R|kotlin/Long|): R|kotlin/Unit| {
+    }
+    public final fun <T : R|foo/bar/Shape|> R|T|.place(y: R|kotlin/Int|, x: R|kotlin/Int|, tint: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun <T> R|T|.fill(endIndex: R|kotlin/Int|, startIndex: R|kotlin/Int|, gamma: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+FILE: extensions.kt
+    package foo.baz
+
+    public final fun R|foo/bar/Grid|.fill(endIndex: R|kotlin/Int|, startIndex: R|kotlin/Int|, beta: R|kotlin/Int|): R|kotlin/Unit| {
     }

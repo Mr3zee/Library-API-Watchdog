@@ -168,14 +168,12 @@ internal fun FirClassSymbol<*>.isValueClass(): Boolean =
     resolvedStatus.let { it.isValue || it.isInline }
 
 /**
- * The name of the value class that mangles a JVM signature mentioning this type, or null.
- * Only the classifier itself counts - a value class inside a type argument is boxed and
- * leaves the name intact. Type aliases are expanded, and a type parameter erases to its
- * first upper bound, so `<T : UserId> f(t: T)` mangles like a direct mention. The visited
- * set guards against cyclic bounds in erroneous code.
+ * The class this type stands for, or null when it is no class at all. Type aliases are expanded,
+ * and a type parameter erases to its first upper bound, so `<T : UserId> f(t: T)` names the same
+ * class as a direct mention. The visited set guards against cyclic bounds in erroneous code.
  */
 context(context: CheckerContext)
-internal fun ConeKotlinType.mangledValueClass(): Name? {
+internal fun ConeKotlinType.erasedClassSymbol(): FirClassSymbol<*>? {
     var type: ConeKotlinType = upperBoundIfFlexible()
     val visitedTypeParameters = mutableSetOf<FirTypeParameterSymbol>()
     while (type is ConeTypeParameterType) {
@@ -186,8 +184,17 @@ internal fun ConeKotlinType.mangledValueClass(): Name? {
         type = typeParameter.resolvedBounds.firstOrNull()?.coneType?.upperBoundIfFlexible() ?: return null
     }
 
-    val classLike = (type as? ConeClassLikeType)?.fullyExpandedType() ?: return null
-    val symbol = classLike.toClassSymbol() ?: return null
+    return (type as? ConeClassLikeType)?.fullyExpandedType()?.toClassSymbol()
+}
+
+/**
+ * The name of the value class that mangles a JVM signature mentioning this type, or null.
+ * Only the classifier itself counts - a value class inside a type argument is boxed and
+ * leaves the name intact.
+ */
+context(context: CheckerContext)
+internal fun ConeKotlinType.mangledValueClass(): Name? {
+    val symbol = erasedClassSymbol() ?: return null
     return symbol.classId.shortClassName.takeIf { symbol.isValueClass() }
 }
 

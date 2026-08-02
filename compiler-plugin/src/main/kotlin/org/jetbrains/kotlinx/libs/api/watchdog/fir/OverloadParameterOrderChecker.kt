@@ -15,8 +15,10 @@ import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
 import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirConstructorSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirFunctionSymbol
+import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.unwrapFakeOverrides
 import org.jetbrains.kotlin.name.Name
 
@@ -33,10 +35,13 @@ import org.jetbrains.kotlin.name.Name
  * No overload is preferred as the canonical order: every member of an inconsistent pair reports,
  * and reordering either clears both. Overloads are compared as users see them side by side -
  * the members visible in a class, inherited ones included, or the module's top-level functions
- * of the same package; constructors of a class are overloads of each other. For an inheritance
- * pair only the subtype's declaration reports: the supertype can't see its subtypes' overloads,
- * and it is the new overload that strays from the established signature. Dependencies are not
- * compared - only declarations the library author can reorder are held against each other.
+ * of the same package; constructors of a class are overloads of each other. An extension is
+ * called like a member of the type it extends, so it is also compared with that type's members.
+ * For an inheritance pair, and for an extension next to the members of its receiver, only the
+ * newcomer reports: a supertype can't see its subtypes' overloads and a class can't see the
+ * extensions declared on it, and it is the new overload that strays from the established
+ * signature. Dependencies are not compared - only declarations the library author can reorder
+ * are held against each other.
  *
  * Overrides never report - their parameter order is fixed by the overridden declaration - but
  * they still serve as ordering references: a new overload next to an inherited signature should
@@ -84,9 +89,14 @@ internal class OverloadParameterOrderChecker(
      * The callables this declaration overloads: same-named functions visible in the class -
      * declared and inherited alike, since users see them side by side - or the module's
      * top-level functions of the same package, or the sibling constructors of the class, which
-     * are not inherited. Inherited members surface as fake overrides and are unwrapped to the
-     * original declaration, whose source, visibility, and exemption the sibling gate inspects;
-     * members originating in dependencies fall out there, having no real source.
+     * are not inherited. An extension is called like a member of the type it extends, so the
+     * same-named members of its receiver class join the list, wherever the extension itself is
+     * declared; a receiver that is no class - a type parameter without a class bound, say -
+     * contributes nothing.
+     *
+     * Inherited members surface as fake overrides and are unwrapped to the original declaration,
+     * whose source, visibility, and exemption the sibling gate inspects; members originating in
+     * dependencies fall out there, having no real source.
      */
     context(context: CheckerContext)
     private fun FirFunction.overloadSiblings(): List<FirFunctionSymbol<*>> {
@@ -104,16 +114,31 @@ internal class OverloadParameterOrderChecker(
                 emptyList()
             }
 
-            containingClass != null -> buildList {
-                containingClass.unsubstitutedScope(context).processFunctionsByName(name) { member ->
-                    add(member.unwrapFakeOverrides())
+            else -> buildList {
+                if (containingClass != null) {
+                    addMembersNamed(containingClass, name)
+                } else {
+                    addAll(
+                        context.session.symbolProvider
+                            .getTopLevelFunctionSymbols(symbol.callableId.packageName, name)
+                    )
+                }
+
+                val receiverClass = receiverParameter?.typeRef?.coneType?.erasedClassSymbol()
+                if (receiverClass != null && receiverClass != containingClass) {
+                    addMembersNamed(receiverClass, name)
                 }
             }
+        }
+    }
 
-            else -> {
-                context.session.symbolProvider
-                    .getTopLevelFunctionSymbols(symbol.callableId.packageName, name)
-            }
+    context(context: CheckerContext)
+    private fun MutableList<FirFunctionSymbol<*>>.addMembersNamed(
+        classSymbol: FirClassSymbol<*>,
+        name: Name,
+    ) {
+        classSymbol.unsubstitutedScope(context).processFunctionsByName(name) { member ->
+            add(member.unwrapFakeOverrides())
         }
     }
 
