@@ -25,10 +25,11 @@ import org.jetbrains.kotlin.platform.jvm.isJvm
  * A checker whose every diagnostic is configured to [WatchdogSeverity.NONE] is not registered at
  * all, so a disabled check costs nothing per declaration.
  */
-class WatchdogFirCheckers(
+class WatchdogFirCheckers internal constructor(
     session: FirSession,
     severities: WatchdogDiagnosticSeverities,
     recorder: WatchdogDiagnosticsRecorder? = null,
+    dependencyExposure: DependencyExposureCheckConfiguration? = null,
 ) : FirAdditionalCheckersExtension(session) {
     override val declarationCheckers: DeclarationCheckers = object : DeclarationCheckers() {
         private val enabled =
@@ -52,8 +53,8 @@ class WatchdogFirCheckers(
                 .unlessDisabled(WatchdogDiagnostics.EXHAUSTIVE_PUBLIC_API),
             DataClassChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.DATA_CLASS_PUBLIC_API),
-            StatefulClassWithoutToStringChecker(severities)
-                .unlessDisabled(WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_TO_STRING),
+            StatefulClassWithoutGeneratedMembersChecker(severities)
+                .unlessDisabled(WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_EQUALS, WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_HASH_CODE, WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_TO_STRING,),
             DslMarkerTargetsChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.DSL_MARKER_NOOP_TARGET, WatchdogDiagnostics.DSL_MARKER_WITHOUT_EXPLICIT_TARGETS),
         ).recorded()
@@ -71,6 +72,8 @@ class WatchdogFirCheckers(
                 .unlessDisabled(WatchdogDiagnostics.PAIR_OR_TRIPLE_PUBLIC_API),
             NullableBooleanChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.NULLABLE_BOOLEAN_PUBLIC_API),
+            dependencyExposure?.let(::NonTransitiveDependencyChecker)
+                ?.takeIf { enabled },
         ).recorded()
 
         // Dispatched to named functions and constructors alike: both declare parameter lists.

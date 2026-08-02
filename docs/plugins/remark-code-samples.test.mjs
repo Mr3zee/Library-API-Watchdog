@@ -84,11 +84,52 @@ test('rejects a malformed named diagnostic parameter value', () => {
   );
 });
 
-function transform(value) {
+test('collapses supplemental KDoc by default', () => {
+  const tree = transform(`/**
+ * Returns the current value.
+ */
+public fun value(): Int = 0`);
+
+  assert.equal(
+    tree.children[0].value,
+    `// !collapse(1:3) collapsed kdoc
+/**
+ * Returns the current value.
+ */
+public fun value(): Int = 0`,
+  );
+});
+
+test('collapses one-line supplemental KDoc', () => {
+  const tree = transform('/** Returns the current value. */\npublic fun value(): Int = 0');
+  assert.match(tree.children[0].value, /^\/\/ !collapse\(1:1\) collapsed kdoc$/m);
+});
+
+test('leaves KDoc expanded on the undocumented API page', () => {
+  const value = '/** Returns the current value. */\npublic fun value(): Int = 0';
+  assert.equal(transform(value, 'undocumented-public-api.md').children[0].value, value);
+});
+
+test('collapses supporting file setup outside its own page', () => {
+  const value = '@file:JvmName("Values")\n\npublic fun value(): Int = 0';
+  assert.match(transform(value).children[0].value, /^\/\/ !collapse\(1:1\) collapsed setup$/m);
+  assert.equal(transform(value, 'top-level-api-without-jvm-name.md').children[0].value, value);
+});
+
+test('does not nest KDoc collapse inside an explicit collapsed range', () => {
+  const value = `// !collapse(1:2) collapsed
+// Supporting type
+// !diag[/Support/] DATA_CLASS_PUBLIC_API ["Support"]
+/** Supporting type. */
+public data class Support(public val value: Int)`;
+  assert.equal(transform(value).children[0].value, value);
+});
+
+function transform(value, path = 'sample.md') {
   const tree = {
     type: 'root',
     children: [{type: 'code', lang: 'kotlin', meta: null, value}],
   };
-  remarkCodeSamples()(tree, {path: 'sample.md'});
+  remarkCodeSamples()(tree, {path});
   return tree;
 }

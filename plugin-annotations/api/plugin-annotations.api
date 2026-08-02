@@ -90,6 +90,16 @@ public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchd
 	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
 }
 
+public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutEquals : java/lang/annotation/Annotation {
+	public abstract fun description ()Ljava/lang/String;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+}
+
+public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutHashCode : java/lang/annotation/Annotation {
+	public abstract fun description ()Ljava/lang/String;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+}
+
 public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutJvmOverloads : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
 	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;

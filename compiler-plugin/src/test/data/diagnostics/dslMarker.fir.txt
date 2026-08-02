@@ -43,6 +43,39 @@ FILE: dslMarker.kt
         }
 
     }
+    @R|kotlin/DslMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.ANNOTATION_CLASS|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.ANNOTATION_CLASS|)]) public final annotation class AnnotationClassDsl : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/AnnotationClassDsl| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|foo/bar/AnnotationClassDsl|() private final annotation class OuterAnnotationReceiver : R|kotlin/Annotation| {
+        public constructor(outerOnly: R|kotlin/String|): R|foo/bar/OuterAnnotationReceiver| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val outerOnly: R|kotlin/String| = R|<local>/outerOnly|
+            public get(): R|kotlin/String|
+
+    }
+    @R|foo/bar/AnnotationClassDsl|() private final annotation class InnerAnnotationReceiver : R|kotlin/Annotation| {
+        public constructor(innerOnly: R|kotlin/String|): R|foo/bar/InnerAnnotationReceiver| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val innerOnly: R|kotlin/String| = R|<local>/innerOnly|
+            public get(): R|kotlin/String|
+
+    }
+    private final fun annotationReceiverDslScope(outer: R|foo/bar/OuterAnnotationReceiver|, inner: R|foo/bar/InnerAnnotationReceiver|): R|kotlin/String| {
+        ^annotationReceiverDslScope R|kotlin/with|<R|foo/bar/OuterAnnotationReceiver|, R|kotlin/String|>(R|<local>/outer|, <L> = with@fun R|foo/bar/OuterAnnotationReceiver|.<anonymous>(): R|kotlin/String| <inline=Inline, kind=EXACTLY_ONCE>  {
+            ^ R|kotlin/with|<R|foo/bar/InnerAnnotationReceiver|, R|kotlin/String|>(R|<local>/inner|, <L> = with@fun R|foo/bar/InnerAnnotationReceiver|.<anonymous>(): R|kotlin/String| <inline=Inline, kind=EXACTLY_ONCE>  {
+                ^ this@R|special/anonymous|.R|foo/bar/OuterAnnotationReceiver.outerOnly<Inapplicable(RESOLVED_WITH_ERROR): foo/bar/OuterAnnotationReceiver.outerOnly>#|
+            }
+            )
+        }
+        )
+    }
     @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility|() @R|kotlin/DslMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|)]) public final annotation class LegacyNoopTargetDsl : R|kotlin/Annotation| {
         public constructor(): R|foo/bar/LegacyNoopTargetDsl| {
             super<R|kotlin/Any|>()

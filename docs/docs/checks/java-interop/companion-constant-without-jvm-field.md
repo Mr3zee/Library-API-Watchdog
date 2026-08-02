@@ -17,8 +17,11 @@ that Java can only read through the companion instance getter.
 A companion `val` that just holds a constant value - no `const`, no custom getter, no delegate.
 
 ```kotlin
+/** Names and metadata used to locate a registry. */
 public class Registry {
+    /** Well-known registry metadata. */
     public companion object {
+        /** Name used when the caller does not supply one. */
         // !diag[/DEFAULT_NAME/] COMPANION_CONSTANT_WITHOUT_JVM_FIELD ["Registry","DEFAULT_NAME"]
         public val DEFAULT_NAME: String = "registry"
     }
@@ -37,9 +40,13 @@ because none of them is the default. See Kotlin's guide to
 ### Don't
 
 ```kotlin
+/** Names and metadata used to locate a registry. */
 public class Registry {
     // Java only sees Registry.Companion.getDEFAULT_NAME().
+    /** Well-known registry metadata. */
     public companion object {
+        /** Name used when the caller does not supply one. */
+        // !diag[/DEFAULT_NAME/] COMPANION_CONSTANT_WITHOUT_JVM_FIELD ["Registry","DEFAULT_NAME"]
         public val DEFAULT_NAME: String = "registry"
     }
 }
@@ -48,13 +55,18 @@ public class Registry {
 ### Do
 
 ```kotlin
+/** Names and metadata used to locate a registry. */
 public class Registry {
+    /** Well-known registry metadata. */
     public companion object {
+        /** Name used when the caller does not supply one. */
         public const val DEFAULT_NAME: String = "registry"
 
+        /** Origin assigned to locally created registries. */
         @JvmField
         public val ORIGIN: String = "field"
 
+        /** Metadata exposed to Java through a static getter. */
         @JvmStatic
         public val EXPOSED: String = "static getter"
     }
@@ -82,8 +94,11 @@ Acknowledge the companion-instance access path with `@IntentionallyNonStaticComp
 keeping it is a deliberate choice:
 
 ```kotlin
+/** Names and metadata used to locate a registry. */
 public class Registry {
+    /** Well-known registry metadata. */
     public companion object {
+        /** The deliberately companion-only default name. */
         @IntentionallyNonStaticCompanionApi(
             reason = ExemptionReason.API_DESIGN,
         )

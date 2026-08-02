@@ -17,6 +17,7 @@ arguments. The annotation restricts nothing in this case: the class or
 interface stays open to external subclassing exactly as if it were unannotated.
 
 ```kotlin
+/** Establishes communication with a remote service. */
 // !diag[/@SubclassOptInRequired/] SUBCLASS_OPT_IN_WITHOUT_MARKERS
 @SubclassOptInRequired
 public abstract class Connector
@@ -35,6 +36,7 @@ for the intended pattern.
 ### Don't
 
 ```kotlin
+/** Establishes communication with a remote service. */
 // !diag[/@SubclassOptInRequired/] SUBCLASS_OPT_IN_WITHOUT_MARKERS
 @SubclassOptInRequired
 public abstract class Connector
@@ -43,12 +45,15 @@ public abstract class Connector
 ### Do
 
 ```kotlin
+/** Marks unstable API. */
 @RequiresOptIn
 public annotation class UnstableApi
 
+/** A connector implemented under an opt-in contract. */
 @SubclassOptInRequired(UnstableApi::class)
 public abstract class Connector
 
+/** A plugin implemented under an opt-in contract. */
 @SubclassOptInRequired(UnstableApi::class)
 public interface Plugin
 ```
@@ -70,6 +75,7 @@ To exempt this check for binary compatibility reasons, replace the `@SubclassOpt
 `@IntentionallyOpen`:
 
 ```kotlin
+/** A connector kept unrestricted for compatibility. */
 @IntentionallyOpen(
     reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY,
 )

@@ -33,7 +33,7 @@ const config: Config = {
           path: 'docs',
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',
-          editUrl: `${variables['repo-tree-path'].replace('/tree/', '/edit/')}/docs/docs/`,
+          editUrl: `${variables['repo-tree-path'].replace('/tree/', '/edit/')}/docs/`,
           // These have to run before the Docusaurus plugins turn code blocks into <Code> elements.
           beforeDefaultRemarkPlugins: [
             remarkCodeSamples,

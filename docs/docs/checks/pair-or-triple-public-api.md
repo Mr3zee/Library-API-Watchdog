@@ -16,6 +16,9 @@ The check flags `Pair` and `Triple` in return types, property types, parameter t
 parameter bounds, including their type arguments (like `List<Pair<Int, String>>`):
 
 ```kotlin
+@file:JvmName("Locations")
+
+/** Returns an unnamed location. */
 // !diag[/Pair<Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","locate","Pair"]
 public fun locate(): Pair<Int, Int> = 0 to 0
 ```
@@ -32,12 +35,23 @@ optional property with a default value. See the
 ### Don't
 
 ```kotlin
+@file:JvmName("Geometry")
+
+/** Returns unnamed dimensions. */
 // !diag[/Triple<Int, Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","dimensions","Triple"]
 public fun dimensions(): Triple<Int, Int, Int> = Triple(0, 0, 0)
 
+// !collapse(1:6) collapsed details
+/**
+ * Attaches content to an unnamed coordinate pair.
+ *
+ * @property position horizontal and vertical anchor coordinates.
+ */
+@Poko
 // !diag[/Pair<Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["property","position","Pair"]
 public class Anchor(public val position: Pair<Int, Int>)
 
+/** Returns unnamed edges. */
 // !diag[/List<Pair<Int, Int>>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","edges","Pair"]
 public fun edges(): List<Pair<Int, Int>> = emptyList()
 
@@ -46,21 +60,49 @@ public fun edges(): List<Pair<Int, Int>> = emptyList()
 ### Do
 
 ```kotlin
+@file:JvmName("Geometry")
+
+// !collapse(1:8) collapsed details
+/**
+ * Extents of a three-dimensional object.
+ *
+ * @property width horizontal extent in pixels.
+ * @property height vertical extent in pixels.
+ * @property depth front-to-back extent in pixels.
+ */
+@Poko
 public class Dimensions(
     public val width: Int,
     public val height: Int,
     public val depth: Int,
 )
 
+/** Returns the dimensions. */
 public fun dimensions(): Dimensions = Dimensions(0, 0, 0)
 
+// !collapse(1:7) collapsed details
+/**
+ * A position in Cartesian coordinate space.
+ *
+ * @property x distance from the vertical axis.
+ * @property y distance from the horizontal axis.
+ */
+@Poko
 public class Point(
     public val x: Int,
     public val y: Int,
 )
 
+// !collapse(1:6) collapsed details
+/**
+ * Attaches content to a point in Cartesian space.
+ *
+ * @property position point at which the content is anchored.
+ */
+@Poko
 public class Anchor(public val position: Point)
 
+/** Returns edges. */
 public fun edges(): List<Point> = emptyList()
 ```
 
@@ -79,14 +121,19 @@ Apply `@IntentionallyPairOrTriple` on the whole declaration, on a single paramet
 parameter, or on a type usage, where it covers the annotated type and everything nested in it:
 
 ```kotlin
+@file:JvmName("Geometry")
+
+/** Returns a deliberately unnamed location. */
 @IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN)
 public fun rawLocation(): Pair<Int, Int> = 0 to 0
 
+/** Draws at the deliberately unnamed [at] location. */
 public fun draw(
   @IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN)
   at: Pair<Int, Int>,
 ) { }
 
+/** Returns deliberately unnamed corners. */
 @IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN)
 public fun corners(): List<Pair<Int, Int>> =
     emptyList()

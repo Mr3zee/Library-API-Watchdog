@@ -2,10 +2,10 @@
 
 `BOOLEAN_PARAMETER_PUBLIC_API` reports Boolean value parameters of public functions.
 
-|                  |                                                   |
-|------------------|---------------------------------------------------|
-| Diagnostic       | `BOOLEAN_PARAMETER_PUBLIC_API`                    |
-| Default severity | Error                                             |
+|                  |                                                      |
+|------------------|------------------------------------------------------|
+| Diagnostic       | `BOOLEAN_PARAMETER_PUBLIC_API`                       |
+| Default severity | Error                                                |
 | Gradle property  | [`booleanParameterPublicApi`](../configuration.md)   |
 | Exemption        | [`@IntentionallyBooleanParameter`](../exemptions.md) |
 
@@ -15,6 +15,9 @@ Every value parameter, and every context parameter, of a public or protected fun
 type is `Boolean`, including the declared element type of `vararg` parameter.
 
 ```kotlin
+@file:JvmName("Work")
+
+/** Processes pending data, optionally favoring speed over memory use. */
 // !diag[/optimizeForSpeed/] BOOLEAN_PARAMETER_PUBLIC_API ["doWork","optimizeForSpeed"]
 public fun doWork(optimizeForSpeed: Boolean): Unit {}
 ```
@@ -29,6 +32,9 @@ whoever reads the call site remembering the parameter name. See the
 ### Don't
 
 ```kotlin
+@file:JvmName("Logging")
+
+/** Controls whether diagnostic messages are recorded. */
 // !diag[/enabled/] BOOLEAN_PARAMETER_PUBLIC_API ["setLogging","enabled"]
 public fun setLogging(enabled: Boolean): Unit {}
 ```
@@ -36,8 +42,12 @@ public fun setLogging(enabled: Boolean): Unit {}
 ### Do
 
 ```kotlin
+@file:JvmName("Logging")
+
+/** Enables logging. */
 public fun enableLogging(): Unit {}
 
+/** Disables logging. */
 public fun disableLogging(): Unit {}
 ```
 
@@ -70,6 +80,9 @@ Apply `@IntentionallyBooleanParameter` when the parameter's meaning is unmistaka
 function name, such as `setEnabled(enabled: Boolean)`.
 
 ```kotlin
+@file:JvmName("Settings")
+
+/** Changes whether this component is enabled. */
 @IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)
 public fun setEnabled(enabled: Boolean): Unit {}
 ```

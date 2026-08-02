@@ -16,6 +16,7 @@ This check fires on the annotation call of `@Intentionally*` annotations with re
 `ExemptionReason.FOR_BACKWARD_COMPATIBILITY` or `ExemptionReason.API_DESIGN` and a blank `description`:
 
 ```kotlin
+/** Base type for UI elements rendered by an application. */
 // !diag[/@IntentionallyOpen/] EXEMPTION_WITHOUT_EXPLANATION ["IntentionallyOpen","OTHER"]
 @IntentionallyOpen
 public open class Widget
@@ -51,10 +52,12 @@ Non-self-explanatory reasons are:
 ### Don't
 
 ```kotlin
+/** Base type for UI elements rendered by an application. */
 // !diag[/@IntentionallyOpen/] EXEMPTION_WITHOUT_EXPLANATION ["IntentionallyOpen","OTHER"]
 @IntentionallyOpen
 public open class Widget
 
+/** Base type for UI elements supplied by extensions. */
 // !diag[/@IntentionallyOpen.*$/] EXEMPTION_WITHOUT_EXPLANATION ["IntentionallyOpen","OTHER"]
 @IntentionallyOpen(reason = ExemptionReason.OTHER)
 public open class OtherWidget
@@ -67,9 +70,11 @@ public class UndocumentedThing
 ### Do
 
 ```kotlin
+/** A UI widget deliberately open to external subclasses. */
 @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public open class Widget
 
+/** Another UI widget deliberately open for internal testing. */
 @IntentionallyOpen(description = "Kept open for internal testing")
 public open class OtherWidget
 ```

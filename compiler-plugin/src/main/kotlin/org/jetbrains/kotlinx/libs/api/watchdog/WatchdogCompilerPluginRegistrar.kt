@@ -6,6 +6,7 @@ import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitCompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitComponentRegistrar
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
+import org.jetbrains.kotlinx.libs.api.watchdog.fir.DependencyExposureCheckConfiguration
 import org.jetbrains.kotlinx.libs.api.watchdog.fir.WatchdogDiagnosticSeverities
 import org.jetbrains.kotlinx.libs.api.watchdog.fir.WatchdogDiagnosticsRecorder
 import org.jetbrains.kotlinx.libs.api.watchdog.fir.WatchdogFirExtensionRegistrar
@@ -24,6 +25,16 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
         )
         val recorder = configuration[WatchdogConfigurationKeys.DIAGNOSTICS_OUTPUT_FILE]
             ?.let { WatchdogDiagnosticsRecorder(File(it)) }
-        FirExtensionRegistrarAdapter.registerExtension(WatchdogFirExtensionRegistrar(severities, recorder))
+        val dependencyExposure = configuration[WatchdogConfigurationKeys.COMPILE_DEPENDENCY_PATHS]
+            ?.let { compileDependencies ->
+                DependencyExposureCheckConfiguration(
+                    compileDependencies = compileDependencies,
+                    transitiveDependencies =
+                        configuration[WatchdogConfigurationKeys.TRANSITIVE_DEPENDENCY_PATHS, emptySet()],
+                )
+            }
+        FirExtensionRegistrarAdapter.registerExtension(
+            WatchdogFirExtensionRegistrar(severities, recorder, dependencyExposure),
+        )
     }
 }

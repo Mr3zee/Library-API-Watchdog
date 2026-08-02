@@ -18,8 +18,11 @@ Flags a public function declared directly in a companion object - of a class
 or an interface - that carries neither `@JvmStatic` nor `@JvmSynthetic`.
 
 ```kotlin
+/** Registry of application services. */
 public class Registry {
+    /** Creates registry instances. */
     public companion object {
+        /** Creates an empty registry. */
         // !diag[/create/] COMPANION_API_WITHOUT_JVM_STATIC ["Registry","create"]
         public fun create(): Registry = Registry()
     }
@@ -38,8 +41,11 @@ changing how Kotlin resolves the same call. See the Kotlin guide on
 ### Don't
 
 ```kotlin
+/** Registry of application services. */
 public class Registry {
+    /** Creates registry instances. */
     public companion object {
+        /** Creates an empty registry. */
         // !diag[/create/] COMPANION_API_WITHOUT_JVM_STATIC ["Registry","create"]
         public fun create(): Registry = Registry()
     }
@@ -49,8 +55,11 @@ public class Registry {
 ### Do
 
 ```kotlin
+/** Registry of application services. */
 public class Registry {
+    /** Creates registry instances. */
     public companion object {
+        /** Creates an empty registry. */
         @JvmStatic
         public fun create(): Registry = Registry()
     }
@@ -74,8 +83,11 @@ Acknowledge the companion-instance access path with `@IntentionallyNonStaticComp
 keeping it is a deliberate choice:
 
 ```kotlin
+/** Registry of application services. */
 public class Registry {
+    /** Creates registry instances. */
     public companion object {
+        /** Creates a registry through the companion instance. */
         @IntentionallyNonStaticCompanionApi(
             reason = ExemptionReason.API_DESIGN,
         )

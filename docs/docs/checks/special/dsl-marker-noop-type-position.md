@@ -17,6 +17,11 @@ type, or a property or variable type marks a value that is only ever accessed by
 restricts nothing:
 
 ```kotlin
+@file:JvmName("Trees")
+
+// !collapse(1:12) collapsed
+// Supporting DSL declarations
+/** Marks tree DSL receivers. */
 @DslMarker
 @Target(
     AnnotationTarget.CLASS,
@@ -25,8 +30,10 @@ restricts nothing:
 )
 public annotation class TreeDsl
 
-public open class Tag
+/** Node accepted by the tree-building DSL. */
+public class Tag
 
+/** Adds [tag] to the current tree. */
 // !diag[/@TreeDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["TreeDsl","parameter type"]
 public fun process(tag: @TreeDsl Tag) { }
 ```
@@ -43,23 +50,32 @@ wrong scope's functions. See the Kotlin guide on [scope control for DSL markers]
 ### Don't
 
 ```kotlin
+// !collapse(1:2) collapsed details
+/** Applies [block] while constructing a tree tag. */
+@JvmSynthetic
 // !diag[/@TreeDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["TreeDsl","return type"]
-@TreeDsl
-public fun configure(block: Tag.() -> Unit) { }
+public fun configure(block: Tag.() -> Unit): @TreeDsl Unit { }
 ```
 
 ### Do
 
 ```kotlin
+/** Node whose receiver participates in tree DSL scope control. */
 @TreeDsl
 public class Tag
 
+// !collapse(1:2) collapsed details
+/** Applies [block] while constructing a tree tag. */
+@JvmSynthetic
 public fun configure(block: Tag.() -> Unit) { }
 ```
 
 ### Don't {#dont-2}
 
 ```kotlin
+@file:JvmName("Trees")
+
+/** Adds [tag] to the current tree. */
 // !diag[/@TreeDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["TreeDsl","parameter type"]
 public fun process(tag: @TreeDsl Tag) { }
 ```
@@ -67,7 +83,10 @@ public fun process(tag: @TreeDsl Tag) { }
 ### Do {#do-2}
 
 ```kotlin
+@file:JvmName("Trees")
+
 // no scope control needed for a named value
+/** Adds [tag] to the current tree. */
 public fun process(tag: Tag) { }
 ```
 

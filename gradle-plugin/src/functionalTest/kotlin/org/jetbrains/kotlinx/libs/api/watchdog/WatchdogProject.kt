@@ -20,6 +20,8 @@ open class WatchdogProject(
         "org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyUndocumented",
         "org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyFunctionTypeAlias",
         "org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyDataClass",
+        "org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyWithoutEquals",
+        "org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyWithoutHashCode",
         "org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyWithoutToString",
         "org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyMutableCollection",
         "org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyPairOrTriple",

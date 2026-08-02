@@ -15,6 +15,11 @@ demoted to a warning, disabled, or exempted in place.
 A public data class that hands out a mutable collection, without documentation, triggers three
 diagnostics at once:
 
+:::tip
+Diagnostics in code examples are interactive. Hover over or focus an underlined range to read the
+diagnostic and follow its link to the full documentation.
+:::
+
 ```kotlin
 // !diag[/Config/] DATA_CLASS_PUBLIC_API ["Config"]
 // !diag[/Config/] UNDOCUMENTED_PUBLIC_API ["class","Config"]
@@ -98,6 +103,9 @@ See [Configuration](./configuration.md) for full configuration options and build
   swapped arguments.
 - [Inline functions with logic](./checks/inline-function-with-logic.md): public inline functions, whose body does more than delegate,
   since the compiler copies that logic, and its bugs, into every user binary.
+- [Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md):
+  dependency types exposed in public signatures but hidden from consumers by an
+  `implementation` declaration. Always an error while enabled.
 
 ### Java interop checks
 

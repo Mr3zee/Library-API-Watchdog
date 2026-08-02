@@ -56,13 +56,6 @@
   --ch-26: #afb8c133;
   --watchdog-diagnostic-color: #cf222e;
   --watchdog-diagnostic-highlight: #cf222e14;
-  --watchdog-tooltip-background: #ffffff;
-  --watchdog-tooltip-border: #c7c9cc;
-  --watchdog-tooltip-divider: #dfe1e5;
-  --watchdog-tooltip-foreground: #1f2328;
-  --watchdog-tooltip-hover: #f2f3f5;
-  --watchdog-tooltip-muted: #6c707e;
-  --watchdog-tooltip-shadow: 0 6px 18px #00000026;
 }
 
 [data-theme='dark'] {
@@ -94,13 +87,6 @@
   --ch-26: #6e768166;
   --watchdog-diagnostic-color: #ff7b72;
   --watchdog-diagnostic-highlight: #ff7b7217;
-  --watchdog-tooltip-background: #2b2d30;
-  --watchdog-tooltip-border: #43454a;
-  --watchdog-tooltip-divider: #43454a;
-  --watchdog-tooltip-foreground: #dfe1e5;
-  --watchdog-tooltip-hover: #393b40;
-  --watchdog-tooltip-muted: #9da0a8;
-  --watchdog-tooltip-shadow: 0 8px 24px #00000066;
 }
 
 /*

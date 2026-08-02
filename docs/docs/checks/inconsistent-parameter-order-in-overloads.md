@@ -17,9 +17,13 @@ relative order of those shared names. No overload is treated as the canonical or
 of a disagreeing pair are reported, and reordering either one clears both.
 
 ```kotlin
+@file:JvmName("Drawing")
+
+/** Draws at ([x], [y]). */
 // !diag[/draw/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["x","y","draw"]
 public fun draw(x: Int, y: Int) { }
 
+/** Draws at ([x], [y]) with [scale]. */
 // !diag[/draw/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["y","x","draw"]
 public fun draw(y: Int, x: Int, scale: Double) { }
 ```
@@ -35,9 +39,13 @@ authors' guide on
 ### Don't
 
 ```kotlin
+@file:JvmName("Drawing")
+
+/** Draws at ([x], [y]). */
 // !diag[/draw/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["x","y","draw"]
 public fun draw(x: Int, y: Int) { }
 
+/** Draws at ([x], [y]) with [scale]. */
 // !diag[/draw/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["y","x","draw"]
 public fun draw(y: Int, x: Int, scale: Double) { }
 ```
@@ -45,16 +53,22 @@ public fun draw(y: Int, x: Int, scale: Double) { }
 ### Do
 
 ```kotlin
+@file:JvmName("Drawing")
+
+/** Draws at ([x], [y]). */
 public fun draw(x: Int, y: Int) { }
 
+/** Draws at ([x], [y]) with [scale]. */
 public fun draw(x: Int, y: Int, scale: Double) { }
 ```
 
 ### Don't {#dont-2}
 
 ```kotlin
+/** Rectangle defined by its horizontal and vertical extents. */
 // !diag[/[(]width: Int, height: Int[)]/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["width","height","Rect"]
 public class Rect(width: Int, height: Int) {
+    /** Creates a rectangle and applies [scale] to both extents. */
     // !diag[/public constructor[(]height: Int, width: Int, scale: Double[)] : this[(]width, height[)]/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["height","width","Rect"]
     public constructor(height: Int, width: Int, scale: Double) : this(width, height)
 }
@@ -63,7 +77,9 @@ public class Rect(width: Int, height: Int) {
 ### Do {#do-2}
 
 ```kotlin
+/** Rectangle defined by its horizontal and vertical extents. */
 public class Rect(width: Int, height: Int) {
+    /** Creates a rectangle and applies [scale] to both extents. */
     public constructor(
         width: Int,
         height: Int,
@@ -75,10 +91,17 @@ public class Rect(width: Int, height: Int) {
 ### Don't {#dont-3}
 
 ```kotlin
+@file:JvmName("Grids")
+
+// !collapse(1:6) collapsed
+// Supporting member overload
+/** Mutable grid addressed by a linear cell index. */
 public class Grid {
+    /** Fills cells from [startIndex] through [endIndex]. */
     public fun fill(startIndex: Int, endIndex: Int) { }
 }
 
+/** Fills a range with [color]. */
 // !diag[/fill/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["endIndex","startIndex","fill"]
 public fun Grid.fill(
     endIndex: Int,
@@ -90,10 +113,17 @@ public fun Grid.fill(
 ### Do {#do-3}
 
 ```kotlin
+@file:JvmName("Grids")
+
+// !collapse(1:6) collapsed
+// Supporting member overload
+/** Mutable grid addressed by a linear cell index. */
 public class Grid {
+    /** Fills cells from [startIndex] through [endIndex]. */
     public fun fill(startIndex: Int, endIndex: Int) { }
 }
 
+/** Fills a range with [color]. */
 public fun Grid.fill(
     startIndex: Int,
     endIndex: Int,
@@ -131,8 +161,12 @@ both as a reporter and as a comparison target, so one acknowledged legacy overlo
 its order onto otherwise-consistent newer ones.
 
 ```kotlin
+@file:JvmName("Rendering")
+
+/** Renders at ([x], [y]). */
 public fun render(x: Int, y: Int) { }
 
+/** Renders at ([x], [y]) with [alpha]. */
 @IntentionallyInconsistentParameterOrder(
     reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY,
 )

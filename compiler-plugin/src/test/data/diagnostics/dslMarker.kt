@@ -53,6 +53,28 @@ public annotation class ClassOnlyDsl
 @Target(AnnotationTarget.CLASS, AnnotationTarget.ANNOTATION_CLASS)
 public annotation class MetaDsl
 
+// ANNOTATION_CLASS is not merely accepted by the watchdog: Kotlin's own DSL scope control sees
+// a marker placed on an annotation class and hides an outer receiver of that annotation type.
+
+@DslMarker
+@Target(AnnotationTarget.ANNOTATION_CLASS)
+public annotation class AnnotationClassDsl
+
+@AnnotationClassDsl
+private annotation class OuterAnnotationReceiver(val outerOnly: String)
+
+@AnnotationClassDsl
+private annotation class InnerAnnotationReceiver(val innerOnly: String)
+
+private fun annotationReceiverDslScope(
+    outer: OuterAnnotationReceiver,
+    inner: InnerAnnotationReceiver,
+): String = with(outer) {
+    with(inner) {
+        <!DSL_SCOPE_VIOLATION!>outerOnly<!>
+    }
+}
+
 // A legacy marker keeps its wrong target set for backwards compatibility: no warning. The
 // exemption's reason is baked into its name, so a bare usage needs no description either.
 

@@ -17,6 +17,7 @@ non-sealed interface. User-side subclasses constrain how
 the declaration can evolve later.
 
 ```kotlin
+/** Base type for UI elements rendered by an application. */
 // !diag[/Widget/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["class","Widget"]
 public open class Widget
 ```
@@ -31,11 +32,14 @@ Unrestricted open API is one of the classic ways a
 ### Don't
 
 ```kotlin
+/** Base type for UI elements rendered by an application. */
 // !diag[/Widget/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["class","Widget"]
 public open class Widget
 
+/** Extension point invoked during application startup. */
 // !diag[/Plugin/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["interface","Plugin"]
 public interface Plugin {
+    /** Initializes the plugin for the current application. */
     public fun run()
 }
 ```
@@ -43,13 +47,17 @@ public interface Plugin {
 ### Do
 
 ```kotlin
+/** A UI widget whose internal constructor prevents external subclasses. */
 public open class Widget internal constructor()
 
+/** Marks APIs that require an opt-in. */
 @RequiresOptIn
 public annotation class InternalMyLibrarySubclassApi
 
+/** A plugin implemented under an opt-in contract. */
 @SubclassOptInRequired(InternalMyLibrarySubclassApi::class)
 public interface Plugin {
+    /** Initializes the plugin for the current application. */
     public fun run()
 }
 ```
@@ -73,6 +81,7 @@ When unrestricted subclassing is an intended, stable part of the contract, ackno
 instead of adding an opt-in marker:
 
 ```kotlin
+/** A UI widget deliberately open to external subclasses. */
 @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public open class Widget
 ```

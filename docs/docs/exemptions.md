@@ -38,6 +38,12 @@ non-public declarations, because leaving any exemption unexplained defeats the p
 A well-explained exemption:
 
 ```kotlin
+/**
+ * Legacy RPC configuration.
+ *
+ * @property host network host serving RPC requests.
+ * @property port TCP port exposed by [host].
+ */
 @IntentionallyDataClass(
     reason = ExemptionReason.INTEROP,
     description = "Serialized as-is by the legacy RPC layer, " +
@@ -71,6 +77,8 @@ only valid reason for a exemption.
 | `@IntentionallyUndocumented`                                   | [Undocumented public API](./checks/undocumented-public-api.md)                                                          |
 | `@IntentionallyFunctionTypeAlias`                              | [Function type aliases in public API](./checks/function-type-alias-public-api.md)                                                   |
 | `@IntentionallyDataClass`                                      | [Data classes in public API](./checks/data-class-public-api.md)                                                            |
+| `@IntentionallyWithoutEquals`                                  | [Stateful classes without equals, hashCode, and toString](./checks/stateful-class-without-equals-hashcode-to-string.md)                                 |
+| `@IntentionallyWithoutHashCode`                                | [Stateful classes without equals, hashCode, and toString](./checks/stateful-class-without-equals-hashcode-to-string.md)                                 |
 | `@IntentionallyWithoutToString`                                | [Stateful classes without equals, hashCode, and toString](./checks/stateful-class-without-equals-hashcode-to-string.md)                                 |
 | `@IntentionallyMutableCollection`                              | [Mutable collections in public API](./checks/mutable-collection-public-api.md)                                                    |
 | `@IntentionallyPairOrTriple`                                   | [Pair and Triple in public API](./checks/pair-or-triple-public-api.md)                                                        |
@@ -94,6 +102,7 @@ exempting every one of them individually, annotate the library's own internal-AP
 with `@InternalAnnotationMarker`:
 
 ```kotlin
+/** Marks declarations that are public only for technical reasons. */
 @InternalAnnotationMarker
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 public annotation class InternalMyLibraryApi

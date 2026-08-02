@@ -20,6 +20,9 @@ Three shapes trigger it:
   function type with receiver, or a `Unit`-returning function type
 
 ```kotlin
+@file:JvmName("Refresh")
+
+/** Refreshes [key]. */
 // !diag[/refresh/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["refresh","$suspend"]
 public suspend fun refresh(key: String) { }
 ```
@@ -36,20 +39,25 @@ these shapes actually compile.
 ### Don't
 
 ```kotlin
+@file:JvmName("KotlinOnly")
+
 // Java sees a trailing Continuation parameter
 // it can't provide idiomatically.
 //
+/** Refreshes [key]. */
 // !diag[/refresh/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["refresh","$suspend"]
 public suspend fun refresh(key: String) { }
 
 // Only inlining Kotlin call sites can substitute T.
 // Calling the compiled method from Java fails at runtime.
 //
+/** Creates an instance of [T]. */
 // !diag[/instantiate/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["instantiate","$reified"]
 public inline fun <reified T> instantiate(): T? = null
 
 // A Java lambda has to return the Unit.INSTANCE token explicitly.
 //
+/** Invokes [action] for each value. */
 // !diag[/onEach/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["onEach","$unitFunctionType(action)"]
 public fun onEach(action: (Int) -> Unit) { }
 ```
@@ -57,13 +65,21 @@ public fun onEach(action: (Int) -> Unit) { }
 ### Do
 
 ```kotlin
+@file:JvmName("Refresh")
+
+/** Refreshes [key]. */
 @JvmSynthetic
 public suspend fun refresh(key: String) { }
 
+// !collapse(1:2) collapsed details
+/** Consumes values produced by an iteration. */
+@IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public fun interface Action {
+    /** Processes [value] emitted by the iteration. */
     public fun doAction(value: Int)
 }
 
+/** Invokes [action] for each value. */
 public fun onEach(action: Action) { }
 ```
 
@@ -87,6 +103,9 @@ Apply `@IntentionallyKotlinOnlyApi` to the function, or to an enclosing class to
 function inside, when leaving the Kotlin-only shape visible to Java is intended:
 
 ```kotlin
+@file:JvmName("Refresh")
+
+/** Refreshes [key] through a deliberately Kotlin-only API. */
 @IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)
 public suspend fun refresh(key: String) {}
 ```

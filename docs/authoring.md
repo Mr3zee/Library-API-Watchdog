@@ -11,8 +11,8 @@ npm start    # dev server with hot reload
 npm run build
 ```
 
-`npm run build` fails on a broken link, a broken anchor, and a code sample comment that names a
-diagnostic missing from `diagnostics.json`, so it is the docs check as well.
+`npm run build` fails on a broken link, a broken anchor, and an invalid code-sample diagnostic
+annotation. Docs CI also compiles every public-API Kotlin sample with all watchdog checks enabled.
 
 ## Hard rules
 
@@ -21,8 +21,11 @@ diagnostic missing from `diagnostics.json`, so it is the docs check as well.
 - Naming: the product is `libs-api-watchdog`. The Gradle plugin id is
   `org.jetbrains.kotlinx.libs.api.watchdog`. The Gradle extension is `apiWatchdog`. The
   annotations package is `org.jetbrains.kotlinx.libs.api.watchdog`.
-- Every Kotlin API example must compile in explicit API mode: `public` modifiers and explicit
+- Every Kotlin API example must compile in explicit API mode and pass all watchdog checks except
+  the diagnostics it demonstrates with `!diag` annotations. Use `public` modifiers and explicit
   return types on all API declarations.
+- Write sample KDoc as if it documented a production API. Describe behavior, meaning, units, or
+  constraints instead of restating the declaration name (`NORTH` as "North", for example).
 - Exemption examples must satisfy `EXEMPTION_WITHOUT_EXPLANATION`: `reason =
   ExemptionReason.FOR_BACKWARDS_COMPATIBILITY` or `ExemptionReason.API_DESIGN` may stand alone.
   Every other reason (`INTEROP`, `EXTERNAL_CONTRACT`, `IGNORE_JAVA_INTEROP`, `OTHER`) also needs a
@@ -68,6 +71,12 @@ public val tags: MutableList<String>
 The name has to exist in `diagnostics.json`, the parameter count has to fill every message
 placeholder, and the regex has to match, otherwise the build fails. Every other comment stays as
 written and is shown as part of the sample.
+
+The Gradle functional test `DocsExamplesTest` extracts every fenced Kotlin block that declares
+public API, compiles each block as an isolated source file, and compares all compiler diagnostics
+with its `!diag` annotations. Configuration snippets and comment-only placeholders are ignored.
+This cross-check means a bad example still demonstrates its annotated diagnostic, while every
+other aspect of that example follows the guidance from the other check pages.
 
 When a long parameter value is shared with the compiler checker, define it once in the
 diagnostic's `parameterValues` object in `diagnostics.json`. Reference a value with `$name`, or
@@ -117,12 +126,13 @@ Checks (`docs/docs/checks/`):
 
 Special checks (`docs/docs/checks/special/`):
 
-| File                                     | Title                                |
-|------------------------------------------|--------------------------------------|
-| `exemption-without-explanation.md`       | Exemptions without explanation       |
-| `dsl-marker-noop-target.md`              | DSL markers with no-op targets       |
-| `dsl-marker-without-explicit-targets.md` | DSL markers without explicit targets |
-| `dsl-marker-noop-type-position.md`       | DSL markers on no-op type positions  |
+| File                                                   | Title                                         |
+|--------------------------------------------------------|-----------------------------------------------|
+| `exemption-without-explanation.md`                     | Exemptions without explanation                |
+| `dsl-marker-noop-target.md`                            | DSL markers with no-op targets                |
+| `dsl-marker-without-explicit-targets.md`               | DSL markers without explicit targets          |
+| `dsl-marker-noop-type-position.md`                     | DSL markers on no-op type positions           |
+| `public-type-from-non-transitive-dependency.md`        | Public types from non-transitive dependencies |
 
 Java interop (`docs/docs/checks/java-interop/`):
 

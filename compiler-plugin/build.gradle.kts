@@ -25,8 +25,8 @@ tasks.named("animalsnifferMain") {
 /**
  * Turns the shared `diagnostics.json` into the `WatchdogDiagnosticMessages` object the diagnostic
  * renderer factory reads its message templates from. The same file feeds the documentation
- * website, which is why the link to a check page is derived here instead of being spelled out in
- * every message.
+ * website, which is why the final "See more" link to a check page is derived here instead of being
+ * spelled out in every message.
  */
 abstract class GenerateDiagnosticMessages : DefaultTask() {
     /** The shared diagnostics source of truth, `diagnostics.json` in the repository root. */
@@ -124,8 +124,8 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
         val trailer = entry["messageTrailer"] as String?
         val message = buildString {
             append(entry["message"] as String)
-            append(" See ").append(docsUrl).append(" for details.")
             if (trailer != null) append(' ').append(trailer)
+            append("\n\nSee more: ").append(docsUrl)
         }
         // MessageFormat only reaches diagnostics that have parameters; the others are rendered
         // verbatim and would show the doubled quotes.
@@ -157,7 +157,7 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
     }
 
     private fun String.escaped(): String =
-        replace("\\", "\\\\").replace("\"", "\\\"").replace("$", "\\$")
+        replace("\\", "\\\\").replace("\n", "\\n").replace("\"", "\\\"").replace("$", "\\$")
 
     private companion object {
         val PARAMETER = Regex("\\{\\d+}")

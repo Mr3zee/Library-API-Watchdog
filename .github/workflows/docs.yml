@@ -92,6 +92,11 @@ jobs:
           ./gradlew -p plugins publishToMavenLocal
           ./gradlew publishToMavenLocal
 
+      - name: Cross-check documentation examples
+        run: >-
+          ./gradlew :gradle-plugin:k240FunctionalTest
+          --tests org.jetbrains.kotlinx.libs.api.watchdog.DocsExamplesTest
+
       - name: Build Dokka API reference
         run: ./gradlew :dokkaGenerate
 

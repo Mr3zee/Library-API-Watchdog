@@ -98,9 +98,9 @@ bootstrap/dev repositories configured in `settings.gradle.kts`.
 `name`, the `title` and `docs` path of its documentation page, the `message` template, and an optional
 `messageTrailer`. Two consumers read it:
 
-- `:compiler-plugin`'s `generateDiagnosticMessages` task emits `WatchdogDiagnosticMessages.kt` into a generated source
-  dir. It appends `See <docsBaseUrl><docs> for details.` to every message, then the trailer, and doubles `'` for
-  `java.text.MessageFormat` in parameterized messages.
+- `:compiler-plugin`'s `generateDiagnosticMessages` task emits `WatchdogDiagnosticMessages.kt` into a generated
+  source dir. It appends a final `See more: <docsBaseUrl><docs>` section to every message, after the trailer, and
+  doubles `'` for `java.text.MessageFormat` in parameterized messages.
 - The documentation website: `docs/plugins/remark-code-samples.mjs` validates the
   `// !diag[/range/] DIAGNOSTIC_NAME ["parameter"]` Code Hike annotations in Kotlin samples, and
   `docs/src/components/Code.tsx` renders the exact compiler-reported ranges as diagnostic underlines and tooltips.

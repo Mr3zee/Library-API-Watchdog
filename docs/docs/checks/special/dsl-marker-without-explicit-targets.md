@@ -15,6 +15,7 @@ explicit `@Target`.
 Any annotation class annotated with `@DslMarker` that has no `@Target` of its own:
 
 ```kotlin
+/** Marks DSL receivers. */
 @DslMarker
 // !diag[/DefaultTargetsDsl/] DSL_MARKER_WITHOUT_EXPLICIT_TARGETS ["DefaultTargetsDsl"]
 public annotation class DefaultTargetsDsl
@@ -33,6 +34,7 @@ restricts nothing and gives a false sense of scope control.
 ### Don't
 
 ```kotlin
+/** Marks HTML DSL receivers. */
 @DslMarker
 // !diag[/HtmlDsl/] DSL_MARKER_WITHOUT_EXPLICIT_TARGETS ["HtmlDsl"]
 public annotation class HtmlDsl
@@ -41,6 +43,7 @@ public annotation class HtmlDsl
 ### Do
 
 ```kotlin
+/** Marks HTML DSL receivers. */
 @DslMarker
 @Target(
     AnnotationTarget.CLASS,
@@ -51,6 +54,7 @@ public annotation class HtmlDsl
 public annotation class HtmlDsl
 
 // A narrower, still-effective subset is fine too
+/** Marks Ktor DSL receivers. */
 @DslMarker
 @Target(AnnotationTarget.CLASS)
 public annotation class KtorDsl
@@ -70,6 +74,7 @@ user code that currently applies the marker to a now-disallowed target. Acknowle
 shape with `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` instead of fixing it:
 
 ```kotlin
+/** Marks legacy DSL receivers. */
 @IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility(
   description = "Published without targets in 1.0.",
 )

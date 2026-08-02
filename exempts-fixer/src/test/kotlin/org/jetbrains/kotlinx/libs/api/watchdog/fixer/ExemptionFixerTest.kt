@@ -608,6 +608,8 @@ class ExemptionFixerTest {
         val result = fix(
             text,
             diagnostic("SUBCLASS_OPT_IN_WITHOUT_MARKERS", text, "@SubclassOptInRequired"),
+            diagnostic("STATEFUL_CLASS_WITHOUT_EQUALS", text, "public abstract class Session(public val id: Int)"),
+            diagnostic("STATEFUL_CLASS_WITHOUT_HASH_CODE", text, "public abstract class Session(public val id: Int)"),
             diagnostic("STATEFUL_CLASS_WITHOUT_TO_STRING", text, "public abstract class Session(public val id: Int)"),
         )
 
@@ -615,11 +617,13 @@ class ExemptionFixerTest {
         // in front of it rather than inside it.
         assertContains(
             result.newText!!,
-            "@IntentionallyWithoutToString(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+            "@IntentionallyWithoutEquals(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+                    "@IntentionallyWithoutHashCode(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+                    "@IntentionallyWithoutToString(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
                     "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
                     "public abstract class Session(public val id: Int)",
         )
-        assertEquals(2, result.applied.size)
+        assertEquals(4, result.applied.size)
     }
 
     @Test
@@ -951,13 +955,21 @@ class ExemptionFixerTest {
             text,
             diagnostic("FUNCTION_TYPE_ALIAS_PUBLIC_API", text, "public typealias Callback = (Int) -> Unit"),
             diagnostic("DATA_CLASS_PUBLIC_API", text, "public data class Point(val x: Int)"),
+            diagnostic("STATEFUL_CLASS_WITHOUT_EQUALS", text, "public class Session(public val id: Int)"),
+            diagnostic("STATEFUL_CLASS_WITHOUT_HASH_CODE", text, "public class Session(public val id: Int)"),
             diagnostic("STATEFUL_CLASS_WITHOUT_TO_STRING", text, "public class Session(public val id: Int)"),
         )
 
         val newText = result.newText!!
         assertContains(newText, "@IntentionallyFunctionTypeAlias(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic typealias Callback")
         assertContains(newText, "@IntentionallyDataClass(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic data class Point")
-        assertContains(newText, "@IntentionallyWithoutToString(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic class Session")
+        assertContains(
+            newText,
+            "@IntentionallyWithoutEquals(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+                    "@IntentionallyWithoutHashCode(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+                    "@IntentionallyWithoutToString(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+                    "public class Session",
+        )
     }
 
     @Test

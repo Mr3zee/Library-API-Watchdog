@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.diagnostics.Severity
 import org.jetbrains.kotlin.diagnostics.SourceElementPositioningStrategies
 import org.jetbrains.kotlin.diagnostics.SourceElementPositioningStrategies.NAME_IDENTIFIER
 import org.jetbrains.kotlin.diagnostics.error2
+import org.jetbrains.kotlin.diagnostics.error3
 import org.jetbrains.kotlin.diagnostics.rendering.BaseDiagnosticRendererFactory
 import org.jetbrains.kotlin.diagnostics.rendering.CommonRenderers.CLASS_KIND
 import org.jetbrains.kotlin.diagnostics.rendering.CommonRenderers.NAME
@@ -101,8 +102,14 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     /** Parameter: the class name. */
     val DATA_CLASS_PUBLIC_API by configurable1<KtClassOrObject, Name>(NAME_IDENTIFIER)
 
-    /** Parameter: the class name. */
-    val STATEFUL_CLASS_WITHOUT_TO_STRING by configurable1<KtClassOrObject, Name>(NAME_IDENTIFIER)
+    /** Parameters: the class name, generation-library hint, and IDEA Generate shortcut. */
+    val STATEFUL_CLASS_WITHOUT_EQUALS by configurable3<KtClassOrObject, Name, String, String>(NAME_IDENTIFIER)
+
+    /** Parameters: the class name, generation-library hint, and IDEA Generate shortcut. */
+    val STATEFUL_CLASS_WITHOUT_HASH_CODE by configurable3<KtClassOrObject, Name, String, String>(NAME_IDENTIFIER)
+
+    /** Parameters: the class name, generation-library hint, and IDEA Generate shortcut. */
+    val STATEFUL_CLASS_WITHOUT_TO_STRING by configurable3<KtClassOrObject, Name, String, String>(NAME_IDENTIFIER)
 
     /**
      * Parameters: declaration kind in words, declaration name, the mutable type's name. Reported
@@ -158,6 +165,12 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
      * explanation requirement is what keeps every exemption honest, so it is always an error.
      */
     val EXEMPTION_WITHOUT_EXPLANATION by error2<KtAnnotationEntry, Name, Name>()
+
+    /**
+     * Parameters: declaration kind, declaration name, exposed type's fully qualified name.
+     * Gradle may disable the check, but whenever it runs this diagnostic is always an error.
+     */
+    val PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY by error3<KtElement, String, Name, String>()
 
     /** Parameters: the marker name, the no-op target name. Reported on the `@Target` argument. */
     val DSL_MARKER_NOOP_TARGET by configurable2<KtExpression, Name, String>()
@@ -246,8 +259,22 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             rendererA = NAME,
         )
         map.put(
+            diagnostic = WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_EQUALS,
+            rendererA = NAME,
+            rendererB = STRING,
+            rendererC = STRING,
+        )
+        map.put(
+            diagnostic = WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_HASH_CODE,
+            rendererA = NAME,
+            rendererB = STRING,
+            rendererC = STRING,
+        )
+        map.put(
             diagnostic = WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_TO_STRING,
             rendererA = NAME,
+            rendererB = STRING,
+            rendererC = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.MUTABLE_COLLECTION_PUBLIC_API,
@@ -291,6 +318,12 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             diagnostic = WatchdogDiagnostics.EXEMPTION_WITHOUT_EXPLANATION,
             rendererA = NAME,
             rendererB = NAME,
+        )
+        map.put(
+            diagnostic = WatchdogDiagnostics.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY,
+            rendererA = STRING,
+            rendererB = NAME,
+            rendererC = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.DSL_MARKER_NOOP_TARGET,
@@ -372,6 +405,16 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
     ) {
         val message = WatchdogDiagnosticMessages.messageFor(diagnostic.name)
         put(diagnostic, message, rendererA, rendererB)
+    }
+
+    private fun <A, B, C> KtDiagnosticFactoryToRendererMap.put(
+        diagnostic: KtDiagnosticFactory3<A, B, C>,
+        rendererA: DiagnosticParameterRenderer<A>?,
+        rendererB: DiagnosticParameterRenderer<B>?,
+        rendererC: DiagnosticParameterRenderer<C>?,
+    ) {
+        val message = WatchdogDiagnosticMessages.messageFor(diagnostic.name)
+        put(diagnostic, message, rendererA, rendererB, rendererC)
     }
 
     private fun <A, B, C> KtDiagnosticFactoryToRendererMap.put(

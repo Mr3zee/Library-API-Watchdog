@@ -2,6 +2,9 @@ package org.jetbrains.kotlinx.libs.api.watchdog
 
 import java.io.File
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.attributes.Attribute
+import org.gradle.api.attributes.AttributeContainer
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -12,6 +15,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
 import org.jetbrains.kotlin.gradle.plugin.FilesSubpluginOption
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
@@ -37,9 +41,6 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         target.afterEvaluate { project ->
             if (!project.explicitApiWarningSuppressed() && !project.hasExplicitApiMode()) {
                 project.logger.warn(missingExplicitApiWarning(project.path))
-            }
-            if (extension.suggestTapmoc.get() && TAPMOC_PLUGIN_IDS.none(project.pluginManager::hasPlugin)) {
-                project.logger.warn(tapmocSuggestion(project.path))
             }
             if (extension.suggestAbiValidation.get() && !project.hasAbiValidation()) {
                 project.logger.warn(abiValidationSuggestion(project.path))
@@ -82,6 +83,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         val extension = extensions.getByType(WatchdogGradleExtension::class.java)
         val isMain = kotlinCompilation.name == KotlinCompilation.MAIN_COMPILATION_NAME
         val collect = collectDiagnosticsForExempts.map { it && isMain }
+        val compileDependencies = configurations.getByName(kotlinCompilation.compileDependencyConfigurationName)
+        val transitiveDependencies = transitiveDependenciesFor(kotlinCompilation, compileDependencies)
         val reportFile = layout.buildDirectory.file(
             "reports/api-watchdog/diagnostics/${kotlinCompilation.compileKotlinTaskName}.tsv"
         )
@@ -139,7 +142,56 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 if (collect.get()) {
                     add(FilesSubpluginOption("diagnosticsOutputFile", listOf(reportFile.get().asFile)))
                 }
+                if (extension.publicTypesMustBeTransitiveDependencies.get()) {
+                    add(
+                        SubpluginOption(
+                            "compileDependencyPaths",
+                            compileDependencies.asPath,
+                        ),
+                    )
+                    add(SubpluginOption("transitiveDependencyPaths", transitiveDependencies.asPath))
+                }
             }
+        }
+    }
+
+    /**
+     * Resolves the dependencies inherited by this target's published API elements with the same
+     * variant attributes as its compile classpath. Extending from the outgoing configuration
+     * preserves source-set hierarchies, `api` transitives, project dependencies and
+     * `compileOnlyApi` where the platform supports it.
+     */
+    private fun Project.transitiveDependenciesFor(
+        kotlinCompilation: KotlinCompilation<*>,
+        compileDependencies: Configuration,
+    ): Configuration {
+        // Android publishes one API-elements configuration per variant, and its compilation name
+        // is that variant name. The target-level configuration does not carry variant-specific
+        // dependencies such as build-type and flavor `api` declarations. Some non-library Android
+        // variants have no publishable API elements, so retain the target configuration as a safe
+        // fallback for those.
+        val publishedApi = if (kotlinCompilation.platformType == KotlinPlatformType.androidJvm) {
+            configurations.findByName("${kotlinCompilation.name}ApiElements")
+        } else {
+            null
+        } ?: configurations.getByName(kotlinCompilation.target.apiElementsConfigurationName)
+        return configurations.create(
+            "apiWatchdog${kotlinCompilation.disambiguatedName.replaceFirstChar(Char::uppercaseChar)}TransitiveDependencies",
+        ) { configuration ->
+            configuration.isCanBeConsumed = false
+            configuration.isCanBeResolved = true
+            configuration.description =
+                "Dependencies exposed transitively by ${kotlinCompilation.target.name} API elements"
+            configuration.extendsFrom(publishedApi)
+            configuration.attributes.copyFrom(compileDependencies.attributes)
+        }
+    }
+
+    private fun AttributeContainer.copyFrom(source: AttributeContainer) {
+        for (key in source.keySet()) {
+            @Suppress("UNCHECKED_CAST")
+            key as Attribute<Any>
+            source.getAttribute(key)?.let { attribute(key, it) }
         }
     }
 
@@ -164,9 +216,6 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
 
         /** The artifact carrying the standalone fixer tool, published next to this plugin. */
         private const val FIXER_ARTIFACT_ID = "exempts-fixer"
-
-        /** Tapmoc's plugin id, plus the id of its former incarnation, CompatPatrouille. */
-        private val TAPMOC_PLUGIN_IDS = listOf("com.gradleup.tapmoc", "com.gradleup.compat.patrouille")
 
         /** The standalone Binary Compatibility Validator's plugin id. */
         private const val BCV_PLUGIN_ID = "org.jetbrains.kotlinx.binary-compatibility-validator"
@@ -237,27 +286,6 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             |    }
             |
             |The `explicitApiWarning()` variant and the `-Xexplicit-api` compiler flag also count.
-        """.trimMargin()
-
-        private fun tapmocSuggestion(projectPath: String): String = """
-            |Project '$projectPath' applies libs-api-watchdog but not Tapmoc. The watchdog guards the shape of
-            |the public API, while Tapmoc pins the Java and Kotlin compatibility levels the artifacts are
-            |built against, keeping them consumable from the oldest JDK and Kotlin versions the library
-            |supports. Enable it in the module's build script, replacing <version> with the latest release
-            |(https://github.com/GradleUp/Tapmoc/releases/latest):
-            |
-            |    plugins {
-            |        id("com.gradleup.tapmoc") version "<version>"
-            |    }
-            |
-            |    tapmoc {
-            |        java(17)        // oldest supported Java release
-            |        kotlin("2.1.0") // oldest supported Kotlin version
-            |    }
-            |
-            |See https://gradleup.com/tapmoc/ for the full configuration reference.
-            |
-            |Disable this suggestion with `apiWatchdog { suggestTapmoc = false }`.
         """.trimMargin()
 
         private fun abiValidationSuggestion(projectPath: String): String = """

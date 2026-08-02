@@ -4,6 +4,7 @@ import com.autonomousapps.kit.GradleBuilder.build
 import com.autonomousapps.kit.GradleBuilder.buildAndFail
 import com.autonomousapps.kit.GradleProject
 import com.autonomousapps.kit.Source
+import com.autonomousapps.kit.gradle.Dependency.Companion.api
 import com.autonomousapps.kit.gradle.Dependency.Companion.implementation
 import com.autonomousapps.kit.gradle.Plugin
 import kotlin.test.assertFalse
@@ -22,25 +23,29 @@ class WatchdogProjectTest {
         val result = buildAndFail(project.rootDir, "build")
         result.assertDiagnosticReported("e: ", "can be subclassed outside the library without restriction")
         result.assertDiagnosticReported("e: ", "can be matched exhaustively by users")
-        result.assertDiagnosticReported("e: ", "has no KDoc")
+        result.assertDiagnosticReported("e: ", "has no `KDoc`")
         result.assertDiagnosticReported("e: ", "abbreviates a function type")
         result.assertDiagnosticReported("e: ", "bakes its constructor property list")
+        result.assertDiagnosticReported("e: ", "neither declares nor inherits an `equals`")
+        result.assertDiagnosticReported("e: ", "neither declares nor inherits a `hashCode`")
         result.assertDiagnosticReported("e: ", "neither declares nor inherits a `toString`")
+        result.assertDiagnosticReported("e: ", "Use Poko or Lombok")
+        result.assertDiagnosticReported("e: ", "press `${ideaGenerateShortcut()}`")
         result.assertDiagnosticReported("e: ", "exposes the mutable collection type")
         result.assertDiagnosticReported("e: ", "exposes the tuple type")
-        result.assertDiagnosticReported("e: ", "takes the Boolean parameter")
-        result.assertDiagnosticReported("e: ", "exposes a nullable Boolean")
+        result.assertDiagnosticReported("e: ", "takes the `Boolean` parameter")
+        result.assertDiagnosticReported("e: ", "exposes a nullable `Boolean`")
         result.assertDiagnosticReported("e: ", "is required but declared after an optional parameter")
         result.assertDiagnosticReported("e: ", "appear in the opposite order in another overload")
-        result.assertDiagnosticReported("e: ", "does more than delegate to a non-inline function")
+        result.assertDiagnosticReported("e: ", "does more than delegate to a function without the `inline` modifier")
         result.assertDiagnosticReported("e: ", "compiled JVM name is mangled")
         result.assertDiagnosticReported("e: ", "still lands in the API surface Java sources see")
-        result.assertDiagnosticReported("e: ", "compiles to an instance method on the nested Companion class")
-        result.assertDiagnosticReported("e: ", "compiles to an instance getter on the nested Companion class")
+        result.assertDiagnosticReported("e: ", "compiles to an instance method on the nested `Companion` class")
+        result.assertDiagnosticReported("e: ", "compiles to an instance getter on the nested `Companion` class")
         result.assertDiagnosticReported("e: ", "compile into the facade class")
         result.assertDiagnosticReported("e: ", "declares default parameter values")
-        result.assertDiagnosticReported("e: ", "allows the FUNCTION annotation target")
-        result.assertDiagnosticReported("e: ", "declares no explicit @Target")
+        result.assertDiagnosticReported("e: ", "allows the `FUNCTION` annotation target")
+        result.assertDiagnosticReported("e: ", "declares no explicit `@Target`")
         result.assertDiagnosticReported("e: ", "has no effect on this parameter type")
     }
 
@@ -54,6 +59,8 @@ class WatchdogProjectTest {
                     undocumentedPublicApi = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                     functionTypeAliasPublicApi = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                     dataClassPublicApi = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
+                    statefulClassWithoutEquals = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
+                    statefulClassWithoutHashCode = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                     statefulClassWithoutToString = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                     mutableCollectionPublicApi = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                     pairOrTriplePublicApi = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
@@ -82,25 +89,27 @@ class WatchdogProjectTest {
         val result = build(project.rootDir, "build")
         result.assertDiagnosticReported("w: ", "can be subclassed outside the library without restriction")
         result.assertDiagnosticReported("w: ", "can be matched exhaustively by users")
-        result.assertDiagnosticReported("w: ", "has no KDoc")
+        result.assertDiagnosticReported("w: ", "has no `KDoc`")
         result.assertDiagnosticReported("w: ", "abbreviates a function type")
         result.assertDiagnosticReported("w: ", "bakes its constructor property list")
+        result.assertDiagnosticReported("w: ", "neither declares nor inherits an `equals`")
+        result.assertDiagnosticReported("w: ", "neither declares nor inherits a `hashCode`")
         result.assertDiagnosticReported("w: ", "neither declares nor inherits a `toString`")
         result.assertDiagnosticReported("w: ", "exposes the mutable collection type")
         result.assertDiagnosticReported("w: ", "exposes the tuple type")
-        result.assertDiagnosticReported("w: ", "takes the Boolean parameter")
-        result.assertDiagnosticReported("w: ", "exposes a nullable Boolean")
+        result.assertDiagnosticReported("w: ", "takes the `Boolean` parameter")
+        result.assertDiagnosticReported("w: ", "exposes a nullable `Boolean`")
         result.assertDiagnosticReported("w: ", "is required but declared after an optional parameter")
         result.assertDiagnosticReported("w: ", "appear in the opposite order in another overload")
-        result.assertDiagnosticReported("w: ", "does more than delegate to a non-inline function")
+        result.assertDiagnosticReported("w: ", "does more than delegate to a function without the `inline` modifier")
         result.assertDiagnosticReported("w: ", "compiled JVM name is mangled")
         result.assertDiagnosticReported("w: ", "still lands in the API surface Java sources see")
-        result.assertDiagnosticReported("w: ", "compiles to an instance method on the nested Companion class")
-        result.assertDiagnosticReported("w: ", "compiles to an instance getter on the nested Companion class")
+        result.assertDiagnosticReported("w: ", "compiles to an instance method on the nested `Companion` class")
+        result.assertDiagnosticReported("w: ", "compiles to an instance getter on the nested `Companion` class")
         result.assertDiagnosticReported("w: ", "compile into the facade class")
         result.assertDiagnosticReported("w: ", "declares default parameter values")
-        result.assertDiagnosticReported("w: ", "allows the FUNCTION annotation target")
-        result.assertDiagnosticReported("w: ", "declares no explicit @Target")
+        result.assertDiagnosticReported("w: ", "allows the `FUNCTION` annotation target")
+        result.assertDiagnosticReported("w: ", "declares no explicit `@Target`")
         result.assertDiagnosticReported("w: ", "has no effect on this parameter type")
     }
 
@@ -122,7 +131,7 @@ class WatchdogProjectTest {
         val result = buildAndFail(project.rootDir, "build")
         result.assertDiagnosticReported("e: ", "can be subclassed outside the library without restriction")
         result.assertDiagnosticReported("e: ", "can be matched exhaustively by users")
-        result.assertDiagnosticReported("w: ", "has no KDoc")
+        result.assertDiagnosticReported("w: ", "has no `KDoc`")
     }
 
     @Test
@@ -144,11 +153,11 @@ class WatchdogProjectTest {
 
         val result = buildAndFail(project.rootDir, "build")
         // The non-interop diagnostics still fail the build...
-        result.assertDiagnosticReported("e: ", "has no KDoc")
+        result.assertDiagnosticReported("e: ", "has no `KDoc`")
         // ...while the whole group is off, the explicitly set severity included.
         assertFalse(result.output.contains("compiled JVM name is mangled"))
         assertFalse(result.output.contains("still lands in the API surface Java sources see"))
-        assertFalse(result.output.contains("nested Companion class"))
+        assertFalse(result.output.contains("nested `Companion` class"))
         assertFalse(result.output.contains("compile into the facade class"))
         assertFalse(result.output.contains("declares default parameter values"))
     }
@@ -159,6 +168,8 @@ class WatchdogProjectTest {
             extraBuildScript = """
                 apiWatchdog {
                     undocumentedPublicApi = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.NONE
+                    statefulClassWithoutEquals = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.NONE
+                    statefulClassWithoutHashCode = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.NONE
                     statefulClassWithoutToString = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.NONE
                 }
             """.trimIndent(),
@@ -171,7 +182,9 @@ class WatchdogProjectTest {
         result.assertDiagnosticReported("e: ", "can be subclassed outside the library without restriction")
         result.assertDiagnosticReported("e: ", "can be matched exhaustively by users")
         // ...while the disabled ones are not reported at all.
-        assertFalse(result.output.contains("has no KDoc"))
+        assertFalse(result.output.contains("has no `KDoc`"))
+        assertFalse(result.output.contains("neither declares nor inherits an `equals`"))
+        assertFalse(result.output.contains("neither declares nor inherits a `hashCode`"))
         assertFalse(result.output.contains("neither declares nor inherits a `toString`"))
     }
 
@@ -216,20 +229,22 @@ class WatchdogProjectTest {
         val result = build(project.rootDir, "build")
         assertFalse(result.output.contains("can be subclassed outside the library"))
         assertFalse(result.output.contains("can be matched exhaustively by users"))
-        assertFalse(result.output.contains("has no KDoc"))
+        assertFalse(result.output.contains("has no `KDoc`"))
         assertFalse(result.output.contains("abbreviates a function type"))
         assertFalse(result.output.contains("bakes its constructor property list"))
+        assertFalse(result.output.contains("neither declares nor inherits an `equals`"))
+        assertFalse(result.output.contains("neither declares nor inherits a `hashCode`"))
         assertFalse(result.output.contains("neither declares nor inherits a `toString`"))
         assertFalse(result.output.contains("exposes the mutable collection type"))
         assertFalse(result.output.contains("exposes the tuple type"))
-        assertFalse(result.output.contains("takes the Boolean parameter"))
-        assertFalse(result.output.contains("exposes a nullable Boolean"))
+        assertFalse(result.output.contains("takes the `Boolean` parameter"))
+        assertFalse(result.output.contains("exposes a nullable `Boolean`"))
         assertFalse(result.output.contains("is required but declared after an optional parameter"))
         assertFalse(result.output.contains("appear in the opposite order in another overload"))
-        assertFalse(result.output.contains("does more than delegate to a non-inline function"))
+        assertFalse(result.output.contains("does more than delegate to a function without the `inline` modifier"))
         assertFalse(result.output.contains("compiled JVM name is mangled"))
         assertFalse(result.output.contains("still lands in the API surface Java sources see"))
-        assertFalse(result.output.contains("nested Companion class"))
+        assertFalse(result.output.contains("nested `Companion` class"))
         assertFalse(result.output.contains("compile into the facade class"))
         assertFalse(result.output.contains("declares default parameter values"))
         assertFalse(result.output.contains("DSL marker"))
@@ -244,20 +259,22 @@ class WatchdogProjectTest {
         val result = build(project.rootDir, "build")
         assertFalse(result.output.contains("can be subclassed outside the library"))
         assertFalse(result.output.contains("can be matched exhaustively by users"))
-        assertFalse(result.output.contains("has no KDoc"))
+        assertFalse(result.output.contains("has no `KDoc`"))
         assertFalse(result.output.contains("abbreviates a function type"))
         assertFalse(result.output.contains("bakes its constructor property list"))
+        assertFalse(result.output.contains("neither declares nor inherits an `equals`"))
+        assertFalse(result.output.contains("neither declares nor inherits a `hashCode`"))
         assertFalse(result.output.contains("neither declares nor inherits a `toString`"))
         assertFalse(result.output.contains("exposes the mutable collection type"))
         assertFalse(result.output.contains("exposes the tuple type"))
-        assertFalse(result.output.contains("takes the Boolean parameter"))
-        assertFalse(result.output.contains("exposes a nullable Boolean"))
+        assertFalse(result.output.contains("takes the `Boolean` parameter"))
+        assertFalse(result.output.contains("exposes a nullable `Boolean`"))
         assertFalse(result.output.contains("is required but declared after an optional parameter"))
         assertFalse(result.output.contains("appear in the opposite order in another overload"))
-        assertFalse(result.output.contains("does more than delegate to a non-inline function"))
+        assertFalse(result.output.contains("does more than delegate to a function without the `inline` modifier"))
         assertFalse(result.output.contains("compiled JVM name is mangled"))
         assertFalse(result.output.contains("still lands in the API surface Java sources see"))
-        assertFalse(result.output.contains("nested Companion class"))
+        assertFalse(result.output.contains("nested `Companion` class"))
         assertFalse(result.output.contains("compile into the facade class"))
         assertFalse(result.output.contains("declares default parameter values"))
         assertFalse(result.output.contains("DSL marker"))
@@ -359,7 +376,7 @@ class WatchdogProjectTest {
 
         val result = buildAndFail(project.rootDir, "build")
         // The unmarked control declaration proves the checks ran in the consuming module...
-        result.assertDiagnosticReported("e: ", "'WatchedClass' is part of the public API but has no KDoc")
+        result.assertDiagnosticReported("e: ", "`WatchedClass` is part of the public API but has no `KDoc`")
         // ...while declarations marked with the dependency's marker annotation are exempt.
         assertFalse(result.output.contains("InternalOpenClass"))
         assertFalse(result.output.contains("memberOfInternal"))
@@ -368,6 +385,122 @@ class WatchdogProjectTest {
         assertFalse(result.output.contains("internalFunction"))
         assertFalse(result.output.contains("can be subclassed outside the library"))
         assertFalse(result.output.contains("can be matched exhaustively by users"))
+    }
+
+    @Test
+    fun publicTypeFromImplementationDependencyIsAnError() {
+        val project = object : WatchdogProject() {
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+                    dependencies(implementation(":model"))
+                }
+                subproject("model") {
+                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
+                }
+            }
+        }.gradleProject
+
+        val result = buildAndFail(project.rootDir, "build")
+        result.assertDiagnosticReported(
+            "e: ",
+            "publicly exposes `test.model.ExternalModel`, but the dependency providing that type " +
+                    "is not published transitively",
+        )
+        result.assertDiagnosticReported("e: ", "The type alias `ExternalModels` publicly exposes")
+        result.assertDiagnosticReported("e: ", "The supertype of `Consumer` publicly exposes")
+        result.assertDiagnosticReported("e: ", "The function receiver `acceptModels` publicly exposes")
+        result.assertDiagnosticReported("e: ", "The parameter `models` publicly exposes")
+    }
+
+    @Test
+    fun publicTypeFromApiDependencyIsAccepted() {
+        val project = object : WatchdogProject() {
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+                    dependencies(api(":model"))
+                }
+                subproject("model") {
+                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
+                }
+            }
+        }.gradleProject
+
+        val result = build(project.rootDir, "build")
+        assertFalse(result.output.contains("not published transitively to consumers"))
+    }
+
+    @Test
+    fun publicJavaTypeFromImplementationDependencyIsAnError() {
+        val project = object : WatchdogProject() {
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(exposesJavaDependencyTypeFile, "JavaConsumer", "test.consumer"))
+                    dependencies(implementation(":javaModel"))
+                }
+                subproject("javaModel") {
+                    sources(
+                        Source.java(javaDependencyTypeFile)
+                            .withPath("test/model", "ExternalJavaModel")
+                            .build(),
+                    )
+                }
+            }
+        }.gradleProject
+
+        val result = buildAndFail(project.rootDir, "build")
+        result.assertDiagnosticReported(
+            "e: ",
+            "publicly exposes `test.model.ExternalJavaModel`, but the dependency providing that type " +
+                    "is not published transitively",
+        )
+    }
+
+    @Test
+    fun publicJavaTypeFromApiDependencyIsAccepted() {
+        val project = object : WatchdogProject() {
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(exposesJavaDependencyTypeFile, "JavaConsumer", "test.consumer"))
+                    dependencies(api(":javaModel"))
+                }
+                subproject("javaModel") {
+                    sources(
+                        Source.java(javaDependencyTypeFile)
+                            .withPath("test/model", "ExternalJavaModel")
+                            .build(),
+                    )
+                }
+            }
+        }.gradleProject
+
+        val result = build(project.rootDir, "build")
+        assertFalse(result.output.contains("not published transitively to consumers"))
+    }
+
+    @Test
+    fun publicDependencyExposureCheckCanOnlyBeDisabledAsAWhole() {
+        val project = object : WatchdogProject(
+            extraBuildScript = """
+                apiWatchdog {
+                    publicTypesMustBeTransitiveDependencies = false
+                }
+            """.trimIndent(),
+        ) {
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+                    dependencies(implementation(":model"))
+                }
+                subproject("model") {
+                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
+                }
+            }
+        }.gradleProject
+
+        val result = build(project.rootDir, "build")
+        assertFalse(result.output.contains("not published transitively to consumers"))
     }
 
     @Test
@@ -413,86 +546,6 @@ class WatchdogProjectTest {
             "-Porg.jetbrains.kotlinx.libs.api.watchdog.suppressExplicitApiWarning=true",
         )
         assertFalse(result.output.contains("doesn't enable explicit API mode"))
-    }
-
-    @Test
-    fun suggestsTapmocWhenItIsNotApplied() {
-        // The suggestion is logged during configuration, so `help` is enough to observe it.
-        val project = WatchdogProject().gradleProject
-
-        val result = build(project.rootDir, "help")
-        assertTrue(result.output.contains("applies libs-api-watchdog but not Tapmoc"))
-        assertTrue(result.output.contains("""id("com.gradleup.tapmoc") version "<version>""""))
-        assertTrue(result.output.contains("https://github.com/GradleUp/Tapmoc/releases/latest"))
-        assertTrue(result.output.contains("https://gradleup.com/tapmoc/"))
-        assertTrue(result.output.contains("suggestTapmoc = false"))
-    }
-
-    @Test
-    fun tapmocSuggestionCanBeDisabled() {
-        val project = WatchdogProject(
-            extraBuildScript = """
-                apiWatchdog {
-                    suggestTapmoc = false
-                }
-            """.trimIndent(),
-        ).gradleProject
-
-        val result = build(project.rootDir, "help")
-        assertFalse(result.output.contains("applies libs-api-watchdog but not Tapmoc"))
-    }
-
-    @Test
-    fun tapmocSuggestionIsSilentWhenTapmocIsApplied() {
-        // A buildSrc stand-in registers the real Tapmoc plugin id, so the check sees the plugin
-        // as applied without the test fetching the actual artifact.
-        val project = object : WatchdogProject(
-            extraBuildScript = """apply(plugin = "com.gradleup.tapmoc")""",
-        ) {
-            override fun buildGradleProject(): GradleProject =
-                newGradleProjectBuilder(GradleProject.DslKind.KOTLIN)
-                    .withRootProject {
-                        withBuildScript { applyDefaultBuildScript() }
-                        withDevKitSettings()
-                    }
-                    .withBuildSrc {
-                        withBuildScript {
-                            plugins(Plugin("java-gradle-plugin"))
-                            withKotlin(
-                                """
-                                    gradlePlugin {
-                                        plugins {
-                                            create("fakeTapmoc") {
-                                                id = "com.gradleup.tapmoc"
-                                                implementationClass = "test.FakeTapmocPlugin"
-                                            }
-                                        }
-                                    }
-                                """.trimIndent()
-                            )
-                        }
-                        sources.add(
-                            Source.java(
-                                """
-                                    package test;
-
-                                    import org.gradle.api.Plugin;
-                                    import org.gradle.api.Project;
-                                    import org.jspecify.annotations.NonNull;
-
-                                    public class FakeTapmocPlugin implements Plugin<Project> {
-                                        @Override
-                                        public void apply(@NonNull Project project) {}
-                                    }
-                                """.trimIndent()
-                            ).withPath("test", "FakeTapmocPlugin").build()
-                        )
-                    }
-                    .write()
-        }.gradleProject
-
-        val result = build(project.rootDir, "help")
-        assertFalse(result.output.contains("applies libs-api-watchdog but not Tapmoc"))
     }
 
     @Test
@@ -621,8 +674,8 @@ class WatchdogProjectTest {
     /** Asserts nothing in [testOnlyFile] was reported by any checker. */
     private fun BuildResult.assertNoTestSourceDiagnostics() {
         assertFalse(output.contains("can be subclassed outside the library"))
-        assertFalse(output.contains("has no KDoc"))
-        assertFalse(output.contains("exposes a nullable Boolean"))
+        assertFalse(output.contains("has no `KDoc`"))
+        assertFalse(output.contains("exposes a nullable `Boolean`"))
         assertFalse(output.contains("exemption doesn't explain why it is applied"))
         assertFalse(output.contains("TestOnlyHelper"))
     }
@@ -634,6 +687,9 @@ class WatchdogProjectTest {
             "Expected a '$severityPrefix' line containing '$message' in build output:\n$output",
         )
     }
+
+    private fun ideaGenerateShortcut(): String =
+        if (System.getProperty("os.name").startsWith("Mac", ignoreCase = true)) "⌘N" else "Alt+Insert"
 }
 
 /** A main-source declaration no checker has anything to say about. */
@@ -803,6 +859,55 @@ private val markerConsumerFile = """
     public class WatchedClass
 """.trimIndent()
 
+@Suppress("RedundantVisibilityModifier")
+@Language("kotlin")
+private val dependencyTypeFile = """
+    /** A model supplied by another module. */
+    public class ExternalModel
+
+    /** A contract supplied by another module. */
+    @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
+    public interface ExternalContract
+""".trimIndent()
+
+@Suppress("RedundantVisibilityModifier")
+@Language("kotlin")
+private val exposesDependencyTypeFile = """
+    import test.model.ExternalContract
+    import test.model.ExternalModel
+
+    /** A public alias whose nested type argument comes from a dependency. */
+    public typealias ExternalModels = List<ExternalModel>
+
+    /** A documented and otherwise settled API owner. */
+    public class Consumer : ExternalContract {
+        /** Returns a model whose class must be available to consumers. */
+        public fun model(): ExternalModel = ExternalModel()
+
+        /** Uses a dependency type as both a receiver and a nested parameter type. */
+        public fun ExternalModel.acceptModels(models: ExternalModels): ExternalModel = this
+    }
+""".trimIndent()
+
+@Language("java")
+private val javaDependencyTypeFile = """
+    package test.model;
+
+    public final class ExternalJavaModel {}
+""".trimIndent()
+
+@Suppress("RedundantVisibilityModifier")
+@Language("kotlin")
+private val exposesJavaDependencyTypeFile = """
+    import test.model.ExternalJavaModel
+
+    /** A documented and otherwise settled API owner. */
+    public class JavaConsumer {
+        /** Returns a Java model whose class must be available to consumers. */
+        public fun model(): ExternalJavaModel = ExternalJavaModel()
+    }
+""".trimIndent()
+
 @Suppress("RedundantVisibilityModifier", "RedundantSuspendModifier", "MayBeConstant")
 @Language("kotlin")
 private val acknowledgedFile = """
@@ -840,6 +945,8 @@ private val acknowledgedFile = """
      *
      * @param token the secret that must not leak into logs.
      */
+    @IntentionallyWithoutEquals(reason = ExemptionReason.API_DESIGN)
+    @IntentionallyWithoutHashCode(reason = ExemptionReason.API_DESIGN)
     @IntentionallyWithoutToString(reason = ExemptionReason.API_DESIGN, description = "The token must not leak into logs.")
     public class OpaqueCredentials(public val token: String)
 

@@ -44,6 +44,9 @@ using the `IGNORE_JAVA_INTEROP` reason and a description of why this declaration
 callers:
 
 ```kotlin
+@file:JvmName("Refresh")
+
+/** Fetches the latest value. */
 @IntentionallyKotlinOnlyApi(
     reason = ExemptionReason.IGNORE_JAVA_INTEROP,
     description = "Coroutine-only API," +

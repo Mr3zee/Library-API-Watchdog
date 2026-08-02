@@ -15,6 +15,9 @@ Flags return types, property types, value parameter types (constructors included
 parameter types, and type parameter bounds that mention `Boolean?`.
 
 ```kotlin
+@file:JvmName("Probes")
+
+/** Returns whether the service is ready, or null before the first health check. */
 // !diag[/Boolean[?]/] NULLABLE_BOOLEAN_PUBLIC_API ["function","probe"]
 public fun probe(): Boolean? = null
 ```
@@ -31,8 +34,11 @@ learned from documentation. See the Kotlin library authors' guide on
 ### Don't
 
 ```kotlin
+@file:JvmName("Connections")
+
 // true, false, or... what does null mean here?
 //
+/** Returns the connection state. */
 // !diag[/Boolean[?]/] NULLABLE_BOOLEAN_PUBLIC_API ["function","connectionState"]
 public fun connectionState(): Boolean? = null
 ```
@@ -40,14 +46,36 @@ public fun connectionState(): Boolean? = null
 ### Do
 
 ```kotlin
-public enum class ConnectionState { CONNECTED, DISCONNECTED, UNKNOWN }
+@file:JvmName("Connections")
 
+// !collapse(1:2) collapsed details
+/** Whether a network transport is available. */
+@IntentionallyExhaustive(reason = ExemptionReason.API_DESIGN)
+public enum class ConnectionState {
+    /** An active transport can carry requests. */
+    CONNECTED,
+
+    /** No transport is currently available. */
+    DISCONNECTED,
+
+    /** The transport has not reported its state yet. */
+    UNKNOWN,
+}
+
+/** Returns the connection state. */
 public fun connectionState(): ConnectionState = ConnectionState.UNKNOWN
 ```
 
 ### Don't {#dont-2}
 
 ```kotlin
+// !collapse(1:6) collapsed details
+/**
+ * Stores the selection state of a control.
+ *
+ * @property checked whether the control is selected, or null before it is initialized.
+ */
+@Poko
 // !diag[/Boolean[?]/] NULLABLE_BOOLEAN_PUBLIC_API ["property","checked"]
 public class Holder(public val checked: Boolean?)
 ```
@@ -55,8 +83,27 @@ public class Holder(public val checked: Boolean?)
 ### Do {#do-2}
 
 ```kotlin
-public enum class CheckState { CHECKED, UNCHECKED, UNKNOWN }
+// !collapse(1:2) collapsed details
+/** Selection state of a control. */
+@IntentionallyExhaustive(reason = ExemptionReason.API_DESIGN)
+public enum class CheckState {
+    /** The control is selected. */
+    CHECKED,
 
+    /** The control is not selected. */
+    UNCHECKED,
+
+    /** The control has not been initialized. */
+    UNKNOWN,
+}
+
+// !collapse(1:6) collapsed details
+/**
+ * Stores the selection state of a control.
+ *
+ * @property checked current selection state.
+ */
+@Poko
 public class Holder(public val checked: CheckState)
 ```
 
@@ -77,6 +124,9 @@ Use `@IntentionallyNullableBoolean` when the nullable Boolean is a deliberate pa
 contract.
 
 ```kotlin
+@file:JvmName("Probes")
+
+/** Performs a deliberately three-state legacy probe. */
 @IntentionallyNullableBoolean(reason = ExemptionReason.API_DESIGN)
 public fun legacyProbe(): Boolean? = null
 ```

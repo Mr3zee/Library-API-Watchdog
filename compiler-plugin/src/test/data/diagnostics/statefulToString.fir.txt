@@ -86,29 +86,67 @@ FILE: statefulToString.kt
         }
 
     }
-    public open class RenderedBase : R|kotlin/Any| {
-        public constructor(id: R|kotlin/Int|): R|foo/bar/RenderedBase| {
+    public final class WithEquality : R|kotlin/Any| {
+        public constructor(id: R|kotlin/Int|): R|foo/bar/WithEquality| {
             super<R|kotlin/Any|>()
         }
 
         public final val id: R|kotlin/Int| = R|<local>/id|
             public get(): R|kotlin/Int|
 
-        public open override fun toString(): R|kotlin/String| {
-            ^toString <strcat>(String(RenderedBase(id=), this@R|foo/bar/RenderedBase|.R|foo/bar/RenderedBase.id|, String()))
+        public open override operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean| {
+            ^equals (R|<local>/other| is R|foo/bar/WithEquality|) && ==(this@R|foo/bar/WithEquality|.R|foo/bar/WithEquality.id|, R|<local>/other|.R|foo/bar/WithEquality.id|)
+        }
+
+        public open override fun hashCode(): R|kotlin/Int| {
+            ^hashCode this@R|foo/bar/WithEquality|.R|foo/bar/WithEquality.id|
         }
 
     }
-    public final class RenderedDerived : R|foo/bar/RenderedBase| {
-        public constructor(id: R|kotlin/Int|, extra: R|kotlin/Int|): R|foo/bar/RenderedDerived| {
-            super<R|foo/bar/RenderedBase|>(R|<local>/id|)
+    public final class EqualsOverload : R|kotlin/Any| {
+        public constructor(id: R|kotlin/Int|): R|foo/bar/EqualsOverload| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val id: R|kotlin/Int| = R|<local>/id|
+            public get(): R|kotlin/Int|
+
+        public final fun equals(other: R|kotlin/String|): R|kotlin/Boolean| {
+            ^equals ==(this@R|foo/bar/EqualsOverload|.R|foo/bar/EqualsOverload.id|.R|kotlin/Int.toString|(), R|<local>/other|)
+        }
+
+    }
+    public open class GeneratedBase : R|kotlin/Any| {
+        public constructor(id: R|kotlin/Int|): R|foo/bar/GeneratedBase| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val id: R|kotlin/Int| = R|<local>/id|
+            public get(): R|kotlin/Int|
+
+        public open override operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean| {
+            ^equals (R|<local>/other| is R|foo/bar/GeneratedBase|) && ==(this@R|foo/bar/GeneratedBase|.R|foo/bar/GeneratedBase.id|, R|<local>/other|.R|foo/bar/GeneratedBase.id|)
+        }
+
+        public open override fun hashCode(): R|kotlin/Int| {
+            ^hashCode this@R|foo/bar/GeneratedBase|.R|foo/bar/GeneratedBase.id|
+        }
+
+        public open override fun toString(): R|kotlin/String| {
+            ^toString <strcat>(String(GeneratedBase(id=), this@R|foo/bar/GeneratedBase|.R|foo/bar/GeneratedBase.id|, String()))
+        }
+
+    }
+    public final class GeneratedDerived : R|foo/bar/GeneratedBase| {
+        public constructor(id: R|kotlin/Int|, extra: R|kotlin/Int|): R|foo/bar/GeneratedDerived| {
+            super<R|foo/bar/GeneratedBase|>(R|<local>/id|)
         }
 
         public final val extra: R|kotlin/Int| = R|<local>/extra|
             public get(): R|kotlin/Int|
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutToString|() public final class MarkedOpaque : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutEquals|() @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutHashCode|() @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutToString|() public final class MarkedOpaque : R|kotlin/Any| {
         public constructor(secret: R|kotlin/String|): R|foo/bar/MarkedOpaque| {
             super<R|kotlin/Any|>()
         }

@@ -16,9 +16,13 @@ The check flags every public or protected `enum class`, `sealed class`, and `sea
 declaration.
 
 ```kotlin
+/** Whether the service can accept requests. */
 // !diag[/Status/] EXHAUSTIVE_PUBLIC_API ["enum class","Status","an entry"]
 public enum class Status {
+    /** The service is ready to accept requests. */
     ACTIVE,
+
+    /** The service rejects requests until it is reactivated. */
     INACTIVE,
 }
 ```
@@ -35,19 +39,28 @@ library author did not think of as breaking. See the
 ### Don't
 
 ```kotlin
+/** Severity assigned to a log record. */
 // !diag[/LogLevel/] EXHAUSTIVE_PUBLIC_API ["enum class","LogLevel","an entry"]
 public enum class LogLevel {
+    /** Fine-grained information used to diagnose behavior. */
     DEBUG,
+
+    /** Routine progress and state changes. */
     INFO,
+
+    /** A failure that prevented an operation from completing. */
     ERROR,
 }
 ```
 
 ```kotlin
+/** A change in the service lifecycle. */
 // !diag[/Event/] EXHAUSTIVE_PUBLIC_API ["interface","Event","a subtype"]
 public sealed interface Event {
+    /** Emitted after the service becomes ready. */
     public class Started : Event
 
+    /** Emitted after the service finishes shutting down. */
     public class Stopped : Event
 }
 ```
@@ -55,18 +68,34 @@ public sealed interface Event {
 ### Do
 
 ```kotlin
+/** A logging level that can grow without breaking exhaustive matches. */
 public class LogLevel {
+    /** Named logging levels. */
     public companion object {
-        public val DEBUG = LogLevel()
-        public val INFO = LogLevel()
-        public val ERROR = LogLevel()
+        // !collapse(1:2) collapsed details
+        /** Fine-grained information used to diagnose behavior. */
+        @JvmField
+        public val DEBUG: LogLevel = LogLevel()
+
+        // !collapse(1:2) collapsed details
+        /** Routine progress and state changes. */
+        @JvmField
+        public val INFO: LogLevel = LogLevel()
+
+        // !collapse(1:2) collapsed details
+        /** A failure that prevented an operation from completing. */
+        @JvmField
+        public val ERROR: LogLevel = LogLevel()
     }
 }
 
+/** A lifecycle event implemented under an opt-in contract. */
 @SubclassOptInRequired(InternalMyLibrarySubclassApi::class)
 public interface Event {
+    /** Emitted after the service becomes ready. */
     public class Started : Event
 
+    /** Emitted after the service finishes shutting down. */
     public class Stopped : Event
 }
 ```
@@ -83,11 +112,19 @@ Apply `@IntentionallyExhaustive` on the enum or sealed class/interface, for exam
 set of entries, or subtypes is a deliberate, stable part of the contract:
 
 ```kotlin
+/** A cardinal direction. */
 @IntentionallyExhaustive(reason = ExemptionReason.API_DESIGN)
 public enum class Direction {
+    /** Points toward increasing latitude. */
     NORTH,
+
+    /** Points toward decreasing latitude. */
     SOUTH,
+
+    /** Points toward increasing longitude. */
     EAST,
+
+    /** Points toward decreasing longitude. */
     WEST,
 }
 ```

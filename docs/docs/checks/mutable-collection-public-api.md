@@ -19,9 +19,13 @@ a mutable collection type: any of the `kotlin.collections` mutable interfaces (`
 too, so a mutable type nested in an otherwise read-only container still counts:
 
 ```kotlin
+@file:JvmName("Collections")
+
+/** Returns a caller-owned list of pending job names. */
 // !diag[/MutableList<String>/] MUTABLE_COLLECTION_PUBLIC_API ["function","produce","MutableList"]
 public fun produce(): MutableList<String> = mutableListOf()
 
+/** Returns batches that callers may edit in place. */
 // !diag[/List<MutableList<Int>>/] MUTABLE_COLLECTION_PUBLIC_API ["function","nested","MutableList"]
 public fun nested(): List<MutableList<Int>> = emptyList()
 ```
@@ -38,6 +42,13 @@ behavioral change for users that relied on mutating the exposed instance. See th
 ### Don't
 
 ```kotlin
+// !collapse(1:6) collapsed details
+/**
+ * Exposes the values scheduled for processing.
+ *
+ * @property items live collection of scheduled values.
+ */
+@Poko
 // !diag[/MutableList<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["property","items","MutableList"]
 public class Holder(public val items: MutableList<Int>)
 ```
@@ -45,7 +56,14 @@ public class Holder(public val items: MutableList<Int>)
 ### Do
 
 ```kotlin
-public class Holder(items: MutableList<Int>) {
+// !collapse(1:6) collapsed details
+/**
+ * Captures the values scheduled at construction time.
+ *
+ * @property items immutable snapshot of the scheduled values.
+ */
+@Poko
+public class Holder(items: List<Int>) {
     public val items: List<Int> = items.toList()
 }
 ```
@@ -53,6 +71,9 @@ public class Holder(items: MutableList<Int>) {
 ### Don't {#dont-2}
 
 ```kotlin
+@file:JvmName("Collections")
+
+/** Removes all scheduled item IDs from [items]. */
 // !diag[/MutableSet<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["parameter","items","MutableSet"]
 public fun consume(items: MutableSet<Int>) {
     items.clear()
@@ -62,6 +83,9 @@ public fun consume(items: MutableSet<Int>) {
 ### Do {#do-2}
 
 ```kotlin
+@file:JvmName("Collections")
+
+/** Reads scheduled item IDs from [items]. */
 public fun consume(items: Set<Int>) {
     // copy internally before mutating, if needed
 }
@@ -86,16 +110,23 @@ Use `@IntentionallyMutableCollection` when sharing the mutable collection is a d
 the API contract.
 
 ```kotlin
+@file:JvmName("Collections")
+
+/** Returns a deliberately shared registry. */
 @IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)
 public fun sharedRegistry(): MutableList<String> = mutableListOf()
 
+/** Adds a value to [target]. */
 public fun fill(
     @IntentionallyMutableCollection(
       reason = ExemptionReason.API_DESIGN,
     )
     target: MutableList<Int>,
-): Unit = target.add(1)
+) {
+    target.add(1)
+}
 
+/** Returns deliberately mutable snapshots. */
 @IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)
 public fun snapshots(): List<MutableList<Int>> = emptyList()
 ```

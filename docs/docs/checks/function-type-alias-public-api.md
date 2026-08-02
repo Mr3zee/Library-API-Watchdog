@@ -15,6 +15,7 @@ A public or protected type alias whose expanded type is a function type: plain, 
 nullable, or with a receiver.
 
 ```kotlin
+/** Receives completed work percentages. */
 // !diag[/Callback/] FUNCTION_TYPE_ALIAS_PUBLIC_API ["Callback"]
 public typealias Callback = (Int) -> Unit
 ```
@@ -32,6 +33,7 @@ add default members without breaking binary compatibility, or be extended from.
 ### Don't
 
 ```kotlin
+/** Receives completed work percentages. */
 // !diag[/Callback/] FUNCTION_TYPE_ALIAS_PUBLIC_API ["Callback"]
 public typealias Callback = (Int) -> Unit
 ```
@@ -39,7 +41,11 @@ public typealias Callback = (Int) -> Unit
 ### Do
 
 ```kotlin
+// !collapse(1:2) collapsed details
+/** Receives completed work percentages. */
+@IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public fun interface Callback {
+    /** Reports that [value] percent of the work is complete. */
     public fun onCall(value: Int): Unit
 }
 ```
@@ -47,6 +53,7 @@ public fun interface Callback {
 ### Don't {#dont-2}
 
 ```kotlin
+/** Represents an operation that may suspend. */
 // !diag[/SuspendAction/] FUNCTION_TYPE_ALIAS_PUBLIC_API ["SuspendAction"]
 public typealias SuspendAction = suspend () -> Unit
 ```
@@ -54,7 +61,11 @@ public typealias SuspendAction = suspend () -> Unit
 ### Do {#do-2}
 
 ```kotlin
+// !collapse(1:2) collapsed details
+/** Represents an operation that may suspend. */
+@IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public fun interface SuspendAction {
+    /** Executes the operation. */
     public suspend fun invoke(): Unit
 }
 ```
@@ -71,6 +82,7 @@ public fun interface SuspendAction {
 Apply `@IntentionallyFunctionTypeAlias` when exposing the bare function type is intended.
 
 ```kotlin
+/** Receives completed work percentages through a deliberately bare function shape. */
 @IntentionallyFunctionTypeAlias(reason = ExemptionReason.API_DESIGN)
 public typealias Callback = (Int) -> Unit
 ```

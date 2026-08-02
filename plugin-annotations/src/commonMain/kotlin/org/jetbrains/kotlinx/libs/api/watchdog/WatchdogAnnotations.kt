@@ -175,6 +175,50 @@ public annotation class IntentionallyDataClass(
 )
 
 /**
+ * Acknowledges that the annotated stateful class deliberately uses identity equality.
+ *
+ * The libs-api-watchdog compiler plugin warns about publicly visible stateful classes - classes
+ * with at least one property backed by a field - that neither declare nor inherit `equals`,
+ * because two instances holding the same meaningful state otherwise compare as different values.
+ * Apply this annotation to suppress the warning when identity equality is intended.
+ *
+ * See the [check documentation](https://mr3zee.github.io/libs-api-watchdog/checks/stateful-class-without-equals-hashcode-to-string) for rationale and examples.
+ *
+ * @param reason why the class deliberately has no `equals` implementation.
+ * @param description free-form explanation of the exemption. May be empty only when [reason]
+ *   explains the exemption on its own ([ExemptionReason.FOR_BACKWARDS_COMPATIBILITY],
+ *   [ExemptionReason.API_DESIGN]).
+ */
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.BINARY)
+public annotation class IntentionallyWithoutEquals(
+    val reason: ExemptionReason = ExemptionReason.OTHER,
+    val description: String = "",
+)
+
+/**
+ * Acknowledges that the annotated stateful class deliberately uses identity hashing.
+ *
+ * The libs-api-watchdog compiler plugin warns about publicly visible stateful classes - classes
+ * with at least one property backed by a field - that neither declare nor inherit `hashCode`,
+ * because hash-based collections otherwise organize instances by identity instead of meaningful
+ * state. Apply this annotation to suppress the warning when identity hashing is intended.
+ *
+ * See the [check documentation](https://mr3zee.github.io/libs-api-watchdog/checks/stateful-class-without-equals-hashcode-to-string) for rationale and examples.
+ *
+ * @param reason why the class deliberately has no `hashCode` implementation.
+ * @param description free-form explanation of the exemption. May be empty only when [reason]
+ *   explains the exemption on its own ([ExemptionReason.FOR_BACKWARDS_COMPATIBILITY],
+ *   [ExemptionReason.API_DESIGN]).
+ */
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.BINARY)
+public annotation class IntentionallyWithoutHashCode(
+    val reason: ExemptionReason = ExemptionReason.OTHER,
+    val description: String = "",
+)
+
+/**
  * Acknowledges that the annotated class deliberately provides no `toString` implementation.
  *
  * The libs-api-watchdog compiler plugin warns about publicly visible stateful classes - classes with
@@ -185,7 +229,7 @@ public annotation class IntentionallyDataClass(
  * when the opaque rendering is intended (for example, when the state is sensitive and must not
  * leak into logs).
  *
- * See the [check documentation](https://mr3zee.github.io/libs-api-watchdog/stateful-class-without-to-string.html) for rationale and examples.
+ * See the [check documentation](https://mr3zee.github.io/libs-api-watchdog/checks/stateful-class-without-equals-hashcode-to-string) for rationale and examples.
  *
  * @param reason why the class deliberately has no `toString`.
  * @param description free-form explanation of the exemption. May be empty only when [reason]

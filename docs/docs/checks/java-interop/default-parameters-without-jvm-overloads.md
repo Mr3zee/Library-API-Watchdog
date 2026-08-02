@@ -17,6 +17,9 @@ A public function or constructor that declares at least one default parameter va
 no `@JvmOverloads`.
 
 ```kotlin
+@file:JvmName("Connections")
+
+/** Connects to [host]. */
 // !diag[/connect/] DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS ["function","connect"]
 public fun connect(
     host: String,
@@ -40,6 +43,10 @@ later binary compatible for Kotlin callers either.
 ### Don't
 
 ```kotlin
+@file:JvmName("Connections")
+
+/** Connects to [host]. */
+// !diag[/connect/] DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS ["function","connect"]
 public fun connect(
     host: String,
     port: Int = 80,
@@ -50,6 +57,9 @@ public fun connect(
 ### Do
 
 ```kotlin
+@file:JvmName("Connections")
+
+/** Connects to [host]. */
 @JvmOverloads
 public fun connect(
     host: String,
@@ -61,6 +71,8 @@ public fun connect(
 ### Don't {#dont-2}
 
 ```kotlin
+/** A connection to [host]. */
+// !diag[/Connection/] DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS ["constructor","Connection"]
 public class Connection(
     host: String,
     port: Int = 80,
@@ -70,6 +82,7 @@ public class Connection(
 ### Do {#do-2}
 
 ```kotlin
+/** A connection to [host]. */
 public class Connection @JvmOverloads constructor(
     host: String,
     port: Int = 80,
@@ -96,6 +109,14 @@ the full signature only is intended, for example when the defaulted parameters m
 without Kotlin's named arguments:
 
 ```kotlin
+@file:JvmName("ConnectionDsl")
+
+// !collapse(1:3) collapsed
+// Supporting options type
+/** Options applied after connecting. */
+public class ConnectionConfig
+
+/** Connects to [host] and applies [options]. */
 @IntentionallyWithoutJvmOverloads(
     reason = ExemptionReason.IGNORE_JAVA_INTEROP,
     description = "Kotlin-only function. " +
@@ -105,7 +126,7 @@ public fun connectDsl(
     host: String,
     port: Int = 80,
     timeout: Int = 30,
-    builder: Connection.() -> Unit,
+    builder: ConnectionConfig.() -> Unit,
 ) { }
 ```
 

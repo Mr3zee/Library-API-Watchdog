@@ -48,6 +48,12 @@ public open class WatchdogGradleExtension(objectFactory: ObjectFactory) {
     /** Severity of `DATA_CLASS_PUBLIC_API`: data classes in the public API. */
     public val dataClassPublicApi: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
+    /** Severity of `STATEFUL_CLASS_WITHOUT_EQUALS`: stateful classes without an `equals` implementation. */
+    public val statefulClassWithoutEquals: Property<WatchdogSeverity> = objectFactory.severityProperty()
+
+    /** Severity of `STATEFUL_CLASS_WITHOUT_HASH_CODE`: stateful classes without a `hashCode` implementation. */
+    public val statefulClassWithoutHashCode: Property<WatchdogSeverity> = objectFactory.severityProperty()
+
     /** Severity of `STATEFUL_CLASS_WITHOUT_TO_STRING`: stateful classes without a `toString` implementation. */
     public val statefulClassWithoutToString: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
@@ -82,13 +88,13 @@ public open class WatchdogGradleExtension(objectFactory: ObjectFactory) {
     public val dslMarkerNoopTypePosition: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
     /**
-     * Whether to suggest applying the [Tapmoc](https://gradleup.com/tapmoc/) Gradle plugin
-     * (`com.gradleup.tapmoc`) when it is missing. Tapmoc pins the Java and Kotlin compatibility
-     * levels a library is built against - the complement of watching the API shape - so the
-     * plugin recommends it with a build warning. `true` by default; set to `false` to silence
-     * the suggestion.
+     * Whether public signatures may only expose types from dependencies published transitively
+     * to consumers. Enabled by default. Unlike design diagnostics, a violation is always an error
+     * and has no source exemption or warning severity; setting this Gradle property to `false` is
+     * the check's only off-switch.
      */
-    public val suggestTapmoc: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(true)
+    public val publicTypesMustBeTransitiveDependencies: Property<Boolean> =
+        objectFactory.property(Boolean::class.java).convention(true)
 
     /**
      * Whether to suggest enabling binary compatibility validation when neither the Kotlin Gradle
@@ -118,6 +124,8 @@ public open class WatchdogGradleExtension(objectFactory: ObjectFactory) {
         "UNDOCUMENTED_PUBLIC_API" to undocumentedPublicApi,
         "FUNCTION_TYPE_ALIAS_PUBLIC_API" to functionTypeAliasPublicApi,
         "DATA_CLASS_PUBLIC_API" to dataClassPublicApi,
+        "STATEFUL_CLASS_WITHOUT_EQUALS" to statefulClassWithoutEquals,
+        "STATEFUL_CLASS_WITHOUT_HASH_CODE" to statefulClassWithoutHashCode,
         "STATEFUL_CLASS_WITHOUT_TO_STRING" to statefulClassWithoutToString,
         "MUTABLE_COLLECTION_PUBLIC_API" to mutableCollectionPublicApi,
         "PAIR_OR_TRIPLE_PUBLIC_API" to pairOrTriplePublicApi,

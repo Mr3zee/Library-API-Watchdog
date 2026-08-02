@@ -62,6 +62,8 @@ internal object ExemptionRegistry {
         "EXHAUSTIVE_PUBLIC_API" to fixable("IntentionallyExhaustive", TargetStrategy.ENCLOSING_CLASS),
         "FUNCTION_TYPE_ALIAS_PUBLIC_API" to fixable("IntentionallyFunctionTypeAlias", TargetStrategy.REPORTED_DECLARATION),
         "DATA_CLASS_PUBLIC_API" to fixable("IntentionallyDataClass", TargetStrategy.ENCLOSING_CLASS),
+        "STATEFUL_CLASS_WITHOUT_EQUALS" to fixable("IntentionallyWithoutEquals", TargetStrategy.ENCLOSING_CLASS),
+        "STATEFUL_CLASS_WITHOUT_HASH_CODE" to fixable("IntentionallyWithoutHashCode", TargetStrategy.ENCLOSING_CLASS),
         "STATEFUL_CLASS_WITHOUT_TO_STRING" to fixable("IntentionallyWithoutToString", TargetStrategy.ENCLOSING_CLASS),
         "MUTABLE_COLLECTION_PUBLIC_API" to fixable("IntentionallyMutableCollection", TargetStrategy.ENCLOSING_CALLABLE),
         "PAIR_OR_TRIPLE_PUBLIC_API" to fixable("IntentionallyPairOrTriple", TargetStrategy.ENCLOSING_CALLABLE),

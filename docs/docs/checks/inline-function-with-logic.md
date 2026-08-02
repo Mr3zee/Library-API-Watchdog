@@ -17,6 +17,9 @@ statement - besides an optional contract - that only performs simple operations 
 non-inline call:
 
 ```kotlin
+@file:JvmName("Numbers")
+
+/** Chooses a sign for [value]. */
 // !diag[/choose/] INLINE_FUNCTION_WITH_LOGIC ["inline function","choose"]
 public inline fun choose(value: Int): Int = if (value < 0) -1 else 1
 ```
@@ -35,9 +38,13 @@ authors' guide on
 ### Don't
 
 ```kotlin
+@file:JvmName("Values")
+
+/** Chooses a sign for [value]. */
 // !diag[/choose/] INLINE_FUNCTION_WITH_LOGIC ["inline function","choose"]
 public inline fun choose(value: Int): Int = if (value < 0) -1 else 1
 
+/** Returns the cached length of [tag]. */
 // !diag[/cachedLength/] INLINE_FUNCTION_WITH_LOGIC ["inline function","cachedLength"]
 public inline fun cachedLength(tag: String): Int {
     val cached = tag.length
@@ -48,8 +55,12 @@ public inline fun cachedLength(tag: String): Int {
 ### Do
 
 ```kotlin
+@file:JvmName("Values")
+
+/** Chooses a sign for [value]. */
 public inline fun choose(value: Int): Int = chooseImpl(value)
 
+/** Returns the cached length of [tag]. */
 public inline fun cachedLength(tag: String): Int =
     cachedLengthImpl(tag)
 
@@ -65,12 +76,17 @@ internal fun cachedLengthImpl(tag: String): Int = withCache {
 ### Don't {#dont-2}
 
 ```kotlin
+@file:JvmName("Arrays")
+
+// !collapse(1:6) collapsed
+// Supporting published state
 @PublishedApi
-internal val array1: Array<Int> = arrayOf()
+internal val array1: List<Int> = emptyList()
 
 @PublishedApi
-internal val array2: Array<Int> = arrayOf()
+internal val array2: List<Int> = emptyList()
 
+/** Returns the combined size of the arrays. */
 // !diag[/calculateArraysSize/] INLINE_FUNCTION_WITH_LOGIC ["inline getter","calculateArraysSize"]
 public inline val calculateArraysSize: Int
     get() {
@@ -81,6 +97,9 @@ public inline val calculateArraysSize: Int
 ### Do {#do-2}
 
 ```kotlin
+@file:JvmName("Arrays")
+
+/** Returns the combined size of the arrays. */
 public val calculateArraysSize: Int
     get() = calculateArraysSizeImpl()
 ```
@@ -88,7 +107,10 @@ public val calculateArraysSize: Int
 ### Don't {#dont-3}
 
 ```kotlin
-public inline fun <reified T> resolveFunctionsCount(): Int {
+// !collapse(1:2) collapsed details
+/** Returns the number of functions declared by [T]. */
+@JvmSynthetic
+public inline fun <reified T : Any> resolveFunctionsCount(): Int {
     return T::class.memberFunctions.size
 }
 ```
@@ -96,12 +118,17 @@ public inline fun <reified T> resolveFunctionsCount(): Int {
 ### Do {#do-3}
 
 ```kotlin
-@PublisedApi
-public fun <T> resolveFunctionsCountImpl(kClass: KClass<T>): Int {
+@file:JvmName("Reflection")
+
+@PublishedApi
+internal fun <T : Any> resolveFunctionsCountImpl(kClass: KClass<T>): Int {
     return kClass.memberFunctions.size
 }
 
-public inline fun <reified T> resolveFunctionsCount(): Int {
+// !collapse(1:2) collapsed details
+/** Returns the number of functions declared by [T]. */
+@JvmSynthetic
+public inline fun <reified T : Any> resolveFunctionsCount(): Int {
     return resolveFunctionsCountImpl(T::class)
 }
 ```
@@ -120,6 +147,9 @@ Apply `@IntentionallyInlinedLogic` when inlining the logic is intended, for exam
 must run inline for non-local returns or a hot path must not pay for an extra call:
 
 ```kotlin
+@file:JvmName("Numbers")
+
+/** Clamps [value] at zero. */
 @IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)
 public inline fun clamped(value: Int): Int =
     if (value < 0) 0 else value

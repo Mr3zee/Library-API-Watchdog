@@ -17,10 +17,10 @@ Kotlin files with top-level properties or functions that can be called from Java
 
 The diagnostic fires once per file, anchored on the first public top-level function or property.
 
-```kotlin
-// Network.kt
+```kotlin Network.kt
 package com.example
 
+/** Connects to the network. */
 // !diag[/connect/] TOP_LEVEL_API_WITHOUT_JVM_NAME ["NetworkKt"]
 public fun connect(): Int = 0
 ```
@@ -36,27 +36,32 @@ for how top-level declarations actually compile.
 
 ### Don't
 
-```kotlin
-// Network.kt
+```kotlin Network.kt
 package com.example
 
 // Facade class NetworkKt
 // renaming this file to NetworkClient.kt breaks every Java caller.
+/** Connects to the network. */
+// !diag[/connect/] TOP_LEVEL_API_WITHOUT_JVM_NAME ["NetworkKt"]
 public fun connect(): Int = 0
+
+/** Disconnects from the network. */
 public fun disconnect(): Int = 0
 ```
 
 ### Do
 
-```kotlin
-// Network.kt
+```kotlin Network.kt
 @file:JvmName("Network")
 
 package com.example
 
 // Java callers write Network.connect(),
 // the file can be renamed freely.
+/** Connects to the network. */
 public fun connect(): Int = 0
+
+/** Disconnects from the network. */
 public fun disconnect(): Int = 0
 ```
 
@@ -82,6 +87,7 @@ package com.example
 import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason
 import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyDefaultFacadeName
 
+/** A legacy entry point tied to the default facade name. */
 public fun legacyEntryPoint(): Int = 0
 ```
 

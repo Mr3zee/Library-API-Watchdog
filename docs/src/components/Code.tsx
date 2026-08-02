@@ -1,9 +1,23 @@
-import React, {type ReactNode} from 'react';
+import React, {useCallback, useEffect, useRef, useState, type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
+import * as Collapsible from '@radix-ui/react-collapsible';
 import * as Tooltip from '@radix-ui/react-tooltip';
-import {Pre, type AnnotationHandler, type CodeAnnotation, type HighlightedCode} from 'codehike/code';
+import clsx from 'clsx';
+import {
+  InnerLine,
+  InnerPre,
+  Pre,
+  type AnnotationHandler,
+  type BlockAnnotation,
+  type CodeAnnotation,
+  type CustomPreProps,
+  type HighlightedCode,
+} from 'codehike/code';
 import Markdown from 'react-markdown';
+import IconCopy from '@theme/Icon/Copy';
+import IconSuccess from '@theme/Icon/Success';
 import registry from '../../../diagnostics.json';
+import {KeyboardShortcut, useIdeaGenerateShortcut} from './KeyboardShortcut';
 import styles from './Code.module.css';
 
 /**
@@ -11,14 +25,168 @@ import styles from './Code.module.css';
  * from the remark plugins configured in docusaurus.config.ts.
  */
 export default function Code({codeblock}: {codeblock: HighlightedCode}): ReactNode {
+  const pre = (
+    <Pre
+      className={clsx(styles.pre, codeblock.meta && styles.namedPre)}
+      code={mergeDiagnosticsOnTheSameRange(codeblock)}
+      handlers={[
+        createCopyButton(codeblock.code),
+        collapseRoot,
+        collapseTrigger,
+        collapseContent,
+        diagnostics,
+      ]}
+    />
+  );
+
+  if (!codeblock.meta) {
+    return (
+      <Tooltip.Provider delayDuration={250} skipDelayDuration={100}>
+        {pre}
+      </Tooltip.Provider>
+    );
+  }
+
   return (
-    <Tooltip.Provider delayDuration={250} skipDelayDuration={100}>
-      <Pre className={styles.pre} code={mergeDiagnosticsOnTheSameRange(codeblock)} handlers={[diagnostics]} />
-    </Tooltip.Provider>
+    <div className={styles.namedCodeBlock}>
+      <div className={styles.filename}>{codeblock.meta}</div>
+      <Tooltip.Provider delayDuration={250} skipDelayDuration={100}>
+        {pre}
+      </Tooltip.Provider>
+    </div>
   );
 }
 
 const byName = new Map(registry.diagnostics.map((diagnostic) => [diagnostic.name, diagnostic]));
+
+function createCopyButton(copyText: string): AnnotationHandler {
+  return {
+    name: 'copy-button',
+    Pre: (props) => <CopyablePre {...props} copyText={copyText} />,
+  };
+}
+
+function CopyablePre({copyText, ...props}: CustomPreProps & {copyText: string}): ReactNode {
+  const timeoutRef = useRef<number | undefined>(undefined);
+  const [isCopied, setIsCopied] = useState(false);
+
+  useEffect(() => () => window.clearTimeout(timeoutRef.current), []);
+
+  const copyCode = useCallback(async () => {
+    if (!copyText || !(await copyToClipboard(copyText))) return;
+
+    window.clearTimeout(timeoutRef.current);
+    setIsCopied(true);
+    timeoutRef.current = window.setTimeout(() => setIsCopied(false), 1000);
+  }, [copyText]);
+
+  return (
+    <div className={styles.codeBlock}>
+      <InnerPre merge={props} />
+      <button
+        aria-label={isCopied ? 'Copied' : 'Copy code to clipboard'}
+        className={clsx('clean-btn', styles.copyButton, isCopied && styles.copyButtonCopied)}
+        onClick={copyCode}
+        title="Copy"
+        type="button"
+      >
+        <span className={styles.copyButtonIcons} aria-hidden="true">
+          <IconCopy className={styles.copyButtonIcon} />
+          <IconSuccess className={styles.copyButtonSuccessIcon} />
+        </span>
+      </button>
+    </div>
+  );
+}
+
+async function copyToClipboard(text: string): Promise<boolean> {
+  if (navigator.clipboard) {
+    await navigator.clipboard.writeText(text);
+    return true;
+  }
+
+  const {default: copy} = await import('copy-text-to-clipboard');
+  return copy(text);
+}
+
+const COLLAPSED = 'collapsed';
+const collapsedPlaceholders = new Map([
+  ['collapsed kdoc', '/** KDoc */'],
+  ['collapsed setup', '// Supporting file setup'],
+  ['collapsed details', '// Supporting details'],
+]);
+
+/**
+ * Implements Code Hike's collapse annotation. Regular ranges keep their first line visible as the
+ * trigger. KDoc ranges get a compact synthetic trigger so even a one-line KDoc can be hidden.
+ */
+const collapseRoot: AnnotationHandler = {
+  name: 'collapse',
+  transform: (annotation: BlockAnnotation) => {
+    if (collapsedPlaceholders.has(annotation.query)) return annotation;
+
+    const {fromLineNumber} = annotation;
+    return [
+      annotation,
+      {
+        ...annotation,
+        fromLineNumber,
+        toLineNumber: fromLineNumber,
+        name: 'CollapseTrigger',
+      },
+      {
+        ...annotation,
+        fromLineNumber: fromLineNumber + 1,
+        name: 'CollapseContent',
+      },
+    ];
+  },
+  Block: ({annotation, children}) => {
+    const placeholder = collapsedPlaceholders.get(annotation.query);
+    return placeholder ? (
+      <Collapsible.Root defaultOpen={false}>
+        <Collapsible.Trigger className={styles.collapseTrigger}>
+          <span className={styles.codeLine}>
+            <span className={styles.collapseGutter}>{collapseIcon}</span>
+            <span className={styles.codeLineContent}>{placeholder}</span>
+          </span>
+        </Collapsible.Trigger>
+        <Collapsible.Content>{children}</Collapsible.Content>
+      </Collapsible.Root>
+    ) : (
+      <Collapsible.Root defaultOpen={annotation.query !== COLLAPSED}>{children}</Collapsible.Root>
+    );
+  },
+};
+
+const collapseIcon = (
+  <svg aria-hidden="true" className={styles.collapseIcon} fill="none" viewBox="0 0 16 16">
+    <path d="m4 6 4 4 4-4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const collapseTrigger: AnnotationHandler = {
+  name: 'CollapseTrigger',
+  onlyIfAnnotated: true,
+  AnnotatedLine: ({annotation: _, ...props}) => (
+    <Collapsible.Trigger className={styles.collapseTrigger}>
+      <InnerLine merge={props} data={{collapseIcon}} />
+    </Collapsible.Trigger>
+  ),
+  Line: (props) => (
+    <div className={styles.codeLine}>
+      <span className={styles.collapseGutter}>{props.data?.collapseIcon as ReactNode}</span>
+      <div className={styles.codeLineContent}>
+        <InnerLine merge={props} />
+      </div>
+    </div>
+  ),
+};
+
+const collapseContent: AnnotationHandler = {
+  name: 'CollapseContent',
+  Block: Collapsible.Content,
+};
 
 /**
  * Underlines the exact source range reported by the compiler and shows its diagnostics in an
@@ -69,11 +237,14 @@ const PARAMETER_REFERENCE = /^\$([A-Za-z][A-Za-z0-9]*)(?:\(([^()]*)\))?$/;
 
 function Diagnostic({report}: {report: DiagnosticReport}): ReactNode {
   const diagnostic = byName.get(report.name);
+  const ideaGenerateShortcut = useIdeaGenerateShortcut();
   // The remark plugin only produces names it found in the registry, so the fallback is only
   // reachable if the two ever get out of sync.
   if (!diagnostic) return <span className={styles.diagnosticName}>{report.name}</span>;
 
-  const parameters = report.parameters.map((parameter) => resolveParameter(diagnostic, parameter));
+  const parameters = report.parameters.map((parameter) =>
+    resolveParameter(diagnostic, parameter, ideaGenerateShortcut.label),
+  );
   const message = formatMessage(diagnostic.message, parameters);
   const trailer = 'messageTrailer' in diagnostic ? diagnostic.messageTrailer : undefined;
   return (
@@ -84,19 +255,40 @@ function Diagnostic({report}: {report: DiagnosticReport}): ReactNode {
       <div className={styles.diagnosticText}>
         <div className={styles.diagnosticTitle}>{diagnostic.title}</div>
         <div className={styles.diagnosticMessage}>
-          <Markdown>{trailer ? `${message} ${trailer}` : message}</Markdown>
+          <Markdown
+            components={{
+              code: ({children, ...props}) =>
+                String(children) === ideaGenerateShortcut.label ? (
+                  <KeyboardShortcut value={ideaGenerateShortcut} />
+                ) : (
+                  <code {...props}>{children}</code>
+                ),
+            }}
+          >
+            {trailer ? `${message} ${trailer}` : message}
+          </Markdown>
         </div>
-        <Link className={styles.diagnosticName} to={`/${diagnostic.docs}`}>
-          {report.name}
+        <Link
+          aria-label={`See more about ${diagnostic.title}`}
+          className={styles.diagnosticLink}
+          to={`/${diagnostic.docs}`}
+        >
+          See more
         </Link>
       </div>
     </div>
   );
 }
 
-function resolveParameter(diagnostic: DiagnosticDefinition, parameter: string): string {
+function resolveParameter(
+  diagnostic: DiagnosticDefinition,
+  parameter: string,
+  ideaGenerateShortcut: string,
+): string {
   const reference = parameter.match(PARAMETER_REFERENCE);
   if (!reference) return parameter;
+
+  if (reference[1] === 'ideaGenerateShortcut') return ideaGenerateShortcut;
 
   const values =
     'parameterValues' in diagnostic

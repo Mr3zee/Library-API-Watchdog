@@ -1,5 +1,6 @@
 package org.jetbrains.kotlinx.libs.api.watchdog
 
+import java.io.File
 import org.jetbrains.kotlin.compiler.plugin.AbstractCliOption
 import org.jetbrains.kotlin.compiler.plugin.CliOption
 import org.jetbrains.kotlin.compiler.plugin.CliOptionProcessingException
@@ -24,12 +25,28 @@ object WatchdogConfigurationKeys {
      */
     val DIAGNOSTICS_OUTPUT_FILE: CompilerConfigurationKey<String> =
         CompilerConfigurationKey.create("watchdog diagnostics output file")
+
+    /**
+     * The compilation classpath and the subset published transitively to consumers. These are
+     * supplied only by the Gradle plugin: without the build model the compiler cannot tell an
+     * `api` dependency from an `implementation` dependency.
+     */
+    val COMPILE_DEPENDENCY_PATHS: CompilerConfigurationKey<Set<String>> =
+        CompilerConfigurationKey.create("watchdog compile dependency paths")
+
+    val TRANSITIVE_DEPENDENCY_PATHS: CompilerConfigurationKey<Set<String>> =
+        CompilerConfigurationKey.create("watchdog transitive dependency paths")
 }
 
 class WatchdogCommandLineProcessor : DevKitCommandLineProcessor(WatchdogCLP::class) {
     override val pluginId: String = PluginInfo.PLUGIN_ID
     override val pluginOptions: Collection<CliOption> =
-        listOf(DIAGNOSTIC_SEVERITY_OPTION, DIAGNOSTICS_OUTPUT_FILE_OPTION)
+        listOf(
+            DIAGNOSTIC_SEVERITY_OPTION,
+            DIAGNOSTICS_OUTPUT_FILE_OPTION,
+            COMPILE_DEPENDENCY_PATHS_OPTION,
+            TRANSITIVE_DEPENDENCY_PATHS_OPTION,
+        )
 
     companion object {
         val DIAGNOSTIC_SEVERITY_OPTION: CliOption = CliOption(
@@ -52,6 +69,24 @@ class WatchdogCommandLineProcessor : DevKitCommandLineProcessor(WatchdogCLP::cla
             required = false,
             allowMultipleOccurrences = false,
         )
+
+        val COMPILE_DEPENDENCY_PATHS_OPTION: CliOption = dependencyPathsOption(
+            optionName = "compileDependencyPaths",
+            description = "Compilation dependency paths used by the public dependency exposure check.",
+        )
+
+        val TRANSITIVE_DEPENDENCY_PATHS_OPTION: CliOption = dependencyPathsOption(
+            optionName = "transitiveDependencyPaths",
+            description = "Dependency paths exposed transitively to consumers.",
+        )
+
+        private fun dependencyPathsOption(optionName: String, description: String): CliOption = CliOption(
+            optionName = optionName,
+            valueDescription = "<paths separated by the platform path separator>",
+            description = description,
+            required = false,
+            allowMultipleOccurrences = false,
+        )
     }
 }
 
@@ -66,9 +101,18 @@ class WatchdogCLP : DevKitCLP {
             WatchdogCommandLineProcessor.DIAGNOSTICS_OUTPUT_FILE_OPTION.optionName -> {
                 configuration.put(WatchdogConfigurationKeys.DIAGNOSTICS_OUTPUT_FILE, value)
             }
+            WatchdogCommandLineProcessor.COMPILE_DEPENDENCY_PATHS_OPTION.optionName -> {
+                configuration.put(WatchdogConfigurationKeys.COMPILE_DEPENDENCY_PATHS, parsePaths(value))
+            }
+            WatchdogCommandLineProcessor.TRANSITIVE_DEPENDENCY_PATHS_OPTION.optionName -> {
+                configuration.put(WatchdogConfigurationKeys.TRANSITIVE_DEPENDENCY_PATHS, parsePaths(value))
+            }
             else -> error("Unexpected config option: '${option.optionName}'")
         }
     }
+
+    private fun parsePaths(value: String): Set<String> =
+        value.split(File.pathSeparatorChar).filterTo(linkedSetOf(), String::isNotEmpty)
 
     private fun parseDiagnosticSeverity(value: String): Pair<String, WatchdogSeverity> {
         val diagnosticName = value.substringBefore(':')

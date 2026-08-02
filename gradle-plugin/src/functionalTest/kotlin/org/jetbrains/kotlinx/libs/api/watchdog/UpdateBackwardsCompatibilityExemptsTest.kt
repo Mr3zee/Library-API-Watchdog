@@ -36,7 +36,13 @@ class UpdateBackwardsCompatibilityExemptsTest {
         assertContains(fixedText, "@IntentionallyExhaustive($reason)\npublic enum class UnmarkedEnum")
         assertContains(fixedText, "@IntentionallyFunctionTypeAlias($reason)\npublic typealias UnacknowledgedCallback")
         assertContains(fixedText, "@IntentionallyDataClass($reason)\npublic data class UnmarkedData")
-        assertContains(fixedText, "@IntentionallyWithoutToString($reason)\npublic class UnrenderedSession")
+        assertContains(
+            fixedText,
+            "@IntentionallyWithoutEquals($reason)\n" +
+                    "@IntentionallyWithoutHashCode($reason)\n" +
+                    "@IntentionallyWithoutToString($reason)\n" +
+                    "public class UnrenderedSession",
+        )
         assertContains(fixedText, "@IntentionallyMutableCollection($reason)\npublic fun leakState()")
         assertContains(fixedText, "@IntentionallyPairOrTriple($reason)\npublic fun locateOrigin()")
         assertContains(fixedText, "@IntentionallyBooleanParameter($reason)\npublic fun toggleWork(enabled: Boolean)")
@@ -262,24 +268,26 @@ class UpdateBackwardsCompatibilityExemptsTest {
         val WATCHDOG_MESSAGES = listOf(
             "can be subclassed outside the library",
             "can be matched exhaustively by users",
-            "has no KDoc",
+            "has no `KDoc`",
             "abbreviates a function type",
             "bakes its constructor property list",
+            "neither declares nor inherits an `equals`",
+            "neither declares nor inherits a `hashCode`",
             "neither declares nor inherits a `toString`",
             "exposes the mutable collection type",
             "exposes the tuple type",
-            "takes the Boolean parameter",
-            "exposes a nullable Boolean",
+            "takes the `Boolean` parameter",
+            "exposes a nullable `Boolean`",
             "is required but declared after an optional parameter",
             "appear in the opposite order in another overload",
-            "does more than delegate to a non-inline function",
+            "does more than delegate to a function without the `inline` modifier",
             "compiled JVM name is mangled",
             "still lands in the API surface Java sources see",
-            "nested Companion class",
+            "nested `Companion` class",
             "compile into the facade class",
             "declares default parameter values",
-            "allows the FUNCTION annotation target",
-            "declares no explicit @Target",
+            "allows the `FUNCTION` annotation target",
+            "declares no explicit `@Target`",
             "exemption doesn't explain why it is applied",
         )
     }

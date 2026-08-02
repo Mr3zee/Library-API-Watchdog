@@ -2,6 +2,7 @@ package org.jetbrains.kotlinx.libs.api.watchdog.fir
 
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
+import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactory3
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
@@ -15,44 +16,42 @@ import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
 import org.jetbrains.kotlin.fir.declarations.utils.hasBackingField
 import org.jetbrains.kotlin.fir.declarations.utils.isData
 import org.jetbrains.kotlin.fir.declarations.utils.isInlineOrValue
+import org.jetbrains.kotlin.fir.moduleData
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.unwrapFakeOverrides
+import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
+import org.jetbrains.kotlin.platform.jvm.isJvm
 import org.jetbrains.kotlin.util.OperatorNameConventions
 
 /**
  * Reports publicly visible
  * [stateful classes](https://kotlinlang.org/docs/api-guidelines-debuggability.html#provide-a-tostring-method-for-stateful-types)
  * - classes with at least one property that stores its value in a backing field - that neither
- * declare nor inherit a `toString` implementation: their instances render as the opaque
- * class-name-with-hash-code default, which reveals nothing in logs and debugger output. Authors
- * acknowledge the opaque rendering with `@IntentionallyWithoutToString`.
+ * declare nor inherit meaningful `equals`, `hashCode`, and `toString` implementations. Without
+ * them, comparison and hashing use object identity and rendering uses the opaque
+ * class-name-with-hash-code default. Each missing member has its own diagnostic and exemption.
  *
- * A `toString` inherited from any supertype other than `kotlin.Any` counts as provided: the
- * rendering is no longer the opaque default, and whether it must be refined to include the
- * subclass state is a judgement call left to the author.
+ * An implementation inherited from any supertype other than `kotlin.Any` counts as provided.
+ * Whether it must be refined to include state added by the subclass is a judgement call left to
+ * the author.
  *
- * Only regular classes are checked. Data and value classes receive a compiler-generated
- * `toString` (data classes are reported by [DataClassChecker] anyway), enum entries render their
- * name, interfaces and annotation classes can't hold backing fields, and objects - companion
- * objects in particular - typically hold constants rather than per-instance state.
+ * Only regular classes are checked. Data and value classes receive compiler-generated
+ * implementations (data classes are reported by [DataClassChecker] anyway), enum entries have
+ * compiler-defined equality and rendering, interfaces and annotation classes can't hold backing
+ * fields, and objects - companion objects in particular - use intentional singleton identity.
  */
-internal class StatefulClassWithoutToStringChecker(
+internal class StatefulClassWithoutGeneratedMembersChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirClassChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirClass) {
-        val factory = severities[WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_TO_STRING] ?: return
-
         if (declaration !is FirRegularClass || !declaration.isWatchedPublicApi()) {
             return
         }
 
         if (declaration.classKind != ClassKind.CLASS || declaration.isData || declaration.isInlineOrValue) {
-            return
-        }
-
-        if (declaration.hasAnnotation(WatchdogClassIds.IntentionallyWithoutToString, context.session)) {
             return
         }
 
@@ -64,30 +63,67 @@ internal class StatefulClassWithoutToStringChecker(
             }
         }
 
-        if (!stateful || declaration.providesToString()) {
+        if (!stateful) {
             return
         }
 
-        reporter.reportOn(
-            source = declaration.source,
-            factory = factory,
-            a = declaration.name,
+        declaration.reportIfMissing(
+            diagnostic = WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_EQUALS,
+            member = GeneratedMember.EQUALS,
+            exemption = WatchdogClassIds.IntentionallyWithoutEquals,
+        )
+        declaration.reportIfMissing(
+            diagnostic = WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_HASH_CODE,
+            member = GeneratedMember.HASH_CODE,
+            exemption = WatchdogClassIds.IntentionallyWithoutHashCode,
+        )
+        declaration.reportIfMissing(
+            diagnostic = WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_TO_STRING,
+            member = GeneratedMember.TO_STRING,
+            exemption = WatchdogClassIds.IntentionallyWithoutToString,
         )
     }
 
     /**
-     * Whether the class declares or inherits a `toString` implementation. The scope resolves
-     * `toString` to the most specific override; only `kotlin.Any` itself provides the opaque
-     * default this checker exists to flag.
+     * Reports one missing generated member. The target platform controls whether Lombok is
+     * offered alongside Poko; the compiler host controls the IntelliJ IDEA shortcut.
+     */
+    context(context: CheckerContext, reporter: DiagnosticReporter)
+    private fun FirRegularClass.reportIfMissing(
+        diagnostic: ConfigurableWatchdogDiagnostic<KtDiagnosticFactory3<Name, String, String>>,
+        member: GeneratedMember,
+        exemption: ClassId,
+    ) {
+        val factory = severities[diagnostic] ?: return
+        if (hasAnnotation(exemption, context.session) || provides(member)) return
+
+        val generationHint = WatchdogDiagnosticMessages.parameterValueFor(
+            diagnostic = diagnostic.name,
+            value = if (context.session.moduleData.platform.isJvm()) "jvmGenerationHint" else "generationHint",
+        )
+        reporter.reportOn(
+            source = source,
+            factory = factory,
+            a = name,
+            b = generationHint,
+            c = ideaGenerateShortcut(),
+        )
+    }
+
+    /**
+     * Whether the class declares or inherits [member]. The scope resolves the name to the most
+     * specific override; only `kotlin.Any` itself provides the identity/opaque defaults these
+     * diagnostics exist to flag.
      */
     context(context: CheckerContext)
-    private fun FirRegularClass.providesToString(): Boolean {
+    private fun FirRegularClass.provides(member: GeneratedMember): Boolean {
         var provided = false
-        unsubstitutedScope().processFunctionsByName(OperatorNameConventions.TO_STRING) { function ->
+        unsubstitutedScope().processFunctionsByName(member.functionName) { function ->
             val original = function.unwrapFakeOverrides()
-            if (original.valueParameterSymbols.isEmpty() &&
+            if (original.valueParameterSymbols.size == member.valueParameterCount &&
                 original.contextParameterSymbols.isEmpty() &&
                 original.receiverParameterSymbol == null &&
+                original.resolvedStatus.isOverride &&
                 original.containingClassLookupTag()?.classId != StandardClassIds.Any
             ) {
                 provided = true
@@ -95,4 +131,17 @@ internal class StatefulClassWithoutToStringChecker(
         }
         return provided
     }
+
+    private enum class GeneratedMember(
+        val functionName: Name,
+        val valueParameterCount: Int,
+    ) {
+        EQUALS(OperatorNameConventions.EQUALS, 1),
+        HASH_CODE(OperatorNameConventions.HASH_CODE, 0),
+        TO_STRING(OperatorNameConventions.TO_STRING, 0),
+    }
 }
+
+/** The shortcut for Code | Generate in IntelliJ IDEA on the compiler's host OS. */
+private fun ideaGenerateShortcut(osName: String = System.getProperty("os.name").orEmpty()): String =
+    if (osName.startsWith("Mac", ignoreCase = true)) "⌘N" else "Alt+Insert"

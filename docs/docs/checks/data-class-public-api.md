@@ -16,6 +16,12 @@ Any `data class` reachable from the public API - top-level, nested inside anothe
 - is flagged, regardless of nesting depth:
 
 ```kotlin
+/**
+ * A position in Cartesian coordinate space.
+ *
+ * @property x distance from the vertical axis.
+ * @property y distance from the horizontal axis.
+ */
 // !diag[/Coordinates/] DATA_CLASS_PUBLIC_API ["Coordinates"]
 public data class Coordinates(public val x: Int, public val y: Int)
 ```
@@ -32,6 +38,12 @@ destructuring declarations, or positional construction. See the Kotlin library a
 ### Don't
 
 ```kotlin
+/**
+ * A position in Cartesian coordinate space.
+ *
+ * @property x distance from the vertical axis.
+ * @property y distance from the horizontal axis.
+ */
 // !diag[/Coordinates/] DATA_CLASS_PUBLIC_API ["Coordinates"]
 public data class Coordinates(public val x: Int, public val y: Int)
 ```
@@ -39,6 +51,12 @@ public data class Coordinates(public val x: Int, public val y: Int)
 ### Do
 
 ```kotlin
+/**
+ * A position in Cartesian coordinate space.
+ *
+ * @property x distance from the vertical axis.
+ * @property y distance from the horizontal axis.
+ */
 @Poko
 public class Coordinates(
     public val x: Int,
@@ -57,6 +75,11 @@ Apply `@IntentionallyDataClass` to the class declaration when the property list 
 stable part of the contract:
 
 ```kotlin
+/**
+ * A stable one-dimensional coordinate used by the wire format.
+ *
+ * @property x distance from the origin.
+ */
 @IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)
 public data class MarkedData(public val x: Int)
 ```

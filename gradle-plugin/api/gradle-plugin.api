@@ -24,11 +24,13 @@ public class org/jetbrains/kotlinx/libs/api/watchdog/WatchdogGradleExtension {
 	public final fun getNullableBooleanPublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun getOpenApiWithoutSubclassOptIn ()Lorg/gradle/api/provider/Property;
 	public final fun getPairOrTriplePublicApi ()Lorg/gradle/api/provider/Property;
+	public final fun getPublicTypesMustBeTransitiveDependencies ()Lorg/gradle/api/provider/Property;
 	public final fun getRequiredParameterAfterOptional ()Lorg/gradle/api/provider/Property;
+	public final fun getStatefulClassWithoutEquals ()Lorg/gradle/api/provider/Property;
+	public final fun getStatefulClassWithoutHashCode ()Lorg/gradle/api/provider/Property;
 	public final fun getStatefulClassWithoutToString ()Lorg/gradle/api/provider/Property;
 	public final fun getSubclassOptInWithoutMarkers ()Lorg/gradle/api/provider/Property;
 	public final fun getSuggestAbiValidation ()Lorg/gradle/api/provider/Property;
-	public final fun getSuggestTapmoc ()Lorg/gradle/api/provider/Property;
 	public final fun getUndocumentedPublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun javaInterop (Lorg/gradle/api/Action;)V
 }

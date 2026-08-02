@@ -5,12 +5,14 @@
 package foo.bar
 
 import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyWithoutToString
+import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyWithoutEquals
+import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyWithoutHashCode
 
-// Stateful classes relying on the opaque default toString: should warn.
+// Stateful classes relying on Any's equality, hashing, and rendering: should warn three times.
 
-public class <!STATEFUL_CLASS_WITHOUT_TO_STRING!>Connection<!>(public val host: String)
+public class <!STATEFUL_CLASS_WITHOUT_EQUALS, STATEFUL_CLASS_WITHOUT_HASH_CODE, STATEFUL_CLASS_WITHOUT_TO_STRING!>Connection<!>(public val host: String)
 
-public class <!STATEFUL_CLASS_WITHOUT_TO_STRING!>Counter<!> {
+public class <!STATEFUL_CLASS_WITHOUT_EQUALS, STATEFUL_CLASS_WITHOUT_HASH_CODE, STATEFUL_CLASS_WITHOUT_TO_STRING!>Counter<!> {
     private var count: Int = 0
 
     public fun increment() {
@@ -19,36 +21,50 @@ public class <!STATEFUL_CLASS_WITHOUT_TO_STRING!>Counter<!> {
 }
 
 public class Container {
-    public class <!STATEFUL_CLASS_WITHOUT_TO_STRING!>Nested<!>(public val value: Int)
+    public class <!STATEFUL_CLASS_WITHOUT_EQUALS, STATEFUL_CLASS_WITHOUT_HASH_CODE, STATEFUL_CLASS_WITHOUT_TO_STRING!>Nested<!>(public val value: Int)
 }
 
 // State declared in an abstract class renders opaquely in every subclass.
-public abstract class <!STATEFUL_CLASS_WITHOUT_TO_STRING!>StatefulBase<!>(public val id: Int)
+public abstract class <!STATEFUL_CLASS_WITHOUT_EQUALS, STATEFUL_CLASS_WITHOUT_HASH_CODE, STATEFUL_CLASS_WITHOUT_TO_STRING!>StatefulBase<!>(public val id: Int)
 
 // A lateinit var has a backing field too.
-public class <!STATEFUL_CLASS_WITHOUT_TO_STRING!>LateBound<!> {
+public class <!STATEFUL_CLASS_WITHOUT_EQUALS, STATEFUL_CLASS_WITHOUT_HASH_CODE, STATEFUL_CLASS_WITHOUT_TO_STRING!>LateBound<!> {
     public lateinit var target: String
 }
 
 // @PublishedApi declarations belong to the published binary API.
 @PublishedApi
-internal class <!STATEFUL_CLASS_WITHOUT_TO_STRING!>PublishedState<!>(val x: Int)
+internal class <!STATEFUL_CLASS_WITHOUT_EQUALS, STATEFUL_CLASS_WITHOUT_HASH_CODE, STATEFUL_CLASS_WITHOUT_TO_STRING!>PublishedState<!>(val x: Int)
 
-// A toString implementation renders the state: no warning.
+// Each generated member is checked independently.
 
-public class WithToString(public val host: String) {
+public class <!STATEFUL_CLASS_WITHOUT_EQUALS, STATEFUL_CLASS_WITHOUT_HASH_CODE!>WithToString<!>(public val host: String) {
     override fun toString(): String = "WithToString(host=$host)"
 }
 
-public open class RenderedBase(public val id: Int) {
-    override fun toString(): String = "RenderedBase(id=$id)"
+public class <!STATEFUL_CLASS_WITHOUT_TO_STRING!>WithEquality<!>(public val id: Int) {
+    override fun equals(other: Any?): Boolean = other is WithEquality && id == other.id
+    override fun hashCode(): Int = id
 }
 
-// The inherited non-Any toString covers the subclass, even one adding its own state.
-public class RenderedDerived(id: Int, public val extra: Int) : RenderedBase(id)
+// An overload with the same name is not an implementation of Any.equals.
+public class <!STATEFUL_CLASS_WITHOUT_EQUALS, STATEFUL_CLASS_WITHOUT_HASH_CODE, STATEFUL_CLASS_WITHOUT_TO_STRING!>EqualsOverload<!>(public val id: Int) {
+    public fun equals(other: String): Boolean = id.toString() == other
+}
 
-// Deliberately opaque classes: no warning.
+public open class GeneratedBase(public val id: Int) {
+    override fun equals(other: Any?): Boolean = other is GeneratedBase && id == other.id
+    override fun hashCode(): Int = id
+    override fun toString(): String = "GeneratedBase(id=$id)"
+}
 
+// Inherited non-Any implementations cover a subclass, even one adding its own state.
+public class GeneratedDerived(id: Int, public val extra: Int) : GeneratedBase(id)
+
+// Deliberate identity equality, identity hashing, and opaque rendering: no warning.
+
+@IntentionallyWithoutEquals
+@IntentionallyWithoutHashCode
 @IntentionallyWithoutToString
 public class MarkedOpaque(public val secret: String)
 

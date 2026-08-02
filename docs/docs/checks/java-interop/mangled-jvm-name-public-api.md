@@ -18,9 +18,19 @@ A value class among the value parameters, the extension receiver, or the context
 function or property - nullable types and type parameters bounded by a value class included.
 
 ```kotlin
+@file:JvmName("Users")
+
+// !collapse(1:8) collapsed
+// Supporting value class
+/**
+ * Stable identifier assigned to a user account.
+ *
+ * @property raw identifier as stored by the account service.
+ */
 @JvmInline
 public value class UserId(public val raw: String)
 
+/** Queues a refresh for the account identified by [id]. */
 // !diag[/take/] MANGLED_JVM_NAME_PUBLIC_API ["function","take","UserId"]
 public fun take(id: UserId) { }
 ```
@@ -38,13 +48,20 @@ Kotlin guide on
 ### Don't
 
 ```kotlin
+@file:JvmName("Users")
+
 // Compiles to take-4ZD5Yi0(...): an illegal Java identifier.
+/** Queues a refresh for the account identified by [id]. */
+// !diag[/take/] MANGLED_JVM_NAME_PUBLIC_API ["function","take","UserId"]
 public fun take(id: UserId) { }
 ```
 
 ### Do
 
 ```kotlin
+@file:JvmName("Users")
+
+/** Queues a refresh for the account identified by [id]. */
 @JvmName("take")
 public fun take(id: UserId) { }
 ```
@@ -54,13 +71,30 @@ public fun take(id: UserId) { }
 ```kotlin
 // The public constructor is replaced by
 // a private one and a synthetic marker-parameter overload.
+/**
+ * Wallet associated with a user account.
+ *
+ * @property id identifier of the account that owns the wallet.
+ */
+// !collapse(1:1) collapsed details
+@Poko
+// !diag[/[(]public val id: UserId[)]/] MANGLED_JVM_NAME_PUBLIC_API ["constructor","Wallet","UserId"]
+// !diag[/id/] MANGLED_JVM_NAME_PUBLIC_API ["property","id","UserId"]
 public class Wallet(public val id: UserId)
 ```
 
 ### Do {#do-2}
 
 ```kotlin
+/**
+ * Wallet associated with a user account.
+ *
+ * @property id identifier of the account that owns the wallet.
+ */
+@OptIn(ExperimentalStdlibApi::class)
 @JvmExposeBoxed
+// !collapse(1:1) collapsed details
+@Poko
 public class Wallet(public val id: UserId)
 ```
 
@@ -87,6 +121,9 @@ only fix for constructors and overridable members, since `@JvmName` doesn't acce
 Apply `@IntentionallyMangledJvmName` when Java callers are not supported for this declaration:
 
 ```kotlin
+@file:JvmName("Users")
+
+/** Queues a refresh for [id] through a deliberately Kotlin-only API. */
 @IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN)
 public fun acknowledged(id: UserId) { }
 ```
