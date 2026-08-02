@@ -16,7 +16,7 @@ The check flags every public or protected `enum class`, `sealed class`, and `sea
 declaration.
 
 ```kotlin
-// EXHAUSTIVE_PUBLIC_API
+// !diag[/Status/] EXHAUSTIVE_PUBLIC_API ["enum class","Status","an entry"]
 public enum class Status {
     ACTIVE,
     INACTIVE,
@@ -35,7 +35,7 @@ library author did not think of as breaking. See the
 ### Don't
 
 ```kotlin
-// EXHAUSTIVE_PUBLIC_API
+// !diag[/LogLevel/] EXHAUSTIVE_PUBLIC_API ["enum class","LogLevel","an entry"]
 public enum class LogLevel {
     DEBUG,
     INFO,
@@ -44,7 +44,7 @@ public enum class LogLevel {
 ```
 
 ```kotlin
-// EXHAUSTIVE_PUBLIC_API
+// !diag[/Event/] EXHAUSTIVE_PUBLIC_API ["interface","Event","a subtype"]
 public sealed interface Event {
     public class Started : Event
 

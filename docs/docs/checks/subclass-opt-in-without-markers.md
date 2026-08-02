@@ -17,7 +17,7 @@ arguments. The annotation restricts nothing in this case: the class or
 interface stays open to external subclassing exactly as if it were unannotated.
 
 ```kotlin
-// SUBCLASS_OPT_IN_WITHOUT_MARKERS
+// !diag[/@SubclassOptInRequired/] SUBCLASS_OPT_IN_WITHOUT_MARKERS
 @SubclassOptInRequired
 public abstract class Connector
 ```
@@ -35,7 +35,7 @@ for the intended pattern.
 ### Don't
 
 ```kotlin
-// SUBCLASS_OPT_IN_WITHOUT_MARKERS
+// !diag[/@SubclassOptInRequired/] SUBCLASS_OPT_IN_WITHOUT_MARKERS
 @SubclassOptInRequired
 public abstract class Connector
 ```

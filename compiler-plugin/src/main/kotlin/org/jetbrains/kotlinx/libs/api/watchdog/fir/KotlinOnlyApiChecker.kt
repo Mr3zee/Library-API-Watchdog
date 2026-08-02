@@ -104,12 +104,10 @@ internal class KotlinOnlyApiChecker(
     context(context: CheckerContext)
     private fun FirNamedFunction.kotlinOnlyShape(): String? {
         if (isSuspend) {
-            return "is a suspend function, which Java sees with a trailing Continuation " +
-                    "parameter it can't provide idiomatically"
+            return sharedShape("suspend")
         }
         if (isInline && typeParameters.any { it.symbol.isReified }) {
-            return "declares a reified type parameter, which only inlining Kotlin call sites " +
-                    "can substitute - calling the compiled method from Java fails at runtime"
+            return sharedShape("reified")
         }
         return valueParameters.firstNotNullOfOrNull { it.kotlinOnlyFunctionType() }
     }
@@ -124,16 +122,19 @@ internal class KotlinOnlyApiChecker(
         }
         return when {
             functionTypeKind == FunctionTypeKind.SuspendFunction ->
-                "takes a suspend function type in the parameter '$name', which no Java lambda " +
-                        "can implement"
+                sharedShape("suspendFunctionType", name.asString())
             type.isExtensionFunctionType ->
-                "takes a function type with receiver in the parameter '$name', which a Java " +
-                        "lambda can only emulate by taking the receiver as an explicit first " +
-                        "argument"
+                sharedShape("extensionFunctionType", name.asString())
             type.typeArguments.lastOrNull()?.type?.fullyExpandedType()?.isUnit == true ->
-                "takes a Unit-returning function type in the parameter '$name', which forces a " +
-                        "Java lambda to return the Unit.INSTANCE token explicitly"
+                sharedShape("unitFunctionType", name.asString())
             else -> null
         }
     }
+
+    private fun sharedShape(name: String, vararg parameters: String): String =
+        WatchdogDiagnosticMessages.parameterValueFor(
+            diagnostic = "KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC",
+            value = name,
+            parameters = parameters,
+        )
 }

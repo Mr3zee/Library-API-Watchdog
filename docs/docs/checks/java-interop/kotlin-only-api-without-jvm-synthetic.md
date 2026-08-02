@@ -20,7 +20,7 @@ Three shapes trigger it:
   function type with receiver, or a `Unit`-returning function type
 
 ```kotlin
-// KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
+// !diag[/refresh/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["refresh","$suspend"]
 public suspend fun refresh(key: String) { }
 ```
 
@@ -39,18 +39,18 @@ these shapes actually compile.
 // Java sees a trailing Continuation parameter
 // it can't provide idiomatically.
 //
-// KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
+// !diag[/refresh/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["refresh","$suspend"]
 public suspend fun refresh(key: String) { }
 
 // Only inlining Kotlin call sites can substitute T.
 // Calling the compiled method from Java fails at runtime.
 //
-// KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
+// !diag[/instantiate/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["instantiate","$reified"]
 public inline fun <reified T> instantiate(): T? = null
 
 // A Java lambda has to return the Unit.INSTANCE token explicitly.
 //
-// KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
+// !diag[/onEach/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["onEach","$unitFunctionType(action)"]
 public fun onEach(action: (Int) -> Unit) { }
 ```
 

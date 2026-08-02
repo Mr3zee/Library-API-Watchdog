@@ -16,7 +16,7 @@ Any `data class` reachable from the public API - top-level, nested inside anothe
 - is flagged, regardless of nesting depth:
 
 ```kotlin
-// DATA_CLASS_PUBLIC_API
+// !diag[/Coordinates/] DATA_CLASS_PUBLIC_API ["Coordinates"]
 public data class Coordinates(public val x: Int, public val y: Int)
 ```
 
@@ -32,7 +32,7 @@ destructuring declarations, or positional construction. See the Kotlin library a
 ### Don't
 
 ```kotlin
-// DATA_CLASS_PUBLIC_API
+// !diag[/Coordinates/] DATA_CLASS_PUBLIC_API ["Coordinates"]
 public data class Coordinates(public val x: Int, public val y: Int)
 ```
 

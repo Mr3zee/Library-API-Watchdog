@@ -19,10 +19,10 @@ a mutable collection type: any of the `kotlin.collections` mutable interfaces (`
 too, so a mutable type nested in an otherwise read-only container still counts:
 
 ```kotlin
-// MUTABLE_COLLECTION_PUBLIC_API
+// !diag[/MutableList<String>/] MUTABLE_COLLECTION_PUBLIC_API ["function","produce","MutableList"]
 public fun produce(): MutableList<String> = mutableListOf()
 
-// MUTABLE_COLLECTION_PUBLIC_API
+// !diag[/List<MutableList<Int>>/] MUTABLE_COLLECTION_PUBLIC_API ["function","nested","MutableList"]
 public fun nested(): List<MutableList<Int>> = emptyList()
 ```
 
@@ -38,7 +38,7 @@ behavioral change for users that relied on mutating the exposed instance. See th
 ### Don't
 
 ```kotlin
-// MUTABLE_COLLECTION_PUBLIC_API
+// !diag[/MutableList<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["property","items","MutableList"]
 public class Holder(public val items: MutableList<Int>)
 ```
 
@@ -53,7 +53,7 @@ public class Holder(items: MutableList<Int>) {
 ### Don't {#dont-2}
 
 ```kotlin
-// MUTABLE_COLLECTION_PUBLIC_API
+// !diag[/MutableSet<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["parameter","items","MutableSet"]
 public fun consume(items: MutableSet<Int>) {
     items.clear()
 }

@@ -16,7 +16,7 @@ Every required parameter (one that doesn't have a default value) that comes afte
 or `vararg` - in the parameter list of a public function or constructor:
 
 ```kotlin
-// REQUIRED_PARAMETER_AFTER_OPTIONAL
+// !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","connect"]
 public fun connect(retries: Int = 3, host: String) { }
 ```
 
@@ -25,9 +25,9 @@ All required parameters behind the first optional one are reported, not just the
 ```kotlin
 public fun configure(
     timeout: Long = 0L,
-    // REQUIRED_PARAMETER_AFTER_OPTIONAL
+    // !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","configure"]
     host: String,
-    // REQUIRED_PARAMETER_AFTER_OPTIONAL
+    // !diag[/port/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["port","configure"]
     port: Int,
 ) { }
 ```
@@ -44,7 +44,7 @@ essential inputs first, optional inputs last.
 ### Don't
 
 ```kotlin
-// REQUIRED_PARAMETER_AFTER_OPTIONAL
+// !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","connect"]
 public fun connect(retries: Int = 3, host: String) { }
 ```
 
@@ -57,7 +57,7 @@ public fun connect(host: String, retries: Int = 3) { }
 ### Don't {#dont-2}
 
 ```kotlin
-// REQUIRED_PARAMETER_AFTER_OPTIONAL
+// !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","Server"]
 public class Server(port: Int = 80, host: String)
 ```
 

@@ -15,7 +15,7 @@ Flags return types, property types, value parameter types (constructors included
 parameter types, and type parameter bounds that mention `Boolean?`.
 
 ```kotlin
-// NULLABLE_BOOLEAN_PUBLIC_API
+// !diag[/Boolean[?]/] NULLABLE_BOOLEAN_PUBLIC_API ["function","probe"]
 public fun probe(): Boolean? = null
 ```
 
@@ -33,7 +33,7 @@ learned from documentation. See the Kotlin library authors' guide on
 ```kotlin
 // true, false, or... what does null mean here?
 //
-// NULLABLE_BOOLEAN_PUBLIC_API
+// !diag[/Boolean[?]/] NULLABLE_BOOLEAN_PUBLIC_API ["function","connectionState"]
 public fun connectionState(): Boolean? = null
 ```
 
@@ -48,7 +48,7 @@ public fun connectionState(): ConnectionState = ConnectionState.UNKNOWN
 ### Don't {#dont-2}
 
 ```kotlin
-// NULLABLE_BOOLEAN_PUBLIC_API
+// !diag[/Boolean[?]/] NULLABLE_BOOLEAN_PUBLIC_API ["property","checked"]
 public class Holder(public val checked: Boolean?)
 ```
 

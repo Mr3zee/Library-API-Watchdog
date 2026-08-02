@@ -17,7 +17,7 @@ A public function or constructor that declares at least one default parameter va
 no `@JvmOverloads`.
 
 ```kotlin
-// DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS
+// !diag[/connect/] DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS ["function","connect"]
 public fun connect(
     host: String,
     port: Int = 80,

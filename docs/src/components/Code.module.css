@@ -7,33 +7,152 @@
   overflow: auto;
 }
 
-/* The markers of one line, stacked under it and indented to line up with the code. */
-.diagnostics {
+/* Match the solid error underline IntelliJ puts under the compiler's reported source range. */
+.diagnosticTrigger {
+  border-radius: 2px;
+  cursor: help;
+  text-decoration-line: underline;
+  text-decoration-style: solid;
+  text-decoration-color: var(--watchdog-diagnostic-color);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.diagnosticTrigger:hover,
+.diagnosticTrigger:focus-visible {
+  background: var(--watchdog-diagnostic-highlight);
+  outline: none;
+}
+
+.tooltip {
+  z-index: 1000;
+  width: max-content;
+  max-width: min(520px, calc(100vw - 24px));
+  max-height: min(600px, calc(100vh - 24px));
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid var(--watchdog-tooltip-border);
+  border-radius: 5px;
+  background: var(--watchdog-tooltip-background);
+  box-shadow: var(--watchdog-tooltip-shadow);
+  color: var(--watchdog-tooltip-foreground);
+  font-family: var(--ifm-font-family-base);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  white-space: normal;
+  animation: tooltip-in 100ms ease-out;
+}
+
+.problemCount {
+  border-bottom: 1px solid var(--watchdog-tooltip-divider);
+  padding: 0.45rem 0.65rem;
+  color: var(--watchdog-tooltip-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.diagnosticList {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
 }
 
 .diagnostic {
-  color: var(--watchdog-diagnostic-color);
+  display: grid;
+  grid-template-columns: 1rem minmax(0, 1fr);
+  gap: 0.5rem;
+  padding: 0.55rem 0.65rem;
+  color: inherit;
+}
+
+.diagnostic + .diagnostic {
+  border-top: 1px solid var(--watchdog-tooltip-divider);
+}
+
+.errorIcon {
+  display: inline-flex;
+  width: 0.9rem;
+  height: 0.9rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.08rem;
+  border-radius: 50%;
+  background: var(--watchdog-diagnostic-color);
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.diagnosticText {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.14rem;
+}
+
+.diagnosticTitle {
   font-weight: 500;
-  white-space: pre;
+}
+
+.diagnosticMessage {
+  color: var(--watchdog-tooltip-foreground);
+}
+
+.diagnosticMessage p {
+  margin: 0;
+}
+
+.diagnosticMessage p + p {
+  margin-top: 0.45rem;
+}
+
+.diagnosticMessage code {
+  padding: 0.05rem 0.2rem;
+  border: 1px solid var(--watchdog-tooltip-divider);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--watchdog-tooltip-foreground) 8%, transparent);
+  color: inherit;
+  font-size: 0.78rem;
+}
+
+.diagnosticMessage a {
+  color: var(--ifm-color-primary-light);
+}
+
+.diagnosticName {
+  align-self: flex-start;
+  color: var(--watchdog-tooltip-muted);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.7rem;
+  overflow-wrap: anywhere;
   text-decoration: none;
 }
 
-.diagnostic:hover {
-  color: var(--watchdog-diagnostic-color);
+.diagnosticName:hover,
+.diagnosticName:focus-visible {
+  color: var(--ifm-color-primary-light);
+  outline: none;
   text-decoration: underline;
 }
 
-.branch {
-  color: var(--ch-24);
-  padding-right: 0.4em;
+.tooltipArrow {
+  fill: var(--watchdog-tooltip-border);
 }
 
-.icon {
-  padding-right: 0.3em;
-  /* Keep the emoji from stretching the line height of the code block. */
-  font-size: 0.9em;
-  line-height: 1;
+@keyframes tooltip-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tooltip {
+    animation: none;
+  }
 }

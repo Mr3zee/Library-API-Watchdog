@@ -17,7 +17,7 @@ value in a backing field, and that doesn't declare or inherit any `toString` imp
 besides the opaque default from `kotlin.Any`:
 
 ```kotlin
-// STATEFUL_CLASS_WITHOUT_TO_STRING
+// !diag[/Connection/] STATEFUL_CLASS_WITHOUT_TO_STRING ["Connection"]
 public class Connection(public val host: String)
 ```
 
@@ -32,7 +32,7 @@ Kotlin library authors' guidelines on
 ### Don't
 
 ```kotlin
-// STATEFUL_CLASS_WITHOUT_TO_STRING
+// !diag[/Connection/] STATEFUL_CLASS_WITHOUT_TO_STRING ["Connection"]
 public class Connection(public val host: String)
 ```
 
@@ -47,7 +47,7 @@ public class Connection(public val host: String) {
 ### Don't {#dont-2}
 
 ```kotlin
-// STATEFUL_CLASS_WITHOUT_TO_STRING
+// !diag[/StatefulBase/] STATEFUL_CLASS_WITHOUT_TO_STRING ["StatefulBase"]
 public abstract class StatefulBase(public val id: Int)
 ```
 

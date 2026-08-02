@@ -15,8 +15,8 @@ explicit `@Target`.
 Any annotation class annotated with `@DslMarker` that has no `@Target` of its own:
 
 ```kotlin
-// DSL_MARKER_WITHOUT_EXPLICIT_TARGETS
 @DslMarker
+// !diag[/DefaultTargetsDsl/] DSL_MARKER_WITHOUT_EXPLICIT_TARGETS ["DefaultTargetsDsl"]
 public annotation class DefaultTargetsDsl
 ```
 
@@ -33,8 +33,8 @@ restricts nothing and gives a false sense of scope control.
 ### Don't
 
 ```kotlin
-// DSL_MARKER_WITHOUT_EXPLICIT_TARGETS
 @DslMarker
+// !diag[/HtmlDsl/] DSL_MARKER_WITHOUT_EXPLICIT_TARGETS ["HtmlDsl"]
 public annotation class HtmlDsl
 ```
 

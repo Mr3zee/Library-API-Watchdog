@@ -20,7 +20,7 @@ or an interface - that carries neither `@JvmStatic` nor `@JvmSynthetic`.
 ```kotlin
 public class Registry {
     public companion object {
-        // COMPANION_API_WITHOUT_JVM_STATIC
+        // !diag[/create/] COMPANION_API_WITHOUT_JVM_STATIC ["Registry","create"]
         public fun create(): Registry = Registry()
     }
 }
@@ -40,7 +40,7 @@ changing how Kotlin resolves the same call. See the Kotlin guide on
 ```kotlin
 public class Registry {
     public companion object {
-        // COMPANION_API_WITHOUT_JVM_STATIC
+        // !diag[/create/] COMPANION_API_WITHOUT_JVM_STATIC ["Registry","create"]
         public fun create(): Registry = Registry()
     }
 }

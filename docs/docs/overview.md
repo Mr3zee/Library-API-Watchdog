@@ -16,9 +16,11 @@ A public data class that hands out a mutable collection, without documentation, 
 diagnostics at once:
 
 ```kotlin
-// DATA_CLASS_PUBLIC_API, UNDOCUMENTED_PUBLIC_API
+// !diag[/Config/] DATA_CLASS_PUBLIC_API ["Config"]
+// !diag[/Config/] UNDOCUMENTED_PUBLIC_API ["class","Config"]
 public data class Config(
-    // MUTABLE_COLLECTION_PUBLIC_API, UNDOCUMENTED_PUBLIC_API
+    // !diag[/tags/] UNDOCUMENTED_PUBLIC_API ["property","tags"]
+    // !diag[/MutableList<String>/] MUTABLE_COLLECTION_PUBLIC_API ["property","tags","MutableList"]
     public val tags: MutableList<String>
 )
 ```

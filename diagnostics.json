@@ -8,17 +8,21 @@
     "    build.gradle.kts). The generator appends 'See <docsBaseUrl><docs> for details.' to every",
     "    message, then messageTrailer if present, and escapes ' as '' for messages with",
     "    parameters, which the compiler renders through java.text.MessageFormat.",
-    "  - docs/plugins/diagnostics.mjs turns the '// DIAGNOSTIC_NAME' comments in the docs code",
-    "    samples into markers linking to the matching check page.",
+    "  - docs/plugins/diagnostics.mjs validates the '// !diag[/range/] DIAGNOSTIC_NAME [params]'",
+    "    Code Hike annotations in docs samples; the docs Code component renders their underlines,",
+    "    fills the message template parameters, and shows the resulting diagnostic tooltips.",
     "",
     "Fields:",
     "  name    - the diagnostic name, matching the property in WatchdogDiagnostics.",
-    "  title   - the H1 of the check page, shown on the docs marker.",
+    "  title   - the H1 of the check page, shown in the docs tooltip.",
     "  docs    - the check page path under docsBaseUrl, without an extension.",
-    "  message - the message template in plain prose. Write ' as a single quote: the generator",
-    "            escapes it where MessageFormat needs it. Do not spell out the documentation link,",
-    "            the generator derives it from docs.",
-    "  messageTrailer - optional sentence appended after the documentation link."
+    "  message - the message template. Docs render it as Markdown; the compiler uses the same text.",
+    "            Write ' as a single quote: the generator escapes it where MessageFormat needs it.",
+    "            Do not spell out the documentation link; the generator derives it from docs.",
+    "  messageTrailer - optional sentence appended after the documentation link.",
+    "  parameterValues - optional named values for long or reusable diagnostic parameters. Values",
+    "                    may have {0}, {1}, ... placeholders. Compiler checkers resolve them through",
+    "                    generated code; docs annotations use $name or $name(value) references."
   ],
   "docsBaseUrl": "https://mr3zee.github.io/libs-api-watchdog/",
   "diagnostics": [
@@ -116,6 +120,13 @@
       "name": "KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC",
       "title": "Kotlin-only API without JvmSynthetic",
       "docs": "checks/java-interop/kotlin-only-api-without-jvm-synthetic",
+      "parameterValues": {
+        "suspend": "is a suspend function, which Java sees with a trailing Continuation parameter it can't provide idiomatically",
+        "reified": "declares a reified type parameter, which only inlining Kotlin call sites can substitute - calling the compiled method from Java fails at runtime",
+        "suspendFunctionType": "takes a suspend function type in the parameter '{0}', which no Java lambda can implement",
+        "extensionFunctionType": "takes a function type with receiver in the parameter '{0}', which a Java lambda can only emulate by taking the receiver as an explicit first argument",
+        "unitFunctionType": "takes a Unit-returning function type in the parameter '{0}', which forces a Java lambda to return the Unit.INSTANCE token explicitly"
+      },
       "message": "The function '{0}' {1}. Kotlin callers see the intended shape, but the function still lands in the API surface Java sources see. Hide the Kotlin-only shape from Java with @JvmSynthetic, or provide a Java-friendly alternative alongside - a blocking or CompletableFuture-returning bridge for a suspend function, a `fun interface` parameter in place of a Kotlin function type - or mark the function with @IntentionallyKotlinOnlyApi if leaving the shape visible to Java is intended."
     },
     {

@@ -17,7 +17,7 @@ with noop targets.
 
 ```kotlin
 @DslMarker
-// DSL_MARKER_NOOP_TARGET
+// !diag[/AnnotationTarget[.]FUNCTION/] DSL_MARKER_NOOP_TARGET ["MyDsl","FUNCTION"]
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 public annotation class MyDsl
 ```
@@ -38,11 +38,11 @@ Kotlin docs on [scope control with `@DslMarker`](https://kotlinlang.org/docs/typ
 ```kotlin
 // This is the shape that broke Ktor's @KtorDsl (KTOR-8901).
 @DslMarker
-// DSL_MARKER_NOOP_TARGET
 @Target(
     AnnotationTarget.CLASS,
     AnnotationTarget.TYPEALIAS,
     AnnotationTarget.TYPE,
+    // !diag[/AnnotationTarget[.]FUNCTION/] DSL_MARKER_NOOP_TARGET ["KtorDsl","FUNCTION"]
     AnnotationTarget.FUNCTION,
 )
 public annotation class KtorDsl

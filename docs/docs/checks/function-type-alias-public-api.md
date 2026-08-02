@@ -15,7 +15,7 @@ A public or protected type alias whose expanded type is a function type: plain, 
 nullable, or with a receiver.
 
 ```kotlin
-// FUNCTION_TYPE_ALIAS_PUBLIC_API
+// !diag[/Callback/] FUNCTION_TYPE_ALIAS_PUBLIC_API ["Callback"]
 public typealias Callback = (Int) -> Unit
 ```
 
@@ -32,7 +32,7 @@ add default members without breaking binary compatibility, or be extended from.
 ### Don't
 
 ```kotlin
-// FUNCTION_TYPE_ALIAS_PUBLIC_API
+// !diag[/Callback/] FUNCTION_TYPE_ALIAS_PUBLIC_API ["Callback"]
 public typealias Callback = (Int) -> Unit
 ```
 
@@ -47,7 +47,7 @@ public fun interface Callback {
 ### Don't {#dont-2}
 
 ```kotlin
-// FUNCTION_TYPE_ALIAS_PUBLIC_API
+// !diag[/SuspendAction/] FUNCTION_TYPE_ALIAS_PUBLIC_API ["SuspendAction"]
 public typealias SuspendAction = suspend () -> Unit
 ```
 

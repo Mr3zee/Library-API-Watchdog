@@ -17,7 +17,7 @@ statement - besides an optional contract - that only performs simple operations 
 non-inline call:
 
 ```kotlin
-// INLINE_FUNCTION_WITH_LOGIC
+// !diag[/choose/] INLINE_FUNCTION_WITH_LOGIC ["inline function","choose"]
 public inline fun choose(value: Int): Int = if (value < 0) -1 else 1
 ```
 
@@ -35,10 +35,10 @@ authors' guide on
 ### Don't
 
 ```kotlin
-// INLINE_FUNCTION_WITH_LOGIC
+// !diag[/choose/] INLINE_FUNCTION_WITH_LOGIC ["inline function","choose"]
 public inline fun choose(value: Int): Int = if (value < 0) -1 else 1
 
-// INLINE_FUNCTION_WITH_LOGIC
+// !diag[/cachedLength/] INLINE_FUNCTION_WITH_LOGIC ["inline function","cachedLength"]
 public inline fun cachedLength(tag: String): Int {
     val cached = tag.length
     return cached
@@ -71,7 +71,7 @@ internal val array1: Array<Int> = arrayOf()
 @PublishedApi
 internal val array2: Array<Int> = arrayOf()
 
-// INLINE_FUNCTION_WITH_LOGIC
+// !diag[/calculateArraysSize/] INLINE_FUNCTION_WITH_LOGIC ["inline getter","calculateArraysSize"]
 public inline val calculateArraysSize: Int
     get() {
         return array1.size + array2.size

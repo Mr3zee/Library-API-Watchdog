@@ -27,7 +27,7 @@ public annotation class TreeDsl
 
 public open class Tag
 
-// DSL_MARKER_NOOP_TYPE_POSITION
+// !diag[/@TreeDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["TreeDsl","parameter type"]
 public fun process(tag: @TreeDsl Tag) { }
 ```
 
@@ -43,7 +43,7 @@ wrong scope's functions. See the Kotlin guide on [scope control for DSL markers]
 ### Don't
 
 ```kotlin
-// DSL_MARKER_NOOP_TYPE_POSITION
+// !diag[/@TreeDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["TreeDsl","return type"]
 @TreeDsl
 public fun configure(block: Tag.() -> Unit) { }
 ```
@@ -60,7 +60,7 @@ public fun configure(block: Tag.() -> Unit) { }
 ### Don't {#dont-2}
 
 ```kotlin
-// DSL_MARKER_NOOP_TYPE_POSITION
+// !diag[/@TreeDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["TreeDsl","parameter type"]
 public fun process(tag: @TreeDsl Tag) { }
 ```
 

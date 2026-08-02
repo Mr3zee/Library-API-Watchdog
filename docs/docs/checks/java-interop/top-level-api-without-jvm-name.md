@@ -18,9 +18,10 @@ Kotlin files with top-level properties or functions that can be called from Java
 The diagnostic fires once per file, anchored on the first public top-level function or property.
 
 ```kotlin
+// Network.kt
 package com.example
 
-// TOP_LEVEL_API_WITHOUT_JVM_NAME
+// !diag[/connect/] TOP_LEVEL_API_WITHOUT_JVM_NAME ["NetworkKt"]
 public fun connect(): Int = 0
 ```
 

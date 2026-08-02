@@ -17,7 +17,7 @@ non-sealed interface. User-side subclasses constrain how
 the declaration can evolve later.
 
 ```kotlin
-// OPEN_API_WITHOUT_SUBCLASS_OPT_IN
+// !diag[/Widget/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["class","Widget"]
 public open class Widget
 ```
 
@@ -31,10 +31,10 @@ Unrestricted open API is one of the classic ways a
 ### Don't
 
 ```kotlin
-// OPEN_API_WITHOUT_SUBCLASS_OPT_IN
+// !diag[/Widget/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["class","Widget"]
 public open class Widget
 
-// OPEN_API_WITHOUT_SUBCLASS_OPT_IN
+// !diag[/Plugin/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["interface","Plugin"]
 public interface Plugin {
     public fun run()
 }

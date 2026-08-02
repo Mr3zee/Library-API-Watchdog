@@ -15,7 +15,7 @@ Every value parameter, and every context parameter, of a public or protected fun
 type is `Boolean`, including the declared element type of `vararg` parameter.
 
 ```kotlin
-// BOOLEAN_PARAMETER_PUBLIC_API
+// !diag[/optimizeForSpeed/] BOOLEAN_PARAMETER_PUBLIC_API ["doWork","optimizeForSpeed"]
 public fun doWork(optimizeForSpeed: Boolean): Unit {}
 ```
 
@@ -29,7 +29,7 @@ whoever reads the call site remembering the parameter name. See the
 ### Don't
 
 ```kotlin
-// BOOLEAN_PARAMETER_PUBLIC_API
+// !diag[/enabled/] BOOLEAN_PARAMETER_PUBLIC_API ["setLogging","enabled"]
 public fun setLogging(enabled: Boolean): Unit {}
 ```
 
@@ -51,7 +51,7 @@ public fun disableLogging(): Unit {}
   from whatever `Boolean` happens to be in scope there.
 
   ```kotlin
-  // BOOLEAN_PARAMETER_PUBLIC_API
+  // !diag[/verbose/] BOOLEAN_PARAMETER_PUBLIC_API ["logLine","verbose"]
   context(verbose: Boolean)
   public fun logLine(message: String): Unit {}
   ```

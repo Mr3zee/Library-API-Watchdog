@@ -21,7 +21,7 @@ function or property - nullable types and type parameters bounded by a value cla
 @JvmInline
 public value class UserId(public val raw: String)
 
-// MANGLED_JVM_NAME_PUBLIC_API
+// !diag[/take/] MANGLED_JVM_NAME_PUBLIC_API ["function","take","UserId"]
 public fun take(id: UserId) { }
 ```
 

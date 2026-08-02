@@ -16,7 +16,7 @@ This check fires on the annotation call of `@Intentionally*` annotations with re
 `ExemptionReason.FOR_BACKWARD_COMPATIBILITY` or `ExemptionReason.API_DESIGN` and a blank `description`:
 
 ```kotlin
-// EXEMPTION_WITHOUT_EXPLANATION
+// !diag[/@IntentionallyOpen/] EXEMPTION_WITHOUT_EXPLANATION ["IntentionallyOpen","OTHER"]
 @IntentionallyOpen
 public open class Widget
 ```
@@ -51,15 +51,15 @@ Non-self-explanatory reasons are:
 ### Don't
 
 ```kotlin
-// EXEMPTION_WITHOUT_EXPLANATION
+// !diag[/@IntentionallyOpen/] EXEMPTION_WITHOUT_EXPLANATION ["IntentionallyOpen","OTHER"]
 @IntentionallyOpen
 public open class Widget
 
-// EXEMPTION_WITHOUT_EXPLANATION
+// !diag[/@IntentionallyOpen.*$/] EXEMPTION_WITHOUT_EXPLANATION ["IntentionallyOpen","OTHER"]
 @IntentionallyOpen(reason = ExemptionReason.OTHER)
 public open class OtherWidget
 
-// EXEMPTION_WITHOUT_EXPLANATION
+// !diag[/@IntentionallyUndocumented.*$/] EXEMPTION_WITHOUT_EXPLANATION ["IntentionallyUndocumented","OTHER"]
 @IntentionallyUndocumented(description = "   ")
 public class UndocumentedThing
 ```

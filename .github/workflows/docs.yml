@@ -45,6 +45,10 @@ jobs:
         working-directory: docs
         run: npm ci
 
+      - name: Test docs tooling
+        working-directory: docs
+        run: npm test
+
       # Docusaurus fails on a broken link or anchor, so this is the docs check as well.
       - name: Build the docs website
         working-directory: docs

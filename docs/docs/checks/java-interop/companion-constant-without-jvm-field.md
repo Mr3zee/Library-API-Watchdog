@@ -19,7 +19,7 @@ A companion `val` that just holds a constant value - no `const`, no custom gette
 ```kotlin
 public class Registry {
     public companion object {
-        // COMPANION_CONSTANT_WITHOUT_JVM_FIELD
+        // !diag[/DEFAULT_NAME/] COMPANION_CONSTANT_WITHOUT_JVM_FIELD ["Registry","DEFAULT_NAME"]
         public val DEFAULT_NAME: String = "registry"
     }
 }

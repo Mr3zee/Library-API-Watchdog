@@ -17,10 +17,10 @@ relative order of those shared names. No overload is treated as the canonical or
 of a disagreeing pair are reported, and reordering either one clears both.
 
 ```kotlin
-// INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+// !diag[/draw/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["x","y","draw"]
 public fun draw(x: Int, y: Int) { }
 
-// INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+// !diag[/draw/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["y","x","draw"]
 public fun draw(y: Int, x: Int, scale: Double) { }
 ```
 
@@ -35,10 +35,10 @@ authors' guide on
 ### Don't
 
 ```kotlin
-// INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+// !diag[/draw/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["x","y","draw"]
 public fun draw(x: Int, y: Int) { }
 
-// INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+// !diag[/draw/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["y","x","draw"]
 public fun draw(y: Int, x: Int, scale: Double) { }
 ```
 
@@ -53,14 +53,10 @@ public fun draw(x: Int, y: Int, scale: Double) { }
 ### Don't {#dont-2}
 
 ```kotlin
-// INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+// !diag[/[(]width: Int, height: Int[)]/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["width","height","Rect"]
 public class Rect(width: Int, height: Int) {
-    // INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
-    public constructor(
-        height: Int,
-        width: Int,
-        scale: Double,
-    ) : this(width, height)
+    // !diag[/public constructor[(]height: Int, width: Int, scale: Double[)] : this[(]width, height[)]/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["height","width","Rect"]
+    public constructor(height: Int, width: Int, scale: Double) : this(width, height)
 }
 ```
 
@@ -83,7 +79,7 @@ public class Grid {
     public fun fill(startIndex: Int, endIndex: Int) { }
 }
 
-// INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+// !diag[/fill/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["endIndex","startIndex","fill"]
 public fun Grid.fill(
     endIndex: Int,
     startIndex: Int,

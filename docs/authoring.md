@@ -43,17 +43,46 @@ diagnostic missing from `diagnostics.json`, so it is the docs check as well.
 
 ## Code samples
 
-Fenced Kotlin blocks are rendered by [Code Hike](https://codehike.org/). A comment line holding
-nothing but diagnostic names is turned into markers under the line it precedes, each linking to its
-check page:
+Fenced Kotlin blocks are rendered by [Code Hike](https://codehike.org/). Mark the exact range the
+compiler reports with a Code Hike `diag` annotation. Hovering or focusing its solid red underline
+opens a diagnostic tooltip linked to the check page:
 
 ```kotlin
-// DATA_CLASS_PUBLIC_API, UNDOCUMENTED_PUBLIC_API
+// !diag[/Point/] DATA_CLASS_PUBLIC_API ["Point"]
+// !diag[/Point/] UNDOCUMENTED_PUBLIC_API ["class","Point"]
 public data class Point(public val x: Int, public val y: Int)
 ```
 
-The names have to exist in `diagnostics.json`, otherwise the build fails. Every other comment is
-left as written and shown as part of the sample.
+Use the inline regex range from the matching `<!DIAGNOSTIC!>...<!>` marker under
+`compiler-plugin/src/test/data/diagnostics`. After the diagnostic name, provide the parameters
+passed to `reportOn` as a JSON string array, in placeholder order. Reports on the same range use
+separate annotations and are combined into one tooltip. Reports on different parts of the next
+code line stay independent:
+
+```kotlin
+// !diag[/tags/] UNDOCUMENTED_PUBLIC_API ["property","tags"]
+// !diag[/MutableList<String>/] MUTABLE_COLLECTION_PUBLIC_API ["property","tags","MutableList"]
+public val tags: MutableList<String>
+```
+
+The name has to exist in `diagnostics.json`, the parameter count has to fill every message
+placeholder, and the regex has to match, otherwise the build fails. Every other comment stays as
+written and is shown as part of the sample.
+
+When a long parameter value is shared with the compiler checker, define it once in the
+diagnostic's `parameterValues` object in `diagnostics.json`. Reference a value with `$name`, or
+fill its own placeholders with `$name(argument1,argument2)`:
+
+```kotlin
+// !diag[/refresh/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["refresh","$suspend"]
+public suspend fun refresh() { }
+
+// !diag[/onEach/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["onEach","$unitFunctionType(action)"]
+public fun onEach(action: (Int) -> Unit) { }
+```
+
+The docs tooltip and generated compiler code resolve the same named values. Diagnostic messages
+are rendered as Markdown in the tooltip, including inline code and links.
 
 ## Page map
 
@@ -130,7 +159,7 @@ Use exactly this structure and section order for every page under `checks/`:
 Two or three sentences on the exact scope, plus a minimal triggering example:
 
     ```kotlin
-    // <DIAGNOSTIC_NAME>
+    // !diag[/<compiler-reported range>/] <DIAGNOSTIC_NAME> ["<parameter>"]
     public data class User(val name: String)
     ```
 
@@ -145,7 +174,7 @@ authors' guidelines page.
     ```kotlin
     // the hazardous shape, possibly annotated with a comment on what breaks later
     //
-    // <DIAGNOSTIC_NAME>
+    // !diag[/<compiler-reported range>/] <DIAGNOSTIC_NAME> ["<parameter>"]
     <example-dont>
     ```
 

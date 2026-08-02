@@ -84,7 +84,38 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
         appendLine("    /** The template of [name], failing loudly when diagnostics.json does not know it. */")
         appendLine("    fun messageFor(name: String): String =")
         appendLine("        messages[name] ?: error(\"No message for the diagnostic '\$name' in diagnostics.json\")")
+        appendLine()
+        appendParameterValues(entries)
+        appendLine()
+        appendLine("    /** Resolves a named diagnostic parameter value and fills its own placeholders. */")
+        appendLine("    fun parameterValueFor(diagnostic: String, value: String, vararg parameters: String): String {")
+        appendLine("        val template = parameterValues[diagnostic]?.get(value)")
+        appendLine("            ?: error(\"No parameter value '\$value' for diagnostic '\$diagnostic' in diagnostics.json\")")
+        appendLine("        return parameters.foldIndexed(template) { index, result, parameter ->")
+        appendLine("            result.replace(\"{\$index}\", parameter)")
+        appendLine("        }")
+        appendLine("    }")
         appendLine("}")
+    }
+
+    private fun StringBuilder.appendParameterValues(entries: List<Map<String, Any>>) {
+        appendLine("    /** Named values used as parameters inside diagnostic message templates. */")
+        appendLine("    private val parameterValues: Map<String, Map<String, String>> = mapOf(")
+        for (entry in entries) {
+            @Suppress("UNCHECKED_CAST")
+            val values = entry["parameterValues"] as Map<String, String>? ?: continue
+            appendLine("        \"${entry["name"]}\" to mapOf(")
+            for ((name, value) in values) {
+                appendLine("            \"$name\" to")
+                val chunks = value.wrap()
+                for ((index, chunk) in chunks.withIndex()) {
+                    val tail = if (index == chunks.lastIndex) "," else " +"
+                    appendLine("                \"${chunk.escaped()}\"$tail")
+                }
+            }
+            appendLine("        ),")
+        }
+        appendLine("    )")
     }
 
     private fun StringBuilder.appendEntry(entry: Map<String, Any>, docsBaseUrl: String) {

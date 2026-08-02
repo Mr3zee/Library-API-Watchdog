@@ -101,9 +101,10 @@ bootstrap/dev repositories configured in `settings.gradle.kts`.
 - `:compiler-plugin`'s `generateDiagnosticMessages` task emits `WatchdogDiagnosticMessages.kt` into a generated source
   dir. It appends `See <docsBaseUrl><docs> for details.` to every message, then the trailer, and doubles `'` for
   `java.text.MessageFormat` in parameterized messages.
-- The documentation website: `docs/plugins/diagnostics.mjs` and `docs/src/components/Code.tsx` turn the
-  `// DIAGNOSTIC_NAME` comments in Kotlin samples into markers linking to the matching check page, failing the docs
-  build on an unknown name.
+- The documentation website: `docs/plugins/remark-code-samples.mjs` validates the
+  `// !diag[/range/] DIAGNOSTIC_NAME ["parameter"]` Code Hike annotations in Kotlin samples, and
+  `docs/src/components/Code.tsx` renders the exact compiler-reported ranges as diagnostic underlines and tooltips.
+  The docs build fails on an unknown name or a range that matches no code.
 
 ### Documentation website
 

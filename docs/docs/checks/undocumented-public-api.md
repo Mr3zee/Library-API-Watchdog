@@ -17,7 +17,7 @@ entries - is flagged when it carries no KDoc. Only the presence of a KDoc is che
 content:
 
 ```kotlin
-// UNDOCUMENTED_PUBLIC_API
+// !diag[/Cache/] UNDOCUMENTED_PUBLIC_API ["class","Cache"]
 public class Cache
 ```
 
@@ -31,9 +31,9 @@ supported. Writing the contract down helps your library avoid these issues. See 
 ### Don't
 
 ```kotlin
-// UNDOCUMENTED_PUBLIC_API
+// !diag[/Cache/] UNDOCUMENTED_PUBLIC_API ["class","Cache"]
 public class Cache {
-    // UNDOCUMENTED_PUBLIC_API
+    // !diag[/get/] UNDOCUMENTED_PUBLIC_API ["function","get"]
     public fun get(key: String): String? = store[key]
 
     private val store: MutableMap<String, String> = mutableMapOf()
@@ -63,9 +63,9 @@ A class KDoc alone doesn't document its constructor properties. Each one still n
 ```kotlin
 /** A user profile. */
 public class Profile(
-    // UNDOCUMENTED_PUBLIC_API
+    // !diag[/name/] UNDOCUMENTED_PUBLIC_API ["property","name"]
     public val name: String,
-    // UNDOCUMENTED_PUBLIC_API
+    // !diag[/age/] UNDOCUMENTED_PUBLIC_API ["property","age"]
     public val age: Int,
 )
 ```

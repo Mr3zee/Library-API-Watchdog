@@ -16,7 +16,7 @@ The check flags `Pair` and `Triple` in return types, property types, parameter t
 parameter bounds, including their type arguments (like `List<Pair<Int, String>>`):
 
 ```kotlin
-// PAIR_OR_TRIPLE_PUBLIC_API
+// !diag[/Pair<Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","locate","Pair"]
 public fun locate(): Pair<Int, Int> = 0 to 0
 ```
 
@@ -32,13 +32,13 @@ optional property with a default value. See the
 ### Don't
 
 ```kotlin
-// PAIR_OR_TRIPLE_PUBLIC_API
+// !diag[/Triple<Int, Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","dimensions","Triple"]
 public fun dimensions(): Triple<Int, Int, Int> = Triple(0, 0, 0)
 
-// PAIR_OR_TRIPLE_PUBLIC_API
+// !diag[/Pair<Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["property","position","Pair"]
 public class Anchor(public val position: Pair<Int, Int>)
 
-// PAIR_OR_TRIPLE_PUBLIC_API
+// !diag[/List<Pair<Int, Int>>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","edges","Pair"]
 public fun edges(): List<Pair<Int, Int>> = emptyList()
 
 ```
