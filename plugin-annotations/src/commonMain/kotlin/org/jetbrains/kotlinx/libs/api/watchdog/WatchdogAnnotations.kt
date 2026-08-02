@@ -279,9 +279,9 @@ public annotation class IntentionallyPairOrTriple(
  *
  * The libs-api-watchdog compiler plugin warns about
  * [Boolean value parameters](https://kotlinlang.org/docs/api-guidelines-readability.html#avoid-using-the-boolean-type-as-an-argument)
- * - including nullable and `vararg` ones - in publicly visible functions, because at the call
- * site a positional `true`/`false` argument reveals nothing about its meaning, and users
- * can't be forced to use named arguments. Prefer separate, descriptively named functions for
+ * - including nullable, `vararg`, and context ones - in publicly visible functions, because at
+ * the call site a bare `true`/`false` reveals nothing about its meaning, and users can't be
+ * forced to name the argument they pass. Prefer separate, descriptively named functions for
  * each mode, or an enum class naming the modes. Constructors and constructor functions -
  * factory functions named after the type they create - are not checked: a construction site
  * stores data in the named type rather than switching an operation mode. Apply this annotation

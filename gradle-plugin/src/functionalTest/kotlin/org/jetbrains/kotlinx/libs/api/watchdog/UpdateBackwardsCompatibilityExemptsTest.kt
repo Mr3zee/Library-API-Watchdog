@@ -37,6 +37,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
         assertContains(fixedText, "@IntentionallyMutableCollection($reason)\npublic fun leakState()")
         assertContains(fixedText, "@IntentionallyPairOrTriple($reason)\npublic fun locateOrigin()")
         assertContains(fixedText, "@IntentionallyBooleanParameter($reason)\npublic fun toggleWork(enabled: Boolean)")
+        assertContains(fixedText, "@IntentionallyBooleanParameter($reason)\ncontext(enabled: Boolean)\npublic fun toggleContextWork()")
         assertContains(fixedText, "@IntentionallyNullableBoolean($reason)\npublic fun lastKnownState()")
         assertContains(fixedText, "@IntentionallyRequiredParameterAfterOptional($reason)\n@IntentionallyWithoutJvmOverloads($reason)\npublic fun retryWork",)
         assertContains(fixedText, "@IntentionallyInconsistentParameterOrder($reason)\npublic fun drawShape(y: Int, x: Int, scale: Double)")
@@ -326,6 +327,10 @@ private val fixableFile = """
 
     /** A function switched by an opaque positional flag. */
     public fun toggleWork(enabled: Boolean) {}
+
+    /** A function switched by a flag the call site puts into scope. */
+    context(enabled: Boolean)
+    public fun toggleContextWork() {}
 
     /** A query returning a silent three-state flag. */
     public fun lastKnownState(): Boolean? = null

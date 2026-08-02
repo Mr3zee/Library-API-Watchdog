@@ -101,8 +101,8 @@ working tree and review the diff; from then on the checks only guard newly added
 - [`PAIR_OR_TRIPLE_PUBLIC_API`](https://mr3zee.github.io/libs-api-watchdog/pair-or-triple-public-api.html) -
   `Pair` and `Triple` in public signatures; tuple components carry no domain meaning.
 - [`BOOLEAN_PARAMETER_PUBLIC_API`](https://mr3zee.github.io/libs-api-watchdog/boolean-parameter-public-api.html) -
-  Boolean parameters of public functions; a positional `true`/`false` reveals nothing at the
-  call site.
+  Boolean parameters of public functions, context parameters included; a bare `true`/`false`
+  reveals nothing at the call site.
 - [`NULLABLE_BOOLEAN_PUBLIC_API`](https://mr3zee.github.io/libs-api-watchdog/nullable-boolean-public-api.html) -
   `Boolean?` in public signatures: three states with only two of them named.
 - [`REQUIRED_PARAMETER_AFTER_OPTIONAL`](https://mr3zee.github.io/libs-api-watchdog/required-parameter-after-optional.html) -

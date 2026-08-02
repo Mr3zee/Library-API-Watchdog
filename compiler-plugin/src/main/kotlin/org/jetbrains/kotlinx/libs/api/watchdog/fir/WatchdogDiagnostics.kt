@@ -351,8 +351,8 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         map.put(
             diagnostic = WatchdogDiagnostics.BOOLEAN_PARAMETER_PUBLIC_API,
             message = "The function ''{0}'' takes the Boolean parameter ''{1}''. At the call " +
-                    "site a positional `true`/`false` argument reveals nothing about its " +
-                    "meaning, and users can''t be forced to use named arguments. Introduce " +
+                    "site a bare `true`/`false` reveals nothing about its meaning, and users " +
+                    "can''t be forced to name the argument they pass. Introduce " +
                     "separate, descriptively named functions for each mode, or replace the " +
                     "parameter with an enum class, or mark it with " +
                     "@IntentionallyBooleanParameter if the Boolean parameter is intended. See " +

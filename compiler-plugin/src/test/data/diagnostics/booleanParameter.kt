@@ -27,6 +27,22 @@ public fun aliased(<!BOOLEAN_PARAMETER_PUBLIC_API!>flag<!>: Flag) {}
 // A vararg Boolean parameter takes the same positional true/false arguments.
 public fun varargFlags(vararg <!BOOLEAN_PARAMETER_PUBLIC_API!>flags<!>: Boolean) {}
 
+// A Boolean context parameter hides the flag even better: the call site writes nothing at all
+// and the value comes from whatever Boolean is in scope there.
+
+context(<!BOOLEAN_PARAMETER_PUBLIC_API!>verbose<!>: Boolean)
+public fun logLine(message: String) {}
+
+// An unnamed context parameter doesn't name the flag anywhere.
+context(<!BOOLEAN_PARAMETER_PUBLIC_API!>_<!>: Boolean)
+public fun trace(message: String) {}
+
+// Context parameters of other types are not flags: no warning.
+public class Logger
+
+context(logger: Logger)
+public fun logNamed(message: String) {}
+
 // Protected members are part of the public API surface.
 public abstract class Base {
     protected fun guarded(<!BOOLEAN_PARAMETER_PUBLIC_API!>flag<!>: Boolean) {}
@@ -96,6 +112,15 @@ public fun acknowledgedParameter(
     @IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN) accepted: Boolean,
     <!BOOLEAN_PARAMETER_PUBLIC_API!>rejected<!>: Boolean,
 ) {}
+
+// The function-level exemption covers context parameters too.
+@IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)
+context(verbose: Boolean)
+public fun acknowledgedContext(message: String) {}
+
+// And a context parameter carries its own exemption.
+context(@IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN) verbose: Boolean)
+public fun acknowledgedContextParameter(message: String) {}
 
 // Booleans in result and property positions are not arguments: no warning.
 

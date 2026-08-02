@@ -9,8 +9,8 @@ import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirValueParameter
-import org.jetbrains.kotlin.fir.declarations.FirValueParameterKind
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
+import org.jetbrains.kotlin.fir.declarations.isLegacyContextReceiver
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
@@ -27,7 +27,9 @@ import org.jetbrains.kotlin.name.StandardClassIds
  * should model the modes as separate, descriptively named functions or as an enum class instead.
  * Nullable Booleans are three-state flags and count too, a type alias doesn't change what
  * users pass, and a `vararg` Boolean parameter takes the same positional `true`/`false`
- * arguments (only the declared element type matters there, not the array carrying it). Authors
+ * arguments (only the declared element type matters there, not the array carrying it). Context
+ * parameters count as well, and hide the flag even better: nothing is written at the call site
+ * at all, the value is picked up from whatever Boolean happens to be in scope there. Authors
  * acknowledge a deliberate Boolean parameter with `@IntentionallyBooleanParameter` - on the
  * function, where it covers every parameter, or on a single parameter.
  *
@@ -38,8 +40,7 @@ import org.jetbrains.kotlin.name.StandardClassIds
  *   `fun Widget(visible: Boolean): Widget` (the alias name counts for a factory returning a type
  *   alias): they share the constructor call shape by design.
  * - Overrides: their signature is fixed by the overridden declaration and is reported there.
- * - Non-regular parameters (context parameters): implicit values are never passed as positional
- *   arguments.
+ * - Legacy context receivers: K2 no longer resolves them, so they can't reach a published API.
  *
  * Boolean return types and Boolean properties are not arguments and are not checked.
  */
@@ -57,8 +58,8 @@ internal class BooleanParameterChecker(
         }
 
         val factory = severities[WatchdogDiagnostics.BOOLEAN_PARAMETER_PUBLIC_API] ?: return
-        for (parameter in declaration.valueParameters) {
-            if (parameter.valueParameterKind != FirValueParameterKind.Regular || parameter.isExempt()) {
+        for (parameter in declaration.contextParameters + declaration.valueParameters) {
+            if (parameter.isLegacyContextReceiver() || parameter.isExempt()) {
                 continue
             }
             if (parameter.declaredType().classId != StandardClassIds.Boolean) {

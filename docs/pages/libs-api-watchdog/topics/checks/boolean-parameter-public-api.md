@@ -11,7 +11,7 @@
 
 ## What it reports
 
-Every regular value parameter of a public or protected function whose
+Every value parameter, and every context parameter, of a public or protected function whose
 type is `Boolean`, including the declared element type of `vararg` parameter.
 
 ```kotlin
@@ -46,6 +46,18 @@ public fun disableLogging(): Unit {}
 - A nullable `Boolean?` parameter is still a positional flag, just a three-state one, so it is
   reported the same way. It is also reported in [](nullable-boolean-public-api.md).
 - A type alias to `Boolean` doesn't change what users pass and is still reported.
+- A `Boolean` context parameter is reported too, and it hides the flag even better than a
+  positional argument: the caller writes nothing at the call site, and the value is picked up
+  from whatever `Boolean` happens to be in scope there.
+
+  ```kotlin
+  // BOOLEAN_PARAMETER_PUBLIC_API
+  context(verbose: Boolean)
+  public fun logLine(message: String): Unit {}
+  ```
+
+  Legacy context receivers are not reported: K2 no longer resolves them, so they can't reach a
+  published API.
 - Overrides are never reported: their signature is fixed by the overridden declaration, which is
   reported there instead.
 - Constructors, and constructor functions - factory functions named after the type they create,
