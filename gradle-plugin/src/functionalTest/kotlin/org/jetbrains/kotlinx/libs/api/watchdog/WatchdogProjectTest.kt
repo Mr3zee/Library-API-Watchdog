@@ -264,6 +264,84 @@ class WatchdogProjectTest {
     }
 
     @Test
+    fun testSourcesAreNotChecked() {
+        // Test sources are not published, so they carry no API contract to watch. The same
+        // declaration in main sources fails the build, see failsWithErrorsOnUnacknowledgedApiByDefault.
+        val project = object : WatchdogProject() {
+            override fun sources() = listOf(source(cleanMainFile), testOnlySource())
+        }.gradleProject
+
+        val result = build(project.rootDir, "compileTestKotlin")
+        result.assertNoTestSourceDiagnostics()
+    }
+
+    @Test
+    fun testSourcesAreNotCheckedWhenExplicitApiModeIsForcedOnEveryCompilation() {
+        // A raw compiler flag reaches test compilations too, unlike `kotlin { explicitApi() }`,
+        // which the Kotlin Gradle plugin deliberately keeps off for them.
+        val project = object : WatchdogProject(
+            explicitApi = false,
+            extraBuildScript = """
+                kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") } }
+            """.trimIndent(),
+        ) {
+            override fun sources() = listOf(source(cleanMainFile), testOnlySource())
+        }.gradleProject
+
+        val result = build(project.rootDir, "compileTestKotlin")
+        result.assertNoTestSourceDiagnostics()
+    }
+
+    @Test
+    fun multiplatformTestSourcesAreNotChecked() {
+        // Every multiplatform target compiles the shared `commonTest` source set along with its
+        // own, so the exclusion has to hold for both. The raw flag is the strict case here too.
+        val project = object : WatchdogProject(
+            multiplatform = true,
+            explicitApi = false,
+            extraBuildScript = """
+                kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") } }
+            """.trimIndent(),
+        ) {
+            override fun multiplatformTargetsBlock(): String = "kotlin {\n  jvm()\n}\n"
+
+            override fun sources() = listOf(
+                source(cleanMainFile),
+                testOnlySource("commonTest"),
+                testOnlySource("jvmTest", "PlatformTestOnlyHelper"),
+            )
+        }.gradleProject
+
+        val result = build(project.rootDir, "compileTestKotlinJvm")
+        result.assertNoTestSourceDiagnostics()
+    }
+
+    @Test
+    fun compilationsNamedAfterATestVariantAreNotChecked() {
+        // Only the Kotlin/JVM and multiplatform targets have a compilation literally called
+        // `test`. Android names them after the variant (`debugUnitTest`, `debugAndroidTest`), the
+        // Android target of a multiplatform project uses `hostTest` and `deviceTest`, and custom
+        // compilations follow the same shape. A locally declared one stands in for all of them,
+        // since an Android build would need the SDK installed.
+        val project = object : WatchdogProject(
+            explicitApi = false,
+            extraBuildScript = """
+                kotlin {
+                    compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") }
+                    target.compilations.create("integrationTest") {
+                        associateWith(target.compilations.getByName("main"))
+                    }
+                }
+            """.trimIndent(),
+        ) {
+            override fun sources() = listOf(source(cleanMainFile), unexemptedTestOnlySource("integrationTest"))
+        }.gradleProject
+
+        val result = build(project.rootDir, "compileIntegrationTestKotlin")
+        result.assertNoTestSourceDiagnostics()
+    }
+
+    @Test
     fun internalAnnotationMarkerExemptsAcrossModules() {
         // The marker annotation lives in `:lib`, so the consuming root module reads the
         // @InternalAnnotationMarker meta-annotation from the compiled dependency.
@@ -512,6 +590,43 @@ class WatchdogProjectTest {
         assertFalse(result.output.contains("but no binary compatibility validation is enabled"))
     }
 
+    /**
+     * The test source set counterpart of [source], carrying the unwatched declarations.
+     * [className] keeps the file names apart when several test source sets take part in one build.
+     */
+    private fun testOnlySource(sourceSet: String = "test", className: String = "TestOnlyHelper"): Source =
+        Source.kotlin(
+            buildString {
+                appendLine("package test")
+                appendLine("import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyOpen")
+                appendLine()
+                appendLine(testOnlyFile(className))
+            }
+        ).withSourceSet(sourceSet).withPath("test", className).build()
+
+    /**
+     * [testOnlySource] without the exemption annotation. The plugin adds the annotations dependency
+     * only to the compilations it applies to, so this fixture doesn't depend on whether a custom
+     * test compilation inherits that dependency from the main one it is associated with.
+     */
+    private fun unexemptedTestOnlySource(sourceSet: String, className: String = "TestOnlyHelper"): Source =
+        Source.kotlin(
+            buildString {
+                appendLine("package test")
+                appendLine()
+                appendLine(unexemptedTestOnlyFile(className))
+            }
+        ).withSourceSet(sourceSet).withPath("test", className).build()
+
+    /** Asserts nothing in [testOnlyFile] was reported by any checker. */
+    private fun BuildResult.assertNoTestSourceDiagnostics() {
+        assertFalse(output.contains("can be subclassed outside the library"))
+        assertFalse(output.contains("has no KDoc"))
+        assertFalse(output.contains("exposes a nullable Boolean"))
+        assertFalse(output.contains("exemption doesn't explain why it is applied"))
+        assertFalse(output.contains("TestOnlyHelper"))
+    }
+
     /** Asserts the message was reported with the given compiler severity prefix (`e: ` or `w: `). */
     private fun BuildResult.assertDiagnosticReported(severityPrefix: String, message: String) {
         assertTrue(
@@ -520,6 +635,40 @@ class WatchdogProjectTest {
         )
     }
 }
+
+/** A main-source declaration no checker has anything to say about. */
+@Suppress("RedundantVisibilityModifier")
+@Language("kotlin")
+private val cleanMainFile = """
+    /** A documented, final, closed declaration. */
+    public class Settled {
+        /** Returns the only supported mode. */
+        public fun mode(): Int = 0
+    }
+""".trimIndent()
+
+/**
+ * A test-source declaration several checkers would report if they ran on test sources. The bare
+ * exemption also covers the one diagnostic no configuration can demote,
+ * `EXEMPTION_WITHOUT_EXPLANATION`, and proves the annotations stay resolvable from test sources.
+ */
+@Suppress("RedundantVisibilityModifier")
+@Language("kotlin")
+private fun testOnlyFile(className: String) = """
+    @IntentionallyOpen
+    public open class $className {
+        public fun flag(): Boolean? = null
+    }
+""".trimIndent()
+
+/** [testOnlyFile] stripped of the exemption, so that it needs nothing on the compile classpath. */
+@Suppress("RedundantVisibilityModifier")
+@Language("kotlin")
+private fun unexemptedTestOnlyFile(className: String) = """
+    public open class $className {
+        public fun flag(): Boolean? = null
+    }
+""".trimIndent()
 
 @Suppress("RedundantVisibilityModifier", "RedundantSuspendModifier", "MayBeConstant")
 @Language("kotlin")

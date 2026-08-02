@@ -76,7 +76,9 @@ bootstrap/dev repositories configured in `settings.gradle.kts`.
   imports). `ExemptionRegistry` maps each diagnostic to its annotation and target strategy or marks it unfixable;
   request/response travel as `key=value` files (`FixerProtocol`). Compile-only deps; at runtime the Gradle task
   supplies `kotlin-compiler-embeddable` of the project's Kotlin version.
-- `:gradle-plugin` - `WatchdogSupportPlugin` applies the compiler plugin and the annotations dependency;
+- `:gradle-plugin` - `WatchdogSupportPlugin` applies the compiler plugin and the annotations dependency to every
+  compilation except test compilations (`isApplicable`), so a raw `-Xexplicit-api` flag spread over all compilations
+  can't turn the checks on for unpublished test sources;
   `WatchdogGradleExtension` (`apiWatchdog { ... }`) exposes one severity `Property` per configurable diagnostic and
   turns them into `diagnosticSeverity` subplugin options. Realizing `UpdateBackwardsCompatibilityExemptsTask`
   (untracked) activates an internal collection property that injects a unique `diagnosticsOutputFile` into every main

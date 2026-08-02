@@ -20,6 +20,16 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
     /** Enabled lazily when Gradle realizes the update task. Never exposed as user configuration. */
     private lateinit var collectDiagnosticsForExempts: Property<Boolean>
 
+    /**
+     * Test sources are never published, so they carry no API contract to watch. The Kotlin Gradle
+     * plugin already keeps explicit API mode off for test compilations, which is enough for the
+     * usual `kotlin { explicitApi() }` setup, but a raw `-Xexplicit-api` flag added to every
+     * compilation would otherwise turn the checks on there too. Skipping the compiler plugin for
+     * test compilations makes the exclusion hold whichever way explicit API mode is enabled.
+     */
+    override fun isApplicable(kotlinCompilation: KotlinCompilation<*>): Boolean =
+        !kotlinCompilation.isTestCompilation()
+
     override fun apply(target: Project) {
         val extension = target.extensions.create("apiWatchdog", WatchdogGradleExtension::class.java)
         collectDiagnosticsForExempts = target.objects.property(Boolean::class.java).convention(false)
@@ -136,6 +146,21 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
     private companion object {
         /** The name of the task that acknowledges existing diagnostics as backwards-compatibility exemptions. */
         private const val UPDATE_EXEMPTS_TASK_NAME = "updateBackwardsCompatibilityExempts"
+
+        /**
+         * The suffix every test compilation that isn't simply called `test` carries. Android
+         * compilations are named after their variant (`debugUnitTest`, `debugAndroidTest`,
+         * `releaseScreenshotTest`), and the Android target of a multiplatform project names them
+         * `hostTest` and `deviceTest`, so there is no single name to recognize them by.
+         */
+        private const val TEST_COMPILATION_NAME_SUFFIX = "Test"
+
+        /**
+         * Whether the compilation builds test sources. Test fixtures are deliberately not treated
+         * as tests: they are published alongside the library, so their API is worth watching.
+         */
+        private fun KotlinCompilation<*>.isTestCompilation(): Boolean =
+            name == KotlinCompilation.TEST_COMPILATION_NAME || name.endsWith(TEST_COMPILATION_NAME_SUFFIX)
 
         /** The artifact carrying the standalone fixer tool, published next to this plugin. */
         private const val FIXER_ARTIFACT_ID = "exempts-fixer"
