@@ -9,12 +9,6 @@ FILE: lib.kt
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|(description = String(Implementation detail of the inline API.) [evaluated = String(Implementation detail of the inline API.)]) @R|kotlin/PublishedApi|() internal final class LibAcknowledgedClass : R|kotlin/Any| {
-        public constructor(): R|libapi/LibAcknowledgedClass| {
-            super<R|kotlin/Any|>()
-        }
-
-    }
     @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|]) @R|kotlin/PublishedApi|() internal open class LibPublishedOpenClass : R|kotlin/Any| {
         public constructor(): R|libapi/LibPublishedOpenClass| {
             super<R|kotlin/Any|>()

@@ -17,12 +17,6 @@ FILE: publishedApi.kt
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() @R|kotlin/PublishedApi|() internal final class AcknowledgedPublishedClass : R|kotlin/Any| {
-        public constructor(): R|foo/bar/AcknowledgedPublishedClass| {
-            super<R|kotlin/Any|>()
-        }
-
-    }
     public final class PublicOuterWithPublishedMembers : R|kotlin/Any| {
         public constructor(): R|foo/bar/PublicOuterWithPublishedMembers| {
             super<R|kotlin/Any|>()
@@ -31,7 +25,7 @@ FILE: publishedApi.kt
         @R|kotlin/PublishedApi|() internal final fun publishedMember(): R|kotlin/Unit| {
         }
 
-        @R|kotlin/PublishedApi|() internal final val documentedPublishedMember: R|kotlin/Int| = Int(0)
+        @R|kotlin/PublishedApi|() internal final val publishedMemberProperty: R|kotlin/Int| = Int(0)
             internal get(): R|kotlin/Int|
 
         internal final fun plainInternalMember(): R|kotlin/Unit| {
@@ -40,7 +34,7 @@ FILE: publishedApi.kt
         public final inline fun useMembers(block: R|() -> kotlin/Unit|): R|kotlin/Int| {
             R|<local>/block|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()
             this@R|foo/bar/PublicOuterWithPublishedMembers|.R|foo/bar/PublicOuterWithPublishedMembers.publishedMember|()
-            ^useMembers this@R|foo/bar/PublicOuterWithPublishedMembers|.R|foo/bar/PublicOuterWithPublishedMembers.documentedPublishedMember|
+            ^useMembers this@R|foo/bar/PublicOuterWithPublishedMembers|.R|foo/bar/PublicOuterWithPublishedMembers.publishedMemberProperty|
         }
 
     }
@@ -56,10 +50,6 @@ FILE: publishedApi.kt
             this<R|foo/bar/WithPublishedConstructor|>(Int(0))
         }
 
-        @R|kotlin/PublishedApi|() internal constructor(a: R|kotlin/Int|, b: R|kotlin/Int|): R|foo/bar/WithPublishedConstructor| {
-            this<R|foo/bar/WithPublishedConstructor|>(R|<local>/a|.R|kotlin/Int.plus|(R|<local>/b|))
-        }
-
     }
     @R|kotlin/PublishedApi|() internal final class PublishedOuter : R|kotlin/Any| {
         public constructor(): R|foo/bar/PublishedOuter| {
@@ -67,9 +57,6 @@ FILE: publishedApi.kt
         }
 
         public final fun undocumentedMember(): R|kotlin/Unit| {
-        }
-
-        public final fun documentedMember(): R|kotlin/Unit| {
         }
 
         private final fun privateMember(): R|kotlin/Unit| {
@@ -93,8 +80,7 @@ FILE: publishedApi.kt
             super<R|kotlin/Enum<foo/bar/PublishedEnum>|>()
         }
 
-        public final static enum entry DOCUMENTED_ENTRY: R|foo/bar/PublishedEnum|
-        public final static enum entry UNDOCUMENTED_ENTRY: R|foo/bar/PublishedEnum|
+        public final static enum entry ENTRY: R|foo/bar/PublishedEnum|
         public final static fun values(): R|kotlin/Array<foo/bar/PublishedEnum>| {
         }
 

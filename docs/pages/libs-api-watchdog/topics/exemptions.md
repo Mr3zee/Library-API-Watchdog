@@ -111,6 +111,8 @@ other declaration, so it still needs a KDoc comment and the rest.
 Note that `@PublishedApi` declarations are not affected by this distinction between source
 visibility and API surface in the opposite direction: they are `internal` in source, but a public
 inline function can expose them to users, so they are watched exactly like public declarations.
+The only exception is [](undocumented-public-api.md): a declaration that stays `internal` in
+sources is never referenced by name in user code, so it needs no KDoc.
 
 ## Where the annotations come from
 

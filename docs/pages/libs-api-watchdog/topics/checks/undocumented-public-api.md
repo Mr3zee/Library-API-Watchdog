@@ -92,7 +92,10 @@ public class Profile(
   have no source of their own and are never reported.
 - A plain `//` or `/* */` comment doesn't count, only a KDoc block (`/** ... */`) satisfies the
   check.
-- `@PublishedApi` annotated declarations are skipped during this check.
+- Declarations that only `@PublishedApi` puts on the API surface are skipped, together with
+  everything inside a `@PublishedApi internal` class. They stay `internal` in sources, so no user
+  writes code against them and there is no usage contract to document - unlike their binary shape,
+  which the other checks still watch.
 
 ## Exemption
 

@@ -152,6 +152,17 @@ private fun FirBasedSymbol<*>.hasInternalApiMarker(): Boolean =
             ?.hasAnnotation(WatchdogClassIds.InternalAnnotationMarker, context.session) == true
     }
 
+/**
+ * Whether the declaration reaches the API surface only through `@PublishedApi`: it is internal in
+ * sources - directly or because an enclosing declaration is - so users can't reference it by name,
+ * even though inline function bodies expose it to their compiled code. Checks that are about how
+ * users write code against a declaration, rather than about its binary shape, skip it.
+ *
+ * Only meaningful for a declaration that already passed [isWatchedPublicApi]: nothing else is
+ * watched in the first place.
+ */
+internal fun FirMemberDeclaration.isPublishedApiOnly(): Boolean = !effectiveVisibility.publicApi
+
 /** `value class` sets the `isValue` status flag; `isInline` covers the legacy `inline class`. */
 internal fun FirClassSymbol<*>.isValueClass(): Boolean =
     resolvedStatus.let { it.isValue || it.isInline }

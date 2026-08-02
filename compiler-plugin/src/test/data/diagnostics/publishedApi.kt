@@ -6,42 +6,35 @@ package foo.bar
 
 import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyExhaustive
 import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyOpen
-import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyUndocumented
 
 // A @PublishedApi declaration is internal in sources but part of the published binary API:
-// public inline functions expose it to users, so every check treats it as public API.
-
-// Undocumented published declarations: should warn.
-
-@PublishedApi
-internal class <!UNDOCUMENTED_PUBLIC_API!>PublishedClass<!>
+// public inline functions expose it to users, so the checks about its binary shape treat it as
+// public API. The KDoc check is not one of them: the declaration stays unreferenceable by name,
+// so no documentation is required.
 
 @PublishedApi
-internal fun <!UNDOCUMENTED_PUBLIC_API!>publishedFunction<!>() {}
+internal class PublishedClass
 
 @PublishedApi
-internal val <!UNDOCUMENTED_PUBLIC_API!>publishedProperty<!>: Int = 0
+internal fun publishedFunction() {}
 
-// Documentation and acknowledgments work on published declarations like on public ones.
+@PublishedApi
+internal val publishedProperty: Int = 0
 
-/** Documented. */
+/** Documenting a published declaration anyway is fine. */
 @PublishedApi
 internal class DocumentedPublishedClass
 
-@IntentionallyUndocumented
-@PublishedApi
-internal class AcknowledgedPublishedClass
-
 // The typical shape: published members inside a public class, backing a public inline function.
+// The members need no KDoc, the public class and its inline function do.
 
 /** Documented. */
 public class PublicOuterWithPublishedMembers {
     @PublishedApi
-    internal fun <!UNDOCUMENTED_PUBLIC_API!>publishedMember<!>() {}
+    internal fun publishedMember() {}
 
-    /** Documented. */
     @PublishedApi
-    internal val documentedPublishedMember: Int = 0
+    internal val publishedMemberProperty: Int = 0
 
     internal fun plainInternalMember() {}
 
@@ -49,11 +42,11 @@ public class PublicOuterWithPublishedMembers {
     public inline fun useMembers(block: () -> Unit): Int {
         block()
         publishedMember()
-        return documentedPublishedMember
+        return publishedMemberProperty
     }
 }
 
-// A published secondary constructor is watched like a public one.
+// A published secondary constructor needs no KDoc either.
 
 /**
  * Documented.
@@ -61,52 +54,38 @@ public class PublicOuterWithPublishedMembers {
  * @property value Documented via the class KDoc.
  */
 public class WithPublishedConstructor private constructor(public val value: Int) {
-    <!UNDOCUMENTED_PUBLIC_API!>@PublishedApi internal constructor() : this(0)<!>
-
-    /** Documented published constructor. */
-    @PublishedApi internal constructor(a: Int, b: Int) : this(a + b)
+    @PublishedApi internal constructor() : this(0)
 }
 
-// Members of a published class are published with it; non-public members stay invisible.
+// Members of a published class are published with it, and stay internal in sources with it: no
+// KDoc required anywhere inside.
 
-/** Documented. */
 @PublishedApi
 internal class PublishedOuter {
-    fun <!UNDOCUMENTED_PUBLIC_API!>undocumentedMember<!>() {}
-
-    /** Documented. */
-    fun documentedMember() {}
+    fun undocumentedMember() {}
 
     private fun privateMember() {}
 }
 
 // Published subclassable API is watched by the open-API check.
 
-/** Documented. */
 @PublishedApi
 internal open class <!OPEN_API_WITHOUT_SUBCLASS_OPT_IN!>PublishedOpenClass<!>
 
-/** Documented. */
 @IntentionallyOpen
 @PublishedApi
 internal open class AcknowledgedPublishedOpenClass
 
 // Published exhaustively matchable API is watched by the exhaustive-API check.
 
-/** Documented. */
 @PublishedApi
 internal enum class <!EXHAUSTIVE_PUBLIC_API!>PublishedEnum<!> {
-    /** Documented. */
-    DOCUMENTED_ENTRY,
-
-    <!UNDOCUMENTED_PUBLIC_API!>UNDOCUMENTED_ENTRY<!>,
+    ENTRY,
 }
 
-/** Documented. */
 @IntentionallyExhaustive
 @PublishedApi
 internal enum class AcknowledgedPublishedEnum {
-    /** Documented. */
     ENTRY,
 }
 

@@ -34,6 +34,8 @@ import org.jetbrains.kotlin.text
  * `actual` declarations inherit the KDoc of the declaration they implement, the primary
  * constructor is described by `@constructor` and `@param` tags in the class KDoc, and a property
  * is covered by a matching `@property` tag there (`@param` also counts for constructor `val`s).
+ * Declarations that only `@PublishedApi` puts on the API surface are exempt too: they stay
+ * internal in sources, so no user writes code against them and there is no contract to document.
  * Authors acknowledge deliberately undocumented declarations with `@IntentionallyUndocumented`.
  */
 internal class UndocumentedApiChecker(
@@ -63,7 +65,7 @@ internal class UndocumentedApiChecker(
         }
 
         val (kind, name) = declaration.watchedKindAndName(context) ?: return
-        if (!declaration.isWatchedPublicApi()) {
+        if (!declaration.isWatchedPublicApi() || declaration.isPublishedApiOnly()) {
             return
         }
 
