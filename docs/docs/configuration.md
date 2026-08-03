@@ -4,9 +4,9 @@ Configuration options for `library-api-watchdog`.
 
 ## Apply the Gradle plugin
 
-Add the Space EAP repository to the plugin and dependency repositories in `settings.gradle.kts`:
+Add the Space EAP repository to the plugin and dependency repositories:
 
-```kotlin
+```kotlin settings.gradle.kts
 pluginManagement {
     repositories {
         maven("https://packages.jetbrains.team/maven/p/kt-lib/eap")
@@ -22,7 +22,9 @@ dependencyResolutionManagement {
 }
 ```
 
-```kotlin
+Then apply the plugin:
+
+```kotlin build.gradle.kts
 plugins {
     kotlin("library.api-watchdog") version "0.1.0-SNAPSHOT"
 }
@@ -32,7 +34,7 @@ library-api-watchdog is a Kotlin compiler plugin. It needs a Gradle
 project that applies the Kotlin plugin and turns on
 [explicit API mode](https://kotlinlang.org/docs/api-guidelines-simplicity.html#use-explicit-api-mode):
 
-```kotlin
+```kotlin build.gradle.kts
 kotlin {
     explicitApi()
 }
@@ -106,7 +108,7 @@ for enabled/disabled switches is it `true` by default.
 
 See the list of configurable properties:
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     suggestAbiValidation = true
     publicTypesMustBeTransitiveDependencies = true
@@ -206,7 +208,7 @@ Binary Compatibility Validator plugin is enabled alongside the watchdog, the plu
 incompatible changes to already-shipped API would go unnoticed. Set it to `false` to silence the
 warning:
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     suggestAbiValidation = false
 }

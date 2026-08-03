@@ -52,9 +52,9 @@ public class Config(public val tags: List<String>)
 
 ## Quick setup
 
-In each published module's `build.gradle.kts` add:
+Add Kotlin and Watchdog plugins and enable explicit API mode:
 
-```kotlin
+```kotlin build.gradle.kts
 plugins {
     kotlin("multiplatform") version "2.4.0"
     kotlin("library.api-watchdog") version "0.1.0-SNAPSHOT"
@@ -140,7 +140,7 @@ consumers. The whole group is disabled with `javaInterop { enabled = false }`. S
   annotations without an explicit `@Target`, whose default target set allows mostly no-op targets.
 - [DSL markers on no-op type positions](./checks/special/dsl-marker-noop-type-position.md): DSL markers written on type positions where scope control doesn't react to them.
 
-### Exemption hygiene
+### Meaningful exemptions
 
 - [Exemptions without explanation](./checks/special/exemption-without-explanation.md): an `@Intentionally*` exemption annotation left with the default `OTHER` reason and a blank description
   explains nothing. This diagnostic is always an error and can't be configured like the others.
