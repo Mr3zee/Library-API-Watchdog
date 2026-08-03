@@ -37,3 +37,6 @@ jobs:
 
       - name: Run compiler plugin tests
         run: ./gradlew :kotlin-library-api-watchdog-compiler-plugin:allVersionedTests
+
+      - name: Audit benchmark corpus
+        run: ./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkCorpusAudit

@@ -3,6 +3,7 @@ plugins {
     // Native loads compiler plugins in an isolated process, so the dev-kit registrar runtime
     // must travel inside the compiler plugin artifact.
     alias(libs.plugins.shadow)
+    id("library-api-watchdog.benchmark-conventions")
     id("library-api-watchdog.compiler-plugin-conventions")
     id("library-api-watchdog.space-publishing-conventions")
 }

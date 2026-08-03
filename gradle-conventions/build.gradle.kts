@@ -9,6 +9,10 @@ dependencies {
 
 gradlePlugin {
     plugins {
+        register("benchmarkConventions") {
+            id = "library-api-watchdog.benchmark-conventions"
+            implementationClass = "org.jetbrains.kotlinx.libs.api.watchdog.conventions.BenchmarkConventionPlugin"
+        }
         register("compilerPluginConventions") {
             id = "library-api-watchdog.compiler-plugin-conventions"
             implementationClass = "org.jetbrains.kotlinx.libs.api.watchdog.conventions.CompilerPluginConventionPlugin"
