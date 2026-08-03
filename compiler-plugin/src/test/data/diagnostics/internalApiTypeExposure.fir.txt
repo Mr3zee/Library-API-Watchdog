@@ -1,0 +1,127 @@
+Module: lib
+FILE: internalTypes.kt
+    package lib.api
+
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/InternalAnnotationMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.TYPEALIAS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.TYPEALIAS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|)]) public final annotation class InternalLibApi : R|kotlin/Annotation| {
+        public constructor(): R|lib/api/InternalLibApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|lib/api/InternalLibApi|() public open class InternalBase : R|kotlin/Any| {
+        public constructor(): R|lib/api/InternalBase| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|lib/api/InternalLibApi|() public open class InternalType : R|kotlin/Any| {
+        public constructor(): R|lib/api/InternalType| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final class Nested : R|kotlin/Any| {
+            public constructor(): R|lib/api/InternalType.Nested| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+    @R|lib/api/InternalLibApi|() public final typealias InternalAlias = R|kotlin/String|
+    @R|lib/api/InternalLibApi|() public final typealias AliasExpandingToInternal = R|lib/api/InternalType|
+    public final class SupportedType : R|kotlin/Any| {
+        public constructor(): R|lib/api/SupportedType| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+Module: main
+FILE: exposure.kt
+    package consumer
+
+    public final val leakedProperty: R|lib/api/InternalType| = R|lib/api/InternalType.InternalType|()
+        public get(): R|lib/api/InternalType|
+    public final val R|lib/api/InternalType|.leakedReceiver: R|kotlin/String|
+        public get(): R|kotlin/String| {
+            ^ String()
+        }
+    public final fun leakedReturn(): R|lib/api/InternalType| {
+        ^leakedReturn R|lib/api/InternalType.InternalType|()
+    }
+    public final fun R|lib/api/InternalType|.leakedFunctionReceiver(): R|kotlin/String| {
+        ^leakedFunctionReceiver String()
+    }
+    public final fun leakedParameter(value: R|lib/api/InternalType|): R|kotlin/Unit| {
+    }
+    context(value: R|lib/api/InternalType|)
+    public final fun leakedContextParameter(): R|kotlin/Unit| {
+    }
+    public final class LeakedConstructor : R|kotlin/Any| {
+        public constructor(value: R|lib/api/InternalType|): R|consumer/LeakedConstructor| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final class LeakedConstructorProperty : R|kotlin/Any| {
+        public constructor(value: R|lib/api/InternalType|): R|consumer/LeakedConstructorProperty| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val value: R|lib/api/InternalType| = R|<local>/value|
+            public get(): R|lib/api/InternalType|
+
+    }
+    public final class LeakedSupertype : R|lib/api/InternalBase| {
+        public constructor(): R|consumer/LeakedSupertype| {
+            super<R|lib/api/InternalBase|>()
+        }
+
+    }
+    public final class LeakedClassBound<T : R|lib/api/InternalType|> : R|kotlin/Any| {
+        public constructor<T : R|lib/api/InternalType|>(): R|consumer/LeakedClassBound<T>| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun <T : R|lib/api/InternalType|> leakedFunctionBound(value: R|T|): R|kotlin/Unit| {
+    }
+    public final typealias LeakedTypeAlias = R|lib/api/InternalType|
+    public final typealias LeakedMarkedAlias = R|{lib/api/InternalAlias=} kotlin/String|
+    public final typealias LeakedExpandedAlias = R|{lib/api/AliasExpandingToInternal=} lib/api/InternalType|
+    public final fun leakedNestedArgument(): R|kotlin/collections/List<lib/api/InternalType>| {
+        ^leakedNestedArgument R|kotlin/collections/emptyList|<R|lib/api/InternalType|>()
+    }
+    public final fun leakedNestedClass(): R|lib/api/InternalType.Nested| {
+        ^leakedNestedClass Q|lib/api/InternalType|.R|lib/api/InternalType.Nested.Nested|()
+    }
+    @R|kotlin/PublishedApi|() internal final fun publishedHelper(value: R|lib/api/InternalType|): R|lib/api/InternalType| {
+        ^publishedHelper R|<local>/value|
+    }
+    @R|kotlin/PublishedApi|() internal final class PublishedHolder<T : R|lib/api/InternalType|> : R|kotlin/Any| {
+        public constructor<T : R|lib/api/InternalType|>(value: R|lib/api/InternalType|): R|consumer/PublishedHolder<T>| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val value: R|lib/api/InternalType| = R|<local>/value|
+            public get(): R|lib/api/InternalType|
+
+    }
+    internal final fun implementationHelper(value: R|lib/api/InternalType|): R|lib/api/InternalType| {
+        ^implementationHelper R|<local>/value|
+    }
+    @R|lib/api/InternalLibApi|() public final fun internalApiFunction(value: R|lib/api/InternalType|): R|lib/api/InternalType| {
+        ^internalApiFunction R|<local>/value|
+    }
+    @R|lib/api/InternalLibApi|() public final class InternalApiContainer : R|kotlin/Any| {
+        public constructor(): R|consumer/InternalApiContainer| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun member(value: R|lib/api/InternalType|): R|lib/api/InternalType| {
+            ^member R|<local>/value|
+        }
+
+    }
+    public final fun supported(value: R|lib/api/SupportedType|): R|kotlin/collections/List<lib/api/SupportedType>| {
+        ^supported R|kotlin/collections/listOf|<R|lib/api/SupportedType|>(R|<local>/value|)
+    }

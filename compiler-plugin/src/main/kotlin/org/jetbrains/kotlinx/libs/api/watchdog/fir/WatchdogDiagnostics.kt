@@ -172,6 +172,9 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
      */
     val PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY by error3<KtElement, String, Name, String>()
 
+    /** Parameters: declaration kind, declaration name, internal type's fully qualified name. */
+    val PUBLIC_TYPE_WITH_INTERNAL_API by configurable3<KtElement, String, Name, String>()
+
     /** Parameters: the marker name, the no-op target name. Reported on the `@Target` argument. */
     val DSL_MARKER_NOOP_TARGET by configurable2<KtExpression, Name, String>()
 
@@ -321,6 +324,12 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         )
         map.put(
             diagnostic = WatchdogDiagnostics.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY,
+            rendererA = STRING,
+            rendererB = NAME,
+            rendererC = STRING,
+        )
+        map.put(
+            diagnostic = WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API,
             rendererA = STRING,
             rendererB = NAME,
             rendererC = STRING,

@@ -170,6 +170,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
         assertContains(result.output, "needs manual attention")
         assertContains(result.output, "DSL_MARKER_NOOP_TYPE_POSITION")
         assertContains(result.output, "UNDOCUMENTED_PUBLIC_API")
+        assertContains(result.output, "PUBLIC_TYPE_WITH_INTERNAL_API")
     }
 
     @Test
@@ -289,6 +290,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
             "allows the `FUNCTION` annotation target",
             "declares no explicit `@Target`",
             "exemption doesn't explain why it is applied",
+            "type is marked as internal API",
         )
     }
 }
@@ -406,6 +408,20 @@ private val fixableFile = """
 @Language("kotlin")
 private val unfixableFile = """
     public class NeedsDocumentation
+
+    /** Marks declarations that are public only for technical reasons. */
+    @InternalAnnotationMarker
+    @Target(AnnotationTarget.CLASS)
+    public annotation class InternalLibApi
+
+    @InternalLibApi
+    public class InternalModel
+
+    /** Supported entry points that require manual API redesign. */
+    public object ManualApi {
+        /** Leaks an explicitly unsupported type. */
+        public fun loadModel(): InternalModel = InternalModel()
+    }
 
     /** A DSL marker with tidy targets, misapplied to an inert type position below. */
     @DslMarker

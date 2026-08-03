@@ -19,7 +19,10 @@ class WatchdogProjectTest {
     @Test
     fun failsWithErrorsOnUnacknowledgedApiByDefault() {
         val project = object : WatchdogProject() {
-            override fun sources() = listOf(source(unacknowledgedFile))
+            override fun sources() = listOf(
+                source(unacknowledgedFile),
+                source(internalApiExposureFile, "internalApiExposure"),
+            )
         }.gradleProject
 
         val result = buildAndFail(project.rootDir, "build")
@@ -53,6 +56,7 @@ class WatchdogProjectTest {
         result.assertDiagnosticReported("e: ", "allows the `FUNCTION` annotation target")
         result.assertDiagnosticReported("e: ", "declares no explicit `@Target`")
         result.assertDiagnosticReported("e: ", "has no effect on this parameter type")
+        result.assertDiagnosticReported("e: ", "type is marked as internal API")
     }
 
     @Test
@@ -78,6 +82,7 @@ class WatchdogProjectTest {
                     dslMarkerNoopTarget = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                     dslMarkerWithoutExplicitTargets = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                     dslMarkerNoopTypePosition = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
+                    publicTypeWithInternalApi = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                     javaInterop {
                         mangledJvmNamePublicApi = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                         kotlinOnlyApiWithoutJvmSynthetic = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
@@ -89,7 +94,10 @@ class WatchdogProjectTest {
                 }
             """.trimIndent(),
         ) {
-            override fun sources() = listOf(source(unacknowledgedFile))
+            override fun sources() = listOf(
+                source(unacknowledgedFile),
+                source(internalApiExposureFile, "internalApiExposure"),
+            )
         }.gradleProject
 
         val result = build(project.rootDir, "build")
@@ -117,6 +125,7 @@ class WatchdogProjectTest {
         result.assertDiagnosticReported("w: ", "allows the `FUNCTION` annotation target")
         result.assertDiagnosticReported("w: ", "declares no explicit `@Target`")
         result.assertDiagnosticReported("w: ", "has no effect on this parameter type")
+        result.assertDiagnosticReported("w: ", "type is marked as internal API")
     }
 
     @Test
@@ -1128,6 +1137,24 @@ private val markerConsumerFile = """
     public fun internalFunction() {}
 
     public class WatchedClass
+""".trimIndent()
+
+@Suppress("RedundantVisibilityModifier")
+@Language("kotlin")
+private val internalApiExposureFile = """
+    /** Marks declarations that are public only for technical reasons. */
+    @InternalAnnotationMarker
+    @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+    public annotation class InternalLibApi
+
+    @InternalLibApi
+    public class InternalModel
+
+    /** Supported entry points. */
+    public object Api {
+        /** Leaks an explicitly unsupported type. */
+        public fun loadModel(): InternalModel = InternalModel()
+    }
 """.trimIndent()
 
 @Suppress("RedundantVisibilityModifier")

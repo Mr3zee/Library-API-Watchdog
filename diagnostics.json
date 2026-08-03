@@ -180,6 +180,12 @@
       "message": "The {0} `{1}` declares default parameter values, but for Java callers the defaults don't exist: only the full signature is compiled, and every argument must be spelled out. Mark the {0} with `@JvmOverloads` to also compile the overloads that let Java callers omit defaulted parameters - trailing ones only: a defaulted parameter in the middle of the list still can't be skipped from Java, and adding a parameter later stays binary incompatible either way - or mark the {0} with `@IntentionallyWithoutJvmOverloads` if serving Java callers the full signature only is intended."
     },
     {
+      "name": "PUBLIC_TYPE_WITH_INTERNAL_API",
+      "title": "Public types marked as internal API",
+      "docs": "checks/special/public-type-with-internal-api",
+      "message": "The {0} `{1}` publicly exposes `{2}`, but that type is marked as internal API. Keep the internal type out of the public signature, or mark the exposing declaration with an internal API annotation too."
+    },
+    {
       "name": "PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY",
       "title": "Public types from non-transitive dependencies",
       "docs": "checks/special/public-type-from-non-transitive-dependency",

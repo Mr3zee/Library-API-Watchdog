@@ -35,6 +35,7 @@ const sidebars: SidebarsConfig = {
             'checks/special/dsl-marker-noop-target',
             'checks/special/dsl-marker-without-explicit-targets',
             'checks/special/dsl-marker-noop-type-position',
+            'checks/special/public-type-with-internal-api',
             'checks/special/public-type-from-non-transitive-dependency',
           ],
         },

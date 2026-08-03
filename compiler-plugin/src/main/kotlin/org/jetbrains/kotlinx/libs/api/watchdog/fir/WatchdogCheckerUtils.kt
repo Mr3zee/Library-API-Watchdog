@@ -152,7 +152,7 @@ private fun FirMemberDeclaration.isMarkedAsInternalApi(): Boolean =
     symbol.hasInternalApiMarker() || context.containingDeclarations.any { it.hasInternalApiMarker() }
 
 context(context: CheckerContext)
-private fun FirBasedSymbol<*>.hasInternalApiMarker(): Boolean =
+internal fun FirBasedSymbol<*>.hasInternalApiMarker(): Boolean =
     resolvedAnnotationsWithClassIds.any { annotation ->
         annotation.toAnnotationClassLikeSymbol(context.session)
             ?.hasAnnotation(WatchdogClassIds.InternalAnnotationMarker, context.session) == true

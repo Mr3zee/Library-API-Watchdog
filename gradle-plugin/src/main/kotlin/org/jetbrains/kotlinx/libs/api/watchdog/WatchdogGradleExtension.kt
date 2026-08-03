@@ -87,6 +87,9 @@ public open class WatchdogGradleExtension(objectFactory: ObjectFactory) {
     /** Severity of `DSL_MARKER_NOOP_TYPE_POSITION`: DSL markers on type positions without effect. */
     public val dslMarkerNoopTypePosition: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
+    /** Severity of `PUBLIC_TYPE_WITH_INTERNAL_API`: internal-API types in public signatures. */
+    public val publicTypeWithInternalApi: Property<WatchdogSeverity> = objectFactory.severityProperty()
+
     /**
      * Whether public signatures may only expose types from dependencies published transitively
      * to consumers. Enabled by default. Unlike design diagnostics, a violation is always an error
@@ -143,6 +146,7 @@ public open class WatchdogGradleExtension(objectFactory: ObjectFactory) {
         "DSL_MARKER_NOOP_TARGET" to dslMarkerNoopTarget,
         "DSL_MARKER_WITHOUT_EXPLICIT_TARGETS" to dslMarkerWithoutExplicitTargets,
         "DSL_MARKER_NOOP_TYPE_POSITION" to dslMarkerNoopTypePosition,
+        "PUBLIC_TYPE_WITH_INTERNAL_API" to publicTypeWithInternalApi,
     )
 }
 

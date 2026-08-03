@@ -24,6 +24,7 @@ public class org/jetbrains/kotlinx/libs/api/watchdog/WatchdogGradleExtension {
 	public final fun getNullableBooleanPublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun getOpenApiWithoutSubclassOptIn ()Lorg/gradle/api/provider/Property;
 	public final fun getPairOrTriplePublicApi ()Lorg/gradle/api/provider/Property;
+	public final fun getPublicTypeWithInternalApi ()Lorg/gradle/api/provider/Property;
 	public final fun getPublicTypesMustBeTransitiveDependencies ()Lorg/gradle/api/provider/Property;
 	public final fun getRequiredParameterAfterOptional ()Lorg/gradle/api/provider/Property;
 	public final fun getStatefulClassWithoutEquals ()Lorg/gradle/api/provider/Property;
@@ -62,4 +63,3 @@ public final class org/jetbrains/kotlinx/libs/api/watchdog/WatchdogSupportPlugin
 	public fun applyToCompilation (Lorg/gradle/api/Project;Lorg/jetbrains/kotlin/gradle/plugin/KotlinCompilation;)Lorg/gradle/api/provider/Provider;
 	public fun isApplicable (Lorg/jetbrains/kotlin/gradle/plugin/KotlinCompilation;)Z
 }
-

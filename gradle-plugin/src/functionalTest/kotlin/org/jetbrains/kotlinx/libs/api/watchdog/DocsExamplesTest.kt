@@ -126,54 +126,56 @@ class DocsExamplesTest {
 
     private fun supportSource(): Source = Source.kotlin(
         """
+            @file:org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyDefaultFacadeName(
+                reason = org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason.API_DESIGN,
+            )
+
             package docs.support
 
-            import org.jetbrains.kotlinx.libs.api.watchdog.InternalAnnotationMarker
-
-            /** Marks declarations supplied only to make isolated documentation snippets compile. */
-            @InternalAnnotationMarker
-            @Target(
-                AnnotationTarget.ANNOTATION_CLASS,
-                AnnotationTarget.CLASS,
-                AnnotationTarget.FUNCTION,
-                AnnotationTarget.PROPERTY,
-            )
-            public annotation class DocsSupport
+            import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason
+            import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyInlinedLogic
+            import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyOpen
 
             /** Stand-in for the Poko compiler-plugin annotation used by documentation samples. */
             @Target(AnnotationTarget.CLASS)
             @Retention(AnnotationRetention.SOURCE)
             public annotation class Poko
 
-            @DocsSupport
+            /** A DSL marker supplied to isolated documentation snippets. */
             @DslMarker
             @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPEALIAS)
             public annotation class TreeDsl
 
-            @DocsSupport
+            /** A receiver supplied to isolated documentation snippets. */
+            @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
             public open class Tag
 
-            @DocsSupport
+            /** An opt-in marker supplied to isolated documentation snippets. */
             @RequiresOptIn
             public annotation class InternalMyLibrarySubclassApi
 
-            @DocsSupport
+            /**
+             * An identifier supplied to isolated documentation snippets.
+             *
+             * @param raw the underlying value.
+             */
             @JvmInline
             public value class UserId(public val raw: String)
 
-            @DocsSupport
+            /** A connection supplied to isolated documentation snippets. */
             public class Connection
 
-            @DocsSupport
+            /** Returns stand-in data for isolated documentation snippets. */
             public fun fetchLatest(): String = ""
 
-            @DocsSupport
+            /** Returns a stand-in array size for isolated documentation snippets. */
             public fun calculateArraysSizeImpl(): Int = 0
 
-            @DocsSupport
+            /** Executes [block] for isolated documentation snippets. */
+            @IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)
             public inline fun <T> withCache(block: () -> T): T = block()
 
-            @DocsSupport
+            /** Stand-in reflection members for isolated documentation snippets. */
             public val kotlin.reflect.KClass<*>.memberFunctions: List<Unit>
                 get() = emptyList()
         """.trimIndent(),
@@ -227,8 +229,13 @@ class DocsExamplesTest {
         }
 
         private fun fileAnnotationPrefix(lines: List<String>): List<String> {
-            if (lines.firstOrNull()?.startsWith("@file:") != true) return emptyList()
-            val blank = lines.indexOfFirst(String::isBlank)
+            val annotation = lines.indexOfFirst { it.startsWith("@file:") }
+            if (annotation < 0 || lines.take(annotation).any { line ->
+                    line.isNotBlank() && !line.trimStart().startsWith("//")
+                }) {
+                return emptyList()
+            }
+            val blank = lines.indices.firstOrNull { it > annotation && lines[it].isBlank() } ?: -1
             return (if (blank < 0) lines else lines.subList(0, blank)).toList()
         }
     }
@@ -274,6 +281,7 @@ class DocsExamplesTest {
                 dslMarkerNoopTarget = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                 dslMarkerWithoutExplicitTargets = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                 dslMarkerNoopTypePosition = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
+                publicTypeWithInternalApi = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                 javaInterop {
                     mangledJvmNamePublicApi = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                     kotlinOnlyApiWithoutJvmSynthetic = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING

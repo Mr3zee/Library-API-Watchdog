@@ -85,6 +85,7 @@ internal object ExemptionRegistry {
         "UNDOCUMENTED_PUBLIC_API" to FixResolution.Unfixable("Adding KDocs is not backwards incompatible. Please, add them."),
         "EXEMPTION_WITHOUT_EXPLANATION" to FixResolution.Unfixable("The existing exemption needs a reason or description only its author can write"),
         "DSL_MARKER_NOOP_TYPE_POSITION" to FixResolution.Unfixable("No exemption annotation exists. Move the DSL marker to an effective position or remove it"),
+        "PUBLIC_TYPE_WITH_INTERNAL_API" to FixResolution.Unfixable("Remove the internal type from the public signature or mark the exposing declaration as internal API"),
     )
 
     val knownDiagnostics: Set<String> get() = resolutions.keys

@@ -72,6 +72,8 @@ class WatchdogFirCheckers internal constructor(
                 .unlessDisabled(WatchdogDiagnostics.PAIR_OR_TRIPLE_PUBLIC_API),
             NullableBooleanChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.NULLABLE_BOOLEAN_PUBLIC_API),
+            InternalApiTypeExposureChecker(severities)
+                .unlessDisabled(WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API),
             dependencyExposure?.let(::NonTransitiveDependencyChecker)
                 ?.takeIf { enabled },
         ).recorded()

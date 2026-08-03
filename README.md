@@ -117,6 +117,9 @@ working tree and review the diff; from then on the checks only guard newly added
 - [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](https://mr3zee.github.io/libs-api-watchdog/checks/special/public-type-from-non-transitive-dependency) -
   public signatures using dependency types that are not published transitively to consumers.
   Always an error while enabled.
+- [`PUBLIC_TYPE_WITH_INTERNAL_API`](https://mr3zee.github.io/libs-api-watchdog/checks/special/public-type-with-internal-api) -
+  supported public signatures exposing types marked as internal API; mark the exposing declaration
+  as internal API too, or remove the internal type from its signature.
 
 ### Java interop
 
