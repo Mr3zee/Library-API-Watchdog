@@ -9,9 +9,6 @@ pluginManagement {
                 username = ""
                 password = ""
             }
-            content {
-                includeGroupByRegex("org\\.jetbrains\\.kotlin\\.compiler\\.plugin\\.devkit(\\..*)?")
-            }
         }
         mavenCentral()
         gradlePluginPortal()
@@ -31,15 +28,13 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
+    @Suppress("UnstableApiUsage")
     repositories {
         maven("https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap") {
             // See the matching plugin repository above.
             credentials {
                 username = ""
                 password = ""
-            }
-            content {
-                includeGroupByRegex("org\\.jetbrains\\.kotlin\\.compiler\\.plugin\\.devkit(\\..*)?")
             }
         }
         mavenCentral()

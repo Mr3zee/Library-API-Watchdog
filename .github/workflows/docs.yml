@@ -10,12 +10,6 @@ on:
       - 'diagnostics.json'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
-    inputs:
-      dry_run:
-        type: boolean
-        description: "Dry run. If set to true, the action will not actually publish the pages, but will assemble the artifact."
-        default: true
-        required: true
 
 permissions:
   id-token: write
@@ -94,7 +88,6 @@ jobs:
           retention-days: 7
 
   deploy:
-    if: github.event_name == 'workflow_dispatch' && !inputs.dry_run
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
