@@ -25,9 +25,7 @@ import org.jetbrains.kotlin.name.Name
  * [PublicSignatureTypeChecker] supplies the same sweep as [NonTransitiveDependencyChecker]. Both
  * type aliases and their expanded types are checked.
  */
-internal class InternalApiTypeExposureChecker(
-    private val severities: WatchdogDiagnosticSeverities,
-) : PublicSignatureTypeChecker<InternalApiExposure>() {
+internal class InternalApiTypeExposureChecker : PublicSignatureTypeChecker<InternalApiExposure>() {
     context(context: CheckerContext)
     override fun isCheckedDeclaration(declaration: FirMemberDeclaration): Boolean =
         declaration.isWatchedPublicSourceApi()
@@ -60,10 +58,9 @@ internal class InternalApiTypeExposureChecker(
         name: Name,
         violation: InternalApiExposure,
     ) {
-        val factory = severities[WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API] ?: return
         reporter.reportOn(
             source = source,
-            factory = factory,
+            factory = WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API,
             a = kind,
             b = name,
             c = violation.type.asSingleFqName().asString(),

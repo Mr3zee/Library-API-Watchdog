@@ -191,7 +191,6 @@ class UpdateBackwardsCompatibilityExemptsTest {
         assertContains(result.output, "needs manual attention")
         assertContains(result.output, "DSL_MARKER_NOOP_TYPE_POSITION")
         assertContains(result.output, "UNDOCUMENTED_PUBLIC_API")
-        assertContains(result.output, "PUBLIC_TYPE_WITH_INTERNAL_API")
     }
 
     @Test
@@ -207,6 +206,20 @@ class UpdateBackwardsCompatibilityExemptsTest {
         assertContains(result.output, "thisCallDoesNotResolve")
         assertEquals(null, result.task(":$UPDATE_TASK")?.outcome)
         assertEquals(original, project.rootDir.mainSource("broken").readText())
+    }
+
+    @Test
+    fun internalApiExposureFailsBeforeTheFixerAndDoesNotTouchSources() {
+        val project = object : WatchdogProject() {
+            override fun sources() = listOf(source(internalApiExposureFile, "internalApiExposure"))
+        }.gradleProject
+        val original = project.rootDir.mainSource("internalApiExposure").readText()
+
+        val result = buildAndFail(project.rootDir, UPDATE_TASK)
+
+        assertContains(result.output, "type is marked as internal API")
+        assertEquals(null, result.task(":$UPDATE_TASK")?.outcome)
+        assertEquals(original, project.rootDir.mainSource("internalApiExposure").readText())
     }
 
     @Test
@@ -430,6 +443,19 @@ private val fixableFile = """
 private val unfixableFile = """
     public class NeedsDocumentation
 
+    /** A DSL marker with tidy targets, misapplied to an inert type position below. */
+    @DslMarker
+    @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPEALIAS)
+    public annotation class ScopedDsl
+
+    /** A parameter type carrying a DSL marker that restricts nothing. */
+    public fun processTag(tag: @ScopedDsl String) { }
+""".trimIndent()
+
+/** An always-error diagnostic that must be fixed before the adoption task can run. */
+@Suppress("RedundantVisibilityModifier")
+@Language("kotlin")
+private val internalApiExposureFile = """
     /** Marks declarations that are public only for technical reasons. */
     @InternalAnnotationMarker
     @Target(AnnotationTarget.CLASS)
@@ -438,19 +464,8 @@ private val unfixableFile = """
     @InternalLibApi
     public class InternalModel
 
-    /** Supported entry points that require manual API redesign. */
-    public object ManualApi {
-        /** Leaks an explicitly unsupported type. */
-        public fun loadModel(): InternalModel = InternalModel()
-    }
-
-    /** A DSL marker with tidy targets, misapplied to an inert type position below. */
-    @DslMarker
-    @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPEALIAS)
-    public annotation class ScopedDsl
-
-    /** A parameter type carrying a DSL marker that restricts nothing. */
-    public fun processTag(tag: @ScopedDsl String) { }
+    /** Leaks an explicitly unsupported type. */
+    public fun loadModel(): InternalModel = InternalModel()
 """.trimIndent()
 
 @Suppress("RedundantVisibilityModifier")

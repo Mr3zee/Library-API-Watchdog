@@ -27,6 +27,9 @@ The build resolves the `org.jetbrains.kotlin.compiler.plugin.devkit.*` plugins a
 ./gradlew :kotlin-library-api-watchdog-exempts-fixer:test                 # fixer unit tests (PSI insertion, protocol)
 ./gradlew :kotlin-library-api-watchdog-gradle-plugin:functionalTest       # Gradle TestKit integration tests
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:test --tests "*JvmDiagnosticTestGenerated*"   # filter generated tests
+./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmark          # JMH time/allocation benchmarks (manual; see compiler-plugin/src/benchmark/README.md)
+./gradlew :kotlin-library-api-watchdog-compiler-plugin:profile            # JFR profile of one benchmark subject (manual; see compiler-plugin/src/benchmark/README.md)
+./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkCorpusAudit   # verify the corpus triggers every benchmark-eligible checker
 ```
 
 Each test-data file becomes one test method in the generated classes, so a single scenario can be run with a `--tests`
@@ -54,7 +57,9 @@ bootstrap/dev repositories configured in `settings.gradle.kts`.
       pick the factory at report time via `WatchdogDiagnosticSeverities` (default: everything is an error). A
       diagnostic configured to `WatchdogSeverity.NONE` resolves to no factory, and `WatchdogFirCheckers` skips
       registering a checker whose diagnostics are all disabled, so a disabled check performs no work.
-      `EXEMPTION_WITHOUT_EXPLANATION` is deliberately not configurable - always an error.
+      `EXEMPTION_WITHOUT_EXPLANATION` and `PUBLIC_TYPE_WITH_INTERNAL_API` are deliberately not
+      severity-configurable - they are always errors. `PUBLIC_TYPE_WITH_INTERNAL_API` has a
+      dedicated Boolean whole-check switch.
     - `fir/WatchdogCheckerUtils.isWatchedPublicApi()` is the shared gate for the published source or binary surface:
       real source, public/protected effective visibility (or `@PublishedApi`), and not under an annotation whose class
       carries `@InternalAnnotationMarker`. Source-API and Java-ergonomics checks use
@@ -138,4 +143,8 @@ tests, and the severity assertions in `WatchdogProjectTest`. Also map the diagno
 `ExemptionRegistry` (to its exemption annotation or an `Unfixable` reason), extend the expected-names set in
 `FixerProtocolTest`, and cover the fix in `UpdateBackwardsCompatibilityExemptsTest`'s specimen file. On the
 documentation side, add the check page at the `docs` path from `diagnostics.json`, list it in `docs/sidebars.ts`,
-`docs/authoring.md`'s page map, and the check list in `docs/docs/overview.md`.
+`docs/authoring.md`'s page map, and the check list in `docs/docs/overview.md`. In the benchmarks
+(`compiler-plugin/src/benchmark/`), add warning-capable checkers as a `CheckerSubject`, add the
+checker name to the `@Param` lists of both benchmark classes, and add a triggering shape to a
+`BenchmarkCorpus` template, then run `benchmarkCorpusAudit`. Exclude always-error diagnostics
+from per-checker modes and triggering corpus shapes.

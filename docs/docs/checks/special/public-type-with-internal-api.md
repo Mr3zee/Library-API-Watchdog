@@ -6,7 +6,7 @@ supported public signature exposes them.
 |                  |                                                          |
 |------------------|----------------------------------------------------------|
 | Diagnostic       | `PUBLIC_TYPE_WITH_INTERNAL_API`                          |
-| Default severity | Error                                                    |
+| Default severity | Always an error while enabled                            |
 | Gradle property  | [`publicTypeWithInternalApi`](../../configuration.md)     |
 | Exemption        | none; mark the exposing API as internal instead          |
 
@@ -82,15 +82,20 @@ signature or mark the exposing declaration as internal API as well.
 
 ## Configuration
 
+The mismatch between a supported declaration and an explicitly unsupported signature type is
+always an error while the check is enabled. It cannot be demoted to a warning. Disable the whole
+check only when the library deliberately permits this mismatch:
+
 ```kotlin
 apiWatchdog {
-    publicTypeWithInternalApi = WatchdogSeverity.WARNING
+    publicTypeWithInternalApi = false
 }
 ```
 
 With direct compiler invocation:
+
 ```
--P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=PUBLIC_TYPE_WITH_INTERNAL_API:warning
+-P plugin:org.jetbrains.kotlin.library.api.watchdog:publicTypeWithInternalApi=false
 ```
 
 ## See also

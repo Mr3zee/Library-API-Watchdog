@@ -91,7 +91,6 @@ class WatchdogProjectTest {
                     dslMarkerNoopTarget = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                     dslMarkerWithoutExplicitTargets = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                     dslMarkerNoopTypePosition = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
-                    publicTypeWithInternalApi = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                     javaInterop {
                         mangledJvmNamePublicApi = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                         kotlinOnlyApiWithoutJvmSynthetic = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
@@ -103,10 +102,7 @@ class WatchdogProjectTest {
                 }
             """.trimIndent(),
         ) {
-            override fun sources() = listOf(
-                source(unacknowledgedFile),
-                source(internalApiExposureFile, "internalApiExposure"),
-            )
+            override fun sources() = listOf(source(unacknowledgedFile))
         }.gradleProject
 
         val result = build(project.rootDir, "build")
@@ -134,7 +130,6 @@ class WatchdogProjectTest {
         result.assertDiagnosticReported("w: ", "allows the `FUNCTION` annotation target")
         result.assertDiagnosticReported("w: ", "declares no explicit `@Target`")
         result.assertDiagnosticReported("w: ", "has no effect on this parameter type")
-        result.assertDiagnosticReported("w: ", "marked as internal API with `@InternalLibApi`")
     }
 
     @Test
@@ -229,6 +224,32 @@ class WatchdogProjectTest {
 
         val result = buildAndFail(project.rootDir, "build")
         result.assertDiagnosticReported("e: ", "exemption doesn't explain why it is applied")
+    }
+
+    @Test
+    fun internalApiExposureIsAlwaysAnError() {
+        val project = object : WatchdogProject() {
+            override fun sources() = listOf(source(internalApiExposureFile, "internalApiExposure"))
+        }.gradleProject
+
+        val result = buildAndFail(project.rootDir, "build")
+        result.assertDiagnosticReported("e: ", "marked as internal API with `@InternalLibApi`")
+    }
+
+    @Test
+    fun internalApiExposureCheckCanOnlyBeDisabledAsAWhole() {
+        val project = object : WatchdogProject(
+            extraBuildScript = """
+                apiWatchdog {
+                    publicTypeWithInternalApi = false
+                }
+            """.trimIndent(),
+        ) {
+            override fun sources() = listOf(source(internalApiExposureFile, "internalApiExposure"))
+        }.gradleProject
+
+        val result = build(project.rootDir, "build")
+        assertFalse(result.output.contains("marked as internal API"))
     }
 
     @Test

@@ -35,8 +35,9 @@ above its other annotations, with imports added as needed.
   and gets no exemptions. `ERROR` and `WARNING` are exempted alike.
 - **Real compilation errors still stop the task.** Since these are the project's regular compiler
   tasks, unresolved references, syntax errors, and the always-error
-  [`EXEMPTION_WITHOUT_EXPLANATION`](./checks/special/exemption-without-explanation.md) must be fixed before the
-  fixer can run.
+  [`EXEMPTION_WITHOUT_EXPLANATION`](./checks/special/exemption-without-explanation.md), [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md) and
+  [`PUBLIC_TYPE_WITH_INTERNAL_API`](./checks/special/public-type-with-internal-api.md) diagnostics
+  must be fixed before the fixer can run while their checks are enabled.
 - **One diagnostic is fixed by a replacement.** A markerless `@SubclassOptInRequired`
   ([`SUBCLASS_OPT_IN_WITHOUT_MARKERS`](./checks/subclass-opt-in-without-markers.md)) gates nothing, so the
   fixer drops it and puts [`@IntentionallyOpen`](./checks/open-api-without-subclass-opt-in.md) in its

@@ -161,6 +161,12 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 if (collect.get()) {
                     add(FilesSubpluginOption("diagnosticsOutputFile", listOf(reportFile.get().asFile)))
                 }
+                add(
+                    SubpluginOption(
+                        "publicTypeWithInternalApi",
+                        extension.publicTypeWithInternalApi.get().toString(),
+                    ),
+                )
                 if (extension.publicTypesMustBeTransitiveDependencies.get()) {
                     add(
                         SubpluginOption(

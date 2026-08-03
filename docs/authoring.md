@@ -133,33 +133,33 @@ Root (`docs/docs/`):
 
 Checks (`docs/docs/checks/`):
 
-| File                                                  | Title                                                  |
-|-------------------------------------------------------|--------------------------------------------------------|
-| `open-api-without-subclass-opt-in.md`                 | Open API without subclass opt-in                       |
-| `subclass-opt-in-without-markers.md`                  | Subclass opt-in without markers                        |
-| `exhaustive-public-api.md`                            | Exhaustive public API                                  |
-| `undocumented-public-api.md`                          | Undocumented public API                                |
-| `function-type-alias-public-api.md`                   | Function type aliases in public API                    |
-| `data-class-public-api.md`                            | Data classes in public API                             |
+| File                                                  | Title                                                   |
+|-------------------------------------------------------|---------------------------------------------------------|
+| `open-api-without-subclass-opt-in.md`                 | Open API without subclass opt-in                        |
+| `subclass-opt-in-without-markers.md`                  | Subclass opt-in without markers                         |
+| `exhaustive-public-api.md`                            | Exhaustive public API                                   |
+| `undocumented-public-api.md`                          | Undocumented public API                                 |
+| `function-type-alias-public-api.md`                   | Function type aliases in public API                     |
+| `data-class-public-api.md`                            | Data classes in public API                              |
 | `stateful-class-without-equals-hashcode-to-string.md` | Stateful classes without equals, hashCode, and toString |
-| `mutable-collection-public-api.md`                    | Mutable collections in public API                      |
-| `pair-or-triple-public-api.md`                        | Pair and Triple in public API                          |
-| `boolean-parameter-public-api.md`                     | Boolean parameters in public API                       |
-| `nullable-boolean-public-api.md`                      | Nullable Booleans in public API                        |
-| `required-parameter-after-optional.md`                | Required parameters after optional ones                |
-| `inconsistent-parameter-order-in-overloads.md`        | Inconsistent parameter order in overloads              |
-| `inline-function-with-logic.md`                       | Inline functions with logic                            |
+| `mutable-collection-public-api.md`                    | Mutable collections in public API                       |
+| `pair-or-triple-public-api.md`                        | Pair and Triple in public API                           |
+| `boolean-parameter-public-api.md`                     | Boolean parameters in public API                        |
+| `nullable-boolean-public-api.md`                      | Nullable Booleans in public API                         |
+| `required-parameter-after-optional.md`                | Required parameters after optional ones                 |
+| `inconsistent-parameter-order-in-overloads.md`        | Inconsistent parameter order in overloads               |
+| `inline-function-with-logic.md`                       | Inline functions with logic                             |
 
 Special checks (`docs/docs/checks/special/`):
 
-| File                                                   | Title                                         |
-|--------------------------------------------------------|-----------------------------------------------|
-| `exemption-without-explanation.md`                     | Exemptions without explanation                |
-| `dsl-marker-noop-target.md`                            | DSL markers with no-op targets                |
-| `dsl-marker-without-explicit-targets.md`               | DSL markers without explicit targets          |
-| `dsl-marker-noop-type-position.md`                     | DSL markers on no-op type positions           |
-| `public-type-with-internal-api.md`                     | Public types marked as internal API            |
-| `public-type-from-non-transitive-dependency.md`        | Public types from non-transitive dependencies |
+| File                                            | Title                                         |
+|-------------------------------------------------|-----------------------------------------------|
+| `exemption-without-explanation.md`              | Exemptions without explanation                |
+| `dsl-marker-noop-target.md`                     | DSL markers with no-op targets                |
+| `dsl-marker-without-explicit-targets.md`        | DSL markers without explicit targets          |
+| `dsl-marker-noop-type-position.md`              | DSL markers on no-op type positions           |
+| `public-type-with-internal-api.md`              | Public types marked as internal API           |
+| `public-type-from-non-transitive-dependency.md` | Public types from non-transitive dependencies |
 
 Java interop (`docs/docs/checks/java-interop/`):
 
@@ -184,10 +184,10 @@ Use exactly this structure and section order for every page under `checks/`:
 
 `<DIAGNOSTIC_NAME>` reports <one sentence: what shape is flagged>.
 
-|                  |                                      |
-|------------------|--------------------------------------|
-| Diagnostic       | `<DIAGNOSTIC_NAME>`                  |
-| Default severity | Error                                |
+|                  |                                         |
+|------------------|-----------------------------------------|
+| Diagnostic       | `<DIAGNOSTIC_NAME>`                     |
+| Default severity | Error                                   |
 | Gradle property  | [`<propertyName>`](../configuration.md) |
 | Exemption        | [`@Intentionally<X>`](../exemptions.md) |
 
@@ -269,6 +269,8 @@ Adjustments:
 - `EXEMPTION_WITHOUT_EXPLANATION` is always an error: its table says
   `| Default severity | Error (not configurable) |`, `| Gradle property | none |`,
   `| Exemption | none |`, and it has no Configuration section.
+- `PUBLIC_TYPE_WITH_INTERNAL_API` and `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY` are always errors while enabled. Their table names the Boolean
+  whole-check switch, and their Configuration section documents only those on/off switches.
 - Checks without an exemption annotation write `| Exemption | none |` and replace the
   "When to exempt" section with how to legitimately silence the check, if anything.
 - Target length 60 to 140 lines. Prefer fewer, sharper examples over exhaustive enumeration.

@@ -7,8 +7,9 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 
 /**
- * Configures the severity of each watchdog diagnostic. Every diagnostic is reported as an error
- * unless demoted to [WatchdogSeverity.WARNING] or disabled with [WatchdogSeverity.NONE] here:
+ * Configures the severity of each configurable watchdog diagnostic. Every configurable
+ * diagnostic is reported as an error unless demoted to [WatchdogSeverity.WARNING] or disabled
+ * with [WatchdogSeverity.NONE] here:
  *
  * ```kotlin
  * apiWatchdog {
@@ -87,8 +88,12 @@ public open class WatchdogGradleExtension(objectFactory: ObjectFactory) {
     /** Severity of `DSL_MARKER_NOOP_TYPE_POSITION`: DSL markers on type positions without effect. */
     public val dslMarkerNoopTypePosition: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `PUBLIC_TYPE_WITH_INTERNAL_API`: internal-API types in public signatures. */
-    public val publicTypeWithInternalApi: Property<WatchdogSeverity> = objectFactory.severityProperty()
+    /**
+     * Whether `PUBLIC_TYPE_WITH_INTERNAL_API` is checked. Enabled by default. A violation is
+     * always an error when enabled; this Boolean property is the check's only off-switch.
+     */
+    public val publicTypeWithInternalApi: Property<Boolean> =
+        objectFactory.property(Boolean::class.java).convention(true)
 
     /**
      * Whether public signatures may only expose types from dependencies published transitively
@@ -146,7 +151,6 @@ public open class WatchdogGradleExtension(objectFactory: ObjectFactory) {
         "DSL_MARKER_NOOP_TARGET" to dslMarkerNoopTarget,
         "DSL_MARKER_WITHOUT_EXPLICIT_TARGETS" to dslMarkerWithoutExplicitTargets,
         "DSL_MARKER_NOOP_TYPE_POSITION" to dslMarkerNoopTypePosition,
-        "PUBLIC_TYPE_WITH_INTERNAL_API" to publicTypeWithInternalApi,
     )
 }
 

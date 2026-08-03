@@ -26,6 +26,8 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
         )
         val recorder = configuration[WatchdogConfigurationKeys.DIAGNOSTICS_OUTPUT_FILE]
             ?.let { WatchdogDiagnosticsRecorder(File(it)) }
+        val publicTypeWithInternalApiEnabled =
+            configuration[WatchdogConfigurationKeys.PUBLIC_TYPE_WITH_INTERNAL_API_ENABLED, true]
         val dependencyExposure = configuration[WatchdogConfigurationKeys.COMPILE_DEPENDENCY_PATHS]
             ?.let { compileDependencies ->
                 DependencyExposureCheckConfiguration(
@@ -35,7 +37,12 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
                 )
             }
         FirExtensionRegistrarAdapter.registerExtension(
-            WatchdogFirExtensionRegistrar(severities, recorder, dependencyExposure),
+            WatchdogFirExtensionRegistrar(
+                severities = severities,
+                recorder = recorder,
+                dependencyExposure = dependencyExposure,
+                publicTypeWithInternalApiEnabled = publicTypeWithInternalApiEnabled,
+            ),
         )
     }
 }

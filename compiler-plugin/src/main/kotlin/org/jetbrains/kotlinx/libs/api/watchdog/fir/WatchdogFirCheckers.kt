@@ -30,6 +30,7 @@ class WatchdogFirCheckers internal constructor(
     severities: WatchdogDiagnosticSeverities,
     recorder: WatchdogDiagnosticsRecorder? = null,
     dependencyExposure: DependencyExposureCheckConfiguration? = null,
+    publicTypeWithInternalApiEnabled: Boolean = true,
 ) : FirAdditionalCheckersExtension(session) {
     override val declarationCheckers: DeclarationCheckers = object : DeclarationCheckers() {
         private val enabled =
@@ -72,8 +73,8 @@ class WatchdogFirCheckers internal constructor(
                 .unlessDisabled(WatchdogDiagnostics.PAIR_OR_TRIPLE_PUBLIC_API),
             NullableBooleanChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.NULLABLE_BOOLEAN_PUBLIC_API),
-            InternalApiTypeExposureChecker(severities)
-                .unlessDisabled(WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API),
+            InternalApiTypeExposureChecker() // Not configurable: contradictory API contracts are always errors.
+                .takeIf { enabled && publicTypeWithInternalApiEnabled },
             dependencyExposure?.let(::NonTransitiveDependencyChecker)
                 ?.takeIf { enabled },
         ).recorded()

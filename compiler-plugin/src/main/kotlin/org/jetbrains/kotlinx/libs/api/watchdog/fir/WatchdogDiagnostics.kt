@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.diagnostics.SourceElementPositioningStrategies
 import org.jetbrains.kotlin.diagnostics.SourceElementPositioningStrategies.NAME_IDENTIFIER
 import org.jetbrains.kotlin.diagnostics.error2
 import org.jetbrains.kotlin.diagnostics.error3
+import org.jetbrains.kotlin.diagnostics.error4
 import org.jetbrains.kotlin.diagnostics.rendering.BaseDiagnosticRendererFactory
 import org.jetbrains.kotlin.diagnostics.rendering.CommonRenderers.CLASS_KIND
 import org.jetbrains.kotlin.diagnostics.rendering.CommonRenderers.NAME
@@ -173,8 +174,12 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
      */
     val PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY by error3<KtElement, String, Name, String>()
 
-    /** Parameters: declaration kind, declaration name, internal type FQ name, annotation name. */
-    val PUBLIC_TYPE_WITH_INTERNAL_API by configurable4<KtElement, String, Name, String, Name>()
+    /**
+     * Parameters: declaration kind, declaration name, internal type FQ name, annotation name.
+     * A supported API exposing a type that explicitly has no supported contract is always an
+     * error. The whole check has a Boolean off-switch, but its diagnostic cannot be demoted.
+     */
+    val PUBLIC_TYPE_WITH_INTERNAL_API by error4<KtElement, String, Name, String, Name>()
 
     /** Parameters: the marker name, the no-op target name. Reported on the `@Target` argument. */
     val DSL_MARKER_NOOP_TARGET by configurable2<KtExpression, Name, String>()
@@ -443,6 +448,17 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         val message = WatchdogDiagnosticMessages.messageFor(diagnostic.name)
         put(diagnostic.error, message, rendererA, rendererB, rendererC)
         put(diagnostic.warning, message, rendererA, rendererB, rendererC)
+    }
+
+    private fun <A, B, C, D> KtDiagnosticFactoryToRendererMap.put(
+        diagnostic: KtDiagnosticFactory4<A, B, C, D>,
+        rendererA: DiagnosticParameterRenderer<A>?,
+        rendererB: DiagnosticParameterRenderer<B>?,
+        rendererC: DiagnosticParameterRenderer<C>?,
+        rendererD: DiagnosticParameterRenderer<D>?,
+    ) {
+        val message = WatchdogDiagnosticMessages.messageFor(diagnostic.name)
+        put(diagnostic, message, rendererA, rendererB, rendererC, rendererD)
     }
 
     private fun <A, B, C, D> KtDiagnosticFactoryToRendererMap.put(

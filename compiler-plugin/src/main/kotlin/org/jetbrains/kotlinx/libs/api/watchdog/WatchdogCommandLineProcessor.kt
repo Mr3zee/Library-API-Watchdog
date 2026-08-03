@@ -27,6 +27,10 @@ object WatchdogConfigurationKeys {
     val DIAGNOSTICS_OUTPUT_FILE: CompilerConfigurationKey<String> =
         CompilerConfigurationKey.create("watchdog diagnostics output file")
 
+    /** Whether the always-error internal API type exposure check is enabled. */
+    val PUBLIC_TYPE_WITH_INTERNAL_API_ENABLED: CompilerConfigurationKey<Boolean> =
+        CompilerConfigurationKey.create("watchdog public type with internal API enabled")
+
     /**
      * The compilation classpath and the subset published transitively to consumers. These are
      * supplied only by the Gradle plugin: without the build model the compiler cannot tell an
@@ -44,6 +48,7 @@ class WatchdogCommandLineProcessor : DevKitCommandLineProcessor(WatchdogCLP::cla
     override val pluginOptions: Collection<CliOption> =
         listOf(
             DIAGNOSTIC_SEVERITY_OPTION,
+            PUBLIC_TYPE_WITH_INTERNAL_API_OPTION,
             DIAGNOSTICS_OUTPUT_FILE_OPTION,
             COMPILE_DEPENDENCY_PATHS_OPTION,
             TRANSITIVE_DEPENDENCY_PATHS_OPTION,
@@ -67,6 +72,14 @@ class WatchdogCommandLineProcessor : DevKitCommandLineProcessor(WatchdogCLP::cla
                     "tab-separated line: diagnostic name, source file path, start offset, " +
                     "end offset. Meant for tooling; the Gradle plugin's " +
                     "updateBackwardsCompatibilityExempts task consumes it.",
+            required = false,
+            allowMultipleOccurrences = false,
+        )
+
+        val PUBLIC_TYPE_WITH_INTERNAL_API_OPTION: CliOption = CliOption(
+            optionName = "publicTypeWithInternalApi",
+            valueDescription = "<true|false>",
+            description = "Enable the always-error PUBLIC_TYPE_WITH_INTERNAL_API check.",
             required = false,
             allowMultipleOccurrences = false,
         )
@@ -102,6 +115,12 @@ class WatchdogCLP : DevKitCLP {
             WatchdogCommandLineProcessor.DIAGNOSTICS_OUTPUT_FILE_OPTION.optionName -> {
                 configuration.put(WatchdogConfigurationKeys.DIAGNOSTICS_OUTPUT_FILE, value)
             }
+            WatchdogCommandLineProcessor.PUBLIC_TYPE_WITH_INTERNAL_API_OPTION.optionName -> {
+                configuration.put(
+                    WatchdogConfigurationKeys.PUBLIC_TYPE_WITH_INTERNAL_API_ENABLED,
+                    parseBoolean(option.optionName, value),
+                )
+            }
             WatchdogCommandLineProcessor.COMPILE_DEPENDENCY_PATHS_OPTION.optionName -> {
                 configuration.put(WatchdogConfigurationKeys.COMPILE_DEPENDENCY_PATHS, parsePaths(value))
             }
@@ -114,6 +133,14 @@ class WatchdogCLP : DevKitCLP {
 
     private fun parsePaths(value: String): Set<String> =
         value.split(File.pathSeparatorChar).filterTo(linkedSetOf(), String::isNotEmpty)
+
+    private fun parseBoolean(optionName: String, value: String): Boolean = when (value.lowercase()) {
+        "true" -> true
+        "false" -> false
+        else -> throw CliOptionProcessingException(
+            "Invalid value '$value' for watchdog option '$optionName': expected 'true' or 'false'.",
+        )
+    }
 
     private fun parseDiagnosticSeverity(value: String): Pair<String, WatchdogSeverity> {
         val diagnosticName = value.substringBefore(':')

@@ -112,6 +112,7 @@ See the list of configurable properties:
 apiWatchdog {
     suggestAbiValidation = true
     publicTypesMustBeTransitiveDependencies = true
+    publicTypeWithInternalApi = true
 
     openApiWithoutSubclassOptIn = WatchdogSeverity.ERROR
     subclassOptInWithoutMarkers = WatchdogSeverity.ERROR
@@ -132,8 +133,6 @@ apiWatchdog {
     dslMarkerNoopTarget = WatchdogSeverity.ERROR
     dslMarkerWithoutExplicitTargets = WatchdogSeverity.ERROR
     dslMarkerNoopTypePosition = WatchdogSeverity.ERROR
-    publicTypeWithInternalApi = WatchdogSeverity.ERROR
-
     javaInterop {
         // One switch for the whole Java interop group,
         // it overrides the severities below.
@@ -159,15 +158,17 @@ Each check's severity is a `WatchdogSeverity`:
 | `WARNING` | Reported as a compiler warning, the build still succeeds.                     |
 | `NONE`    | The check is disabled entirely.                                               |
 
-`EXEMPTION_WITHOUT_EXPLANATION` has no matching property and is always an error. The dependency
-exposure diagnostic is also always an error when enabled; its Gradle property is a Boolean
-whole-check switch rather than a severity. See [Exemptions and internal API](./exemptions.md).
+`EXEMPTION_WITHOUT_EXPLANATION` has no matching property and is always an error.
+`PUBLIC_TYPE_WITH_INTERNAL_API` and `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY` are always errors when
+enabled. Their Gradle properties are Boolean whole-check switches rather than severities. See
+[Exemptions and internal API](./exemptions.md).
 
 ## Property reference
 
 | Property                                           | Check                                                                                                                   | Diagnostic                                   |
 |----------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|----------------------------------------------|
 | `publicTypesMustBeTransitiveDependencies`          | [Public types from non-transitive dependencies](checks/special/public-type-from-non-transitive-dependency.md)           | `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY` |
+| `publicTypeWithInternalApi`                        | [Public types marked as internal API](./checks/special/public-type-with-internal-api.md)                                | `PUBLIC_TYPE_WITH_INTERNAL_API`              |
 | `openApiWithoutSubclassOptIn`                      | [Open API without subclass opt-in](./checks/open-api-without-subclass-opt-in.md)                                        | `OPEN_API_WITHOUT_SUBCLASS_OPT_IN`           |
 | `subclassOptInWithoutMarkers`                      | [Subclass opt-in without markers](./checks/subclass-opt-in-without-markers.md)                                          | `SUBCLASS_OPT_IN_WITHOUT_MARKERS`            |
 | `exhaustivePublicApi`                              | [Exhaustive public API](./checks/exhaustive-public-api.md)                                                              | `EXHAUSTIVE_PUBLIC_API`                      |
@@ -187,7 +188,6 @@ whole-check switch rather than a severity. See [Exemptions and internal API](./e
 | `dslMarkerNoopTarget`                              | [DSL markers with no-op targets](./checks/special/dsl-marker-noop-target.md)                                            | `DSL_MARKER_NOOP_TARGET`                     |
 | `dslMarkerWithoutExplicitTargets`                  | [DSL markers without explicit targets](./checks/special/dsl-marker-without-explicit-targets.md)                         | `DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`        |
 | `dslMarkerNoopTypePosition`                        | [DSL markers on no-op type positions](./checks/special/dsl-marker-noop-type-position.md)                                | `DSL_MARKER_NOOP_TYPE_POSITION`              |
-| `publicTypeWithInternalApi`                        | [Public types marked as internal API](./checks/special/public-type-with-internal-api.md)                                | `PUBLIC_TYPE_WITH_INTERNAL_API`              |
 | `javaInterop.mangledJvmNamePublicApi`              | [Mangled JVM names in public API](./checks/java-interop/mangled-jvm-name-public-api.md)                                 | `MANGLED_JVM_NAME_PUBLIC_API`                |
 | `javaInterop.kotlinOnlyApiWithoutJvmSynthetic`     | [Kotlin-only API without JvmSynthetic](./checks/java-interop/kotlin-only-api-without-jvm-synthetic.md)                  | `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`      |
 | `javaInterop.companionApiWithoutJvmStatic`         | [Companion API without JvmStatic](./checks/java-interop/companion-api-without-jvm-static.md)                            | `COMPANION_API_WITHOUT_JVM_STATIC`           |

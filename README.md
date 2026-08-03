@@ -91,7 +91,8 @@ source positions; the task merges and deduplicates the reports, then inserts the
 imports as needed). A markerless `@SubclassOptInRequired` is replaced by `@IntentionallyOpen`
 rather than annotated, since it restricts nothing to begin with. Checks disabled through
 `apiWatchdog` are not exempted, and the few diagnostics no annotation can acknowledge are listed
-as warnings for manual follow-up. Run it on a clean
+as warnings for manual follow-up. Enabled always-error diagnostics must be fixed before the task
+can run. Run it on a clean
 working tree and review the diff; from then on the checks only guard newly added API. See the
 [existing-library guide](https://mr3zee.github.io/Library-API-Watchdog/existing-libs) for details.
 
@@ -132,13 +133,13 @@ working tree and review the diff; from then on the checks only guard newly added
   same-named parameters ordered differently across overloads, inviting silently swapped
   arguments.
 - [`INLINE_FUNCTION_WITH_LOGIC`](https://mr3zee.github.io/Library-API-Watchdog/checks/inline-function-with-logic) -
-  public inline bodies that do more than delegate; the logic freezes into user binaries.
+  public inline bodies that do more than delegate. The logic freezes into user binaries.
 - [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency) -
   public signatures using dependency types that are not published transitively to consumers.
   Always an error while enabled.
 - [`PUBLIC_TYPE_WITH_INTERNAL_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api) -
   supported public signatures exposing types marked as internal API; mark the exposing declaration
-  as internal API too, or remove the internal type from its signature.
+  as internal API too, or remove the internal type from its signature. Always an error while enabled.
 
 ### Java interop
 

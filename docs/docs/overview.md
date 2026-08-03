@@ -112,6 +112,7 @@ Checks that protect binary linkage still include them where noted.
   `implementation` declaration.
 - [Public types marked as internal API](./checks/special/public-type-with-internal-api.md):
   supported public signatures exposing types that explicitly carry no supported API contract.
+  This diagnostic is always an error while its Boolean whole-check switch is enabled.
 
 ### Java interop checks
 

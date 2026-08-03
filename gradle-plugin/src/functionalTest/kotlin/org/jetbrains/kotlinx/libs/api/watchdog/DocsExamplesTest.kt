@@ -37,6 +37,7 @@ class DocsExamplesTest {
             .filter { it.startsWith("e: ") }
             .filterNot { "exemption doesn't explain why it is applied" in it }
             .filterNot { "not published transitively to consumers" in it }
+            .filterNot { "marked as internal API" in it }
             .toList()
         assertEquals(emptyList(), unexpectedCompilerErrors, unexpectedCompilerErrors.joinToString("\n"))
 
@@ -281,7 +282,6 @@ class DocsExamplesTest {
                 dslMarkerNoopTarget = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                 dslMarkerWithoutExplicitTargets = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                 dslMarkerNoopTypePosition = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
-                publicTypeWithInternalApi = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                 javaInterop {
                     mangledJvmNamePublicApi = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
                     kotlinOnlyApiWithoutJvmSynthetic = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
