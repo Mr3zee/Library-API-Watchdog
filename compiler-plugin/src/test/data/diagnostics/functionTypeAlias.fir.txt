@@ -13,5 +13,13 @@ FILE: functionTypeAlias.kt
     public final typealias StringList = R|kotlin/collections/List<kotlin/String>|
     public final typealias Callbacks = R|kotlin/collections/List<(kotlin/Int) -> kotlin/Unit>|
     public final typealias FunctionReference = R|kotlin/reflect/KFunction1<kotlin/Int, kotlin/Unit>|
+    @R|kotlin/PublishedApi|() internal final class PublishedAliases : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PublishedAliases| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final typealias PublishedCallback = R|(kotlin/Int) -> kotlin/Unit|
+
+    }
     internal final typealias InternalCallback = R|(kotlin/Int) -> kotlin/Unit|
     private final typealias PrivateCallback = R|(kotlin/Int) -> kotlin/Unit|

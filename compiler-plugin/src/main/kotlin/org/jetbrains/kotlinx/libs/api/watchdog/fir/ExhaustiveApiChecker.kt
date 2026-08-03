@@ -20,7 +20,7 @@ internal class ExhaustiveApiChecker(
     override fun check(declaration: FirClass) {
         val factory = severities[WatchdogDiagnostics.EXHAUSTIVE_PUBLIC_API] ?: return
 
-        if (declaration !is FirRegularClass || !declaration.isWatchedPublicApi()) {
+        if (declaration !is FirRegularClass || !declaration.isWatchedPublicSourceApi()) {
             return
         }
 

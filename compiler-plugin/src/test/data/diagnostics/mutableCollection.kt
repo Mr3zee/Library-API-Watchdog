@@ -22,9 +22,9 @@ public class Holder(public val items: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableLi
 
 public class Sink(buffer: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int><!>)
 
-// @PublishedApi declarations belong to the published binary API.
+// @PublishedApi declarations do not expose their types to source callers.
 @PublishedApi
-internal fun stash(): <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int><!> = mutableListOf()
+internal fun stash(): MutableList<Int> = mutableListOf()
 
 // The mutable type may hide in a type argument, behind a type alias, or in a function type.
 

@@ -82,6 +82,14 @@ FILE: overloads.kt
     }
     public final fun helper(second: R|kotlin/Int|, first: R|kotlin/Int|, extra: R|kotlin/Long|): R|kotlin/Unit| {
     }
+    public final fun publishedSibling(first: R|kotlin/Int|, second: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    @R|kotlin/PublishedApi|() internal final fun publishedSibling(second: R|kotlin/Int|, first: R|kotlin/Int|, extra: R|kotlin/Long|): R|kotlin/Unit| {
+    }
+    @R|kotlin/PublishedApi|() internal final fun publishedPair(first: R|kotlin/Int|, second: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    @R|kotlin/PublishedApi|() internal final fun publishedPair(second: R|kotlin/Int|, first: R|kotlin/Int|, extra: R|kotlin/Long|): R|kotlin/Unit| {
+    }
     public final class Grid : R|kotlin/Any| {
         public constructor(): R|foo/bar/Grid| {
             super<R|kotlin/Any|>()

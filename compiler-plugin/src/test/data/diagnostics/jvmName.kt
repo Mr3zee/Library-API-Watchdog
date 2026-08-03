@@ -72,3 +72,10 @@ package foo.bar
 internal fun helper(): Int = 0
 
 private val secret: Int = 0
+
+// FILE: publishedOnly.kt
+package foo.bar
+
+// The facade remains part of the binary contract copied into public inline callers.
+@PublishedApi
+internal fun <!TOP_LEVEL_API_WITHOUT_JVM_NAME!>publishedHelper<!>(): Int = 0

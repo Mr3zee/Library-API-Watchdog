@@ -35,10 +35,7 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
 ) : FirClassChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirClass) {
-        if (declaration !is FirRegularClass ||
-            !declaration.isWatchedPublicApi() ||
-            declaration.isPublishedApiOnly()
-        ) {
+        if (declaration !is FirRegularClass || !declaration.isWatchedPublicSourceApi()) {
             return
         }
 

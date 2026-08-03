@@ -86,6 +86,19 @@ private fun helper(first: Int, second: Int) {}
 
 public fun helper(second: Int, first: Int, extra: Long) {}
 
+// A @PublishedApi overload is also hidden from source users and is not a comparison reference.
+
+public fun publishedSibling(first: Int, second: Int) {}
+
+@PublishedApi
+internal fun publishedSibling(second: Int, first: Int, extra: Long) {}
+
+@PublishedApi
+internal fun publishedPair(first: Int, second: Int) {}
+
+@PublishedApi
+internal fun publishedPair(second: Int, first: Int, extra: Long) {}
+
 // An extension is called like a member of the type it extends, so the receiver's members are
 // overloads of it. Only the extension warns - the class can't see the extensions declared on
 // it, and it is the extension that strays from the established order.

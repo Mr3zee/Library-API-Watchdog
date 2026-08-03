@@ -98,6 +98,9 @@ public class KotlinOnlyService {
 
 // Not visible outside the library: no warning.
 
+@PublishedApi
+internal suspend fun publishedFetch(key: String): String = key
+
 internal suspend fun internalFetch(key: String): String = key
 
 private fun privateEach(action: (Int) -> Unit) {}

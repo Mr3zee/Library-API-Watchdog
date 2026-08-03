@@ -75,6 +75,12 @@ FILE: publishedApi.kt
         }
 
     }
+    @R|kotlin/SubclassOptInRequired|() @R|kotlin/PublishedApi|() internal open class PublishedOpenClassWithEmptyOptIn : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PublishedOpenClassWithEmptyOptIn| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
     @R|kotlin/PublishedApi|() internal final enum class PublishedEnum : R|kotlin/Enum<foo/bar/PublishedEnum>| {
         private constructor(): R|foo/bar/PublishedEnum| {
             super<R|kotlin/Enum<foo/bar/PublishedEnum>|>()

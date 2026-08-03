@@ -7,10 +7,8 @@ package foo.bar
 import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyExhaustive
 import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyOpen
 
-// A @PublishedApi declaration is internal in sources but part of the published binary API:
-// public inline functions expose it to users, so the checks about its binary shape treat it as
-// public API. The KDoc check is not one of them: the declaration stays unreferenceable by name,
-// so no documentation is required.
+// A @PublishedApi declaration is internal in sources but part of the published binary API.
+// Source-API checks ignore it because the declaration stays unreferenceable by name.
 
 @PublishedApi
 internal class PublishedClass
@@ -67,19 +65,23 @@ internal class PublishedOuter {
     private fun privateMember() {}
 }
 
-// Published subclassable API is watched by the open-API check.
+// Published classes cannot be subclassed by external Kotlin source.
 
 @PublishedApi
-internal open class <!OPEN_API_WITHOUT_SUBCLASS_OPT_IN!>PublishedOpenClass<!>
+internal open class PublishedOpenClass
 
 @IntentionallyOpen
 @PublishedApi
 internal open class AcknowledgedPublishedOpenClass
 
-// Published exhaustively matchable API is watched by the exhaustive-API check.
+@SubclassOptInRequired()
+@PublishedApi
+internal open class PublishedOpenClassWithEmptyOptIn
+
+// Published enums cannot be matched by external Kotlin source.
 
 @PublishedApi
-internal enum class <!EXHAUSTIVE_PUBLIC_API!>PublishedEnum<!> {
+internal enum class PublishedEnum {
     ENTRY,
 }
 

@@ -55,9 +55,11 @@ bootstrap/dev repositories configured in `settings.gradle.kts`.
       diagnostic configured to `WatchdogSeverity.NONE` resolves to no factory, and `WatchdogFirCheckers` skips
       registering a checker whose diagnostics are all disabled, so a disabled check performs no work.
       `EXEMPTION_WITHOUT_EXPLANATION` is deliberately not configurable - always an error.
-    - `fir/WatchdogCheckerUtils.isWatchedPublicApi()` is the shared gate for API-surface checks: real source,
-      public/protected effective visibility (or `@PublishedApi`), and not under an annotation whose class carries
-      `@InternalAnnotationMarker`. `WatchdogClassIds` holds the annotation ClassIds, including the
+    - `fir/WatchdogCheckerUtils.isWatchedPublicApi()` is the shared gate for the published source or binary surface:
+      real source, public/protected effective visibility (or `@PublishedApi`), and not under an annotation whose class
+      carries `@InternalAnnotationMarker`. Source-API and Java-ergonomics checks use
+      `isWatchedPublicSourceApi()`, which excludes declarations visible only through `@PublishedApi`.
+      `WatchdogClassIds` holds the annotation ClassIds, including the
       `exemptionAnnotations` set on which `ExemptionExplanationChecker` enforces explanations.
     - The `diagnosticsOutputFile=<path>` option makes `fir/WatchdogDiagnosticsRecorder` append every reported
       diagnostic (name, file path, element offsets) as a TSV line: `WatchdogFirCheckers` wraps each checker in a

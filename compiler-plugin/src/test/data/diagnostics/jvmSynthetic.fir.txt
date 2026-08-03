@@ -121,6 +121,9 @@ FILE: jvmSynthetic.kt
         }
 
     }
+    @R|kotlin/PublishedApi|() internal final suspend fun publishedFetch(key: R|kotlin/String|): R|kotlin/String| {
+        ^publishedFetch R|<local>/key|
+    }
     internal final suspend fun internalFetch(key: R|kotlin/String|): R|kotlin/String| {
         ^internalFetch R|<local>/key|
     }

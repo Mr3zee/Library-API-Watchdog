@@ -83,6 +83,8 @@ public fun interface SuspendAction {
 
 ## Notes
 
+- `@PublishedApi internal` aliases are not reported because library users cannot name them in
+  source, and an alias contributes no binary declaration of its own.
 - Nullable and receiver variants are caught the same way: `public typealias Some = ((String) -> Boolean)?` and
   `public typealias Some = StringBuilder.() -> Unit` are both function types under the alias.
 - A function type nested inside another type, such as `List<(Int) -> Unit>`, doesn't trigger the

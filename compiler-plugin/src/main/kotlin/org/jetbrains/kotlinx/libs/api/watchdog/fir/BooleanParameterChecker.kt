@@ -38,7 +38,7 @@ internal class BooleanParameterChecker(
             return
         }
 
-        if (!declaration.isWatchedPublicApi() || declaration.isExempt()) {
+        if (!declaration.isWatchedPublicSourceApi() || declaration.isExempt()) {
             return
         }
 

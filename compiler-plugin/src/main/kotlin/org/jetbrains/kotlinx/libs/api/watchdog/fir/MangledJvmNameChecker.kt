@@ -101,7 +101,7 @@ internal class MangledJvmNameChecker(
 
     context(context: CheckerContext)
     private fun FirCallableDeclaration.isWatchedForMangling(): Boolean {
-        if (!isWatchedPublicApi()) {
+        if (!isWatchedPublicSourceApi()) {
             return false
         }
 

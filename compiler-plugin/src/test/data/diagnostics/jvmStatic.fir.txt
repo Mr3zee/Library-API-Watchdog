@@ -169,3 +169,23 @@ FILE: jvmStatic.kt
             public get(): R|kotlin/Int|
 
     }
+    public final class PublishedMembers : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PublishedMembers| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/PublishedMembers.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            @R|kotlin/PublishedApi|() internal final fun create(): R|foo/bar/PublishedMembers| {
+                ^create R|foo/bar/PublishedMembers.PublishedMembers|()
+            }
+
+            @R|kotlin/PublishedApi|() internal final val DEFAULT_NAME: R|kotlin/String| = String(published)
+                internal get(): R|kotlin/String|
+
+        }
+
+    }

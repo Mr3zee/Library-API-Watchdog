@@ -22,9 +22,9 @@ public class Anchor(public val position: <!PAIR_OR_TRIPLE_PUBLIC_API!>Pair<Int, 
 
 public class Plotter(seed: <!PAIR_OR_TRIPLE_PUBLIC_API!>Pair<Int, Int><!>)
 
-// @PublishedApi declarations belong to the published binary API.
+// @PublishedApi declarations do not expose their types to source callers.
 @PublishedApi
-internal fun corner(): <!PAIR_OR_TRIPLE_PUBLIC_API!>Pair<Int, Int><!> = 0 to 0
+internal fun corner(): Pair<Int, Int> = 0 to 0
 
 // The tuple may hide in a type argument, behind a type alias, or in a function type.
 

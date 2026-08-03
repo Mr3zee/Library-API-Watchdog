@@ -158,6 +158,8 @@ public fun Grid.fill(
 
 ## Notes
 
+- `@PublishedApi internal` overloads are neither reported nor used as comparison references because
+  library users cannot call them in source.
 - Overloads that share fewer than two parameter names can't disagree on order and are never
   reported, which is why single-argument conversion overloads with the same parameter name but
   different types (`BigDecimal(value: Int)` next to `BigDecimal(value: String)`) stay silent.

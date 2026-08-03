@@ -106,6 +106,8 @@ public fun consume(items: Set<Int>) {
 
 ## Notes
 
+- `@PublishedApi internal` declarations are not reported because their types do not cross the
+  supported source API boundary.
 - `vararg` parameters are not reported themselves - the compiler already passes a defensive copy of
   the array - but a mutable element type still is (`vararg groups: MutableList<Int>`).
 - Extension receivers are not reported: an extension on a mutable collection serves values the

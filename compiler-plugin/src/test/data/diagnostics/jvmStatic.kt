@@ -110,3 +110,15 @@ public class Plain {
 
     public val value: Int = 0
 }
+
+// @PublishedApi members are binary implementation details, not supported Java API.
+
+public class PublishedMembers {
+    public companion object {
+        @PublishedApi
+        internal fun create(): PublishedMembers = PublishedMembers()
+
+        @PublishedApi
+        internal val DEFAULT_NAME: String = "published"
+    }
+}

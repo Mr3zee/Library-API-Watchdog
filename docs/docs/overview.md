@@ -73,6 +73,10 @@ See [Configuration](./configuration.md) for full configuration options and build
 
 ### API surface checks
 
+Checks about how callers use the source API ignore declarations that are visible only through
+`@PublishedApi`: those declarations remain `internal` and cannot be named by library users.
+Checks that protect binary linkage still include them where noted.
+
 - [Data classes in public API](./checks/data-class-public-api.md): data classes, whose generated `copy`,
   `componentN`, and constructor bake the exact property list into the compiled API.
 - [Open API without subclass opt-in](./checks/open-api-without-subclass-opt-in.md): open or abstract

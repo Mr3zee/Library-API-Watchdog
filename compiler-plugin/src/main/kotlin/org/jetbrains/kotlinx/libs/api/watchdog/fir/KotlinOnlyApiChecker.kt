@@ -46,7 +46,7 @@ internal class KotlinOnlyApiChecker(
             return
         }
 
-        if (!declaration.isWatchedPublicApi()) {
+        if (!declaration.isWatchedPublicSourceApi()) {
             return
         }
 

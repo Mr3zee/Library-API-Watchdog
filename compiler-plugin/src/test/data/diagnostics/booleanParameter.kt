@@ -48,9 +48,9 @@ public abstract class Base {
     protected fun guarded(<!BOOLEAN_PARAMETER_PUBLIC_API!>flag<!>: Boolean) {}
 }
 
-// @PublishedApi declarations belong to the published binary API.
+// @PublishedApi declarations are not callable by library users in source.
 @PublishedApi
-internal fun published(<!BOOLEAN_PARAMETER_PUBLIC_API!>flag<!>: Boolean) {}
+internal fun published(flag: Boolean) {}
 
 // Operator conventions don't exempt: `bits.set(0, true)` is as opaque as any other call.
 public class Bits {

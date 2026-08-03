@@ -76,6 +76,9 @@ public class LegacyServer @IntentionallyRequiredParameterAfterOptional(reason = 
 
 // Not visible outside the library: no warning.
 
+@PublishedApi
+internal fun publishedHelper(retries: Int = 3, host: String) {}
+
 internal fun internalHelper(retries: Int = 3, host: String) {}
 
 private fun privateHelper(retries: Int = 3, host: String) {}

@@ -120,6 +120,9 @@ public interface Event {
 
 ## Notes
 
+- `@PublishedApi internal` types are not reported because library users cannot name and match them
+  in source.
+
 A non-final member of a sealed hierarchy (an `abstract` or `sealed` subclass)
 is itself unrestricted, subclassable API and is reported separately by
 [Open API without subclass opt-in](./open-api-without-subclass-opt-in.md), on top of this check.

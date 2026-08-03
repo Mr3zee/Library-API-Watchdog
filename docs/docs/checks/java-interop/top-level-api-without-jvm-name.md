@@ -77,6 +77,8 @@ public fun disconnect(): Int = 0
 - Files exposing only classifiers - classes, objects, type aliases - produce no facade worth
   naming.
 - Files where every top-level callable is hidden from Java with `@JvmSynthetic` are not reported.
+- `@PublishedApi internal` callables still count: public inline bodies can copy calls to their file
+  facade into user binaries, so renaming that facade can break binary linkage.
 - Non-JVM compilations never register this check at all.
 
 ## Exemption

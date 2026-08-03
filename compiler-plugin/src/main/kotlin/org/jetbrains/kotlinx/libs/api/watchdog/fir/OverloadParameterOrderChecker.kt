@@ -43,7 +43,7 @@ internal class OverloadParameterOrderChecker(
             return
         }
 
-        if (!declaration.isWatchedPublicApi() || declaration.isOverride || declaration.symbol.isExempt()) {
+        if (!declaration.isWatchedPublicSourceApi() || declaration.isOverride || declaration.symbol.isExempt()) {
             return
         }
 
@@ -58,7 +58,7 @@ internal class OverloadParameterOrderChecker(
                 continue
             }
 
-            if (sibling.isExempt() || !sibling.isWatchedPublicApiSibling()) {
+            if (sibling.isExempt() || !sibling.isWatchedPublicSourceApiSibling()) {
                 continue
             }
 

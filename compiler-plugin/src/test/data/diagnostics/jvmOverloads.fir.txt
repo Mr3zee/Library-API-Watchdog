@@ -94,6 +94,8 @@ FILE: jvmOverloads.kt
         }
 
     }
+    @R|kotlin/PublishedApi|() internal final fun publishedConnect(host: R|kotlin/String|, port: R|kotlin/Int| = Int(80)): R|kotlin/Unit| {
+    }
     internal final fun internalConnect(host: R|kotlin/String|, port: R|kotlin/Int| = Int(80)): R|kotlin/Unit| {
     }
     private final fun privateConnect(host: R|kotlin/String|, port: R|kotlin/Int| = Int(80)): R|kotlin/Unit| {

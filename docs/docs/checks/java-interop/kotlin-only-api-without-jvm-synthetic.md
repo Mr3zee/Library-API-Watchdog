@@ -113,6 +113,8 @@ public fun onEach(action: Action) { }
   reported instead.
 - Constructors are not reported: `@JvmSynthetic` doesn't apply to them.
 - A signature mangled by a value class is reported by [`MANGLED_JVM_NAME_PUBLIC_API`](./mangled-jvm-name-public-api.md) instead.
+- `@PublishedApi internal` functions are not reported: their public bytecode entry is a binary
+  implementation detail, not supported Java source API.
 - `@JvmSynthetic` declarations are hidden from Java on purpose and are not reported.
 - Non-JVM compilations never register this check at all.
 

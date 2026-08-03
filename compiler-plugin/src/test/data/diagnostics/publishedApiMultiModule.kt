@@ -47,10 +47,10 @@ import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyInlinedLogic
 internal class MainPublishedClass
 
 @PublishedApi
-internal open class <!OPEN_API_WITHOUT_SUBCLASS_OPT_IN!>MainPublishedOpenClass<!>
+internal open class MainPublishedOpenClass
 
 @PublishedApi
-internal enum class <!EXHAUSTIVE_PUBLIC_API!>MainPublishedEnum<!> {
+internal enum class MainPublishedEnum {
     ENTRY,
 }
 

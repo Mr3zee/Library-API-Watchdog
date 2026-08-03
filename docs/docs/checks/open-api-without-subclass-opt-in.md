@@ -75,6 +75,8 @@ public interface Plugin {
 
 ## Notes
 
+- `@PublishedApi internal` types are not reported by either diagnostic because library users cannot
+  subclass them in Kotlin source.
 - A `@SubclassOptInRequired` annotation with no marker classes gates nothing. It is reported by
   the separate [`SUBCLASS_OPT_IN_WITHOUT_MARKERS`](./subclass-opt-in-without-markers.md) check
   instead of this one.

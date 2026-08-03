@@ -30,7 +30,7 @@ internal class InternalApiTypeExposureChecker(
 ) : PublicSignatureTypeChecker<InternalApiExposure>() {
     context(context: CheckerContext)
     override fun isCheckedDeclaration(declaration: FirMemberDeclaration): Boolean =
-        declaration.isWatchedPublicApi() && !declaration.isPublishedApiOnly()
+        declaration.isWatchedPublicSourceApi()
 
     /** Preserve an alias long enough to inspect a marker on the alias declaration itself. */
     context(context: CheckerContext)

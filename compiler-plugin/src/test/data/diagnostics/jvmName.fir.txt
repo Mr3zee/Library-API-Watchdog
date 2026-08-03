@@ -66,3 +66,9 @@ FILE: internalOnly.kt
     }
     private final val secret: R|kotlin/Int| = Int(0)
         private get(): R|kotlin/Int|
+FILE: publishedOnly.kt
+    package foo.bar
+
+    @R|kotlin/PublishedApi|() internal final fun publishedHelper(): R|kotlin/Int| {
+        ^publishedHelper Int(0)
+    }

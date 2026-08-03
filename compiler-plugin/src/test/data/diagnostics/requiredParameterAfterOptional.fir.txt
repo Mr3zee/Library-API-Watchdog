@@ -67,6 +67,8 @@ FILE: requiredParameterAfterOptional.kt
         }
 
     }
+    @R|kotlin/PublishedApi|() internal final fun publishedHelper(retries: R|kotlin/Int| = Int(3), host: R|kotlin/String|): R|kotlin/Unit| {
+    }
     internal final fun internalHelper(retries: R|kotlin/Int| = Int(3), host: R|kotlin/String|): R|kotlin/Unit| {
     }
     private final fun privateHelper(retries: R|kotlin/Int| = Int(3), host: R|kotlin/String|): R|kotlin/Unit| {

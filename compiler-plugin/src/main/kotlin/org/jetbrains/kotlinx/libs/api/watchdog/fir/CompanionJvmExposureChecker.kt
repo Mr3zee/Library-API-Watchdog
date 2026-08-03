@@ -60,7 +60,7 @@ internal class CompanionJvmExposureChecker(
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun checkFunction(declaration: FirNamedFunction, outerClass: Name) {
-        if (declaration.isOverride || declaration.isSuspend || !declaration.isWatchedPublicApi()) {
+        if (declaration.isOverride || declaration.isSuspend || !declaration.isWatchedPublicSourceApi()) {
             return
         }
 
@@ -90,7 +90,7 @@ internal class CompanionJvmExposureChecker(
             return
         }
 
-        if (!declaration.isWatchedPublicApi()) {
+        if (!declaration.isWatchedPublicSourceApi()) {
             return
         }
 

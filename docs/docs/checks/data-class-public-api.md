@@ -74,6 +74,8 @@ public class Coordinates(
 
 - `data object`s are not reported: with no constructor properties, none of `copy`, `componentN`, or a
   per-instance constructor are generated.
+- `@PublishedApi internal` data classes are still reported: their generated constructors, `copy`,
+  and `componentN` functions belong to the binary API available to public inline functions.
 
 ## Exemption
 

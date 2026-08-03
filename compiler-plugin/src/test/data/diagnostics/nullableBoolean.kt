@@ -31,9 +31,9 @@ public class Holder(public val checked: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<
 
 public class Sink(initial: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!>)
 
-// @PublishedApi declarations belong to the published binary API.
+// @PublishedApi declarations do not expose their types to source callers.
 @PublishedApi
-internal fun published(): <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!> = null
+internal fun published(): Boolean? = null
 
 // The nullable Boolean may hide in a type argument, behind a type alias, or in a function type.
 

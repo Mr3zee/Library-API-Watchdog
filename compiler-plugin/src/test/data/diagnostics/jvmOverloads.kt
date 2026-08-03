@@ -82,6 +82,9 @@ public class Gateway @IntentionallyWithoutJvmOverloads(reason = ExemptionReason.
 
 // Not visible outside the library: no warning.
 
+@PublishedApi
+internal fun publishedConnect(host: String, port: Int = 80) {}
+
 internal fun internalConnect(host: String, port: Int = 80) {}
 
 private fun privateConnect(host: String, port: Int = 80) {}

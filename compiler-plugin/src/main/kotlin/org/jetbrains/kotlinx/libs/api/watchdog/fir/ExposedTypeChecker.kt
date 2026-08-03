@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
+import org.jetbrains.kotlin.fir.declarations.FirMemberDeclaration
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
 import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
@@ -36,6 +37,10 @@ internal abstract class ExposedTypeChecker(
     checkTypeAliases = false,
     skipOverrides = true,
 ) {
+    context(context: CheckerContext)
+    override fun isCheckedDeclaration(declaration: FirMemberDeclaration): Boolean =
+        declaration.isWatchedPublicSourceApi()
+
     context(context: CheckerContext)
     override fun isDeclarationExempt(declaration: FirDeclaration): Boolean =
         declaration.hasAnnotation(exemption, context.session)

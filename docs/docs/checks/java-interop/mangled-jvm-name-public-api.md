@@ -126,6 +126,8 @@ only fix for constructors and overridable members, since `@JvmName` doesn't acce
 - `suspend` functions are not reported: an unmangled name would not make them Java-callable anyway.
 - Overrides are not reported: their signature is fixed by the overridden declaration, which is
   reported instead.
+- `@PublishedApi internal` declarations are not reported: their public bytecode entry is a binary
+  implementation detail, not supported Java source API.
 - `@JvmSynthetic` declarations are hidden from Java on purpose and are not reported.
 - Non-JVM compilations never register this check at all.
 

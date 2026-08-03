@@ -144,6 +144,18 @@ internal fun FirMemberDeclaration.isWatchedPublicApi(): Boolean {
 }
 
 /**
+ * Whether this declaration is part of the supported source API. `@PublishedApi` only makes an
+ * internal declaration available to compiled inline bodies; it does not make the declaration
+ * referenceable by library users in Kotlin source.
+ *
+ * Checks concerned with call-site readability, source extensibility, or Java ergonomics use this
+ * gate. Checks protecting the published binary surface use [isWatchedPublicApi] directly.
+ */
+context(context: CheckerContext)
+internal fun FirMemberDeclaration.isWatchedPublicSourceApi(): Boolean =
+    isWatchedPublicApi() && !isPublishedApiOnly()
+
+/**
  * The marker on an enclosing declaration covers the whole subtree: an internal API class can't
  * be used by users, so nothing declared inside it is usable public API.
  */
@@ -280,15 +292,15 @@ private fun FirProperty.isAccessorHiddenWithJvmSynthetic(
 
 /**
  * Symbol-based public API gate for overload siblings, which checkers only reach as symbols. The
- * declaration under check shares the containers its own [isWatchedPublicApi] gate already vets -
- * or, for an inherited sibling, subsumes them: a supertype visible in a public class's scope is
- * itself reachable by users. So only the sibling's own state matters here. Library symbols
- * carry no real source, so dependencies never pass this gate.
+ * declaration under check shares the containers its own [isWatchedPublicSourceApi] gate already
+ * vets - or, for an inherited sibling, subsumes them: a supertype visible in a public class's
+ * scope is itself reachable by users. So only the sibling's own state matters here. Library
+ * symbols carry no real source, so dependencies never pass this gate.
  */
 context(context: CheckerContext)
-internal fun FirCallableSymbol<*>.isWatchedPublicApiSibling(): Boolean =
+internal fun FirCallableSymbol<*>.isWatchedPublicSourceApiSibling(): Boolean =
     source?.kind == KtRealSourceElementKind &&
-            (effectiveVisibility.publicApi || publishedApiEffectiveVisibility?.publicApi == true) &&
+            effectiveVisibility.publicApi &&
             !hasInternalApiMarker()
 
 private val reasonParameter = Name.identifier("reason")

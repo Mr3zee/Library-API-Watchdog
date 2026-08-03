@@ -59,7 +59,7 @@ internal class UndocumentedApiChecker(
         }
 
         val (kind, name) = declaration.watchedKindAndName(context) ?: return
-        if (!declaration.isWatchedPublicApi() || declaration.isPublishedApiOnly()) {
+        if (!declaration.isWatchedPublicSourceApi()) {
             return
         }
 

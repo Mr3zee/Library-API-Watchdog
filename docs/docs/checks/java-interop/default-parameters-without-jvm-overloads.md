@@ -103,6 +103,8 @@ public class Connection @JvmOverloads constructor(
 - `suspend` functions and members of a value class are not reported: they are not Java-callable
   regardless of overloads.
 - Overrides are not reported: they can't re-declare default values.
+- `@PublishedApi internal` declarations are not reported: their public bytecode entry is a binary
+  implementation detail, not supported Java source API.
 - `@JvmSynthetic` functions and constructors are hidden from Java on purpose and are not reported.
 - Non-JVM compilations never register this check at all.
 

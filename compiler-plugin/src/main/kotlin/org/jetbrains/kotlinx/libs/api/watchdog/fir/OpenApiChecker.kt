@@ -34,7 +34,7 @@ internal class OpenApiChecker(
             return
         }
 
-        if (!declaration.isWatchedPublicApi()) {
+        if (!declaration.isWatchedPublicSourceApi()) {
             return
         }
 

@@ -62,6 +62,8 @@ public fun disableLogging() {}
 
 ## Notes
 
+- `@PublishedApi internal` functions are not reported because library users cannot call them in
+  source.
 - A nullable `Boolean?` parameter is still a positional flag, just a three-state one, so it is
   reported the same way. It is also reported in [Nullable Booleans in public API](./nullable-boolean-public-api.md).
 - A type alias to `Boolean` doesn't change what users pass and is still reported.

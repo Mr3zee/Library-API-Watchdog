@@ -43,6 +43,11 @@ public typealias FunctionReference = kotlin.reflect.KFunction1<Int, Unit>
 
 // Not visible outside the library: no warning.
 
+@PublishedApi
+internal class PublishedAliases {
+    public typealias PublishedCallback = (Int) -> Unit
+}
+
 internal typealias InternalCallback = (Int) -> Unit
 
 private typealias PrivateCallback = (Int) -> Unit

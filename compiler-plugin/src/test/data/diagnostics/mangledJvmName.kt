@@ -137,9 +137,9 @@ public fun hidden(id: UserId) {}
 @JvmSynthetic
 public var <!MANGLED_JVM_NAME_PUBLIC_API!>fieldOnlySynthetic<!>: UserId = UserId("x")
 
-// @PublishedApi declarations belong to the published binary API.
+// @PublishedApi declarations are binary implementation details, not supported Java API.
 @PublishedApi
-internal fun <!MANGLED_JVM_NAME_PUBLIC_API!>published<!>(id: UserId) {}
+internal fun published(id: UserId) {}
 
 // Acknowledged declarations: no warning.
 

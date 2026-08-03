@@ -42,6 +42,9 @@ The check covers return, receiver, value and context parameter types, nested typ
 bounds, class supertypes, and public type aliases. It is always reported as an error and cannot be
 suppressed in source or demoted to a warning.
 
+`@PublishedApi internal` declarations are included because public inline bodies can copy calls to
+them into consumer binaries, whose linkage still requires every type in those signatures.
+
 If dependency exposure is deliberately managed outside Gradle metadata, disable the check for the
 module:
 
