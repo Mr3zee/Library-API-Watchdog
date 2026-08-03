@@ -8,34 +8,13 @@ import java.util.jar.JarFile
 import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
-import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
-import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirBasicDeclarationChecker
-import org.jetbrains.kotlin.fir.declarations.FirConstructor
-import org.jetbrains.kotlin.fir.declarations.FirDeclaration
-import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
-import org.jetbrains.kotlin.fir.declarations.FirProperty
-import org.jetbrains.kotlin.fir.declarations.FirRegularClass
-import org.jetbrains.kotlin.fir.declarations.FirTypeAlias
-import org.jetbrains.kotlin.fir.declarations.FirTypeParameter
-import org.jetbrains.kotlin.fir.declarations.FirTypeParameterRef
-import org.jetbrains.kotlin.fir.declarations.FirValueParameter
-import org.jetbrains.kotlin.fir.declarations.isLegacyContextReceiver
-import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
-import org.jetbrains.kotlin.fir.declarations.utils.correspondingValueParameterFromPrimaryConstructor
 import org.jetbrains.kotlin.fir.declarations.utils.sourceElement
 import org.jetbrains.kotlin.fir.moduleData
-import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
 import org.jetbrains.kotlin.fir.resolve.toClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
-import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
-import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
-import org.jetbrains.kotlin.fir.types.FirTypeRef
-import org.jetbrains.kotlin.fir.types.coneType
-import org.jetbrains.kotlin.fir.types.type
-import org.jetbrains.kotlin.fir.types.upperBoundIfFlexible
 import org.jetbrains.kotlin.library.metadata.KlibDeserializedContainerSource
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinarySourceElement
 import org.jetbrains.kotlin.name.ClassId
@@ -60,126 +39,24 @@ internal data class DependencyExposureCheckConfiguration(
  */
 internal class NonTransitiveDependencyChecker(
     configuration: DependencyExposureCheckConfiguration,
-) : FirBasicDeclarationChecker(MppCheckerKind.Common) {
+) : PublicSignatureTypeChecker<ClassId>() {
     private val dependencyIndex = DependencyExposureIndex(configuration)
 
-    context(context: CheckerContext, reporter: DiagnosticReporter)
-    override fun check(declaration: FirDeclaration) {
-        when (declaration) {
-            // Parameters are swept from their callable so its visibility is evaluated once.
-            is FirValueParameter -> return
-            is FirProperty -> checkProperty(declaration)
-            is FirNamedFunction -> checkFunction(declaration)
-            is FirConstructor -> checkConstructor(declaration)
-            is FirRegularClass -> checkClass(declaration)
-            is FirTypeAlias -> checkTypeAlias(declaration)
-            else -> return
-        }
+    context(context: CheckerContext)
+    override fun ConeKotlinType.violatingClassifier(): ClassId? {
+        val symbol = (this as? ConeClassLikeType)?.toClassSymbol() ?: return null
+        return symbol.classId.takeIf { dependencyIndex.isNonTransitive(symbol, context) }
     }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun checkProperty(declaration: FirProperty) {
-        if (!declaration.isWatchedPublicApi()) return
-
-        checkTypeParameters(declaration.typeParameters)
-        declaration.receiverParameter?.typeRef?.let {
-            checkType(it, "property receiver", declaration.name, declaration.source)
-        }
-        declaration.contextParameters.forEach { checkParameter(it) }
-        checkType(declaration.returnTypeRef, "property", declaration.name, declaration.source)
-    }
-
-    context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun checkFunction(declaration: FirNamedFunction) {
-        if (!declaration.isWatchedPublicApi()) return
-
-        checkTypeParameters(declaration.typeParameters)
-        declaration.receiverParameter?.typeRef?.let {
-            checkType(it, "function receiver", declaration.name, declaration.source)
-        }
-        checkType(declaration.returnTypeRef, "function", declaration.name, declaration.source)
-        (declaration.contextParameters + declaration.valueParameters).forEach { checkParameter(it) }
-    }
-
-    context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun checkConstructor(declaration: FirConstructor) {
-        if (!declaration.isWatchedPublicApi()) return
-
-        // A val/var parameter is also a property over the same source text. Let that property own
-        // the report so one dependency type produces one diagnostic.
-        val propertyParameters = mutableSetOf<FirValueParameterSymbol>()
-        if (declaration.isPrimary) {
-            context.containingClassSymbol?.processAllDeclarations(context.session) { member ->
-                if (member is FirPropertySymbol) {
-                    member.correspondingValueParameterFromPrimaryConstructor?.let(propertyParameters::add)
-                }
-            }
-        }
-
-        for (parameter in declaration.contextParameters + declaration.valueParameters) {
-            if (parameter.symbol !in propertyParameters) checkParameter(parameter)
-        }
-    }
-
-    context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun checkClass(declaration: FirRegularClass) {
-        if (!declaration.isWatchedPublicApi()) return
-
-        checkTypeParameters(declaration.typeParameters)
-        declaration.superTypeRefs.forEach {
-            checkType(it, "supertype of", declaration.name, declaration.source)
-        }
-        declaration.contextParameters.forEach { checkParameter(it) }
-    }
-
-    context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun checkTypeAlias(declaration: FirTypeAlias) {
-        if (!declaration.isWatchedPublicApi()) return
-
-        checkTypeParameters(declaration.typeParameters)
-        checkType(declaration.expandedTypeRef, "type alias", declaration.name, declaration.source)
-    }
-
-    context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun checkParameter(parameter: FirValueParameter) {
-        if (parameter.isLegacyContextReceiver()) return
-        checkType(parameter.returnTypeRef, "parameter", parameter.name, parameter.source)
-    }
-
-    context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun checkTypeParameters(typeParameters: List<FirTypeParameterRef>) {
-        for (typeParameter in typeParameters.filterIsInstance<FirTypeParameter>()) {
-            for (bound in typeParameter.bounds) {
-                checkType(bound, "type parameter", typeParameter.name, typeParameter.source)
-            }
-        }
-    }
-
-    context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun checkType(typeRef: FirTypeRef, kind: String, name: Name, fallbackSource: KtSourceElement?) {
-        val violation = typeRef.coneType.findNonTransitiveDependency() ?: return
+    override fun report(source: KtSourceElement?, kind: String, name: Name, violation: ClassId) {
         reporter.reportOn(
-            source = typeRef.source ?: fallbackSource,
+            source = source,
             factory = WatchdogDiagnostics.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY,
             a = kind,
             b = name,
             c = violation.asSingleFqName().asString(),
         )
-    }
-
-    context(context: CheckerContext)
-    private fun ConeKotlinType.findNonTransitiveDependency(): ClassId? {
-        val type = upperBoundIfFlexible().let {
-            if (it is ConeClassLikeType) it.fullyExpandedType() else it
-        }
-
-        if (type is ConeClassLikeType) {
-            val symbol = type.toClassSymbol()
-            if (symbol != null && dependencyIndex.isNonTransitive(symbol, context)) {
-                return symbol.classId
-            }
-        }
-        return type.typeArguments.firstNotNullOfOrNull { it.type?.findNonTransitiveDependency() }
     }
 }
 
