@@ -392,6 +392,32 @@ class WatchdogProjectTest {
     }
 
     @Test
+    fun androidTestSourceCompilationsAreNotCheckedWithBuiltInKotlin() {
+        // The same test compilation names under AGP 9, where AGP's built-in Kotlin support
+        // drives the compiler plugin integration instead of the Kotlin Android plugin.
+        // publicTypeFromImplementationDependencyIsAnErrorInAndroidLibrariesWithBuiltInKotlin
+        // proves the main compilations of the same project shape are checked.
+        assumeAndroidBuildEnvironment()
+        val project = object : AndroidLibraryWatchdogProject(
+            kotlinScript = """kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") } }""",
+            builtInKotlin = true,
+        ) {
+            override fun sources() = listOf(
+                source(cleanMainFile),
+                unexemptedOpenClassSource("test"),
+                unexemptedOpenClassSource("androidTest", "DeviceTestOnlyHelper"),
+            )
+        }.gradleProject
+
+        val result = build(
+            project.rootDir,
+            "compileDebugUnitTestKotlin",
+            "compileDebugAndroidTestKotlin",
+        )
+        result.assertNoTestSourceDiagnostics()
+    }
+
+    @Test
     fun multiplatformAndroidTargetMainSourcesAreChecked() {
         // The control for multiplatformAndroidTargetTestSourcesAreNotChecked: the android
         // target's `main` compilation of the same project shape reports its diagnostics.
@@ -429,6 +455,46 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = build(agpCompatibleGradle, project.rootDir, "compileAndroidHostTest")
+        result.assertNoTestSourceDiagnostics()
+    }
+
+    @Test
+    fun multiplatformAndroidTargetMainSourcesAreCheckedOnAgp9() {
+        // The control for multiplatformAndroidTargetTestSourcesAreNotCheckedOnAgp9, on AGP 9's
+        // `android` target block.
+        assumeAndroidBuildEnvironment()
+        val project = object : KmpAndroidWatchdogProject(agp9 = true) {
+            override fun sources() = listOf(
+                source(cleanMainFile),
+                unexemptedOpenClassSource("androidMain", "AndroidOnlyApi"),
+            )
+        }.gradleProject
+
+        val result = buildAndFail(project.rootDir, "compileAndroidMain")
+        result.assertDiagnosticReported("e: ", "can be subclassed outside the library without restriction")
+        result.assertDiagnosticReported("e: ", "has no `KDoc`")
+        result.assertDiagnosticReported("e: ", "exposes a nullable `Boolean`")
+    }
+
+    @Test
+    fun multiplatformAndroidTargetTestSourcesAreNotCheckedOnAgp9() {
+        // The `hostTest` exclusion holds on AGP 9's multiplatform android target too.
+        assumeAndroidBuildEnvironment()
+        val project = object : KmpAndroidWatchdogProject(
+            agp9 = true,
+            explicitApi = false,
+            extraBuildScript = """
+                kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") } }
+            """.trimIndent(),
+        ) {
+            override fun sources() = listOf(
+                source(cleanMainFile),
+                unexemptedOpenClassSource("commonTest"),
+                unexemptedOpenClassSource("androidHostTest", "HostTestOnlyHelper"),
+            )
+        }.gradleProject
+
+        val result = build(project.rootDir, "compileAndroidHostTest")
         result.assertNoTestSourceDiagnostics()
     }
 
@@ -640,6 +706,46 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = build(agpCompatibleGradle, project.rootDir, "compileDebugKotlin")
+        assertFalse(result.output.contains("not published transitively to consumers"))
+    }
+
+    @Test
+    fun publicTypeFromImplementationDependencyIsAnErrorInAndroidLibrariesWithBuiltInKotlin() {
+        // The AGP 9 counterpart of the test above: built-in Kotlin support applies the compiler
+        // plugin and supplies the same variant-specific dependency configurations.
+        assumeAndroidBuildEnvironment()
+        val project = object : AndroidLibraryWatchdogProject(builtInKotlin = true) {
+            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+
+            override fun androidDependencies() = listOf(implementation(":model"))
+
+            override fun jvmSubprojects() = mapOf(
+                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
+            )
+        }.gradleProject
+
+        val result = buildAndFail(project.rootDir, "compileDebugKotlin")
+        result.assertDiagnosticReported(
+            "e: ",
+            "publicly exposes `test.model.ExternalModel`, but the dependency providing that type " +
+                    "is not published transitively",
+        )
+    }
+
+    @Test
+    fun publicTypeFromApiDependencyIsAcceptedInAndroidLibrariesWithBuiltInKotlin() {
+        assumeAndroidBuildEnvironment()
+        val project = object : AndroidLibraryWatchdogProject(builtInKotlin = true) {
+            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+
+            override fun androidDependencies() = listOf(api(":model"))
+
+            override fun jvmSubprojects() = mapOf(
+                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
+            )
+        }.gradleProject
+
+        val result = build(project.rootDir, "compileDebugKotlin")
         assertFalse(result.output.contains("not published transitively to consumers"))
     }
 

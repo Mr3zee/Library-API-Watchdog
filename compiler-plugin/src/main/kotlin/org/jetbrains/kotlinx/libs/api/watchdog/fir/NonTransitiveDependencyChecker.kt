@@ -27,7 +27,6 @@ import org.jetbrains.kotlin.fir.declarations.utils.sourceElement
 import org.jetbrains.kotlin.fir.moduleData
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
 import org.jetbrains.kotlin.fir.resolve.toClassSymbol
-import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
@@ -192,12 +191,18 @@ private class DependencyExposureIndex(configuration: DependencyExposureCheckConf
 
     fun isNonTransitive(symbol: FirClassSymbol<*>, context: CheckerContext): Boolean {
         // A class declared by the compilation itself needs no dependency at all.
-        if (symbol.moduleData == context.session.moduleData) return false
+        if (symbol.moduleData == context.session.moduleData) {
+            return false
+        }
 
         val origin = symbol.dependencyPath()
         if (origin != null) {
-            if (transitiveRoots.any { it.containsOrigin(origin) }) return false
-            if (compileRoots.any { it.containsOrigin(origin) }) return true
+            if (transitiveRoots.any { it.containsOrigin(origin) }) {
+                return false
+            }
+            if (compileRoots.any { it.containsOrigin(origin) }) {
+                return true
+            }
         }
 
         // Project artifacts can be represented as a jar in one configuration and as a classes
@@ -213,8 +218,7 @@ private class DependencyExposureIndex(configuration: DependencyExposureCheckConf
         }
     }
 
-    @OptIn(SymbolInternals::class)
-    private fun FirClassSymbol<*>.dependencyPath(): Path? = when (val source = fir.sourceElement) {
+    private fun FirClassSymbol<*>.dependencyPath(): Path? = when (val source = sourceElement) {
         is KotlinJvmBinarySourceElement -> source.binaryClass.containingLibraryPath?.path?.toString()?.let(::normalizedPath)
         is KlibDeserializedContainerSource -> normalizedPath(source.klib.libraryFile.path)
         else -> null

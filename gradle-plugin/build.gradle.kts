@@ -53,7 +53,8 @@ fun androidSdkDirOrNull(): File? {
 }
 
 tasks.withType<Test>().configureEach {
-    systemProperty("watchdog.test.agpVersion", libs.versions.agp.get())
+    systemProperty("watchdog.test.agp8Version", libs.versions.agp8.get())
+    systemProperty("watchdog.test.agp9Version", libs.versions.agp9.get())
     androidSdkDirOrNull()?.let { systemProperty("watchdog.test.androidHome", it.absolutePath) }
 }
 

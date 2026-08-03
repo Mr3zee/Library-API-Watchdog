@@ -4,10 +4,12 @@ kotlin = "2.4.0"
 # https://github.com/Kotlin/dokka
 dokka = "2.2.0"
 # https://developer.android.com/build/releases/gradle-plugin
-# Applied by the Android functional test projects of :gradle-plugin. Stays on AGP 8: AGP 9 refuses
-# the Kotlin Android Gradle plugin in favor of built-in Kotlin support, which bypasses the KGP
-# compiler plugin integration under test.
-agp = "8.13.0"
+# Applied by the Android functional test projects of :gradle-plugin. Both AGP generations are
+# integrated differently: AGP 8 works through the Kotlin Android Gradle plugin, while AGP 9
+# refuses that plugin and drives KGP's compiler plugin integration itself through its built-in
+# Kotlin support.
+agp8 = "8.13.0"
+agp9 = "9.2.1"
 
 [libraries]
 kotlin-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
