@@ -20,8 +20,18 @@ public fun <!MANGLED_JVM_NAME_PUBLIC_API!>find<!>(id: UserId?) {}
 // An extension receiver is a parameter on the JVM and mangles the name too.
 public fun UserId.<!MANGLED_JVM_NAME_PUBLIC_API!>describe<!>(): String = "user"
 
+// Context parameters become JVM parameters for functions and property accessors.
+context(id: UserId)
+public fun <!MANGLED_JVM_NAME_PUBLIC_API!>describeContext<!>(): String = id.raw
+
+context(id: UserId)
+public val <!MANGLED_JVM_NAME_PUBLIC_API!>contextOwner<!>: String get() = id.raw
+
 // A type parameter erases to its first upper bound, so it mangles like a direct mention.
 public fun <T : UserId> <!MANGLED_JVM_NAME_PUBLIC_API!>locate<!>(t: T) {}
+
+// Erasure follows chains of type-parameter bounds.
+public fun <T : U, U : UserId> <!MANGLED_JVM_NAME_PUBLIC_API!>locateChained<!>(t: T) {}
 
 // Stdlib value classes count: kotlin.Result and the unsigned types mangle like any other.
 

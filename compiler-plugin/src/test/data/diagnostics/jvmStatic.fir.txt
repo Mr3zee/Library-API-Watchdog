@@ -143,6 +143,26 @@ FILE: jvmStatic.kt
         }
 
     }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|]) public final class AcknowledgedOuter : R|kotlin/Any| {
+        public constructor(): R|foo/bar/AcknowledgedOuter| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/AcknowledgedOuter.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun create(): R|foo/bar/AcknowledgedOuter| {
+                ^create R|foo/bar/AcknowledgedOuter.AcknowledgedOuter|()
+            }
+
+            public final val DEFAULT_NAME: R|kotlin/String| = String(acknowledged)
+                public get(): R|kotlin/String|
+
+        }
+
+    }
     public final object Singleton : R|kotlin/Any| {
         private constructor(): R|foo/bar/Singleton| {
             super<R|kotlin/Any|>()

@@ -92,6 +92,39 @@ FILE: mutableCollection.kt
     public final fun buffer(): R|foo/bar/IntBuffer| {
         ^buffer R|kotlin/TODO|()
     }
+    public abstract interface BufferMarker : R|kotlin/Any| {
+    }
+    public abstract class BranchedBuffer : R|foo/bar/BufferMarker|, R|kotlin/collections/MutableCollection<kotlin/Int>| {
+        public constructor(): R|foo/bar/BranchedBuffer| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public abstract class SpecializedBuffer : R|foo/bar/BranchedBuffer| {
+        public constructor(): R|foo/bar/SpecializedBuffer| {
+            super<R|foo/bar/BranchedBuffer|>()
+        }
+
+    }
+    public abstract class ReadOnlyBuffer : R|kotlin/collections/Collection<kotlin/Int>| {
+        public constructor(): R|foo/bar/ReadOnlyBuffer| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun branchedBuffer(): R|foo/bar/BranchedBuffer| {
+        ^branchedBuffer R|kotlin/TODO|()
+    }
+    public final fun specializedBuffer(): R|foo/bar/SpecializedBuffer| {
+        ^specializedBuffer R|kotlin/TODO|()
+    }
+    public final fun readOnlyBuffer(): R|foo/bar/ReadOnlyBuffer| {
+        ^readOnlyBuffer R|kotlin/TODO|()
+    }
+    public final typealias ReadOnlyBox<T> = R|kotlin/collections/List<T>|
+    public final fun boxedBuffer(): R|{foo/bar/ReadOnlyBox<kotlin/collections/MutableList<kotlin/Int>>=} kotlin/collections/List<kotlin/collections/MutableList<kotlin/Int>>| {
+        ^boxedBuffer R|kotlin/collections/emptyList|<R|kotlin/collections/MutableList<kotlin/Int>|>()
+    }
     public final fun table(): R|kotlin/Array<kotlin/String>| {
         ^table R|kotlin/arrayOf|<R|kotlin/String|>()
     }

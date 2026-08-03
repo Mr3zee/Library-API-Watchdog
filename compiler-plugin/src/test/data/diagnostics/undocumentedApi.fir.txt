@@ -168,6 +168,18 @@ FILE: undocumentedApi.kt
             public get(): R|kotlin/Int|
 
     }
+    public final class EscapedKDocSubjects : R|kotlin/Any| {
+        public constructor(class: R|kotlin/Int|): R|foo/bar/EscapedKDocSubjects| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val class: R|kotlin/Int| = R|<local>/class|
+            public get(): R|kotlin/Int|
+
+        public final val when: R|kotlin/Int| = this@R|foo/bar/EscapedKDocSubjects|.R|foo/bar/EscapedKDocSubjects.class|
+            public get(): R|kotlin/Int|
+
+    }
     public final class ClassKDocNotCoveringAllProperties : R|kotlin/Any| {
         public constructor(covered: R|kotlin/Int|): R|foo/bar/ClassKDocNotCoveringAllProperties| {
             super<R|kotlin/Any|>()

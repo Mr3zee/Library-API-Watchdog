@@ -24,6 +24,12 @@ FILE: jvmSynthetic.kt
     public final typealias Callback = R|(kotlin/Int) -> kotlin/Unit|
     public final fun onEvent(callback: R|{foo/bar/Callback=} (kotlin/Int) -> kotlin/Unit|): R|kotlin/Unit| {
     }
+    public final fun onEvents(vararg callbacks: R|kotlin/Array<out (kotlin/Int) -> kotlin/Unit>|): R|kotlin/Unit| {
+    }
+    public final fun raceAll(vararg work: R|kotlin/Array<out suspend () -> kotlin/Int>|): R|kotlin/Unit| {
+    }
+    public final fun transformAll(vararg mappers: R|kotlin/Array<out (kotlin/Int) -> kotlin/Int>|): R|kotlin/Unit| {
+    }
     public open class Loader : R|kotlin/Any| {
         public constructor(): R|foo/bar/Loader| {
             super<R|kotlin/Any|>()

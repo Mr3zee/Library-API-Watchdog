@@ -131,6 +131,20 @@ public class DocumentedThroughClassKDocTags(
     public val fromBody: Int = input
 }
 
+// Backticks in KDoc subjects cover Kotlin identifiers that need escaping in source.
+
+/**
+ * Documented.
+ *
+ * @param `class` Documented via the class KDoc.
+ * @property `when` Documented via the class KDoc.
+ */
+public class EscapedKDocSubjects(
+    public val `class`: Int,
+) {
+    public val `when`: Int = `class`
+}
+
 // A class KDoc covers a property only through a matching `@property` tag; the KDoc's mere
 // presence doesn't document the properties.
 

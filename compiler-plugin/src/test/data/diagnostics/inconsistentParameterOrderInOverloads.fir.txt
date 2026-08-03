@@ -11,6 +11,14 @@ FILE: overloads.kt
     }
     public final fun move(x: R|kotlin/Long|, y: R|kotlin/Long|): R|kotlin/Unit| {
     }
+    public final fun arrange(prefix: R|kotlin/String|, first: R|kotlin/Int|, middle: R|kotlin/Long|, second: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun arrange(second: R|kotlin/Int|, suffix: R|kotlin/String|, first: R|kotlin/Int|, scale: R|kotlin/Double|): R|kotlin/Unit| {
+    }
+    public final fun align(first: R|kotlin/Int|, separator: R|kotlin/String|, second: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun align(prefix: R|kotlin/String|, first: R|kotlin/Long|, second: R|kotlin/Long|, suffix: R|kotlin/Double|): R|kotlin/Unit| {
+    }
     public final fun log(message: R|kotlin/String|): R|kotlin/Unit| {
     }
     public final fun log(tag: R|kotlin/String|, code: R|kotlin/Int|): R|kotlin/Unit| {

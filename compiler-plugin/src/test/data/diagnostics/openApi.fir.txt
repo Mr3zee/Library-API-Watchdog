@@ -92,6 +92,24 @@ FILE: openApi.kt
         }
 
     }
+    public abstract class MixedVisibilityConstructors : R|kotlin/Any| {
+        private constructor(): R|foo/bar/MixedVisibilityConstructors| {
+            super<R|kotlin/Any|>()
+        }
+
+        protected constructor(flag: R|kotlin/Boolean|): R|foo/bar/MixedVisibilityConstructors| {
+            this<R|foo/bar/MixedVisibilityConstructors|>()
+        }
+
+        public constructor(value: R|kotlin/Int|): R|foo/bar/MixedVisibilityConstructors| {
+            this<R|foo/bar/MixedVisibilityConstructors|>()
+        }
+
+        private constructor(value: R|kotlin/String|): R|foo/bar/MixedVisibilityConstructors| {
+            this<R|foo/bar/MixedVisibilityConstructors|>()
+        }
+
+    }
     @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|() public open class DeliberatelyOpenClass : R|kotlin/Any| {
         public constructor(): R|foo/bar/DeliberatelyOpenClass| {
             super<R|kotlin/Any|>()

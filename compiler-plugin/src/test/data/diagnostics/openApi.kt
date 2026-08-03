@@ -61,6 +61,13 @@ public abstract class AbstractClassWithVisibleSecondaryConstructor private const
     <!OPEN_API_WITHOUT_SUBCLASS_OPT_IN!>public constructor(x: Int) : this()<!>
 }
 
+// Every accessible secondary constructor is reported, while inaccessible siblings are ignored.
+public abstract class MixedVisibilityConstructors private constructor() {
+    <!OPEN_API_WITHOUT_SUBCLASS_OPT_IN!>protected constructor(flag: Boolean) : this()<!>
+    <!OPEN_API_WITHOUT_SUBCLASS_OPT_IN!>public constructor(value: Int) : this()<!>
+    private constructor(value: String) : this()
+}
+
 // Deliberately open: no warning.
 
 @IntentionallyOpen

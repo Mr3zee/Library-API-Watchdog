@@ -21,6 +21,13 @@ public fun tag(vararg values: String, <!REQUIRED_PARAMETER_AFTER_OPTIONAL!>name<
 // A function-type parameter that is not last has no trailing-lambda syntax to preserve.
 public fun schedule(delay: Long = 0L, <!REQUIRED_PARAMETER_AFTER_OPTIONAL!>action<!>: () -> Unit, <!REQUIRED_PARAMETER_AFTER_OPTIONAL!>name<!>: String) {}
 
+// A trailing lambda excuses only itself; an earlier required parameter is still reported.
+public fun namedSchedule(
+    delay: Long = 0L,
+    <!REQUIRED_PARAMETER_AFTER_OPTIONAL!>name<!>: String,
+    action: () -> Unit,
+) {}
+
 // No lambda literal satisfies a KFunction reflection type, so the last position doesn't excuse it.
 public fun bind(priority: Int = 0, <!REQUIRED_PARAMETER_AFTER_OPTIONAL!>handler<!>: KFunction1<Int, Unit>) {}
 
@@ -38,6 +45,10 @@ public fun launch(delay: Long = 0L, block: suspend () -> Unit) {}
 
 public fun maybeRun(delay: Long = 0L, block: (() -> Unit)?) {}
 
+public class Scope
+
+public fun inScope(delay: Long = 0L, block: Scope.() -> Unit) {}
+
 public typealias Callback = (Int) -> Unit
 
 public fun onEvent(priority: Int = 0, callback: Callback) {}
@@ -47,6 +58,8 @@ public fun interface Listener {
 }
 
 public fun listen(bufferSize: Int = 16, listener: Listener) {}
+
+public fun listenMaybe(bufferSize: Int = 16, listener: Listener?) {}
 
 // Optional inputs last, or no optional inputs at all: no warning.
 

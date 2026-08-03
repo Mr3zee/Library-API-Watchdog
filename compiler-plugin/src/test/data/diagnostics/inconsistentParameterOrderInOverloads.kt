@@ -25,6 +25,27 @@ public fun move(x: Int, y: Int, z: Int) {}
 
 public fun move(x: Long, y: Long) {}
 
+// Parameters unique to either overload may be interleaved without affecting the relative-order
+// comparison of the names they share.
+
+public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>arrange<!>(
+    prefix: String,
+    first: Int,
+    middle: Long,
+    second: Int,
+) {}
+
+public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>arrange<!>(
+    second: Int,
+    suffix: String,
+    first: Int,
+    scale: Double,
+) {}
+
+public fun align(first: Int, separator: String, second: Int) {}
+
+public fun align(prefix: String, first: Long, second: Long, suffix: Double) {}
+
 // Fewer than two shared names can disagree on order.
 
 public fun log(message: String) {}

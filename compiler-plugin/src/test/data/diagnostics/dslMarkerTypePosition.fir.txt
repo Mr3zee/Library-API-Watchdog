@@ -7,6 +7,12 @@ FILE: dslMarkerTypePosition.kt
         }
 
     }
+    @R|kotlin/DslMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.TYPE|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.TYPE|)]) public final annotation class LayoutDsl : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/LayoutDsl| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
     public open class Tag : R|kotlin/Any| {
         public constructor(): R|foo/bar/Tag| {
             super<R|kotlin/Any|>()
@@ -14,6 +20,8 @@ FILE: dslMarkerTypePosition.kt
 
     }
     public final fun process(tag: R|@R|foo/bar/TreeDsl|()  foo/bar/Tag|): R|kotlin/Unit| {
+    }
+    public final fun processTwice(tag: R|@R|foo/bar/TreeDsl|()  @R|foo/bar/LayoutDsl|()  foo/bar/Tag|): R|kotlin/Unit| {
     }
     public final fun make(): R|@R|foo/bar/TreeDsl|()  foo/bar/Tag| {
         ^make R|foo/bar/Tag.Tag|()
@@ -40,6 +48,11 @@ FILE: dslMarkerTypePosition.kt
     }
     public final fun tree(block: R|@R|foo/bar/TreeDsl|()  foo/bar/Tag.() -> kotlin/Unit|): R|kotlin/Unit| {
         ^tree R|<local>/block|.R|SubstitutionOverride<kotlin/Function1.invoke: R|kotlin/Unit|>|(R|foo/bar/Tag.Tag|())
+    }
+    public final fun layoutTree(block: R|@R|foo/bar/TreeDsl|()  @R|foo/bar/LayoutDsl|()  foo/bar/Tag.() -> kotlin/Unit|): R|kotlin/Unit| {
+        ^layoutTree R|<local>/block|.R|SubstitutionOverride<kotlin/Function1.invoke: R|kotlin/Unit|>|(R|foo/bar/Tag.Tag|())
+    }
+    public final fun contextualTree(block: R|@R|foo/bar/TreeDsl|()  context(foo/bar/Tag) () -> kotlin/Unit|): R|kotlin/Unit| {
     }
     public final fun tree2(block: R|@R|foo/bar/TreeDsl|()  foo/bar/Tag.() -> kotlin/Unit|): R|kotlin/Unit| {
         ^tree2 R|<local>/block|.R|SubstitutionOverride<kotlin/Function1.invoke: R|kotlin/Unit|>|(R|foo/bar/Tag.Tag|())

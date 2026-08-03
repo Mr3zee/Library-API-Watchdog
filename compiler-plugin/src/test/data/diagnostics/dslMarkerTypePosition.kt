@@ -8,11 +8,20 @@ package foo.bar
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPEALIAS)
 public annotation class TreeDsl
 
+@DslMarker
+@Target(AnnotationTarget.TYPE)
+public annotation class LayoutDsl
+
 public open class Tag
 
 // Inert type positions: the value is only ever accessed by name, so the marker restricts nothing.
 
 public fun process(tag: <!DSL_MARKER_NOOP_TYPE_POSITION!>@TreeDsl<!> Tag) { }
+
+// Every marker on the same inert type position is reported.
+public fun processTwice(
+    tag: <!DSL_MARKER_NOOP_TYPE_POSITION!>@TreeDsl<!> <!DSL_MARKER_NOOP_TYPE_POSITION!>@LayoutDsl<!> Tag,
+) { }
 
 public fun make(): <!DSL_MARKER_NOOP_TYPE_POSITION!>@TreeDsl<!> Tag = Tag()
 
@@ -35,6 +44,12 @@ internal fun internalProcess(tag: <!DSL_MARKER_NOOP_TYPE_POSITION!>@TreeDsl<!> T
 
 // The marker on a function type propagates to its receiver.
 public fun tree(block: @TreeDsl Tag.() -> Unit): Unit = Tag().block()
+
+// All markers are effective when the function type has an implicit receiver.
+public fun layoutTree(block: @TreeDsl @LayoutDsl Tag.() -> Unit): Unit = Tag().block()
+
+// A context parameter is an implicit function-type value too.
+public fun contextualTree(block: @TreeDsl context(Tag) () -> Unit): Unit { }
 
 // The marker on the receiver type inside a function type marks the lambda receiver.
 public fun tree2(block: (@TreeDsl Tag).() -> Unit): Unit = Tag().block()

@@ -53,6 +53,34 @@ public fun kotlinOnlyHelper(): Int = 0
 @get:JvmSynthetic
 public val kotlinOnlyValue: Int = 0
 
+// FILE: syntheticFields.kt
+package foo.bar
+
+// A const or @JvmField property has no accessors; a synthetic backing field hides its only Java
+// entry point, so this file exposes no Java-visible facade member.
+
+@JvmSynthetic
+public const val HIDDEN_CONSTANT: Int = 1
+
+@JvmSynthetic
+@JvmField
+public val HIDDEN_FIELD: Int = 2
+
+// FILE: partiallyHiddenProperty.kt
+package foo.bar
+
+// Hiding only a var's getter leaves its setter and therefore its facade visible.
+@get:JvmSynthetic
+public var <!TOP_LEVEL_API_WITHOUT_JVM_NAME!>partiallyHidden<!>: Int = 0
+
+// FILE: fieldAnnotationOnly.kt
+package foo.bar
+
+// On an ordinary property the untargeted annotation hides only the backing field; accessors stay
+// visible and still require a stable facade name.
+@JvmSynthetic
+public val <!TOP_LEVEL_API_WITHOUT_JVM_NAME!>fieldAnnotationOnly<!>: Int = 0
+
 // FILE: acknowledged.kt
 @file:IntentionallyDefaultFacadeName(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)
 

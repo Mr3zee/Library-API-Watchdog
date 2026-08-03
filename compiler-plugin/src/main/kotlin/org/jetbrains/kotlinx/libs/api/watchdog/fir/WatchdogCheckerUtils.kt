@@ -248,8 +248,8 @@ internal fun FirNamedFunction.mangledValueClassInSignature(): Name? =
 /**
  * Whether Java sources can't see this declaration because it is marked `@JvmSynthetic`. A
  * property is hidden when its every Java entry point is: the getter - and the setter of a
- * `var` - via `@get:`/`@set:JvmSynthetic`, while a `const` or `@JvmField` property stays
- * visible as a field regardless of accessor annotations.
+ * `var` - via `@get:`/`@set:JvmSynthetic`; or, for a `const` or `@JvmField` property, its sole
+ * backing-field entry point.
  */
 context(context: CheckerContext)
 internal fun FirCallableDeclaration.isHiddenFromJavaWithJvmSynthetic(): Boolean {
@@ -259,7 +259,15 @@ internal fun FirCallableDeclaration.isHiddenFromJavaWithJvmSynthetic(): Boolean 
     }
 
     if (isConst || hasJvmFieldAnnotation()) {
-        return false
+        // These properties expose only their backing field. Unlike an accessor-targeted
+        // annotation, @JvmSynthetic on that field hides the property's sole Java entry point.
+        return backingField?.hasAnnotation(
+            JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID,
+            session,
+        ) == true || annotations.any {
+            it.useSiteTarget == AnnotationUseSiteTarget.FIELD &&
+                    it.toAnnotationClassIdSafe(session) == JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID
+        }
     }
     return isAccessorHiddenWithJvmSynthetic(getter, AnnotationUseSiteTarget.PROPERTY_GETTER) &&
             (!isVar || isAccessorHiddenWithJvmSynthetic(setter, AnnotationUseSiteTarget.PROPERTY_SETTER))

@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.fir.types.functionTypeKind
 import org.jetbrains.kotlin.fir.types.isExtensionFunctionType
 import org.jetbrains.kotlin.fir.types.isUnit
 import org.jetbrains.kotlin.fir.types.type
+import org.jetbrains.kotlin.fir.types.varargElementType
 import org.jetbrains.kotlin.name.JvmStandardClassIds
 
 /**
@@ -93,7 +94,10 @@ internal class KotlinOnlyApiChecker(
     context(context: CheckerContext)
     private fun FirValueParameter.kotlinOnlyFunctionType(): String? {
         val session = context.session
-        val type = returnTypeRef.coneType.fullyExpandedType()
+        var type = returnTypeRef.coneType.fullyExpandedType()
+        if (isVararg) {
+            type = type.varargElementType().fullyExpandedType()
+        }
         val functionTypeKind = type.functionTypeKind(session) ?: return null
         if (functionTypeKind.isReflectType) {
             return null

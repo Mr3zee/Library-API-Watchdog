@@ -83,6 +83,28 @@ public abstract class IntBuffer : MutableList<Int>
 
 public fun buffer(): <!MUTABLE_COLLECTION_PUBLIC_API!>IntBuffer<!> = TODO()
 
+// User-defined mutable collection subtypes are recognized transitively and through an unrelated
+// first superinterface. Read-only subtypes remain clean, including after their result is cached.
+
+public interface BufferMarker
+
+public abstract class BranchedBuffer : BufferMarker, MutableCollection<Int>
+
+public abstract class SpecializedBuffer : BranchedBuffer()
+
+public abstract class ReadOnlyBuffer : Collection<Int>
+
+public fun branchedBuffer(): <!MUTABLE_COLLECTION_PUBLIC_API!>BranchedBuffer<!> = TODO()
+
+public fun specializedBuffer(): <!MUTABLE_COLLECTION_PUBLIC_API!>SpecializedBuffer<!> = TODO()
+
+public fun readOnlyBuffer(): ReadOnlyBuffer = TODO()
+
+// Alias expansion preserves type arguments supplied at the use site.
+public typealias ReadOnlyBox<T> = List<T>
+
+public fun boxedBuffer(): <!MUTABLE_COLLECTION_PUBLIC_API!>ReadOnlyBox<MutableList<Int>><!> = emptyList()
+
 // Arrays are mutable collections too.
 
 public fun table(): <!MUTABLE_COLLECTION_PUBLIC_API!>Array<String><!> = arrayOf()

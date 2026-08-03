@@ -97,6 +97,16 @@ public class AcknowledgedCompanion {
     }
 }
 
+// The exemption on the outer class covers its companion members as well.
+@IntentionallyNonStaticCompanionApi(reason = ExemptionReason.API_DESIGN)
+public class AcknowledgedOuter {
+    public companion object {
+        public fun create(): AcknowledgedOuter = AcknowledgedOuter()
+
+        public val DEFAULT_NAME: String = "acknowledged"
+    }
+}
+
 // Named objects and plain class members are not companion members: no warning.
 
 public object Singleton {

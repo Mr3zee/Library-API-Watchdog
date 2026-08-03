@@ -9,6 +9,8 @@ FILE: requiredParameterAfterOptional.kt
     }
     public final fun schedule(delay: R|kotlin/Long| = Long(0), action: R|() -> kotlin/Unit|, name: R|kotlin/String|): R|kotlin/Unit| {
     }
+    public final fun namedSchedule(delay: R|kotlin/Long| = Long(0), name: R|kotlin/String|, action: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+    }
     public final fun bind(priority: R|kotlin/Int| = Int(0), handler: R|kotlin/reflect/KFunction1<kotlin/Int, kotlin/Unit>|): R|kotlin/Unit| {
     }
     public final class Server : R|kotlin/Any| {
@@ -27,6 +29,14 @@ FILE: requiredParameterAfterOptional.kt
     }
     public final fun maybeRun(delay: R|kotlin/Long| = Long(0), block: R|(() -> kotlin/Unit)?|): R|kotlin/Unit| {
     }
+    public final class Scope : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Scope| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun inScope(delay: R|kotlin/Long| = Long(0), block: R|foo/bar/Scope.() -> kotlin/Unit|): R|kotlin/Unit| {
+    }
     public final typealias Callback = R|(kotlin/Int) -> kotlin/Unit|
     public final fun onEvent(priority: R|kotlin/Int| = Int(0), callback: R|{foo/bar/Callback=} (kotlin/Int) -> kotlin/Unit|): R|kotlin/Unit| {
     }
@@ -35,6 +45,8 @@ FILE: requiredParameterAfterOptional.kt
 
     }
     public final fun listen(bufferSize: R|kotlin/Int| = Int(16), listener: R|foo/bar/Listener|): R|kotlin/Unit| {
+    }
+    public final fun listenMaybe(bufferSize: R|kotlin/Int| = Int(16), listener: R|foo/bar/Listener?|): R|kotlin/Unit| {
     }
     public final fun wellOrdered(host: R|kotlin/String|, port: R|kotlin/Int| = Int(80), timeout: R|kotlin/Long| = Long(30)): R|kotlin/Unit| {
     }

@@ -29,6 +29,14 @@ public typealias Callback = (Int) -> Unit
 
 public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>onEvent<!>(callback: Callback) {}
 
+// A vararg's array is compiler-generated; callers still pass Kotlin function values one by one.
+public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>onEvents<!>(vararg callbacks: (Int) -> Unit) {}
+
+public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>raceAll<!>(vararg work: suspend () -> Int) {}
+
+// Function types Java can invoke naturally remain accepted in vararg position too.
+public fun transformAll(vararg mappers: (Int) -> Int) {}
+
 // An open (non-abstract) member still has a body Java sees: should warn.
 public open class Loader {
     public open suspend fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>load<!>(key: String): String = key

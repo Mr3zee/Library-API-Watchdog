@@ -17,7 +17,18 @@ FILE: mangledJvmName.kt
     public final fun R|foo/bar/UserId|.describe(): R|kotlin/String| {
         ^describe String(user)
     }
+    context(id: R|foo/bar/UserId|)
+    public final fun describeContext(): R|kotlin/String| {
+        ^describeContext R|<local>/id|.R|foo/bar/UserId.raw|
+    }
+    context(id: R|foo/bar/UserId|)
+    public final val contextOwner: R|kotlin/String|
+        public get(): R|kotlin/String| {
+            ^ R|<local>/id|.R|foo/bar/UserId.raw|
+        }
     public final fun <T : R|foo/bar/UserId|> locate(t: R|T|): R|kotlin/Unit| {
+    }
+    public final fun <T : R|U|, U : R|foo/bar/UserId|> locateChained(t: R|T|): R|kotlin/Unit| {
     }
     public final fun handle(result: R|kotlin/Result<kotlin/String>|): R|kotlin/Unit| {
     }
