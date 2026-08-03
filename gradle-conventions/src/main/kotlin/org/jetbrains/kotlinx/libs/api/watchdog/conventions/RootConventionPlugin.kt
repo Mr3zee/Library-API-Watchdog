@@ -19,7 +19,7 @@ class RootConventionPlugin : Plugin<Project> {
                 pluginsConfiguration.withType(DokkaHtmlPluginParameters::class.java).configureEach {
                     customAssets.from(logo)
                     footerMessage.set(footer)
-                    homepageLink.set("https://mr3zee.github.io/libs-api-watchdog/")
+                    homepageLink.set("https://mr3zee.github.io/Library-API-Watchdog/")
                 }
             }
 

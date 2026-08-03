@@ -17,7 +17,7 @@ const config: Config = {
   favicon: 'img/logo.svg',
 
   url: variables.host,
-  baseUrl: '/libs-api-watchdog/',
+  baseUrl: '/Library-API-Watchdog/',
   organizationName: 'Mr3zee',
   projectName: 'Library API Watchdog',
   trailingSlash: false,
@@ -62,7 +62,7 @@ const config: Config = {
       },
       items: [
         {
-          href: `${variables.host}/libs-api-watchdog/api/`,
+          href: `${variables.host}/Library-API-Watchdog/api/`,
           label: 'API Reference',
           position: 'right',
         },
@@ -87,7 +87,7 @@ const config: Config = {
         {
           title: 'More',
           items: [
-            {label: 'API Reference', href: `${variables.host}/libs-api-watchdog/api/`},
+            {label: 'API Reference', href: `${variables.host}/Library-API-Watchdog/api/`},
             {label: 'GitHub', href: variables['repo-root-path']},
           ],
         },

@@ -9,7 +9,7 @@ class DokkaConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         val conventionModuleName = target.name
         val rootDirectory = target.isolated.rootProject.projectDirectory
-        val sourceUrl = target.uri("https://github.com/Mr3zee/libs-api-watchdog/blob/main")
+        val sourceUrl = target.uri("https://github.com/Mr3zee/Library-API-Watchdog/blob/main")
         with(target) {
             pluginManager.apply("org.jetbrains.dokka")
 

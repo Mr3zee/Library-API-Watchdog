@@ -3,7 +3,7 @@
 # update_sitemap.sh
 #
 # Appends a <url> entry for every generated API-docs HTML page to a sitemap.xml file,
-# used when publishing documentation to https://mr3zee.github.io/libs-api-watchdog/.
+# used when publishing documentation to https://mr3zee.github.io/Library-API-Watchdog/.
 #
 # Usage:
 #   ./scripts/update_sitemap.sh <sitemap_file> <api_docs_dir>
@@ -50,7 +50,7 @@ find "$api_docs_dir" -type f -name "*.html" | while read -r html_file; do
   url_path="${html_file/#$api_docs_dir/api}"
 
   # Create the full URL
-  url="https://mr3zee.github.io/libs-api-watchdog/$url_path"
+  url="https://mr3zee.github.io/Library-API-Watchdog/$url_path"
 
   # Add the URL entry to the temporary file
   cat >> "$temp_file" << EOF

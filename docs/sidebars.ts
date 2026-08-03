@@ -58,7 +58,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'link',
       label: 'API Reference',
-      href: `${variables.host}/libs-api-watchdog/api/`,
+      href: `${variables.host}/Library-API-Watchdog/api/`,
     },
   ],
 };

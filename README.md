@@ -1,11 +1,11 @@
-# library-api-watchdog <img src="logo.svg" width="48" align="right" alt="library-api-watchdog logo"/>
+# Library API Watchdog <img src="logo.svg" width="48" align="right" alt="library-api-watchdog logo"/>
 
 A Kotlin K2 compiler plugin that warns library authors about public API declarations that are
 hard to evolve.
 
-**[Documentation](https://mr3zee.github.io/libs-api-watchdog/)** - a full write-up for every
+**[Documentation](https://mr3zee.github.io/Library-API-Watchdog/)** - a full write-up for every
 check: rationale, do/don't examples, exemptions, and configuration. The
-[API reference](https://mr3zee.github.io/libs-api-watchdog/api/) covers the exemption
+[API reference](https://mr3zee.github.io/Library-API-Watchdog/api/) covers the exemption
 annotations.
 
 ## Setup
@@ -61,8 +61,8 @@ apiWatchdog {
 }
 ```
 
-See [Setup](https://mr3zee.github.io/libs-api-watchdog/) and the
-[Gradle plugin reference](https://mr3zee.github.io/libs-api-watchdog/configuration) for all
+See [Setup](https://mr3zee.github.io/Library-API-Watchdog/) and the
+[Gradle plugin reference](https://mr3zee.github.io/Library-API-Watchdog/configuration) for all
 options, including direct compiler invocation without Gradle.
 
 ## Exemptions
@@ -71,7 +71,7 @@ Declarations that are public for technical reasons only are excluded from all ch
 the library's internal-API annotation with `@InternalAnnotationMarker`. A single declaration is
 exempted in place with the matching `@Intentionally*` annotation, which must explain itself
 through an `ExemptionReason` and a description. See
-[Exemptions and internal API](https://mr3zee.github.io/libs-api-watchdog/exemptions).
+[Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions).
 
 ## Adopting on an existing library
 
@@ -93,50 +93,50 @@ rather than annotated, since it restricts nothing to begin with. Checks disabled
 `apiWatchdog` are not exempted, and the few diagnostics no annotation can acknowledge are listed
 as warnings for manual follow-up. Run it on a clean
 working tree and review the diff; from then on the checks only guard newly added API. See the
-[existing-library guide](https://mr3zee.github.io/libs-api-watchdog/existing-libs) for details.
+[existing-library guide](https://mr3zee.github.io/Library-API-Watchdog/existing-libs) for details.
 
 ## Checks
 
 ### API surface
 
-- [`OPEN_API_WITHOUT_SUBCLASS_OPT_IN`](https://mr3zee.github.io/libs-api-watchdog/checks/open-api-without-subclass-opt-in) -
+- [`OPEN_API_WITHOUT_SUBCLASS_OPT_IN`](https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in) -
   open/abstract classes and interfaces that can be subclassed outside the library without
   restriction.
-- [`SUBCLASS_OPT_IN_WITHOUT_MARKERS`](https://mr3zee.github.io/libs-api-watchdog/checks/subclass-opt-in-without-markers) -
+- [`SUBCLASS_OPT_IN_WITHOUT_MARKERS`](https://mr3zee.github.io/Library-API-Watchdog/checks/subclass-opt-in-without-markers) -
   `@SubclassOptInRequired` annotations that list no marker classes and so restrict nothing.
-- [`EXHAUSTIVE_PUBLIC_API`](https://mr3zee.github.io/libs-api-watchdog/checks/exhaustive-public-api) -
+- [`EXHAUSTIVE_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/exhaustive-public-api) -
   enums and sealed hierarchies, which users can match exhaustively, so adding an entry or a
   subtype later breaks them.
-- [`UNDOCUMENTED_PUBLIC_API`](https://mr3zee.github.io/libs-api-watchdog/checks/undocumented-public-api) -
+- [`UNDOCUMENTED_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api) -
   public declarations of every kind without KDoc.
-- [`FUNCTION_TYPE_ALIAS_PUBLIC_API`](https://mr3zee.github.io/libs-api-watchdog/checks/function-type-alias-public-api) -
+- [`FUNCTION_TYPE_ALIAS_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/function-type-alias-public-api) -
   type aliases of function types; the alias is erased from the compiled API, unlike a
   `fun interface`.
-- [`DATA_CLASS_PUBLIC_API`](https://mr3zee.github.io/libs-api-watchdog/checks/data-class-public-api) -
+- [`DATA_CLASS_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/data-class-public-api) -
   data classes, whose generated `copy`/`componentN` bake the exact property list into the
   compiled API.
-- [`STATEFUL_CLASS_WITHOUT_EQUALS`, `STATEFUL_CLASS_WITHOUT_HASH_CODE`, and `STATEFUL_CLASS_WITHOUT_TO_STRING`](https://mr3zee.github.io/libs-api-watchdog/checks/stateful-class-without-equals-hashcode-to-string) -
+- [`STATEFUL_CLASS_WITHOUT_EQUALS`, `STATEFUL_CLASS_WITHOUT_HASH_CODE`, and `STATEFUL_CLASS_WITHOUT_TO_STRING`](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string) -
   stateful classes relying on identity equality, identity hashing, or opaque rendering.
-- [`MUTABLE_COLLECTION_PUBLIC_API`](https://mr3zee.github.io/libs-api-watchdog/checks/mutable-collection-public-api) -
+- [`MUTABLE_COLLECTION_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/mutable-collection-public-api) -
   mutable collection types (arrays included) in public signatures.
-- [`PAIR_OR_TRIPLE_PUBLIC_API`](https://mr3zee.github.io/libs-api-watchdog/checks/pair-or-triple-public-api) -
+- [`PAIR_OR_TRIPLE_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/pair-or-triple-public-api) -
   `Pair` and `Triple` in public signatures; tuple components carry no domain meaning.
-- [`BOOLEAN_PARAMETER_PUBLIC_API`](https://mr3zee.github.io/libs-api-watchdog/checks/boolean-parameter-public-api) -
+- [`BOOLEAN_PARAMETER_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/boolean-parameter-public-api) -
   Boolean parameters of public functions, context parameters included; a bare `true`/`false`
   reveals nothing at the call site.
-- [`NULLABLE_BOOLEAN_PUBLIC_API`](https://mr3zee.github.io/libs-api-watchdog/checks/nullable-boolean-public-api) -
+- [`NULLABLE_BOOLEAN_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/nullable-boolean-public-api) -
   `Boolean?` in public signatures: three states with only two of them named.
-- [`REQUIRED_PARAMETER_AFTER_OPTIONAL`](https://mr3zee.github.io/libs-api-watchdog/checks/required-parameter-after-optional) -
+- [`REQUIRED_PARAMETER_AFTER_OPTIONAL`](https://mr3zee.github.io/Library-API-Watchdog/checks/required-parameter-after-optional) -
   required parameters declared after optional ones.
-- [`INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS`](https://mr3zee.github.io/libs-api-watchdog/checks/inconsistent-parameter-order-in-overloads) -
+- [`INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS`](https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads) -
   same-named parameters ordered differently across overloads, inviting silently swapped
   arguments.
-- [`INLINE_FUNCTION_WITH_LOGIC`](https://mr3zee.github.io/libs-api-watchdog/checks/inline-function-with-logic) -
+- [`INLINE_FUNCTION_WITH_LOGIC`](https://mr3zee.github.io/Library-API-Watchdog/checks/inline-function-with-logic) -
   public inline bodies that do more than delegate; the logic freezes into user binaries.
-- [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](https://mr3zee.github.io/libs-api-watchdog/checks/special/public-type-from-non-transitive-dependency) -
+- [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency) -
   public signatures using dependency types that are not published transitively to consumers.
   Always an error while enabled.
-- [`PUBLIC_TYPE_WITH_INTERNAL_API`](https://mr3zee.github.io/libs-api-watchdog/checks/special/public-type-with-internal-api) -
+- [`PUBLIC_TYPE_WITH_INTERNAL_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api) -
   supported public signatures exposing types marked as internal API; mark the exposing declaration
   as internal API too, or remove the internal type from its signature.
 
@@ -144,34 +144,34 @@ working tree and review the diff; from then on the checks only guard newly added
 
 Only run in JVM compilations; a Kotlin-only library disables the group with
 `javaInterop { enabled = false }`. See the
-[group overview](https://mr3zee.github.io/libs-api-watchdog/checks/java-interop).
+[group overview](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop).
 
-- [`MANGLED_JVM_NAME_PUBLIC_API`](https://mr3zee.github.io/libs-api-watchdog/checks/java-interop/mangled-jvm-name-public-api) -
+- [`MANGLED_JVM_NAME_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api) -
   value classes in signatures mangle the compiled JVM name out of Java's reach.
-- [`KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`](https://mr3zee.github.io/libs-api-watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic) -
+- [`KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic) -
   suspend/reified/Kotlin-function-type shapes left visible to Java sources.
-- [`COMPANION_API_WITHOUT_JVM_STATIC`](https://mr3zee.github.io/libs-api-watchdog/checks/java-interop/companion-api-without-jvm-static) -
+- [`COMPANION_API_WITHOUT_JVM_STATIC`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-api-without-jvm-static) -
   companion functions Java can only reach as `Outer.Companion.member(...)`.
-- [`COMPANION_CONSTANT_WITHOUT_JVM_FIELD`](https://mr3zee.github.io/libs-api-watchdog/checks/java-interop/companion-constant-without-jvm-field) -
+- [`COMPANION_CONSTANT_WITHOUT_JVM_FIELD`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-constant-without-jvm-field) -
   constant-shaped companion `val`s readable from Java only through the companion instance.
-- [`TOP_LEVEL_API_WITHOUT_JVM_NAME`](https://mr3zee.github.io/libs-api-watchdog/checks/java-interop/top-level-api-without-jvm-name) -
+- [`TOP_LEVEL_API_WITHOUT_JVM_NAME`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/top-level-api-without-jvm-name) -
   file facades without `@file:JvmName`, leaking the file name into the Java API surface.
-- [`DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS`](https://mr3zee.github.io/libs-api-watchdog/checks/java-interop/default-parameters-without-jvm-overloads) -
+- [`DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/default-parameters-without-jvm-overloads) -
   for functions with default parameter values without `@JvmOverloads` Java callers must pass every argument.
 
 ### DSL markers
 
-- [`DSL_MARKER_NOOP_TARGET`](https://mr3zee.github.io/libs-api-watchdog/checks/special/dsl-marker-noop-target) -
+- [`DSL_MARKER_NOOP_TARGET`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target) -
   `@Target` entries on which a `@DslMarker` annotation has no effect.
-- [`DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`](https://mr3zee.github.io/libs-api-watchdog/checks/special/dsl-marker-without-explicit-targets) -
+- [`DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-without-explicit-targets) -
   DSL markers relying on the default target set, which allows nine no-op targets and forbids the
   effective ones.
-- [`DSL_MARKER_NOOP_TYPE_POSITION`](https://mr3zee.github.io/libs-api-watchdog/checks/special/dsl-marker-noop-type-position) -
+- [`DSL_MARKER_NOOP_TYPE_POSITION`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-type-position) -
   DSL markers written on type positions where receiver scope control ignores them.
 
 ### Exemption hygiene
 
-- [`EXEMPTION_WITHOUT_EXPLANATION`](https://mr3zee.github.io/libs-api-watchdog/checks/special/exemption-without-explanation) -
+- [`EXEMPTION_WITHOUT_EXPLANATION`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/exemption-without-explanation) -
   `@Intentionally*` exemptions whose reason and description explain nothing. Always an error,
   not configurable.
 
@@ -179,9 +179,9 @@ Only run in JVM compilations; a Kotlin-only library disables the group with
 
 Performed by the Gradle plugin rather than the compiler:
 
-- [Explicit API mode warning](https://mr3zee.github.io/libs-api-watchdog/configuration) - warns when
+- [Explicit API mode warning](https://mr3zee.github.io/Library-API-Watchdog/configuration) - warns when
   explicit API mode is not enabled, since the watchdog registers no checks without it.
-- [Binary compatibility validation suggestion](https://mr3zee.github.io/libs-api-watchdog/abi-validation-suggestion) -
+- [Binary compatibility validation suggestion](https://mr3zee.github.io/Library-API-Watchdog/abi-validation-suggestion) -
   warns when neither the Kotlin Gradle plugin's built-in ABI validation nor the standalone
   Binary Compatibility Validator is enabled.
 

@@ -36,7 +36,7 @@ class WatchdogProjectTest {
         result.assertDiagnosticReported("e: ", "neither declares nor inherits a `toString`")
         result.assertDiagnosticReported(
             "e: ",
-            "[Poko](https://mr3zee.github.io/libs-api-watchdog/checks/" +
+            "[Poko](https://mr3zee.github.io/Library-API-Watchdog/checks/" +
                     "stateful-class-without-equals-hashcode-to-string#poko)",
         )
         result.assertDiagnosticReported("e: ", "press `${ideaGenerateShortcut()}`")
