@@ -7,9 +7,11 @@ import com.autonomousapps.kit.Source
 import com.autonomousapps.kit.gradle.Dependency.Companion.api
 import com.autonomousapps.kit.gradle.Dependency.Companion.implementation
 import com.autonomousapps.kit.gradle.Plugin
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.gradle.testkit.runner.BuildResult
+import org.gradle.testkit.runner.TaskOutcome
 import org.intellij.lang.annotations.Language
 import org.junit.Test
 
@@ -29,7 +31,11 @@ class WatchdogProjectTest {
         result.assertDiagnosticReported("e: ", "neither declares nor inherits an `equals`")
         result.assertDiagnosticReported("e: ", "neither declares nor inherits a `hashCode`")
         result.assertDiagnosticReported("e: ", "neither declares nor inherits a `toString`")
-        result.assertDiagnosticReported("e: ", "Use Poko or Lombok")
+        result.assertDiagnosticReported(
+            "e: ",
+            "[Poko](https://mr3zee.github.io/libs-api-watchdog/checks/" +
+                    "stateful-class-without-equals-hashcode-to-string#poko)",
+        )
         result.assertDiagnosticReported("e: ", "press `${ideaGenerateShortcut()}`")
         result.assertDiagnosticReported("e: ", "exposes the mutable collection type")
         result.assertDiagnosticReported("e: ", "exposes the tuple type")
@@ -338,8 +344,8 @@ class WatchdogProjectTest {
         // Only the Kotlin/JVM and multiplatform targets have a compilation literally called
         // `test`. Android names them after the variant (`debugUnitTest`, `debugAndroidTest`), the
         // Android target of a multiplatform project uses `hostTest` and `deviceTest`, and custom
-        // compilations follow the same shape. A locally declared one stands in for all of them,
-        // since an Android build would need the SDK installed.
+        // compilations follow the same shape. A locally declared one stands in for all of them
+        // without needing an Android SDK; the SDK-gated Android tests below build the real names.
         val project = object : WatchdogProject(
             explicitApi = false,
             extraBuildScript = """
@@ -351,10 +357,78 @@ class WatchdogProjectTest {
                 }
             """.trimIndent(),
         ) {
-            override fun sources() = listOf(source(cleanMainFile), unexemptedTestOnlySource("integrationTest"))
+            override fun sources() = listOf(source(cleanMainFile), unexemptedOpenClassSource("integrationTest"))
         }.gradleProject
 
         val result = build(project.rootDir, "compileIntegrationTestKotlin")
+        result.assertNoTestSourceDiagnostics()
+    }
+
+    @Test
+    fun androidTestSourceCompilationsAreNotChecked() {
+        // The real Android names for the stand-in above: unit tests compile as `debugUnitTest`
+        // and instrumented tests as `debugAndroidTest`. The raw flag reaches both because
+        // project-level compiler options apply to every compilation, so only the plugin's own
+        // exclusion keeps them silent. publicTypeFromImplementationDependencyIsAnErrorInAndroidLibraries
+        // proves the main compilations of the same project shape are checked.
+        assumeAndroidBuildEnvironment()
+        val project = object : AndroidLibraryWatchdogProject(
+            kotlinScript = """kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") } }""",
+        ) {
+            override fun sources() = listOf(
+                source(cleanMainFile),
+                unexemptedOpenClassSource("test"),
+                unexemptedOpenClassSource("androidTest", "DeviceTestOnlyHelper"),
+            )
+        }.gradleProject
+
+        val result = build(
+            agpCompatibleGradle,
+            project.rootDir,
+            "compileDebugUnitTestKotlin",
+            "compileDebugAndroidTestKotlin",
+        )
+        result.assertNoTestSourceDiagnostics()
+    }
+
+    @Test
+    fun multiplatformAndroidTargetMainSourcesAreChecked() {
+        // The control for multiplatformAndroidTargetTestSourcesAreNotChecked: the android
+        // target's `main` compilation of the same project shape reports its diagnostics.
+        assumeAndroidBuildEnvironment()
+        val project = object : KmpAndroidWatchdogProject() {
+            override fun sources() = listOf(
+                source(cleanMainFile),
+                unexemptedOpenClassSource("androidMain", "AndroidOnlyApi"),
+            )
+        }.gradleProject
+
+        val result = buildAndFail(agpCompatibleGradle, project.rootDir, "compileAndroidMain")
+        result.assertDiagnosticReported("e: ", "can be subclassed outside the library without restriction")
+        result.assertDiagnosticReported("e: ", "has no `KDoc`")
+        result.assertDiagnosticReported("e: ", "exposes a nullable `Boolean`")
+    }
+
+    @Test
+    fun multiplatformAndroidTargetTestSourcesAreNotChecked() {
+        // The android target of a multiplatform project names its unit test compilation
+        // `hostTest` and compiles the shared test sources along with its own. The raw flag is
+        // the strict case here too, see multiplatformTestSourcesAreNotChecked.
+        assumeAndroidBuildEnvironment()
+        val project = object : KmpAndroidWatchdogProject(
+            explicitApi = false,
+            extraBuildScript = """
+                kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") } }
+            """.trimIndent(),
+        ) {
+            override fun sources() = listOf(
+                source(cleanMainFile),
+                unexemptedOpenClassSource("commonTest"),
+                unexemptedOpenClassSource("androidHostTest", "HostTestOnlyHelper"),
+            )
+        }.gradleProject
+
+        val result = build(agpCompatibleGradle, project.rootDir, "compileAndroidHostTest")
         result.assertNoTestSourceDiagnostics()
     }
 
@@ -432,6 +506,56 @@ class WatchdogProjectTest {
     }
 
     @Test
+    fun publicTypeFromImplementationDependencyIsAnErrorInMultiplatformProjects() {
+        // The JVM target consumes the dependency as a jar or classes directory while the JS
+        // target consumes it as a klib, so both artifact classification paths are exercised.
+        // `--continue` lets the second compilation run after the first one fails.
+        val project = object : WatchdogProject(multiplatform = true) {
+            override fun multiplatformTargetsBlock(): String = "kotlin {\n  jvm()\n  js { nodejs() }\n}\n"
+
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+                    dependencies(implementation(":model"))
+                }
+                subproject("model") {
+                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
+                }
+            }
+        }.gradleProject
+
+        val result = buildAndFail(project.rootDir, "compileKotlinJvm", "compileKotlinJs", "--continue")
+        assertEquals(TaskOutcome.FAILED, result.task(":compileKotlinJvm")?.outcome)
+        assertEquals(TaskOutcome.FAILED, result.task(":compileKotlinJs")?.outcome)
+        result.assertDiagnosticReported(
+            "e: ",
+            "publicly exposes `test.model.ExternalModel`, but the dependency providing that type " +
+                    "is not published transitively",
+        )
+    }
+
+    @Test
+    fun publicTypeFromApiDependencyIsAcceptedInMultiplatformProjects() {
+        // The api dependency lands in `commonMainApi`, so every target's API elements inherit it.
+        val project = object : WatchdogProject(multiplatform = true) {
+            override fun multiplatformTargetsBlock(): String = "kotlin {\n  jvm()\n  js { nodejs() }\n}\n"
+
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+                    dependencies(api(":model"))
+                }
+                subproject("model") {
+                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
+                }
+            }
+        }.gradleProject
+
+        val result = build(project.rootDir, "compileKotlinJvm", "compileKotlinJs")
+        assertFalse(result.output.contains("not published transitively to consumers"))
+    }
+
+    @Test
     fun publicJavaTypeFromImplementationDependencyIsAnError() {
         val project = object : WatchdogProject() {
             override fun buildGradleProject() = multiModuleProject {
@@ -476,6 +600,46 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = build(project.rootDir, "build")
+        assertFalse(result.output.contains("not published transitively to consumers"))
+    }
+
+    @Test
+    fun publicTypeFromImplementationDependencyIsAnErrorInAndroidLibraries() {
+        // Android resolves the transitive dependencies against the variant-specific API elements
+        // configuration (`debugApiElements`), the branch the plugin reserves for androidJvm.
+        assumeAndroidBuildEnvironment()
+        val project = object : AndroidLibraryWatchdogProject() {
+            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+
+            override fun androidDependencies() = listOf(implementation(":model"))
+
+            override fun jvmSubprojects() = mapOf(
+                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
+            )
+        }.gradleProject
+
+        val result = buildAndFail(agpCompatibleGradle, project.rootDir, "compileDebugKotlin")
+        result.assertDiagnosticReported(
+            "e: ",
+            "publicly exposes `test.model.ExternalModel`, but the dependency providing that type " +
+                    "is not published transitively",
+        )
+    }
+
+    @Test
+    fun publicTypeFromApiDependencyIsAcceptedInAndroidLibraries() {
+        assumeAndroidBuildEnvironment()
+        val project = object : AndroidLibraryWatchdogProject() {
+            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+
+            override fun androidDependencies() = listOf(api(":model"))
+
+            override fun jvmSubprojects() = mapOf(
+                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
+            )
+        }.gradleProject
+
+        val result = build(agpCompatibleGradle, project.rootDir, "compileDebugKotlin")
         assertFalse(result.output.contains("not published transitively to consumers"))
     }
 
@@ -658,11 +822,12 @@ class WatchdogProjectTest {
         ).withSourceSet(sourceSet).withPath("test", className).build()
 
     /**
-     * [testOnlySource] without the exemption annotation. The plugin adds the annotations dependency
-     * only to the compilations it applies to, so this fixture doesn't depend on whether a custom
-     * test compilation inherits that dependency from the main one it is associated with.
+     * [testOnlySource] without the exemption annotation, placeable into any source set. The plugin
+     * adds the annotations dependency only to the compilations it applies to, so this fixture
+     * doesn't depend on whether a test compilation inherits that dependency from the main one it
+     * is associated with.
      */
-    private fun unexemptedTestOnlySource(sourceSet: String, className: String = "TestOnlyHelper"): Source =
+    private fun unexemptedOpenClassSource(sourceSet: String, className: String = "TestOnlyHelper"): Source =
         Source.kotlin(
             buildString {
                 appendLine("package test")

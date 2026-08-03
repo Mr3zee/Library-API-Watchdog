@@ -42,7 +42,6 @@ behavioral change for users that relied on mutating the exposed instance. See th
 ### Don't
 
 ```kotlin
-// !collapse(1:6) collapsed details
 /**
  * Exposes the values scheduled for processing.
  *
@@ -56,7 +55,6 @@ public class Holder(public val items: MutableList<Int>)
 ### Do
 
 ```kotlin
-// !collapse(1:6) collapsed details
 /**
  * Captures the values scheduled at construction time.
  *

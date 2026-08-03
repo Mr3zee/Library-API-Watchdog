@@ -97,3 +97,47 @@ pre[data-ch] {
   background: var(--ch-16);
   color: var(--ch-4);
 }
+
+.theme-doc-markdown .table-wrapper {
+  position: relative;
+  max-width: 100%;
+  margin-bottom: var(--ifm-spacing-vertical);
+}
+
+.theme-doc-markdown .table-scroll {
+  overflow-x: auto;
+}
+
+.theme-doc-markdown .table-scroll table {
+  display: table;
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.theme-doc-markdown .table-wrapper::before,
+.theme-doc-markdown .table-wrapper::after {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  bottom: 0;
+  width: 1.25rem;
+  content: '';
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--ifm-transition-fast);
+}
+
+.theme-doc-markdown .table-wrapper::before {
+  left: 0;
+  background: linear-gradient(to right, rgb(0 0 0 / 24%), transparent);
+}
+
+.theme-doc-markdown .table-wrapper::after {
+  right: 0;
+  background: linear-gradient(to left, rgb(0 0 0 / 24%), transparent);
+}
+
+.theme-doc-markdown .table-wrapper--overflow-left::before,
+.theme-doc-markdown .table-wrapper--overflow-right::after {
+  opacity: 1;
+}

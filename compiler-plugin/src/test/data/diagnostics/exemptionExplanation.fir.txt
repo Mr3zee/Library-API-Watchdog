@@ -43,6 +43,15 @@ FILE: exemptionExplanation.kt
         public final fun copy(x: R|kotlin/Int| = this@R|foo/bar/BareDataClassExemption|.R|foo/bar/BareDataClassExemption.x|): R|foo/bar/BareDataClassExemption|
 
     }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutEqualsHashCodeOrToString|() public final class BareCombinedStatefulExemption : R|kotlin/Any| {
+        public constructor(x: R|kotlin/Int|): R|foo/bar/BareCombinedStatefulExemption| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val x: R|kotlin/Int| = R|<local>/x|
+            public get(): R|kotlin/Int|
+
+    }
     @R|org/jetbrains/kotlinx/libs/api/watchdog/InternalAnnotationMarker|() public final annotation class UnexplainedMarker : R|kotlin/Annotation| {
         public constructor(): R|foo/bar/UnexplainedMarker| {
             super<R|kotlin/Any|>()

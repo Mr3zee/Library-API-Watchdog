@@ -1,14 +1,11 @@
 import React, {useCallback, useEffect, useRef, useState, type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
-import * as Collapsible from '@radix-ui/react-collapsible';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import clsx from 'clsx';
 import {
-  InnerLine,
   InnerPre,
   Pre,
   type AnnotationHandler,
-  type BlockAnnotation,
   type CodeAnnotation,
   type CustomPreProps,
   type HighlightedCode,
@@ -29,13 +26,7 @@ export default function Code({codeblock}: {codeblock: HighlightedCode}): ReactNo
     <Pre
       className={clsx(styles.pre, codeblock.meta && styles.namedPre)}
       code={mergeDiagnosticsOnTheSameRange(codeblock)}
-      handlers={[
-        createCopyButton(codeblock.code),
-        collapseRoot,
-        collapseTrigger,
-        collapseContent,
-        diagnostics,
-      ]}
+      handlers={[createCopyButton(codeblock.code), diagnostics]}
     />
   );
 
@@ -108,85 +99,6 @@ async function copyToClipboard(text: string): Promise<boolean> {
   const {default: copy} = await import('copy-text-to-clipboard');
   return copy(text);
 }
-
-const COLLAPSED = 'collapsed';
-const collapsedPlaceholders = new Map([
-  ['collapsed kdoc', '/** KDoc */'],
-  ['collapsed setup', '// Supporting file setup'],
-  ['collapsed details', '// Supporting details'],
-]);
-
-/**
- * Implements Code Hike's collapse annotation. Regular ranges keep their first line visible as the
- * trigger. KDoc ranges get a compact synthetic trigger so even a one-line KDoc can be hidden.
- */
-const collapseRoot: AnnotationHandler = {
-  name: 'collapse',
-  transform: (annotation: BlockAnnotation) => {
-    if (collapsedPlaceholders.has(annotation.query)) return annotation;
-
-    const {fromLineNumber} = annotation;
-    return [
-      annotation,
-      {
-        ...annotation,
-        fromLineNumber,
-        toLineNumber: fromLineNumber,
-        name: 'CollapseTrigger',
-      },
-      {
-        ...annotation,
-        fromLineNumber: fromLineNumber + 1,
-        name: 'CollapseContent',
-      },
-    ];
-  },
-  Block: ({annotation, children}) => {
-    const placeholder = collapsedPlaceholders.get(annotation.query);
-    return placeholder ? (
-      <Collapsible.Root defaultOpen={false}>
-        <Collapsible.Trigger className={styles.collapseTrigger}>
-          <span className={styles.codeLine}>
-            <span className={styles.collapseGutter}>{collapseIcon}</span>
-            <span className={styles.codeLineContent}>{placeholder}</span>
-          </span>
-        </Collapsible.Trigger>
-        <Collapsible.Content>{children}</Collapsible.Content>
-      </Collapsible.Root>
-    ) : (
-      <Collapsible.Root defaultOpen={annotation.query !== COLLAPSED}>{children}</Collapsible.Root>
-    );
-  },
-};
-
-const collapseIcon = (
-  <svg aria-hidden="true" className={styles.collapseIcon} fill="none" viewBox="0 0 16 16">
-    <path d="m4 6 4 4 4-4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-const collapseTrigger: AnnotationHandler = {
-  name: 'CollapseTrigger',
-  onlyIfAnnotated: true,
-  AnnotatedLine: ({annotation: _, ...props}) => (
-    <Collapsible.Trigger className={styles.collapseTrigger}>
-      <InnerLine merge={props} data={{collapseIcon}} />
-    </Collapsible.Trigger>
-  ),
-  Line: (props) => (
-    <div className={styles.codeLine}>
-      <span className={styles.collapseGutter}>{props.data?.collapseIcon as ReactNode}</span>
-      <div className={styles.codeLineContent}>
-        <InnerLine merge={props} />
-      </div>
-    </div>
-  ),
-};
-
-const collapseContent: AnnotationHandler = {
-  name: 'CollapseContent',
-  Block: Collapsible.Content,
-};
 
 /**
  * Underlines the exact source range reported by the compiler and shows its diagnostics in an

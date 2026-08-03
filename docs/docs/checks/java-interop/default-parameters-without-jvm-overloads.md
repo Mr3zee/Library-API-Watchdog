@@ -111,7 +111,6 @@ without Kotlin's named arguments:
 ```kotlin
 @file:JvmName("ConnectionDsl")
 
-// !collapse(1:3) collapsed
 // Supporting options type
 /** Options applied after connecting. */
 public class ConnectionConfig

@@ -71,7 +71,6 @@ public fun onEach(action: (Int) -> Unit) { }
 @JvmSynthetic
 public suspend fun refresh(key: String) { }
 
-// !collapse(1:2) collapsed details
 /** Consumes values produced by an iteration. */
 @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public fun interface Action {

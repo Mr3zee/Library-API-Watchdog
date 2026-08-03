@@ -12,6 +12,7 @@ import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyKotlinOnlyApi
 import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyMutableCollection
 import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyOpen
 import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyUndocumented
+import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyWithoutEqualsHashCodeOrToString
 import org.jetbrains.kotlinx.libs.api.watchdog.InternalAnnotationMarker
 
 // A bare exemption defaults to reason = OTHER with an empty description, which explains
@@ -31,6 +32,9 @@ public typealias BareAliasExemption = (Int) -> Unit
 
 <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyDataClass<!>
 public data class BareDataClassExemption(val x: Int)
+
+<!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyWithoutEqualsHashCodeOrToString<!>
+public class BareCombinedStatefulExemption(public val x: Int)
 
 // @InternalAnnotationMarker needs no explanation: the marked annotation class documents the
 // internal API surface itself.

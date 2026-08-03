@@ -1,17 +1,30 @@
 # Stateful classes without equals, hashCode, and toString
 
-Three diagnostics report public stateful classes that rely on the implementations from
-`kotlin.Any`: `STATEFUL_CLASS_WITHOUT_EQUALS`, `STATEFUL_CLASS_WITHOUT_HASH_CODE`, and
-`STATEFUL_CLASS_WITHOUT_TO_STRING`.
+Three diagnostics report public stateful classes that rely on the implementations of
+`equals`, `hashCode`, and `toString` from `kotlin.Any`.
 
-| Diagnostic                            | Gradle property                         | Exemption                            |
-|---------------------------------------|-----------------------------------------|--------------------------------------|
-| `STATEFUL_CLASS_WITHOUT_EQUALS`       | `statefulClassWithoutEquals`            | `@IntentionallyWithoutEquals`        |
-| `STATEFUL_CLASS_WITHOUT_HASH_CODE`    | `statefulClassWithoutHashCode`          | `@IntentionallyWithoutHashCode`      |
-| `STATEFUL_CLASS_WITHOUT_TO_STRING`    | `statefulClassWithoutToString`          | `@IntentionallyWithoutToString`      |
+|                  |                                                                             |
+|------------------|-----------------------------------------------------------------------------|
+| Diagnostic       | `STATEFUL_CLASS_WITHOUT_EQUALS`                                             |
+| Default severity | Error                                                                       |
+| Gradle property  | [`statefulClassWithoutEquals`](../configuration.md)                         |
+| Exemption        | [`@IntentionallyWithoutEquals`](../exemptions.md) or the combined exemption |
 
-All three have a default severity of Error. See [Configuration](../configuration.md) for the
-Gradle properties and [Exemptions](../exemptions.md) for the annotations.
+|                  |                                                                               |
+|------------------|-------------------------------------------------------------------------------|
+| Diagnostic       | `STATEFUL_CLASS_WITHOUT_HASH_CODE`                                            |
+| Default severity | Error                                                                         |
+| Gradle property  | [`statefulClassWithoutHashCode`](../configuration.md)                         |
+| Exemption        | [`@IntentionallyWithoutHashCode`](../exemptions.md) or the combined exemption |
+
+|                  |                                                                               |
+|------------------|-------------------------------------------------------------------------------|
+| Diagnostic       | `STATEFUL_CLASS_WITHOUT_TO_STRING`                                            |
+| Default severity | Error                                                                         |
+| Gradle property  | [`statefulClassWithoutToString`](../configuration.md)                         |
+| Exemption        | [`@IntentionallyWithoutToString`](../exemptions.md) or the combined exemption |
+
+Combined exemption: [`@IntentionallyWithoutEqualsHashCodeOrToString`](../exemptions.md)
 
 ## What they report
 
@@ -24,9 +37,9 @@ value in a backing field and that doesn't declare or inherit the corresponding i
  *
  * @property host network host serving requests.
  */
-// !diag[/Connection/] STATEFUL_CLASS_WITHOUT_EQUALS ["Connection","$jvmGenerationHint","$ideaGenerateShortcut"]
-// !diag[/Connection/] STATEFUL_CLASS_WITHOUT_HASH_CODE ["Connection","$jvmGenerationHint","$ideaGenerateShortcut"]
-// !diag[/Connection/] STATEFUL_CLASS_WITHOUT_TO_STRING ["Connection","$jvmGenerationHint","$ideaGenerateShortcut"]
+// !diag[/Connection/] STATEFUL_CLASS_WITHOUT_EQUALS ["Connection","$generationHint","$ideaGenerateShortcut"]
+// !diag[/Connection/] STATEFUL_CLASS_WITHOUT_HASH_CODE ["Connection","$generationHint","$ideaGenerateShortcut"]
+// !diag[/Connection/] STATEFUL_CLASS_WITHOUT_TO_STRING ["Connection","$generationHint","$ideaGenerateShortcut"]
 public class Connection(public val host: String)
 ```
 
@@ -40,9 +53,8 @@ state as different values. Identity hashing carries that behavior into sets and 
 instance that only prints as `Connection@1a2b3c4d` reveals nothing in a log line, exception message,
 or debugger watch.
 
-Generate all three members together so they use the same state. [Poko](https://github.com/drewhamilton/Poko)
-does this without exposing the `copy` and `componentN` API of a data class. On JVM projects,
-[Lombok](https://projectlombok.org/) is another generation option. In IntelliJ IDEA, press
+Generate all three members together so they use the same state. [Poko](#poko) does this for Kotlin
+classes without exposing the `copy` and `componentN` API of a data class. In IntelliJ IDEA, press
 <IdeaGenerateShortcut /> or choose `Code | Generate` to generate the methods without another
 library.
 
@@ -57,13 +69,15 @@ See the Kotlin library authors' guidelines on
  *
  * @property host network host serving requests.
  */
-// !diag[/Connection/] STATEFUL_CLASS_WITHOUT_EQUALS ["Connection","$jvmGenerationHint","$ideaGenerateShortcut"]
-// !diag[/Connection/] STATEFUL_CLASS_WITHOUT_HASH_CODE ["Connection","$jvmGenerationHint","$ideaGenerateShortcut"]
-// !diag[/Connection/] STATEFUL_CLASS_WITHOUT_TO_STRING ["Connection","$jvmGenerationHint","$ideaGenerateShortcut"]
+// !diag[/Connection/] STATEFUL_CLASS_WITHOUT_EQUALS ["Connection","$generationHint","$ideaGenerateShortcut"]
+// !diag[/Connection/] STATEFUL_CLASS_WITHOUT_HASH_CODE ["Connection","$generationHint","$ideaGenerateShortcut"]
+// !diag[/Connection/] STATEFUL_CLASS_WITHOUT_TO_STRING ["Connection","$generationHint","$ideaGenerateShortcut"]
 public class Connection(public val host: String)
 ```
 
 ### Do
+
+Generate the members with Poko:
 
 ```kotlin
 /**
@@ -75,24 +89,42 @@ public class Connection(public val host: String)
 public class Connection(public val host: String)
 ```
 
+### Or Do
+
+```kotlin
+/**
+ * Describes a connection to a remote service.
+ *
+ * @property host network host serving requests.
+ */
+public class Connection(public val host: String) {
+    public override fun equals(other: Any?): Boolean =
+        this === other || (other is Connection && host == other.host)
+
+    public override fun hashCode(): Int = host.hashCode()
+
+    public override fun toString(): String = "Connection(host=$host)"
+}
+```
+
 ## Notes
 
 - An implementation inherited from any supertype other than `kotlin.Any` counts as provided, so a
   subclass that adds its own state is not flagged for that member. Whether the inherited behavior
   should include the new state is left to the author.
 - Data and value classes get compiler-generated implementations and are not checked here. Data
-  classes are reported by `DATA_CLASS_PUBLIC_API` instead.
+  classes are reported by [`DATA_CLASS_PUBLIC_API`](./data-class-public-api.md) instead.
 - Enum entries, objects (including companion objects), interfaces, and annotation classes are not
   checked. Enums and singleton objects have deliberate identity semantics, while interfaces and
   annotation classes can't hold backing fields.
 - A delegated property stores its value in the delegate, not in a backing field, so it doesn't
   make a class stateful on its own.
-- `@PublishedApi` internal classes are checked too, since they belong to the published binary API.
+- `@PublishedApi` internal classes are not checked because users can't reference them in source.
 
 ## Exemptions
 
-Apply the exemption matching each deliberately absent member. For example, a sensitive handle may
-intentionally use identity equality and avoid rendering its state:
+Use `@IntentionallyWithoutEqualsHashCodeOrToString` when all three behaviors are intentional. For
+example, a sensitive handle may intentionally use identity equality and avoid rendering its state:
 
 ```kotlin
 /**
@@ -100,19 +132,35 @@ intentionally use identity equality and avoid rendering its state:
  *
  * @property token bearer token sent to the remote service.
  */
-@IntentionallyWithoutEquals(reason = ExemptionReason.API_DESIGN)
-@IntentionallyWithoutHashCode(reason = ExemptionReason.API_DESIGN)
-@IntentionallyWithoutToString(
-    description = "Holds an access token. " +
-            "Must never be rendered in logs."
+@IntentionallyWithoutEqualsHashCodeOrToString(
+    reason = ExemptionReason.API_DESIGN,
+    description = "Uses identity semantics, and its access token must never be rendered in logs.",
 )
 public class Credentials(public val token: String)
 ```
 
-The exemptions are independent. A class can acknowledge identity equality and hashing while still
-providing a safe `toString`, for example.
+The individual `@IntentionallyWithoutEquals`, `@IntentionallyWithoutHashCode`, and
+`@IntentionallyWithoutToString` exemptions remain available when only some behaviors are
+intentional. For example, a class can acknowledge identity equality and hashing while still
+providing a safe `toString`.
 
 ## Configuration
+
+### Poko
+
+[Poko](https://github.com/drewhamilton/Poko) supports Kotlin/JVM and Kotlin Multiplatform. Apply the
+version compatible with the Kotlin version used by the project; for Kotlin 2.4.0:
+
+```kotlin build.gradle.kts
+plugins {
+    id("dev.drewhamilton.poko") version "0.23.0"
+}
+```
+
+Annotate each class whose `equals`, `hashCode`, and `toString` should be generated with `@Poko`, as
+shown in the [usage sample](#do).
+
+### Check severity
 
 ```kotlin
 apiWatchdog {

@@ -19,7 +19,6 @@ restricts nothing:
 ```kotlin
 @file:JvmName("Trees")
 
-// !collapse(1:12) collapsed
 // Supporting DSL declarations
 /** Marks tree DSL receivers. */
 @DslMarker
@@ -50,7 +49,6 @@ wrong scope's functions. See the Kotlin guide on [scope control for DSL markers]
 ### Don't
 
 ```kotlin
-// !collapse(1:2) collapsed details
 /** Applies [block] while constructing a tree tag. */
 @JvmSynthetic
 // !diag[/@TreeDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["TreeDsl","return type"]
@@ -64,7 +62,6 @@ public fun configure(block: Tag.() -> Unit): @TreeDsl Unit { }
 @TreeDsl
 public class Tag
 
-// !collapse(1:2) collapsed details
 /** Applies [block] while constructing a tree tag. */
 @JvmSynthetic
 public fun configure(block: Tag.() -> Unit) { }

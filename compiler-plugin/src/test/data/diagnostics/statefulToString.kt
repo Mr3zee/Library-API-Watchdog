@@ -6,6 +6,7 @@ package foo.bar
 
 import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyWithoutToString
 import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyWithoutEquals
+import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyWithoutEqualsHashCodeOrToString
 import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyWithoutHashCode
 
 // Stateful classes relying on Any's equality, hashing, and rendering: should warn three times.
@@ -32,9 +33,9 @@ public class <!STATEFUL_CLASS_WITHOUT_EQUALS, STATEFUL_CLASS_WITHOUT_HASH_CODE, 
     public lateinit var target: String
 }
 
-// @PublishedApi declarations belong to the published binary API.
+// @PublishedApi classes are internal in source and therefore exempt.
 @PublishedApi
-internal class <!STATEFUL_CLASS_WITHOUT_EQUALS, STATEFUL_CLASS_WITHOUT_HASH_CODE, STATEFUL_CLASS_WITHOUT_TO_STRING!>PublishedState<!>(val x: Int)
+internal class PublishedState(val x: Int)
 
 // Each generated member is checked independently.
 
@@ -67,6 +68,9 @@ public class GeneratedDerived(id: Int, public val extra: Int) : GeneratedBase(id
 @IntentionallyWithoutHashCode
 @IntentionallyWithoutToString
 public class MarkedOpaque(public val secret: String)
+
+@IntentionallyWithoutEqualsHashCodeOrToString
+public class CombinedMarkedOpaque(public val secret: String)
 
 // No property stores its value in a backing field: no warning.
 

@@ -78,7 +78,6 @@ internal fun cachedLengthImpl(tag: String): Int = withCache {
 ```kotlin
 @file:JvmName("Arrays")
 
-// !collapse(1:6) collapsed
 // Supporting published state
 @PublishedApi
 internal val array1: List<Int> = emptyList()
@@ -107,7 +106,6 @@ public val calculateArraysSize: Int
 ### Don't {#dont-3}
 
 ```kotlin
-// !collapse(1:2) collapsed details
 /** Returns the number of functions declared by [T]. */
 @JvmSynthetic
 public inline fun <reified T : Any> resolveFunctionsCount(): Int {
@@ -125,7 +123,6 @@ internal fun <T : Any> resolveFunctionsCountImpl(kClass: KClass<T>): Int {
     return kClass.memberFunctions.size
 }
 
-// !collapse(1:2) collapsed details
 /** Returns the number of functions declared by [T]. */
 @JvmSynthetic
 public inline fun <reified T : Any> resolveFunctionsCount(): Int {

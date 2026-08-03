@@ -68,33 +68,30 @@
       "title": "Stateful classes without equals",
       "docs": "checks/stateful-class-without-equals-hashcode-to-string",
       "parameterValues": {
-        "generationHint": "Use Poko to generate `equals`, `hashCode`, and `toString` together.",
-        "jvmGenerationHint": "Use Poko or Lombok to generate `equals`, `hashCode`, and `toString` together.",
+        "generationHint": "Use [Poko](https://mr3zee.github.io/libs-api-watchdog/checks/stateful-class-without-equals-hashcode-to-string#poko) to generate `equals`, `hashCode`, and `toString` together.",
         "ideaGenerateShortcut": "Alt+Insert"
       },
-      "message": "The class `{0}` holds state - at least one property with a backing field - but neither declares nor inherits an `equals` implementation, so comparisons use object identity instead of the class's meaningful state. Override `equals` and `hashCode` together. {1} Alternatively, in IntelliJ IDEA press `{2}` or choose `Code | Generate` to generate the methods. Mark the class with `@IntentionallyWithoutEquals` if identity equality is intended."
+      "message": "The class `{0}` holds state - at least one property with a backing field - but neither declares nor inherits an `equals` implementation, so comparisons use object identity instead of the class's meaningful state. Override `equals` and `hashCode` together. {1} Alternatively, in IntelliJ IDEA press `{2}` or choose `Code | Generate` to generate the methods. Mark the class with `@IntentionallyWithoutEquals` if identity equality is intended, or `@IntentionallyWithoutEqualsHashCodeOrToString` to acknowledge all three inherited implementations."
     },
     {
       "name": "STATEFUL_CLASS_WITHOUT_HASH_CODE",
       "title": "Stateful classes without hashCode",
       "docs": "checks/stateful-class-without-equals-hashcode-to-string",
       "parameterValues": {
-        "generationHint": "Use Poko to generate `equals`, `hashCode`, and `toString` together.",
-        "jvmGenerationHint": "Use Poko or Lombok to generate `equals`, `hashCode`, and `toString` together.",
+        "generationHint": "Use [Poko](https://mr3zee.github.io/libs-api-watchdog/checks/stateful-class-without-equals-hashcode-to-string#poko) to generate `equals`, `hashCode`, and `toString` together.",
         "ideaGenerateShortcut": "Alt+Insert"
       },
-      "message": "The class `{0}` holds state - at least one property with a backing field - but neither declares nor inherits a `hashCode` implementation, so hash-based collections use object identity instead of the class's meaningful state. Override `equals` and `hashCode` together. {1} Alternatively, in IntelliJ IDEA press `{2}` or choose `Code | Generate` to generate the methods. Mark the class with `@IntentionallyWithoutHashCode` if identity hashing is intended."
+      "message": "The class `{0}` holds state - at least one property with a backing field - but neither declares nor inherits a `hashCode` implementation, so hash-based collections use object identity instead of the class's meaningful state. Override `equals` and `hashCode` together. {1} Alternatively, in IntelliJ IDEA press `{2}` or choose `Code | Generate` to generate the methods. Mark the class with `@IntentionallyWithoutHashCode` if identity hashing is intended, or `@IntentionallyWithoutEqualsHashCodeOrToString` to acknowledge all three inherited implementations."
     },
     {
       "name": "STATEFUL_CLASS_WITHOUT_TO_STRING",
       "title": "Stateful classes without toString",
       "docs": "checks/stateful-class-without-equals-hashcode-to-string",
       "parameterValues": {
-        "generationHint": "Use Poko to generate `equals`, `hashCode`, and `toString` together.",
-        "jvmGenerationHint": "Use Poko or Lombok to generate `equals`, `hashCode`, and `toString` together.",
+        "generationHint": "Use [Poko](https://mr3zee.github.io/libs-api-watchdog/checks/stateful-class-without-equals-hashcode-to-string#poko) to generate `equals`, `hashCode`, and `toString` together.",
         "ideaGenerateShortcut": "Alt+Insert"
       },
-      "message": "The class `{0}` holds state - at least one property with a backing field - but neither declares nor inherits a `toString` implementation, so instances render as the opaque class-name-with-hash-code default and reveal nothing in logs and debugger output. Override `toString` to render the current state. {1} Alternatively, in IntelliJ IDEA press `{2}` or choose `Code | Generate` to generate the methods. Mark the class with `@IntentionallyWithoutToString` if the opaque rendering is intended."
+      "message": "The class `{0}` holds state - at least one property with a backing field - but neither declares nor inherits a `toString` implementation, so instances render as the opaque class-name-with-hash-code default and reveal nothing in logs and debugger output. Override `toString` to render the current state. {1} Alternatively, in IntelliJ IDEA press `{2}` or choose `Code | Generate` to generate the methods. Mark the class with `@IntentionallyWithoutToString` if the opaque rendering is intended, or `@IntentionallyWithoutEqualsHashCodeOrToString` to acknowledge all three inherited implementations."
     },
     {
       "name": "MUTABLE_COLLECTION_PUBLIC_API",

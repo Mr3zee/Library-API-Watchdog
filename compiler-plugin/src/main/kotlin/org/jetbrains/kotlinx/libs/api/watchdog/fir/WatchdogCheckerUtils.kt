@@ -50,6 +50,7 @@ internal object WatchdogClassIds {
     val IntentionallyFunctionTypeAlias: ClassId = ClassId(annotationsPackage, Name.identifier("IntentionallyFunctionTypeAlias"))
     val IntentionallyDataClass: ClassId = ClassId(annotationsPackage, Name.identifier("IntentionallyDataClass"))
     val IntentionallyWithoutEquals: ClassId = ClassId(annotationsPackage, Name.identifier("IntentionallyWithoutEquals"))
+    val IntentionallyWithoutEqualsHashCodeOrToString: ClassId = ClassId(annotationsPackage, Name.identifier("IntentionallyWithoutEqualsHashCodeOrToString"))
     val IntentionallyWithoutHashCode: ClassId = ClassId(annotationsPackage, Name.identifier("IntentionallyWithoutHashCode"))
     val IntentionallyWithoutToString: ClassId = ClassId(annotationsPackage, Name.identifier("IntentionallyWithoutToString"))
     val IntentionallyMutableCollection: ClassId = ClassId(annotationsPackage, Name.identifier("IntentionallyMutableCollection"))
@@ -81,6 +82,7 @@ internal object WatchdogClassIds {
         IntentionallyFunctionTypeAlias,
         IntentionallyDataClass,
         IntentionallyWithoutEquals,
+        IntentionallyWithoutEqualsHashCodeOrToString,
         IntentionallyWithoutHashCode,
         IntentionallyWithoutToString,
         IntentionallyMutableCollection,

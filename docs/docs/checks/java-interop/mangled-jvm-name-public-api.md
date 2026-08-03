@@ -20,7 +20,6 @@ function or property - nullable types and type parameters bounded by a value cla
 ```kotlin
 @file:JvmName("Users")
 
-// !collapse(1:8) collapsed
 // Supporting value class
 /**
  * Stable identifier assigned to a user account.
@@ -76,7 +75,6 @@ public fun take(id: UserId) { }
  *
  * @property id identifier of the account that owns the wallet.
  */
-// !collapse(1:1) collapsed details
 @Poko
 // !diag[/[(]public val id: UserId[)]/] MANGLED_JVM_NAME_PUBLIC_API ["constructor","Wallet","UserId"]
 // !diag[/id/] MANGLED_JVM_NAME_PUBLIC_API ["property","id","UserId"]
@@ -93,7 +91,6 @@ public class Wallet(public val id: UserId)
  */
 @OptIn(ExperimentalStdlibApi::class)
 @JvmExposeBoxed
-// !collapse(1:1) collapsed details
 @Poko
 public class Wallet(public val id: UserId)
 ```

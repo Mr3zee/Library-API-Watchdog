@@ -124,7 +124,11 @@ and PSI (`AbstractPsiJvmDiagnosticTest`) runners. After adding, removing, or ren
 
 Gradle-plugin functional tests build real projects with TestKit against artifacts that `installForFunctionalTest`
 publishes into a shared local repo (only the JVM + metadata publications of `:plugin-annotations`, to avoid building all
-native targets).
+native targets). The Android functional tests (an AGP library with the Kotlin Android plugin, and the KMP
+`androidLibrary` target from `com.android.kotlin.multiplatform.library`) skip themselves when no Android SDK is found
+(see `androidSdkDirOrNull` in `gradle-plugin/build.gradle.kts`) and launch their projects with the pinned
+`agpCompatibleGradle` version: AGP 8 cannot run on Gradle 9.6+, and AGP 9 refuses the Kotlin Android plugin in favor
+of built-in Kotlin support, which bypasses the KGP compiler plugin integration under test.
 
 ### Adding a new diagnostic
 

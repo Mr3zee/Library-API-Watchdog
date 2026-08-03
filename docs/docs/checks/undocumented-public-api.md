@@ -31,14 +31,12 @@ supported. Writing the contract down helps your library avoid these issues. See 
 ### Don't
 
 ```kotlin
-// !collapse(1:1) collapsed details
 @Poko
 // !diag[/Cache/] UNDOCUMENTED_PUBLIC_API ["class","Cache"]
 public class Cache {
     // !diag[/get/] UNDOCUMENTED_PUBLIC_API ["function","get"]
     public fun get(key: String): String? = store[key]
 
-    // !collapse(1:2) collapsed
     // Supporting implementation
     private val store: MutableMap<String, String> = mutableMapOf()
 }
@@ -48,7 +46,6 @@ public class Cache {
 
 ```kotlin
 /** An in-memory string cache. */
-// !collapse(1:1) collapsed details
 @Poko
 public class Cache {
     /**
@@ -57,7 +54,6 @@ public class Cache {
      */
     public fun get(key: String): String? = store[key]
 
-    // !collapse(1:2) collapsed
     // Supporting implementation
     private val store: MutableMap<String, String> = mutableMapOf()
 }
@@ -70,7 +66,6 @@ A class KDoc alone doesn't document its constructor properties. Each one still n
 
 ```kotlin
 /** Profile information displayed for a user. */
-// !collapse(1:1) collapsed details
 @Poko
 public class Profile(
     // !diag[/name/] UNDOCUMENTED_PUBLIC_API ["property","name"]
@@ -89,7 +84,6 @@ public class Profile(
  * @property name the user's display name.
  * @property age the user's age in years.
  */
-// !collapse(1:1) collapsed details
 @Poko
 public class Profile(
   public val name: String,

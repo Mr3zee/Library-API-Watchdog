@@ -93,7 +93,6 @@ public class Rect(width: Int, height: Int) {
 ```kotlin
 @file:JvmName("Grids")
 
-// !collapse(1:6) collapsed
 // Supporting member overload
 /** Mutable grid addressed by a linear cell index. */
 public class Grid {
@@ -115,7 +114,6 @@ public fun Grid.fill(
 ```kotlin
 @file:JvmName("Grids")
 
-// !collapse(1:6) collapsed
 // Supporting member overload
 /** Mutable grid addressed by a linear cell index. */
 public class Grid {

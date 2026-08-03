@@ -48,7 +48,6 @@ public fun connectionState(): Boolean? = null
 ```kotlin
 @file:JvmName("Connections")
 
-// !collapse(1:2) collapsed details
 /** Whether a network transport is available. */
 @IntentionallyExhaustive(reason = ExemptionReason.API_DESIGN)
 public enum class ConnectionState {
@@ -69,7 +68,6 @@ public fun connectionState(): ConnectionState = ConnectionState.UNKNOWN
 ### Don't {#dont-2}
 
 ```kotlin
-// !collapse(1:6) collapsed details
 /**
  * Stores the selection state of a control.
  *
@@ -83,7 +81,6 @@ public class Holder(public val checked: Boolean?)
 ### Do {#do-2}
 
 ```kotlin
-// !collapse(1:2) collapsed details
 /** Selection state of a control. */
 @IntentionallyExhaustive(reason = ExemptionReason.API_DESIGN)
 public enum class CheckState {
@@ -97,7 +94,6 @@ public enum class CheckState {
     UNKNOWN,
 }
 
-// !collapse(1:6) collapsed details
 /**
  * Stores the selection state of a control.
  *

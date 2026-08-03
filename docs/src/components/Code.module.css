@@ -11,49 +11,6 @@
   overflow: auto;
 }
 
-.codeLine {
-  display: table-row;
-}
-
-.collapseGutter,
-.codeLineContent {
-  display: table-cell;
-}
-
-.collapseGutter {
-  width: 1rem;
-  padding-right: 0.25rem;
-  text-align: center;
-  user-select: none;
-}
-
-.codeLineContent {
-  width: 100%;
-}
-
-.collapseTrigger {
-  all: unset;
-  display: contents;
-  cursor: pointer;
-}
-
-.collapseIcon {
-  width: 0.875rem;
-  height: 0.875rem;
-  color: var(--ifm-color-emphasis-600);
-  transition: transform var(--ifm-transition-fast) ease-in-out;
-  vertical-align: -0.125rem;
-}
-
-.collapseTrigger[data-state='closed'] .collapseIcon {
-  transform: rotate(-90deg);
-}
-
-.collapseTrigger:hover .collapseIcon,
-.collapseTrigger:focus-visible .collapseIcon {
-  color: var(--ifm-color-primary);
-}
-
 .namedCodeBlock {
   margin-bottom: var(--ifm-leading);
   border-radius: var(--ifm-code-border-radius);
@@ -289,7 +246,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .collapseIcon,
   .tooltip {
     animation: none;
     transition: none;

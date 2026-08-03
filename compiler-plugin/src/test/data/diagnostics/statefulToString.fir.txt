@@ -155,6 +155,15 @@ FILE: statefulToString.kt
             public get(): R|kotlin/String|
 
     }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutEqualsHashCodeOrToString|() public final class CombinedMarkedOpaque : R|kotlin/Any| {
+        public constructor(secret: R|kotlin/String|): R|foo/bar/CombinedMarkedOpaque| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val secret: R|kotlin/String| = R|<local>/secret|
+            public get(): R|kotlin/String|
+
+    }
     public final class Stateless : R|kotlin/Any| {
         public constructor(): R|foo/bar/Stateless| {
             super<R|kotlin/Any|>()

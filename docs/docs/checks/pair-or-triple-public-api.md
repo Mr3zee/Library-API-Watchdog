@@ -41,7 +41,6 @@ optional property with a default value. See the
 // !diag[/Triple<Int, Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","dimensions","Triple"]
 public fun dimensions(): Triple<Int, Int, Int> = Triple(0, 0, 0)
 
-// !collapse(1:6) collapsed details
 /**
  * Attaches content to an unnamed coordinate pair.
  *
@@ -62,7 +61,6 @@ public fun edges(): List<Pair<Int, Int>> = emptyList()
 ```kotlin
 @file:JvmName("Geometry")
 
-// !collapse(1:8) collapsed details
 /**
  * Extents of a three-dimensional object.
  *
@@ -80,7 +78,6 @@ public class Dimensions(
 /** Returns the dimensions. */
 public fun dimensions(): Dimensions = Dimensions(0, 0, 0)
 
-// !collapse(1:7) collapsed details
 /**
  * A position in Cartesian coordinate space.
  *
@@ -93,7 +90,6 @@ public class Point(
     public val y: Int,
 )
 
-// !collapse(1:6) collapsed details
 /**
  * Attaches content to a point in Cartesian space.
  *

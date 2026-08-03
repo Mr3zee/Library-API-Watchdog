@@ -16,13 +16,11 @@ import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
 import org.jetbrains.kotlin.fir.declarations.utils.hasBackingField
 import org.jetbrains.kotlin.fir.declarations.utils.isData
 import org.jetbrains.kotlin.fir.declarations.utils.isInlineOrValue
-import org.jetbrains.kotlin.fir.moduleData
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.unwrapFakeOverrides
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
-import org.jetbrains.kotlin.platform.jvm.isJvm
 import org.jetbrains.kotlin.util.OperatorNameConventions
 
 /**
@@ -47,7 +45,10 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
 ) : FirClassChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirClass) {
-        if (declaration !is FirRegularClass || !declaration.isWatchedPublicApi()) {
+        if (declaration !is FirRegularClass ||
+            !declaration.isWatchedPublicApi() ||
+            declaration.isPublishedApiOnly()
+        ) {
             return
         }
 
@@ -64,6 +65,10 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
         }
 
         if (!stateful) {
+            return
+        }
+
+        if (declaration.hasAnnotation(WatchdogClassIds.IntentionallyWithoutEqualsHashCodeOrToString, context.session)) {
             return
         }
 
@@ -84,10 +89,7 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
         )
     }
 
-    /**
-     * Reports one missing generated member. The target platform controls whether Lombok is
-     * offered alongside Poko; the compiler host controls the IntelliJ IDEA shortcut.
-     */
+    /** Reports one missing generated member, including the compiler host's IntelliJ IDEA shortcut. */
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun FirRegularClass.reportIfMissing(
         diagnostic: ConfigurableWatchdogDiagnostic<KtDiagnosticFactory3<Name, String, String>>,
@@ -95,11 +97,14 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
         exemption: ClassId,
     ) {
         val factory = severities[diagnostic] ?: return
-        if (hasAnnotation(exemption, context.session) || provides(member)) return
+
+        if (hasAnnotation(exemption, context.session) || provides(member)) {
+            return
+        }
 
         val generationHint = WatchdogDiagnosticMessages.parameterValueFor(
             diagnostic = diagnostic.name,
-            value = if (context.session.moduleData.platform.isJvm()) "jvmGenerationHint" else "generationHint",
+            value = "generationHint",
         )
         reporter.reportOn(
             source = source,

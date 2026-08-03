@@ -2,7 +2,6 @@
 // the plugin that runs right after this one:
 //
 //   - Fences with no language become `text`, so the highlighter is not asked for an empty one.
-//   - Supplemental KDoc and file setup are collapsed, except on the pages where each is the topic.
 //   - The inline diagnostic annotations in Kotlin samples,
 //
 //         // !diag[/Point/] DATA_CLASS_PUBLIC_API ["Point"]
@@ -19,10 +18,6 @@ const DIAGNOSTIC_ANNOTATION_COMMENT =
 const LEGACY_DIAGNOSTIC_COMMENT =
   /^\s*\/\/ ([A-Z][A-Z0-9_]*(?:\s*,\s*[A-Z][A-Z0-9_]*)*)\s*$/;
 const PARAMETER_REFERENCE = /^\$([A-Za-z][A-Za-z0-9]*)(?:\(([^()]*)\))?$/;
-const COLLAPSE_ANNOTATION_COMMENT = /^\s*\/\/ !collapse\((\d+):(\d+)\)\s+(.+?)\s*$/;
-const CODE_HIKE_ANNOTATION_COMMENT = /^\s*\/\/ ![A-Za-z]/;
-const KDOC_PAGE = /(?:^|[/\\])undocumented-public-api\.md$/;
-const JVM_NAME_PAGE = /(?:^|[/\\])top-level-api-without-jvm-name\.md$/;
 
 /** The annotation name the `diag` handler in src/components/Code.tsx listens for. */
 export const DIAGNOSTIC_ANNOTATION = 'diag';
@@ -36,57 +31,8 @@ export function remarkCodeSamples() {
       }
       if (node.lang !== 'kotlin') return;
       validateDiagnosticAnnotations(node.value, file);
-      node.value = addSupplementalCollapseAnnotations(node.value, file);
     });
   };
-}
-
-function addSupplementalCollapseAnnotations(value, file) {
-  const lines = value.split('\n');
-  const shouldCollapseKDoc = !KDOC_PAGE.test(file.path ?? '');
-  const explicitlyCollapsedLines = findExplicitlyCollapsedLines(lines);
-  const result = [];
-
-  for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index];
-    if (/^\s*@file:JvmName\b/.test(line) && !JVM_NAME_PAGE.test(file.path ?? '')) {
-      const indentation = line.match(/^\s*/)[0];
-      result.push(`${indentation}// !collapse(1:1) collapsed setup`);
-    }
-    if (!shouldCollapseKDoc || !/^\s*\/\*\*/.test(line) || explicitlyCollapsedLines.has(index)) {
-      result.push(line);
-      continue;
-    }
-
-    let end = index;
-    while (end < lines.length && !lines[end].includes('*/')) end += 1;
-    if (end === lines.length) throw new Error(`Unclosed KDoc in ${file.path}.`);
-
-    const indentation = line.match(/^\s*/)[0];
-    result.push(`${indentation}// !collapse(1:${end - index + 1}) collapsed kdoc`);
-    result.push(...lines.slice(index, end + 1));
-    index = end;
-  }
-
-  return result.join('\n');
-}
-
-function findExplicitlyCollapsedLines(lines) {
-  const result = new Set();
-  lines.forEach((line, index) => {
-    const annotation = line.match(COLLAPSE_ANNOTATION_COMMENT);
-    if (!annotation || annotation[3] === 'collapsed kdoc') return;
-
-    const from = Number(annotation[1]);
-    const to = Number(annotation[2]);
-    let renderedOffset = 0;
-    for (let cursor = index + 1; cursor < lines.length && renderedOffset < to; cursor += 1) {
-      if (CODE_HIKE_ANNOTATION_COMMENT.test(lines[cursor])) continue;
-      renderedOffset += 1;
-      if (renderedOffset >= from) result.add(cursor);
-    }
-  });
-  return result;
 }
 
 function validateDiagnosticAnnotations(value, file) {

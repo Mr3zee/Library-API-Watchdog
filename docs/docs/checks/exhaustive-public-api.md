@@ -72,17 +72,14 @@ public sealed interface Event {
 public class LogLevel {
     /** Named logging levels. */
     public companion object {
-        // !collapse(1:2) collapsed details
         /** Fine-grained information used to diagnose behavior. */
         @JvmField
         public val DEBUG: LogLevel = LogLevel()
 
-        // !collapse(1:2) collapsed details
         /** Routine progress and state changes. */
         @JvmField
         public val INFO: LogLevel = LogLevel()
 
-        // !collapse(1:2) collapsed details
         /** A failure that prevented an operation from completing. */
         @JvmField
         public val ERROR: LogLevel = LogLevel()

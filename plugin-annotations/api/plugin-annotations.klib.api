@@ -159,6 +159,15 @@ open annotation class org.jetbrains.kotlinx.libs.api.watchdog/IntentionallyWitho
         final fun <get-reason>(): org.jetbrains.kotlinx.libs.api.watchdog/ExemptionReason // org.jetbrains.kotlinx.libs.api.watchdog/IntentionallyWithoutEquals.reason.<get-reason>|<get-reason>(){}[0]
 }
 
+open annotation class org.jetbrains.kotlinx.libs.api.watchdog/IntentionallyWithoutEqualsHashCodeOrToString : kotlin/Annotation { // org.jetbrains.kotlinx.libs.api.watchdog/IntentionallyWithoutEqualsHashCodeOrToString|null[0]
+    constructor <init>(org.jetbrains.kotlinx.libs.api.watchdog/ExemptionReason = ..., kotlin/String = ...) // org.jetbrains.kotlinx.libs.api.watchdog/IntentionallyWithoutEqualsHashCodeOrToString.<init>|<init>(org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason;kotlin.String){}[0]
+
+    final val description // org.jetbrains.kotlinx.libs.api.watchdog/IntentionallyWithoutEqualsHashCodeOrToString.description|{}description[0]
+        final fun <get-description>(): kotlin/String // org.jetbrains.kotlinx.libs.api.watchdog/IntentionallyWithoutEqualsHashCodeOrToString.description.<get-description>|<get-description>(){}[0]
+    final val reason // org.jetbrains.kotlinx.libs.api.watchdog/IntentionallyWithoutEqualsHashCodeOrToString.reason|{}reason[0]
+        final fun <get-reason>(): org.jetbrains.kotlinx.libs.api.watchdog/ExemptionReason // org.jetbrains.kotlinx.libs.api.watchdog/IntentionallyWithoutEqualsHashCodeOrToString.reason.<get-reason>|<get-reason>(){}[0]
+}
+
 open annotation class org.jetbrains.kotlinx.libs.api.watchdog/IntentionallyWithoutHashCode : kotlin/Annotation { // org.jetbrains.kotlinx.libs.api.watchdog/IntentionallyWithoutHashCode|null[0]
     constructor <init>(org.jetbrains.kotlinx.libs.api.watchdog/ExemptionReason = ..., kotlin/String = ...) // org.jetbrains.kotlinx.libs.api.watchdog/IntentionallyWithoutHashCode.<init>|<init>(org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason;kotlin.String){}[0]
 

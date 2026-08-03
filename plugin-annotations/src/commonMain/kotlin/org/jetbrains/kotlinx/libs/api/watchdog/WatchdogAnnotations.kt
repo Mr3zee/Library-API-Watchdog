@@ -244,6 +244,31 @@ public annotation class IntentionallyWithoutToString(
 )
 
 /**
+ * Acknowledges that the annotated stateful class deliberately uses identity equality and hashing
+ * and the opaque default rendering inherited from `kotlin.Any`.
+ *
+ * The libs-api-watchdog compiler plugin warns about publicly visible stateful classes - classes
+ * with at least one property backed by a field - that neither declare nor inherit meaningful
+ * `equals`, `hashCode`, and `toString` implementations. Apply this annotation to suppress all
+ * three warnings when identity semantics and opaque rendering are intended. Use
+ * [IntentionallyWithoutEquals], [IntentionallyWithoutHashCode], or
+ * [IntentionallyWithoutToString] when only one behavior is intentional.
+ *
+ * See the [check documentation](https://mr3zee.github.io/libs-api-watchdog/checks/stateful-class-without-equals-hashcode-to-string) for rationale and examples.
+ *
+ * @param reason why the class deliberately inherits all three implementations from `kotlin.Any`.
+ * @param description free-form explanation of the exemption. May be empty only when [reason]
+ *   explains the exemption on its own ([ExemptionReason.FOR_BACKWARDS_COMPATIBILITY],
+ *   [ExemptionReason.API_DESIGN]).
+ */
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.BINARY)
+public annotation class IntentionallyWithoutEqualsHashCodeOrToString(
+    val reason: ExemptionReason = ExemptionReason.OTHER,
+    val description: String = "",
+)
+
+/**
  * Acknowledges that the annotated declaration deliberately exposes a mutable collection type in
  * the public API.
  *

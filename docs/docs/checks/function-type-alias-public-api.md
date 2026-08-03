@@ -41,7 +41,6 @@ public typealias Callback = (Int) -> Unit
 ### Do
 
 ```kotlin
-// !collapse(1:2) collapsed details
 /** Receives completed work percentages. */
 @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public fun interface Callback {
@@ -61,7 +60,6 @@ public typealias SuspendAction = suspend () -> Unit
 ### Do {#do-2}
 
 ```kotlin
-// !collapse(1:2) collapsed details
 /** Represents an operation that may suspend. */
 @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public fun interface SuspendAction {
