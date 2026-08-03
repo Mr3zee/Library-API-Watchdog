@@ -83,7 +83,7 @@ public interface Plugin {
 - A class whose constructors are all `internal` or `private` can't be subclassed outside the
   library, so it is never reported, even if it is `open` or `abstract`.
 - `fun interface`s are checked like any other interface.
-- Sealed interfaces are not reported here; they are covered by
+- Sealed interfaces are not reported here. They are covered by
   [`EXHAUSTIVE_PUBLIC_API`](./exhaustive-public-api.md) instead.
 
 ## Exemption

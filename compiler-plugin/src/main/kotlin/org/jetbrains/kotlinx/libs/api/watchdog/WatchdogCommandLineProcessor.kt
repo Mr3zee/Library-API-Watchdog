@@ -14,7 +14,7 @@ import org.jetbrains.kotlinx.libs.api.watchdog.fir.WatchdogSeverity
 
 object WatchdogConfigurationKeys {
     /**
-     * Severity overrides keyed by diagnostic name; diagnostics not listed here are errors, and
+     * Severity overrides keyed by diagnostic name. Diagnostics not listed here are errors, and
      * [WatchdogSeverity.NONE] disables a diagnostic entirely.
      */
     val DIAGNOSTIC_SEVERITIES: CompilerConfigurationKey<Map<String, WatchdogSeverity>> =
@@ -22,7 +22,7 @@ object WatchdogConfigurationKeys {
 
     /**
      * Path of the file every reported watchdog diagnostic is appended to as a tab-separated
-     * line; see [org.jetbrains.kotlinx.libs.api.watchdog.fir.WatchdogDiagnosticsRecorder].
+     * line. See [org.jetbrains.kotlinx.libs.api.watchdog.fir.WatchdogDiagnosticsRecorder].
      */
     val DIAGNOSTICS_OUTPUT_FILE: CompilerConfigurationKey<String> =
         CompilerConfigurationKey.create("watchdog diagnostics output file")
@@ -70,7 +70,7 @@ class WatchdogCommandLineProcessor : DevKitCommandLineProcessor(WatchdogCLP::cla
             valueDescription = "<path>",
             description = "Append every reported watchdog diagnostic to the given file as a " +
                     "tab-separated line: diagnostic name, source file path, start offset, " +
-                    "end offset. Meant for tooling; the Gradle plugin's " +
+                    "end offset. Meant for tooling. The Gradle plugin's " +
                     "updateBackwardsCompatibilityExempts task consumes it.",
             required = false,
             allowMultipleOccurrences = false,

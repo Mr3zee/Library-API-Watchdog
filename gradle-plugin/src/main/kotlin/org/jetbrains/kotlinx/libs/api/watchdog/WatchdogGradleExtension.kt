@@ -90,7 +90,7 @@ public open class WatchdogGradleExtension(objectFactory: ObjectFactory) {
 
     /**
      * Whether `PUBLIC_TYPE_WITH_INTERNAL_API` is checked. Enabled by default. A violation is
-     * always an error when enabled; this Boolean property is the check's only off-switch.
+     * always an error when enabled. This Boolean property is the check's only off-switch.
      */
     public val publicTypeWithInternalApi: Property<Boolean> =
         objectFactory.property(Boolean::class.java).convention(true)
@@ -98,7 +98,7 @@ public open class WatchdogGradleExtension(objectFactory: ObjectFactory) {
     /**
      * Whether public signatures may only expose types from dependencies published transitively
      * to consumers. Enabled by default. Unlike design diagnostics, a violation is always an error
-     * and has no source exemption or warning severity; setting this Gradle property to `false` is
+     * and has no source exemption or warning severity. Setting this Gradle property to `false` is
      * the check's only off-switch.
      */
     public val publicTypesMustBeTransitiveDependencies: Property<Boolean> =

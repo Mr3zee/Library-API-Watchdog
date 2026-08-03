@@ -156,7 +156,7 @@ providing a safe `toString`.
 ### Poko
 
 [Poko](https://github.com/drewhamilton/Poko) supports Kotlin/JVM and Kotlin Multiplatform. Apply the
-version compatible with the Kotlin version used by the project; for Kotlin 2.4.0:
+version compatible with the Kotlin version used by the project. For Kotlin 2.4.0:
 
 ```kotlin build.gradle.kts
 plugins {

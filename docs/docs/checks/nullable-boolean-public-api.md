@@ -131,7 +131,7 @@ public class Holder(public val checked: CheckState)
 
 - `@PublishedApi internal` declarations are not reported because their types do not cross the
   supported source API boundary.
-- Unlike `BOOLEAN_PARAMETER_PUBLIC_API`, constructors are checked too.
+- Unlike [`BOOLEAN_PARAMETER_PUBLIC_API`](./boolean-parameter-public-api.md), constructors are checked too.
 - A type alias resolves to its expansion, and a `Boolean?` bound on a type parameter
   (`<T : Boolean?>`) is reported the same as a direct mention.
 - Extension receivers are not reported: an extension on `Boolean?`, typically a remedial helper

@@ -119,7 +119,7 @@ longer watched by any check, and neither is anything nested inside it.
 
 A supported public declaration must not expose one of those internal types in its signature. The
 [`PUBLIC_TYPE_WITH_INTERNAL_API`](./checks/special/public-type-with-internal-api.md) check reports
-that mismatch; either keep the type behind the implementation boundary or mark the exposing
+that mismatch. Either keep the type behind the implementation boundary or mark the exposing
 declaration as internal API too.
 
 The marker annotation class itself is ordinary public API and stays watched like any

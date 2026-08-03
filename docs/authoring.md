@@ -26,13 +26,16 @@ annotation. Docs CI also compiles every public-API Kotlin sample with all watchd
   return types on all API declarations.
 - Write sample KDoc as if it documented a production API. Describe behavior, meaning, units, or
   constraints instead of restating the declaration name (`NORTH` as "North", for example).
-- Exemption examples must satisfy `EXEMPTION_WITHOUT_EXPLANATION`: `reason =
+- Exemption examples must satisfy
+  [`EXEMPTION_WITHOUT_EXPLANATION`](./docs/checks/special/exemption-without-explanation.md): `reason =
   ExemptionReason.FOR_BACKWARDS_COMPATIBILITY` or `ExemptionReason.API_DESIGN` may stand alone.
   Every other reason (`INTEROP`, `EXTERNAL_CONTRACT`, `IGNORE_JAVA_INTEROP`, `OTHER`) also needs a
   non-empty `description`.
 - Exactly one `#` heading per page, at the top. It is the page title shown in the sidebar.
 - Use standard Docusaurus relative links between pages, including the path from the current file:
   `[Exemptions](../exemptions.md)`. Always provide descriptive link text.
+- Make every diagnostic name in prose or a table an inline-code link to its check page. Leave it
+  unlinked on that same check page and in fenced code blocks.
 - Write product names, versions, and URLs directly in page content. `docs/variables.mjs` is only
   for shared site configuration in `docusaurus.config.ts` and `sidebars.ts`.
 - American English. Concise, active voice, no marketing fluff. Don't mention implementation
@@ -266,10 +269,12 @@ Adjustments:
   intro or See also. Since these pages are nested one level deeper, their links to root pages use
   `../../`, such as `../../configuration.md`.
 - Special-check pages are also nested one level deeper and use `../../` for links to root pages.
-- `EXEMPTION_WITHOUT_EXPLANATION` is always an error: its table says
+- [`EXEMPTION_WITHOUT_EXPLANATION`](./docs/checks/special/exemption-without-explanation.md) is always an error: its table says
   `| Default severity | Error (not configurable) |`, `| Gradle property | none |`,
   `| Exemption | none |`, and it has no Configuration section.
-- `PUBLIC_TYPE_WITH_INTERNAL_API` and `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY` are always errors while enabled. Their table names the Boolean
+- [`PUBLIC_TYPE_WITH_INTERNAL_API`](./docs/checks/special/public-type-with-internal-api.md) and
+  [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./docs/checks/special/public-type-from-non-transitive-dependency.md)
+  are always errors while enabled. Their table names the Boolean
   whole-check switch, and their Configuration section documents only those on/off switches.
 - Checks without an exemption annotation write `| Exemption | none |` and replace the
   "When to exempt" section with how to legitimately silence the check, if anything.

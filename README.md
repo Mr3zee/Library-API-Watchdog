@@ -30,7 +30,7 @@ dependencyResolutionManagement {
 
 The plugin only runs in modules compiled with
 [explicit API mode](https://kotlinlang.org/docs/api-guidelines-simplicity.html#use-explicit-api-mode)
-(strict or warning variant); without it the checkers are not registered at all, and the Gradle
+(strict or warning variant). Without it the checkers are not registered at all, and the Gradle
 plugin prints a warning.
 
 ```kotlin
@@ -86,14 +86,14 @@ acknowledges all of them in one sweep:
 
 The task depends on the regular main Kotlin compilation tasks for every KGP target, including JS,
 Native, Wasm, and metadata-only projects. Those compilations record diagnostics with their exact
-source positions; the task merges and deduplicates the reports, then inserts the matching
+source positions. The task merges and deduplicates the reports, then inserts the matching
 `@Intentionally*` annotations with `reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY` (adding
 imports as needed). A markerless `@SubclassOptInRequired` is replaced by `@IntentionallyOpen`
 rather than annotated, since it restricts nothing to begin with. Checks disabled through
 `apiWatchdog` are not exempted, and the few diagnostics no annotation can acknowledge are listed
 as warnings for manual follow-up. Enabled always-error diagnostics must be fixed before the task
 can run. Run it on a clean
-working tree and review the diff; from then on the checks only guard newly added API. See the
+working tree and review the diff. From then on the checks only guard newly added API. See the
 [existing-library guide](https://mr3zee.github.io/Library-API-Watchdog/existing-libs) for details.
 
 ## Checks
@@ -111,7 +111,7 @@ working tree and review the diff; from then on the checks only guard newly added
 - [`UNDOCUMENTED_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api) -
   public declarations of every kind without KDoc.
 - [`FUNCTION_TYPE_ALIAS_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/function-type-alias-public-api) -
-  type aliases of function types; the alias is erased from the compiled API, unlike a
+  type aliases of function types. The alias is erased from the compiled API, unlike a
   `fun interface`.
 - [`DATA_CLASS_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/data-class-public-api) -
   data classes, whose generated `copy`/`componentN` bake the exact property list into the
@@ -121,9 +121,9 @@ working tree and review the diff; from then on the checks only guard newly added
 - [`MUTABLE_COLLECTION_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/mutable-collection-public-api) -
   mutable collection types (arrays included) in public signatures.
 - [`PAIR_OR_TRIPLE_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/pair-or-triple-public-api) -
-  `Pair` and `Triple` in public signatures; tuple components carry no domain meaning.
+  `Pair` and `Triple` in public signatures. Tuple components carry no domain meaning.
 - [`BOOLEAN_PARAMETER_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/boolean-parameter-public-api) -
-  Boolean parameters of public functions, context parameters included; a bare `true`/`false`
+  Boolean parameters of public functions, context parameters included. A bare `true`/`false`
   reveals nothing at the call site.
 - [`NULLABLE_BOOLEAN_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/nullable-boolean-public-api) -
   `Boolean?` in public signatures: three states with only two of them named.
@@ -138,12 +138,12 @@ working tree and review the diff; from then on the checks only guard newly added
   public signatures using dependency types that are not published transitively to consumers.
   Always an error while enabled.
 - [`PUBLIC_TYPE_WITH_INTERNAL_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api) -
-  supported public signatures exposing types marked as internal API; mark the exposing declaration
+  supported public signatures exposing types marked as internal API. Mark the exposing declaration
   as internal API too, or remove the internal type from its signature. Always an error while enabled.
 
 ### Java interop
 
-Only run in JVM compilations; a Kotlin-only library disables the group with
+These checks only run in JVM compilations. A Kotlin-only library disables the group with
 `javaInterop { enabled = false }`. See the
 [group overview](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop).
 
@@ -210,5 +210,5 @@ Modules:
   dependency (plugin id `org.jetbrains.kotlin.library.api-watchdog`).
 
 The documentation site is a [Docusaurus](https://docusaurus.io/) project in [docs](docs), built by
-[docs.yml](.github/workflows/docs.yml); see [docs/authoring.md](docs/authoring.md) for the page
+[docs.yml](.github/workflows/docs.yml). See [docs/authoring.md](docs/authoring.md) for the page
 template and rules.

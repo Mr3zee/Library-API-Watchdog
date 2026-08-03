@@ -23,6 +23,13 @@ import org.jetbrains.kotlin.name.StandardClassIds
 internal class MutableCollectionChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : ExposedTypeChecker(WatchdogClassIds.IntentionallyMutableCollection) {
+    /**
+     * A checker instance belongs to one FIR session. Public signatures repeatedly use the same
+     * classifiers, so retain the hierarchy answer instead of rebuilding the complete transitive
+     * supertype list for every occurrence.
+     */
+    private val mutableCollectionLikeByClassId = mutableMapOf<ClassId, Boolean>()
+
     context(context: CheckerContext)
     override fun ConeKotlinType.violatingClassifier(): Name? {
         val type = this as? ConeClassLikeType ?: return null
@@ -56,11 +63,13 @@ internal class MutableCollectionChecker(
             return true
         }
 
-        // Concrete implementations (ArrayList, java.util.HashMap, a hand-written MutableList
-        // subtype, ...) expose the same mutators as the interfaces they implement.
-        val symbol = type.toClassSymbol() ?: return false
-        return lookupSuperTypes(symbol, lookupInterfaces = true, deep = true, useSiteSession = context.session)
-            .any { it.lookupTag.classId in mutableCollectionTypes }
+        return mutableCollectionLikeByClassId.getOrPut(this) {
+            // Concrete implementations (ArrayList, java.util.HashMap, a hand-written MutableList
+            // subtype, ...) expose the same mutators as the interfaces they implement.
+            val symbol = type.toClassSymbol() ?: return@getOrPut false
+            lookupSuperTypes(symbol, lookupInterfaces = true, deep = true, useSiteSession = context.session)
+                .any { it.lookupTag.classId in mutableCollectionTypes }
+        }
     }
 
     private val mutableCollectionTypes: Set<ClassId> = setOf(

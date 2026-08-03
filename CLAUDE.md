@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Text Requirement
 
 Never use '—'.
+Never use ';' to separate sentences.
 
 ## What this is
 

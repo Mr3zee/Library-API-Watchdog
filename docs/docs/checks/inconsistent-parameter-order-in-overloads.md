@@ -170,7 +170,7 @@ public fun Grid.fill(
 - An extension is called like a member of the type it extends, so the members of its receiver
   class - inherited ones included - are its overloads too, wherever in the library the extension
   is declared. A receiver reached through a type alias, a nullable type, or a type parameter
-  bound still leads back to the extended class; an unbounded type parameter is no class and has
+  bound still leads back to the extended class. An unbounded type parameter is no class and has
   no members to compare against.
 - For an inherited pair, only the subtype's own declaration is reported: the supertype can't see
   the subtype's overload, and it is the new declaration that strays from the established order.
