@@ -17,8 +17,9 @@ README.md for the full list of diagnostics and their rationale.
 ## compiler-plugin-dev-kit
 
 The build resolves the `org.jetbrains.kotlin.compiler.plugin.devkit.*` plugins and runtime artifacts from
-`https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap`. The version is configured by
-`compilerPluginDevKitVersion` in `gradle.properties`.
+`https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap`. Its settings plugin supplies the Kotlin
+development repositories, aligned plugin coordinates, and functional-test publishing setup. Dev-kit cross-module
+wiring and the supported Kotlin versions are declared through namespaced properties in `gradle.properties`.
 
 ## Commands
 

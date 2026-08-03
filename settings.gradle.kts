@@ -12,20 +12,10 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
-        maven("https://redirector.kotlinlang.org/maven/bootstrap")
-        maven("https://redirector.kotlinlang.org/maven/dev/")
-        // Publications used by IJ
-        // https://kotlinlang.slack.com/archives/C7L3JB43G/p1757001642402909
-        maven("https://redirector.kotlinlang.org/maven/intellij-dependencies/")
-    }
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id.startsWith("org.jetbrains.kotlin.compiler.plugin.devkit.")) {
-                useVersion(providers.gradleProperty("compilerPluginDevKitVersion").get())
-            }
-        }
     }
 }
+
+plugins { kotlin("compiler.plugin.devkit") version "0.0.1-SNAPSHOT" }
 
 dependencyResolutionManagement {
     @Suppress("UnstableApiUsage")
@@ -38,11 +28,6 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
-        maven("https://redirector.kotlinlang.org/maven/bootstrap")
-        maven("https://redirector.kotlinlang.org/maven/dev/")
-        // Publications used by IJ
-        // https://kotlinlang.slack.com/archives/C7L3JB43G/p1757001642402909
-        maven("https://redirector.kotlinlang.org/maven/intellij-dependencies/")
     }
 }
 

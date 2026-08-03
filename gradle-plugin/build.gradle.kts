@@ -3,7 +3,7 @@
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {
-    kotlin("compiler.plugin.devkit.gradle-plugin")
+    pluginDevKit("gradle-plugin")
     id("library-api-watchdog.dokka-conventions")
     id("library-api-watchdog.gradle-plugin-conventions")
     id("library-api-watchdog.space-publishing-conventions")
@@ -17,8 +17,6 @@ kotlin {
 
 pluginDevKit {
     pluginPackage.set("org.jetbrains.kotlin.library.api.watchdog")
-    companionLibrary(project(":kotlin-library-api-watchdog-plugin-annotations"))
-    compilerPlugin = project(":kotlin-library-api-watchdog-compiler-plugin")
 }
 
 gradlePlugin {

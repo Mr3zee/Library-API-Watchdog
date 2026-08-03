@@ -1,7 +1,6 @@
 plugins {
     kotlin("jvm")
     `maven-publish`
-    kotlin("compiler.plugin.devkit.functional-test-publishing")
     id("library-api-watchdog.exempts-fixer-conventions")
     id("library-api-watchdog.space-publishing-conventions")
 }

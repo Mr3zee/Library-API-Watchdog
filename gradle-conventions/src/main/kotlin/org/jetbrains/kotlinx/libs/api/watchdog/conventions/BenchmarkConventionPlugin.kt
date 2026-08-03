@@ -72,10 +72,6 @@ class BenchmarkConventionPlugin : Plugin<Project> {
             dependencies.add("benchmarkImplementation", sourceSets.getByName("main").output)
             dependencies.add("benchmarkImplementation", "org.openjdk.jmh:jmh-core:$JMH_VERSION")
             dependencies.add("benchmarkImplementation", "org.jetbrains.kotlin:kotlin-compiler:$kotlinVersion")
-            // The registrar's dev-kit base classes ship only inside the shadow jar. The in-process
-            // compiler loads plugin classes from the benchmark classpath, so it needs them too.
-            val compilerPluginDevKitVersion = providers.gradleProperty("compilerPluginDevKitVersion").get()
-            dependencies.add("benchmarkRuntimeOnly", "org.jetbrains.kotlin.compiler.plugin.devkit:compiler-plugin-runtime:$compilerPluginDevKitVersion")
             dependencies.add("benchmarkCorpusClasspath", dependencies.project(mapOf("path" to ":kotlin-library-api-watchdog-plugin-annotations")))
             dependencies.add("jmhBytecodeGenerator", "org.openjdk.jmh:jmh-generator-bytecode:$JMH_VERSION")
 

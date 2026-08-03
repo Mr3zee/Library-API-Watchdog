@@ -190,7 +190,10 @@ Performed by the Gradle plugin rather than the compiler:
 
 The build resolves compiler-plugin-dev-kit from its
 [Space EAP repository](https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap).
-Its version is configured by `compilerPluginDevKitVersion` in `gradle.properties`.
+The dev-kit settings plugin supplies its Kotlin development repositories, aligned plugin
+coordinates, and functional-test publishing setup. The supported Kotlin versions, companion
+library, and compiler-plugin project are declared through the dev-kit's namespaced properties in
+`gradle.properties`.
 
 Tests:
 

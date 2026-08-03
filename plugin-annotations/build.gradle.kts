@@ -7,7 +7,6 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     id("library-api-watchdog.dokka-conventions")
     `maven-publish`
-    kotlin("compiler.plugin.devkit.functional-test-publishing")
     id("library-api-watchdog.space-publishing-conventions")
 }
 
