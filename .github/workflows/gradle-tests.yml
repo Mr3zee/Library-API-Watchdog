@@ -30,38 +30,6 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
 
-      # The build consumes the compiler-plugin-dev-kit convention plugins from mavenLocal.
-      - name: Checkout compiler-plugin-dev-kit
-        uses: actions/checkout@v5
-        with:
-          repository: Kotlin/compiler-plugin-dev-kit
-          path: compiler-plugin-dev-kit
-          token: ${{ secrets.DEV_KIT_TOKEN }}
-
-      # Replace the dev kit's unpublished auxiliary compiler version, but build its default
-      # runtime against the same Kotlin version as this project. Otherwise its test-fixtures jar
-      # exposes the newer compiler test API while this build resolves the 2.4.0 test framework.
-      - name: Align dev-kit Kotlin versions
-        working-directory: compiler-plugin-dev-kit
-        run: |
-          sed -i 's/2\.4\.20-dev-7680/2.4.20-dev-7885/g' \
-            compiler-plugin-runtime/build.gradle.kts \
-            template/compiler-plugin/build.gradle.kts
-          if [ -d compiler-plugin-runtime/k2420_dev_7680 ]; then
-            mv compiler-plugin-runtime/k2420_dev_7680 compiler-plugin-runtime/k2420_dev_7885
-          fi
-          project_kotlin_version=$(sed -n 's/^kotlin = "\([^"]*\)"/\1/p' ../gradle/libs.versions.toml)
-          test -n "$project_kotlin_version"
-          sed -i "s/^kotlin = .*/kotlin = \"${project_kotlin_version}\"/" \
-            gradle/libs.versions.toml
-
-      - name: Publish compiler-plugin-dev-kit to Maven Local
-        working-directory: compiler-plugin-dev-kit
-        run: |
-          ./gradlew -p artifact-transform publishToMavenLocal
-          ./gradlew -p plugins publishToMavenLocal
-          ./gradlew publishToMavenLocal
-
       - name: Run Gradle tests
         run: >-
           ./gradlew

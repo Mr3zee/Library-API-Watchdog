@@ -168,15 +168,9 @@ Performed by the Gradle plugin rather than the compiler:
 
 ## Development
 
-The build consumes the sibling [compiler-plugin-dev-kit](../compiler-plugin-dev-kit) from
-`mavenLocal`; publish it first:
-
-```bash
-cd ../compiler-plugin-dev-kit
-./gradlew -p artifact-transform publishToMavenLocal
-./gradlew -p plugins publishToMavenLocal
-./gradlew publishToMavenLocal
-```
+The build resolves compiler-plugin-dev-kit from its
+[Space EAP repository](https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap).
+Its version is configured by `compilerPluginDevKitVersion` in `gradle.properties`.
 
 Tests:
 

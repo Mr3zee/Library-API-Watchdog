@@ -2,8 +2,11 @@ pluginManagement {
     includeBuild("gradle-conventions")
 
     repositories {
-        // The compiler-plugin-dev-kit convention plugins are published to mavenLocal.
-        mavenLocal()
+        maven("https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap") {
+            content {
+                includeGroupByRegex("org\\.jetbrains\\.kotlin\\.compiler\\.plugin\\.devkit(\\..*)?")
+            }
+        }
         mavenCentral()
         gradlePluginPortal()
         maven("https://redirector.kotlinlang.org/maven/bootstrap")
@@ -15,7 +18,7 @@ pluginManagement {
     resolutionStrategy {
         eachPlugin {
             if (requested.id.id.startsWith("org.jetbrains.kotlin.compiler.plugin.devkit.")) {
-                useVersion("0.0.1-SNAPSHOT")
+                useVersion(providers.gradleProperty("compilerPluginDevKitVersion").get())
             }
         }
     }
@@ -23,8 +26,11 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
-        // The compiler-plugin-dev-kit runtime artifacts are published to mavenLocal.
-        mavenLocal()
+        maven("https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap") {
+            content {
+                includeGroupByRegex("org\\.jetbrains\\.kotlin\\.compiler\\.plugin\\.devkit(\\..*)?")
+            }
+        }
         mavenCentral()
         maven("https://redirector.kotlinlang.org/maven/bootstrap")
         maven("https://redirector.kotlinlang.org/maven/dev/")

@@ -13,18 +13,11 @@ declarations that are hard to evolve. The checkers only run in modules compiled 
 (`kotlin { explicitApi() }` / `-Xexplicit-api`, strict or warning); otherwise they are not registered at all. See
 README.md for the full list of diagnostics and their rationale.
 
-## Prerequisite: compiler-plugin-dev-kit
+## compiler-plugin-dev-kit
 
-The build consumes the sibling `../compiler-plugin-dev-kit` repo from `mavenLocal` (convention plugins
-`org.jetbrains.kotlin.compiler.plugin.devkit.*`, resolved as `0.0.1-SNAPSHOT`). Publish it first if not already, or
-nothing builds:
-
-```bash
-cd ../compiler-plugin-dev-kit
-./gradlew -p artifact-transform publishToMavenLocal
-./gradlew -p plugins publishToMavenLocal
-./gradlew publishToMavenLocal
-```
+The build resolves the `org.jetbrains.kotlin.compiler.plugin.devkit.*` plugins and runtime artifacts from
+`https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap`. The version is configured by
+`compilerPluginDevKitVersion` in `gradle.properties`.
 
 ## Commands
 

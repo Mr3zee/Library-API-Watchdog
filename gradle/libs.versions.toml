@@ -3,6 +3,8 @@
 kotlin = "2.4.0"
 # https://github.com/Kotlin/dokka
 dokka = "2.2.0"
+# https://github.com/GradleUp/shadow
+shadow = "9.6.0"
 # https://developer.android.com/build/releases/gradle-plugin
 # Applied by the Android functional test projects of :gradle-plugin. Both AGP generations are
 # integrated differently: AGP 8 works through the Kotlin Android Gradle plugin, while AGP 9
@@ -17,3 +19,4 @@ kotlin-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-em
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

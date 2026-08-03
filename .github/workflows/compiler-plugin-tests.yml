@@ -24,34 +24,5 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
 
-      # The build consumes the compiler-plugin-dev-kit convention plugins from mavenLocal.
-      - name: Checkout compiler-plugin-dev-kit
-        uses: actions/checkout@v5
-        with:
-          repository: Kotlin/compiler-plugin-dev-kit
-          path: compiler-plugin-dev-kit
-          token: ${{ secrets.DEV_KIT_TOKEN }}
-
-      # The dev kit pins kotlin-compiler-internal-test-framework 2.4.20-dev-7680, a dev-channel
-      # build that has been cleaned up from the Kotlin repositories. 2.4.20-dev-7885 is the
-      # bootstrap-channel build the dev kit itself compiles against and is still published.
-      # No-op once the dev kit drops the 7680 reference upstream.
-      - name: Patch dev-kit to a published Kotlin dev version
-        working-directory: compiler-plugin-dev-kit
-        run: |
-          sed -i 's/2\.4\.20-dev-7680/2.4.20-dev-7885/g' \
-            compiler-plugin-runtime/build.gradle.kts \
-            template/compiler-plugin/build.gradle.kts
-          if [ -d compiler-plugin-runtime/k2420_dev_7680 ]; then
-            mv compiler-plugin-runtime/k2420_dev_7680 compiler-plugin-runtime/k2420_dev_7885
-          fi
-
-      - name: Publish compiler-plugin-dev-kit to Maven Local
-        working-directory: compiler-plugin-dev-kit
-        run: |
-          ./gradlew -p artifact-transform publishToMavenLocal
-          ./gradlew -p plugins publishToMavenLocal
-          ./gradlew publishToMavenLocal
-
       - name: Run compiler plugin tests
         run: ./gradlew :compiler-plugin:allVersionedTests
