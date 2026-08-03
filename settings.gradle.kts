@@ -3,6 +3,12 @@ pluginManagement {
 
     repositories {
         maven("https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap") {
+            // Space can challenge public reads on GitHub-hosted runners. Keep the username
+            // explicitly empty so Gradle retries that challenge as an anonymous request.
+            credentials {
+                username = ""
+                password = ""
+            }
             content {
                 includeGroupByRegex("org\\.jetbrains\\.kotlin\\.compiler\\.plugin\\.devkit(\\..*)?")
             }
@@ -27,6 +33,11 @@ pluginManagement {
 dependencyResolutionManagement {
     repositories {
         maven("https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap") {
+            // See the matching plugin repository above.
+            credentials {
+                username = ""
+                password = ""
+            }
             content {
                 includeGroupByRegex("org\\.jetbrains\\.kotlin\\.compiler\\.plugin\\.devkit(\\..*)?")
             }
