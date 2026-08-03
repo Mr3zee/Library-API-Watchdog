@@ -19,22 +19,22 @@ function or property - nullable types and type parameters bounded by a value cla
 
 ```kotlin
 // !hide-focused
-@file:JvmName("Users")
+@file:JvmName("Accounts")
 
 // Supporting value class
 // !hide-focused(1:5)
 /**
- * Stable identifier assigned to a user account.
+ * Stable identifier assigned to an account.
  *
  * @property raw identifier as stored by the account service.
  */
 @JvmInline
-public value class UserId(public val raw: String)
+public value class AccountId(public val raw: String)
 
 // !hide-focused
-/** Queues a refresh for the account identified by [id]. */
-// !diag[/take/] MANGLED_JVM_NAME_PUBLIC_API ["function","take","UserId"]
-public fun take(id: UserId) { }
+/** Finds the account identified by [id]. */
+// !diag[/find/] MANGLED_JVM_NAME_PUBLIC_API ["function","find","AccountId"]
+public fun find(id: AccountId) { }
 ```
 
 ## Rationale
@@ -121,11 +121,12 @@ only fix for constructors and overridable members, since `@JvmName` doesn't acce
   only mangles for members, where the dispatch receiver makes the difference.
 - A `var` property's setter mangles independently of the getter - renaming or hiding one accessor
   leaves the other checked on its own.
-- Members and constructors of the value class itself are exempt: declaring the public value class
+- Members and constructors of the value class itself are not reported: declaring the public value class
   is the deliberate choice, and `@JvmName` is not even applicable inside it.
-- `suspend` functions are exempt: an unmangled name would not make them Java-callable anyway.
-- Overrides are exempt, the fixed signature is reported on the base declaration.
-- `@JvmSynthetic` declarations are hidden from Java on purpose and are not flagged.
+- `suspend` functions are not reported: an unmangled name would not make them Java-callable anyway.
+- Overrides are not reported: their signature is fixed by the overridden declaration, which is
+  reported instead.
+- `@JvmSynthetic` declarations are hidden from Java on purpose and are not reported.
 - Non-JVM compilations never register this check at all.
 
 ## Exemption
@@ -139,7 +140,7 @@ Apply `@IntentionallyMangledJvmName` when Java callers are not supported for thi
 // !hide-focused
 /** Queues a refresh for [id] through a deliberately Kotlin-only API. */
 @IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN)
-public fun acknowledged(id: UserId) { }
+public fun take(id: UserId) { }
 ```
 
 ## Configuration

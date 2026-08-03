@@ -131,26 +131,26 @@ public class Holder(public val checked: CheckState)
 
 - Unlike `BOOLEAN_PARAMETER_PUBLIC_API`, constructors are checked too.
 - A type alias resolves to its expansion, and a `Boolean?` bound on a type parameter
-  (`<T : Boolean?>`) is flagged the same as a direct mention.
-- Extension receivers are not flagged: an extension on `Boolean?`, typically a remedial helper
+  (`<T : Boolean?>`) is reported the same as a direct mention.
+- Extension receivers are not reported: an extension on `Boolean?`, typically a remedial helper
   like `fun Boolean?.orFalse()`, serves values the user already holds.
-- Overrides are not flagged: their signature is fixed by the overridden declaration and reported
-  there instead.
-- Java platform types are not flagged: their nullability is not declared in Kotlin sources.
+- Overrides are not reported: their signature is fixed by the overridden declaration, which is
+  reported instead.
+- Java platform types are not reported: their nullability is not declared in Kotlin sources.
 
 ## Exemption
 
-Use `@IntentionallyNullableBoolean` when the nullable Boolean is a deliberate part of the API
+Apply `@IntentionallyNullableBoolean` when the nullable Boolean is a deliberate part of the API
 contract.
 
 ```kotlin
 // !hide-focused
-@file:JvmName("Probes")
+@file:JvmName("Connections")
 
 // !hide-focused
-/** Performs a deliberately three-state legacy probe. */
+/** Returns a deliberately three-state connection status. */
 @IntentionallyNullableBoolean(reason = ExemptionReason.API_DESIGN)
-public fun legacyProbe(): Boolean? = null
+public fun connectionState(): Boolean? = null
 ```
 
 ## Configuration

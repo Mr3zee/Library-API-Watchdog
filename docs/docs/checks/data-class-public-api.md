@@ -13,7 +13,7 @@ constructor property list as part of the compiled API.
 ## What it reports
 
 Any `data class` reachable from the public API - top-level, nested inside another public class
-- is flagged, regardless of nesting depth:
+- is reported, regardless of nesting depth:
 
 ```kotlin
 // !hide-focused(1:6)
@@ -23,8 +23,8 @@ Any `data class` reachable from the public API - top-level, nested inside anothe
  * @property x distance from the vertical axis.
  * @property y distance from the horizontal axis.
  */
-// !diag[/Coordinates/] DATA_CLASS_PUBLIC_API ["Coordinates"]
-public data class Coordinates(public val x: Int, public val y: Int)
+// !diag[/Point/] DATA_CLASS_PUBLIC_API ["Point"]
+public data class Point(public val x: Int, public val y: Int)
 ```
 
 ## Rationale
@@ -72,7 +72,7 @@ public class Coordinates(
 
 ## Notes
 
-- `data object`s are exempt: with no constructor properties, none of `copy`, `componentN`, or a
+- `data object`s are not reported: with no constructor properties, none of `copy`, `componentN`, or a
   per-instance constructor are generated.
 
 ## Exemption
@@ -81,14 +81,15 @@ Apply `@IntentionallyDataClass` to the class declaration when the property list 
 stable part of the contract:
 
 ```kotlin
-// !hide-focused(1:5)
+// !hide-focused(1:6)
 /**
- * A stable one-dimensional coordinate used by the wire format.
+ * A stable position in Cartesian coordinate space used by the wire format.
  *
- * @property x distance from the origin.
+ * @property x distance from the vertical axis.
+ * @property y distance from the horizontal axis.
  */
 @IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)
-public data class MarkedData(public val x: Int)
+public data class Coordinates(public val x: Int, public val y: Int)
 ```
 
 ## Configuration

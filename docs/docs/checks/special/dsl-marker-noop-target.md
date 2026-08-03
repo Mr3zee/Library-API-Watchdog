@@ -70,12 +70,12 @@ public annotation class KtorDsl
 
 ## Notes
 
-- `ANNOTATION_CLASS` is effective too: it is a classifier declaration like `CLASS`.
+- `ANNOTATION_CLASS` is also effective because it is a classifier declaration, like `CLASS`.
 - Marker visibility is irrelevant: an `internal` or `private` marker is still applied across the
   library's - possibly public - DSL classes, so markers of any visibility are checked.
-- An annotation class without `@DslMarker` is out of scope entirely, no matter what its `@Target`
-  allows.
-- A marker with no explicit `@Target` at all is a different diagnostic,
+- A plain annotation class without `@DslMarker` is outside the scope of this check, regardless of
+  its `@Target`.
+- A marker without an explicit `@Target` is covered by the separate, related
   [`DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`](./dsl-marker-without-explicit-targets.md), because the
   default target set has its own no-op entries plus forbids `TYPE`/`TYPEALIAS`.
 
@@ -86,11 +86,11 @@ that applied the marker there - a breaking change. Acknowledge the legacy shape 
 
 ```kotlin
 // !hide-focused
-/** Marks legacy DSL receivers. */
+/** Marks Ktor DSL receivers with targets retained for compatibility. */
 @IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility
 @DslMarker
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-public annotation class LegacyNoopTargetDsl
+public annotation class KtorDsl
 ```
 
 Wrong marker targets are never good API design, so this annotation bakes its only accepted

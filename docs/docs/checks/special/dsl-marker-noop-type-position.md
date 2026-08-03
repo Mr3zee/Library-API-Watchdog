@@ -18,27 +18,27 @@ restricts nothing:
 
 ```kotlin
 // !hide-focused
-@file:JvmName("Trees")
+@file:JvmName("Branches")
 
 // Supporting DSL declarations
 // !hide-focused
-/** Marks tree DSL receivers. */
+/** Marks branch DSL receivers. */
 @DslMarker
 @Target(
     AnnotationTarget.CLASS,
     AnnotationTarget.TYPE,
     AnnotationTarget.TYPEALIAS,
 )
-public annotation class TreeDsl
+public annotation class BranchDsl
 
 // !hide-focused
-/** Node accepted by the tree-building DSL. */
-public class Tag
+/** Branch accepted by the branch-building DSL. */
+public class Branch
 
 // !hide-focused
-/** Adds [tag] to the current tree. */
-// !diag[/@TreeDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["TreeDsl","parameter type"]
-public fun process(tag: @TreeDsl Tag) { }
+/** Appends [branch] to the current tree. */
+// !diag[/@BranchDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["BranchDsl","parameter type"]
+public fun append(branch: @BranchDsl Branch) { }
 ```
 
 Unlike the API-surface checks, this one also fires on non-public and even internal declarations: an
@@ -107,9 +107,9 @@ public fun process(tag: Tag) { }
 ## Notes
 
 - A context parameter's type is an implicit value just like a receiver, so a marker there is
-  effective and not flagged.
+  effective and not reported.
 - Markers on supertypes, type parameter bounds, and type alias expansions are effective carriers
-  and stay exempt: `class Div : @TreeDsl Tag()`, `typealias MarkedTag = @TreeDsl Tag`.
+  and are not reported: `class Div : @TreeDsl Tag()`, `typealias MarkedTag = @TreeDsl Tag`.
 - A marker nested inside a type argument is not analyzed at all (`List<@TreeDsl Tag>` triggers
   nothing), which is a known limitation rather than an endorsement.
 
@@ -118,9 +118,9 @@ public fun process(tag: Tag) { }
 ## Exemption
 
 There is no `@Intentionally*` annotation for this diagnostic: a marker on a no-op type position
-never restricts anything, so keeping it there as-is is never a deliberate design choice. Fix it by
-moving the marker to an effective position (a receiver, a context parameter, or a supertype) or by
-removing it.
+never restricts anything, so keeping it there as-is is never a valid design choice. Fix it by moving
+the marker to an effective position (a receiver, a context parameter, or a supertype) or by removing
+it.
 
 [//]: # (TODO huh? - investigate)
 The one legitimate reason to keep a marker exactly where it is reported is deliberate flow-through:

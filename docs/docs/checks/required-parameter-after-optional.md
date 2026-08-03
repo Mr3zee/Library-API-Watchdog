@@ -17,14 +17,14 @@ or `vararg` - in the parameter list of a public function or constructor:
 
 ```kotlin
 // !hide-focused
-@file:JvmName("Connections")
+@file:JvmName("Requests")
 
 // !hide-focused
-/** Connects to [host]. */
+/** Sends a request to [host]. */
 // !hide-focused
 @JvmOverloads
-// !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","connect"]
-public fun connect(retries: Int = 3, host: String) { }
+// !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","request"]
+public fun request(retries: Int = 3, host: String) { }
 ```
 
 All required parameters behind the first optional one are reported, not just the first:
@@ -113,13 +113,13 @@ public class Server
 
 - A `vararg` parameter counts as optional too: callers can omit it entirely, so a required
   parameter after it is still reported.
-- A required function-type or `fun interface` parameter in the **last** position is exempt: keeping
-  it last is what makes trailing-lambda call syntax available, and the standard library itself
+- A required function-type or `fun interface` parameter in the **last** position is not reported:
+  keeping it last is what makes trailing-lambda call syntax available, and the standard library itself
   places such parameters after defaulted ones (`joinToString(separator = ..., transform)`). The
   same required function-type parameter is still reported when it is *not* last, since there is no
   trailing-lambda syntax to preserve there.
-- Overrides are exempt: they can't declare default values, and their parameter order is fixed by
-  the overridden declaration, which is reported where it is declared instead.
+- Overrides are not reported: they can't declare default values, and their parameter order is
+  fixed by the overridden declaration, which is reported instead.
 
 ## Exemption
 
@@ -140,7 +140,7 @@ compatibility:
 @IntentionallyWithoutJvmOverloads(
     reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY,
 )
-public fun legacyConnect(retries: Int = 3, host: String) { }
+public fun connect(retries: Int = 3, host: String) { }
 ```
 
 ## Configuration

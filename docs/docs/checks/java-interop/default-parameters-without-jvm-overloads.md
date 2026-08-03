@@ -18,12 +18,12 @@ no `@JvmOverloads`.
 
 ```kotlin
 // !hide-focused
-@file:JvmName("Connections")
+@file:JvmName("Sockets")
 
 // !hide-focused
-/** Connects to [host]. */
-// !diag[/connect/] DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS ["function","connect"]
-public fun connect(
+/** Opens a socket to [host]. */
+// !diag[/openSocket/] DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS ["function","openSocket"]
+public fun openSocket(
     host: String,
     port: Int = 80,
     timeout: Int = 30,
@@ -104,12 +104,12 @@ public class Connection @JvmOverloads constructor(
 - A defaulted parameter in the middle of the list still can't be skipped from Java even with
   `@JvmOverloads`. Keep optional parameters last (see [`REQUIRED_PARAMETER_AFTER_OPTIONAL`](../required-parameter-after-optional.md)) so the
   generated overloads actually cover the common call shapes.
-- Abstract and interface members, and annotation class constructors, are exempt: `@JvmOverloads`
+- Abstract and interface members, and annotation class constructors, are not reported: `@JvmOverloads`
   doesn't apply to them.
-- `suspend` functions and members of a value class are exempt: they are not Java-callable
+- `suspend` functions and members of a value class are not reported: they are not Java-callable
   regardless of overloads.
-- Overrides are exempt: they can't re-declare default values.
-- `@JvmSynthetic` functions and constructors are hidden from Java on purpose and are not flagged.
+- Overrides are not reported: they can't re-declare default values.
+- `@JvmSynthetic` functions and constructors are hidden from Java on purpose and are not reported.
 - Non-JVM compilations never register this check at all.
 
 ## Exemption
@@ -120,7 +120,7 @@ without Kotlin's named arguments:
 
 ```kotlin
 // !hide-focused
-@file:JvmName("ConnectionDsl")
+@file:JvmName("Connections")
 
 // Supporting options type
 // !hide-focused
@@ -136,7 +136,7 @@ public class ConnectionConfig
 )
 // !hide-focused
 @IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)
-public fun connectDsl(
+public fun connect(
     host: String,
     port: Int = 80,
     timeout: Int = 30,

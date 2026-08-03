@@ -43,6 +43,9 @@ annotation. Docs CI also compiles every public-API Kotlin sample with all watchd
   `plugin-annotations/src/commonMain/kotlin/org/jetbrains/kotlinx/libs/api/watchdog/WatchdogAnnotations.kt`,
   and the extension in `gradle-plugin/src/main/kotlin/org/jetbrains/kotlinx/libs/api/watchdog/WatchdogGradleExtension.kt`.
 - No imports in code snippets
+- On check pages, use a standalone API in "What it reports" that is different from the rationale
+  examples. Reuse the same API names across the matching "Don't", "Do", and "Exemption" samples
+  so readers can compare the alternatives without also translating between unrelated examples.
 
 ## Code samples
 

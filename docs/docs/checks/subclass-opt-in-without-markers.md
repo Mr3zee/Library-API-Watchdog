@@ -18,10 +18,10 @@ interface stays open to external subclassing exactly as if it were unannotated.
 
 ```kotlin
 // !hide-focused
-/** Establishes communication with a remote service. */
+/** Base type for application extensions. */
 // !diag[/@SubclassOptInRequired/] SUBCLASS_OPT_IN_WITHOUT_MARKERS
 @SubclassOptInRequired
-public abstract class Connector
+public abstract class ExtensionPoint
 ```
 
 ## Rationale

@@ -17,10 +17,10 @@ This check fires on the annotation call of `@Intentionally*` annotations with re
 
 ```kotlin
 // !hide-focused
-/** Base type for UI elements rendered by an application. */
+/** Base type for components hosted by an application. */
 // !diag[/@IntentionallyOpen/] EXEMPTION_WITHOUT_EXPLANATION ["IntentionallyOpen","OTHER"]
 @IntentionallyOpen
-public open class Widget
+public open class Component
 ```
 
 ## Rationale
@@ -83,6 +83,9 @@ public open class Widget
 /** Another UI widget deliberately open for internal testing. */
 @IntentionallyOpen(description = "Kept open for internal testing")
 public open class OtherWidget
+
+@IntentionallyUndocumented(reason = ExemptionReason.API_DESIGN)
+public class UndocumentedThing
 ```
 
 

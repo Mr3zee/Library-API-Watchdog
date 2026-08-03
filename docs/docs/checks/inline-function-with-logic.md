@@ -12,7 +12,7 @@ body does more than delegate to a non-inline function.
 
 ## What it reports
 
-Any public `inline` function and any inline property accessor are flagged unless their body is a thin wrapper: a single
+Any public `inline` function and any inline property accessor are reported unless their body is a thin wrapper: a single
 statement - besides an optional contract - that only performs simple operations and delegates to a
 non-inline call:
 
@@ -21,9 +21,9 @@ non-inline call:
 @file:JvmName("Numbers")
 
 // !hide-focused
-/** Chooses a sign for [value]. */
-// !diag[/choose/] INLINE_FUNCTION_WITH_LOGIC ["inline function","choose"]
-public inline fun choose(value: Int): Int = if (value < 0) -1 else 1
+/** Classifies [value] by its sign. */
+// !diag[/classifySign/] INLINE_FUNCTION_WITH_LOGIC ["inline function","classifySign"]
+public inline fun classifySign(value: Int): Int = if (value < 0) -1 else 1
 ```
 
 ## Rationale
@@ -168,13 +168,12 @@ must run inline for non-local returns or a hot path must not pay for an extra ca
 
 ```kotlin
 // !hide-focused
-@file:JvmName("Numbers")
+@file:JvmName("Values")
 
 // !hide-focused
-/** Clamps [value] at zero. */
+/** Chooses a sign for [value]. */
 @IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)
-public inline fun clamped(value: Int): Int =
-    if (value < 0) 0 else value
+public inline fun choose(value: Int): Int = if (value < 0) -1 else 1
 ```
 
 ## Configuration

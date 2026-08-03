@@ -68,10 +68,11 @@ public annotation class KtorDsl
 
 ## Notes
 
-- `ANNOTATION_CLASS` counts as effective too, since it is a classifier declaration.
-- An explicit `@Target` that still lists no-op targets is a separate, related check. See
-  [DSL markers with no-op targets](./dsl-marker-noop-target.md) for more details.
-- A plain annotation class without `@DslMarker` is never checked here.
+- `ANNOTATION_CLASS` is also effective because it is a classifier declaration, like `CLASS`.
+- A marker with an explicit `@Target` that lists no-op targets is covered by the separate, related
+  [DSL markers with no-op targets](./dsl-marker-noop-target.md) check.
+- A plain annotation class without `@DslMarker` is outside the scope of this check, regardless of
+  its `@Target`.
 
 ## Exemption
 
@@ -81,12 +82,12 @@ shape with `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` instea
 
 ```kotlin
 // !hide-focused
-/** Marks legacy DSL receivers. */
+/** Marks HTML DSL receivers with default targets retained for compatibility. */
 @IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility(
   description = "Published without targets in 1.0.",
 )
 @DslMarker
-public annotation class LegacyDsl
+public annotation class HtmlDsl
 ```
 
 Wrong marker targets are never good API design, so this annotation bakes its only accepted

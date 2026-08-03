@@ -8,7 +8,7 @@ supported public signature exposes them.
 | Diagnostic       | `PUBLIC_TYPE_WITH_INTERNAL_API`                          |
 | Default severity | Error                                                    |
 | Gradle property  | [`publicTypeWithInternalApi`](../../configuration.md)     |
-| Exemption        | Make the exposing API internal too                       |
+| Exemption        | none; mark the exposing API as internal instead          |
 
 An annotation whose class carries `@InternalAnnotationMarker` says that its declarations have no
 supported compatibility contract. Exposing one of those declarations from supported API makes
@@ -73,7 +73,7 @@ enclosing class is marked, and an internal type alias is detected independently 
 type. Its diagnostic names the annotation that marks each exposed internal type. Markers declared
 in dependency modules are resolved too.
 
-`@PublishedApi internal` declarations are not checked. Although their binary shape is available
+`@PublishedApi internal` declarations are not reported. Although their binary shape is available
 to public inline code, users cannot name those declarations as source API, so exposing an internal
 type within their signatures does not create a supported source contract.
 
@@ -88,7 +88,10 @@ apiWatchdog {
 }
 ```
 
-See [Configuration](../../configuration.md) for all severity options.
+With direct compiler invocation:
+```
+-P plugin:org.jetbrains.kotlinx.libs.api.watchdog:diagnosticSeverity=PUBLIC_TYPE_WITH_INTERNAL_API:warning
+```
 
 ## See also
 

@@ -18,9 +18,9 @@ the declaration can evolve later.
 
 ```kotlin
 // !hide-focused
-/** Base type for UI elements rendered by an application. */
-// !diag[/Widget/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["class","Widget"]
-public open class Widget
+/** Base type for components hosted by an application. */
+// !diag[/Component/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["class","Component"]
+public open class Component
 ```
 
 ## Rationale
@@ -82,7 +82,7 @@ public interface Plugin {
 - A class whose constructors are all `internal` or `private` can't be subclassed outside the
   library, so it is never reported, even if it is `open` or `abstract`.
 - `fun interface`s are checked like any other interface.
-- Sealed interfaces are exempt here, they are covered by
+- Sealed interfaces are not reported here; they are covered by
   [`EXHAUSTIVE_PUBLIC_API`](./exhaustive-public-api.md) instead.
 
 ## Exemption

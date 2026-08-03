@@ -12,7 +12,7 @@ signatures.
 
 ## What it reports
 
-The check flags `Pair` and `Triple` in return types, property types, parameter types, and type
+The check reports `Pair` and `Triple` in return types, property types, parameter types, and type
 parameter bounds, including their type arguments (like `List<Pair<Int, String>>`):
 
 ```kotlin
@@ -124,10 +124,10 @@ public fun edges(): List<Point> = emptyList()
 
 - A tuple type parameter bound (`<T : Pair<Int, Int>>`) is reported too: it constrains every
   instantiation to the tuple shape, exposing it just like a direct mention.
-- Extension receivers are exempt: `fun Pair<Int, Int>.manhattanLength(): Int` serves a value the
-  user already holds instead of handing out a new tuple.
-- Overrides are exempt: their signature is fixed by the overridden declaration and reported
-  there.
+- Extension receivers are not reported: `fun Pair<Int, Int>.manhattanLength(): Int` serves a
+  value the user already holds instead of handing out a new tuple.
+- Overrides are not reported: their signature is fixed by the overridden declaration, which is
+  reported instead.
 
 ## Exemption
 
@@ -139,25 +139,29 @@ parameter, or on a type usage, where it covers the annotated type and everything
 @file:JvmName("Geometry")
 
 // !hide-focused
-/** Returns a deliberately unnamed location. */
+/** Returns deliberately unnamed dimensions. */
 @IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN)
-public fun rawLocation(): Pair<Int, Int> = 0 to 0
+public fun dimensions(): Triple<Int, Int, Int> = Triple(0, 0, 0)
+
+// !hide-focused(1:5)
+/**
+ * Attaches content to a deliberately unnamed coordinate pair.
+ *
+ * @property position horizontal and vertical anchor coordinates.
+ */
+// !hide-focused
+@Poko
+public class Anchor(
+    public val position: @IntentionallyPairOrTriple(
+        reason = ExemptionReason.API_DESIGN,
+    ) Pair<Int, Int>,
+)
 
 // !hide-focused
-/** Draws at the deliberately unnamed [at] location. */
-public fun draw(
-  @IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN)
-  at: Pair<Int, Int>,
-) { }
-
-// !hide-focused
-/** Returns deliberately unnamed corners. */
+/** Returns deliberately unnamed edges. */
 @IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN)
-public fun corners(): List<Pair<Int, Int>> =
-    emptyList()
+public fun edges(): List<Pair<Int, Int>> = emptyList()
 ```
-
-[//]: # (TODO check ^ works)
 
 ## Configuration
 

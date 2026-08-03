@@ -19,7 +19,7 @@ const config: Config = {
   url: variables.host,
   baseUrl: '/libs-api-watchdog/',
   organizationName: 'Mr3zee',
-  projectName: 'libs-api-watchdog',
+  projectName: 'Library API Watchdog',
   trailingSlash: false,
 
   onBrokenLinks: 'throw',

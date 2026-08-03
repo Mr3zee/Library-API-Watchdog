@@ -21,12 +21,12 @@ Three shapes trigger it:
 
 ```kotlin
 // !hide-focused
-@file:JvmName("Refresh")
+@file:JvmName("Loading")
 
 // !hide-focused
-/** Refreshes [key]. */
-// !diag[/refresh/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["refresh","$suspend"]
-public suspend fun refresh(key: String) { }
+/** Loads the value identified by [key]. */
+// !diag[/load/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["load","$suspend"]
+public suspend fun load(key: String) { }
 ```
 
 ## Rationale
@@ -73,12 +73,17 @@ public fun onEach(action: (Int) -> Unit) { }
 
 ```kotlin
 // !hide-focused
-@file:JvmName("Refresh")
+@file:JvmName("KotlinOnly")
 
 // !hide-focused
 /** Refreshes [key]. */
 @JvmSynthetic
 public suspend fun refresh(key: String) { }
+
+// !hide-focused
+/** Creates an instance of [T]. */
+@JvmSynthetic
+public inline fun <reified T> instantiate(): T? = null
 
 // !hide-focused
 /** Consumes values produced by an iteration. */
@@ -102,12 +107,13 @@ public fun onEach(action: Action) { }
 
 ## Notes
 
-- Abstract and interface members are exempt: `@JvmSynthetic` can't hide a member that
+- Abstract and interface members are not reported: `@JvmSynthetic` can't hide a member that
   implementations must provide.
-- Overrides are exempt, the shape is reported on the base declaration instead.
-- Constructors are exempt: `@JvmSynthetic` doesn't apply to them.
+- Overrides are not reported: their shape is fixed by the overridden declaration, which is
+  reported instead.
+- Constructors are not reported: `@JvmSynthetic` doesn't apply to them.
 - A signature mangled by a value class is reported by [`MANGLED_JVM_NAME_PUBLIC_API`](./mangled-jvm-name-public-api.md) instead.
-- `@JvmSynthetic` declarations are hidden from Java on purpose and are not flagged.
+- `@JvmSynthetic` declarations are hidden from Java on purpose and are not reported.
 - Non-JVM compilations never register this check at all.
 
 ## Exemption
@@ -117,12 +123,22 @@ function inside, when leaving the Kotlin-only shape visible to Java is intended:
 
 ```kotlin
 // !hide-focused
-@file:JvmName("Refresh")
+@file:JvmName("KotlinOnly")
 
 // !hide-focused
 /** Refreshes [key] through a deliberately Kotlin-only API. */
 @IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)
 public suspend fun refresh(key: String) {}
+
+// !hide-focused
+/** Creates an instance of [T] through a deliberately Kotlin-only API. */
+@IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)
+public inline fun <reified T> instantiate(): T? = null
+
+// !hide-focused
+/** Invokes [action] through a deliberately Kotlin-only API. */
+@IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)
+public fun onEach(action: (Int) -> Unit) { }
 ```
 
 ## Configuration

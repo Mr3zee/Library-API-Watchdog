@@ -17,13 +17,13 @@ Kotlin files with top-level properties or functions that can be called from Java
 
 The diagnostic fires once per file, anchored on the first public top-level function or property.
 
-```kotlin Network.kt
+```kotlin Health.kt
 package com.example
 
 // !hide-focused
-/** Connects to the network. */
-// !diag[/connect/] TOP_LEVEL_API_WITHOUT_JVM_NAME ["NetworkKt"]
-public fun connect(): Int = 0
+/** Checks whether the network is reachable. */
+// !diag[/ping/] TOP_LEVEL_API_WITHOUT_JVM_NAME ["HealthKt"]
+public fun ping(): Int = 0
 ```
 
 ## Rationale
@@ -76,7 +76,7 @@ public fun disconnect(): Int = 0
 
 - Files exposing only classifiers - classes, objects, type aliases - produce no facade worth
   naming.
-- Files where every top-level callable is hidden from Java with `@JvmSynthetic` are not flagged.
+- Files where every top-level callable is hidden from Java with `@JvmSynthetic` are not reported.
 - Non-JVM compilations never register this check at all.
 
 ## Exemption
@@ -95,8 +95,12 @@ import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason
 import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyDefaultFacadeName
 
 // !hide-focused
-/** A legacy entry point tied to the default facade name. */
-public fun legacyEntryPoint(): Int = 0
+/** Connects to the network. */
+public fun connect(): Int = 0
+
+// !hide-focused
+/** Disconnects from the network. */
+public fun disconnect(): Int = 0
 ```
 
 ## Configuration

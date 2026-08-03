@@ -18,15 +18,15 @@ A companion `val` that just holds a constant value - no `const`, no custom gette
 
 ```kotlin
 // !hide-focused
-/** Names and metadata used to locate a registry. */
-public class Registry {
+/** Names and metadata used to locate a catalog. */
+public class Catalog {
     // !hide-focused
-    /** Well-known registry metadata. */
+    /** Well-known catalog metadata. */
     public companion object {
         // !hide-focused
         /** Name used when the caller does not supply one. */
-        // !diag[/DEFAULT_NAME/] COMPANION_CONSTANT_WITHOUT_JVM_FIELD ["Registry","DEFAULT_NAME"]
-        public val DEFAULT_NAME: String = "registry"
+        // !diag[/DEFAULT_NAME/] COMPANION_CONSTANT_WITHOUT_JVM_FIELD ["Catalog","DEFAULT_NAME"]
+        public val DEFAULT_NAME: String = "catalog"
     }
 }
 ```
@@ -93,12 +93,12 @@ computed default.
 
 ## Notes
 
-- `var` properties are not checked: they expose mutable state, not a constant.
+- `var` properties are not reported: they expose mutable state, not a constant.
 - A property with a custom getter or setter, or a delegate (`by lazy { }` and similar), is not
-  checked: it exposes behavior rather than a fixed value, and `@JvmField` would not apply to most
+  reported: it exposes behavior rather than a fixed value, and `@JvmField` would not apply to most
   of these shapes anyway.
-- Overrides are exempt: their Java-facing shape is fixed by the overridden declaration.
-- `@JvmSynthetic` members are hidden from Java on purpose and are not flagged.
+- Overrides are not reported: their Java-facing shape is fixed by the overridden declaration.
+- `@JvmSynthetic` members are hidden from Java on purpose and are not reported.
 - Non-JVM compilations never register this check at all.
 
 ## Exemption

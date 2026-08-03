@@ -106,49 +106,51 @@ public fun consume(items: Set<Int>) {
 
 ## Notes
 
-- `vararg` parameters are not flagged themselves - the compiler already passes a defensive copy of
+- `vararg` parameters are not reported themselves - the compiler already passes a defensive copy of
   the array - but a mutable element type still is (`vararg groups: MutableList<Int>`).
-- Extension receivers are not flagged: an extension on a mutable collection serves values the
-  user already holds, unlike a builder lambda receiver, which is flagged.
-- Overrides are not flagged: their signature is fixed by the overridden declaration and reported
-  there instead.
-- Java platform types are not flagged: their mutability is not declared in Kotlin sources, so only
+- Extension receivers are not reported: an extension on a mutable collection serves values the
+  user already holds, unlike a builder lambda receiver, which is reported.
+- Overrides are not reported: their signature is fixed by the overridden declaration, which is
+  reported instead.
+- Java platform types are not reported: their mutability is not declared in Kotlin sources, so only
   the read-only upper bound is inspected.
 - A type alias resolves to its expansion, and a mutable bound on a type parameter
-  (`<T : MutableList<Int>>`) is flagged the same as a direct mention of the bound.
+  (`<T : MutableList<Int>>`) is reported the same as a direct mention of the bound.
 
 ## Exemption
 
-Use `@IntentionallyMutableCollection` when sharing the mutable collection is a deliberate part of
+Apply `@IntentionallyMutableCollection` when sharing the mutable collection is a deliberate part of
 the API contract.
 
 ```kotlin
 // !hide-focused
 @file:JvmName("Collections")
 
+// !hide-focused(1:5)
+/**
+ * Exposes the values scheduled for processing as a deliberately shared collection.
+ *
+ * @property items live collection of scheduled values.
+ */
 // !hide-focused
-/** Returns a deliberately shared registry. */
-@IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)
-public fun sharedRegistry(): MutableList<String> = mutableListOf()
+@Poko
+public class Holder(
+    public val items: @IntentionallyMutableCollection(
+        reason = ExemptionReason.API_DESIGN,
+    ) MutableList<Int>,
+)
 
 // !hide-focused
-/** Adds a value to [target]. */
-public fun fill(
+/** Removes all scheduled item IDs from [items]. */
+public fun consume(
     @IntentionallyMutableCollection(
-      reason = ExemptionReason.API_DESIGN,
+        reason = ExemptionReason.API_DESIGN,
     )
-    target: MutableList<Int>,
+    items: MutableSet<Int>,
 ) {
-    target.add(1)
+    items.clear()
 }
-
-// !hide-focused
-/** Returns deliberately mutable snapshots. */
-@IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)
-public fun snapshots(): List<MutableList<Int>> = emptyList()
 ```
-
-[//]: # (TODO check ^ works)
 
 ## Configuration
 

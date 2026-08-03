@@ -34,14 +34,14 @@ value in a backing field and that doesn't declare or inherit the corresponding i
 ```kotlin
 // !hide-focused(1:5)
 /**
- * Describes a connection to a remote service.
+ * Describes a remote service endpoint.
  *
  * @property host network host serving requests.
  */
-// !diag[/Connection/] STATEFUL_CLASS_WITHOUT_EQUALS ["Connection","$generationHint","$ideaGenerateShortcut"]
-// !diag[/Connection/] STATEFUL_CLASS_WITHOUT_HASH_CODE ["Connection","$generationHint","$ideaGenerateShortcut"]
-// !diag[/Connection/] STATEFUL_CLASS_WITHOUT_TO_STRING ["Connection","$generationHint","$ideaGenerateShortcut"]
-public class Connection(public val host: String)
+// !diag[/Endpoint/] STATEFUL_CLASS_WITHOUT_EQUALS ["Endpoint","$generationHint","$ideaGenerateShortcut"]
+// !diag[/Endpoint/] STATEFUL_CLASS_WITHOUT_HASH_CODE ["Endpoint","$generationHint","$ideaGenerateShortcut"]
+// !diag[/Endpoint/] STATEFUL_CLASS_WITHOUT_TO_STRING ["Endpoint","$generationHint","$ideaGenerateShortcut"]
+public class Endpoint(public val host: String)
 ```
 
 Each member is checked independently. A class that implements `toString` but not `equals` and
@@ -116,34 +116,34 @@ public class Connection(public val host: String) {
 ## Notes
 
 - An implementation inherited from any supertype other than `kotlin.Any` counts as provided, so a
-  subclass that adds its own state is not flagged for that member. Whether the inherited behavior
+  subclass that adds its own state is not reported for that member. Whether the inherited behavior
   should include the new state is left to the author.
-- Data and value classes get compiler-generated implementations and are not checked here. Data
+- Data and value classes get compiler-generated implementations and are not reported here. Data
   classes are reported by [`DATA_CLASS_PUBLIC_API`](./data-class-public-api.md) instead.
 - Enum entries, objects (including companion objects), interfaces, and annotation classes are not
-  checked. Enums and singleton objects have deliberate identity semantics, while interfaces and
+  reported. Enums and singleton objects have deliberate identity semantics, while interfaces and
   annotation classes can't hold backing fields.
 - A delegated property stores its value in the delegate, not in a backing field, so it doesn't
   make a class stateful on its own.
-- `@PublishedApi` internal classes are not checked because users can't reference them in source.
+- `@PublishedApi` internal classes are not reported because users can't reference them in source.
 
 ## Exemptions
 
-Use `@IntentionallyWithoutEqualsHashCodeOrToString` when all three behaviors are intentional. For
+Apply `@IntentionallyWithoutEqualsHashCodeOrToString` when all three behaviors are intentional. For
 example, a sensitive handle may intentionally use identity equality and avoid rendering its state:
 
 ```kotlin
 // !hide-focused(1:5)
 /**
- * Credentials used to authenticate an outgoing request.
+ * Describes a live connection to a remote service.
  *
- * @property token bearer token sent to the remote service.
+ * @property host network host serving requests.
  */
 @IntentionallyWithoutEqualsHashCodeOrToString(
     reason = ExemptionReason.API_DESIGN,
-    description = "Uses identity semantics, and its access token must never be rendered in logs.",
+    description = "A live connection uses identity semantics and omits configuration from logs.",
 )
-public class Credentials(public val token: String)
+public class Connection(public val host: String)
 ```
 
 The individual `@IntentionallyWithoutEquals`, `@IntentionallyWithoutHashCode`, and

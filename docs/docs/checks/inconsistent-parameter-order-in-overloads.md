@@ -18,17 +18,17 @@ of a disagreeing pair are reported, and reordering either one clears both.
 
 ```kotlin
 // !hide-focused
-@file:JvmName("Drawing")
+@file:JvmName("Movement")
 
 // !hide-focused
-/** Draws at ([x], [y]). */
-// !diag[/draw/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["x","y","draw"]
-public fun draw(x: Int, y: Int) { }
+/** Moves to ([x], [y]). */
+// !diag[/move/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["x","y","move"]
+public fun move(x: Int, y: Int) { }
 
 // !hide-focused
-/** Draws at ([x], [y]) with [scale]. */
-// !diag[/draw/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["y","x","draw"]
-public fun draw(y: Int, x: Int, scale: Double) { }
+/** Moves to ([x], [y]) with [scale]. */
+// !diag[/move/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["y","x","move"]
+public fun move(y: Int, x: Int, scale: Double) { }
 ```
 
 ## Rationale
@@ -174,7 +174,7 @@ public fun Grid.fill(
   the subtype's overload, and it is the new declaration that strays from the established order.
   An extension next to the members of its receiver is reported the same way: only the extension,
   since the class can't see the extensions declared on it.
-- Overrides never report - their order is fixed by the overridden declaration - but they still
+- Overrides are not reported - their order is fixed by the overridden declaration - but they still
   serve as an ordering reference for a new overload declared next to them.
 
 ## Exemption
@@ -187,18 +187,18 @@ its order onto otherwise-consistent newer ones.
 
 ```kotlin
 // !hide-focused
-@file:JvmName("Rendering")
+@file:JvmName("Drawing")
 
 // !hide-focused
-/** Renders at ([x], [y]). */
-public fun render(x: Int, y: Int) { }
+/** Draws at ([x], [y]). */
+public fun draw(x: Int, y: Int) { }
 
 // !hide-focused
-/** Renders at ([x], [y]) with [alpha]. */
+/** Draws at ([x], [y]) with [scale]. */
 @IntentionallyInconsistentParameterOrder(
     reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY,
 )
-public fun render(y: Int, x: Int, alpha: Long) { }
+public fun draw(y: Int, x: Int, scale: Double) { }
 ```
 
 ## Configuration

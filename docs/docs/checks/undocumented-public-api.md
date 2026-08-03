@@ -13,12 +13,12 @@
 
 Each publicly visible declaration a user can reference - classes, interfaces, objects, enum
 classes, annotation classes, type aliases, functions, properties, secondary constructors, and enum
-entries - is flagged when it carries no KDoc. Only the presence of a KDoc is checked, not its
+entries - is reported when it carries no KDoc. Only the presence of a KDoc is checked, not its
 content:
 
 ```kotlin
-// !diag[/Cache/] UNDOCUMENTED_PUBLIC_API ["class","Cache"]
-public class Cache
+// !diag[/Store/] UNDOCUMENTED_PUBLIC_API ["class","Store"]
+public class Store
 ```
 
 ## Rationale
@@ -108,7 +108,7 @@ public class Profile(
   have no source of their own and are never reported.
 - A plain `//` or `/* */` comment doesn't count, only a KDoc block (`/** ... */`) satisfies the
   check.
-- Declarations that only `@PublishedApi` puts on the API surface are skipped, together with
+- Declarations that only `@PublishedApi` puts on the API surface are not reported, together with
   everything inside a `@PublishedApi internal` class. They stay `internal` in sources, so no user
   writes code against them and there is no usage contract to document - unlike their binary shape,
   which the other checks still watch.

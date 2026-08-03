@@ -16,9 +16,9 @@ nullable, or with a receiver.
 
 ```kotlin
 // !hide-focused
-/** Receives completed work percentages. */
-// !diag[/Callback/] FUNCTION_TYPE_ALIAS_PUBLIC_API ["Callback"]
-public typealias Callback = (Int) -> Unit
+/** Handles progress updates emitted by background work. */
+// !diag[/ProgressHandler/] FUNCTION_TYPE_ALIAS_PUBLIC_API ["ProgressHandler"]
+public typealias ProgressHandler = (Int) -> Unit
 ```
 
 ## Rationale

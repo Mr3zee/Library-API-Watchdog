@@ -19,15 +19,15 @@ or an interface - that carries neither `@JvmStatic` nor `@JvmSynthetic`.
 
 ```kotlin
 // !hide-focused
-/** Registry of application services. */
-public class Registry {
+/** Factory for application services. */
+public class ServiceFactory {
     // !hide-focused
-    /** Creates registry instances. */
+    /** Creates service factory instances. */
     public companion object {
         // !hide-focused
-        /** Creates an empty registry. */
-        // !diag[/create/] COMPANION_API_WITHOUT_JVM_STATIC ["Registry","create"]
-        public fun create(): Registry = Registry()
+        /** Creates an empty service factory. */
+        // !diag[/create/] COMPANION_API_WITHOUT_JVM_STATIC ["ServiceFactory","create"]
+        public fun create(): ServiceFactory = ServiceFactory()
     }
 }
 ```
@@ -79,13 +79,13 @@ public class Registry {
 
 ## Notes
 
-- `suspend` companion functions are exempt here - they are not Java-callable regardless of
+- `suspend` companion functions are not reported here - they are not Java-callable regardless of
   placement, and `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC` reports them with the fitting fix.
-- Overrides are not flagged: their Java-facing shape is fixed by the overridden declaration, and
+- Overrides are not reported: their Java-facing shape is fixed by the overridden declaration, and
   `@JvmStatic` can't be applied to an override anyway.
 - Interface companions compile the same way and are checked identically to class companions.
-- Internal functions are skipped unless marked `@PublishedApi`.
-- `@JvmSynthetic` members are hidden from Java on purpose and are not flagged.
+- Internal functions are not reported unless marked `@PublishedApi`.
+- `@JvmSynthetic` members are hidden from Java on purpose and are not reported.
 - Non-JVM compilations never register this check at all.
 
 ## Exemption
@@ -114,8 +114,6 @@ The same annotation also acknowledges [`COMPANION_CONSTANT_WITHOUT_JVM_FIELD`](.
 
 ## Configuration
 
-The property lives inside the `javaInterop { }` block:
-
 ```kotlin
 apiWatchdog {
     javaInterop {
@@ -124,13 +122,13 @@ apiWatchdog {
 }
 ```
 
+The property lives inside the `javaInterop { }` block. `javaInterop { enabled = false }` turns off
+this check along with the rest of the [Java interop checks](./java-interop.md) group.
+
 With direct compiler invocation:
 ```
 -P plugin:org.jetbrains.kotlinx.libs.api.watchdog:diagnosticSeverity=COMPANION_API_WITHOUT_JVM_STATIC:warning
 ```
-
-The property lives inside the `javaInterop { }` block. `javaInterop { enabled = false }` turns off
-this check along with the rest of the [Java interop checks](./java-interop.md) group.
 
 ## See also
 

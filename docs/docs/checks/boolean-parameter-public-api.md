@@ -77,25 +77,25 @@ public fun disableLogging(): Unit {}
 
   Legacy context receivers are not reported: K2 no longer resolves them, so they can't reach a
   published API.
-- Overrides are never reported: their signature is fixed by the overridden declaration, which is
-  reported there instead.
+- Overrides are not reported: their signature is fixed by the overridden declaration, which is
+  reported instead.
 - Constructors, and constructor functions - factory functions named after the type they create,
-  such as `fun Widget(visible: Boolean): Widget` - are exempt.
-- Boolean return types and Boolean properties are not arguments and are not checked.
+  such as `fun Widget(visible: Boolean): Widget` - are not reported.
+- Boolean return types and Boolean properties are not arguments and are not reported.
 
 ## Exemption
 
 Apply `@IntentionallyBooleanParameter` when the parameter's meaning is unmistakable from the
-function name, such as `setEnabled(enabled: Boolean)`.
+function name, such as `setLogging(enabled: Boolean)`.
 
 ```kotlin
 // !hide-focused
-@file:JvmName("Settings")
+@file:JvmName("Logging")
 
 // !hide-focused
-/** Changes whether this component is enabled. */
+/** Controls whether diagnostic messages are recorded. */
 @IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)
-public fun setEnabled(enabled: Boolean): Unit {}
+public fun setLogging(enabled: Boolean): Unit {}
 ```
 
 ## Configuration

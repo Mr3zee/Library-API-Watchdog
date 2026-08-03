@@ -12,7 +12,7 @@ exhaustively with a `when` expression that has no `else` branch.
 
 ## What it reports
 
-The check flags every public or protected `enum class`, `sealed class`, and `sealed interface`
+The check reports every public or protected `enum class`, `sealed class`, and `sealed interface`
 declaration.
 
 ```kotlin
@@ -126,29 +126,25 @@ is itself unrestricted, subclassable API and is reported separately by
 
 ## Exemption
 
-Apply `@IntentionallyExhaustive` on the enum or sealed class/interface, for example, when a declaration has a fixed
-set of entries, or subtypes is a deliberate, stable part of the contract:
+Apply `@IntentionallyExhaustive` to the enum or sealed class or interface when a fixed set of
+entries or subtypes is a deliberate, stable part of the contract:
 
 ```kotlin
 // !hide-focused
-/** A cardinal direction. */
+/** A fixed set of logging levels. */
 @IntentionallyExhaustive(reason = ExemptionReason.API_DESIGN)
-public enum class Direction {
+public enum class LogLevel {
     // !hide-focused
-    /** Points toward increasing latitude. */
-    NORTH,
+    /** Fine-grained information used to diagnose behavior. */
+    DEBUG,
 
     // !hide-focused
-    /** Points toward decreasing latitude. */
-    SOUTH,
+    /** Routine progress and state changes. */
+    INFO,
 
     // !hide-focused
-    /** Points toward increasing longitude. */
-    EAST,
-
-    // !hide-focused
-    /** Points toward decreasing longitude. */
-    WEST,
+    /** A failure that prevented an operation from completing. */
+    ERROR,
 }
 ```
 
