@@ -27,7 +27,7 @@ import org.jetbrains.kotlin.name.Name
  */
 internal class InternalApiTypeExposureChecker(
     private val severities: WatchdogDiagnosticSeverities,
-) : PublicSignatureTypeChecker<ClassId>() {
+) : PublicSignatureTypeChecker<InternalApiExposure>() {
     context(context: CheckerContext)
     override fun isCheckedDeclaration(declaration: FirMemberDeclaration): Boolean =
         declaration.isWatchedPublicApi() && !declaration.isPublishedApiOnly()
@@ -41,9 +41,9 @@ internal class InternalApiTypeExposureChecker(
     override fun ConeKotlinType.typeBeforeClassifier(): ConeKotlinType? = abbreviatedType
 
     context(context: CheckerContext)
-    override fun ConeKotlinType.violatingClassifier(): ClassId? {
+    override fun ConeKotlinType.violatingClassifier(): InternalApiExposure? {
         val symbol = (this as? ConeClassLikeType)?.lookupTag?.toSymbol(context.session)
-        return symbol?.internalApiOwner()?.classId
+        return symbol?.internalApiExposure()
     }
 
     /** An unmarked alias can still expand to an internal-API type. */
@@ -54,24 +54,36 @@ internal class InternalApiTypeExposureChecker(
     }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
-    override fun report(source: KtSourceElement?, kind: String, name: Name, violation: ClassId) {
+    override fun report(
+        source: KtSourceElement?,
+        kind: String,
+        name: Name,
+        violation: InternalApiExposure,
+    ) {
         val factory = severities[WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API] ?: return
         reporter.reportOn(
             source = source,
             factory = factory,
             a = kind,
             b = name,
-            c = violation.asSingleFqName().asString(),
+            c = violation.type.asSingleFqName().asString(),
+            d = violation.annotation.shortClassName,
         )
     }
 
     context(context: CheckerContext)
-    private fun FirClassLikeSymbol<*>.internalApiOwner(): FirClassLikeSymbol<*>? {
+    private fun FirClassLikeSymbol<*>.internalApiExposure(): InternalApiExposure? {
         var current: FirClassLikeSymbol<*>? = this
         while (current != null) {
-            if (current.hasInternalApiMarker()) return current
+            val annotation = current.internalApiAnnotation()
+            if (annotation != null) {
+                return InternalApiExposure(current.classId, annotation)
+            }
             current = current.getContainingClassSymbol()
         }
         return null
     }
 }
+
+/** An internal type found in a public signature and the annotation that marks it. */
+internal data class InternalApiExposure(val type: ClassId, val annotation: ClassId)

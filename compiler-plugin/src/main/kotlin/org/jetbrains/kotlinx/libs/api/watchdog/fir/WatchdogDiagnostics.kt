@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactory0
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactory1
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactory2
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactory3
+import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactory4
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactoryToRendererMap
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticsContainer
 import org.jetbrains.kotlin.diagnostics.Severity
@@ -172,8 +173,8 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
      */
     val PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY by error3<KtElement, String, Name, String>()
 
-    /** Parameters: declaration kind, declaration name, internal type's fully qualified name. */
-    val PUBLIC_TYPE_WITH_INTERNAL_API by configurable3<KtElement, String, Name, String>()
+    /** Parameters: declaration kind, declaration name, internal type FQ name, annotation name. */
+    val PUBLIC_TYPE_WITH_INTERNAL_API by configurable4<KtElement, String, Name, String, Name>()
 
     /** Parameters: the marker name, the no-op target name. Reported on the `@Target` argument. */
     val DSL_MARKER_NOOP_TARGET by configurable2<KtExpression, Name, String>()
@@ -221,6 +222,12 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
         positioningStrategy: AbstractSourceElementPositioningStrategy = SourceElementPositioningStrategies.DEFAULT,
     ) = configurableDiagnostic { name, severity ->
         KtDiagnosticFactory3<A, B, C>(name, severity, positioningStrategy, P::class, getRendererFactory())
+    }
+
+    private inline fun <reified P : PsiElement, A, B, C, D> configurable4(
+        positioningStrategy: AbstractSourceElementPositioningStrategy = SourceElementPositioningStrategies.DEFAULT,
+    ) = configurableDiagnostic { name, severity ->
+        KtDiagnosticFactory4<A, B, C, D>(name, severity, positioningStrategy, P::class, getRendererFactory())
     }
 }
 
@@ -333,6 +340,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             rendererA = STRING,
             rendererB = NAME,
             rendererC = STRING,
+            rendererD = NAME,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.DSL_MARKER_NOOP_TARGET,
@@ -435,5 +443,17 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         val message = WatchdogDiagnosticMessages.messageFor(diagnostic.name)
         put(diagnostic.error, message, rendererA, rendererB, rendererC)
         put(diagnostic.warning, message, rendererA, rendererB, rendererC)
+    }
+
+    private fun <A, B, C, D> KtDiagnosticFactoryToRendererMap.put(
+        diagnostic: ConfigurableWatchdogDiagnostic<KtDiagnosticFactory4<A, B, C, D>>,
+        rendererA: DiagnosticParameterRenderer<A>?,
+        rendererB: DiagnosticParameterRenderer<B>?,
+        rendererC: DiagnosticParameterRenderer<C>?,
+        rendererD: DiagnosticParameterRenderer<D>?,
+    ) {
+        val message = WatchdogDiagnosticMessages.messageFor(diagnostic.name)
+        put(diagnostic.error, message, rendererA, rendererB, rendererC, rendererD)
+        put(diagnostic.warning, message, rendererA, rendererB, rendererC, rendererD)
     }
 }

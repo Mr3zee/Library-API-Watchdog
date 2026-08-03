@@ -152,10 +152,17 @@ private fun FirMemberDeclaration.isMarkedAsInternalApi(): Boolean =
     symbol.hasInternalApiMarker() || context.containingDeclarations.any { it.hasInternalApiMarker() }
 
 context(context: CheckerContext)
-internal fun FirBasedSymbol<*>.hasInternalApiMarker(): Boolean =
-    resolvedAnnotationsWithClassIds.any { annotation ->
-        annotation.toAnnotationClassLikeSymbol(context.session)
-            ?.hasAnnotation(WatchdogClassIds.InternalAnnotationMarker, context.session) == true
+internal fun FirBasedSymbol<*>.hasInternalApiMarker(): Boolean = internalApiAnnotation() != null
+
+/** An annotation on this declaration whose class carries the internal-API meta-annotation. */
+context(context: CheckerContext)
+internal fun FirBasedSymbol<*>.internalApiAnnotation(): ClassId? =
+    resolvedAnnotationsWithClassIds.firstNotNullOfOrNull { annotation ->
+        val annotationSymbol = annotation.toAnnotationClassLikeSymbol(context.session)
+            ?.takeIf {
+                it.hasAnnotation(WatchdogClassIds.InternalAnnotationMarker, context.session)
+            }
+        annotationSymbol?.classId
     }
 
 /**

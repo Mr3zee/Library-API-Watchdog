@@ -56,7 +56,16 @@ class WatchdogProjectTest {
         result.assertDiagnosticReported("e: ", "allows the `FUNCTION` annotation target")
         result.assertDiagnosticReported("e: ", "declares no explicit `@Target`")
         result.assertDiagnosticReported("e: ", "has no effect on this parameter type")
-        result.assertDiagnosticReported("e: ", "type is marked as internal API")
+        result.assertDiagnosticReported(
+            "e: ",
+            "parameter `first` publicly exposes `test.InternalModel`, but that type is marked " +
+                    "as internal API with `@InternalLibApi`",
+        )
+        result.assertDiagnosticReported(
+            "e: ",
+            "parameter `second` publicly exposes `test.OtherInternalModel`, but that type is " +
+                    "marked as internal API with `@OtherInternalApi`",
+        )
     }
 
     @Test
@@ -125,7 +134,7 @@ class WatchdogProjectTest {
         result.assertDiagnosticReported("w: ", "allows the `FUNCTION` annotation target")
         result.assertDiagnosticReported("w: ", "declares no explicit `@Target`")
         result.assertDiagnosticReported("w: ", "has no effect on this parameter type")
-        result.assertDiagnosticReported("w: ", "type is marked as internal API")
+        result.assertDiagnosticReported("w: ", "marked as internal API with `@InternalLibApi`")
     }
 
     @Test
@@ -1147,13 +1156,24 @@ private val internalApiExposureFile = """
     @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
     public annotation class InternalLibApi
 
+    /** Another internal API with a different annotation. */
+    @InternalAnnotationMarker
+    @Target(AnnotationTarget.CLASS)
+    public annotation class OtherInternalApi
+
     @InternalLibApi
     public class InternalModel
+
+    @OtherInternalApi
+    public class OtherInternalModel
 
     /** Supported entry points. */
     public object Api {
         /** Leaks an explicitly unsupported type. */
         public fun loadModel(): InternalModel = InternalModel()
+
+        /** Leaks types governed by different internal API annotations. */
+        public fun useModels(first: InternalModel, second: OtherInternalModel) {}
     }
 """.trimIndent()
 

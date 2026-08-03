@@ -8,6 +8,12 @@ FILE: internalTypes.kt
         }
 
     }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/InternalAnnotationMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|)]) public final annotation class OtherInternalApi : R|kotlin/Annotation| {
+        public constructor(): R|lib/api/OtherInternalApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
     @R|lib/api/InternalLibApi|() public open class InternalBase : R|kotlin/Any| {
         public constructor(): R|lib/api/InternalBase| {
             super<R|kotlin/Any|>()
@@ -24,6 +30,12 @@ FILE: internalTypes.kt
                 super<R|kotlin/Any|>()
             }
 
+        }
+
+    }
+    @R|lib/api/OtherInternalApi|() public final class OtherInternalType : R|kotlin/Any| {
+        public constructor(): R|lib/api/OtherInternalType| {
+            super<R|kotlin/Any|>()
         }
 
     }
@@ -93,6 +105,8 @@ FILE: exposure.kt
     }
     public final fun leakedNestedClass(): R|lib/api/InternalType.Nested| {
         ^leakedNestedClass Q|lib/api/InternalType|.R|lib/api/InternalType.Nested.Nested|()
+    }
+    public final fun leakedDifferentAnnotations(first: R|lib/api/InternalType|, second: R|lib/api/OtherInternalType|): R|kotlin/Unit| {
     }
     @R|kotlin/PublishedApi|() internal final fun publishedHelper(value: R|lib/api/InternalType|): R|lib/api/InternalType| {
         ^publishedHelper R|<local>/value|

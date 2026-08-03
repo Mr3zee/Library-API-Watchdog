@@ -16,6 +16,11 @@ import org.jetbrains.kotlinx.libs.api.watchdog.InternalAnnotationMarker
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPEALIAS, AnnotationTarget.FUNCTION)
 public annotation class InternalLibApi
 
+/** A second internal-API annotation used to verify one type reference retains every marker. */
+@InternalAnnotationMarker
+@Target(AnnotationTarget.CLASS)
+public annotation class OtherInternalApi
+
 @InternalLibApi
 public open class InternalBase
 
@@ -23,6 +28,9 @@ public open class InternalBase
 public open class InternalType {
     public class Nested
 }
+
+@OtherInternalApi
+public class OtherInternalType
 
 @InternalLibApi
 public typealias InternalAlias = String
@@ -42,6 +50,7 @@ import lib.api.InternalAlias
 import lib.api.InternalBase
 import lib.api.InternalLibApi
 import lib.api.InternalType
+import lib.api.OtherInternalType
 import lib.api.SupportedType
 
 public val leakedProperty: <!PUBLIC_TYPE_WITH_INTERNAL_API!>InternalType<!> = InternalType()
@@ -79,6 +88,11 @@ public typealias LeakedExpandedAlias = <!PUBLIC_TYPE_WITH_INTERNAL_API!>AliasExp
 public fun leakedNestedArgument(): <!PUBLIC_TYPE_WITH_INTERNAL_API!>List<InternalType><!> = emptyList()
 
 public fun leakedNestedClass(): <!PUBLIC_TYPE_WITH_INTERNAL_API!>InternalType.Nested<!> = InternalType.Nested()
+
+public fun leakedDifferentAnnotations(
+    first: <!PUBLIC_TYPE_WITH_INTERNAL_API!>InternalType<!>,
+    second: <!PUBLIC_TYPE_WITH_INTERNAL_API!>OtherInternalType<!>,
+) {}
 
 // Declarations that only @PublishedApi promotes are binary implementation details rather than
 // source API. They and ordinary internal declarations are not checked.

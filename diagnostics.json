@@ -183,7 +183,7 @@
       "name": "PUBLIC_TYPE_WITH_INTERNAL_API",
       "title": "Public types marked as internal API",
       "docs": "checks/special/public-type-with-internal-api",
-      "message": "The {0} `{1}` publicly exposes `{2}`, but that type is marked as internal API. Keep the internal type out of the public signature, or mark the exposing declaration with an internal API annotation too."
+      "message": "The {0} `{1}` publicly exposes `{2}`, but that type is marked as internal API with `@{3}`. Keep the internal type out of the public signature, or mark the exposing declaration with an internal API annotation too."
     },
     {
       "name": "PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY",
