@@ -26,11 +26,10 @@ public annotation class DefaultTargetsDsl
 
 [DSL marker scope control](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker)
 only reacts to a marker found on a classifier declaration (`CLASS`, `ANNOTATION_CLASS`), a type
-usage (`TYPE`), or a type alias (`TYPEALIAS`). The default target set - what a class gets when it
-declares no `@Target` at all - covers neither `TYPE` nor `TYPEALIAS`, so a marker left without an
-explicit `@Target` can never be applied where it would restrict an implicit receiver. Users are
-free to put it on parameters, properties, or return types instead, where it silently
-restricts nothing and gives a false sense of scope control.
+usage (`TYPE`), or a type alias (`TYPEALIAS`). The default target set includes `CLASS`, but omits
+`TYPE` and `TYPEALIAS` while allowing parameters, properties, functions, and other positions where
+the marker has no effect. An explicit target set makes the effective placements available without
+advertising ineffective ones.
 
 
 ### Don't

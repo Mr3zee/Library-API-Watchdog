@@ -37,12 +37,6 @@ out all three at every call site. See Kotlin's guide on
 [overloads generation](https://kotlinlang.org/docs/java-to-kotlin-interop.html#overloads-generation)
 for how `@JvmOverloads` compiles the reduced overloads Java needs.
 
-The recommendation is honest about its limits, though: `@JvmOverloads` only generates
-right-truncated overloads, so a defaulted parameter in the middle of the list still can't be
-skipped from Java, and it only improves Java call sites - it doesn't make adding a parameter
-later binary compatible for Kotlin callers either.
-
-
 ### Don't
 
 ```kotlin

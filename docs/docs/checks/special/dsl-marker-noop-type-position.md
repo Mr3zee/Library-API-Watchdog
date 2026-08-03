@@ -117,18 +117,14 @@ public fun process(tag: Tag) { }
 
 ## Exemption
 
-There is no `@Intentionally*` annotation for this diagnostic: a marker on a no-op type position
-never restricts anything, so keeping it there as-is is never a valid design choice. Fix it by moving
-the marker to an effective position (a receiver, a context parameter, or a supertype) or by removing
-it.
-
 [//]: # (TODO huh? - investigate)
-The one legitimate reason to keep a marker exactly where it is reported is deliberate flow-through:
-a value whose type carries the marker can still become a scoped implicit receiver later through
-type inference (`with(value) { ... }`), even though the position itself is inert. Suppress the
-diagnostic on that declaration with `@Suppress("DSL_MARKER_NOOP_TYPE_POSITION")` if that flow-through
-use is intended. To silence the check project-wide instead, lower its severity with the Gradle
-property below, there is no other per-declaration escape hatch.
+
+There is no `@Intentionally*` annotation for this diagnostic: a marker on a no-op type position
+should normally be moved to an effective position (a receiver, a context parameter, or a supertype)
+or removed. A deliberate flow-through use is the exception: a value whose type carries the marker
+can later become an implicit receiver through type inference (`with(value) { ... }`). Suppress the
+diagnostic on that declaration with `@Suppress("DSL_MARKER_NOOP_TYPE_POSITION")` when that use is
+intended. To silence the check project-wide, lower its severity with the Gradle property below.
 
 ## Configuration
 

@@ -21,12 +21,9 @@ import org.jetbrains.kotlin.fir.expressions.unwrapAndFlattenArgument
 import org.jetbrains.kotlin.name.Name
 
 /**
- * Reports publicly visible classes and interfaces that can be subclassed outside the library
- * without any control: every external subclass constrains how the declaration can evolve. Authors
- * either gate subclassing with [kotlin.SubclassOptInRequired] or explicitly acknowledge the
- * contract with `@IntentionallyOpen`. A `@SubclassOptInRequired` with no marker classes gates
- * nothing, so it is reported as well. Classes whose constructors are all internal or private
- * can't be subclassed outside the library and are not reported.
+ * Reports watched open or abstract classes and interfaces without
+ * [kotlin.SubclassOptInRequired] or an exemption. Classes with no public or protected constructor
+ * are skipped. A separate diagnostic reports `@SubclassOptInRequired` calls with no marker classes.
  */
 internal class OpenApiChecker(
     private val severities: WatchdogDiagnosticSeverities,

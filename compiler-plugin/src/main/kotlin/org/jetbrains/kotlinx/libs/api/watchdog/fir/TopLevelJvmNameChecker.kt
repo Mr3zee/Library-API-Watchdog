@@ -15,19 +15,11 @@ import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils
 import org.jetbrains.kotlin.name.JvmStandardClassIds
 
 /**
- * Reports files whose public top-level functions or properties compile into a file facade class
- * without an explicit `@file:JvmName`. The facade's name is derived from the file name
- * (`foo.kt` → `FooKt`), so the file name leaks into the Java API surface - Java callers write
- * `FooKt.topFun()` - and renaming the file, invisible to Kotlin callers, renames the facade and
- * breaks Java sources and binaries compiled against it. `@file:JvmName` decouples the facade
- * name from the file name and lets the author choose a deliberate, Java-idiomatic one.
+ * Reports a file with watched top-level functions or properties and no `@file:JvmName` or file-level
+ * exemption. The diagnostic is anchored on the first qualifying callable and emitted once per
+ * file. Files with only classifiers or only Java-hidden callables are skipped.
  *
- * The diagnostic fires once per file, anchored on the first public top-level function or
- * property. Files exposing only classifiers don't produce a facade worth naming, and neither do
- * files whose every top-level callable is hidden from Java with `@JvmSynthetic`. Authors
- * acknowledge a deliberately derived facade name with `@file:IntentionallyDefaultFacadeName`.
- * Non-JVM compilations have no facade classes at all, so [WatchdogFirCheckers] only registers
- * this checker when the platform is JVM.
+ * [WatchdogFirCheckers] registers this checker only for JVM compilations.
  */
 internal class TopLevelJvmNameChecker(
     private val severities: WatchdogDiagnosticSeverities,

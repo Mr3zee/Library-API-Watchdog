@@ -13,8 +13,7 @@ can be subclassed outside the library without any restriction.
 ## What it reports
 
 A public `open`/`abstract` class with at least one public or protected constructor, or a public
-non-sealed interface. User-side subclasses constrain how
-the declaration can evolve later.
+non-sealed interface.
 
 ```kotlin
 // !hide-focused
@@ -71,7 +70,7 @@ public interface Plugin {
 }
 ```
 
-`@SubclassOptInRequired` marks the api as internal to opt-in for, preventing unexpected breaking changes.
+`@SubclassOptInRequired` requires external subclasses to opt in to the explicitly unstable contract.
 
 
 ## Notes

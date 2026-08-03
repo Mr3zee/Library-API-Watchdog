@@ -19,19 +19,9 @@ import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.types.functionTypeKind
 
 /**
- * Reports required parameters of publicly visible functions and constructors that are declared
- * after an optional (defaulted or `vararg`) parameter:
- * [parameters should go from the general to the specific](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage),
- * essential inputs first and optional inputs last. A required parameter behind optional ones
- * can't be passed positionally without re-stating the defaults in front of it. Authors
- * acknowledge a deliberate order with `@IntentionallyRequiredParameterAfterOptional`.
- *
- * A required function-type or `fun interface` parameter in the last position is exempt: keeping
- * it last is what makes trailing-lambda call syntax available, and the stdlib itself places such
- * parameters after defaulted ones (`joinToString(separator = ..., transform)`).
- *
- * Overrides are exempt as well: they can't declare default values, and their parameter order is
- * fixed by the overridden declaration, which is reported where it is declared.
+ * Reports each required parameter after the first defaulted or `vararg` parameter in a watched
+ * function or constructor. A final required function-type or `fun interface` parameter is skipped
+ * to preserve trailing-lambda shapes. Overrides are skipped.
  */
 internal class RequiredParameterAfterOptionalChecker(
     private val severities: WatchdogDiagnosticSeverities,

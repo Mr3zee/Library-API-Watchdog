@@ -23,20 +23,11 @@ import org.jetbrains.kotlin.fir.types.receiverType
 import org.jetbrains.kotlin.name.StandardClassIds
 
 /**
- * Reports DSL marker annotations written on type positions where the marker has no effect. Scope
- * control only reacts to markers found on the type of an *implicit* value: a receiver type, a
- * context parameter type, or a function type that has such implicit values (the marker propagates
- * to them). A marker on the type of a plain parameter, a return type, or a property type marks a
- * value that is only ever accessed by name, so nothing is restricted and the marker only gives a
- * false sense of scope control.
+ * Reports DSL marker annotations on callable type positions other than receiver types, context
+ * parameter types, and function types with implicit values. The check is position-local: later
+ * use of the annotated type as an inferred receiver does not change the reported position.
  *
- * The check is deliberately position-local: a value whose type carries a marker can still become
- * an implicit receiver later through type inference (`with(value) { ... }` infers the annotated
- * type), but relying on that is obscure enough that the direct positions are reported anyway -
- * suppress the diagnostic where such flow-through marking is intended.
- *
- * Unlike the API-surface checkers, this one is not limited to public declarations: an inert
- * marker misleads the library's own authors just as much as its users.
+ * All declaration visibilities are checked.
  */
 internal class DslMarkerTypePositionChecker(
     private val severities: WatchdogDiagnosticSeverities,

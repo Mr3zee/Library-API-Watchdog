@@ -11,17 +11,8 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 
 /**
- * Reports the tuple types `Pair` and `Triple` in publicly visible signatures, type parameter
- * bounds and type arguments included (`List<Pair<Int, String>>` exposes the tuple all the same;
- * see [ExposedTypeChecker] for the shared sweep). Tuple components carry no domain meaning: at
- * the use site `first`/`second`/`third` and positional destructuring reveal nothing about the
- * values, and the fixed shape can't evolve - adding a value means switching to a different
- * type, breaking users. The API should expose
- * [a small class with descriptively named properties](https://kotlinlang.org/docs/data-classes.html)
- * instead. Authors acknowledge a deliberate tuple with `@IntentionallyPairOrTriple`.
- *
- * `Pair` and `Triple` are final, so a direct classifier match suffices - no subtype can smuggle
- * the tuple shape in under another name.
+ * Reports direct `Pair` and `Triple` classifier matches found by the [ExposedTypeChecker]
+ * signature sweep. Subtype checks are unnecessary because both tuple classes are final.
  */
 internal class PairOrTripleChecker(
     private val severities: WatchdogDiagnosticSeverities,

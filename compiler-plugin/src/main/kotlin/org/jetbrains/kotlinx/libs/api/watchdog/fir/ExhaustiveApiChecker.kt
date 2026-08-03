@@ -12,11 +12,7 @@ import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.utils.modality
 
-/**
- * Reports publicly visible enums and sealed hierarchies: users can match on them
- * exhaustively (`when` without an `else` branch), so adding an entry or a subtype later breaks
- * user code. Authors acknowledge the contract with `@IntentionallyExhaustive`.
- */
+/** Reports watched enum classes and sealed classes or interfaces unless exempted. */
 internal class ExhaustiveApiChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirClassChecker(MppCheckerKind.Common) {

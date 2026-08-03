@@ -12,17 +12,10 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
 
 /**
- * Reports nullable Booleans in publicly visible signatures, type parameter bounds and type
- * arguments included (`List<Boolean?>` still exposes the unnamed third state; see
- * [ExposedTypeChecker] for the shared sweep). `Boolean?` models three states but names only two
- * of them: every use site has to know what `null` stands for, and three-state logic hides in
- * two-branch `if`s, so the API should name all three states with an enum class instead. Authors
- * acknowledge a deliberate nullable Boolean with `@IntentionallyNullableBoolean`.
- *
- * Unlike [BooleanParameterChecker], constructors are checked too: a stored three-state flag is as
- * opaque to its readers as a passed one. A `vararg` parameter needs no special casing: the array
- * carrying the arguments is never a nullable Boolean itself, and a `Boolean?` element type is
- * found as its type argument.
+ * Reports nullable Booleans found by the [ExposedTypeChecker] signature sweep. Flexible types are
+ * inspected through their lower bound so source nullability is preserved. Constructors are included.
+ * A `vararg` needs no special handling because its nullable element type is visited as a type
+ * argument.
  */
 internal class NullableBooleanChecker(
     private val severities: WatchdogDiagnosticSeverities,

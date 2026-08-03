@@ -152,7 +152,7 @@
         "extensionFunctionType": "takes a function type with receiver in the parameter `{0}`, which a Java lambda can only emulate by taking the receiver as an explicit first argument",
         "unitFunctionType": "takes a `Unit`-returning function type in the parameter `{0}`, which forces a Java lambda to return the `Unit.INSTANCE` token explicitly"
       },
-      "message": "The function `{0}` {1}. Kotlin callers see the intended shape, but the function still lands in the API surface Java sources see. Hide the Kotlin-only shape from Java with `@JvmSynthetic`, or provide a Java-friendly alternative alongside - a blocking or `CompletableFuture`-returning bridge for a `suspend` function, a `fun interface` parameter in place of a Kotlin function type - or mark the function with `@IntentionallyKotlinOnlyApi` if leaving the shape visible to Java is intended."
+      "message": "The function `{0}` {1}. Kotlin callers see the intended shape, but the function still lands in the API surface Java sources see. Hide it from Java with `@JvmSynthetic`, provide a Java-friendly alternative, or mark it with `@IntentionallyKotlinOnlyApi` if leaving the shape visible to Java is intended."
     },
     {
       "name": "COMPANION_API_WITHOUT_JVM_STATIC",
@@ -170,14 +170,13 @@
       "name": "TOP_LEVEL_API_WITHOUT_JVM_NAME",
       "title": "Top-level API without JvmName",
       "docs": "checks/java-interop/top-level-api-without-jvm-name",
-      "message": "This file's public top-level functions and properties compile into the facade class `{0}`, a name derived from the file name: it reads as an implementation detail at Java call sites, and renaming the file - invisible to Kotlin callers - renames the facade and breaks Java callers. Choose and pin the facade name deliberately with `@file:JvmName`, or mark the file with `@file:IntentionallyDefaultFacadeName` if the derived name is intended.",
-      "messageTrailer": "Reported once per file, on its first public top-level function or property."
+      "message": "This file's public top-level functions and properties compile into the facade class `{0}`, a name derived from the file name: it reads as an implementation detail at Java call sites, and renaming the file - invisible to Kotlin callers - renames the facade and breaks Java callers. Choose and pin the facade name deliberately with `@file:JvmName`, or mark the file with `@file:IntentionallyDefaultFacadeName` if the derived name is intended."
     },
     {
       "name": "DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS",
       "title": "Default parameters without JvmOverloads",
       "docs": "checks/java-interop/default-parameters-without-jvm-overloads",
-      "message": "The {0} `{1}` declares default parameter values, but for Java callers the defaults don't exist: only the full signature is compiled, and every argument must be spelled out. Mark the {0} with `@JvmOverloads` to also compile the overloads that let Java callers omit defaulted parameters - trailing ones only: a defaulted parameter in the middle of the list still can't be skipped from Java, and adding a parameter later stays binary incompatible either way - or mark the {0} with `@IntentionallyWithoutJvmOverloads` if serving Java callers the full signature only is intended."
+      "message": "The {0} `{1}` declares default parameter values, but for Java callers the defaults don't exist: only the full signature is compiled, and every argument must be spelled out. Mark the {0} with `@JvmOverloads` to generate overloads that omit trailing defaulted parameters, or with `@IntentionallyWithoutJvmOverloads` if serving Java callers the full signature only is intended."
     },
     {
       "name": "PUBLIC_TYPE_WITH_INTERNAL_API",

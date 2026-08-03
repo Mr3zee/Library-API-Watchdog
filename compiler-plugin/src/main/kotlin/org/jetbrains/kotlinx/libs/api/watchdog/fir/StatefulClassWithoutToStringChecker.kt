@@ -24,21 +24,11 @@ import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.util.OperatorNameConventions
 
 /**
- * Reports publicly visible
- * [stateful classes](https://kotlinlang.org/docs/api-guidelines-debuggability.html#provide-a-tostring-method-for-stateful-types)
- * - classes with at least one property that stores its value in a backing field - that neither
- * declare nor inherit meaningful `equals`, `hashCode`, and `toString` implementations. Without
- * them, comparison and hashing use object identity and rendering uses the opaque
- * class-name-with-hash-code default. Each missing member has its own diagnostic and exemption.
+ * Reports watched regular classes with a backing-field property when their resolved member scope
+ * still selects the `kotlin.Any` implementation of `equals`, `hashCode`, or `toString`. Each
+ * missing member has its own diagnostic and exemption.
  *
- * An implementation inherited from any supertype other than `kotlin.Any` counts as provided.
- * Whether it must be refined to include state added by the subclass is a judgement call left to
- * the author.
- *
- * Only regular classes are checked. Data and value classes receive compiler-generated
- * implementations (data classes are reported by [DataClassChecker] anyway), enum entries have
- * compiler-defined equality and rendering, interfaces and annotation classes can't hold backing
- * fields, and objects - companion objects in particular - use intentional singleton identity.
+ * Data and value classes, enums, interfaces, annotation classes, and objects are skipped.
  */
 internal class StatefulClassWithoutGeneratedMembersChecker(
     private val severities: WatchdogDiagnosticSeverities,

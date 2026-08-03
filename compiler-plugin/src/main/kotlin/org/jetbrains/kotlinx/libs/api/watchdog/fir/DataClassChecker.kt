@@ -11,15 +11,7 @@ import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.utils.isData
 
-/**
- * Reports publicly visible data classes: the generated `copy` and `componentN` functions and the
- * constructor bake the exact property list into the compiled API, so adding, removing, or
- * reordering a property later breaks users. Authors acknowledge the contract with
- * `@IntentionallyDataClass`.
- *
- * `data object`s are exempt: without constructor properties none of the hazardous members are
- * generated.
- */
+/** Reports watched data classes unless exempted. `data object`s are skipped. */
 internal class DataClassChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirClassChecker(MppCheckerKind.Common) {

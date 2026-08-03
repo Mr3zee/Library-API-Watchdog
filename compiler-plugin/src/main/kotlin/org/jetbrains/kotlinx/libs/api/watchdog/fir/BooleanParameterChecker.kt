@@ -21,28 +21,13 @@ import org.jetbrains.kotlin.fir.types.varargElementType
 import org.jetbrains.kotlin.name.StandardClassIds
 
 /**
- * Reports [Boolean value parameters](https://kotlinlang.org/docs/api-guidelines-readability.html#avoid-using-the-boolean-type-as-an-argument)
- * of publicly visible functions. At the call site a positional `true`/`false` argument reveals
- * nothing about what it controls, and users can't be forced to use named arguments, so the API
- * should model the modes as separate, descriptively named functions or as an enum class instead.
- * Nullable Booleans are three-state flags and count too, a type alias doesn't change what
- * users pass, and a `vararg` Boolean parameter takes the same positional `true`/`false`
- * arguments (only the declared element type matters there, not the array carrying it). Context
- * parameters count as well, and hide the flag even better: nothing is written at the call site
- * at all, the value is picked up from whatever Boolean happens to be in scope there. Authors
- * acknowledge a deliberate Boolean parameter with `@IntentionallyBooleanParameter` - on the
- * function, where it covers every parameter, or on a single parameter.
+ * Reports Boolean value and context parameters of watched functions, including nullable and
+ * aliased Booleans. For `vararg` parameters it inspects the declared element type rather than the
+ * generated array type.
  *
- * Deliberate exceptions:
- * - Constructors: a construction site stores data in the named type rather than switching an
- *   operation mode, and there is no behavior to split into descriptively named constructors.
- * - Constructor functions - factory functions named after the type they create, as in
- *   `fun Widget(visible: Boolean): Widget` (the alias name counts for a factory returning a type
- *   alias): they share the constructor call shape by design.
- * - Overrides: their signature is fixed by the overridden declaration and is reported there.
- * - Legacy context receivers: K2 no longer resolves them, so they can't reach a published API.
- *
- * Boolean return types and Boolean properties are not arguments and are not checked.
+ * Constructors, constructor functions, overrides, and legacy context receivers are skipped.
+ * Exemptions may cover the whole function or one parameter. Return types and properties are not
+ * inspected.
  */
 internal class BooleanParameterChecker(
     private val severities: WatchdogDiagnosticSeverities,

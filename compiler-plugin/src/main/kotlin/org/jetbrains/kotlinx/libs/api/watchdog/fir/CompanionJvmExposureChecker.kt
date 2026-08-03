@@ -21,29 +21,13 @@ import org.jetbrains.kotlin.name.JvmStandardClassIds
 import org.jetbrains.kotlin.name.Name
 
 /**
- * Reports publicly visible companion object members that Java callers can only reach through the
- * companion instance - `Outer.Companion.member` - although a JVM annotation would put them on the
- * outer class where Java expects statics:
- * - a function without `@JvmStatic` ([WatchdogDiagnostics.COMPANION_API_WITHOUT_JVM_STATIC]),
- * - a constant-shaped `val` - final, initialized in place, with the default getter, not `const`
- *   and not delegated - without `@JvmField`
- *   ([WatchdogDiagnostics.COMPANION_CONSTANT_WITHOUT_JVM_FIELD]); `const val`, a `@JvmStatic`
- *   getter, and hiding with `@get:JvmSynthetic` settle the Java-facing shape as well.
+ * Reports watched companion functions without `@JvmStatic` and constant-shaped companion `val`s
+ * without `@JvmField`. A constant-shaped property is final, initialized in place, uses the default
+ * getter, and is neither `const` nor delegated; a `@JvmStatic` getter also satisfies the check.
  *
- * Authors acknowledge a deliberately companion-instance-only access path with
- * `@IntentionallyNonStaticCompanionApi` - on the member, or on a class (the companion object
- * itself or its outer class), where it covers every member inside.
- *
- * Deliberate exceptions:
- * - Non-JVM compilations: how Java reaches a companion member is a JVM-only concern, so
- *   [WatchdogFirCheckers] only registers this checker when the platform is JVM.
- * - Overrides: their Java-facing shape is fixed by the overridden declaration, and `@JvmStatic`
- *   members can't override anything.
- * - `suspend` functions: not Java-callable regardless of placement - [KotlinOnlyApiChecker]
- *   reports them with the fitting fix.
- * - `@JvmSynthetic` members: they are hidden from Java on purpose.
- * - `var` properties and properties with custom accessors or delegates: they expose behavior
- *   rather than a constant, and `@JvmField` is not applicable to most of these shapes anyway.
+ * Exemptions are honored on the member and enclosing classes. Overrides, `suspend` functions,
+ * Java-hidden members, mutable properties, and properties with custom accessors or delegates are
+ * skipped. [WatchdogFirCheckers] registers this checker only for JVM compilations.
  */
 internal class CompanionJvmExposureChecker(
     private val severities: WatchdogDiagnosticSeverities,

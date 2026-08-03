@@ -21,7 +21,7 @@ type is `Boolean`, including the declared element type of `vararg` parameter.
 // !hide-focused
 /** Processes pending data, optionally favoring speed over memory use. */
 // !diag[/optimizeForSpeed/] BOOLEAN_PARAMETER_PUBLIC_API ["doWork","optimizeForSpeed"]
-public fun doWork(optimizeForSpeed: Boolean): Unit {}
+public fun doWork(optimizeForSpeed: Boolean) {}
 ```
 
 ## Rationale
@@ -41,7 +41,7 @@ whoever reads the call site remembering the parameter name. See the
 // !hide-focused
 /** Controls whether diagnostic messages are recorded. */
 // !diag[/enabled/] BOOLEAN_PARAMETER_PUBLIC_API ["setLogging","enabled"]
-public fun setLogging(enabled: Boolean): Unit {}
+public fun setLogging(enabled: Boolean) {}
 ```
 
 ### Do
@@ -52,11 +52,11 @@ public fun setLogging(enabled: Boolean): Unit {}
 
 // !hide-focused
 /** Enables logging. */
-public fun enableLogging(): Unit {}
+public fun enableLogging() {}
 
 // !hide-focused
 /** Disables logging. */
-public fun disableLogging(): Unit {}
+public fun disableLogging() {}
 ```
 
 
@@ -72,7 +72,7 @@ public fun disableLogging(): Unit {}
   ```kotlin
   // !diag[/verbose/] BOOLEAN_PARAMETER_PUBLIC_API ["logLine","verbose"]
   context(verbose: Boolean)
-  public fun logLine(message: String): Unit {}
+  public fun logLine(message: String) {}
   ```
 
   Legacy context receivers are not reported: K2 no longer resolves them, so they can't reach a
@@ -95,7 +95,7 @@ function name, such as `setLogging(enabled: Boolean)`.
 // !hide-focused
 /** Controls whether diagnostic messages are recorded. */
 @IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)
-public fun setLogging(enabled: Boolean): Unit {}
+public fun setLogging(enabled: Boolean) {}
 ```
 
 ## Configuration

@@ -24,41 +24,14 @@ import org.jetbrains.kotlin.name.JvmStandardClassIds
 import org.jetbrains.kotlin.name.Name
 
 /**
- * Reports publicly visible callables that Java sources can't call because a
- * [value class](https://kotlinlang.org/docs/inline-classes.html#mangling) appears in their
- * signature. Value classes compile to their underlying type, so the JVM backend mangles the
- * name of every affected entry point with a hash suffix (`take-4ZD5Yi0`); the `-` makes the
- * name an illegal Java identifier. Kotlin users never notice, but for Java users the
- * declaration might as well not exist. A JVM name is mangled when the callable
- * - declares a value parameter, an extension receiver, or a context parameter of a value class
- *   type - nullable types and type parameters whose JVM erasure (the first upper bound) is a
- *   value class included, - or
- * - is a member of a class, interface, or object and returns a value class (top-level callables
- *   merely returning a value class keep their JVM name), while
- * - a constructor with a value class parameter is not mangled but replaced: the visible
- *   constructor becomes private and the public one grows a synthetic marker parameter, which
- *   Java rejects just the same.
+ * Reports watched JVM callables whose signature is mangled by a value class, plus constructors
+ * hidden behind a synthetic constructor for the same reason. Parameters, extension and context
+ * receivers, and member return types are inspected through nullable types and erased type-parameter
+ * bounds. Value classes nested in type arguments and top-level return types do not count.
  *
- * A value class inside a type argument (`List<UserId>`) is boxed and leaves the JVM name intact,
- * so it is not reported.
- *
- * The fix is an explicit Java-facing shape: `@JvmName` on the function (`@get:`/`@set:JvmName`
- * on property accessors) unmangles the name, and `@JvmExposeBoxed` generates Java-callable boxed
- * variants - the only option for constructors and overridable members, which `@JvmName` doesn't
- * accept. Authors acknowledge a deliberately Kotlin-only shape with `@IntentionallyMangledJvmName`
- * - on the declaration, on a constructor `val`/`var` parameter for the property made from it, or
- * on a class, where it covers every declaration inside.
- *
- * Deliberate exceptions:
- * - Non-JVM compilations: mangling is a JVM-ABI concern, so [WatchdogFirCheckers] only registers
- *   this checker when the platform is JVM.
- * - Members and constructors of the value class itself: they are Java-hostile by construction
- *   (`@JvmName` is not even applicable inside), so declaring the public value class is treated
- *   as the deliberate choice, and only its mentions in the rest of the API are watched.
- * - `suspend` functions: Java callers can't provide the continuation idiomatically anyway, so
- *   an unmangled name would not make the function Java-friendly.
- * - Overrides: their signature is fixed by the overridden declaration and is reported there.
- * - `@JvmSynthetic` declarations and accessors: they are hidden from Java on purpose.
+ * Members of the value class itself, `suspend` functions, overrides, and Java-hidden declarations
+ * are skipped. Exemptions may be placed on the callable, a constructor property parameter, or an
+ * enclosing class. [WatchdogFirCheckers] registers this checker only for JVM compilations.
  */
 internal class MangledJvmNameChecker(
     private val severities: WatchdogDiagnosticSeverities,

@@ -25,18 +25,12 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.text
 
 /**
- * Reports publicly visible declarations that have no KDoc: undocumented API forces users to
- * guess the usage contract. Only KDoc presence is checked, not its content. Every declaration
- * kind a user can reference is watched: classifiers, type aliases, functions, properties,
- * constructors, and enum entries.
+ * Reports watched classifiers, type aliases, functions, properties, secondary constructors, and
+ * enum entries with no KDoc token. KDoc content is not inspected beyond recognizing class-level
+ * `@property` and constructor `@param` tags.
  *
- * Declarations whose documentation lives on another declaration are exempt: overrides and
- * `actual` declarations inherit the KDoc of the declaration they implement, the primary
- * constructor is described by `@constructor` and `@param` tags in the class KDoc, and a property
- * is covered by a matching `@property` tag there (`@param` also counts for constructor `val`s).
- * Declarations that only `@PublishedApi` puts on the API surface are exempt too: they stay
- * internal in sources, so no user writes code against them and there is no contract to document.
- * Authors acknowledge deliberately undocumented declarations with `@IntentionallyUndocumented`.
+ * Overrides, `actual` declarations, primary constructors, declarations visible only through
+ * `@PublishedApi`, and exempt declarations are skipped.
  */
 internal class UndocumentedApiChecker(
     private val severities: WatchdogDiagnosticSeverities,

@@ -1,3 +1,5 @@
+@import '@fontsource-variable/jetbrains-mono';
+
 /* Purple is the documentation site's primary color. */
 :root {
   --ifm-color-primary: #7048e8;
@@ -7,6 +9,7 @@
   --ifm-color-primary-light: #855cec;
   --ifm-color-primary-lighter: #9066ee;
   --ifm-color-primary-lightest: #ab8bf2;
+  --ifm-font-family-monospace: 'JetBrains Mono Variable', monospace;
   --ifm-code-font-size: 92%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 }

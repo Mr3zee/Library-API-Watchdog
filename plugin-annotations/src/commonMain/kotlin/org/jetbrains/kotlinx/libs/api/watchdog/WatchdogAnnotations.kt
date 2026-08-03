@@ -9,7 +9,7 @@ package org.jetbrains.kotlinx.libs.api.watchdog
  * ([FOR_BACKWARDS_COMPATIBILITY], [API_DESIGN]). The other reasons only categorize the exemption
  * and keep the description shorter - the specific constraint still has to be spelled out there.
  *
- * See [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions.html) for how reasons and descriptions are validated.
+ * See [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions) for how reasons and descriptions are validated.
  */
 public enum class ExemptionReason {
     /** The exempted shape is kept to stay compatible with existing users. */
@@ -59,7 +59,7 @@ public enum class ExemptionReason {
  * Apply this annotation to suppress the warning when unrestricted subclassing is an intended
  * part of the API contract.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/open-api-without-subclass-opt-in.html) for rationale and examples.
+ * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in) for rationale and examples.
  *
  * @param reason why the class is deliberately open.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -83,7 +83,7 @@ public annotation class IntentionallyOpen(
  * change. Apply this annotation to suppress the warning when the set of entries/subtypes is an
  * intended, stable part of the API contract.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/exhaustive-public-api.html) for rationale and examples.
+ * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/exhaustive-public-api) for rationale and examples.
  *
  * @param reason why the hierarchy is deliberately exhaustive.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -106,7 +106,7 @@ public annotation class IntentionallyExhaustive(
  * Apply this annotation to suppress the warning when leaving the declaration undocumented is
  * intended (for example, when it is self-explanatory or documented elsewhere).
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/undocumented-public-api.html) for rationale and examples.
+ * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api) for rationale and examples.
  *
  * @param reason why the declaration is deliberately undocumented.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -136,7 +136,7 @@ public annotation class IntentionallyUndocumented(
  * Apply this annotation to suppress the warning when exposing the function type is intended
  * (for example, for lambdas that only travel through inline functions).
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/function-type-alias-public-api.html) for rationale and examples.
+ * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/function-type-alias-public-api) for rationale and examples.
  *
  * @param reason why the alias deliberately exposes a function type.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -160,7 +160,7 @@ public annotation class IntentionallyFunctionTypeAlias(
  * users. Apply this annotation to suppress the warning when the property list is an intended,
  * stable part of the API contract.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/data-class-public-api.html) for rationale and examples.
+ * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/data-class-public-api) for rationale and examples.
  *
  * @param reason why the class is deliberately a data class.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -284,7 +284,7 @@ public annotation class IntentionallyWithoutEqualsHashCodeOrToString(
  * type usage (`List<@IntentionallyMutableCollection MutableList<Int>>`) it covers the annotated
  * type and everything nested in it.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/mutable-collection-public-api.html) for rationale and examples.
+ * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/mutable-collection-public-api) for rationale and examples.
  *
  * @param reason why the declaration deliberately exposes a mutable collection.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -322,7 +322,7 @@ public annotation class IntentionallyMutableCollection(
  * (`List<@IntentionallyPairOrTriple Pair<Int, String>>`) it covers the annotated type and
  * everything nested in it.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/pair-or-triple-public-api.html) for rationale and examples.
+ * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/pair-or-triple-public-api) for rationale and examples.
  *
  * @param reason why the declaration deliberately exposes a tuple type.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -358,7 +358,7 @@ public annotation class IntentionallyPairOrTriple(
  * parameter is unmistakable from the function name alone, as in `setEnabled(enabled: Boolean)`).
  * On a function it covers every parameter. On a single parameter it covers just that parameter.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/boolean-parameter-public-api.html) for rationale and examples.
+ * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/boolean-parameter-public-api) for rationale and examples.
  *
  * @param reason why the Boolean parameter is intended.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -392,7 +392,7 @@ public annotation class IntentionallyBooleanParameter(
  * (`List<@IntentionallyNullableBoolean Boolean?>`) it covers the annotated type and everything
  * nested in it.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/nullable-boolean-public-api.html) for rationale and examples.
+ * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/nullable-boolean-public-api) for rationale and examples.
  *
  * @param reason why the declaration deliberately exposes a nullable Boolean.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -427,7 +427,7 @@ public annotation class IntentionallyNullableBoolean(
  * call syntax available. Apply this annotation to suppress the warning when the order is intended
  * (for example, when appending a parameter anywhere else would break existing users).
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/required-parameter-after-optional.html) for rationale and examples.
+ * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/required-parameter-after-optional) for rationale and examples.
  *
  * @param reason why the parameter order is intended.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -452,7 +452,7 @@ public annotation class IntentionallyRequiredParameterAfterOptional(
  * annotation to suppress the warning when the differing order is intended. The annotated
  * declaration is also no longer used as an ordering reference for other overloads.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/inconsistent-parameter-order-in-overloads.html) for rationale and examples.
+ * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads) for rationale and examples.
  *
  * @param reason why the differing parameter order is intended.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -483,7 +483,7 @@ public annotation class IntentionallyInconsistentParameterOrder(
  * inline for non-local returns, or when a hot path must not pay for an extra call). On a
  * property it covers both accessors.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/inline-function-with-logic.html) for rationale and examples.
+ * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/inline-function-with-logic) for rationale and examples.
  *
  * @param reason why the logic is deliberately inlined.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -514,7 +514,7 @@ public annotation class IntentionallyInlinedLogic(
  * declaration is deliberately Kotlin-only. On a class it covers every declaration inside. On a
  * primary constructor `val`/`var` parameter it covers the property created from it.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/mangled-jvm-name-public-api.html) for rationale and examples.
+ * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api) for rationale and examples.
  *
  * @param reason why the Java-inaccessible shape is intended.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -551,7 +551,7 @@ public annotation class IntentionallyMangledJvmName(
  * to suppress the warning when leaving the Kotlin-only shape visible to Java is intended. On a
  * class it covers every function declared inside.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/kotlin-only-api-without-jvm-synthetic.html) for rationale and examples.
+ * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic) for rationale and examples.
  *
  * @param reason why the Kotlin-only shape deliberately stays visible to Java.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -582,8 +582,8 @@ public annotation class IntentionallyKotlinOnlyApi(
  * class - the companion object itself or its outer class - it covers every member inside.
  *
  * See the check documentation for rationale and examples:
- * [companion functions](https://mr3zee.github.io/Library-API-Watchdog/companion-api-without-jvm-static.html),
- * [companion constants](https://mr3zee.github.io/Library-API-Watchdog/companion-constant-without-jvm-field.html).
+ * [companion functions](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-api-without-jvm-static),
+ * [companion constants](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-constant-without-jvm-field).
  *
  * @param reason why the companion-instance access path is intended.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -611,7 +611,7 @@ public annotation class IntentionallyNonStaticCompanionApi(
  * this annotation - as `@file:IntentionallyDefaultFacadeName(...)` - to suppress the warning
  * when keeping the derived name is intended.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/top-level-api-without-jvm-name.html) for rationale and examples.
+ * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/top-level-api-without-jvm-name) for rationale and examples.
  *
  * @param reason why the derived facade name is intended.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -639,7 +639,7 @@ public annotation class IntentionallyDefaultFacadeName(
  * serving Java callers the full signature only is intended (for example, when the defaulted
  * parameters make no sense without Kotlin's named arguments).
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/default-parameters-without-jvm-overloads.html) for rationale and examples.
+ * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/default-parameters-without-jvm-overloads) for rationale and examples.
  *
  * @param reason why the defaults deliberately stay invisible to Java callers.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -671,8 +671,8 @@ public annotation class IntentionallyWithoutJvmOverloads(
  * [ExemptionReason]. New DSL markers must declare effective targets instead.
  *
  * See the check documentation for rationale and examples:
- * [no-op targets](https://mr3zee.github.io/Library-API-Watchdog/dsl-marker-noop-target.html),
- * [missing explicit targets](https://mr3zee.github.io/Library-API-Watchdog/dsl-marker-without-explicit-targets.html).
+ * [no-op targets](https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target),
+ * [missing explicit targets](https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-without-explicit-targets).
  *
  * @param description optional free-form context for the exemption.
  */
@@ -702,7 +702,7 @@ public annotation class IntentionallyWrongDslMarkerTargetsForBackwardsCompatibil
  *
  * The marker annotation class itself remains part of the public API surface and is still watched.
  *
- * See [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions.html) for details.
+ * See [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions) for details.
  */
 @Target(AnnotationTarget.ANNOTATION_CLASS)
 @Retention(AnnotationRetention.BINARY)

@@ -36,32 +36,14 @@ import org.jetbrains.kotlin.fir.references.toResolvedCallableSymbol
 import org.jetbrains.kotlin.fir.references.toResolvedPropertySymbol
 
 /**
- * Reports publicly visible
- * [inline functions](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#considerations-for-using-the-publishedapi-annotation)
- * - and inline property accessors, which inline the same way - whose body does more than delegate
- * to a non-inline function. The compiler copies an inline body into every user binary, so logic
- * placed there - and its bugs - stays frozen in users compiled against an old library version
- * until they recompile. A public inline function should be a thin wrapper: it resolves what only
- * the call site knows - a reified type argument, an inlined lambda - and hands the actual work to
- * a non-inline function (`@PublishedApi internal` when it should stay out of the public API),
- * where the library can still fix it. Authors acknowledge deliberately inlined logic with
- * `@IntentionallyInlinedLogic` - on the function, or on the property for its accessors.
+ * Reports watched inline functions and inline property accessors whose body is not classified as a
+ * thin delegation. Besides an optional contract, a thin body has one statement composed only of
+ * value reads or writes, casts, callable or class references, lambda literals with thin bodies,
+ * and calls to non-inline declarations. Calls through inline functions or accessors and all other
+ * FIR constructs are classified as logic.
  *
- * A body counts as a thin wrapper when its single statement - besides an optional contract - is a
- * delegation whose parts only read or write values: parameters, properties, `this`, literals,
- * object references, `T::class`, callable references, nested non-inline calls, an assignment to a
- * property with a non-inline setter (the thin shape of a setter or a `set`-prefixed wrapper), and
- * an `as`/`as?` cast on a read (reified wrappers narrow their delegate's result that way). A
- * lambda literal passed along counts too when its own body is such a thin statement - the
- * `impl { block() }` shape a `crossinline` wrapper needs. Everything else is logic frozen into
- * users: control flow of any kind, operator and infix calls (arithmetic compiles inline into
- * the user), string templates, local variables, multiple statements, object literals - and
- * calls to inline functions or inline property accessors, whose bodies the inliner drags into the
- * user binary transitively.
- *
- * `@PublishedApi internal` inline functions are checked like public ones: a public inline wrapper
- * may call them, which inlines their body into users just as transitively. Bodiless functions
- * (`expect`, `external`) and non-inline accessors freeze nothing and are skipped.
+ * `@PublishedApi internal` inline declarations are included. Bodiless functions and non-inline
+ * accessors are skipped. An exemption on a property covers both accessors.
  */
 internal class InlineFunctionLogicChecker(
     private val severities: WatchdogDiagnosticSeverities,

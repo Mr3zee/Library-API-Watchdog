@@ -18,21 +18,11 @@ import org.jetbrains.kotlin.fir.expressions.unwrapAndFlattenArgument
 import org.jetbrains.kotlin.name.StandardClassIds
 
 /**
- * Reports DSL markers ([kotlin.DslMarker] annotations) that allow annotation targets on which the
- * marker has no effect. Receiver scope control only reacts to markers found on classifier
- * declarations, type usages, and type aliases (see the
- * [DSL marker design note](https://github.com/Kotlin/KEEP/blob/main/notes/0005-dsl-marker.md)),
- * so only the `CLASS`, `ANNOTATION_CLASS`, `TYPE`, and `TYPEALIAS` targets are effective. Every
- * other target lets users apply the marker where it silently restricts nothing, giving a false
- * sense of scope control. A DSL marker without an explicit `@Target` is reported as well: the
- * default target set allows nine such no-op targets and at the same time forbids the effective
- * `TYPE` and `TYPEALIAS` ones.
+ * Reports `@DslMarker` annotation classes with no explicit `@Target` or with targets other than
+ * `CLASS`, `ANNOTATION_CLASS`, `TYPE`, and `TYPEALIAS`. All marker visibilities are checked.
  *
- * The marker's own visibility is irrelevant: even an internal or private marker is applied
- * across the library's - possibly public - DSL classes, so every marker is checked.
- *
- * For an already-published marker, fixing the target set is a breaking change, so authors
- * acknowledge the legacy shape with `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility`.
+ * The backwards-compatibility exemption applies to the annotation class and covers both
+ * diagnostics.
  */
 internal class DslMarkerTargetsChecker(
     private val severities: WatchdogDiagnosticSeverities,

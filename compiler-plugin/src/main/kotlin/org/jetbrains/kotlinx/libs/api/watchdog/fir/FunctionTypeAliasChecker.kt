@@ -10,13 +10,7 @@ import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.types.functionTypeKind
 
-/**
- * Reports publicly visible type aliases that abbreviate function types: the alias is erased from
- * the compiled API, so users bind to the bare function shape and the type can't evolve into a
- * richer abstraction later. A `fun interface` keeps the lambda ergonomics of a function type
- * behind a stable nominal type that can grow members without breaking users. Authors
- * acknowledge a deliberate function type alias with `@IntentionallyFunctionTypeAlias`.
- */
+/** Reports watched type aliases whose fully expanded type is a function type unless exempted. */
 internal class FunctionTypeAliasChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirTypeAliasChecker(MppCheckerKind.Common) {

@@ -50,8 +50,7 @@ public fun configure(
 
 A required parameter behind an optional one can't be passed positionally,
 which pushes callers toward named arguments for a parameter that should have been more trivial to supply.
-It also blocks the library from ever adding another optional
-parameter in a natural position later. See the Kotlin library authors' guide on
+See the Kotlin library authors' guide on
 [parameter order, naming, and usage](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage):
 essential inputs first, optional inputs last.
 

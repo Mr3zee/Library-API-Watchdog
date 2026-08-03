@@ -14,19 +14,11 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
 
 /**
- * Reports [mutable collection types](https://kotlinlang.org/docs/api-guidelines-predictability.html#avoid-exposing-mutable-state)
- * in publicly visible signatures, type parameter bounds and type arguments included
- * (`List<MutableList<Int>>` still hands out a mutable collection; see [ExposedTypeChecker] for
- * the shared sweep). Once a mutable collection is shared across the API boundary, it is unclear
- * whether user-side and library-side mutations affect each other, so the API should accept and
- * return read-only types, handing out defensive copies where needed. Authors acknowledge
- * deliberate sharing with `@IntentionallyMutableCollection`.
+ * Reports mutable collection classifiers and arrays found by the [ExposedTypeChecker] signature
+ * sweep. Implementations and subtypes of the Kotlin mutable collection interfaces count. Flexible
+ * types are inspected through their upper bound.
  *
- * A type counts as mutable when it is one of the `kotlin.collections` mutable interfaces, any
- * classifier implementing them (`ArrayList`, a hand-written `MutableList` subtype, ...), or an
- * array - the guideline treats arrays as mutable collections as well. Flexible (Java platform)
- * types don't declare their mutability in Kotlin sources, so only the read-only upper bound is
- * inspected.
+ * A `vararg` array is handled separately so only a mutable element type is reported.
  */
 internal class MutableCollectionChecker(
     private val severities: WatchdogDiagnosticSeverities,

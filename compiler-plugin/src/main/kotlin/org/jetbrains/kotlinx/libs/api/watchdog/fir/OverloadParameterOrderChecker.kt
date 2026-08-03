@@ -23,30 +23,14 @@ import org.jetbrains.kotlin.fir.unwrapFakeOverrides
 import org.jetbrains.kotlin.name.Name
 
 /**
- * Reports publicly visible overloads whose same-named parameters appear in a different relative
- * order than in another overload:
- * [users transfer their expectations between overloads](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage),
- * so an inconsistent order of same-named parameters invites silently swapped arguments -
- * especially when the parameters share a type and the call still compiles. Same-named parameters
- * with different types stay legal: conversion overloads like `BigDecimal(Int)`/`BigDecimal(String)`
- * are the point of overloading. Authors acknowledge a deliberate order difference with
- * `@IntentionallyInconsistentParameterOrder`.
+ * Reports watched overloads whose shared parameter names have different relative orders. Members
+ * visible in one class, top-level functions in one package, constructors of one class, and
+ * extensions alongside members of their receiver are compared. Dependencies are excluded.
  *
- * No overload is preferred as the canonical order: every member of an inconsistent pair reports,
- * and reordering either clears both. Overloads are compared as users see them side by side -
- * the members visible in a class, inherited ones included, or the module's top-level functions
- * of the same package; constructors of a class are overloads of each other. An extension is
- * called like a member of the type it extends, so it is also compared with that type's members.
- * For an inheritance pair, and for an extension next to the members of its receiver, only the
- * newcomer reports: a supertype can't see its subtypes' overloads and a class can't see the
- * extensions declared on it, and it is the new overload that strays from the established
- * signature. Dependencies are not compared - only declarations the library author can reorder
- * are held against each other.
- *
- * Overrides never report - their parameter order is fixed by the overridden declaration - but
- * they still serve as ordering references: a new overload next to an inherited signature should
- * follow it. An exempt declaration is skipped entirely, as reporter and as reference, so one
- * acknowledged legacy overload doesn't spread its order to consistent newer ones.
+ * Both declarations in a local inconsistent pair report. For inherited-member and extension-member
+ * pairs, only the declaration introduced alongside the existing members reports. Overrides remain
+ * comparison references but do not report. Exempt declarations are excluded as both reporters and
+ * references.
  */
 internal class OverloadParameterOrderChecker(
     private val severities: WatchdogDiagnosticSeverities,

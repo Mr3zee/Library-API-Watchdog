@@ -138,8 +138,8 @@ consumers. The whole group is disabled with `javaInterop { enabled = false }`. S
 
 ### Exemption hygiene
 
-- [Exemptions without explanation](./checks/special/exemption-without-explanation.md): `@Intentionally*` exemption annotations left with the default `OTHER` reason and a blank description
-  explains nothing. Always an error. it can't be configured like the other diagnostics.
+- [Exemptions without explanation](./checks/special/exemption-without-explanation.md): an `@Intentionally*` exemption annotation left with the default `OTHER` reason and a blank description
+  explains nothing. This diagnostic is always an error and can't be configured like the others.
 
 ## Next steps
 

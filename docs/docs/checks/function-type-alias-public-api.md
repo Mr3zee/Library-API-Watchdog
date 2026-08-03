@@ -25,8 +25,8 @@ public typealias ProgressHandler = (Int) -> Unit
 
 A type alias is not a real type: it is erased at compile time, so a user compiled against
 `Callback` really binds to `(Int) -> Unit`. The alias can never grow a second member, a default
-implementation, or a name that documents intent. The only way to change the shape later is a
-breaking change to the bare function type. A
+implementation, or additional constraints. The only way to change the shape later is a breaking
+change to the bare function type. A
 [`fun interface`](https://kotlinlang.org/docs/fun-interfaces.html#functional-interfaces-vs-type-aliases)
 keeps the same lambda call-site ergonomics (SAM conversion) behind a real type that can
 add default members without breaking binary compatibility, or be extended from.
@@ -51,7 +51,7 @@ public typealias Callback = (Int) -> Unit
 public fun interface Callback {
     // !hide-focused
     /** Reports that [value] percent of the work is complete. */
-    public fun onCall(value: Int): Unit
+    public fun onCall(value: Int)
 }
 ```
 
@@ -76,7 +76,7 @@ public typealias SuspendAction = suspend () -> Unit
 public fun interface SuspendAction {
     // !hide-focused
     /** Executes the operation. */
-    public suspend fun invoke(): Unit
+    public suspend fun invoke()
 }
 ```
 

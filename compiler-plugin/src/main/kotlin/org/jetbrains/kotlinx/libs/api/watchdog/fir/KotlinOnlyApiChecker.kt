@@ -25,34 +25,12 @@ import org.jetbrains.kotlin.fir.types.type
 import org.jetbrains.kotlin.name.JvmStandardClassIds
 
 /**
- * Reports publicly visible functions whose shape only Kotlin callers can use idiomatically while
- * the function still lands in the API surface Java sources see:
- * - a `suspend` function, which Java sees with a trailing `Continuation` parameter it can't
- *   provide idiomatically,
- * - an `inline` function with a `reified` type parameter, whose compiled method can't be called
- *   from Java at all - the call fails at runtime,
- * - a function taking a Kotlin-specific function type: a suspend function type (no Java lambda
- *   can implement it), a function type with receiver (a Java lambda has to take the receiver as
- *   an explicit first argument), or a `Unit`-returning function type (a Java lambda has to
- *   return the `Unit.INSTANCE` token explicitly).
+ * Reports watched functions that are `suspend`, have a reified type parameter, or take a suspend,
+ * extension, or `Unit`-returning function type.
  *
- * The fix is either hiding the Kotlin-only shape from Java with `@JvmSynthetic` or providing a
- * Java-friendly alternative alongside - a blocking or `CompletableFuture`-returning bridge for a
- * suspend function, a `fun interface` parameter in place of a Kotlin function type. Authors
- * acknowledge a deliberately Java-visible Kotlin-only shape with `@IntentionallyKotlinOnlyApi` -
- * on the function, or on a class, where it covers every function inside.
- *
- * Deliberate exceptions:
- * - Non-JVM compilations: what Java sources see is a JVM-only concern, so [WatchdogFirCheckers]
- *   only registers this checker when the platform is JVM.
- * - Abstract and interface members: `@JvmSynthetic` can't hide a member that implementations
- *   must provide, so there is no non-breaking fix to suggest on the declaration itself.
- * - Overrides: their signature is fixed by the overridden declaration and is reported there.
- * - Constructors: `@JvmSynthetic` is not applicable to them, and their Kotlin-specific
- *   function-type parameters read the same for Java as any other overload's.
- * - Signatures mangled by a value class, and members of a value class: they are already
- *   invisible to Java sources and reported by [MangledJvmNameChecker].
- * - `@JvmSynthetic` declarations: the Kotlin-only shape is already hidden on purpose.
+ * Abstract and interface members, overrides, constructors, value-class members, value-class-mangled
+ * signatures, and Java-hidden declarations are skipped. A class-level exemption covers its
+ * functions. [WatchdogFirCheckers] registers this checker only for JVM compilations.
  */
 internal class KotlinOnlyApiChecker(
     private val severities: WatchdogDiagnosticSeverities,

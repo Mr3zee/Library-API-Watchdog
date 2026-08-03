@@ -13,7 +13,7 @@
 ## What it reports
 
 This check fires on the annotation call of `@Intentionally*` annotations with reasons other than
-`ExemptionReason.FOR_BACKWARD_COMPATIBILITY` or `ExemptionReason.API_DESIGN` and a blank `description`:
+`ExemptionReason.FOR_BACKWARDS_COMPATIBILITY` or `ExemptionReason.API_DESIGN` and a blank `description`:
 
 ```kotlin
 // !hide-focused
