@@ -4,6 +4,17 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'compiler-plugin/**'
+      - 'plugin-annotations/**'
+      - 'gradle-conventions/**'
+      - 'diagnostics.json'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'gradle.properties'
+      - 'gradle/**'
+      - 'gradlew'
+      - '.github/workflows/compiler-plugin-tests.yml'
 
 permissions:
   contents: read
