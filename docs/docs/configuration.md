@@ -1,16 +1,34 @@
 # Configuration
 
-Configuration options for `libs-api-watchdog`.
+Configuration options for `library-api-watchdog`.
 
 ## Apply the Gradle plugin
 
+Add the Space EAP repository to the plugin and dependency repositories in `settings.gradle.kts`:
+
 ```kotlin
-plugins {
-    kotlin("libs.api.watchdog") version "0.1.0"
+pluginManagement {
+    repositories {
+        maven("https://packages.jetbrains.team/maven/p/kt-lib/eap")
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        maven("https://packages.jetbrains.team/maven/p/kt-lib/eap")
+        mavenCentral()
+    }
 }
 ```
 
-libs-api-watchdog is a Kotlin compiler plugin. It needs a Gradle
+```kotlin
+plugins {
+    kotlin("library.api-watchdog") version "0.1.0-SNAPSHOT"
+}
+```
+
+library-api-watchdog is a Kotlin compiler plugin. It needs a Gradle
 project that applies the Kotlin plugin and turns on
 [explicit API mode](https://kotlinlang.org/docs/api-guidelines-simplicity.html#use-explicit-api-mode):
 
@@ -21,7 +39,7 @@ kotlin {
 ```
 
 The `-Xexplicit-api` compiler flag, and the `warning` variant of either form, also count. Without
-explicit API mode enabled, `libs-api-watchdog` registers no checks at all: there is no public API contract
+explicit API mode enabled, `library-api-watchdog` registers no checks at all: there is no public API contract
 to watch. The Gradle plugin prints a build warning when explicit API mode is not enabled.
 
 ## What applying does
@@ -30,14 +48,15 @@ Applying the plugin:
 
 - Registers the compiler plugin for every compilation in the project except test compilations:
   test sources are not published, so they carry no API contract to watch.
-- Adds a dependency on `org.jetbrains.kotlin:libs-api-watchdog-plugin-annotations`, a runtime library with the `@Intentionally*` exemption annotations.
+- Adds a dependency on `org.jetbrains.kotlin:kotlin-library-api-watchdog-plugin-annotations`,
+  a runtime library with the `@Intentionally*` exemption annotations.
 - Warns when explicit API mode is not enabled.
 - Checks whether binary compatibility validation is enabled alongside it, printing a
   build warning with a setup snippet for either one that is missing. See below.
 
 ## Errors by default
 
-`libs-api-watchdog` is intentionally restrictive by default: every check reports a compilation error until
+`library-api-watchdog` is intentionally restrictive by default: every check reports a compilation error until
 configured otherwise. See [The apiWatchdog extension](./configuration.md#the-apiwatchdog-extension)
 for demoting individual checks to warnings or disabling them, and
 [Exemptions and internal API](./exemptions.md) for exempting a single declaration in place instead of
@@ -62,7 +81,7 @@ See [Adding the plugin to existing libraries](./existing-libs.md) for more detai
 When invoking the compiler directly, configure severities with the repeatable plugin option:
 
 ```
--P plugin:org.jetbrains.kotlinx.libs.api.watchdog:diagnosticSeverity=<NAME>:<severity>
+-P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=<NAME>:<severity>
 ```
 
 Parameters:
@@ -76,7 +95,7 @@ compiler alone cannot distinguish dependencies declared with `api` from those de
 For example, to demote undocumented public API to a warning use the following argument form:
 
 ```
--P plugin:org.jetbrains.kotlinx.libs.api.watchdog:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:warning
+-P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:warning
 ```
 
 

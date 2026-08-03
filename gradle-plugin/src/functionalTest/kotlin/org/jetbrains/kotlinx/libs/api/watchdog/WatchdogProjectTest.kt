@@ -831,7 +831,7 @@ class WatchdogProjectTest {
         val result = build(
             project.rootDir,
             "help",
-            "-Porg.jetbrains.kotlinx.libs.api.watchdog.suppressExplicitApiWarning=true",
+            "-Porg.jetbrains.kotlin.library.api-watchdog.suppressExplicitApiWarning=true",
         )
         assertFalse(result.output.contains("doesn't enable explicit API mode"))
     }

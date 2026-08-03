@@ -23,4 +23,4 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "libs-watchdog-gradle-conventions"
+rootProject.name = "library-api-watchdog-gradle-conventions"

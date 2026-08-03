@@ -20,6 +20,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
+import org.jetbrains.kotlin.library.api.watchdog.PluginInfo
 
 @Suppress("unused") // Used via reflection.
 public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO) {
@@ -63,7 +64,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         val kotlinCompilerDependency = provider {
             val kotlinVersion = plugins.withType(KotlinBasePlugin::class.java)
                 .firstOrNull()?.pluginVersion
-                ?: error("The Kotlin Gradle plugin must be applied alongside libs-api-watchdog")
+                ?: error("The Kotlin Gradle plugin must be applied alongside library-api-watchdog")
             dependencyHandler.create("org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlinVersion")
         }
         val fixerClasspath = configurations.register(
@@ -238,7 +239,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             name == KotlinCompilation.TEST_COMPILATION_NAME || name.endsWith(TEST_COMPILATION_NAME_SUFFIX)
 
         /** The artifact carrying the standalone fixer tool, published next to this plugin. */
-        private const val FIXER_ARTIFACT_ID = "exempts-fixer"
+        private const val FIXER_ARTIFACT_ID = "kotlin-library-api-watchdog-exempts-fixer"
 
         /** Resolvable runtime used only by [UpdateBackwardsCompatibilityExemptsTask]. */
         private const val FIXER_CLASSPATH_CONFIGURATION_NAME = "apiWatchdogExemptsFixerClasspath"
@@ -254,7 +255,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
          * missing-explicit-API warning should its detection misjudge a project.
          */
         private const val SUPPRESS_EXPLICIT_API_WARNING_PROPERTY =
-            "org.jetbrains.kotlinx.libs.api.watchdog.suppressExplicitApiWarning"
+            "org.jetbrains.kotlin.library.api-watchdog.suppressExplicitApiWarning"
 
         private fun Project.explicitApiWarningSuppressed(): Boolean =
             providers.gradleProperty(SUPPRESS_EXPLICIT_API_WARNING_PROPERTY)
@@ -300,7 +301,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         }
 
         private fun missingExplicitApiWarning(projectPath: String): String = """
-            |Project '$projectPath' applies libs-api-watchdog but doesn't enable explicit API mode, so the
+            |Project '$projectPath' applies library-api-watchdog but doesn't enable explicit API mode, so the
             |watchdog registers no checks: there is no declared public API contract to watch. Enable it in
             |the module's build script:
             |
@@ -312,7 +313,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         """.trimMargin()
 
         private fun abiValidationSuggestion(projectPath: String): String = """
-            |Project '$projectPath' applies libs-api-watchdog but no binary compatibility validation is enabled.
+            |Project '$projectPath' applies library-api-watchdog but no binary compatibility validation is enabled.
             |The watchdog reviews the shape of new API declarations, while binary compatibility validation
             |compares each build against a committed dump of the released API surface and catches accidental
             |breaking changes to it. Enable the Kotlin Gradle plugin's built-in ABI validation in the

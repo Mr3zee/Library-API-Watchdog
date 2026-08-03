@@ -10,24 +10,28 @@ dependencies {
 gradlePlugin {
     plugins {
         register("compilerPluginConventions") {
-            id = "libs-watchdog.compiler-plugin-conventions"
+            id = "library-api-watchdog.compiler-plugin-conventions"
             implementationClass = "org.jetbrains.kotlinx.libs.api.watchdog.conventions.CompilerPluginConventionPlugin"
         }
         register("dokkaConventions") {
-            id = "libs-watchdog.dokka-conventions"
+            id = "library-api-watchdog.dokka-conventions"
             implementationClass = "org.jetbrains.kotlinx.libs.api.watchdog.conventions.DokkaConventionPlugin"
         }
         register("exemptsFixerConventions") {
-            id = "libs-watchdog.exempts-fixer-conventions"
+            id = "library-api-watchdog.exempts-fixer-conventions"
             implementationClass = "org.jetbrains.kotlinx.libs.api.watchdog.conventions.ExemptsFixerConventionPlugin"
         }
         register("gradlePluginConventions") {
-            id = "libs-watchdog.gradle-plugin-conventions"
+            id = "library-api-watchdog.gradle-plugin-conventions"
             implementationClass = "org.jetbrains.kotlinx.libs.api.watchdog.conventions.GradlePluginConventionPlugin"
         }
         register("rootConventions") {
-            id = "libs-watchdog.root-conventions"
+            id = "library-api-watchdog.root-conventions"
             implementationClass = "org.jetbrains.kotlinx.libs.api.watchdog.conventions.RootConventionPlugin"
+        }
+        register("spacePublishingConventions") {
+            id = "library-api-watchdog.space-publishing-conventions"
+            implementationClass = "org.jetbrains.kotlinx.libs.api.watchdog.conventions.SpacePublishingConventionPlugin"
         }
     }
 }

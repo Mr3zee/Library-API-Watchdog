@@ -4,8 +4,9 @@ import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {
     kotlin("compiler.plugin.devkit.gradle-plugin")
-    id("libs-watchdog.dokka-conventions")
-    id("libs-watchdog.gradle-plugin-conventions")
+    id("library-api-watchdog.dokka-conventions")
+    id("library-api-watchdog.gradle-plugin-conventions")
+    id("library-api-watchdog.space-publishing-conventions")
 }
 
 kotlin {
@@ -15,15 +16,16 @@ kotlin {
 }
 
 pluginDevKit {
-    companionLibrary(project(":plugin-annotations"))
-    compilerPlugin = project(":compiler-plugin")
+    pluginPackage.set("org.jetbrains.kotlin.library.api.watchdog")
+    companionLibrary(project(":kotlin-library-api-watchdog-plugin-annotations"))
+    compilerPlugin = project(":kotlin-library-api-watchdog-compiler-plugin")
 }
 
 gradlePlugin {
     plugins {
-        create("LibsApiWatchdog") {
-            id = group.toString()
-            displayName = "LibsApiWatchdog"
+        create("LibraryApiWatchdog") {
+            id = "org.jetbrains.kotlin.library.api-watchdog"
+            displayName = "Library API Watchdog"
             description =
                 "Warns Kotlin library authors about public API declarations that are hard to evolve"
             implementationClass = "org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSupportPlugin"

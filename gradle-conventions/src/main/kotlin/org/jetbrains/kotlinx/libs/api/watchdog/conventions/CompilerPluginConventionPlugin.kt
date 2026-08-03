@@ -2,12 +2,21 @@ package org.jetbrains.kotlinx.libs.api.watchdog.conventions
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.compile.JavaCompile
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 
 class CompilerPluginConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             tasks.named("animalsnifferMain").configure { enabled = false }
+
+            // The version-pinned dev-kit test suites consume this project through a project
+            // dependency whose selected artifact is the relocated compiler plugin jar.
+            tasks.withType(JavaCompile::class.java).configureEach {
+                if (name != "compileJava") {
+                    dependsOn("shadowJar")
+                }
+            }
 
             val generateDiagnosticMessages = tasks.register(
                 "generateDiagnosticMessages",

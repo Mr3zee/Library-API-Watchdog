@@ -127,7 +127,7 @@ this check along with the rest of the [Java interop checks](./java-interop.md) g
 
 With direct compiler invocation:
 ```
--P plugin:org.jetbrains.kotlinx.libs.api.watchdog:diagnosticSeverity=COMPANION_API_WITHOUT_JVM_STATIC:warning
+-P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=COMPANION_API_WITHOUT_JVM_STATIC:warning
 ```
 
 ## See also

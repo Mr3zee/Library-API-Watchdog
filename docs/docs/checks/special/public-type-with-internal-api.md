@@ -90,7 +90,7 @@ apiWatchdog {
 
 With direct compiler invocation:
 ```
--P plugin:org.jetbrains.kotlinx.libs.api.watchdog:diagnosticSeverity=PUBLIC_TYPE_WITH_INTERNAL_API:warning
+-P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=PUBLIC_TYPE_WITH_INTERNAL_API:warning
 ```
 
 ## See also

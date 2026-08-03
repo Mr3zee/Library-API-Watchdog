@@ -7,7 +7,7 @@ import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 
 class DokkaConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
-        val conventionModuleName = "libs-api-watchdog-${target.name}"
+        val conventionModuleName = target.name
         val rootDirectory = target.isolated.rootProject.projectDirectory
         val sourceUrl = target.uri("https://github.com/Mr3zee/libs-api-watchdog/blob/main")
         with(target) {

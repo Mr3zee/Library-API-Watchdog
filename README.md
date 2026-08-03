@@ -1,4 +1,4 @@
-# libs-api-watchdog <img src="logo.svg" width="48" align="right" alt="libs-api-watchdog logo"/>
+# library-api-watchdog <img src="logo.svg" width="48" align="right" alt="library-api-watchdog logo"/>
 
 A Kotlin K2 compiler plugin that warns library authors about public API declarations that are
 hard to evolve.
@@ -10,6 +10,24 @@ annotations.
 
 ## Setup
 
+Add the snapshot repository to `settings.gradle.kts` for both plugin and library resolution:
+
+```kotlin
+pluginManagement {
+    repositories {
+        maven("https://packages.jetbrains.team/maven/p/kt-lib/eap")
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        maven("https://packages.jetbrains.team/maven/p/kt-lib/eap")
+        mavenCentral()
+    }
+}
+```
+
 The plugin only runs in modules compiled with
 [explicit API mode](https://kotlinlang.org/docs/api-guidelines-simplicity.html#use-explicit-api-mode)
 (strict or warning variant); without it the checkers are not registered at all, and the Gradle
@@ -17,7 +35,7 @@ plugin prints a warning.
 
 ```kotlin
 plugins {
-    id("org.jetbrains.kotlinx.libs.api.watchdog") version "<version>"
+    kotlin("library.api-watchdog") version "<version>"
 }
 
 kotlin {
@@ -27,7 +45,8 @@ kotlin {
 
 Applying the Gradle plugin registers the compiler plugin for every compilation except test
 compilations, whose sources are never published, and automatically
-adds the `org.jetbrains.kotlin:libs-api-watchdog-plugin-annotations` dependency with the `@Intentionally*` exemption annotations. The
+adds the `org.jetbrains.kotlin:kotlin-library-api-watchdog-plugin-annotations` dependency with
+the `@Intentionally*` exemption annotations. The
 plugin is intentionally restrictive by default: every check reports a compilation error until it
 is individually demoted to a warning or disabled through the `apiWatchdog` extension:
 
@@ -175,19 +194,19 @@ Its version is configured by `compilerPluginDevKitVersion` in `gradle.properties
 Tests:
 
 ```bash
-./gradlew :compiler-plugin:test               # diagnostics tests
-./gradlew :compiler-plugin:generateTests      # regenerate JUnit classes from test data
-./gradlew :gradle-plugin:functionalTest       # Gradle integration tests
+./gradlew :kotlin-library-api-watchdog-compiler-plugin:test               # diagnostics tests
+./gradlew :kotlin-library-api-watchdog-compiler-plugin:generateTests      # regenerate JUnit classes from test data
+./gradlew :kotlin-library-api-watchdog-gradle-plugin:functionalTest       # Gradle integration tests
 ```
 
 Modules:
 
-- [`:compiler-plugin`](compiler-plugin/src) - the compiler plugin (FIR checkers only). Test data
+- [`:kotlin-library-api-watchdog-compiler-plugin`](compiler-plugin/src) - the compiler plugin (FIR checkers only). Test data
   lives in [compiler-plugin/src/test/data/diagnostics](compiler-plugin/src/test/data/diagnostics).
-- [`:plugin-annotations`](plugin-annotations/src/commonMain/kotlin) - the `@Intentionally*`
+- [`:kotlin-library-api-watchdog-plugin-annotations`](plugin-annotations/src/commonMain/kotlin) - the `@Intentionally*`
   exemption annotations, `@InternalAnnotationMarker`, and the `ExemptionReason` enum.
-- [`:gradle-plugin`](gradle-plugin/src) - applies the compiler plugin and the annotations
-  dependency (plugin id `org.jetbrains.kotlinx.libs.api.watchdog`).
+- [`:kotlin-library-api-watchdog-gradle-plugin`](gradle-plugin/src) - applies the compiler plugin and the annotations
+  dependency (plugin id `org.jetbrains.kotlin.library.api-watchdog`).
 
 The documentation site is a [Docusaurus](https://docusaurus.io/) project in [docs](docs), built by
 [docs.yml](.github/workflows/docs.yml); see [docs/authoring.md](docs/authoring.md) for the page

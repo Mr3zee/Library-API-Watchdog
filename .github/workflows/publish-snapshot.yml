@@ -1,0 +1,33 @@
+name: Publish snapshot
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    # A macOS host can publish the Apple annotation variants as well as the cross-compiled
+    # Linux, Windows, Android Native, JVM, JS, and Wasm variants.
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Publish snapshot to Space
+        env:
+          KOTLIN_LIBRARY_SPACE_USERNAME: ${{ secrets.KOTLIN_LIBRARY_SPACE_USERNAME }}
+          KOTLIN_LIBRARY_SPACE_PASSWORD: ${{ secrets.KOTLIN_LIBRARY_SPACE_PASSWORD }}
+        run: ./gradlew publishAllPublicationsToSpaceRepository

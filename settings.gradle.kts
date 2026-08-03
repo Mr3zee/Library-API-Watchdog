@@ -46,12 +46,16 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "libs-api-watchdog"
+rootProject.name = "library-api-watchdog"
 
-include("compiler-plugin")
+include("kotlin-library-api-watchdog-compiler-plugin")
+project(":kotlin-library-api-watchdog-compiler-plugin").projectDir = file("compiler-plugin")
 
-include("exempts-fixer")
+include("kotlin-library-api-watchdog-exempts-fixer")
+project(":kotlin-library-api-watchdog-exempts-fixer").projectDir = file("exempts-fixer")
 
-include("gradle-plugin")
+include("kotlin-library-api-watchdog-gradle-plugin")
+project(":kotlin-library-api-watchdog-gradle-plugin").projectDir = file("gradle-plugin")
 
-include("plugin-annotations")
+include("kotlin-library-api-watchdog-plugin-annotations")
+project(":kotlin-library-api-watchdog-plugin-annotations").projectDir = file("plugin-annotations")

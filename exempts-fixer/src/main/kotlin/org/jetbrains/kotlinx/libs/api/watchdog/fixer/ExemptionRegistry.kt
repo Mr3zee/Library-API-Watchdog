@@ -45,7 +45,8 @@ internal sealed interface FixResolution {
 /**
  * Maps every watchdog diagnostic to the `@Intentionally*` exemption annotation that acknowledges
  * it, or to the reason why no annotation can be added automatically. The diagnostic names mirror
- * `WatchdogDiagnostics` in `:compiler-plugin` and the annotations mirror `:plugin-annotations`.
+ * `WatchdogDiagnostics` in `:kotlin-library-api-watchdog-compiler-plugin` and the annotations
+ * mirror `:kotlin-library-api-watchdog-plugin-annotations`.
  * The Gradle plugin's functional tests exercise every fixable entry end to end, which keeps the
  * three lists in sync.
  */

@@ -108,7 +108,7 @@ apiWatchdog {
 
 With direct compiler invocation:
 ```
--P plugin:org.jetbrains.kotlinx.libs.api.watchdog:diagnosticSeverity=BOOLEAN_PARAMETER_PUBLIC_API:warning
+-P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=BOOLEAN_PARAMETER_PUBLIC_API:warning
 ```
 
 ## See also

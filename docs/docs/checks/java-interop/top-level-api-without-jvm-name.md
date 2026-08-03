@@ -118,7 +118,7 @@ this check along with the rest of the [Java interop checks](./java-interop.md) g
 
 With direct compiler invocation:
 ```
--P plugin:org.jetbrains.kotlinx.libs.api.watchdog:diagnosticSeverity=TOP_LEVEL_API_WITHOUT_JVM_NAME:warning
+-P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=TOP_LEVEL_API_WITHOUT_JVM_NAME:warning
 ```
 
 ## See also

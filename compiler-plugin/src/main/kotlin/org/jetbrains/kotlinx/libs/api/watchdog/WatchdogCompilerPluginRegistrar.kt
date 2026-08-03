@@ -6,6 +6,7 @@ import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitCompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitComponentRegistrar
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
+import org.jetbrains.kotlin.library.api.watchdog.PluginInfo
 import org.jetbrains.kotlinx.libs.api.watchdog.fir.DependencyExposureCheckConfiguration
 import org.jetbrains.kotlinx.libs.api.watchdog.fir.WatchdogDiagnosticSeverities
 import org.jetbrains.kotlinx.libs.api.watchdog.fir.WatchdogDiagnosticsRecorder

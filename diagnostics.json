@@ -4,7 +4,7 @@
     "the documentation website.",
     "",
     "Consumers:",
-    "  - :compiler-plugin generates WatchdogDiagnosticMessages from this file (see its",
+    "  - :kotlin-library-api-watchdog-compiler-plugin generates WatchdogDiagnosticMessages from this file (see its",
     "    build.gradle.kts). The generator appends a final 'See more: <docsBaseUrl><docs>' section",
     "    to every message, after messageTrailer if present, and escapes ' as '' for messages with",
     "    parameters, which the compiler renders through java.text.MessageFormat.",

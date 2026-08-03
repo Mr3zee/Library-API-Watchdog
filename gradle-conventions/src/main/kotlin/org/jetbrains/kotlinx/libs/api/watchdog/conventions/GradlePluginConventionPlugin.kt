@@ -12,11 +12,11 @@ class GradlePluginConventionPlugin : Plugin<Project> {
         with(target) {
             tasks.named("installForFunctionalTest").configure {
                 dependsOn(
-                    ":compiler-plugin:installForFunctionalTest",
-                    ":exempts-fixer:installForFunctionalTest",
-                    ":plugin-annotations:publishJsPublicationToFunctionalTestRepository",
-                    ":plugin-annotations:publishJvmPublicationToFunctionalTestRepository",
-                    ":plugin-annotations:publishKotlinMultiplatformPublicationToFunctionalTestRepository",
+                    ":kotlin-library-api-watchdog-compiler-plugin:installForFunctionalTest",
+                    ":kotlin-library-api-watchdog-exempts-fixer:installForFunctionalTest",
+                    ":kotlin-library-api-watchdog-plugin-annotations:publishJsPublicationToFunctionalTestRepository",
+                    ":kotlin-library-api-watchdog-plugin-annotations:publishJvmPublicationToFunctionalTestRepository",
+                    ":kotlin-library-api-watchdog-plugin-annotations:publishKotlinMultiplatformPublicationToFunctionalTestRepository",
                 )
             }
 

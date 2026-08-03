@@ -55,7 +55,7 @@ open class WatchdogProject(
         if (extraBuildScript.isNotBlank()) appendLine(extraBuildScript)
     }
 
-    override val pluginUnderTest: Plugin = Plugin("org.jetbrains.kotlinx.libs.api.watchdog", pluginUnderTestVersion)
+    override val pluginUnderTest: Plugin = Plugin("org.jetbrains.kotlin.library.api-watchdog", pluginUnderTestVersion)
 
     // The dev kit runtime artifacts are consumed from mavenLocal rather than from included builds.
     override fun repositories(defaults: List<Repository>): Repositories =

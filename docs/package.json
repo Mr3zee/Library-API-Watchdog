@@ -1,8 +1,8 @@
 {
-  "name": "libs-api-watchdog-docs",
+  "name": "library-api-watchdog-docs",
   "version": "0.1.0",
   "private": true,
-  "description": "Documentation website for libs-api-watchdog",
+  "description": "Documentation website for library-api-watchdog",
   "scripts": {
     "start": "docusaurus start",
     "build": "docusaurus build",

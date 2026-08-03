@@ -62,7 +62,7 @@ jobs:
 
       - name: Cross-check documentation examples
         run: >-
-          ./gradlew :gradle-plugin:k240FunctionalTest
+          ./gradlew :kotlin-library-api-watchdog-gradle-plugin:k240FunctionalTest
           --tests org.jetbrains.kotlinx.libs.api.watchdog.DocsExamplesTest
 
       - name: Build Dokka API reference
@@ -83,7 +83,7 @@ jobs:
       - name: Save assembled artifact
         uses: actions/upload-artifact@v6
         with:
-          name: libs-api-watchdog-docs-assembled
+          name: library-api-watchdog-docs-assembled
           path: ${{ env.ASSEMBLE_ARTIFACT }}
           retention-days: 7
 
@@ -97,7 +97,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v6
         with:
-          name: libs-api-watchdog-docs-assembled
+          name: library-api-watchdog-docs-assembled
 
       - name: Unzip artifact
         run: unzip -O UTF-8 -qq '${{ env.ASSEMBLE_ARTIFACT }}' -d publish

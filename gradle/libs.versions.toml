@@ -6,7 +6,7 @@ dokka = "2.2.0"
 # https://github.com/GradleUp/shadow
 shadow = "9.6.0"
 # https://developer.android.com/build/releases/gradle-plugin
-# Applied by the Android functional test projects of :gradle-plugin. Both AGP generations are
+# Applied by the Android functional test projects of :kotlin-library-api-watchdog-gradle-plugin. Both AGP generations are
 # integrated differently: AGP 8 works through the Kotlin Android Gradle plugin, while AGP 9
 # refuses that plugin and drives KGP's compiler plugin integration itself through its built-in
 # Kotlin support.

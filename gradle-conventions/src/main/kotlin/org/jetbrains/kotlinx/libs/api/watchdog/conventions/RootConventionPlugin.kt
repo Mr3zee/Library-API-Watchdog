@@ -12,7 +12,7 @@ class RootConventionPlugin : Plugin<Project> {
         val logo = target.isolated.rootProject.projectDirectory.file("docs/static/img/logo-icon.svg")
         val footer = "© ${Year.now()} JetBrains s.r.o and contributors."
         with(target) {
-            pluginManager.apply("libs-watchdog.dokka-conventions")
+            pluginManager.apply("library-api-watchdog.dokka-conventions")
 
             extensions.configure(DokkaExtension::class.java) {
                 moduleVersion.set(conventionModuleVersion)
@@ -23,8 +23,14 @@ class RootConventionPlugin : Plugin<Project> {
                 }
             }
 
-            dependencies.add("dokka", dependencies.project(mapOf("path" to ":plugin-annotations")))
-            dependencies.add("dokka", dependencies.project(mapOf("path" to ":gradle-plugin")))
+            dependencies.add(
+                "dokka",
+                dependencies.project(mapOf("path" to ":kotlin-library-api-watchdog-plugin-annotations")),
+            )
+            dependencies.add(
+                "dokka",
+                dependencies.project(mapOf("path" to ":kotlin-library-api-watchdog-gradle-plugin")),
+            )
         }
     }
 }

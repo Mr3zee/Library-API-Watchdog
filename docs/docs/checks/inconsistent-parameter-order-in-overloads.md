@@ -211,7 +211,7 @@ apiWatchdog {
 
 With direct compiler invocation:
 ```
--P plugin:org.jetbrains.kotlinx.libs.api.watchdog:diagnosticSeverity=INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS:warning
+-P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS:warning
 ```
 
 ## See also

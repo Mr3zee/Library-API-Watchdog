@@ -46,5 +46,5 @@ jobs:
       - name: Run Gradle tests
         run: >-
           ./gradlew
-          :exempts-fixer:test
-          :gradle-plugin:allVersionedFunctionalTests
+          :kotlin-library-api-watchdog-exempts-fixer:test
+          :kotlin-library-api-watchdog-gradle-plugin:allVersionedFunctionalTests

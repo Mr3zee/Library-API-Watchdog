@@ -4,7 +4,7 @@ slug: /
 
 # Get started
 
-`libs-api-watchdog` helps library authors to detect public API declarations
+`library-api-watchdog` helps library authors to detect public API declarations
 that are hard to evolve. It runs as a set of Kotlin K2 compiler frontend checks in the module it is applied to.
 
 The tool is intentionally restrictive by default: all checks are enabled and report a compilation error until
@@ -57,7 +57,7 @@ In each published module's `build.gradle.kts` add:
 ```kotlin
 plugins {
     kotlin("multiplatform") version "2.4.0"
-    kotlin("libs.api.watchdog") version "0.1.0"
+    kotlin("library.api-watchdog") version "0.1.0-SNAPSHOT"
 }
 
 kotlin {

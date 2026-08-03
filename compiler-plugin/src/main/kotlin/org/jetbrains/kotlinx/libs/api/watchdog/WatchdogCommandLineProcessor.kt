@@ -8,6 +8,7 @@ import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitCLP
 import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitCommandLineProcessor
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
+import org.jetbrains.kotlin.library.api.watchdog.PluginInfo
 import org.jetbrains.kotlinx.libs.api.watchdog.fir.WatchdogDiagnostics
 import org.jetbrains.kotlinx.libs.api.watchdog.fir.WatchdogSeverity
 

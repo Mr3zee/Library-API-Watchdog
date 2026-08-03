@@ -256,7 +256,7 @@ class DocsExamplesTest {
             kotlin {
                 compilerOptions.freeCompilerArgs.addAll(
                     "-P",
-                    "plugin:org.jetbrains.kotlinx.libs.api.watchdog:diagnosticsOutputFile=" +
+                    "plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticsOutputFile=" +
                         layout.projectDirectory.file("$REPORT_FILE").asFile.absolutePath,
                 )
             }

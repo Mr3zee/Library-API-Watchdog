@@ -1,6 +1,6 @@
 # Exemptions and internal API
 
-`libs-api-watchdog` gives library authors two ways to opt out of its checks without disabling them altogether:
+`library-api-watchdog` gives library authors two ways to opt out of its checks without disabling them altogether:
 
 - A per-declaration `@Intentionally*` annotation acknowledges that one specific hard-to-evolve shape is a deliberate
   choice.
@@ -136,5 +136,5 @@ likewise concerned with source-facing behavior.
 ## Where the annotations come from
 
 Every `@Intentionally*` annotation, `@InternalAnnotationMarker`, and `ExemptionReason` live in the
-`org.jetbrains.kotlin:libs-api-watchdog-plugin-annotations` artifact.
+`org.jetbrains.kotlin:kotlin-library-api-watchdog-plugin-annotations` artifact.
 Applying the Gradle plugin adds this library as a dependency automatically - no manual dependency declaration is needed.

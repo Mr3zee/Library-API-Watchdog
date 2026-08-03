@@ -57,8 +57,8 @@ export default function Code({codeblock}: {codeblock: HighlightedCode}): ReactNo
 }
 
 const HIDE_FOCUSED_ANNOTATION = 'hide-focused';
-const CODE_VIEW_STORAGE_KEY = 'libs-api-watchdog-code-view';
-const CODE_VIEW_EVENT = 'libs-api-watchdog-code-view-change';
+const CODE_VIEW_STORAGE_KEY = 'library-api-watchdog-code-view';
+const CODE_VIEW_EVENT = 'library-api-watchdog-code-view-change';
 
 type CodeView = 'full' | 'focused';
 let inMemoryCodeView: CodeView = 'full';

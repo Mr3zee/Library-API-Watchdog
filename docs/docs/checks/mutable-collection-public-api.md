@@ -162,7 +162,7 @@ apiWatchdog {
 
 With direct compiler invocation:
 ```
--P plugin:org.jetbrains.kotlinx.libs.api.watchdog:diagnosticSeverity=MUTABLE_COLLECTION_PUBLIC_API:warning
+-P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=MUTABLE_COLLECTION_PUBLIC_API:warning
 ```
 
 ## See also

@@ -18,8 +18,8 @@ annotation. Docs CI also compiles every public-API Kotlin sample with all watchd
 
 - Never use the em dash character (U+2014). Use a plain hyphen, a colon, or rewrite the sentence.
   Also avoid smart quotes. Use straight ASCII quotes.
-- Naming: the product is `libs-api-watchdog`. The Gradle plugin id is
-  `org.jetbrains.kotlinx.libs.api.watchdog`. The Gradle extension is `apiWatchdog`. The
+- Naming: the product is `library-api-watchdog`. The Gradle plugin id is
+  `org.jetbrains.kotlin.library.api-watchdog`. The Gradle extension is `apiWatchdog`. The
   annotations package is `org.jetbrains.kotlinx.libs.api.watchdog`.
 - Every Kotlin API example must compile in explicit API mode and pass all watchdog checks except
   the diagnostics it demonstrates with `!diag` annotations. Use `public` modifiers and explicit
@@ -249,7 +249,7 @@ parameter, type usage, containing class) when the annotation has several.
 
 With direct compiler invocation:
 \```
--P plugin:org.jetbrains.kotlinx.libs.api.watchdog:diagnosticSeverity=<DIAGNOSTIC_NAME>:warning
+-P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=<DIAGNOSTIC_NAME>:warning
 \```
 
 ## See also

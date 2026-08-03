@@ -1,6 +1,6 @@
 # Java interop checks
 
-`libs-api-watchdog` includes six checks that keep a JVM library ergonomic for Java consumers. They flag
+`library-api-watchdog` includes six checks that keep a JVM library ergonomic for Java consumers. They flag
 shapes that compile fine but that Java callers can't use idiomatically, or can't use at all. All
 six only run in JVM compilations.
 

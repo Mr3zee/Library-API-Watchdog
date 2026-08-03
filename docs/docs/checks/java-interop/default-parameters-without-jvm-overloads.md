@@ -159,7 +159,7 @@ this check along with the rest of the [Java interop checks](./java-interop.md) g
 
 With direct compiler invocation:
 ```
--P plugin:org.jetbrains.kotlinx.libs.api.watchdog:diagnosticSeverity=DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS:warning
+-P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS:warning
 ```
 
 ## See also
