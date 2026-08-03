@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.dokka)
+    id("libs-watchdog.dokka-conventions")
     `maven-publish`
     kotlin("compiler.plugin.devkit.functional-test-publishing")
 }

@@ -5,8 +5,8 @@ import javax.inject.Inject
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.ListProperty
-import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
@@ -44,8 +44,8 @@ public abstract class UpdateBackwardsCompatibilityExemptsTask : DefaultTask() {
     public abstract val fixerClasspath: ConfigurableFileCollection
 
     /** The directory console output relativizes source paths against. */
-    @get:Input
-    public abstract val projectDirectory: Property<File>
+    @get:Internal
+    public abstract val projectDirectory: DirectoryProperty
 
     @get:Inject
     protected abstract val execOperations: ExecOperations
@@ -126,7 +126,7 @@ public abstract class UpdateBackwardsCompatibilityExemptsTask : DefaultTask() {
     }
 
     private fun relativize(path: String): String =
-        File(path).relativeToOrSelf(projectDirectory.get()).path
+        File(path).relativeToOrSelf(projectDirectory.get().asFile).path
 
     private fun String.unescapeNewlines(): String {
         val result = StringBuilder(length)

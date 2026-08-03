@@ -1,6 +1,8 @@
 package org.jetbrains.kotlinx.libs.api.watchdog
 
 import java.io.File
+import org.gradle.api.Action
+import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.attributes.Attribute
@@ -11,13 +13,13 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitSupportPlugin
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
+import org.jetbrains.kotlin.gradle.dsl.HasConfigurableKotlinCompilerOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
 import org.jetbrains.kotlin.gradle.plugin.FilesSubpluginOption
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 @Suppress("unused") // Used via reflection.
 public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO) {
@@ -36,8 +38,9 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
 
     override fun apply(target: Project) {
         val extension = target.extensions.create("apiWatchdog", WatchdogGradleExtension::class.java)
-        collectDiagnosticsForExempts = target.objects.property(Boolean::class.java).convention(false)
-        target.registerUpdateBackwardsCompatibilityExemptsTask()
+        val collectDiagnostics = target.objects.property(Boolean::class.java).convention(false)
+        collectDiagnosticsForExempts = collectDiagnostics
+        target.registerUpdateBackwardsCompatibilityExemptsTask(collectDiagnostics)
         target.afterEvaluate { project ->
             if (!project.explicitApiWarningSuppressed() && !project.hasExplicitApiMode()) {
                 project.logger.warn(missingExplicitApiWarning(project.path))
@@ -53,26 +56,41 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
      * so KGP itself drives JVM, JS, native, Wasm, and metadata analysis. The fixer classpath uses
      * the compiler embeddable matching the project's Kotlin Gradle plugin for PSI parsing only.
      */
-    private fun Project.registerUpdateBackwardsCompatibilityExemptsTask(): TaskProvider<UpdateBackwardsCompatibilityExemptsTask> {
-        val fixerClasspath = configurations.detachedConfiguration(
-            dependencies.create("${info.artifact.groupId}:$FIXER_ARTIFACT_ID:${info.artifact.version}"),
-        )
-        fixerClasspath.dependencies.addLater(provider {
-            val kotlinVersion = plugins.withType(KotlinBasePlugin::class.java).firstOrNull()?.pluginVersion
+    private fun Project.registerUpdateBackwardsCompatibilityExemptsTask(
+        collectDiagnostics: Property<Boolean>,
+    ): TaskProvider<UpdateBackwardsCompatibilityExemptsTask> {
+        val dependencyHandler = dependencies
+        val kotlinCompilerDependency = provider {
+            val kotlinVersion = plugins.withType(KotlinBasePlugin::class.java)
+                .firstOrNull()?.pluginVersion
                 ?: error("The Kotlin Gradle plugin must be applied alongside libs-api-watchdog")
-            dependencies.create("org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlinVersion")
-        })
+            dependencyHandler.create("org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlinVersion")
+        }
+        val fixerClasspath = configurations.register(
+            FIXER_CLASSPATH_CONFIGURATION_NAME,
+            Action { configuration ->
+                configuration.isCanBeConsumed = false
+                configuration.isCanBeResolved = true
+                configuration.description = "The watchdog exemption fixer and its Kotlin PSI runtime"
+                configuration.dependencies.add(
+                    dependencyHandler.create(
+                        "${info.artifact.groupId}:$FIXER_ARTIFACT_ID:${info.artifact.version}",
+                    ),
+                )
+                configuration.dependencies.addLater(kotlinCompilerDependency)
+            },
+        )
 
         return tasks.register(UPDATE_EXEMPTS_TASK_NAME, UpdateBackwardsCompatibilityExemptsTask::class.java) { task ->
             // Realizing the task enables collection. Compile-task inputs and options
             // consume this property lazily during task-graph construction and execution.
-            collectDiagnosticsForExempts.set(true)
+            collectDiagnostics.set(true)
             task.group = "api watchdog"
             task.description = "Acknowledges every watchdog diagnostic in the main Kotlin " +
                     "compilation sources with the matching @Intentionally* annotation and the " +
                     "FOR_BACKWARDS_COMPATIBILITY reason"
             task.compilationNames.convention(emptyList())
-            task.projectDirectory.set(layout.projectDirectory.asFile)
+            task.projectDirectory.set(layout.projectDirectory)
             task.fixerClasspath.from(fixerClasspath)
         }
     }
@@ -83,7 +101,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         val extension = extensions.getByType(WatchdogGradleExtension::class.java)
         val isMain = kotlinCompilation.name == KotlinCompilation.MAIN_COMPILATION_NAME
         val collect = collectDiagnosticsForExempts.map { it && isMain }
-        val compileDependencies = configurations.getByName(kotlinCompilation.compileDependencyConfigurationName)
+        val compileDependencies = configurations.named(kotlinCompilation.compileDependencyConfigurationName)
         val transitiveDependencies = transitiveDependenciesFor(kotlinCompilation, compileDependencies)
         val reportFile = layout.buildDirectory.file(
             "reports/api-watchdog/diagnostics/${kotlinCompilation.compileKotlinTaskName}.tsv"
@@ -146,10 +164,10 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                     add(
                         SubpluginOption(
                             "compileDependencyPaths",
-                            compileDependencies.asPath,
+                            compileDependencies.get().asPath,
                         ),
                     )
-                    add(SubpluginOption("transitiveDependencyPaths", transitiveDependencies.asPath))
+                    add(SubpluginOption("transitiveDependencyPaths", transitiveDependencies.get().asPath))
                 }
             }
         }
@@ -163,27 +181,32 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
      */
     private fun Project.transitiveDependenciesFor(
         kotlinCompilation: KotlinCompilation<*>,
-        compileDependencies: Configuration,
-    ): Configuration {
+        compileDependencies: Provider<Configuration>,
+    ): NamedDomainObjectProvider<Configuration> {
         // Android publishes one API-elements configuration per variant, and its compilation name
         // is that variant name. The target-level configuration does not carry variant-specific
         // dependencies such as build-type and flavor `api` declarations. Some non-library Android
         // variants have no publishable API elements, so retain the target configuration as a safe
         // fallback for those.
-        val publishedApi = if (kotlinCompilation.platformType == KotlinPlatformType.androidJvm) {
-            configurations.findByName("${kotlinCompilation.name}ApiElements")
+        val androidApiElementsName = "${kotlinCompilation.name}ApiElements"
+        val publishedApiName = if (
+            kotlinCompilation.platformType == KotlinPlatformType.androidJvm &&
+            androidApiElementsName in configurations.names
+        ) {
+            androidApiElementsName
         } else {
-            null
-        } ?: configurations.getByName(kotlinCompilation.target.apiElementsConfigurationName)
-        return configurations.create(
+            kotlinCompilation.target.apiElementsConfigurationName
+        }
+        val publishedApi = configurations.named(publishedApiName)
+        return configurations.register(
             "apiWatchdog${kotlinCompilation.disambiguatedName.replaceFirstChar(Char::uppercaseChar)}TransitiveDependencies",
         ) { configuration ->
             configuration.isCanBeConsumed = false
             configuration.isCanBeResolved = true
             configuration.description =
                 "Dependencies exposed transitively by ${kotlinCompilation.target.name} API elements"
-            configuration.extendsFrom(publishedApi)
-            configuration.attributes.copyFrom(compileDependencies.attributes)
+            configuration.extendsFrom(publishedApi.get())
+            configuration.attributes.copyFrom(compileDependencies.get().attributes)
         }
     }
 
@@ -217,6 +240,9 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         /** The artifact carrying the standalone fixer tool, published next to this plugin. */
         private const val FIXER_ARTIFACT_ID = "exempts-fixer"
 
+        /** Resolvable runtime used only by [UpdateBackwardsCompatibilityExemptsTask]. */
+        private const val FIXER_CLASSPATH_CONFIGURATION_NAME = "apiWatchdogExemptsFixerClasspath"
+
         /** The standalone Binary Compatibility Validator's plugin id. */
         private const val BCV_PLUGIN_ID = "org.jetbrains.kotlinx.binary-compatibility-validator"
 
@@ -236,29 +262,26 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 .getOrElse(false)
 
         /**
-         * Whether explicit API mode (strict or warning) is enabled: through the `kotlin` DSL, or
-         * through a raw `-Xexplicit-api` flag in the effective free compiler arguments of any
-         * Kotlin compile task. The DSL check comes first so that the common case doesn't force
-         * task realization.
+         * Whether explicit API mode (strict or warning) is enabled through the `kotlin` DSL or a
+         * raw flag in its top-level compiler options. Inspecting the extension keeps compile tasks
+         * unrealized during configuration.
          */
         private fun Project.hasExplicitApiMode(): Boolean {
             val kotlin = extensions.findByName("kotlin") as? KotlinBaseExtension ?: return false
             val mode = kotlin.explicitApi
-            return mode != null && mode != ExplicitApiMode.Disabled || tasks.withType(KotlinCompilationTask::class.java).any { task ->
-                task.compilerOptions.freeCompilerArgs.orNull.orEmpty()
-                    .any { it.startsWith("-Xexplicit-api=") && it != "-Xexplicit-api=disable" }
+            if (mode != null && mode != ExplicitApiMode.Disabled) return true
+            val compilerOptions = kotlin as? HasConfigurableKotlinCompilerOptions<*> ?: return false
+            return compilerOptions.compilerOptions.freeCompilerArgs.orNull.orEmpty().any {
+                it.startsWith("-Xexplicit-api=") && it != "-Xexplicit-api=disable"
             }
         }
 
         /**
-         * Whether some binary compatibility validation guards this project: the standalone
-         * Binary Compatibility Validator plugin (it covers subprojects when applied to a parent
-         * project) or the Kotlin Gradle plugin's built-in ABI validation.
+         * Whether binary compatibility validation is configured in this isolated project: the
+         * standalone Binary Compatibility Validator plugin or Kotlin's built-in ABI validation.
          */
         private fun Project.hasAbiValidation(): Boolean {
-            val standaloneApplied = generateSequence(this) { it.parent }
-                .any { it.pluginManager.hasPlugin(BCV_PLUGIN_ID) }
-            if (standaloneApplied) return true
+            if (pluginManager.hasPlugin(BCV_PLUGIN_ID)) return true
             val kotlin = extensions.findByName("kotlin") as? ExtensionAware ?: return false
             // Kotlin 2.2 and 2.3 register the DSL as a `kotlin` sub-extension whose `enabled`
             // flag is the opt-in. The flag is deprecated for removal in the API compiled

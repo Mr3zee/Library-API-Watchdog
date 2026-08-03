@@ -17,6 +17,27 @@ import org.junit.Test
 
 class UpdateBackwardsCompatibilityExemptsTest {
     @Test
+    fun updateTaskReusesTheConfigurationCache() {
+        val project = object : WatchdogProject() {
+            override fun sources() = listOf(
+                source("/** An existing open API. */\npublic open class ExistingApi", "existingApi"),
+            )
+        }.gradleProject
+        val arguments = arrayOf(
+            UPDATE_TASK,
+            "--configuration-cache",
+            "--configuration-cache-problems=fail",
+        )
+
+        val first = build(project.rootDir, *arguments)
+        assertContains(first.output, "Configuration cache entry stored.")
+
+        val second = build(project.rootDir, *arguments)
+        assertContains(second.output, "Configuration cache entry reused.")
+        assertContains(second.output, "No watchdog diagnostics to exempt.")
+    }
+
+    @Test
     fun fixesEveryFixableDiagnosticAndTheBuildPasses() {
         val project = object : WatchdogProject() {
             override fun sources() = listOf(source(fixableFile, "legacy"))

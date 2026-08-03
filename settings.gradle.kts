@@ -1,4 +1,6 @@
 pluginManagement {
+    includeBuild("gradle-conventions")
+
     repositories {
         // The compiler-plugin-dev-kit convention plugins are published to mavenLocal.
         mavenLocal()
