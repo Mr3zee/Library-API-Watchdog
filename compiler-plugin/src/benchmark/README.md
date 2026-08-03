@@ -22,7 +22,8 @@ CI, and the results are reports for humans, not assertions.
 
 `-Pbenchmark.include=<regex>` filters benchmarks. `-Pbenchmark.args='...'` passes raw JMH
 options through (`-p` to pin parameters, `-wi`/`-i`/`-f` to change iteration counts, and so on).
-Results are printed and saved as JSON to `build/reports/benchmark/results.json`.
+Results are printed and saved as JSON to
+`build/reports/benchmark/results-<yyyyMMdd-HHmmss-SSS>.json`.
 
 Every run enables JMH's GC profiler: `gc.alloc.rate.norm` is the number of bytes allocated per
 operation and is far more stable than wall-clock time, so prefer it for comparing allocation
@@ -54,9 +55,9 @@ benchmark (or `none` for the traversal baseline). `profile.corpusFiles` defaults
 `profile.stackDepth` defaults to 256, and `profile.args` passes additional JMH options through.
 
 JFR captures only the measurement iterations, after JMH warmup. Recordings are written under
-`build/reports/profile/<benchmark-id>/profile.jfr`. Open them in IntelliJ IDEA or JDK Mission
-Control to inspect CPU samples, allocation samples, locks, and GC activity. The task uses the JDK's
-built-in recorder and needs no platform-specific profiler installation.
+`build/reports/profile/<benchmark-id>/profile-<yyyyMMdd-HHmmss-SSS>.jfr`. Open them in IntelliJ
+IDEA or JDK Mission Control to inspect CPU samples, allocation samples, locks, and GC activity. The
+task uses the JDK's built-in recorder and needs no platform-specific profiler installation.
 
 ## The two benchmarks
 

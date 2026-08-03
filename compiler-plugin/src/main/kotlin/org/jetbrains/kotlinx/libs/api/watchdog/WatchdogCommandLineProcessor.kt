@@ -1,6 +1,7 @@
 package org.jetbrains.kotlinx.libs.api.watchdog
 
 import java.io.File
+import java.util.HashMap
 import org.jetbrains.kotlin.compiler.plugin.AbstractCliOption
 import org.jetbrains.kotlin.compiler.plugin.CliOption
 import org.jetbrains.kotlin.compiler.plugin.CliOptionProcessingException
@@ -108,9 +109,7 @@ class WatchdogCLP : DevKitCLP {
     override fun processOption(option: AbstractCliOption, value: String, configuration: CompilerConfiguration) {
         when (option.optionName) {
             WatchdogCommandLineProcessor.DIAGNOSTIC_SEVERITY_OPTION.optionName -> {
-                val override = parseDiagnosticSeverity(value)
-                val severities = configuration[WatchdogConfigurationKeys.DIAGNOSTIC_SEVERITIES, emptyMap()]
-                configuration.put(WatchdogConfigurationKeys.DIAGNOSTIC_SEVERITIES, severities + override)
+                processDiagnosticSeverity(value, configuration)
             }
             WatchdogCommandLineProcessor.DIAGNOSTICS_OUTPUT_FILE_OPTION.optionName -> {
                 configuration.put(WatchdogConfigurationKeys.DIAGNOSTICS_OUTPUT_FILE, value)
@@ -142,7 +141,7 @@ class WatchdogCLP : DevKitCLP {
         )
     }
 
-    private fun parseDiagnosticSeverity(value: String): Pair<String, WatchdogSeverity> {
+    private fun processDiagnosticSeverity(value: String, configuration: CompilerConfiguration) {
         val diagnosticName = value.substringBefore(':')
         val diagnostic = WatchdogDiagnostics.allDiagnostics.find { it.name == diagnosticName }
             ?: throw CliOptionProcessingException(
@@ -159,6 +158,9 @@ class WatchdogCLP : DevKitCLP {
                         "expected 'error', 'warning', or 'none'.",
             )
         }
-        return diagnostic.name to severity
+        val key = WatchdogConfigurationKeys.DIAGNOSTIC_SEVERITIES
+        val severities = HashMap(configuration[key, emptyMap()])
+        severities[diagnostic.name] = severity
+        configuration.put(key, severities)
     }
 }

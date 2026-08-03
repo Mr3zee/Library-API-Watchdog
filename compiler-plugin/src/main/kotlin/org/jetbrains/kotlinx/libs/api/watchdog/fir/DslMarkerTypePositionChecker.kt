@@ -55,20 +55,24 @@ internal class DslMarkerTypePositionChecker(
         val typeRef = declaration.returnTypeRef
 
         val session = context.session
-        val markers = typeRef.annotations.filter { it.isDslMarker(session) }
-        if (markers.isEmpty()) {
-            return
-        }
+        var checkedFunctionTypePosition = false
+        for (annotation in typeRef.annotations) {
+            if (!annotation.isDslMarker(session)) continue
 
-        // A marker on a function type propagates to its receiver and context parameters, so it is
-        // effective as long as the type has at least one implicit value. Receiver types inside a
-        // function type ((@M Tag).() -> Unit) are nested type refs and never reach this point.
-        val coneType = typeRef.coneType
-        if (coneType.receiverType(session) != null || coneType.contextParameterTypes(session).isNotEmpty()) {
-            return
-        }
+            if (!checkedFunctionTypePosition) {
+                // A marker on a function type propagates to its receiver and context parameters,
+                // so it is effective as long as the type has at least one implicit value.
+                // Receiver types inside a function type ((@M Tag).() -> Unit) are nested type refs
+                // and never reach this point.
+                val coneType = typeRef.coneType
+                if (coneType.receiverType(session) != null ||
+                    coneType.contextParameterTypes(session).isNotEmpty()
+                ) {
+                    return
+                }
+                checkedFunctionTypePosition = true
+            }
 
-        for (annotation in markers) {
             val markerName = annotation.annotationClassSymbol(session)?.name ?: continue
             reporter.reportOn(
                 source = annotation.source,

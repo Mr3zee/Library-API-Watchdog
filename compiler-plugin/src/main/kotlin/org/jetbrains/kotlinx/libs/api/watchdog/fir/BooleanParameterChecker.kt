@@ -1,6 +1,7 @@
 package org.jetbrains.kotlinx.libs.api.watchdog.fir
 
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
+import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactory2
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
@@ -18,6 +19,7 @@ import org.jetbrains.kotlin.fir.types.abbreviatedTypeOrSelf
 import org.jetbrains.kotlin.fir.types.classId
 import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.types.varargElementType
+import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
 
 /**
@@ -43,20 +45,29 @@ internal class BooleanParameterChecker(
         }
 
         val factory = severities[WatchdogDiagnostics.BOOLEAN_PARAMETER_PUBLIC_API] ?: return
-        for (parameter in declaration.contextParameters + declaration.valueParameters) {
-            if (parameter.isLegacyContextReceiver() || parameter.isExempt()) {
-                continue
-            }
-            if (parameter.declaredType().classId != StandardClassIds.Boolean) {
-                continue
-            }
-            reporter.reportOn(
-                source = parameter.source ?: declaration.source,
-                factory = factory,
-                a = declaration.name,
-                b = parameter.name,
-            )
+        for (parameter in declaration.contextParameters) {
+            checkParameter(parameter, declaration, factory)
         }
+        for (parameter in declaration.valueParameters) {
+            checkParameter(parameter, declaration, factory)
+        }
+    }
+
+    context(context: CheckerContext, reporter: DiagnosticReporter)
+    private fun checkParameter(
+        parameter: FirValueParameter,
+        declaration: FirNamedFunction,
+        factory: KtDiagnosticFactory2<Name, Name>,
+    ) {
+        if (parameter.isLegacyContextReceiver() || parameter.isExempt()) return
+        if (parameter.declaredType().classId != StandardClassIds.Boolean) return
+
+        reporter.reportOn(
+            source = parameter.source ?: declaration.source,
+            factory = factory,
+            a = declaration.name,
+            b = parameter.name,
+        )
     }
 
     /**

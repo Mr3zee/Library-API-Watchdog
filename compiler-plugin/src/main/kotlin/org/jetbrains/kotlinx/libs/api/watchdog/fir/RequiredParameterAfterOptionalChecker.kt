@@ -45,7 +45,10 @@ internal class RequiredParameterAfterOptionalChecker(
         val callableName = declaration.reportedName() ?: return
         val parameters = declaration.valueParameters
         var seenOptional = false
-        for ((index, parameter) in parameters.withIndex()) {
+        var index = 0
+        while (index < parameters.size) {
+            val parameter = parameters[index]
+            index++
             if (parameter.defaultValue != null || parameter.isVararg) {
                 seenOptional = true
                 continue
@@ -55,7 +58,7 @@ internal class RequiredParameterAfterOptionalChecker(
                 continue
             }
 
-            if (index == parameters.lastIndex && parameter.acceptsTrailingLambda()) {
+            if (index == parameters.size && parameter.acceptsTrailingLambda()) {
                 continue
             }
 

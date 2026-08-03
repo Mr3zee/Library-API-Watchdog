@@ -42,20 +42,18 @@ internal class OpenApiChecker(
 
         // A subclass has to delegate to some superclass constructor, so a class whose
         // constructors are all internal or private can't be subclassed outside the library.
-        val accessibleConstructors = if (declaration.classKind == ClassKind.CLASS) {
-            declaration.constructors(session).filter {
-                it.visibility == Visibilities.Public || it.visibility == Visibilities.Protected
-            }
-        } else {
-            emptyList()
-        }
+        val constructors = if (declaration.classKind == ClassKind.CLASS) {
+            declaration.constructors(session)
+        } else emptyList()
 
         val openForSubclassing =
             when {
                 declaration.classKind == ClassKind.CLASS ->
                     (declaration.modality == Modality.OPEN ||
                             declaration.modality == Modality.ABSTRACT) &&
-                            accessibleConstructors.isNotEmpty()
+                            constructors.any {
+                                it.visibility == Visibilities.Public || it.visibility == Visibilities.Protected
+                            }
                 // Sealed interfaces are reported by ExhaustiveApiChecker instead.
                 declaration.classKind == ClassKind.INTERFACE ->
                     declaration.modality != Modality.SEALED
@@ -85,12 +83,17 @@ internal class OpenApiChecker(
         if (declaration.hasAnnotation(WatchdogClassIds.IntentionallyOpen, session)) return
 
         val factory = severities[WatchdogDiagnostics.OPEN_API_WITHOUT_SUBCLASS_OPT_IN] ?: return
-        val hasPublicPrimaryConstructor = accessibleConstructors.any {
+        val hasPublicPrimaryConstructor = constructors.any {
             it.isPrimary && it.visibility == Visibilities.Public
         }
 
         if (declaration.classKind == ClassKind.CLASS && !hasPublicPrimaryConstructor) {
-            for (constructor in accessibleConstructors) {
+            for (constructor in constructors) {
+                if (constructor.visibility != Visibilities.Public &&
+                    constructor.visibility != Visibilities.Protected
+                ) {
+                    continue
+                }
                 reporter.reportOn(
                     source = constructor.source,
                     factory = factory,

@@ -1,6 +1,9 @@
 package org.jetbrains.kotlinx.libs.api.watchdog.conventions
 
 import java.io.File
+import java.nio.file.Files
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -130,7 +133,7 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                 )
             }
 
-            val benchmarkResultsFile = layout.buildDirectory.file("reports/benchmark/results.json")
+            val benchmarkResultsDirectory = layout.buildDirectory.dir("reports/benchmark")
             tasks.register("benchmark", JavaExec::class.java) {
                 group = "benchmark"
                 description = "Runs the watchdog JMH benchmarks with the GC (allocation) profiler. " +
@@ -143,17 +146,23 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                 configureWatchdogBenchmarkInputs(this)
                 val include = providers.gradleProperty("benchmark.include")
                 val extraArgs = providers.gradleProperty("benchmark.args")
-                val resultsPath = benchmarkResultsFile.get().asFile
+                var resultsPath: File? = null
                 doFirst {
+                    resultsPath = benchmarkResultsDirectory.get().file(
+                        "results-${resultTimestamp()}.json",
+                    ).asFile
                     resultsPath.parentFile.mkdirs()
                 }
                 argumentProviders.add(
                     CommandLineArgumentProvider {
+                        val resultFile = checkNotNull(resultsPath) {
+                            "The benchmark results path was not initialized."
+                        }
                         buildList {
                             include.orNull?.let { add(it) }
                             addAll(listOf("-prof", "gc"))
                             addAll(listOf("-foe", "true"))
-                            addAll(listOf("-rf", "json", "-rff", resultsPath.absolutePath))
+                            addAll(listOf("-rf", "json", "-rff", resultFile.absolutePath))
                             extraArgs.orNull?.let {
                                 addAll(it.split(' ').filter(String::isNotEmpty))
                             }
@@ -180,8 +189,26 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                 val stackDepth = providers.gradleProperty("profile.stackDepth").orElse("256")
                 val extraArgs = providers.gradleProperty("profile.args")
                 val resultsPath = profileResultsDirectory.get().asFile
+                var startedAt = 0L
+                var timestamp: String? = null
                 doFirst {
+                    startedAt = System.currentTimeMillis()
+                    timestamp = resultTimestamp()
                     resultsPath.mkdirs()
+                }
+                doLast {
+                    val resultTimestamp = checkNotNull(timestamp) {
+                        "The profile result timestamp was not initialized."
+                    }
+                    resultsPath.walkTopDown()
+                        .filter { it.isFile && it.name == "profile.jfr" && it.lastModified() >= startedAt }
+                        .toList()
+                        .forEach { profile ->
+                            Files.move(
+                                profile.toPath(),
+                                profile.resolveSibling("profile-$resultTimestamp.jfr").toPath(),
+                            )
+                        }
                 }
                 argumentProviders.add(
                     CommandLineArgumentProvider {
@@ -244,5 +271,8 @@ class BenchmarkConventionPlugin : Plugin<Project> {
 
     private companion object {
         const val JMH_VERSION = "1.37"
+        val RESULT_TIMESTAMP_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss-SSS")
+
+        fun resultTimestamp(): String = LocalDateTime.now().format(RESULT_TIMESTAMP_FORMATTER)
     }
 }

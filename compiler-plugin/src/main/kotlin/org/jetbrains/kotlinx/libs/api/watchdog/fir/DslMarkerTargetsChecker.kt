@@ -70,7 +70,7 @@ internal class DslMarkerTargetsChecker(
         for (argument in allowedTargets) {
             val target = argument.extractEnumValueArgumentInfo()?.enumEntryName?.asString()
                 ?.let(KotlinTarget::valueOrNull) ?: continue
-            if (target !in effectiveDslMarkerTargets) {
+            if (!target.isEffectiveDslMarkerTarget()) {
                 reporter.reportOn(
                     source = argument.source,
                     factory = noopTargetFactory,
@@ -85,10 +85,9 @@ internal class DslMarkerTargetsChecker(
      * The targets on which scope control reacts to a marker; `ANNOTATION_CLASS` counts because
      * it is a classifier declaration.
      */
-    private val effectiveDslMarkerTargets = setOf(
-        KotlinTarget.CLASS,
-        KotlinTarget.ANNOTATION_CLASS,
-        KotlinTarget.TYPE,
-        KotlinTarget.TYPEALIAS,
-    )
+    private fun KotlinTarget.isEffectiveDslMarkerTarget(): Boolean =
+        this == KotlinTarget.CLASS ||
+                this == KotlinTarget.ANNOTATION_CLASS ||
+                this == KotlinTarget.TYPE ||
+                this == KotlinTarget.TYPEALIAS
 }

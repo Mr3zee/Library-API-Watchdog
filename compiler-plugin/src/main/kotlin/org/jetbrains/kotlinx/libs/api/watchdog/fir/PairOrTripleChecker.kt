@@ -18,10 +18,10 @@ internal class PairOrTripleChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : ExposedTypeChecker(WatchdogClassIds.IntentionallyPairOrTriple) {
     context(context: CheckerContext)
-    override fun ConeKotlinType.violatingClassifier(): Name? =
-        (this as? ConeClassLikeType)?.lookupTag?.classId
-            ?.takeIf { it in tupleTypes }
-            ?.shortClassName
+    override fun ConeKotlinType.violatingClassifier(): Name? {
+        val classId = (this as? ConeClassLikeType)?.lookupTag?.classId ?: return null
+        return classId.shortClassName.takeIf { classId == pairType || classId == tripleType }
+    }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun report(source: KtSourceElement?, kind: String, name: Name, violation: Name) {
@@ -36,9 +36,7 @@ internal class PairOrTripleChecker(
     }
 
     companion object {
-        private val tupleTypes: Set<ClassId> = setOf(
-            ClassId(FqName("kotlin"), Name.identifier("Pair")),
-            ClassId(FqName("kotlin"), Name.identifier("Triple")),
-        )
+        private val pairType = ClassId(FqName("kotlin"), Name.identifier("Pair"))
+        private val tripleType = ClassId(FqName("kotlin"), Name.identifier("Triple"))
     }
 }

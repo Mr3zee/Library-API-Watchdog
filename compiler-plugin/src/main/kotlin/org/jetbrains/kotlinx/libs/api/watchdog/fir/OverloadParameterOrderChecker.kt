@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.unsubstitutedScope
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
+import org.jetbrains.kotlin.fir.declarations.FirValueParameter
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
@@ -18,6 +19,7 @@ import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirConstructorSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirFunctionSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
 import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.unwrapFakeOverrides
 import org.jetbrains.kotlin.name.Name
@@ -47,25 +49,30 @@ internal class OverloadParameterOrderChecker(
             return
         }
 
-        val ownOrder = declaration.valueParameters.map { it.name }
-        if (ownOrder.size < 2) {
+        val ownParameters = declaration.valueParameters
+        if (ownParameters.size < 2) {
             return
         }
 
         val callableName = declaration.reportedName() ?: return
-        for (sibling in declaration.overloadSiblings()) {
+        var reported = false
+        declaration.forEachOverloadSibling siblings@{ sibling ->
+            if (reported) return@siblings
             if (sibling == declaration.symbol) {
-                continue
+                return@siblings
             }
 
             if (sibling.isExempt() || !sibling.isWatchedPublicSourceApiSibling()) {
-                continue
+                return@siblings
             }
 
-            val siblingOrder = sibling.valueParameterSymbols.map { it.name }
-            if (reportSwappedPair(declaration, factory, callableName, other = siblingOrder, current = ownOrder)) {
-                return
-            }
+            reported = reportSwappedPair(
+                declaration,
+                factory,
+                callableName,
+                other = sibling.valueParameterSymbols,
+                current = ownParameters,
+            )
         }
     }
 
@@ -83,46 +90,48 @@ internal class OverloadParameterOrderChecker(
      * dependencies fall out there, having no real source.
      */
     context(context: CheckerContext)
-    private fun FirFunction.overloadSiblings(): List<FirFunctionSymbol<*>> {
+    private inline fun FirFunction.forEachOverloadSibling(
+        crossinline action: (FirFunctionSymbol<*>) -> Unit,
+    ) {
         val containingClass = context.containingClassSymbol
-        return when {
-            this is FirConstructor -> buildList {
+        when {
+            this is FirConstructor -> {
                 containingClass?.processAllDeclarations(context.session) { member ->
                     if (member is FirConstructorSymbol) {
-                        add(member)
+                        action(member)
                     }
                 }
             }
 
-            this !is FirNamedFunction -> {
-                emptyList()
-            }
+            this !is FirNamedFunction -> Unit
 
-            else -> buildList {
+            else -> {
                 if (containingClass != null) {
-                    addMembersNamed(containingClass, name)
+                    containingClass.forEachMemberNamed(name, action)
                 } else {
-                    addAll(
-                        context.session.symbolProvider
-                            .getTopLevelFunctionSymbols(symbol.callableId.packageName, name)
-                    )
+                    for (sibling in context.session.symbolProvider.getTopLevelFunctionSymbols(
+                        symbol.callableId.packageName,
+                        name,
+                    )) {
+                        action(sibling)
+                    }
                 }
 
                 val receiverClass = receiverParameter?.typeRef?.coneType?.erasedClassSymbol()
                 if (receiverClass != null && receiverClass != containingClass) {
-                    addMembersNamed(receiverClass, name)
+                    receiverClass.forEachMemberNamed(name, action)
                 }
             }
         }
     }
 
     context(context: CheckerContext)
-    private fun MutableList<FirFunctionSymbol<*>>.addMembersNamed(
-        classSymbol: FirClassSymbol<*>,
+    private inline fun FirClassSymbol<*>.forEachMemberNamed(
         name: Name,
+        crossinline action: (FirFunctionSymbol<*>) -> Unit,
     ) {
-        classSymbol.unsubstitutedScope(context).processFunctionsByName(name) { member ->
-            add(member.unwrapFakeOverrides())
+        unsubstitutedScope(context).processFunctionsByName(name) { member ->
+            action(member.unwrapFakeOverrides())
         }
     }
 
@@ -136,21 +145,23 @@ internal class OverloadParameterOrderChecker(
         declaration: FirFunction,
         factory: KtDiagnosticFactory3<Name, Name, Name>,
         callableName: Name,
-        other: List<Name>,
-        current: List<Name>,
+        other: List<FirValueParameterSymbol>,
+        current: List<FirValueParameter>,
     ): Boolean {
-        val otherIndex = buildMap {
-            other.forEachIndexed { index, name -> put(name, index) }
-        }
-        val shared = current.filter { it in otherIndex }
-        for (i in shared.indices) {
-            for (j in i + 1 until shared.size) {
-                if (otherIndex.getValue(shared[i]) > otherIndex.getValue(shared[j])) {
+        for (i in current.indices) {
+            val firstName = current[i].name
+            val firstOtherIndex = other.indexOfFirst { it.name == firstName }
+            if (firstOtherIndex < 0) continue
+
+            for (j in i + 1 until current.size) {
+                val secondName = current[j].name
+                val secondOtherIndex = other.indexOfFirst { it.name == secondName }
+                if (secondOtherIndex >= 0 && firstOtherIndex > secondOtherIndex) {
                     reporter.reportOn(
                         source = declaration.source,
                         factory = factory,
-                        a = shared[i],
-                        b = shared[j],
+                        a = firstName,
+                        b = secondName,
                         c = callableName,
                     )
                     return true

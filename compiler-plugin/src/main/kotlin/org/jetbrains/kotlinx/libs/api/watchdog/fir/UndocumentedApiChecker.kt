@@ -58,7 +58,7 @@ internal class UndocumentedApiChecker(
             return
         }
 
-        val (kind, name) = declaration.watchedKindAndName(context) ?: return
+        val kind = declaration.watchedKind() ?: return
         if (!declaration.isWatchedPublicSourceApi()) {
             return
         }
@@ -79,36 +79,43 @@ internal class UndocumentedApiChecker(
             source = declaration.source,
             factory = factory,
             a = kind,
-            b = name,
+            b = declaration.watchedName(context) ?: return,
         )
     }
 
     /**
-     * The declaration kind for the message and the name to report, or null when the declaration
-     * is not watched: either users can't reference it directly, or its documentation lives on
-     * another declaration - overrides and `actual`s inherit it, and the primary constructor is
-     * described by the class KDoc. Secondary constructors report the class name because their
-     * own name is the internal `<init>`.
+     * The declaration kind for the message, or null when the declaration is not watched: either
+     * users can't reference it directly, or its documentation lives on another declaration -
+     * overrides and `actual`s inherit it, and the primary constructor is described by class KDoc.
      */
-    private fun FirMemberDeclaration.watchedKindAndName(context: CheckerContext): Pair<String, Name>? = when {
+    private fun FirMemberDeclaration.watchedKind(): String? = when {
         isActual -> null
         // Comparisons instead of a `when` over the enum: an exhaustive `when` compiles to an
         // `ordinal()` switch, and AnimalSniffer rejects that call against the compiler API baseline.
         this is FirRegularClass -> when {
-            classKind == ClassKind.CLASS -> "class" to name
-            classKind == ClassKind.INTERFACE -> "interface" to name
-            classKind == ClassKind.OBJECT -> "object" to name
-            classKind == ClassKind.ENUM_CLASS -> "enum class" to name
-            classKind == ClassKind.ANNOTATION_CLASS -> "annotation class" to name
+            classKind == ClassKind.CLASS -> "class"
+            classKind == ClassKind.INTERFACE -> "interface"
+            classKind == ClassKind.OBJECT -> "object"
+            classKind == ClassKind.ENUM_CLASS -> "enum class"
+            classKind == ClassKind.ANNOTATION_CLASS -> "annotation class"
             else -> null
         }
-        this is FirTypeAlias -> "type alias" to name
-        this is FirEnumEntry -> "enum entry" to name
-        this is FirNamedFunction -> if (isOverride) null else "function" to name
-        this is FirProperty -> if (isOverride) null else "property" to name
-        this is FirConstructor ->
-            if (isPrimary) null
-            else "constructor" to (context.containingClassSymbol?.classId?.shortClassName ?: symbol.name)
+        this is FirTypeAlias -> "type alias"
+        this is FirEnumEntry -> "enum entry"
+        this is FirNamedFunction -> if (isOverride) null else "function"
+        this is FirProperty -> if (isOverride) null else "property"
+        this is FirConstructor -> if (isPrimary) null else "constructor"
+        else -> null
+    }
+
+    /** Secondary constructors report the class name instead of their internal `<init>` name. */
+    private fun FirMemberDeclaration.watchedName(context: CheckerContext): Name? = when (this) {
+        is FirRegularClass -> name
+        is FirTypeAlias -> name
+        is FirEnumEntry -> name
+        is FirNamedFunction -> name
+        is FirProperty -> name
+        is FirConstructor -> context.containingClassSymbol?.classId?.shortClassName ?: symbol.name
         else -> null
     }
 

@@ -1,6 +1,7 @@
 package org.jetbrains.kotlinx.libs.api.watchdog.fir
 
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
+import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactory2
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
@@ -8,6 +9,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirCallableDeclara
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
+import org.jetbrains.kotlin.fir.declarations.FirPropertyAccessor
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.utils.isInline
 import org.jetbrains.kotlin.fir.expressions.FirAnonymousFunctionExpression
@@ -34,6 +36,7 @@ import org.jetbrains.kotlin.fir.expressions.arguments
 import org.jetbrains.kotlin.fir.expressions.impl.FirContractCallBlock
 import org.jetbrains.kotlin.fir.references.toResolvedCallableSymbol
 import org.jetbrains.kotlin.fir.references.toResolvedPropertySymbol
+import org.jetbrains.kotlin.name.Name
 
 /**
  * Reports watched inline functions and inline property accessors whose body is not classified as a
@@ -89,23 +92,27 @@ internal class InlineFunctionLogicChecker(
         }
 
         val factory = severities[WatchdogDiagnostics.INLINE_FUNCTION_WITH_LOGIC] ?: return
-        for (accessor in listOfNotNull(declaration.getter, declaration.setter)) {
-            if (!accessor.isInline && !declaration.isInline) {
-                continue
-            }
+        declaration.getter?.let { checkAccessor(it, declaration, factory) }
+        declaration.setter?.let { checkAccessor(it, declaration, factory) }
+    }
 
-            val body = accessor.body ?: continue
-            if (body.isThinWrapper()) {
-                continue
-            }
+    context(context: CheckerContext, reporter: DiagnosticReporter)
+    private fun checkAccessor(
+        accessor: FirPropertyAccessor,
+        property: FirProperty,
+        factory: KtDiagnosticFactory2<String, Name>,
+    ) {
+        if (!accessor.isInline && !property.isInline) return
 
-            reporter.reportOn(
-                source = declaration.source,
-                factory = factory,
-                a = if (accessor.isGetter) "inline getter" else "inline setter",
-                b = declaration.name,
-            )
-        }
+        val body = accessor.body ?: return
+        if (body.isThinWrapper()) return
+
+        reporter.reportOn(
+            source = property.source,
+            factory = factory,
+            a = if (accessor.isGetter) "inline getter" else "inline setter",
+            b = property.name,
+        )
     }
 
     context(context: CheckerContext)
@@ -118,13 +125,15 @@ internal class InlineFunctionLogicChecker(
      * be a plain delegation.
      */
     private fun FirBlock.isThinWrapper(): Boolean {
-        val statements = statements.filterNot { it is FirContractCallBlock }
-        if (statements.isEmpty()) {
-            return true
+        var statement: FirStatement? = null
+        for (candidate in statements) {
+            if (candidate is FirContractCallBlock) continue
+            if (statement != null) return false
+            statement = candidate
         }
 
-        val statement = statements.singleOrNull() ?: return false
-        return ((statement as? FirReturnExpression)?.result ?: statement).isPlain()
+        val singleStatement = statement ?: return true
+        return ((singleStatement as? FirReturnExpression)?.result ?: singleStatement).isPlain()
     }
 
     /**

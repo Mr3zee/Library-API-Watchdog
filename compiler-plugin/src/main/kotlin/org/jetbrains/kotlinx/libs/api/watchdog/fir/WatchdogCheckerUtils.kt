@@ -200,10 +200,12 @@ internal fun FirClassSymbol<*>.isValueClass(): Boolean =
 context(context: CheckerContext)
 internal fun ConeKotlinType.erasedClassSymbol(): FirClassSymbol<*>? {
     var type: ConeKotlinType = upperBoundIfFlexible()
-    val visitedTypeParameters = mutableSetOf<FirTypeParameterSymbol>()
+    var visitedTypeParameters: MutableSet<FirTypeParameterSymbol>? = null
     while (type is ConeTypeParameterType) {
         val typeParameter = type.lookupTag.typeParameterSymbol
-        if (!visitedTypeParameters.add(typeParameter)) {
+        val visited = visitedTypeParameters ?: mutableSetOf<FirTypeParameterSymbol>()
+            .also { visitedTypeParameters = it }
+        if (!visited.add(typeParameter)) {
             return null
         }
         type = typeParameter.resolvedBounds.firstOrNull()?.coneType?.upperBoundIfFlexible() ?: return null
@@ -312,10 +314,8 @@ private val otherReason = Name.identifier("OTHER")
  * future annotations version may add - only categorizes the exemption and requires a
  * non-empty description next to it.
  */
-private val selfSufficientReasons = setOf(
-    Name.identifier("FOR_BACKWARDS_COMPATIBILITY"),
-    Name.identifier("API_DESIGN"),
-)
+private val backwardsCompatibilityReason = Name.identifier("FOR_BACKWARDS_COMPATIBILITY")
+private val apiDesignReason = Name.identifier("API_DESIGN")
 
 /**
  * The reason that fails to explain this exemption annotation on its own ([otherReason] when the
@@ -333,7 +333,7 @@ internal fun FirAnnotation.unexplainedExemptionReason(): Name? {
         // is not reported again.
         reasonArgument.extractEnumValueArgumentInfo()?.enumEntryName ?: return null
     }
-    if (reason in selfSufficientReasons) {
+    if (reason == backwardsCompatibilityReason || reason == apiDesignReason) {
         return null
     }
 

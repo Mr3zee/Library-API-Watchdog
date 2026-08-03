@@ -154,7 +154,8 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
             }
         }
         checkType(declaration.returnTypeRef, "function", declaration.name, declaration.source)
-        (declaration.contextParameters + declaration.valueParameters).forEach { checkParameter(it) }
+        declaration.contextParameters.forEach { checkParameter(it) }
+        declaration.valueParameters.forEach { checkParameter(it) }
     }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
@@ -163,18 +164,23 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
 
         // A val/var parameter is also a property over the same source text. Let that property own
         // the report so one exposed type produces one diagnostic.
-        val propertyParameters = mutableSetOf<FirValueParameterSymbol>()
+        var propertyParameters: MutableSet<FirValueParameterSymbol>? = null
         if (declaration.isPrimary) {
             context.containingClassSymbol?.processAllDeclarations(context.session) { member ->
                 if (member is FirPropertySymbol) {
                     member.correspondingValueParameterFromPrimaryConstructor
-                        ?.let(propertyParameters::add)
+                        ?.let { parameter ->
+                            val parameters = propertyParameters ?: mutableSetOf<FirValueParameterSymbol>()
+                                .also { propertyParameters = it }
+                            parameters.add(parameter)
+                        }
                 }
             }
         }
 
-        for (parameter in declaration.contextParameters + declaration.valueParameters) {
-            if (parameter.symbol !in propertyParameters) checkParameter(parameter)
+        declaration.contextParameters.forEach { checkParameter(it) }
+        for (parameter in declaration.valueParameters) {
+            if (propertyParameters?.contains(parameter.symbol) != true) checkParameter(parameter)
         }
     }
 
@@ -234,7 +240,8 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
      */
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun checkTypeParameters(typeParameters: List<FirTypeParameterRef>) {
-        for (typeParameter in typeParameters.filterIsInstance<FirTypeParameter>()) {
+        for (typeParameterRef in typeParameters) {
+            val typeParameter = typeParameterRef as? FirTypeParameter ?: continue
             if (isDeclarationExempt(typeParameter)) continue
 
             for (bound in typeParameter.bounds) {
@@ -257,25 +264,43 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
     /** The first violation in this type or any nested type, guarded against recursive types. */
     context(context: CheckerContext, reporter: DiagnosticReporter)
     protected fun ConeKotlinType.findViolation(): Violation? =
-        findViolation(mutableSetOf())
+        findViolation(visited = null)
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun ConeKotlinType.findViolation(visited: MutableSet<ConeKotlinType>): Violation? {
+    private fun ConeKotlinType.findViolation(visited: MutableSet<ConeKotlinType>?): Violation? {
         if (isTypeExempt()) return null
 
         val type = declaredBound()
-        if (!visited.add(type)) return null
+        var visitedTypes = visited
+        if (visitedTypes != null && !visitedTypes.add(type)) return null
 
-        type.typeBeforeClassifier()?.findViolation(visited)?.let { return it }
+        val beforeClassifier = type.typeBeforeClassifier()
+        if (beforeClassifier != null) {
+            if (visitedTypes == null) visitedTypes = mutableSetOf(type)
+            beforeClassifier.findViolation(visitedTypes)?.let { return it }
+        }
 
         val classifierType = type.classifierType()
-        if (classifierType != type && !visited.add(classifierType)) return null
+        if (classifierType != type && visitedTypes != null && !visitedTypes.add(classifierType)) return null
         classifierType.violatingClassifier()?.let { return it }
 
-        classifierType.typeAfterClassifier()?.findViolation(visited)?.let { return it }
-
-        return classifierType.typeArguments.firstNotNullOfOrNull {
-            it.type?.findViolation(visited)
+        val afterClassifier = classifierType.typeAfterClassifier()
+        if (afterClassifier != null) {
+            if (visitedTypes == null) {
+                visitedTypes = mutableSetOf(type)
+                if (classifierType != type) visitedTypes.add(classifierType)
+            }
+            afterClassifier.findViolation(visitedTypes)?.let { return it }
         }
+
+        for (argument in classifierType.typeArguments) {
+            val argumentType = argument.type ?: continue
+            if (visitedTypes == null) {
+                visitedTypes = mutableSetOf(type)
+                if (classifierType != type) visitedTypes.add(classifierType)
+            }
+            argumentType.findViolation(visitedTypes)?.let { return it }
+        }
+        return null
     }
 }

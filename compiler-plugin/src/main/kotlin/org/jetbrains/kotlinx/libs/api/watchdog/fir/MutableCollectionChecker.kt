@@ -4,10 +4,11 @@ import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
-import org.jetbrains.kotlin.fir.resolve.lookupSuperTypes
 import org.jetbrains.kotlin.fir.resolve.toClassSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
+import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.types.type
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
@@ -28,7 +29,7 @@ internal class MutableCollectionChecker(
      * classifiers, so retain the hierarchy answer instead of rebuilding the complete transitive
      * supertype list for every occurrence.
      */
-    private val mutableCollectionLikeByClassId = mutableMapOf<ClassId, Boolean>()
+    private val collectionKindByClassId = mutableMapOf<ClassId, CollectionKind>()
 
     context(context: CheckerContext)
     override fun ConeKotlinType.violatingClassifier(): Name? {
@@ -63,29 +64,71 @@ internal class MutableCollectionChecker(
             return true
         }
 
-        return mutableCollectionLikeByClassId.getOrPut(this) {
-            // Concrete implementations (ArrayList, java.util.HashMap, a hand-written MutableList
-            // subtype, ...) expose the same mutators as the interfaces they implement.
-            val symbol = type.toClassSymbol() ?: return@getOrPut false
-            lookupSuperTypes(symbol, lookupInterfaces = true, deep = true, useSiteSession = context.session)
-                .any { it.lookupTag.classId in mutableCollectionTypes }
-        }
+        cachedMutableCollectionResult()?.let { return it }
+
+        // Concrete implementations (ArrayList, java.util.HashMap, a hand-written MutableList
+        // subtype, ...) expose the same mutators as the interfaces they implement.
+        val result = type.toClassSymbol()?.inheritsMutableCollection() == true
+        collectionKindByClassId[this] = result.toCollectionKind()
+        return result
     }
 
-    private val mutableCollectionTypes: Set<ClassId> = setOf(
-        StandardClassIds.MutableIterable,
-        StandardClassIds.MutableIterator,
-        StandardClassIds.MutableListIterator,
-        StandardClassIds.MutableCollection,
-        StandardClassIds.MutableList,
-        StandardClassIds.MutableSet,
-        StandardClassIds.MutableMap,
-        StandardClassIds.MutableMapEntry,
-    )
+    /**
+     * Walks direct FIR supertypes so the Boolean query can short-circuit without materializing the
+     * compiler utility's complete hierarchy or its `(symbol, substitutor)` traversal pairs.
+     */
+    context(context: CheckerContext)
+    private fun FirClassSymbol<*>.inheritsMutableCollection(): Boolean {
+        if (classId in mutableCollectionTypes) return true
+        classId.cachedMutableCollectionResult()?.let { return it }
+        collectionKindByClassId[classId] = CollectionKind.CHECKING
 
-    private val arrayTypes: Set<ClassId> = buildSet {
-        add(StandardClassIds.Array)
-        addAll(StandardClassIds.primitiveArrayTypeByElementType.values)
-        addAll(StandardClassIds.unsignedArrayTypeByElementType.values)
+        var result = false
+        for (superTypeRef in resolvedSuperTypeRefs) {
+            val superType = superTypeRef.coneType as? ConeClassLikeType ?: continue
+            if (superType.lookupTag.classId in mutableCollectionTypes ||
+                superType.toClassSymbol()?.inheritsMutableCollection() == true
+            ) {
+                result = true
+                break
+            }
+        }
+        collectionKindByClassId[classId] = result.toCollectionKind()
+        return result
+    }
+
+    /** `CHECKING` is a cycle back-edge and contributes no mutable supertype by itself. */
+    private fun ClassId.cachedMutableCollectionResult(): Boolean? = when (collectionKindByClassId[this]) {
+        CollectionKind.MUTABLE -> true
+        CollectionKind.OTHER, CollectionKind.CHECKING -> false
+        null -> null
+    }
+
+    private fun Boolean.toCollectionKind(): CollectionKind =
+        if (this) CollectionKind.MUTABLE else CollectionKind.OTHER
+
+    private enum class CollectionKind {
+        CHECKING,
+        MUTABLE,
+        OTHER,
+    }
+
+    private companion object {
+        val mutableCollectionTypes: Set<ClassId> = setOf(
+            StandardClassIds.MutableIterable,
+            StandardClassIds.MutableIterator,
+            StandardClassIds.MutableListIterator,
+            StandardClassIds.MutableCollection,
+            StandardClassIds.MutableList,
+            StandardClassIds.MutableSet,
+            StandardClassIds.MutableMap,
+            StandardClassIds.MutableMapEntry,
+        )
+
+        val arrayTypes: Set<ClassId> = buildSet {
+            add(StandardClassIds.Array)
+            addAll(StandardClassIds.primitiveArrayTypeByElementType.values)
+            addAll(StandardClassIds.unsignedArrayTypeByElementType.values)
+        }
     }
 }

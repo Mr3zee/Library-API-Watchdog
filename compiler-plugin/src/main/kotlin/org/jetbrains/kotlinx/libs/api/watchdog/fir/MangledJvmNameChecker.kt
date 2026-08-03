@@ -164,10 +164,12 @@ internal class MangledJvmNameChecker(
             return true
         }
 
-        val targeted = annotations.asSequence() +
-                (correspondingValueParameterFromPrimaryConstructor?.resolvedAnnotationsWithClassIds?.asSequence()
-                    ?: emptySequence())
-        return targeted.any { it.useSiteTarget == useSiteTarget && it.isJavaFacingNameAnnotation() }
+        if (annotations.any { it.useSiteTarget == useSiteTarget && it.isJavaFacingNameAnnotation() }) {
+            return true
+        }
+        return correspondingValueParameterFromPrimaryConstructor
+            ?.resolvedAnnotationsWithClassIds
+            ?.any { it.useSiteTarget == useSiteTarget && it.isJavaFacingNameAnnotation() } == true
     }
 
     context(context: CheckerContext)
