@@ -18,9 +18,11 @@ A value class among the value parameters, the extension receiver, or the context
 function or property - nullable types and type parameters bounded by a value class included.
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Users")
 
 // Supporting value class
+// !hide-focused(1:5)
 /**
  * Stable identifier assigned to a user account.
  *
@@ -29,6 +31,7 @@ function or property - nullable types and type parameters bounded by a value cla
 @JvmInline
 public value class UserId(public val raw: String)
 
+// !hide-focused
 /** Queues a refresh for the account identified by [id]. */
 // !diag[/take/] MANGLED_JVM_NAME_PUBLIC_API ["function","take","UserId"]
 public fun take(id: UserId) { }
@@ -44,12 +47,15 @@ by the source signature and never notice, but for Java the declaration is unreac
 Kotlin guide on
 [inline value classes and mangling](https://kotlinlang.org/docs/java-to-kotlin-interop.html#inline-value-classes).
 
+
 ### Don't
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Users")
 
 // Compiles to take-4ZD5Yi0(...): an illegal Java identifier.
+// !hide-focused
 /** Queues a refresh for the account identified by [id]. */
 // !diag[/take/] MANGLED_JVM_NAME_PUBLIC_API ["function","take","UserId"]
 public fun take(id: UserId) { }
@@ -58,23 +64,29 @@ public fun take(id: UserId) { }
 ### Do
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Users")
 
+// !hide-focused
 /** Queues a refresh for the account identified by [id]. */
 @JvmName("take")
 public fun take(id: UserId) { }
 ```
+
+
 
 ### Don't {#dont-2}
 
 ```kotlin
 // The public constructor is replaced by
 // a private one and a synthetic marker-parameter overload.
+// !hide-focused(1:5)
 /**
  * Wallet associated with a user account.
  *
  * @property id identifier of the account that owns the wallet.
  */
+// !hide-focused
 @Poko
 // !diag[/[(]public val id: UserId[)]/] MANGLED_JVM_NAME_PUBLIC_API ["constructor","Wallet","UserId"]
 // !diag[/id/] MANGLED_JVM_NAME_PUBLIC_API ["property","id","UserId"]
@@ -84,6 +96,7 @@ public class Wallet(public val id: UserId)
 ### Do {#do-2}
 
 ```kotlin
+// !hide-focused(1:5)
 /**
  * Wallet associated with a user account.
  *
@@ -91,12 +104,14 @@ public class Wallet(public val id: UserId)
  */
 @OptIn(ExperimentalStdlibApi::class)
 @JvmExposeBoxed
+// !hide-focused
 @Poko
 public class Wallet(public val id: UserId)
 ```
 
 `@JvmExposeBoxed` generates Java-callable boxed variants alongside the mangled ones. It is the
 only fix for constructors and overridable members, since `@JvmName` doesn't accept them.
+
 
 ## Notes
 
@@ -118,8 +133,10 @@ only fix for constructors and overridable members, since `@JvmName` doesn't acce
 Apply `@IntentionallyMangledJvmName` when Java callers are not supported for this declaration:
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Users")
 
+// !hide-focused
 /** Queues a refresh for [id] through a deliberately Kotlin-only API. */
 @IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN)
 public fun acknowledged(id: UserId) { }

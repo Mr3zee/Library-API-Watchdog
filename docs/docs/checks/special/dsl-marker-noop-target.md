@@ -16,6 +16,7 @@ The check only looks at `@DslMarker`-annotated annotation classes that declare a
 with noop targets.
 
 ```kotlin
+// !hide-focused
 /** Marks DSL receivers. */
 @DslMarker
 // !diag[/AnnotationTarget[.]FUNCTION/] DSL_MARKER_NOOP_TARGET ["MyDsl","FUNCTION"]
@@ -34,10 +35,12 @@ it is. See the
 [DSL marker design note](https://github.com/Kotlin/KEEP/blob/main/notes/0005-dsl-marker.md) and the
 Kotlin docs on [scope control with `@DslMarker`](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker).
 
+
 ### Don't
 
 ```kotlin
 // This is the shape that broke Ktor's @KtorDsl (KTOR-8901).
+// !hide-focused
 /** Marks Ktor DSL receivers. */
 @DslMarker
 @Target(
@@ -53,6 +56,7 @@ public annotation class KtorDsl
 ### Do
 
 ```kotlin
+// !hide-focused
 /** Marks Ktor DSL receivers. */
 @DslMarker
 @Target(
@@ -62,6 +66,7 @@ public annotation class KtorDsl
 )
 public annotation class KtorDsl
 ```
+
 
 ## Notes
 
@@ -80,6 +85,7 @@ For a marker that already shipped with a no-op target, narrowing `@Target` rejec
 that applied the marker there - a breaking change. Acknowledge the legacy shape instead:
 
 ```kotlin
+// !hide-focused
 /** Marks legacy DSL receivers. */
 @IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility
 @DslMarker

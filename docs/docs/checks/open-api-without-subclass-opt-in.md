@@ -17,6 +17,7 @@ non-sealed interface. User-side subclasses constrain how
 the declaration can evolve later.
 
 ```kotlin
+// !hide-focused
 /** Base type for UI elements rendered by an application. */
 // !diag[/Widget/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["class","Widget"]
 public open class Widget
@@ -29,16 +30,20 @@ change existing members' signatures, or tighten invariants without breaking thos
 Unrestricted open API is one of the classic ways a
 [public declaration becomes hard to evolve](https://kotlinlang.org/docs/api-guidelines-predictability.html#prevent-unwanted-and-invalid-extensions).
 
+
 ### Don't
 
 ```kotlin
+// !hide-focused
 /** Base type for UI elements rendered by an application. */
 // !diag[/Widget/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["class","Widget"]
 public open class Widget
 
+// !hide-focused
 /** Extension point invoked during application startup. */
 // !diag[/Plugin/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["interface","Plugin"]
 public interface Plugin {
+    // !hide-focused
     /** Initializes the plugin for the current application. */
     public fun run()
 }
@@ -47,22 +52,27 @@ public interface Plugin {
 ### Do
 
 ```kotlin
+// !hide-focused
 /** A UI widget whose internal constructor prevents external subclasses. */
 public open class Widget internal constructor()
 
+// !hide-focused
 /** Marks APIs that require an opt-in. */
 @RequiresOptIn
 public annotation class InternalMyLibrarySubclassApi
 
+// !hide-focused
 /** A plugin implemented under an opt-in contract. */
 @SubclassOptInRequired(InternalMyLibrarySubclassApi::class)
 public interface Plugin {
+    // !hide-focused
     /** Initializes the plugin for the current application. */
     public fun run()
 }
 ```
 
 `@SubclassOptInRequired` marks the api as internal to opt-in for, preventing unexpected breaking changes.
+
 
 ## Notes
 
@@ -81,6 +91,7 @@ When unrestricted subclassing is an intended, stable part of the contract, ackno
 instead of adding an opt-in marker:
 
 ```kotlin
+// !hide-focused
 /** A UI widget deliberately open to external subclasses. */
 @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public open class Widget

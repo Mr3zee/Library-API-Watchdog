@@ -18,10 +18,13 @@ Flags a public function declared directly in a companion object - of a class
 or an interface - that carries neither `@JvmStatic` nor `@JvmSynthetic`.
 
 ```kotlin
+// !hide-focused
 /** Registry of application services. */
 public class Registry {
+    // !hide-focused
     /** Creates registry instances. */
     public companion object {
+        // !hide-focused
         /** Creates an empty registry. */
         // !diag[/create/] COMPANION_API_WITHOUT_JVM_STATIC ["Registry","create"]
         public fun create(): Registry = Registry()
@@ -38,13 +41,17 @@ Kotlin, like a plain static factory or utility.
 changing how Kotlin resolves the same call. See the Kotlin guide on
 [static methods](https://kotlinlang.org/docs/java-to-kotlin-interop.html#static-methods).
 
+
 ### Don't
 
 ```kotlin
+// !hide-focused
 /** Registry of application services. */
 public class Registry {
+    // !hide-focused
     /** Creates registry instances. */
     public companion object {
+        // !hide-focused
         /** Creates an empty registry. */
         // !diag[/create/] COMPANION_API_WITHOUT_JVM_STATIC ["Registry","create"]
         public fun create(): Registry = Registry()
@@ -55,16 +62,20 @@ public class Registry {
 ### Do
 
 ```kotlin
+// !hide-focused
 /** Registry of application services. */
 public class Registry {
+    // !hide-focused
     /** Creates registry instances. */
     public companion object {
+        // !hide-focused
         /** Creates an empty registry. */
         @JvmStatic
         public fun create(): Registry = Registry()
     }
 }
 ```
+
 
 ## Notes
 
@@ -83,10 +94,13 @@ Acknowledge the companion-instance access path with `@IntentionallyNonStaticComp
 keeping it is a deliberate choice:
 
 ```kotlin
+// !hide-focused
 /** Registry of application services. */
 public class Registry {
+    // !hide-focused
     /** Creates registry instances. */
     public companion object {
+        // !hide-focused
         /** Creates a registry through the companion instance. */
         @IntentionallyNonStaticCompanionApi(
             reason = ExemptionReason.API_DESIGN,

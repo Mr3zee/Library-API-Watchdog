@@ -16,6 +16,7 @@ Any `data class` reachable from the public API - top-level, nested inside anothe
 - is flagged, regardless of nesting depth:
 
 ```kotlin
+// !hide-focused(1:6)
 /**
  * A position in Cartesian coordinate space.
  *
@@ -35,9 +36,11 @@ which breaks source and binary compatibility for callers who use the functions,
 destructuring declarations, or positional construction. See the Kotlin library authors' guide on
 [avoiding data classes in your API](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#avoid-using-data-classes-in-your-api).
 
+
 ### Don't
 
 ```kotlin
+// !hide-focused(1:6)
 /**
  * A position in Cartesian coordinate space.
  *
@@ -51,18 +54,21 @@ public data class Coordinates(public val x: Int, public val y: Int)
 ### Do
 
 ```kotlin
+// !hide-focused(1:6)
 /**
  * A position in Cartesian coordinate space.
  *
  * @property x distance from the vertical axis.
  * @property y distance from the horizontal axis.
  */
+// !hide-focused
 @Poko
 public class Coordinates(
     public val x: Int,
     public val y: Int,
 )
 ```
+
 
 ## Notes
 
@@ -75,6 +81,7 @@ Apply `@IntentionallyDataClass` to the class declaration when the property list 
 stable part of the contract:
 
 ```kotlin
+// !hide-focused(1:5)
 /**
  * A stable one-dimensional coordinate used by the wire format.
  *

@@ -20,8 +20,10 @@ Three shapes trigger it:
   function type with receiver, or a `Unit`-returning function type
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Refresh")
 
+// !hide-focused
 /** Refreshes [key]. */
 // !diag[/refresh/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["refresh","$suspend"]
 public suspend fun refresh(key: String) { }
@@ -36,14 +38,17 @@ that compiles in Java but fails at runtime. See Kotlin's
 [Java-to-Kotlin interop guide](https://kotlinlang.org/docs/java-to-kotlin-interop.html) for how
 these shapes actually compile.
 
+
 ### Don't
 
 ```kotlin
+// !hide-focused
 @file:JvmName("KotlinOnly")
 
 // Java sees a trailing Continuation parameter
 // it can't provide idiomatically.
 //
+// !hide-focused
 /** Refreshes [key]. */
 // !diag[/refresh/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["refresh","$suspend"]
 public suspend fun refresh(key: String) { }
@@ -51,12 +56,14 @@ public suspend fun refresh(key: String) { }
 // Only inlining Kotlin call sites can substitute T.
 // Calling the compiled method from Java fails at runtime.
 //
+// !hide-focused
 /** Creates an instance of [T]. */
 // !diag[/instantiate/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["instantiate","$reified"]
 public inline fun <reified T> instantiate(): T? = null
 
 // A Java lambda has to return the Unit.INSTANCE token explicitly.
 //
+// !hide-focused
 /** Invokes [action] for each value. */
 // !diag[/onEach/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["onEach","$unitFunctionType(action)"]
 public fun onEach(action: (Int) -> Unit) { }
@@ -65,19 +72,25 @@ public fun onEach(action: (Int) -> Unit) { }
 ### Do
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Refresh")
 
+// !hide-focused
 /** Refreshes [key]. */
 @JvmSynthetic
 public suspend fun refresh(key: String) { }
 
+// !hide-focused
 /** Consumes values produced by an iteration. */
+// !hide-focused
 @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public fun interface Action {
+    // !hide-focused
     /** Processes [value] emitted by the iteration. */
     public fun doAction(value: Int)
 }
 
+// !hide-focused
 /** Invokes [action] for each value. */
 public fun onEach(action: Action) { }
 ```
@@ -85,6 +98,7 @@ public fun onEach(action: Action) { }
 - `@JvmSynthetic` hides the Kotlin-only member from Java entirely.
   (A `suspend` function can instead ship alongside a blocking or `CompletableFuture`-returning bridge for Java callers.)
 - A `fun interface` parameter gives Java a lambda-friendly type instead of a Kotlin function type.
+
 
 ## Notes
 
@@ -102,8 +116,10 @@ Apply `@IntentionallyKotlinOnlyApi` to the function, or to an enclosing class to
 function inside, when leaving the Kotlin-only shape visible to Java is intended:
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Refresh")
 
+// !hide-focused
 /** Refreshes [key] through a deliberately Kotlin-only API. */
 @IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)
 public suspend fun refresh(key: String) {}

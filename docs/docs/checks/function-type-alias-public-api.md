@@ -15,6 +15,7 @@ A public or protected type alias whose expanded type is a function type: plain, 
 nullable, or with a receiver.
 
 ```kotlin
+// !hide-focused
 /** Receives completed work percentages. */
 // !diag[/Callback/] FUNCTION_TYPE_ALIAS_PUBLIC_API ["Callback"]
 public typealias Callback = (Int) -> Unit
@@ -30,9 +31,11 @@ breaking change to the bare function type. A
 keeps the same lambda call-site ergonomics (SAM conversion) behind a real type that can
 add default members without breaking binary compatibility, or be extended from.
 
+
 ### Don't
 
 ```kotlin
+// !hide-focused
 /** Receives completed work percentages. */
 // !diag[/Callback/] FUNCTION_TYPE_ALIAS_PUBLIC_API ["Callback"]
 public typealias Callback = (Int) -> Unit
@@ -41,17 +44,23 @@ public typealias Callback = (Int) -> Unit
 ### Do
 
 ```kotlin
+// !hide-focused
 /** Receives completed work percentages. */
+// !hide-focused
 @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public fun interface Callback {
+    // !hide-focused
     /** Reports that [value] percent of the work is complete. */
     public fun onCall(value: Int): Unit
 }
 ```
 
+
+
 ### Don't {#dont-2}
 
 ```kotlin
+// !hide-focused
 /** Represents an operation that may suspend. */
 // !diag[/SuspendAction/] FUNCTION_TYPE_ALIAS_PUBLIC_API ["SuspendAction"]
 public typealias SuspendAction = suspend () -> Unit
@@ -60,13 +69,17 @@ public typealias SuspendAction = suspend () -> Unit
 ### Do {#do-2}
 
 ```kotlin
+// !hide-focused
 /** Represents an operation that may suspend. */
+// !hide-focused
 @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public fun interface SuspendAction {
+    // !hide-focused
     /** Executes the operation. */
     public suspend fun invoke(): Unit
 }
 ```
+
 
 ## Notes
 
@@ -80,6 +93,7 @@ public fun interface SuspendAction {
 Apply `@IntentionallyFunctionTypeAlias` when exposing the bare function type is intended.
 
 ```kotlin
+// !hide-focused
 /** Receives completed work percentages through a deliberately bare function shape. */
 @IntentionallyFunctionTypeAlias(reason = ExemptionReason.API_DESIGN)
 public typealias Callback = (Int) -> Unit

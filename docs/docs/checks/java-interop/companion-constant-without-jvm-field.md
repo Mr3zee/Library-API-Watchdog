@@ -17,10 +17,13 @@ that Java can only read through the companion instance getter.
 A companion `val` that just holds a constant value - no `const`, no custom getter, no delegate.
 
 ```kotlin
+// !hide-focused
 /** Names and metadata used to locate a registry. */
 public class Registry {
+    // !hide-focused
     /** Well-known registry metadata. */
     public companion object {
+        // !hide-focused
         /** Name used when the caller does not supply one. */
         // !diag[/DEFAULT_NAME/] COMPANION_CONSTANT_WITHOUT_JVM_FIELD ["Registry","DEFAULT_NAME"]
         public val DEFAULT_NAME: String = "registry"
@@ -37,14 +40,18 @@ because none of them is the default. See Kotlin's guide to
 [static fields](https://kotlinlang.org/docs/java-to-kotlin-interop.html#static-fields) for how
 `@JvmField`, `const val`, and `@JvmStatic` each compile.
 
+
 ### Don't
 
 ```kotlin
+// !hide-focused
 /** Names and metadata used to locate a registry. */
 public class Registry {
     // Java only sees Registry.Companion.getDEFAULT_NAME().
+    // !hide-focused
     /** Well-known registry metadata. */
     public companion object {
+        // !hide-focused
         /** Name used when the caller does not supply one. */
         // !diag[/DEFAULT_NAME/] COMPANION_CONSTANT_WITHOUT_JVM_FIELD ["Registry","DEFAULT_NAME"]
         public val DEFAULT_NAME: String = "registry"
@@ -55,17 +62,22 @@ public class Registry {
 ### Do
 
 ```kotlin
+// !hide-focused
 /** Names and metadata used to locate a registry. */
 public class Registry {
+    // !hide-focused
     /** Well-known registry metadata. */
     public companion object {
+        // !hide-focused
         /** Name used when the caller does not supply one. */
         public const val DEFAULT_NAME: String = "registry"
 
+        // !hide-focused
         /** Origin assigned to locally created registries. */
         @JvmField
         public val ORIGIN: String = "field"
 
+        // !hide-focused
         /** Metadata exposed to Java through a static getter. */
         @JvmStatic
         public val EXPOSED: String = "static getter"
@@ -77,6 +89,7 @@ public class Registry {
 (primitives and strings). `@JvmField` exposes any other final value the same way, as a plain
 static field. `@JvmStatic` instead compiles a static getter, useful when the value needs a
 computed default.
+
 
 ## Notes
 
@@ -94,10 +107,13 @@ Acknowledge the companion-instance access path with `@IntentionallyNonStaticComp
 keeping it is a deliberate choice:
 
 ```kotlin
+// !hide-focused
 /** Names and metadata used to locate a registry. */
 public class Registry {
+    // !hide-focused
     /** Well-known registry metadata. */
     public companion object {
+        // !hide-focused
         /** The deliberately companion-only default name. */
         @IntentionallyNonStaticCompanionApi(
             reason = ExemptionReason.API_DESIGN,

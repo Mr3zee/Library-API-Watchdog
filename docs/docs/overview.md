@@ -106,6 +106,9 @@ See [Configuration](./configuration.md) for full configuration options and build
 - [Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md):
   dependency types exposed in public signatures but hidden from consumers by an
   `implementation` declaration. Always an error while enabled.
+- [Public types marked as internal API](./checks/special/public-type-with-internal-api.md):
+  supported public signatures exposing types that explicitly carry no supported API contract.
+  `@PublishedApi internal` declarations are excluded.
 
 ### Java interop checks
 

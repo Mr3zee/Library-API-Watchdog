@@ -38,6 +38,7 @@ non-public declarations, because leaving any exemption unexplained defeats the p
 A well-explained exemption:
 
 ```kotlin
+// !hide-focused(1:6)
 /**
  * Legacy RPC configuration.
  *
@@ -103,6 +104,7 @@ exempting every one of them individually, annotate the library's own internal-AP
 with `@InternalAnnotationMarker`:
 
 ```kotlin
+// !hide-focused
 /** Marks declarations that are public only for technical reasons. */
 @InternalAnnotationMarker
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
@@ -114,6 +116,11 @@ public class ReflectionHelper
 
 Every declaration carrying the marked annotation is no
 longer watched by any check, and neither is anything nested inside it.
+
+A supported public declaration must not expose one of those internal types in its signature. The
+[`PUBLIC_TYPE_WITH_INTERNAL_API`](./checks/special/public-type-with-internal-api.md) check reports
+that mismatch; either keep the type behind the implementation boundary or mark the exposing
+declaration as internal API too.
 
 The marker annotation class itself is ordinary public API and stays watched like any
 other declaration, so it still needs a KDoc comment and the rest.

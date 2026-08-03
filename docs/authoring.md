@@ -78,6 +78,29 @@ with its `!diag` annotations. Configuration snippets and comment-only placeholde
 This cross-check means a bad example still demonstrates its annotated diagnostic, while every
 other aspect of that example follows the guidance from the other check pages.
 
+Kotlin fences containing `// !hide-focused` render with **Full** and **Focused** tabs. Full is the
+audited source from the Markdown fence. Focused removes code that exists only to satisfy checks
+other than the one explained by the page. Mark one line for removal with `// !hide-focused`. Use a
+relative range such as `// !hide-focused(1:3)` to remove the next three lines:
+
+```kotlin
+// !hide-focused
+@file:JvmName("Connections")
+
+// !hide-focused(1:5)
+/**
+ * Connects to a network host.
+ *
+ * @param host host serving requests.
+ */
+// !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","connect"]
+public fun connect(retries: Int = 3, host: String) { }
+```
+
+The marker comments are absent from both rendered tabs. Keep the Full source compilable and fully
+audited. Focused is explanatory and may omit declarations or annotations required to compile in
+isolation.
+
 When a long parameter value is shared with the compiler checker, define it once in the
 diagnostic's `parameterValues` object in `diagnostics.json`. Reference a value with `$name`, or
 fill its own placeholders with `$name(argument1,argument2)`:
@@ -132,6 +155,7 @@ Special checks (`docs/docs/checks/special/`):
 | `dsl-marker-noop-target.md`                            | DSL markers with no-op targets                |
 | `dsl-marker-without-explicit-targets.md`               | DSL markers without explicit targets          |
 | `dsl-marker-noop-type-position.md`                     | DSL markers on no-op type positions           |
+| `public-type-with-internal-api.md`                     | Public types marked as internal API            |
 | `public-type-from-non-transitive-dependency.md`        | Public types from non-transitive dependencies |
 
 Java interop (`docs/docs/checks/java-interop/`):
@@ -182,6 +206,8 @@ authors' guidelines page.
 ### Don't
 
     ```kotlin
+    // !hide-focused
+    /** Documentation required by the undocumented API check. */
     // the hazardous shape, possibly annotated with a comment on what breaks later
     //
     // !diag[/<compiler-reported range>/] <DIAGNOSTIC_NAME> ["<parameter>"]
@@ -191,7 +217,8 @@ authors' guidelines page.
 ### Do
 
     ```kotlin
-    // the evolvable alternative
+    // !hide-focused
+    /** Documentation required by the undocumented API check. */
     <example-do>
     ```
 

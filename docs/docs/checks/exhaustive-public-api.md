@@ -16,12 +16,15 @@ The check flags every public or protected `enum class`, `sealed class`, and `sea
 declaration.
 
 ```kotlin
+// !hide-focused
 /** Whether the service can accept requests. */
 // !diag[/Status/] EXHAUSTIVE_PUBLIC_API ["enum class","Status","an entry"]
 public enum class Status {
+    // !hide-focused
     /** The service is ready to accept requests. */
     ACTIVE,
 
+    // !hide-focused
     /** The service rejects requests until it is reactivated. */
     INACTIVE,
 }
@@ -36,30 +39,36 @@ later makes every such `when` at every call site stop compiling: a source-incomp
 library author did not think of as breaking. See the
 [Kotlin API guidelines on preventing unwanted extensions](https://kotlinlang.org/docs/api-guidelines-predictability.html#prevent-unwanted-and-invalid-extensions).
 
+
 ### Don't
 
 ```kotlin
+// !hide-focused
 /** Severity assigned to a log record. */
 // !diag[/LogLevel/] EXHAUSTIVE_PUBLIC_API ["enum class","LogLevel","an entry"]
 public enum class LogLevel {
+    // !hide-focused
     /** Fine-grained information used to diagnose behavior. */
     DEBUG,
 
+    // !hide-focused
     /** Routine progress and state changes. */
     INFO,
 
+    // !hide-focused
     /** A failure that prevented an operation from completing. */
     ERROR,
 }
-```
 
-```kotlin
+// !hide-focused
 /** A change in the service lifecycle. */
 // !diag[/Event/] EXHAUSTIVE_PUBLIC_API ["interface","Event","a subtype"]
 public sealed interface Event {
+    // !hide-focused
     /** Emitted after the service becomes ready. */
     public class Started : Event
 
+    // !hide-focused
     /** Emitted after the service finishes shutting down. */
     public class Stopped : Event
 }
@@ -68,34 +77,46 @@ public sealed interface Event {
 ### Do
 
 ```kotlin
+// !hide-focused
 /** A logging level that can grow without breaking exhaustive matches. */
 public class LogLevel {
+    // !hide-focused
     /** Named logging levels. */
     public companion object {
+        // !hide-focused
         /** Fine-grained information used to diagnose behavior. */
+        // !hide-focused
         @JvmField
         public val DEBUG: LogLevel = LogLevel()
 
+        // !hide-focused
         /** Routine progress and state changes. */
+        // !hide-focused
         @JvmField
         public val INFO: LogLevel = LogLevel()
 
+        // !hide-focused
         /** A failure that prevented an operation from completing. */
+        // !hide-focused
         @JvmField
         public val ERROR: LogLevel = LogLevel()
     }
 }
 
+// !hide-focused
 /** A lifecycle event implemented under an opt-in contract. */
 @SubclassOptInRequired(InternalMyLibrarySubclassApi::class)
 public interface Event {
+    // !hide-focused
     /** Emitted after the service becomes ready. */
     public class Started : Event
 
+    // !hide-focused
     /** Emitted after the service finishes shutting down. */
     public class Stopped : Event
 }
 ```
+
 
 ## Notes
 
@@ -109,18 +130,23 @@ Apply `@IntentionallyExhaustive` on the enum or sealed class/interface, for exam
 set of entries, or subtypes is a deliberate, stable part of the contract:
 
 ```kotlin
+// !hide-focused
 /** A cardinal direction. */
 @IntentionallyExhaustive(reason = ExemptionReason.API_DESIGN)
 public enum class Direction {
+    // !hide-focused
     /** Points toward increasing latitude. */
     NORTH,
 
+    // !hide-focused
     /** Points toward decreasing latitude. */
     SOUTH,
 
+    // !hide-focused
     /** Points toward increasing longitude. */
     EAST,
 
+    // !hide-focused
     /** Points toward decreasing longitude. */
     WEST,
 }

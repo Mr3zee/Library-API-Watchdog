@@ -21,8 +21,10 @@ dependencies {
 ```
 
 ```kotlin Library.kt
+// !hide-focused
 @file:JvmName("Library")
 
+// !hide-focused
 /** Loads the current external model. */
 // !diag[/ExternalModel/] PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY ["function","loadModel","com.example.models.ExternalModel"]
 public fun loadModel(): ExternalModel = TODO()

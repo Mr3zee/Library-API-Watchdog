@@ -1,4 +1,14 @@
-import React, {useCallback, useEffect, useRef, useState, type ReactNode} from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import Link from '@docusaurus/Link';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import clsx from 'clsx';
@@ -22,13 +32,11 @@ import styles from './Code.module.css';
  * from the remark plugins configured in docusaurus.config.ts.
  */
 export default function Code({codeblock}: {codeblock: HighlightedCode}): ReactNode {
-  const pre = (
-    <Pre
-      className={clsx(styles.pre, codeblock.meta && styles.namedPre)}
-      code={mergeDiagnosticsOnTheSameRange(codeblock)}
-      handlers={[createCopyButton(codeblock.code), diagnostics]}
-    />
-  );
+  const tabbed = hasFocusedCode(codeblock);
+
+  if (tabbed) return <FocusedCodeTabs codeblock={codeblock} />;
+
+  const pre = <CodePre codeblock={codeblock} named={Boolean(codeblock.meta)} />;
 
   if (!codeblock.meta) {
     return (
@@ -48,16 +56,327 @@ export default function Code({codeblock}: {codeblock: HighlightedCode}): ReactNo
   );
 }
 
-const byName = new Map(registry.diagnostics.map((diagnostic) => [diagnostic.name, diagnostic]));
+const HIDE_FOCUSED_ANNOTATION = 'hide-focused';
+const CODE_VIEW_STORAGE_KEY = 'libs-api-watchdog-code-view';
+const CODE_VIEW_EVENT = 'libs-api-watchdog-code-view-change';
 
-function createCopyButton(copyText: string): AnnotationHandler {
+type CodeView = 'full' | 'focused';
+let inMemoryCodeView: CodeView = 'full';
+
+function CodePre({
+  codeblock,
+  named = false,
+  tabbed = false,
+}: {
+  codeblock: HighlightedCode;
+  named?: boolean;
+  tabbed?: boolean;
+}): ReactNode {
+  return (
+    <CopyTextContext value={codeblock.code}>
+      <Pre
+        className={clsx(styles.pre, named && styles.namedPre, tabbed && styles.tabbedPre)}
+        code={mergeDiagnosticsOnTheSameRange(codeblock)}
+        handlers={[copyButton, diagnostics]}
+      />
+    </CopyTextContext>
+  );
+}
+
+function FocusedCodeTabs({codeblock}: {codeblock: HighlightedCode}): ReactNode {
+  const [view, setView] = usePersistentCodeView();
+  const tabId = useId();
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const toolbarTopBeforeViewChange = useRef<number | null>(null);
+  const full = withoutFocusedAnnotations(codeblock);
+  const focused = focusedCode(codeblock);
+  const selected = view === 'focused' ? focused : full;
+
+  const selectView = useCallback(
+    (nextView: CodeView) => {
+      if (nextView === view) return;
+      toolbarTopBeforeViewChange.current = toolbarRef.current?.getBoundingClientRect().top ?? null;
+      setView(nextView);
+    },
+    [setView, view],
+  );
+
+  useLayoutEffect(() => {
+    const previousTop = toolbarTopBeforeViewChange.current;
+    toolbarTopBeforeViewChange.current = null;
+    if (previousTop === null || !toolbarRef.current) return;
+
+    // Every code block changes view together. Counteract the height changes of blocks above the
+    // clicked one so its toolbar stays under the pointer and the page does not jump.
+    const topDelta = toolbarRef.current.getBoundingClientRect().top - previousTop;
+    if (Math.abs(topDelta) >= 0.5) window.scrollBy(0, topDelta);
+  }, [view]);
+
+  return (
+    <Tooltip.Provider delayDuration={250} skipDelayDuration={100}>
+      <div className={styles.tabbedCodeBlock}>
+        <div ref={toolbarRef} className={styles.codeToolbar}>
+          <div aria-label="Code detail" className={styles.codeTabs} role="tablist">
+            <CodeTab
+              controls={`${tabId}-panel`}
+              id={`${tabId}-full`}
+              onSelect={() => selectView('full')}
+              selected={view === 'full'}
+            >
+              Full
+            </CodeTab>
+            <CodeTab
+              controls={`${tabId}-panel`}
+              id={`${tabId}-focused`}
+              onSelect={() => selectView('focused')}
+              selected={view === 'focused'}
+            >
+              Focused
+            </CodeTab>
+            <FocusedHint />
+          </div>
+          {codeblock.meta && <span className={styles.tabbedFilename}>{codeblock.meta}</span>}
+        </div>
+        <div
+          aria-labelledby={`${tabId}-${view}`}
+          id={`${tabId}-panel`}
+          role="tabpanel"
+          tabIndex={0}
+        >
+          <CodePre codeblock={selected} tabbed />
+        </div>
+      </div>
+    </Tooltip.Provider>
+  );
+}
+
+function CodeTab({
+  children,
+  controls,
+  id,
+  onSelect,
+  selected,
+}: {
+  children: ReactNode;
+  controls: string;
+  id: string;
+  onSelect: () => void;
+  selected: boolean;
+}): ReactNode {
+  return (
+    <button
+      aria-controls={controls}
+      aria-selected={selected}
+      className={clsx('clean-btn', styles.codeTab)}
+      id={id}
+      onKeyDown={moveCodeTabFocus}
+      onClick={onSelect}
+      role="tab"
+      tabIndex={selected ? 0 : -1}
+      type="button"
+    >
+      {children}
+    </button>
+  );
+}
+
+function moveCodeTabFocus(event: React.KeyboardEvent<HTMLButtonElement>): void {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+
+  const tabs = Array.from(
+    event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]') ?? [],
+  );
+  const currentIndex = tabs.indexOf(event.currentTarget);
+  if (currentIndex < 0 || tabs.length === 0) return;
+
+  event.preventDefault();
+  const nextIndex =
+    event.key === 'Home'
+      ? 0
+      : event.key === 'End'
+        ? tabs.length - 1
+        : (currentIndex + (event.key === 'ArrowLeft' ? -1 : 1) + tabs.length) % tabs.length;
+  tabs[nextIndex].click();
+  tabs[nextIndex].focus();
+}
+
+function FocusedHint(): ReactNode {
+  return (
+    <Tooltip.Root>
+      <Tooltip.Trigger asChild>
+        <button
+          aria-label="What does Focused mean?"
+          className={clsx('clean-btn', styles.focusedHint)}
+          type="button"
+        >
+          ?
+        </button>
+      </Tooltip.Trigger>
+      <Tooltip.Portal>
+        <Tooltip.Content
+          align="center"
+          className={styles.focusedTooltip}
+          collisionPadding={8}
+          side="top"
+          sideOffset={6}
+        >
+          "Focused" only shows code relevant to the current check showcase,
+          skipping other possible checks, like presence of KDocs.
+          <Tooltip.Arrow className={styles.tooltipArrow} width={10} height={5} />
+        </Tooltip.Content>
+      </Tooltip.Portal>
+    </Tooltip.Root>
+  );
+}
+
+function usePersistentCodeView(): [CodeView, (view: CodeView) => void] {
+  const [view, setView] = useState<CodeView>('full');
+
+  useEffect(() => {
+    const update = () => setView(readStoredCodeView());
+    update();
+    window.addEventListener(CODE_VIEW_EVENT, update);
+    window.addEventListener('storage', update);
+    return () => {
+      window.removeEventListener(CODE_VIEW_EVENT, update);
+      window.removeEventListener('storage', update);
+    };
+  }, []);
+
+  const select = useCallback((nextView: CodeView) => {
+    inMemoryCodeView = nextView;
+    try {
+      window.localStorage.setItem(CODE_VIEW_STORAGE_KEY, nextView);
+    } catch {
+      // The shared in-memory value still keeps all examples in sync when storage is unavailable.
+    }
+    window.dispatchEvent(new Event(CODE_VIEW_EVENT));
+  }, []);
+
+  return [view, select];
+}
+
+function readStoredCodeView(): CodeView {
+  try {
+    inMemoryCodeView =
+      window.localStorage.getItem(CODE_VIEW_STORAGE_KEY) === 'focused' ? 'focused' : 'full';
+  } catch {
+    // Keep the last selected view when storage is unavailable or blocked.
+  }
+  return inMemoryCodeView;
+}
+
+function hasFocusedCode(codeblock: HighlightedCode): boolean {
+  return codeblock.annotations.some(({name}) => name === HIDE_FOCUSED_ANNOTATION);
+}
+
+function withoutFocusedAnnotations(codeblock: HighlightedCode): HighlightedCode {
   return {
-    name: 'copy-button',
-    Pre: (props) => <CopyablePre {...props} copyText={copyText} />,
+    ...codeblock,
+    annotations: codeblock.annotations.filter(({name}) => name !== HIDE_FOCUSED_ANNOTATION),
   };
 }
 
-function CopyablePre({copyText, ...props}: CustomPreProps & {copyText: string}): ReactNode {
+function focusedCode(codeblock: HighlightedCode): HighlightedCode {
+  const codeLines = codeblock.code.split('\n');
+  const hiddenLines = hiddenFocusedLines(codeblock.annotations);
+  normalizeBlankLines(codeLines, hiddenLines);
+
+  const oldToNewLine = new Map<number, number>();
+  const keptLines: number[] = [];
+  for (let line = 1; line <= codeLines.length; line += 1) {
+    if (hiddenLines.has(line)) continue;
+    keptLines.push(line);
+    oldToNewLine.set(line, keptLines.length);
+  }
+  if (keptLines.length === 0) return withoutFocusedAnnotations(codeblock);
+
+  const tokenLines = splitTokenLines(codeblock.tokens);
+  const tokens = keptLines.flatMap((line, index) => [
+    ...(tokenLines[line - 1] ?? []),
+    ...(index < keptLines.length - 1 ? ['\n'] : []),
+  ]);
+  const annotations = codeblock.annotations.flatMap((annotation) =>
+    remapFocusedAnnotation(annotation, oldToNewLine),
+  );
+  const code = keptLines.map((line) => codeLines[line - 1]).join('\n');
+
+  return {...codeblock, value: code, code, tokens, annotations};
+}
+
+function hiddenFocusedLines(annotations: CodeAnnotation[]): Set<number> {
+  const hidden = new Set<number>();
+  for (const annotation of annotations) {
+    if (annotation.name !== HIDE_FOCUSED_ANNOTATION) continue;
+    if ('lineNumber' in annotation) {
+      hidden.add(annotation.lineNumber);
+      continue;
+    }
+    for (let line = annotation.fromLineNumber; line <= annotation.toLineNumber; line += 1) {
+      hidden.add(line);
+    }
+  }
+  return hidden;
+}
+
+function normalizeBlankLines(lines: string[], hidden: Set<number>): void {
+  const visible = lines.map((_, index) => index + 1).filter((line) => !hidden.has(line));
+  while (visible.length > 0 && !lines[visible[0] - 1].trim()) hidden.add(visible.shift()!);
+  while (visible.length > 0 && !lines[visible.at(-1)! - 1].trim()) hidden.add(visible.pop()!);
+
+  let previousWasBlank = false;
+  for (const line of visible) {
+    if (hidden.has(line)) continue;
+    const blank = !lines[line - 1].trim();
+    if (blank && previousWasBlank) hidden.add(line);
+    previousWasBlank = blank;
+  }
+}
+
+function splitTokenLines(tokens: HighlightedCode['tokens']): HighlightedCode['tokens'][] {
+  const lines: HighlightedCode['tokens'][] = [[]];
+  for (const token of tokens) {
+    if (typeof token !== 'string') {
+      lines.at(-1)!.push(token);
+      continue;
+    }
+
+    const parts = token.split('\n');
+    for (const [index, part] of parts.entries()) {
+      if (part) lines.at(-1)!.push(part);
+      if (index < parts.length - 1) lines.push([]);
+    }
+  }
+  return lines;
+}
+
+function remapFocusedAnnotation(
+  annotation: CodeAnnotation,
+  oldToNewLine: Map<number, number>,
+): CodeAnnotation[] {
+  if (annotation.name === HIDE_FOCUSED_ANNOTATION) return [];
+  if ('lineNumber' in annotation) {
+    const lineNumber = oldToNewLine.get(annotation.lineNumber);
+    return lineNumber === undefined ? [] : [{...annotation, lineNumber}];
+  }
+
+  const lines = Array.from(
+    {length: annotation.toLineNumber - annotation.fromLineNumber + 1},
+    (_, index) => annotation.fromLineNumber + index,
+  )
+    .map((line) => oldToNewLine.get(line))
+    .filter((line): line is number => line !== undefined);
+  if (lines.length === 0) return [];
+  return [{...annotation, fromLineNumber: lines[0], toLineNumber: lines.at(-1)!}];
+}
+
+const byName = new Map(registry.diagnostics.map((diagnostic) => [diagnostic.name, diagnostic]));
+const CopyTextContext = createContext('');
+
+const copyButton: AnnotationHandler = {name: 'copy-button', Pre: CopyablePre};
+
+function CopyablePre(props: CustomPreProps): ReactNode {
+  const copyText = useContext(CopyTextContext);
   const timeoutRef = useRef<number | undefined>(undefined);
   const [isCopied, setIsCopied] = useState(false);
 

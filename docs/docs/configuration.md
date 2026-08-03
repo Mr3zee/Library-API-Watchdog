@@ -111,6 +111,7 @@ apiWatchdog {
     dslMarkerNoopTarget = WatchdogSeverity.ERROR
     dslMarkerWithoutExplicitTargets = WatchdogSeverity.ERROR
     dslMarkerNoopTypePosition = WatchdogSeverity.ERROR
+    publicTypeWithInternalApi = WatchdogSeverity.ERROR
 
     javaInterop {
         // One switch for the whole Java interop group,
@@ -165,6 +166,7 @@ whole-check switch rather than a severity. See [Exemptions and internal API](./e
 | `dslMarkerNoopTarget`                              | [DSL markers with no-op targets](./checks/special/dsl-marker-noop-target.md)                                            | `DSL_MARKER_NOOP_TARGET`                     |
 | `dslMarkerWithoutExplicitTargets`                  | [DSL markers without explicit targets](./checks/special/dsl-marker-without-explicit-targets.md)                         | `DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`        |
 | `dslMarkerNoopTypePosition`                        | [DSL markers on no-op type positions](./checks/special/dsl-marker-noop-type-position.md)                                | `DSL_MARKER_NOOP_TYPE_POSITION`              |
+| `publicTypeWithInternalApi`                        | [Public types marked as internal API](./checks/special/public-type-with-internal-api.md)                                | `PUBLIC_TYPE_WITH_INTERNAL_API`              |
 | `javaInterop.mangledJvmNamePublicApi`              | [Mangled JVM names in public API](./checks/java-interop/mangled-jvm-name-public-api.md)                                 | `MANGLED_JVM_NAME_PUBLIC_API`                |
 | `javaInterop.kotlinOnlyApiWithoutJvmSynthetic`     | [Kotlin-only API without JvmSynthetic](./checks/java-interop/kotlin-only-api-without-jvm-synthetic.md)                  | `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`      |
 | `javaInterop.companionApiWithoutJvmStatic`         | [Companion API without JvmStatic](./checks/java-interop/companion-api-without-jvm-static.md)                            | `COMPANION_API_WITHOUT_JVM_STATIC`           |

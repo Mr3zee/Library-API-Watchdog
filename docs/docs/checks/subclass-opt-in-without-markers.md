@@ -17,6 +17,7 @@ arguments. The annotation restricts nothing in this case: the class or
 interface stays open to external subclassing exactly as if it were unannotated.
 
 ```kotlin
+// !hide-focused
 /** Establishes communication with a remote service. */
 // !diag[/@SubclassOptInRequired/] SUBCLASS_OPT_IN_WITHOUT_MARKERS
 @SubclassOptInRequired
@@ -33,9 +34,11 @@ to opt out of. See the
 [opt-in requirements guide](https://kotlinlang.org/docs/opt-in-requirements.html#require-opt-in-to-extend-api)
 for the intended pattern.
 
+
 ### Don't
 
 ```kotlin
+// !hide-focused
 /** Establishes communication with a remote service. */
 // !diag[/@SubclassOptInRequired/] SUBCLASS_OPT_IN_WITHOUT_MARKERS
 @SubclassOptInRequired
@@ -45,18 +48,22 @@ public abstract class Connector
 ### Do
 
 ```kotlin
+// !hide-focused
 /** Marks unstable API. */
 @RequiresOptIn
 public annotation class UnstableApi
 
+// !hide-focused
 /** A connector implemented under an opt-in contract. */
 @SubclassOptInRequired(UnstableApi::class)
 public abstract class Connector
 
+// !hide-focused
 /** A plugin implemented under an opt-in contract. */
 @SubclassOptInRequired(UnstableApi::class)
 public interface Plugin
 ```
+
 
 ## Notes
 
@@ -75,6 +82,7 @@ To exempt this check for binary compatibility reasons, replace the `@SubclassOpt
 `@IntentionallyOpen`:
 
 ```kotlin
+// !hide-focused
 /** A connector kept unrestricted for compatibility. */
 @IntentionallyOpen(
     reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY,

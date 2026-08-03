@@ -17,8 +17,10 @@ statement - besides an optional contract - that only performs simple operations 
 non-inline call:
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Numbers")
 
+// !hide-focused
 /** Chooses a sign for [value]. */
 // !diag[/choose/] INLINE_FUNCTION_WITH_LOGIC ["inline function","choose"]
 public inline fun choose(value: Int): Int = if (value < 0) -1 else 1
@@ -35,15 +37,19 @@ authors' guide on
 
 [//]: # (TODO list permitted simple operations)
 
+
 ### Don't
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Values")
 
+// !hide-focused
 /** Chooses a sign for [value]. */
 // !diag[/choose/] INLINE_FUNCTION_WITH_LOGIC ["inline function","choose"]
 public inline fun choose(value: Int): Int = if (value < 0) -1 else 1
 
+// !hide-focused
 /** Returns the cached length of [tag]. */
 // !diag[/cachedLength/] INLINE_FUNCTION_WITH_LOGIC ["inline function","cachedLength"]
 public inline fun cachedLength(tag: String): Int {
@@ -55,11 +61,14 @@ public inline fun cachedLength(tag: String): Int {
 ### Do
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Values")
 
+// !hide-focused
 /** Chooses a sign for [value]. */
 public inline fun choose(value: Int): Int = chooseImpl(value)
 
+// !hide-focused
 /** Returns the cached length of [tag]. */
 public inline fun cachedLength(tag: String): Int =
     cachedLengthImpl(tag)
@@ -73,9 +82,12 @@ internal fun cachedLengthImpl(tag: String): Int = withCache {
 }
 ```
 
+
+
 ### Don't {#dont-2}
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Arrays")
 
 // Supporting published state
@@ -85,6 +97,7 @@ internal val array1: List<Int> = emptyList()
 @PublishedApi
 internal val array2: List<Int> = emptyList()
 
+// !hide-focused
 /** Returns the combined size of the arrays. */
 // !diag[/calculateArraysSize/] INLINE_FUNCTION_WITH_LOGIC ["inline getter","calculateArraysSize"]
 public inline val calculateArraysSize: Int
@@ -96,17 +109,23 @@ public inline val calculateArraysSize: Int
 ### Do {#do-2}
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Arrays")
 
+// !hide-focused
 /** Returns the combined size of the arrays. */
 public val calculateArraysSize: Int
     get() = calculateArraysSizeImpl()
 ```
 
+
+
 ### Don't {#dont-3}
 
 ```kotlin
+// !hide-focused
 /** Returns the number of functions declared by [T]. */
+// !hide-focused
 @JvmSynthetic
 public inline fun <reified T : Any> resolveFunctionsCount(): Int {
     return T::class.memberFunctions.size
@@ -116,6 +135,7 @@ public inline fun <reified T : Any> resolveFunctionsCount(): Int {
 ### Do {#do-3}
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Reflection")
 
 @PublishedApi
@@ -123,12 +143,15 @@ internal fun <T : Any> resolveFunctionsCountImpl(kClass: KClass<T>): Int {
     return kClass.memberFunctions.size
 }
 
+// !hide-focused
 /** Returns the number of functions declared by [T]. */
+// !hide-focused
 @JvmSynthetic
 public inline fun <reified T : Any> resolveFunctionsCount(): Int {
     return resolveFunctionsCountImpl(T::class)
 }
 ```
+
 
 ## Notes
 
@@ -144,8 +167,10 @@ Apply `@IntentionallyInlinedLogic` when inlining the logic is intended, for exam
 must run inline for non-local returns or a hot path must not pay for an extra call:
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Numbers")
 
+// !hide-focused
 /** Clamps [value] at zero. */
 @IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)
 public inline fun clamped(value: Int): Int =

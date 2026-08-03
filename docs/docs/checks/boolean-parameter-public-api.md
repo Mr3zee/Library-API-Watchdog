@@ -15,8 +15,10 @@ Every value parameter, and every context parameter, of a public or protected fun
 type is `Boolean`, including the declared element type of `vararg` parameter.
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Work")
 
+// !hide-focused
 /** Processes pending data, optionally favoring speed over memory use. */
 // !diag[/optimizeForSpeed/] BOOLEAN_PARAMETER_PUBLIC_API ["doWork","optimizeForSpeed"]
 public fun doWork(optimizeForSpeed: Boolean): Unit {}
@@ -29,11 +31,14 @@ about what turns on. Users can't be forced to use named arguments yet, so the me
 whoever reads the call site remembering the parameter name. See the
 [Kotlin API guidelines on avoiding Boolean arguments](https://kotlinlang.org/docs/api-guidelines-readability.html#avoid-using-the-boolean-type-as-an-argument).
 
+
 ### Don't
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Logging")
 
+// !hide-focused
 /** Controls whether diagnostic messages are recorded. */
 // !diag[/enabled/] BOOLEAN_PARAMETER_PUBLIC_API ["setLogging","enabled"]
 public fun setLogging(enabled: Boolean): Unit {}
@@ -42,14 +47,18 @@ public fun setLogging(enabled: Boolean): Unit {}
 ### Do
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Logging")
 
+// !hide-focused
 /** Enables logging. */
 public fun enableLogging(): Unit {}
 
+// !hide-focused
 /** Disables logging. */
 public fun disableLogging(): Unit {}
 ```
+
 
 ## Notes
 
@@ -80,8 +89,10 @@ Apply `@IntentionallyBooleanParameter` when the parameter's meaning is unmistaka
 function name, such as `setEnabled(enabled: Boolean)`.
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Settings")
 
+// !hide-focused
 /** Changes whether this component is enabled. */
 @IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)
 public fun setEnabled(enabled: Boolean): Unit {}

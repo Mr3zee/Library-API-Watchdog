@@ -28,15 +28,18 @@ implementation, and any later change - even a bug fix - risks breaking a usage n
 supported. Writing the contract down helps your library avoid these issues. See the
 [Kotlin API guidelines on documenting your API](https://kotlinlang.org/docs/api-guidelines-informative-documentation.html#thoroughly-document-your-api).
 
+
 ### Don't
 
 ```kotlin
+// !hide-focused
 @Poko
 // !diag[/Cache/] UNDOCUMENTED_PUBLIC_API ["class","Cache"]
 public class Cache {
     // !diag[/get/] UNDOCUMENTED_PUBLIC_API ["function","get"]
     public fun get(key: String): String? = store[key]
 
+    // !hide-focused(1:2)
     // Supporting implementation
     private val store: MutableMap<String, String> = mutableMapOf()
 }
@@ -46,6 +49,7 @@ public class Cache {
 
 ```kotlin
 /** An in-memory string cache. */
+// !hide-focused
 @Poko
 public class Cache {
     /**
@@ -54,10 +58,13 @@ public class Cache {
      */
     public fun get(key: String): String? = store[key]
 
+    // !hide-focused(1:2)
     // Supporting implementation
     private val store: MutableMap<String, String> = mutableMapOf()
 }
 ```
+
+
 
 ### Don't {#dont-2}
 
@@ -66,6 +73,7 @@ A class KDoc alone doesn't document its constructor properties. Each one still n
 
 ```kotlin
 /** Profile information displayed for a user. */
+// !hide-focused
 @Poko
 public class Profile(
     // !diag[/name/] UNDOCUMENTED_PUBLIC_API ["property","name"]
@@ -84,12 +92,14 @@ public class Profile(
  * @property name the user's display name.
  * @property age the user's age in years.
  */
+// !hide-focused
 @Poko
 public class Profile(
   public val name: String,
   public val age: Int,
 )
 ```
+
 
 ## Notes
 

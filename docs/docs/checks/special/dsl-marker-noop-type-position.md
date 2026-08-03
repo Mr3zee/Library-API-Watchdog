@@ -17,9 +17,11 @@ type, or a property or variable type marks a value that is only ever accessed by
 restricts nothing:
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Trees")
 
 // Supporting DSL declarations
+// !hide-focused
 /** Marks tree DSL receivers. */
 @DslMarker
 @Target(
@@ -29,9 +31,11 @@ restricts nothing:
 )
 public annotation class TreeDsl
 
+// !hide-focused
 /** Node accepted by the tree-building DSL. */
 public class Tag
 
+// !hide-focused
 /** Adds [tag] to the current tree. */
 // !diag[/@TreeDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["TreeDsl","parameter type"]
 public fun process(tag: @TreeDsl Tag) { }
@@ -46,10 +50,13 @@ A marker in a no-op position gives none of the protection `@DslMarker` exists fo
 builder lambda, an outer builder's members stay implicitly callable, so code can silently call the
 wrong scope's functions. See the Kotlin guide on [scope control for DSL markers](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker).
 
+
 ### Don't
 
 ```kotlin
+// !hide-focused
 /** Applies [block] while constructing a tree tag. */
+// !hide-focused
 @JvmSynthetic
 // !diag[/@TreeDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["TreeDsl","return type"]
 public fun configure(block: Tag.() -> Unit): @TreeDsl Unit { }
@@ -58,20 +65,27 @@ public fun configure(block: Tag.() -> Unit): @TreeDsl Unit { }
 ### Do
 
 ```kotlin
+// !hide-focused
 /** Node whose receiver participates in tree DSL scope control. */
 @TreeDsl
 public class Tag
 
+// !hide-focused
 /** Applies [block] while constructing a tree tag. */
+// !hide-focused
 @JvmSynthetic
 public fun configure(block: Tag.() -> Unit) { }
 ```
 
+
+
 ### Don't {#dont-2}
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Trees")
 
+// !hide-focused
 /** Adds [tag] to the current tree. */
 // !diag[/@TreeDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["TreeDsl","parameter type"]
 public fun process(tag: @TreeDsl Tag) { }
@@ -80,12 +94,15 @@ public fun process(tag: @TreeDsl Tag) { }
 ### Do {#do-2}
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Trees")
 
 // no scope control needed for a named value
+// !hide-focused
 /** Adds [tag] to the current tree. */
 public fun process(tag: Tag) { }
 ```
+
 
 ## Notes
 

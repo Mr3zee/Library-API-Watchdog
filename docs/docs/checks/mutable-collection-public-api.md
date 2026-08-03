@@ -19,12 +19,15 @@ a mutable collection type: any of the `kotlin.collections` mutable interfaces (`
 too, so a mutable type nested in an otherwise read-only container still counts:
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Collections")
 
+// !hide-focused
 /** Returns a caller-owned list of pending job names. */
 // !diag[/MutableList<String>/] MUTABLE_COLLECTION_PUBLIC_API ["function","produce","MutableList"]
 public fun produce(): MutableList<String> = mutableListOf()
 
+// !hide-focused
 /** Returns batches that callers may edit in place. */
 // !diag[/List<MutableList<Int>>/] MUTABLE_COLLECTION_PUBLIC_API ["function","nested","MutableList"]
 public fun nested(): List<MutableList<Int>> = emptyList()
@@ -39,14 +42,17 @@ no longer swap its internal representation for a different collection type witho
 behavioral change for users that relied on mutating the exposed instance. See the Kotlin guide on
 [avoiding exposing mutable state](https://kotlinlang.org/docs/api-guidelines-predictability.html#avoid-exposing-mutable-state).
 
+
 ### Don't
 
 ```kotlin
+// !hide-focused(1:5)
 /**
  * Exposes the values scheduled for processing.
  *
  * @property items live collection of scheduled values.
  */
+// !hide-focused
 @Poko
 // !diag[/MutableList<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["property","items","MutableList"]
 public class Holder(public val items: MutableList<Int>)
@@ -55,22 +61,28 @@ public class Holder(public val items: MutableList<Int>)
 ### Do
 
 ```kotlin
+// !hide-focused(1:5)
 /**
  * Captures the values scheduled at construction time.
  *
  * @property items immutable snapshot of the scheduled values.
  */
+// !hide-focused
 @Poko
 public class Holder(items: List<Int>) {
     public val items: List<Int> = items.toList()
 }
 ```
 
+
+
 ### Don't {#dont-2}
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Collections")
 
+// !hide-focused
 /** Removes all scheduled item IDs from [items]. */
 // !diag[/MutableSet<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["parameter","items","MutableSet"]
 public fun consume(items: MutableSet<Int>) {
@@ -81,13 +93,16 @@ public fun consume(items: MutableSet<Int>) {
 ### Do {#do-2}
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Collections")
 
+// !hide-focused
 /** Reads scheduled item IDs from [items]. */
 public fun consume(items: Set<Int>) {
     // copy internally before mutating, if needed
 }
 ```
+
 
 ## Notes
 
@@ -108,12 +123,15 @@ Use `@IntentionallyMutableCollection` when sharing the mutable collection is a d
 the API contract.
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Collections")
 
+// !hide-focused
 /** Returns a deliberately shared registry. */
 @IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)
 public fun sharedRegistry(): MutableList<String> = mutableListOf()
 
+// !hide-focused
 /** Adds a value to [target]. */
 public fun fill(
     @IntentionallyMutableCollection(
@@ -124,6 +142,7 @@ public fun fill(
     target.add(1)
 }
 
+// !hide-focused
 /** Returns deliberately mutable snapshots. */
 @IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)
 public fun snapshots(): List<MutableList<Int>> = emptyList()

@@ -44,8 +44,10 @@ using the `IGNORE_JAVA_INTEROP` reason and a description of why this declaration
 callers:
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Refresh")
 
+// !hide-focused
 /** Fetches the latest value. */
 @IntentionallyKotlinOnlyApi(
     reason = ExemptionReason.IGNORE_JAVA_INTEROP,

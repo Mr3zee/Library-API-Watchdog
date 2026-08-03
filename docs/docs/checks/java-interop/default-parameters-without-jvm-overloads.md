@@ -17,8 +17,10 @@ A public function or constructor that declares at least one default parameter va
 no `@JvmOverloads`.
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Connections")
 
+// !hide-focused
 /** Connects to [host]. */
 // !diag[/connect/] DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS ["function","connect"]
 public fun connect(
@@ -40,11 +42,14 @@ right-truncated overloads, so a defaulted parameter in the middle of the list st
 skipped from Java, and it only improves Java call sites - it doesn't make adding a parameter
 later binary compatible for Kotlin callers either.
 
+
 ### Don't
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Connections")
 
+// !hide-focused
 /** Connects to [host]. */
 // !diag[/connect/] DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS ["function","connect"]
 public fun connect(
@@ -57,8 +62,10 @@ public fun connect(
 ### Do
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Connections")
 
+// !hide-focused
 /** Connects to [host]. */
 @JvmOverloads
 public fun connect(
@@ -71,6 +78,7 @@ public fun connect(
 ### Don't {#dont-2}
 
 ```kotlin
+// !hide-focused
 /** A connection to [host]. */
 // !diag[/Connection/] DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS ["constructor","Connection"]
 public class Connection(
@@ -82,12 +90,14 @@ public class Connection(
 ### Do {#do-2}
 
 ```kotlin
+// !hide-focused
 /** A connection to [host]. */
 public class Connection @JvmOverloads constructor(
     host: String,
     port: Int = 80,
 )
 ```
+
 
 ## Notes
 
@@ -109,18 +119,23 @@ the full signature only is intended, for example when the defaulted parameters m
 without Kotlin's named arguments:
 
 ```kotlin
+// !hide-focused
 @file:JvmName("ConnectionDsl")
 
 // Supporting options type
+// !hide-focused
 /** Options applied after connecting. */
 public class ConnectionConfig
 
+// !hide-focused
 /** Connects to [host] and applies [options]. */
 @IntentionallyWithoutJvmOverloads(
     reason = ExemptionReason.IGNORE_JAVA_INTEROP,
     description = "Kotlin-only function. " +
             "Java callers are expected to use the builder instead.",
 )
+// !hide-focused
+@IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)
 public fun connectDsl(
     host: String,
     port: Int = 80,

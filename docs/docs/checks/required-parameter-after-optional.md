@@ -16,9 +16,12 @@ Every required parameter (one that doesn't have a default value) that comes afte
 or `vararg` - in the parameter list of a public function or constructor:
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Connections")
 
+// !hide-focused
 /** Connects to [host]. */
+// !hide-focused
 @JvmOverloads
 // !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","connect"]
 public fun connect(retries: Int = 3, host: String) { }
@@ -27,9 +30,12 @@ public fun connect(retries: Int = 3, host: String) { }
 All required parameters behind the first optional one are reported, not just the first:
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Configuration")
 
+// !hide-focused
 /** Configures a connection. */
+// !hide-focused
 @JvmOverloads
 public fun configure(
     timeout: Long = 0L,
@@ -49,12 +55,16 @@ parameter in a natural position later. See the Kotlin library authors' guide on
 [parameter order, naming, and usage](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage):
 essential inputs first, optional inputs last.
 
+
 ### Don't
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Connections")
 
+// !hide-focused
 /** Connects to [host]. */
+// !hide-focused
 @JvmOverloads
 // !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","connect"]
 public fun connect(retries: Int = 3, host: String) { }
@@ -63,27 +73,41 @@ public fun connect(retries: Int = 3, host: String) { }
 ### Do
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Connections")
 
+// !hide-focused
 /** Connects to [host]. */
+// !hide-focused
 @JvmOverloads
 public fun connect(host: String, retries: Int = 3) { }
 ```
 
+
+
 ### Don't {#dont-2}
 
 ```kotlin
+// !hide-focused
 /** A server at [host]. */
-// !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","Server"]
-public class Server @JvmOverloads constructor(port: Int = 80, host: String)
+public class Server
+    // !hide-focused
+    @JvmOverloads
+    // !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","Server"]
+    constructor(port: Int = 80, host: String)
 ```
 
 ### Do {#do-2}
 
 ```kotlin
+// !hide-focused
 /** A server at [host]. */
-public class Server @JvmOverloads constructor(host: String, port: Int = 80)
+public class Server
+    // !hide-focused
+    @JvmOverloads
+    constructor(host: String, port: Int = 80)
 ```
+
 
 ## Notes
 
@@ -104,12 +128,15 @@ is a deliberate, stable part of the contract, for example an old parameter list 
 compatibility:
 
 ```kotlin
+// !hide-focused
 @file:JvmName("Connections")
 
+// !hide-focused
 /** Connects through the legacy parameter order. */
 @IntentionallyRequiredParameterAfterOptional(
     reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY,
 )
+// !hide-focused(1:3)
 @IntentionallyWithoutJvmOverloads(
     reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY,
 )

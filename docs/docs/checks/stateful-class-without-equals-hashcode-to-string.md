@@ -32,6 +32,7 @@ The checks flag a public or protected regular class that has at least one proper
 value in a backing field and that doesn't declare or inherit the corresponding implementation:
 
 ```kotlin
+// !hide-focused(1:5)
 /**
  * Describes a connection to a remote service.
  *
@@ -61,9 +62,11 @@ library.
 See the Kotlin library authors' guidelines on
 [providing a toString method for stateful types](https://kotlinlang.org/docs/api-guidelines-debuggability.html#provide-a-tostring-method-for-stateful-types).
 
+
 ### Don't
 
 ```kotlin
+// !hide-focused(1:5)
 /**
  * Describes a connection to a remote service.
  *
@@ -80,6 +83,7 @@ public class Connection(public val host: String)
 Generate the members with Poko:
 
 ```kotlin
+// !hide-focused(1:5)
 /**
  * Describes a connection to a remote service.
  *
@@ -92,6 +96,7 @@ public class Connection(public val host: String)
 ### Or Do
 
 ```kotlin
+// !hide-focused(1:5)
 /**
  * Describes a connection to a remote service.
  *
@@ -106,6 +111,7 @@ public class Connection(public val host: String) {
     public override fun toString(): String = "Connection(host=$host)"
 }
 ```
+
 
 ## Notes
 
@@ -127,6 +133,7 @@ Use `@IntentionallyWithoutEqualsHashCodeOrToString` when all three behaviors are
 example, a sensitive handle may intentionally use identity equality and avoid rendering its state:
 
 ```kotlin
+// !hide-focused(1:5)
 /**
  * Credentials used to authenticate an outgoing request.
  *

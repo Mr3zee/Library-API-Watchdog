@@ -20,6 +20,7 @@ The diagnostic fires once per file, anchored on the first public top-level funct
 ```kotlin Network.kt
 package com.example
 
+// !hide-focused
 /** Connects to the network. */
 // !diag[/connect/] TOP_LEVEL_API_WITHOUT_JVM_NAME ["NetworkKt"]
 public fun connect(): Int = 0
@@ -34,6 +35,7 @@ against it. See Kotlin's
 [Java-to-Kotlin interop guide](https://kotlinlang.org/docs/java-to-kotlin-interop.html#package-level-functions)
 for how top-level declarations actually compile.
 
+
 ### Don't
 
 ```kotlin Network.kt
@@ -41,10 +43,12 @@ package com.example
 
 // Facade class NetworkKt
 // renaming this file to NetworkClient.kt breaks every Java caller.
+// !hide-focused
 /** Connects to the network. */
 // !diag[/connect/] TOP_LEVEL_API_WITHOUT_JVM_NAME ["NetworkKt"]
 public fun connect(): Int = 0
 
+// !hide-focused
 /** Disconnects from the network. */
 public fun disconnect(): Int = 0
 ```
@@ -58,12 +62,15 @@ package com.example
 
 // Java callers write Network.connect(),
 // the file can be renamed freely.
+// !hide-focused
 /** Connects to the network. */
 public fun connect(): Int = 0
 
+// !hide-focused
 /** Disconnects from the network. */
 public fun disconnect(): Int = 0
 ```
+
 
 ## Notes
 
@@ -87,6 +94,7 @@ package com.example
 import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason
 import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyDefaultFacadeName
 
+// !hide-focused
 /** A legacy entry point tied to the default facade name. */
 public fun legacyEntryPoint(): Int = 0
 ```
