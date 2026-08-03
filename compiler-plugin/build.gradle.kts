@@ -6,6 +6,14 @@ plugins {
     id("libs-watchdog.compiler-plugin-conventions")
 }
 
+publishing {
+    publications {
+        create<MavenPublication>("compilerPlugin") {
+            from(components["java"])
+        }
+    }
+}
+
 pluginDevKit {
     testDataLibraries { common(project(":plugin-annotations")) }
 }
