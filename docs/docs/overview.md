@@ -5,7 +5,7 @@ slug: /
 # Get started
 
 `library-api-watchdog` helps library authors to detect public API declarations
-that are hard to evolve. It runs as a set of Kotlin K2 compiler frontend checks in the module it is applied to.
+that are hard to evolve. It runs as a set of compiler checks in the module it is applied to.
 
 The tool is intentionally restrictive by default: all checks are enabled and report a compilation error until
 demoted to a warning, disabled, or exempted in place.
@@ -14,11 +14,6 @@ demoted to a warning, disabled, or exempted in place.
 
 A public data class that hands out a mutable collection, without documentation, triggers three
 diagnostics at once:
-
-:::tip
-Diagnostics in code examples are interactive. Hover over or focus an underlined range to read the
-diagnostic and follow its link to the full documentation.
-:::
 
 ```kotlin
 // !diag[/Config/] DATA_CLASS_PUBLIC_API ["Config"]
@@ -29,6 +24,13 @@ public data class Config(
     public val tags: MutableList<String>
 )
 ```
+
+:::tip
+Diagnostics in code examples are interactive. Hover over an underlined range to read the
+diagnostic and follow its link to the full documentation.
+:::
+
+### TLDR;
 
 - The generated `copy` and `componentN` functions and the constructor bake the exact property
   list into the compiled API.
@@ -65,85 +67,79 @@ kotlin {
 }
 ```
 
-The plugin also works for Kotlin/JVM only projects.
+The plugin also works for Kotlin/JVM projects.
 
-See [Configuration](./configuration.md) for full configuration options and build suggestions overview.
+See [Configuration](./configuration.md) for more details.
 
 ## All checks
 
 ### API surface checks
 
-Checks about how callers use the source API ignore declarations that are visible only through
-`@PublishedApi`: those declarations remain `internal` and cannot be named by library users.
-Checks that protect binary linkage still include them where noted.
-
-- [Data classes in public API](./checks/data-class-public-api.md): data classes, whose generated `copy`,
-  `componentN`, and constructor bake the exact property list into the compiled API.
+- [Data classes in public API](./checks/data-class-public-api.md): data classes generate `copy`, `componentN` methods 
+  and constructor, which is hard to evolve and it defies the purpose of the data class in the first place.   
 - [Open API without subclass opt-in](./checks/open-api-without-subclass-opt-in.md): open or abstract
   classes and interfaces that any outside code can subclass without restriction.
 - [Subclass opt-in without markers](./checks/subclass-opt-in-without-markers.md): `@SubclassOptInRequired`
   annotations that list no marker classes don't actually restrict subclassing.
-- [Exhaustive public API](./checks/exhaustive-public-api.md): enums and sealed hierarchies, which users
-  can match exhaustively, thus adding an entry or a subtype later breaks user code.
-- [Undocumented public API](./checks/undocumented-public-api.md): public declarations of every kind that
-  have no KDoc.
+- [Exhaustive public API](./checks/exhaustive-public-api.md): users can exhaustively match enums and sealed hierarchies,
+  so a new entry or a subtype breaks source compatibility.
+- [Undocumented public API](./checks/undocumented-public-api.md): public declarations that have no KDoc.
 - [Function type aliases in public API](./checks/function-type-alias-public-api.md): type aliases that
   abbreviate function types erase from the compiled API, so the type can't evolve
   into a richer abstraction later.
 - [Stateful classes without equals, hashCode, and toString](./checks/stateful-class-without-equals-hashcode-to-string.md): classes with a
-  backing-field property that neither declare nor inherit `equals`, `hashCode`, and `toString`,
+  backing-field property that don't declare or inherit `equals`, `hashCode`, and `toString`,
   so instances render as an opaque default in logs and debuggers, and comparison is reference based.
 - [Mutable collections in public API](./checks/mutable-collection-public-api.md): mutable collection
   types in public signatures leave it unclear whether user-side and library-side
   mutations affect each other.
 - [Pair and Triple in public API](./checks/pair-or-triple-public-api.md): the tuple types `Pair` and
-  `Triple`, whose components carry no domain meaning and whose fixed shape can't evolve.
-- [Boolean parameters in public API](./checks/boolean-parameter-public-api.md): Boolean value parameters,
-  whose positional `true`/`false` argument reveals nothing about its meaning at the call site.
-- [Nullable Booleans in public API](./checks/nullable-boolean-public-api.md): nullable `Boolean`s in public signatures model three states while naming only two.
+  `Triple` carry no domain meaning and can't evolve because of the fixed shape.
+- [Boolean parameters in public API](./checks/boolean-parameter-public-api.md): Boolean value parameters are confusing at the call site,
+  as unnamed `true`/`false` arguments reveal nothing about their meaning.
+- [Nullable Booleans in public API](./checks/nullable-boolean-public-api.md): nullable `Boolean`s in public signatures model three states, but name only two.
 - [Required parameters after optional ones](./checks/required-parameter-after-optional.md): required parameters declared after an optional one can't be passed positionally without
   restating the earlier defaults.
-- [Inconsistent parameter order in overloads](./checks/inconsistent-parameter-order-in-overloads.md): overloads whose same-named parameters appear in a different relative order, inviting silently
-  swapped arguments.
-- [Inline functions with logic](./checks/inline-function-with-logic.md): public inline functions, whose body does more than delegate,
-  since the compiler copies that logic, and its bugs, into every user binary.
+- [Inconsistent parameter order in overloads](./checks/inconsistent-parameter-order-in-overloads.md): overloads with same-named parameters that appear in a different relative order 
+  have a risk silently swapped arguments and unintuitive call sites.
+- [Inline functions with logic](./checks/inline-function-with-logic.md): public inline functions with a body that does more than delegate  
+  will have the compiler copy that body, and its bugs, into every user binary.
 - [Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md):
-  dependency types exposed in public signatures but hidden from consumers by an
-  `implementation` declaration.
+  dependency types exposed in public signatures but not provided transitively to consumers.
 - [Public types marked as internal API](./checks/special/public-type-with-internal-api.md):
-  supported public signatures exposing types that explicitly carry no supported API contract.
-  This diagnostic is always an error while its Boolean whole-check switch is enabled.
+  public signatures that expose effectively internal types.
 
 ### Java interop checks
 
-These checks only run in JVM compilations, and only pay off for libraries that support Java
-consumers. The whole group is disabled with `javaInterop { enabled = false }`. See
-[Java interop checks](./checks/java-interop/java-interop.md) for the group overview.
+These checks only run in JVM compilations, and are only valuable for libraries that support Java
+consumers. The whole group can be disabled with `javaInterop { enabled = false }`. See
+[Java interop checks](./checks/java-interop/java-interop.md) for the whole group overview.
 
 - [Mangled JVM names in public API](./checks/java-interop/mangled-jvm-name-public-api.md): public API that Java sources
   can't call because a value class in the signature gets its JVM name mangled.
-- [Kotlin-only API without JvmSynthetic](./checks/java-interop/kotlin-only-api-without-jvm-synthetic.md): functions whose shape only Kotlin callers can use idiomatically,
-  yet still land in the API surface Java sources see.
+- [Kotlin-only API without JvmSynthetic](./checks/java-interop/kotlin-only-api-without-jvm-synthetic.md): functions with a shape only Kotlin callers can use idiomatically.
 - [Companion API without JvmStatic](./checks/java-interop/companion-api-without-jvm-static.md): public companion object functions without `@JvmStatic`,
-  which Java callers can only reach through the `Companion` instance.
-- [Companion constants without JvmField](./checks/java-interop/companion-constant-without-jvm-field.md): constant-shaped companion object properties that Java can only read through the companion instance getter.
-- [Top-level API without JvmName](./checks/java-interop/top-level-api-without-jvm-name.md): files whose public top-level
-  API compiles into a file facade class without a pinned `@file:JvmName`, so renaming the file
-  breaks Java sources and binaries built against it.
-- [Default parameters without JvmOverloads](./checks/java-interop/default-parameters-without-jvm-overloads.md): default parameter values without `@JvmOverloads`, forcing Java callers to pass every argument.
+  which Java callers can only use with the `Companion` instance.
+- [Companion constants without JvmField](./checks/java-interop/companion-constant-without-jvm-field.md): public companion object properties without `@JvmField` or `const`
+  which Java callers can only use with the `Companion` instance.
+- [Top-level API without JvmName](./checks/java-interop/top-level-api-without-jvm-name.md): files with public top-level
+  declarations that compile into a facade `*Kt` class without a pinned `@file:JvmName`, so a file renaming
+  breaks Java binary compatibility.
+- [Default parameters without JvmOverloads](./checks/java-interop/default-parameters-without-jvm-overloads.md): functions and constructors with default parameters but without `@JvmOverloads` 
+  force Java callers to pass every argument.
 
 ### DSL marker checks
 
 - [DSL markers with no-op targets](./checks/special/dsl-marker-noop-target.md): `@DslMarker` annotation targets on
-  which the marker has no effect, giving a false sense of scope control.
+  which the marker has no effect give a false sense of scope control.
 - [DSL markers without explicit targets](./checks/special/dsl-marker-without-explicit-targets.md): `@DslMarker`
-  annotations without an explicit `@Target`, whose default target set allows mostly no-op targets.
+  annotations without an explicit `@Target` allow target set with mostly no-op targets.
 - [DSL markers on no-op type positions](./checks/special/dsl-marker-noop-type-position.md): DSL markers written on type positions where scope control doesn't react to them.
 
 ### Meaningful exemptions
 
 - [Exemptions without explanation](./checks/special/exemption-without-explanation.md): an `@Intentionally*` exemption annotation left with the default `OTHER` reason and a blank description
-  explains nothing. This diagnostic is always an error and can't be configured like the others.
+  explains nothing.
 
 ## Next steps
 
