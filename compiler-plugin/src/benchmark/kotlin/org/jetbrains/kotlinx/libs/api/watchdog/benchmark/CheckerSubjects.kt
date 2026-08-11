@@ -1,5 +1,6 @@
 package org.jetbrains.kotlinx.libs.api.watchdog.benchmark
 
+import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.DeclarationCheckers
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirBasicDeclarationChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirCallableDeclarationChecker
@@ -46,7 +47,12 @@ internal class CheckerSubject(
     val name: String,
     val configurableDiagnostics: List<String>,
     val needsDependencyPaths: Boolean = false,
-    val createCheckers: (corpusClasspath: List<String>) -> DeclarationCheckers,
+    val createCheckers: (environment: CheckerEnvironment) -> DeclarationCheckers,
+)
+
+internal class CheckerEnvironment(
+    val corpusClasspath: List<String>,
+    val session: FirSession,
 )
 
 /**
@@ -83,14 +89,14 @@ internal object CheckerSubjects {
         ) { ofClass(DslMarkerTargetsChecker(severities)) },
 
         // Basic declaration checkers.
-        CheckerSubject("UndocumentedApiChecker", listOf("UNDOCUMENTED_PUBLIC_API")) {
-            ofBasic(UndocumentedApiChecker(severities))
+        CheckerSubject("UndocumentedApiChecker", listOf("UNDOCUMENTED_PUBLIC_API")) { environment ->
+            ofBasic(UndocumentedApiChecker(environment.session, severities))
         },
         CheckerSubject("ExemptionExplanationChecker", emptyList()) {
             ofBasic(ExemptionExplanationChecker())
         },
-        CheckerSubject("MutableCollectionChecker", listOf("MUTABLE_COLLECTION_PUBLIC_API")) {
-            ofBasic(MutableCollectionChecker(severities))
+        CheckerSubject("MutableCollectionChecker", listOf("MUTABLE_COLLECTION_PUBLIC_API")) { environment ->
+            ofBasic(MutableCollectionChecker(environment.session, severities))
         },
         CheckerSubject("PairOrTripleChecker", listOf("PAIR_OR_TRIPLE_PUBLIC_API")) {
             ofBasic(PairOrTripleChecker(severities))
@@ -102,9 +108,11 @@ internal object CheckerSubjects {
             "NonTransitiveDependencyChecker",
             emptyList(),
             needsDependencyPaths = true,
-        ) { corpusClasspath ->
+        ) { environment ->
+            val corpusClasspath = environment.corpusClasspath
             ofBasic(
                 NonTransitiveDependencyChecker(
+                    environment.session,
                     DependencyExposureCheckConfiguration(
                         compileDependencies = corpusClasspath.toSet(),
                         transitiveDependencies = corpusClasspath.filterTo(linkedSetOf()) {

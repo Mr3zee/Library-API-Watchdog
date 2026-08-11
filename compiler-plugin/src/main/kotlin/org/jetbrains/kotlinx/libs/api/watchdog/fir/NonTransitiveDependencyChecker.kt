@@ -3,12 +3,15 @@ package org.jetbrains.kotlinx.libs.api.watchdog.fir
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.concurrent.ConcurrentHashMap
 import java.util.jar.JarFile
 import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
+import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
+import org.jetbrains.kotlin.fir.caches.createCache
+import org.jetbrains.kotlin.fir.caches.firCachesFactory
+import org.jetbrains.kotlin.fir.caches.getValue
 import org.jetbrains.kotlin.fir.declarations.utils.sourceElement
 import org.jetbrains.kotlin.fir.moduleData
 import org.jetbrains.kotlin.fir.resolve.toClassSymbol
@@ -38,9 +41,10 @@ internal data class DependencyExposureCheckConfiguration(
  * remains part of this library's API even when another declaration fixed its shape.
  */
 internal class NonTransitiveDependencyChecker(
+    session: FirSession,
     configuration: DependencyExposureCheckConfiguration,
 ) : PublicSignatureTypeChecker<ClassId>() {
-    private val dependencyIndex = DependencyExposureIndex(configuration)
+    private val dependencyIndex = DependencyExposureIndex(session, configuration)
 
     context(context: CheckerContext)
     override fun ConeKotlinType.violatingClassifier(): ClassId? {
@@ -61,10 +65,13 @@ internal class NonTransitiveDependencyChecker(
 }
 
 /** Classifies a resolved FIR class by the Gradle artifacts that contain it. */
-private class DependencyExposureIndex(configuration: DependencyExposureCheckConfiguration) {
+private class DependencyExposureIndex(
+    session: FirSession,
+    configuration: DependencyExposureCheckConfiguration,
+) {
     private val compileRoots = configuration.compileDependencies.mapTo(linkedSetOf(), ::normalizedPath)
     private val transitiveRoots = configuration.transitiveDependencies.mapTo(linkedSetOf(), ::normalizedPath)
-    private val classification = ConcurrentHashMap<ClassId, Boolean>()
+    private val classification = session.firCachesFactory.createCache(::classifyByContents)
 
     fun isNonTransitive(symbol: FirClassSymbol<*>, context: CheckerContext): Boolean {
         // A class declared by the compilation itself needs no dependency at all.
@@ -86,14 +93,15 @@ private class DependencyExposureIndex(configuration: DependencyExposureCheckConf
         // directory in another. Java dependency classes also lack the Kotlin container source
         // above. Looking up the class in both root sets covers both cases without relying on path
         // identity.
-        return classification.getOrPut(symbol.classId) {
-            when {
-                transitiveRoots.any { it.containsClass(symbol.classId) } -> false
-                compileRoots.any { it.containsClass(symbol.classId) } -> true
-                else -> false // JDK and compiler built-ins are not Gradle dependencies.
-            }
-        }
+        return classification.getValue(symbol.classId)
     }
+
+    private fun classifyByContents(classId: ClassId): Boolean =
+        when {
+            transitiveRoots.any { it.containsClass(classId) } -> false
+            compileRoots.any { it.containsClass(classId) } -> true
+            else -> false // JDK and compiler built-ins are not Gradle dependencies.
+        }
 
     private fun FirClassSymbol<*>.dependencyPath(): Path? = when (val source = sourceElement) {
         is KotlinJvmBinarySourceElement -> source.binaryClass.containingLibraryPath?.path?.toString()?.let(::normalizedPath)

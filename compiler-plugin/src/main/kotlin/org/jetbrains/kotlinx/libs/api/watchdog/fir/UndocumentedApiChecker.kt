@@ -6,10 +6,14 @@ import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
+import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirBasicDeclarationChecker
 import org.jetbrains.kotlin.fir.analysis.getChild
+import org.jetbrains.kotlin.fir.caches.createCache
+import org.jetbrains.kotlin.fir.caches.firCachesFactory
+import org.jetbrains.kotlin.fir.caches.getValue
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirEnumEntry
@@ -33,8 +37,19 @@ import org.jetbrains.kotlin.text
  * `@PublishedApi`, and exempt declarations are skipped.
  */
 internal class UndocumentedApiChecker(
-    private val severities: WatchdogDiagnosticSeverities,
+    session: FirSession,
+    severities: WatchdogDiagnosticSeverities,
 ) : FirBasicDeclarationChecker(MppCheckerKind.Common) {
+    private val factory = severities[WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API]
+
+    private val kdocBySource = session.firCachesFactory.createCache<KtSourceElement, KtSourceElement?> { source ->
+        source.getChild(kdocElementTypes, index = 0, depth = 1, reverse = false)
+    }
+
+    private val classKdocTagsByKdoc = session.firCachesFactory.createCache<KtSourceElement, ClassKdocTags> { kdoc ->
+        kdoc.text?.parseClassKdocTags() ?: ClassKdocTags(emptySet(), emptySet())
+    }
+
     private companion object {
         /**
          * The same plugin jar runs both in the CLI compiler and in `kotlin-compiler-embeddable`,
@@ -52,7 +67,7 @@ internal class UndocumentedApiChecker(
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirDeclaration) {
-        val factory = severities[WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API] ?: return
+        val factory = factory ?: return
 
         if (declaration !is FirMemberDeclaration) {
             return
@@ -122,8 +137,9 @@ internal class UndocumentedApiChecker(
     // KDoc never reaches FIR, but the source element keeps the underlying parse tree, where
     // the KDoc is a direct child of the declaration node. `getChild` traverses both source
     // representations: the light tree (CLI) and PSI (Analysis API).
-    private fun KtSourceElement?.hasKdoc(): Boolean =
-        this?.getChild(kdocElementTypes, index = 0, depth = 1, reverse = false) != null
+    private fun KtSourceElement?.kdoc(): KtSourceElement? = this?.let(kdocBySource::getValue)
+
+    private fun KtSourceElement?.hasKdoc(): Boolean = kdoc() != null
 
     /**
      * A property with no KDoc of its own may still be documented in the containing class KDoc:
@@ -132,25 +148,39 @@ internal class UndocumentedApiChecker(
      */
     private fun FirProperty.isCoveredByClassKdocTags(context: CheckerContext): Boolean {
         val classSource = context.containingClassSymbol?.source ?: return false
-        val classKdoc = classSource.getChild(kdocElementTypes, index = 0, depth = 1, reverse = false)?.text
-            ?: return false
-        return classKdoc.documentsSubject("property", name) ||
+        val classKdoc = classSource.kdoc() ?: return false
+        val tags = classKdocTagsByKdoc.getValue(classKdoc)
+        val propertyName = name.asString()
+        return propertyName in tags.properties ||
             (source?.kind == KtFakeSourceElementKind.PropertyFromParameter &&
-                classKdoc.documentsSubject("param", name))
+                propertyName in tags.parameters)
     }
 
     /**
-     * Whether this KDoc text contains a `@tag subject` block tag. KDoc stays a raw comment token
-     * in the light tree, so the tags are recognized textually instead of through the KDoc parser:
-     * a block tag occurs only at the start of a line, after the comment markers.
+     * KDoc stays a raw comment token in the light tree, so class-level property and constructor
+     * parameter tags are recognized textually. A block tag occurs only at the start of a line,
+     * after the comment markers.
      */
-    private fun CharSequence.documentsSubject(tag: String, subject: Name): Boolean =
-        lineSequence().any { line ->
+    private fun CharSequence.parseClassKdocTags(): ClassKdocTags {
+        val properties = mutableSetOf<String>()
+        val parameters = mutableSetOf<String>()
+        lineSequence().forEach { line ->
             val content = line.trim().removePrefix("/**").removePrefix("*").trimStart()
-            if (!content.startsWith("@$tag ")) return@any false
-            val documented = content.removePrefix("@$tag ").trimStart()
-                .takeWhile { !it.isWhitespace() }
-                .removeSurrounding("`")
-            documented == subject.asString()
+            when {
+                content.startsWith("@property ") -> properties += content.subjectAfter("@property ")
+                content.startsWith("@param ") -> parameters += content.subjectAfter("@param ")
+            }
         }
+        return ClassKdocTags(properties, parameters)
+    }
+
+    private fun String.subjectAfter(tagPrefix: String): String =
+        removePrefix(tagPrefix).trimStart()
+            .takeWhile { !it.isWhitespace() }
+            .removeSurrounding("`")
+
+    private data class ClassKdocTags(
+        val properties: Set<String>,
+        val parameters: Set<String>,
+    )
 }

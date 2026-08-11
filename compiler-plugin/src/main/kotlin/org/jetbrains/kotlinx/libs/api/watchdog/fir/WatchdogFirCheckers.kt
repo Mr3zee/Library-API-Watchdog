@@ -63,11 +63,11 @@ class WatchdogFirCheckers internal constructor(
         // These checkers watch every declaration kind, not just classes. MutableCollectionChecker
         // is one of them because it also inspects class-level type parameter bounds.
         override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> = setOfNotNull(
-            UndocumentedApiChecker(severities)
+            UndocumentedApiChecker(session, severities)
                 .unlessDisabled(WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API),
             ExemptionExplanationChecker() // Not configurable: exemption explanations are enforced whenever the plugin runs.
                 .takeIf { enabled },
-            MutableCollectionChecker(severities)
+            MutableCollectionChecker(session, severities)
                 .unlessDisabled(WatchdogDiagnostics.MUTABLE_COLLECTION_PUBLIC_API),
             PairOrTripleChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.PAIR_OR_TRIPLE_PUBLIC_API),
@@ -75,7 +75,7 @@ class WatchdogFirCheckers internal constructor(
                 .unlessDisabled(WatchdogDiagnostics.NULLABLE_BOOLEAN_PUBLIC_API),
             InternalApiTypeExposureChecker() // Not configurable: contradictory API contracts are always errors.
                 .takeIf { enabled && publicTypeWithInternalApiEnabled },
-            dependencyExposure?.let(::NonTransitiveDependencyChecker)
+            dependencyExposure?.let { NonTransitiveDependencyChecker(session, it) }
                 ?.takeIf { enabled },
         ).recorded()
 

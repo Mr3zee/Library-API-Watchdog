@@ -124,7 +124,7 @@ open class IsolatedCheckerBenchmark {
             else -> {
                 val subject = CheckerSubjects.byName[checker]
                     ?: error("Unknown checker '$checker'. Update CheckerSubjects and the @Param list together.")
-                subject.createCheckers(BenchmarkEnv.corpusClasspath)
+                subject.createCheckers(CheckerEnvironment(BenchmarkEnv.corpusClasspath, output.session))
             }
         }
         collector = CliDiagnosticsCollector(output.session, output.scopeSession) { reporter ->
