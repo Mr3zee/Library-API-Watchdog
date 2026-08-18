@@ -12,7 +12,7 @@ body does more than delegate to a non-inline function.
 
 ## What it reports
 
-Any public `inline` function and any inline property accessor are reported unless their body is a thin wrapper: a single
+Any public `inline` function and any `inline` property accessor are reported unless their body is a thin wrapper: a single
 statement - besides an optional contract - that only performs simple operations and delegates to a
 non-inline call:
 
@@ -37,90 +37,7 @@ authors' guide on
 
 [//]: # (TODO list permitted simple operations)
 
-
 ### Don't
-
-```kotlin
-// !hide-focused
-@file:JvmName("Values")
-
-// !hide-focused
-/** Chooses a sign for [value]. */
-// !diag[/choose/] INLINE_FUNCTION_WITH_LOGIC ["inline function","choose"]
-public inline fun choose(value: Int): Int = if (value < 0) -1 else 1
-
-// !hide-focused
-/** Returns the cached length of [tag]. */
-// !diag[/cachedLength/] INLINE_FUNCTION_WITH_LOGIC ["inline function","cachedLength"]
-public inline fun cachedLength(tag: String): Int {
-    val cached = tag.length
-    return cached
-}
-```
-
-### Do
-
-```kotlin
-// !hide-focused
-@file:JvmName("Values")
-
-// !hide-focused
-/** Chooses a sign for [value]. */
-public inline fun choose(value: Int): Int = chooseImpl(value)
-
-// !hide-focused
-/** Returns the cached length of [tag]. */
-public inline fun cachedLength(tag: String): Int =
-    cachedLengthImpl(tag)
-
-@PublishedApi
-internal fun chooseImpl(value: Int): Int = if (value < 0) -1 else 1
-
-@PublishedApi
-internal fun cachedLengthImpl(tag: String): Int = withCache {
-    tag.length
-}
-```
-
-
-
-### Don't {#dont-2}
-
-```kotlin
-// !hide-focused
-@file:JvmName("Arrays")
-
-// Supporting published state
-@PublishedApi
-internal val array1: List<Int> = emptyList()
-
-@PublishedApi
-internal val array2: List<Int> = emptyList()
-
-// !hide-focused
-/** Returns the combined size of the arrays. */
-// !diag[/calculateArraysSize/] INLINE_FUNCTION_WITH_LOGIC ["inline getter","calculateArraysSize"]
-public inline val calculateArraysSize: Int
-    get() {
-        return array1.size + array2.size
-    }
-```
-
-### Do {#do-2}
-
-```kotlin
-// !hide-focused
-@file:JvmName("Arrays")
-
-// !hide-focused
-/** Returns the combined size of the arrays. */
-public val calculateArraysSize: Int
-    get() = calculateArraysSizeImpl()
-```
-
-
-
-### Don't {#dont-3}
 
 ```kotlin
 // !hide-focused
@@ -132,7 +49,7 @@ public inline fun <reified T : Any> resolveFunctionsCount(): Int {
 }
 ```
 
-### Do {#do-3}
+### Do
 
 ```kotlin
 // !hide-focused

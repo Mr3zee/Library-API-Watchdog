@@ -11,12 +11,17 @@
 
 ## What it reports
 
-Flags return types, property types, value parameter types, and type parameter bounds that mention
-a mutable collection type: any of the `kotlin.collections` mutable interfaces (`MutableList`,
-`MutableSet`, `MutableMap`, `MutableCollection`, `MutableIterable`, `MutableIterator`,
-`MutableListIterator`, `MutableMap.MutableEntry`), a classifier implementing one of them
-(`ArrayList`, a hand-written `MutableList` subtype, ...), or an array. Type arguments are checked
-too, so a mutable type nested in an otherwise read-only container still counts:
+Flags public APIs that expose a mutable collection type (any of the `kotlin.collections` mutable interfaces):
+ - `MutableList`
+ - `MutableSet` 
+ - `MutableMap`
+ - `MutableCollection`
+ - `MutableIterable`
+ - `MutableIterator`,
+ - `MutableListIterator`
+ - `MutableMap.MutableEntry` 
+ - A classifier implementing one of them (`ArrayList`, a hand-written `MutableList` subtype, etc.)
+ - An array (`Array`, `IntArray`, etc.) 
 
 ```kotlin
 // !hide-focused
@@ -37,7 +42,7 @@ public fun nested(): List<MutableList<Int>> = emptyList()
 
 A mutable return type or property lets users mutate a collection they don't own. A mutable
 parameter lets the library mutate an argument the user still holds. Either way, once a mutable
-collection crosses the API boundary it is unclear whose mutations are safe, and the library can
+collection crosses the API boundary it is unclear which mutations are safe, and the library can
 no longer swap its internal representation for a different collection type without risking a
 behavioral change for users that relied on mutating the exposed instance. See the Kotlin guide on
 [avoiding exposing mutable state](https://kotlinlang.org/docs/api-guidelines-predictability.html#avoid-exposing-mutable-state).
@@ -69,12 +74,8 @@ public class Holder(public val items: MutableList<Int>)
  */
 // !hide-focused
 @Poko
-public class Holder(items: List<Int>) {
-    public val items: List<Int> = items.toList()
-}
+public class Holder(public val items: List<Int>)
 ```
-
-
 
 ### Don't {#dont-2}
 
@@ -85,8 +86,8 @@ public class Holder(items: List<Int>) {
 // !hide-focused
 /** Removes all scheduled item IDs from [items]. */
 // !diag[/MutableSet<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["parameter","items","MutableSet"]
-public fun consume(items: MutableSet<Int>) {
-    items.clear()
+public fun consume(items: MutableSet<Int>) { 
+    items.add(1)
 }
 ```
 
@@ -99,7 +100,8 @@ public fun consume(items: MutableSet<Int>) {
 // !hide-focused
 /** Reads scheduled item IDs from [items]. */
 public fun consume(items: Set<Int>) {
-    // copy internally before mutating, if needed
+    items.toMutableSet()
+    // proceed with mutations
 }
 ```
 
@@ -108,16 +110,12 @@ public fun consume(items: Set<Int>) {
 
 - `@PublishedApi internal` declarations are not reported because their types do not cross the
   supported source API boundary.
-- `vararg` parameters are not reported themselves - the compiler already passes a defensive copy of
-  the array - but a mutable element type still is (`vararg groups: MutableList<Int>`).
+- `vararg` parameters are not reported - the compiler already passes a defensive copy of
+  the array. But a mutable element type is still reported (`vararg groups: MutableList<Int>`).
 - Extension receivers are not reported: an extension on a mutable collection serves values the
   user already holds, unlike a builder lambda receiver, which is reported.
 - Overrides are not reported: their signature is fixed by the overridden declaration, which is
   reported instead.
-- Java platform types are not reported: their mutability is not declared in Kotlin sources, so only
-  the read-only upper bound is inspected.
-- A type alias resolves to its expansion, and a mutable bound on a type parameter
-  (`<T : MutableList<Int>>`) is reported the same as a direct mention of the bound.
 
 ## Exemption
 
@@ -137,9 +135,10 @@ the API contract.
 // !hide-focused
 @Poko
 public class Holder(
-    public val items: @IntentionallyMutableCollection(
+    @IntentionallyMutableCollection(
         reason = ExemptionReason.API_DESIGN,
-    ) MutableList<Int>,
+    )
+    public val items: MutableList<Int>,
 )
 
 // !hide-focused

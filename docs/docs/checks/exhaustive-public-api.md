@@ -1,7 +1,7 @@
 # Exhaustive public API
 
 `EXHAUSTIVE_PUBLIC_API` reports public enums and sealed hierarchies, which users can match
-exhaustively with a `when` expression that has no `else` branch.
+exhaustively with a `when` expression.
 
 |                  |                                                |
 |------------------|------------------------------------------------|
@@ -12,7 +12,7 @@ exhaustively with a `when` expression that has no `else` branch.
 
 ## What it reports
 
-The check reports every public or protected `enum class`, `sealed class`, and `sealed interface`
+The check reports every public `enum class`, `sealed class`, and `sealed interface`
 declaration.
 
 ```kotlin
@@ -23,6 +23,7 @@ public enum class Status {
     // !hide-focused
     /** The service is ready to accept requests. */
     ACTIVE,
+    // !hide-focused
 
     // !hide-focused
     /** The service rejects requests until it is reactivated. */
@@ -50,10 +51,12 @@ public enum class LogLevel {
     // !hide-focused
     /** Fine-grained information used to diagnose behavior. */
     DEBUG,
+    // !hide-focused
 
     // !hide-focused
     /** Routine progress and state changes. */
     INFO,
+    // !hide-focused
 
     // !hide-focused
     /** A failure that prevented an operation from completing. */
@@ -120,16 +123,15 @@ public interface Event {
 
 ## Notes
 
+- A non-final member of a sealed hierarchy (an `abstract` or `sealed` subclass)
+  is itself unrestricted. Subclassable API and is reported separately by
+  [Open API without subclass opt-in](./open-api-without-subclass-opt-in.md).
 - `@PublishedApi internal` types are not reported because library users cannot name and match them
   in source.
 
-A non-final member of a sealed hierarchy (an `abstract` or `sealed` subclass)
-is itself unrestricted, subclassable API and is reported separately by
-[Open API without subclass opt-in](./open-api-without-subclass-opt-in.md), on top of this check.
-
 ## Exemption
 
-Apply `@IntentionallyExhaustive` to the enum or sealed class or interface when a fixed set of
+Apply `@IntentionallyExhaustive` to the enum or sealed hierarchy when a fixed set of
 entries or subtypes is a deliberate, stable part of the contract:
 
 ```kotlin
@@ -140,10 +142,12 @@ public enum class LogLevel {
     // !hide-focused
     /** Fine-grained information used to diagnose behavior. */
     DEBUG,
+    // !hide-focused
 
     // !hide-focused
     /** Routine progress and state changes. */
     INFO,
+    // !hide-focused
 
     // !hide-focused
     /** A failure that prevented an operation from completing. */

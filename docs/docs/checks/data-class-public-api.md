@@ -12,8 +12,7 @@ constructor property list as part of the compiled API.
 
 ## What it reports
 
-Any `data class` reachable from the public API - top-level, nested inside another public class
-- is reported, regardless of nesting depth:
+Any `data class` reachable from the public API.
 
 ```kotlin
 // !hide-focused(1:6)
@@ -61,7 +60,6 @@ public data class Coordinates(public val x: Int, public val y: Int)
  * @property x distance from the vertical axis.
  * @property y distance from the horizontal axis.
  */
-// !hide-focused
 @Poko
 public class Coordinates(
     public val x: Int,

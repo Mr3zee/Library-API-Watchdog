@@ -55,13 +55,13 @@
       "name": "FUNCTION_TYPE_ALIAS_PUBLIC_API",
       "title": "Function type aliases in public API",
       "docs": "checks/function-type-alias-public-api",
-      "message": "The type alias `{0}` abbreviates a function type, so users bind to the bare function shape: the alias is erased from the compiled API and can't evolve into a richer abstraction later. Declare a `fun interface` instead to keep lambda ergonomics behind a stable nominal type, or mark the alias with `@IntentionallyFunctionTypeAlias` if exposing the function type is intended."
+      "message": "The type alias `{0}` abbreviates a function type. The alias is erased from the compiled API and can't evolve into a richer abstraction later. Declare a `fun interface` instead to keep lambda ergonomics behind a stable nominal type, or mark the alias with `@IntentionallyFunctionTypeAlias` if exposing the function type is intended."
     },
     {
       "name": "DATA_CLASS_PUBLIC_API",
       "title": "Data classes in public API",
       "docs": "checks/data-class-public-api",
-      "message": "The `data class` `{0}` bakes its constructor property list into the compiled API through the generated `copy` and `componentN` functions and the constructor itself, so adding, removing, or reordering a property later is a breaking change. Declare a regular class and implement `equals`/`hashCode`/`toString` explicitly, or mark the class with `@IntentionallyDataClass` if this property list is an intended, stable part of the API."
+      "message": "The `data class` `{0}` bakes its constructor property list into the compiled API through the generated `copy` and `componentN` functions and the constructor itself, so adding, removing, or reordering a property later is a breaking change. Declare a regular class and implement `equals`/`hashCode`/`toString` explicitly (or use the Poko library), or mark the class with `@IntentionallyDataClass` if this data class is an intended, stable part of the API."
     },
     {
       "name": "STATEFUL_CLASS_WITHOUT_EQUALS",
@@ -115,7 +115,7 @@
       "name": "INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS",
       "title": "Inconsistent parameter order in overloads",
       "docs": "checks/inconsistent-parameter-order-in-overloads",
-      "message": "The parameters `{0}` and `{1}` of `{2}` appear in the opposite order in another overload. Users transfer their expectations between overloads, so an inconsistent order of same-named parameters invites silently swapped arguments. Keep shared parameters in the same relative order across overloads, or mark the declaration with `@IntentionallyInconsistentParameterOrder` if the differing order is intended."
+      "message": "The parameters `{0}` and `{1}` of `{2}` appear in the opposite relative order in another overload. Users transfer their expectations between overloads, so an inconsistent order of same-named parameters invites silently swapped arguments. Keep shared parameters in the same relative order across overloads, or mark the declaration with `@IntentionallyInconsistentParameterOrder` if the differing order is intended."
     },
     {
       "name": "BOOLEAN_PARAMETER_PUBLIC_API",

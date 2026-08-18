@@ -11,8 +11,7 @@
 
 ## What it reports
 
-A public or protected type alias whose expanded type is a function type: plain, `suspend`,
-nullable, or with a receiver.
+A public or protected type alias whose expanded type is a function type.
 
 ```kotlin
 // !hide-focused
@@ -29,7 +28,7 @@ implementation, or additional constraints. The only way to change the shape late
 change to the bare function type. A
 [`fun interface`](https://kotlinlang.org/docs/fun-interfaces.html#functional-interfaces-vs-type-aliases)
 keeps the same lambda call-site ergonomics (SAM conversion) behind a real type that can
-add default members without breaking binary compatibility, or be extended from.
+be extended from or can new default members without breaking binary compatibility.
 
 
 ### Don't
@@ -92,7 +91,7 @@ public fun interface SuspendAction {
 
 ## Exemption
 
-Apply `@IntentionallyFunctionTypeAlias` when exposing the bare function type is intended.
+Apply `@IntentionallyFunctionTypeAlias` when exposing the bare function type via a typealias is intended.
 
 ```kotlin
 // !hide-focused

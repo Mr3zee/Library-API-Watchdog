@@ -33,7 +33,7 @@ public fun move(y: Int, x: Int, scale: Double) { }
 
 ## Rationale
 
-Callers transfer their intuition about one overload's parameter order to the next: once `x, y` is
+Users transfer their intuition about one overload's parameter order to the next: once `x, y` is
 established, a sibling overload that expects `y, x` invites a silently swapped call, especially
 when the swapped parameters share a type and the mistake still compiles. See the Kotlin library
 authors' guide on
@@ -96,15 +96,9 @@ public class Rect(width: Int, height: Int) {
 public class Rect(width: Int, height: Int) {
     // !hide-focused
     /** Creates a rectangle and applies [scale] to both extents. */
-    public constructor(
-        width: Int,
-        height: Int,
-        scale: Double,
-    ) : this(width, height)
+    public constructor(width: Int, height: Int, scale: Double) : this(width, height)
 }
 ```
-
-
 
 ### Don't {#dont-3}
 
@@ -112,7 +106,6 @@ public class Rect(width: Int, height: Int) {
 // !hide-focused
 @file:JvmName("Grids")
 
-// Supporting member overload
 // !hide-focused
 /** Mutable grid addressed by a linear cell index. */
 public class Grid {
@@ -137,7 +130,6 @@ public fun Grid.fill(
 // !hide-focused
 @file:JvmName("Grids")
 
-// Supporting member overload
 // !hide-focused
 /** Mutable grid addressed by a linear cell index. */
 public class Grid {
@@ -163,21 +155,14 @@ public fun Grid.fill(
 - Overloads that share fewer than two parameter names can't disagree on order and are never
   reported, which is why single-argument conversion overloads with the same parameter name but
   different types (`BigDecimal(value: Int)` next to `BigDecimal(value: String)`) stay silent.
-- Only declarations users see side by side are compared: the members of one class body -
+- Only declarations users see side by side in (for example, code completion) are compared: the members of one class body -
   inherited members included - the top-level functions of one package, or the constructors of one
   class among each other. A class member is never compared against a same-named top-level
   function, and declarations from dependencies are never compared.
-- An extension is called like a member of the type it extends, so the members of its receiver
-  class - inherited ones included - are its overloads too, wherever in the library the extension
-  is declared. A receiver reached through a type alias, a nullable type, or a type parameter
-  bound still leads back to the extended class. An unbounded type parameter is no class and has
-  no members to compare against.
 - For an inherited pair, only the subtype's own declaration is reported: the supertype can't see
-  the subtype's overload, and it is the new declaration that strays from the established order.
-  An extension next to the members of its receiver is reported the same way: only the extension,
-  since the class can't see the extensions declared on it.
-- Overrides are not reported - their order is fixed by the overridden declaration - but they still
-  serve as an ordering reference for a new overload declared next to them.
+  the subtype's overload, and it is the new declaration that differs from the supertype's order.
+  Same for the extensions: only the extension itself is reposted,
+  since the class can't see the extensions that are declared on it.
 
 ## Exemption
 
