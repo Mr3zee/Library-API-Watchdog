@@ -30,7 +30,7 @@ plugins {
 }
 ```
 
-library-api-watchdog is a Kotlin compiler plugin. It needs a Gradle
+`library-api-watchdog` is a Kotlin compiler plugin. It needs a Gradle
 project that applies the Kotlin plugin and turns on
 [explicit API mode](https://kotlinlang.org/docs/api-guidelines-simplicity.html#use-explicit-api-mode):
 
@@ -54,12 +54,13 @@ Applying the plugin:
   a runtime library with the `@Intentionally*` exemption annotations.
 - Warns when explicit API mode is not enabled.
 - Checks whether binary compatibility validation is enabled alongside it, printing a
-  build warning with a setup snippet for either one that is missing. See below.
+  build warning with a setup snippet when missing. 
+  See [Binary compatibility validation suggestion](./abi-validation-suggestion.md) for more details.
 
 ## Errors by default
 
-`library-api-watchdog` is intentionally restrictive by default: every check reports a compilation error until
-configured otherwise. See [The apiWatchdog extension](./configuration.md#the-apiwatchdog-extension)
+`library-api-watchdog` is intentionally restrictive by default: every check is enabled and 
+reports a compilation error until configured otherwise. See [The apiWatchdog extension](./configuration.md#the-apiwatchdog-extension)
 for demoting individual checks to warnings or disabling them, and
 [Exemptions and internal API](./exemptions.md) for exempting a single declaration in place instead of
 changing severity project-wide.
@@ -67,7 +68,7 @@ changing severity project-wide.
 ## Adding the plugin to existing libraries
 
 When added to an exiting library, chances are that the whole codebase will turn red,
-and most of the declarations reported can't be changes easily without breaking users.
+and most of the declarations reported can't be changed easily without breaking users.
 
 Use `updateBackwardsCompatibilityExempts` task to mark existing APIs with `@Intentionally*`
 annotations and `ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`:
@@ -78,30 +79,7 @@ annotations and `ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`:
 
 See [Adding the plugin to existing libraries](./existing-libs.md) for more details.
 
-## Without Gradle
-
-When invoking the compiler directly, configure severities with the repeatable plugin option:
-
-```
--P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=<NAME>:<severity>
-```
-
-Parameters:
-- `<NAME>` is a diagnostic name. Any value from the [Property reference](./configuration.md#property-reference) is valid.
-- `<severity>` is `error`, `warning`, or `none`.
-
-The [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md) check is unavailable without Gradle because the
-compiler alone cannot distinguish dependencies declared with `api` from those declared with
-`implementation`.
-
-For example, to demote undocumented public API to a warning use the following argument form:
-
-```
--P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:warning
-```
-
-
-## The apiWatchdog extension
+## The `apiWatchdog` extension
 
 Every property has a default value. For configurable checks it is `WatchdogSeverity.ERROR`,
 for enabled/disabled switches is it `true` by default.
@@ -133,6 +111,7 @@ apiWatchdog {
     dslMarkerNoopTarget = WatchdogSeverity.ERROR
     dslMarkerWithoutExplicitTargets = WatchdogSeverity.ERROR
     dslMarkerNoopTypePosition = WatchdogSeverity.ERROR
+
     javaInterop {
         // One switch for the whole Java interop group,
         // it overrides the severities below.
@@ -161,61 +140,67 @@ Each check's severity is a `WatchdogSeverity`:
 [`EXEMPTION_WITHOUT_EXPLANATION`](./checks/special/exemption-without-explanation.md) has no matching property and is always an error.
 [`PUBLIC_TYPE_WITH_INTERNAL_API`](./checks/special/public-type-with-internal-api.md) and
 [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md) are always errors when
-enabled. Their Gradle properties are Boolean whole-check switches rather than severities. See
+enabled. Their Gradle properties are `Boolean` whole-check switches rather than severities. See
 [Exemptions and internal API](./exemptions.md).
 
 ## Property reference
 
-| Property                                           | Check                                                                                                                   | Diagnostic                                                                                                      |
-|----------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
-| `publicTypesMustBeTransitiveDependencies`          | [Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md)         | [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md)  |
-| `publicTypeWithInternalApi`                        | [Public types marked as internal API](./checks/special/public-type-with-internal-api.md)                                | [`PUBLIC_TYPE_WITH_INTERNAL_API`](./checks/special/public-type-with-internal-api.md)                            |
-| `openApiWithoutSubclassOptIn`                      | [Open API without subclass opt-in](./checks/open-api-without-subclass-opt-in.md)                                        | [`OPEN_API_WITHOUT_SUBCLASS_OPT_IN`](./checks/open-api-without-subclass-opt-in.md)                              |
-| `subclassOptInWithoutMarkers`                      | [Subclass opt-in without markers](./checks/subclass-opt-in-without-markers.md)                                          | [`SUBCLASS_OPT_IN_WITHOUT_MARKERS`](./checks/subclass-opt-in-without-markers.md)                                |
-| `exhaustivePublicApi`                              | [Exhaustive public API](./checks/exhaustive-public-api.md)                                                              | [`EXHAUSTIVE_PUBLIC_API`](./checks/exhaustive-public-api.md)                                                    |
-| `undocumentedPublicApi`                            | [Undocumented public API](./checks/undocumented-public-api.md)                                                          | [`UNDOCUMENTED_PUBLIC_API`](./checks/undocumented-public-api.md)                                                |
-| `functionTypeAliasPublicApi`                       | [Function type aliases in public API](./checks/function-type-alias-public-api.md)                                       | [`FUNCTION_TYPE_ALIAS_PUBLIC_API`](./checks/function-type-alias-public-api.md)                                  |
-| `dataClassPublicApi`                               | [Data classes in public API](./checks/data-class-public-api.md)                                                         | [`DATA_CLASS_PUBLIC_API`](./checks/data-class-public-api.md)                                                    |
-| `statefulClassWithoutEquals`                       | [Stateful classes without equals, hashCode, and toString](./checks/stateful-class-without-equals-hashcode-to-string.md) | [`STATEFUL_CLASS_WITHOUT_EQUALS`](./checks/stateful-class-without-equals-hashcode-to-string.md)                 |
-| `statefulClassWithoutHashCode`                     | [Stateful classes without equals, hashCode, and toString](./checks/stateful-class-without-equals-hashcode-to-string.md) | [`STATEFUL_CLASS_WITHOUT_HASH_CODE`](./checks/stateful-class-without-equals-hashcode-to-string.md)              |
-| `statefulClassWithoutToString`                     | [Stateful classes without equals, hashCode, and toString](./checks/stateful-class-without-equals-hashcode-to-string.md) | [`STATEFUL_CLASS_WITHOUT_TO_STRING`](./checks/stateful-class-without-equals-hashcode-to-string.md)              |
-| `mutableCollectionPublicApi`                       | [Mutable collections in public API](./checks/mutable-collection-public-api.md)                                          | [`MUTABLE_COLLECTION_PUBLIC_API`](./checks/mutable-collection-public-api.md)                                    |
-| `pairOrTriplePublicApi`                            | [Pair and Triple in public API](./checks/pair-or-triple-public-api.md)                                                  | [`PAIR_OR_TRIPLE_PUBLIC_API`](./checks/pair-or-triple-public-api.md)                                            |
-| `booleanParameterPublicApi`                        | [Boolean parameters in public API](./checks/boolean-parameter-public-api.md)                                            | [`BOOLEAN_PARAMETER_PUBLIC_API`](./checks/boolean-parameter-public-api.md)                                      |
-| `nullableBooleanPublicApi`                         | [Nullable Booleans in public API](./checks/nullable-boolean-public-api.md)                                              | [`NULLABLE_BOOLEAN_PUBLIC_API`](./checks/nullable-boolean-public-api.md)                                        |
-| `requiredParameterAfterOptional`                   | [Required parameters after optional ones](./checks/required-parameter-after-optional.md)                                | [`REQUIRED_PARAMETER_AFTER_OPTIONAL`](./checks/required-parameter-after-optional.md)                            |
-| `inconsistentParameterOrderInOverloads`            | [Inconsistent parameter order in overloads](./checks/inconsistent-parameter-order-in-overloads.md)                      | [`INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS`](./checks/inconsistent-parameter-order-in-overloads.md)            |
-| `inlineFunctionWithLogic`                          | [Inline functions with logic](./checks/inline-function-with-logic.md)                                                   | [`INLINE_FUNCTION_WITH_LOGIC`](./checks/inline-function-with-logic.md)                                          |
-| `dslMarkerNoopTarget`                              | [DSL markers with no-op targets](./checks/special/dsl-marker-noop-target.md)                                            | [`DSL_MARKER_NOOP_TARGET`](./checks/special/dsl-marker-noop-target.md)                                          |
-| `dslMarkerWithoutExplicitTargets`                  | [DSL markers without explicit targets](./checks/special/dsl-marker-without-explicit-targets.md)                         | [`DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`](./checks/special/dsl-marker-without-explicit-targets.md)                |
-| `dslMarkerNoopTypePosition`                        | [DSL markers on no-op type positions](./checks/special/dsl-marker-noop-type-position.md)                                | [`DSL_MARKER_NOOP_TYPE_POSITION`](./checks/special/dsl-marker-noop-type-position.md)                            |
-| `javaInterop.mangledJvmNamePublicApi`              | [Mangled JVM names in public API](./checks/java-interop/mangled-jvm-name-public-api.md)                                 | [`MANGLED_JVM_NAME_PUBLIC_API`](./checks/java-interop/mangled-jvm-name-public-api.md)                           |
-| `javaInterop.kotlinOnlyApiWithoutJvmSynthetic`     | [Kotlin-only API without JvmSynthetic](./checks/java-interop/kotlin-only-api-without-jvm-synthetic.md)                  | [`KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`](./checks/java-interop/kotlin-only-api-without-jvm-synthetic.md)       |
-| `javaInterop.companionApiWithoutJvmStatic`         | [Companion API without JvmStatic](./checks/java-interop/companion-api-without-jvm-static.md)                            | [`COMPANION_API_WITHOUT_JVM_STATIC`](./checks/java-interop/companion-api-without-jvm-static.md)                 |
-| `javaInterop.companionConstantWithoutJvmField`     | [Companion constants without JvmField](./checks/java-interop/companion-constant-without-jvm-field.md)                   | [`COMPANION_CONSTANT_WITHOUT_JVM_FIELD`](./checks/java-interop/companion-constant-without-jvm-field.md)         |
-| `javaInterop.topLevelApiWithoutJvmName`            | [Top-level API without JvmName](./checks/java-interop/top-level-api-without-jvm-name.md)                                | [`TOP_LEVEL_API_WITHOUT_JVM_NAME`](./checks/java-interop/top-level-api-without-jvm-name.md)                     |
-| `javaInterop.defaultParametersWithoutJvmOverloads` | [Default parameters without JvmOverloads](./checks/java-interop/default-parameters-without-jvm-overloads.md)            | [`DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS`](./checks/java-interop/default-parameters-without-jvm-overloads.md) |
+| Check                                                                                                                   | Property                                                | Diagnostic                                   |
+|-------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|----------------------------------------------|
+| [Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md)         | `publicTypesMustBeTransitiveDependencies`               | `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY` |
+| [Public types marked as internal API](./checks/special/public-type-with-internal-api.md)                                | `publicTypeWithInternalApi`                             | `PUBLIC_TYPE_WITH_INTERNAL_API`              |
+| [Open API without subclass opt-in](./checks/open-api-without-subclass-opt-in.md)                                        | `openApiWithoutSubclassOptIn`                           | `OPEN_API_WITHOUT_SUBCLASS_OPT_IN`           |
+| [Subclass opt-in without markers](./checks/subclass-opt-in-without-markers.md)                                          | `subclassOptInWithoutMarkers`                           | `SUBCLASS_OPT_IN_WITHOUT_MARKERS`            |
+| [Exhaustive public API](./checks/exhaustive-public-api.md)                                                              | `exhaustivePublicApi`                                   | `EXHAUSTIVE_PUBLIC_API`                      |
+| [Undocumented public API](./checks/undocumented-public-api.md)                                                          | `undocumentedPublicApi`                                 | `UNDOCUMENTED_PUBLIC_API`                    |
+| [Function type aliases in public API](./checks/function-type-alias-public-api.md)                                       | `functionTypeAliasPublicApi`                            | `FUNCTION_TYPE_ALIAS_PUBLIC_API`             |
+| [Data classes in public API](./checks/data-class-public-api.md)                                                         | `dataClassPublicApi`                                    | `DATA_CLASS_PUBLIC_API`                      |
+| [Stateful classes without equals, hashCode, and toString](./checks/stateful-class-without-equals-hashcode-to-string.md) | `statefulClassWithoutEquals`                            | `STATEFUL_CLASS_WITHOUT_EQUALS`              |
+| [Stateful classes without equals, hashCode, and toString](./checks/stateful-class-without-equals-hashcode-to-string.md) | `statefulClassWithoutHashCode`                          | `STATEFUL_CLASS_WITHOUT_HASH_CODE`           |
+| [Stateful classes without equals, hashCode, and toString](./checks/stateful-class-without-equals-hashcode-to-string.md) | `statefulClassWithoutToString`                          | `STATEFUL_CLASS_WITHOUT_TO_STRING`           |
+| [Mutable collections in public API](./checks/mutable-collection-public-api.md)                                          | `mutableCollectionPublicApi`                            | `MUTABLE_COLLECTION_PUBLIC_API`              |
+| [Pair and Triple in public API](./checks/pair-or-triple-public-api.md)                                                  | `pairOrTriplePublicApi`                                 | `PAIR_OR_TRIPLE_PUBLIC_API`                  |
+| [Boolean parameters in public API](./checks/boolean-parameter-public-api.md)                                            | `booleanParameterPublicApi`                             | `BOOLEAN_PARAMETER_PUBLIC_API`               |
+| [Nullable Booleans in public API](./checks/nullable-boolean-public-api.md)                                              | `nullableBooleanPublicApi`                              | `NULLABLE_BOOLEAN_PUBLIC_API`                |
+| [Required parameters after optional ones](./checks/required-parameter-after-optional.md)                                | `requiredParameterAfterOptional`                        | `REQUIRED_PARAMETER_AFTER_OPTIONAL`          |
+| [Inconsistent parameter order in overloads](./checks/inconsistent-parameter-order-in-overloads.md)                      | `inconsistentParameterOrderInOverloads`                 | `INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS`  |
+| [Inline functions with logic](./checks/inline-function-with-logic.md)                                                   | `inlineFunctionWithLogic`                               | `INLINE_FUNCTION_WITH_LOGIC`                 |
+| [DSL markers with no-op targets](./checks/special/dsl-marker-noop-target.md)                                            | `dslMarkerNoopTarget`                                   | `DSL_MARKER_NOOP_TARGET`                     |
+| [DSL markers without explicit targets](./checks/special/dsl-marker-without-explicit-targets.md)                         | `dslMarkerWithoutExplicitTargets`                       | `DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`        |
+| [DSL markers on no-op type positions](./checks/special/dsl-marker-noop-type-position.md)                                | `dslMarkerNoopTypePosition`                             | `DSL_MARKER_NOOP_TYPE_POSITION`              |
+| [Mangled JVM names in public API](./checks/java-interop/mangled-jvm-name-public-api.md)                                 | `mangledJvmNamePublicApi` in `javaInterop`              | `MANGLED_JVM_NAME_PUBLIC_API`                |
+| [Kotlin-only API without JvmSynthetic](./checks/java-interop/kotlin-only-api-without-jvm-synthetic.md)                  | `kotlinOnlyApiWithoutJvmSynthetic` in `javaInterop`     | `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`      |
+| [Companion API without JvmStatic](./checks/java-interop/companion-api-without-jvm-static.md)                            | `companionApiWithoutJvmStatic` in `javaInterop`         | `COMPANION_API_WITHOUT_JVM_STATIC`           |
+| [Companion constants without JvmField](./checks/java-interop/companion-constant-without-jvm-field.md)                   | `companionConstantWithoutJvmField` in `javaInterop`     | `COMPANION_CONSTANT_WITHOUT_JVM_FIELD`       |
+| [Top-level API without JvmName](./checks/java-interop/top-level-api-without-jvm-name.md)                                | `topLevelApiWithoutJvmName` in `javaInterop`            | `TOP_LEVEL_API_WITHOUT_JVM_NAME`             |
+| [Default parameters without JvmOverloads](./checks/java-interop/default-parameters-without-jvm-overloads.md)            | `defaultParametersWithoutJvmOverloads` in `javaInterop` | `DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS`   |
 
 The last six properties live inside the `javaInterop { }` block. They only run in JVM
 compilations, and `javaInterop.enabled` (default `true`) is a single switch for all of them: set
 it to `false` and every one of the six resolves to `NONE`, no matter what its own property says.
 See [Java interop checks](./checks/java-interop/java-interop.md) for more details.
 
-## Binary compatibility validation suggestion
+## Without Gradle
 
-`suggestAbiValidation` (default is `true`) controls a build warning unrelated to any
-diagnostic. If neither the Kotlin Gradle plugin's built-in ABI validation nor the standalone
-Binary Compatibility Validator plugin is enabled alongside the watchdog, the plugin warns that
-incompatible changes to already-shipped API would go unnoticed. Set it to `false` to silence the
-warning:
+When invoking the compiler directly, configure severities with the repeatable plugin option:
 
-```kotlin build.gradle.kts
-apiWatchdog {
-    suggestAbiValidation = false
-}
+```
+-P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=<NAME>:<severity>
 ```
 
-See [Binary compatibility validation suggestion](./abi-validation-suggestion.md) for more details.
+Parameters:
+- `<NAME>` is a diagnostic name. Any value from the [Property reference](./configuration.md#property-reference) is valid.
+- `<severity>` is `error`, `warning`, or `none`.
+
+The [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md) check is not available without Gradle because the
+compiler alone cannot distinguish dependencies declared with `api` from those declared with
+`implementation`.
+
+For example, to demote undocumented public API to a warning use the following argument form:
+
+```
+-P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:warning
+```
 
 ## Next steps
 

@@ -1,6 +1,6 @@
 # Exemptions and internal API
 
-`library-api-watchdog` gives library authors two ways to opt out of its checks without disabling them altogether:
+`library-api-watchdog` gives library authors two ways to opt out of its checks without disabling them in the project:
 
 - A per-declaration `@Intentionally*` annotation acknowledges that one specific hard-to-evolve shape is a deliberate
   choice.
@@ -13,7 +13,7 @@ when a declaration is public only for technical reasons and is not meant to be s
 
 ## Exempting a single declaration
 
-Each check that has an exemption annotation names it in its "Exemption" section
+Each check has an exemption annotation. It is described in the corresponding "Exemption" section of the check's page
 ([Example for data classes](./checks/data-class-public-api.md#exemption)). Applying the
 annotation silences that one check on that one declaration (or, for annotations placed on a type
 parameter or type usage, on that one type).
@@ -30,7 +30,7 @@ Every `@Intentionally*` annotation takes a `reason: ExemptionReason` (default `O
   to ignore Java callers is not obvious from the entry alone - so a non-empty `description` is
   required.
 
-A bare `@IntentionallyOpen` (reason left at `OTHER`, description left empty) explains nothing and is rejected by the
+A bare `@IntentionallyDataClass` without a description, for example, explains nothing and is rejected by the
 [Exemptions without explanation](./checks/special/exemption-without-explanation.md) check. That check is always an
 error and can't be configured or disabled. It fires on every exemption annotation usage, even on
 non-public declarations, because leaving any exemption unexplained defeats the point of exemptions.
@@ -98,8 +98,8 @@ only valid reason for a exemption.
 
 ## Internal API annotations
 
-Some declarations are public only because the language requires it, not because they are supported
-API - reflection helpers behind an opt-in marker, shared internals, and other. Rather than
+Some declarations are public only because the current library's internal structure requires it, 
+not because they are supported API (for example, shared internals). Rather than
 exempting every one of them individually, annotate the library's own internal-API marker annotation
 with `@InternalAnnotationMarker`:
 
@@ -125,15 +125,7 @@ declaration as internal API too.
 The marker annotation class itself is ordinary public API and stays watched like any
 other declaration, so it still needs a KDoc comment and the rest.
 
-Note that `@PublishedApi` declarations are not affected by this distinction between source
-visibility and API surface in the opposite direction: they are `internal` in source, but a public
-inline function can expose them to users, so they are watched exactly like public declarations.
-The exceptions are [Undocumented public API](./checks/undocumented-public-api.md), because a
-declaration that stays `internal` in sources is never referenced by name in user code, and the
-[stateful class checks](./checks/stateful-class-without-equals-hashcode-to-string.md), which are
-likewise concerned with source-facing behavior.
-
-## Where the annotations come from
+## Configuration
 
 Every `@Intentionally*` annotation, `@InternalAnnotationMarker`, and `ExemptionReason` live in the
 `org.jetbrains.kotlin:kotlin-library-api-watchdog-plugin-annotations` artifact.
