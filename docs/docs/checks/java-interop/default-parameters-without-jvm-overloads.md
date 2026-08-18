@@ -3,11 +3,11 @@
 `DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS` reports public functions and constructors that declare
 default parameter values without `@JvmOverloads`.
 
-|                  |                                                            |
-|------------------|------------------------------------------------------------|
-| Diagnostic       | `DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS`                 |
-| Default severity | Error                                                      |
-| Applies to       | JVM compilations only                                      |
+|                  |                                                                  |
+|------------------|------------------------------------------------------------------|
+| Diagnostic       | `DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS`                       |
+| Default severity | Error                                                            |
+| Applies to       | JVM compilations only                                            |
 | Gradle property  | [`defaultParametersWithoutJvmOverloads`](../../configuration.md) |
 | Exemption        | [`@IntentionallyWithoutJvmOverloads`](../../exemptions.md)       |
 

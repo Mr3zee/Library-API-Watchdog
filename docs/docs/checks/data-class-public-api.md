@@ -3,10 +3,10 @@
 `DATA_CLASS_PUBLIC_API` reports public data classes, whose generated members expose their
 constructor property list as part of the compiled API.
 
-|                  |                                            |
-|------------------|--------------------------------------------|
-| Diagnostic       | `DATA_CLASS_PUBLIC_API`                    |
-| Default severity | Error                                      |
+|                  |                                               |
+|------------------|-----------------------------------------------|
+| Diagnostic       | `DATA_CLASS_PUBLIC_API`                       |
+| Default severity | Error                                         |
 | Gradle property  | [`dataClassPublicApi`](../configuration.md)   |
 | Exemption        | [`@IntentionallyDataClass`](../exemptions.md) |
 

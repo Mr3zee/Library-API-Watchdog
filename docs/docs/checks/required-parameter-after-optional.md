@@ -3,10 +3,10 @@
 `REQUIRED_PARAMETER_AFTER_OPTIONAL` reports required parameters of public functions and
 constructors declared after an optional (defaulted or `vararg`) parameter.
 
-|                  |                                                                 |
-|------------------|-----------------------------------------------------------------|
-| Diagnostic       | `REQUIRED_PARAMETER_AFTER_OPTIONAL`                             |
-| Default severity | Error                                                           |
+|                  |                                                                    |
+|------------------|--------------------------------------------------------------------|
+| Diagnostic       | `REQUIRED_PARAMETER_AFTER_OPTIONAL`                                |
+| Default severity | Error                                                              |
 | Gradle property  | [`requiredParameterAfterOptional`](../configuration.md)            |
 | Exemption        | [`@IntentionallyRequiredParameterAfterOptional`](../exemptions.md) |
 

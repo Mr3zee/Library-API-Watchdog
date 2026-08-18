@@ -3,10 +3,10 @@
 `PAIR_OR_TRIPLE_PUBLIC_API` reports the tuple types `Pair` and `Triple` in publicly visible
 signatures.
 
-|                  |                                               |
-|------------------|-----------------------------------------------|
-| Diagnostic       | `PAIR_OR_TRIPLE_PUBLIC_API`                   |
-| Default severity | Error                                         |
+|                  |                                                  |
+|------------------|--------------------------------------------------|
+| Diagnostic       | `PAIR_OR_TRIPLE_PUBLIC_API`                      |
+| Default severity | Error                                            |
 | Gradle property  | [`pairOrTriplePublicApi`](../configuration.md)   |
 | Exemption        | [`@IntentionallyPairOrTriple`](../exemptions.md) |
 

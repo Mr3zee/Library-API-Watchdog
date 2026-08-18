@@ -346,16 +346,18 @@ public annotation class IntentionallyPairOrTriple(
 /**
  * Acknowledges that the annotated function or parameter deliberately takes a Boolean argument.
  *
- * The library-api-watchdog compiler plugin warns about
- * [Boolean value parameters](https://kotlinlang.org/docs/api-guidelines-readability.html#avoid-using-the-boolean-type-as-an-argument)
- * - including nullable, `vararg`, and context ones - in publicly visible functions, because at
- * the call site a bare `true`/`false` reveals nothing about its meaning, and users can't be
+ * The checker warns about
+ * [Boolean value parameters](https://kotlinlang.org/docs/api-guidelines-readability.html#avoid-using-the-boolean-type-as-an-argument),
+ * including nullable, `vararg`, and context ones - in publicly visible functions.
+ *
+ * At the call site a bare `true`/`false` reveals nothing about its meaning, and users can't be
  * forced to name the argument they pass. Prefer separate, descriptively named functions for
  * each mode, or an enum class naming the modes. Constructors and constructor functions -
  * factory functions named after the type they create - are not checked: a construction site
- * stores data in the named type rather than switching an operation mode. Apply this annotation
- * to suppress the warning when the Boolean parameter is intended (for example, when the
- * parameter is unmistakable from the function name alone, as in `setEnabled(enabled: Boolean)`).
+ * stores data in the named type rather than switching an operation mode.
+ *
+ * Apply this annotation to suppress the warning when the Boolean parameter is intended
+ * (for example, when the parameter is unmistakable from the function name alone, as in `setEnabled(enabled: Boolean)`).
  * On a function it covers every parameter. On a single parameter it covers just that parameter.
  *
  * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/boolean-parameter-public-api) for rationale and examples.

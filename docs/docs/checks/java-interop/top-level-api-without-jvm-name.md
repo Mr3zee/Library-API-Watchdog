@@ -3,11 +3,11 @@
 `TOP_LEVEL_API_WITHOUT_JVM_NAME` reports a file whose public top-level functions or properties
 compile into a file facade class without an explicit `@file:JvmName`.
 
-|                  |                                                    |
-|------------------|----------------------------------------------------|
-| Diagnostic       | `TOP_LEVEL_API_WITHOUT_JVM_NAME`                   |
-| Default severity | Error                                              |
-| Applies to       | JVM compilations only                              |
+|                  |                                                          |
+|------------------|----------------------------------------------------------|
+| Diagnostic       | `TOP_LEVEL_API_WITHOUT_JVM_NAME`                         |
+| Default severity | Error                                                    |
+| Applies to       | JVM compilations only                                    |
 | Gradle property  | [`topLevelApiWithoutJvmName`](../../configuration.md)    |
 | Exemption        | [`@IntentionallyDefaultFacadeName`](../../exemptions.md) |
 

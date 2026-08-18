@@ -2,10 +2,10 @@
 
 `MUTABLE_COLLECTION_PUBLIC_API` reports mutable collection and array types in public signatures.
 
-|                  |                                                    |
-|------------------|----------------------------------------------------|
-| Diagnostic       | `MUTABLE_COLLECTION_PUBLIC_API`                    |
-| Default severity | Error                                              |
+|                  |                                                       |
+|------------------|-------------------------------------------------------|
+| Diagnostic       | `MUTABLE_COLLECTION_PUBLIC_API`                       |
+| Default severity | Error                                                 |
 | Gradle property  | [`mutableCollectionPublicApi`](../configuration.md)   |
 | Exemption        | [`@IntentionallyMutableCollection`](../exemptions.md) |
 

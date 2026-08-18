@@ -4,11 +4,11 @@
 instance method on the nested `Companion` class instead of a static entry point on the outer
 class.
 
-|                  |                                                        |
-|------------------|--------------------------------------------------------|
-| Diagnostic       | `COMPANION_API_WITHOUT_JVM_STATIC`                     |
-| Default severity | Error                                                  |
-| Applies to       | JVM compilations only                                  |
+|                  |                                                              |
+|------------------|--------------------------------------------------------------|
+| Diagnostic       | `COMPANION_API_WITHOUT_JVM_STATIC`                           |
+| Default severity | Error                                                        |
+| Applies to       | JVM compilations only                                        |
 | Gradle property  | [`companionApiWithoutJvmStatic`](../../configuration.md)     |
 | Exemption        | [`@IntentionallyNonStaticCompanionApi`](../../exemptions.md) |
 

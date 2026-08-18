@@ -2,10 +2,10 @@
 
 `FUNCTION_TYPE_ALIAS_PUBLIC_API` reports public type aliases that expand to a function type.
 
-|                  |                                                    |
-|------------------|----------------------------------------------------|
-| Diagnostic       | `FUNCTION_TYPE_ALIAS_PUBLIC_API`                   |
-| Default severity | Error                                              |
+|                  |                                                       |
+|------------------|-------------------------------------------------------|
+| Diagnostic       | `FUNCTION_TYPE_ALIAS_PUBLIC_API`                      |
+| Default severity | Error                                                 |
 | Gradle property  | [`functionTypeAliasPublicApi`](../configuration.md)   |
 | Exemption        | [`@IntentionallyFunctionTypeAlias`](../exemptions.md) |
 

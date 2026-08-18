@@ -3,10 +3,10 @@
 `INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS` reports two overloads of the same public callable
 whose shared parameter names appear in a different relative order.
 
-|                  |                                                             |
-|------------------|-------------------------------------------------------------|
-| Diagnostic       | `INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS`                 |
-| Default severity | Error                                                       |
+|                  |                                                                |
+|------------------|----------------------------------------------------------------|
+| Diagnostic       | `INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS`                    |
+| Default severity | Error                                                          |
 | Gradle property  | [`inconsistentParameterOrderInOverloads`](../configuration.md) |
 | Exemption        | [`@IntentionallyInconsistentParameterOrder`](../exemptions.md) |
 

@@ -8,7 +8,7 @@ supported public signature exposes them.
 | Diagnostic       | `PUBLIC_TYPE_WITH_INTERNAL_API`                       |
 | Default severity | Always an error while enabled                         |
 | Gradle property  | [`publicTypeWithInternalApi`](../../configuration.md) |
-| Exemption        | none (mark the exposing API as internal instead)      |
+| Exemption        | none                                                  |
 
 An annotation whose class carries `@InternalAnnotationMarker` says that its declarations have no
 supported compatibility contract. Exposing one of those declarations from supported API makes

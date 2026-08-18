@@ -3,10 +3,10 @@
 `DSL_MARKER_NOOP_TARGET` reports an explicit `@Target` entry on a `@DslMarker` annotation that
 names a target the marker has no effect on.
 
-|                  |                                                                                 |
-|------------------|---------------------------------------------------------------------------------|
-| Diagnostic       | `DSL_MARKER_NOOP_TARGET`                                                        |
-| Default severity | Error                                                                           |
+|                  |                                                                                       |
+|------------------|---------------------------------------------------------------------------------------|
+| Diagnostic       | `DSL_MARKER_NOOP_TARGET`                                                              |
+| Default severity | Error                                                                                 |
 | Gradle property  | [`dslMarkerNoopTarget`](../../configuration.md)                                       |
 | Exemption        | [`@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility`](../../exemptions.md) |
 

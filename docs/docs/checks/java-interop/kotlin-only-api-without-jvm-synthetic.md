@@ -3,11 +3,11 @@
 `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC` reports public functions whose shape only Kotlin callers
 can use idiomatically, while the function still lands in the API surface Java sources see.
 
-|                  |                                                        |
-|------------------|--------------------------------------------------------|
-| Diagnostic       | `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`                |
-| Default severity | Error                                                  |
-| Applies to       | JVM compilations only                                  |
+|                  |                                                              |
+|------------------|--------------------------------------------------------------|
+| Diagnostic       | `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`                      |
+| Default severity | Error                                                        |
+| Applies to       | JVM compilations only                                        |
 | Gradle property  | [`kotlinOnlyApiWithoutJvmSynthetic`](../../configuration.md) |
 | Exemption        | [`@IntentionallyKotlinOnlyApi`](../../exemptions.md)         |
 

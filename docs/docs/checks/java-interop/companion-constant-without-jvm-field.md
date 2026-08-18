@@ -4,11 +4,11 @@
 - a final `val`, initialized in place, with the default getter, neither `const` nor delegated -
 that Java can only read through the companion instance getter.
 
-|                  |                                                        |
-|------------------|--------------------------------------------------------|
-| Diagnostic       | `COMPANION_CONSTANT_WITHOUT_JVM_FIELD`                 |
-| Default severity | Error                                                  |
-| Applies to       | JVM compilations only                                  |
+|                  |                                                              |
+|------------------|--------------------------------------------------------------|
+| Diagnostic       | `COMPANION_CONSTANT_WITHOUT_JVM_FIELD`                       |
+| Default severity | Error                                                        |
+| Applies to       | JVM compilations only                                        |
 | Gradle property  | [`companionConstantWithoutJvmField`](../../configuration.md) |
 | Exemption        | [`@IntentionallyNonStaticCompanionApi`](../../exemptions.md) |
 

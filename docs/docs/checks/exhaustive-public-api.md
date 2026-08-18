@@ -3,10 +3,10 @@
 `EXHAUSTIVE_PUBLIC_API` reports public enums and sealed hierarchies, which users can match
 exhaustively with a `when` expression that has no `else` branch.
 
-|                  |                                             |
-|------------------|---------------------------------------------|
-| Diagnostic       | `EXHAUSTIVE_PUBLIC_API`                     |
-| Default severity | Error                                       |
+|                  |                                                |
+|------------------|------------------------------------------------|
+| Diagnostic       | `EXHAUSTIVE_PUBLIC_API`                        |
+| Default severity | Error                                          |
 | Gradle property  | [`exhaustivePublicApi`](../configuration.md)   |
 | Exemption        | [`@IntentionallyExhaustive`](../exemptions.md) |
 

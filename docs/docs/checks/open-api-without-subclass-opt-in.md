@@ -3,10 +3,10 @@
 `OPEN_API_WITHOUT_SUBCLASS_OPT_IN` reports public open or abstract classes and interfaces that
 can be subclassed outside the library without any restriction.
 
-|                  |                                                   |
-|------------------|---------------------------------------------------|
-| Diagnostic       | `OPEN_API_WITHOUT_SUBCLASS_OPT_IN`                |
-| Default severity | Error                                             |
+|                  |                                                      |
+|------------------|------------------------------------------------------|
+| Diagnostic       | `OPEN_API_WITHOUT_SUBCLASS_OPT_IN`                   |
+| Default severity | Error                                                |
 | Gradle property  | [`openApiWithoutSubclassOptIn`](../configuration.md) |
 | Exemption        | [`@IntentionallyOpen`](../exemptions.md)             |
 

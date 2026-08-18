@@ -4,11 +4,11 @@
 sources can't call because a value class in their signature makes the JVM backend mangle the
 compiled name.
 
-|                  |                                                 |
-|------------------|-------------------------------------------------|
-| Diagnostic       | `MANGLED_JVM_NAME_PUBLIC_API`                   |
-| Default severity | Error                                           |
-| Applies to       | JVM compilations only                           |
+|                  |                                                       |
+|------------------|-------------------------------------------------------|
+| Diagnostic       | `MANGLED_JVM_NAME_PUBLIC_API`                         |
+| Default severity | Error                                                 |
+| Applies to       | JVM compilations only                                 |
 | Gradle property  | [`mangledJvmNamePublicApi`](../../configuration.md)   |
 | Exemption        | [`@IntentionallyMangledJvmName`](../../exemptions.md) |
 

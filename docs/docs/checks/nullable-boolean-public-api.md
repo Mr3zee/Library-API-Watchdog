@@ -2,10 +2,10 @@
 
 `NULLABLE_BOOLEAN_PUBLIC_API` reports `Boolean?` in publicly visible signatures.
 
-|                  |                                                  |
-|------------------|--------------------------------------------------|
-| Diagnostic       | `NULLABLE_BOOLEAN_PUBLIC_API`                    |
-| Default severity | Error                                            |
+|                  |                                                     |
+|------------------|-----------------------------------------------------|
+| Diagnostic       | `NULLABLE_BOOLEAN_PUBLIC_API`                       |
+| Default severity | Error                                               |
 | Gradle property  | [`nullableBooleanPublicApi`](../configuration.md)   |
 | Exemption        | [`@IntentionallyNullableBoolean`](../exemptions.md) |
 

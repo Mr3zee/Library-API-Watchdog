@@ -3,11 +3,11 @@
 `SUBCLASS_OPT_IN_WITHOUT_MARKERS` reports `@SubclassOptInRequired` annotations that list no
 marker classes.
 
-|                  |                                                                                |
-|------------------|--------------------------------------------------------------------------------|
-| Diagnostic       | `SUBCLASS_OPT_IN_WITHOUT_MARKERS`                                              |
-| Default severity | Error                                                                          |
-| Gradle property  | [`subclassOptInWithoutMarkers`](../configuration.md)                              |
+|                  |                                                                                  |
+|------------------|----------------------------------------------------------------------------------|
+| Diagnostic       | `SUBCLASS_OPT_IN_WITHOUT_MARKERS`                                                |
+| Default severity | Error                                                                            |
+| Gradle property  | [`subclassOptInWithoutMarkers`](../configuration.md)                             |
 | Exemption        | none, replace with [`@IntentionallyOpen`](./open-api-without-subclass-opt-in.md) |
 
 ## What it reports

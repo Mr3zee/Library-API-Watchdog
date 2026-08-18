@@ -3,12 +3,12 @@
 `DSL_MARKER_NOOP_TYPE_POSITION` reports a `@DslMarker` annotation written directly on a type
 position where it has no effect on scope control.
 
-|                  |                                                 |
-|------------------|-------------------------------------------------|
-| Diagnostic       | `DSL_MARKER_NOOP_TYPE_POSITION`                 |
-| Default severity | Error                                           |
+|                  |                                                       |
+|------------------|-------------------------------------------------------|
+| Diagnostic       | `DSL_MARKER_NOOP_TYPE_POSITION`                       |
+| Default severity | Error                                                 |
 | Gradle property  | [`dslMarkerNoopTypePosition`](../../configuration.md) |
-| Exemption        | none                                            |
+| Exemption        | none                                                  |
 
 ## What it reports
 

@@ -2,10 +2,10 @@
 
 `UNDOCUMENTED_PUBLIC_API` reports public declarations that have no KDoc.
 
-|                  |                                               |
-|------------------|-----------------------------------------------|
-| Diagnostic       | `UNDOCUMENTED_PUBLIC_API`                     |
-| Default severity | Error                                         |
+|                  |                                                  |
+|------------------|--------------------------------------------------|
+| Diagnostic       | `UNDOCUMENTED_PUBLIC_API`                        |
+| Default severity | Error                                            |
 | Gradle property  | [`undocumentedPublicApi`](../configuration.md)   |
 | Exemption        | [`@IntentionallyUndocumented`](../exemptions.md) |
 

@@ -3,10 +3,10 @@
 `INLINE_FUNCTION_WITH_LOGIC` reports public inline functions and inline property accessors whose
 body does more than delegate to a non-inline function.
 
-|                  |                                               |
-|------------------|-----------------------------------------------|
-| Diagnostic       | `INLINE_FUNCTION_WITH_LOGIC`                  |
-| Default severity | Error                                         |
+|                  |                                                  |
+|------------------|--------------------------------------------------|
+| Diagnostic       | `INLINE_FUNCTION_WITH_LOGIC`                     |
+| Default severity | Error                                            |
 | Gradle property  | [`inlineFunctionWithLogic`](../configuration.md) |
 | Exemption        | [`@IntentionallyInlinedLogic`](../exemptions.md) |
 

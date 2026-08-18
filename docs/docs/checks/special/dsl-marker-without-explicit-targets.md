@@ -3,10 +3,10 @@
 `DSL_MARKER_WITHOUT_EXPLICIT_TARGETS` reports a `@DslMarker` annotation class that declares no
 explicit `@Target`.
 
-|                  |                                                                                 |
-|------------------|---------------------------------------------------------------------------------|
-| Diagnostic       | `DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`                                           |
-| Default severity | Error                                                                           |
+|                  |                                                                                       |
+|------------------|---------------------------------------------------------------------------------------|
+| Diagnostic       | `DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`                                                 |
+| Default severity | Error                                                                                 |
 | Gradle property  | [`dslMarkerWithoutExplicitTargets`](../../configuration.md)                           |
 | Exemption        | [`@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility`](../../exemptions.md) |
 
