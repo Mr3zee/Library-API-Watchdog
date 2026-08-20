@@ -58,3 +58,20 @@ pluginDevKit {
         groupVersions("pathKlib", { it >= pathKlibVersion })
     }
 }
+
+tasks.register("ciTests") {
+    group = "verification"
+    description =
+        "Runs compiler diagnostics tests where baselines exist and compiles earlier supported versions."
+    dependsOn(
+        provider {
+            pluginDevKit.testAgainst.map { target ->
+                if (target.version.toKotlinVersion() >= KotlinVersion(2, 4)) {
+                    target.testTask
+                } else {
+                    target.mainCompilation.compileTaskProvider
+                }
+            }
+        },
+    )
+}

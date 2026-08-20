@@ -39,14 +39,24 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                 "k" + kotlinVersion.replace(".", "").replace("-", "_").lowercase()
             val kotlin = extensions.getByType(KotlinMultiplatformExtension::class.java)
             val kotlinTarget = kotlin.targets.getByName(kotlinTargetName)
+            val mainCompilation = kotlinTarget.compilations.getByName("main")
             val benchmarkCompilation =
                 kotlinTarget.compilations.create("benchmark") {
-                    associateWith(kotlinTarget.compilations.getByName("main"))
+                    associateWith(mainCompilation)
                     // The dev kit generates PluginInfo in its entry-point compilation. Benchmarks
                     // use that canonical plugin ID when invoking the compiler programmatically.
                     associateWith(kotlinTarget.compilations.getByName("entryPoint"))
                     defaultSourceSet.kotlin.srcDir("src/benchmark/kotlin")
                 }
+            configurations.named(checkNotNull(benchmarkCompilation.runtimeDependencyConfigurationName)) {
+                // Custom compilations do not inherit the dev kit's compiler-version attribute,
+                // so their runtime would otherwise contain unflattened multi-release artifacts.
+                val mainRuntime =
+                    configurations.getByName(
+                        checkNotNull(mainCompilation.runtimeDependencyConfigurationName),
+                    )
+                attributes.addAllLater(mainRuntime.attributes)
+            }
             val benchmarkSourceSet: SourceSet =
                 sourceSets.getByName(benchmarkCompilation.defaultSourceSet.name)
 
