@@ -13,6 +13,7 @@ import kotlin.test.assertTrue
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.intellij.lang.annotations.Language
+import org.jetbrains.kotlin.compiler.plugin.devkit.test.getTestCompilerVersion
 import org.junit.Test
 
 class WatchdogProjectTest {
@@ -45,7 +46,7 @@ class WatchdogProjectTest {
         result.assertDiagnosticReported("e: ", "takes the `Boolean` parameter")
         result.assertDiagnosticReported("e: ", "exposes a nullable `Boolean`")
         result.assertDiagnosticReported("e: ", "is required but declared after an optional parameter")
-        result.assertDiagnosticReported("e: ", "appear in the opposite order in another overload")
+        result.assertDiagnosticReported("e: ", "appear in the opposite relative order in another overload")
         result.assertDiagnosticReported("e: ", "does more than delegate to a function without the `inline` modifier")
         result.assertDiagnosticReported("e: ", "compiled JVM name is mangled")
         result.assertDiagnosticReported("e: ", "still lands in the API surface Java sources see")
@@ -119,7 +120,7 @@ class WatchdogProjectTest {
         result.assertDiagnosticReported("w: ", "takes the `Boolean` parameter")
         result.assertDiagnosticReported("w: ", "exposes a nullable `Boolean`")
         result.assertDiagnosticReported("w: ", "is required but declared after an optional parameter")
-        result.assertDiagnosticReported("w: ", "appear in the opposite order in another overload")
+        result.assertDiagnosticReported("w: ", "appear in the opposite relative order in another overload")
         result.assertDiagnosticReported("w: ", "does more than delegate to a function without the `inline` modifier")
         result.assertDiagnosticReported("w: ", "compiled JVM name is mangled")
         result.assertDiagnosticReported("w: ", "still lands in the API surface Java sources see")
@@ -285,7 +286,7 @@ class WatchdogProjectTest {
         assertFalse(result.output.contains("takes the `Boolean` parameter"))
         assertFalse(result.output.contains("exposes a nullable `Boolean`"))
         assertFalse(result.output.contains("is required but declared after an optional parameter"))
-        assertFalse(result.output.contains("appear in the opposite order in another overload"))
+        assertFalse(result.output.contains("appear in the opposite relative order in another overload"))
         assertFalse(result.output.contains("does more than delegate to a function without the `inline` modifier"))
         assertFalse(result.output.contains("compiled JVM name is mangled"))
         assertFalse(result.output.contains("still lands in the API surface Java sources see"))
@@ -315,7 +316,7 @@ class WatchdogProjectTest {
         assertFalse(result.output.contains("takes the `Boolean` parameter"))
         assertFalse(result.output.contains("exposes a nullable `Boolean`"))
         assertFalse(result.output.contains("is required but declared after an optional parameter"))
-        assertFalse(result.output.contains("appear in the opposite order in another overload"))
+        assertFalse(result.output.contains("appear in the opposite relative order in another overload"))
         assertFalse(result.output.contains("does more than delegate to a function without the `inline` modifier"))
         assertFalse(result.output.contains("compiled JVM name is mangled"))
         assertFalse(result.output.contains("still lands in the API surface Java sources see"))
@@ -886,11 +887,16 @@ class WatchdogProjectTest {
 
     @Test
     fun abiValidationSuggestionIsSilentWhenBuiltInAbiValidationIsEnabled() {
+        val abiValidationCall = if (getTestCompilerVersion().startsWith("2.3.")) {
+            "abiValidation { enabled.set(true) }"
+        } else {
+            "abiValidation()"
+        }
         val project = WatchdogProject(
             extraBuildScript = """
                 kotlin {
                     @OptIn(org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation::class)
-                    abiValidation()
+                    $abiValidationCall
                 }
             """.trimIndent(),
         ).gradleProject
@@ -993,7 +999,9 @@ class WatchdogProjectTest {
     /** Asserts the message was reported with the given compiler severity prefix (`e: ` or `w: `). */
     private fun BuildResult.assertDiagnosticReported(severityPrefix: String, message: String) {
         assertTrue(
-            output.lineSequence().any { it.startsWith(severityPrefix) && message in it },
+            output.lineSequence().any {
+                (it.startsWith(severityPrefix) || " $severityPrefix" in it) && message in it
+            },
             "Expected a '$severityPrefix' line containing '$message' in build output:\n$output",
         )
     }

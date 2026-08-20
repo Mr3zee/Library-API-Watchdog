@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFileChecker
 import org.jetbrains.kotlin.fir.declarations.DirectDeclarationsAccess
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirFile
-import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
+import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils
@@ -45,7 +45,7 @@ internal class TopLevelJvmNameChecker(
 
     context(context: CheckerContext)
     private fun FirDeclaration.isJavaVisibleTopLevelCallable(): Boolean = when (this) {
-        is FirNamedFunction -> isWatchedPublicApi() && !isHiddenFromJavaWithJvmSynthetic()
+        is FirFunction -> isNamedFunction() && isWatchedPublicApi() && !isHiddenFromJavaWithJvmSynthetic()
         is FirProperty -> isWatchedPublicApi() && !isHiddenFromJavaWithJvmSynthetic()
         else -> false
     }

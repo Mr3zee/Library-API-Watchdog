@@ -2,6 +2,7 @@
 
 package org.jetbrains.kotlinx.libs.api.watchdog.fixer
 
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -11,17 +12,24 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
-import org.jetbrains.kotlin.compiler.plugin.devkit.runners.DevKitTest
-import org.jetbrains.kotlin.compiler.plugin.devkit.services.configurePlugin
+import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoots
+import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.test.FirParser
+import org.jetbrains.kotlin.test.builders.TestConfigurationBuilder
 import org.jetbrains.kotlin.test.directives.CodegenTestDirectives
 import org.jetbrains.kotlin.test.directives.FirDiagnosticsDirectives
 import org.jetbrains.kotlin.test.directives.JvmEnvironmentConfigurationDirectives
+import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.runners.AbstractFirPhasedDiagnosticTest
+import org.jetbrains.kotlin.test.services.EnvironmentConfigurator
+import org.jetbrains.kotlin.test.services.EnvironmentBasedStandardLibrariesPathProvider
 import org.jetbrains.kotlin.test.services.KotlinTestInfo
-import org.jetbrains.kotlinx.libs.api.watchdog.WatchdogCompilerPluginRegistrar
-import java.io.File
+import org.jetbrains.kotlin.test.services.KotlinStandardLibrariesPathProvider
+import org.jetbrains.kotlin.test.services.TestServices
+import org.jetbrains.kotlinx.libs.api.watchdog.WatchdogComponentRegistrar
+import org.opentest4j.AssertionFailedError
 
 private val PATH_SEPARATOR = File.pathSeparator
 
@@ -81,7 +89,17 @@ class CompilerPluginTestDataFixerTest {
         }
         // These sources retain the original fixture's deliberately muted diagnostics, so a clean
         // expected marker set doesn't necessarily mean that code generation can run.
-        return "// DISABLE_NEXT_PHASE_SUGGESTION\n$generated"
+        // Older compilers report language-feature and annotation-target migration diagnostics
+        // independently of this plugin. They are irrelevant to whether the inserted watchdog
+        // exemptions suppress the plugin diagnostics.
+        return buildString {
+            appendLine("// DISABLE_NEXT_PHASE_SUGGESTION")
+            appendLine(
+                "// DIAGNOSTICS: -UNSUPPORTED_FEATURE " +
+                        "-ANNOTATION_WILL_BE_APPLIED_ALSO_TO_PROPERTY_OR_FIELD",
+            )
+            append(generated)
+        }
     }
 
     private fun fixSourceFile(fixtureName: String, fileName: String, markedText: String): String {
@@ -155,19 +173,15 @@ class CompilerPluginTestDataFixerTest {
         }
 
     /**
-     * The fixer needs the relocated compiler embeddable while Kotlin's diagnostics test framework
-     * needs the regular compiler. Their classes share package names and can't coexist in one
-     * classloader, so compile the generated expectations in a clean child JVM.
+     * [KotlinFileParser] initializes a standalone Kotlin PSI application before this validation.
+     * Run the diagnostics framework in a clean child JVM so its compiler application and
+     * disposables cannot conflict with the parser environment.
      */
     private fun validateWithCompilerPlugin(generatedFiles: List<Path>) {
         val runtimeClasspath = System.getProperty("java.class.path")
             .split(PATH_SEPARATOR)
             .map(Paths::get)
         val compilerClasspath = runtimeClasspath
-            .filterNot {
-                val name = it.fileName.toString()
-                name.contains("compiler-embeddable") || name.contains("daemon-embeddable")
-            }
             .joinToString(PATH_SEPARATOR) { it.toAbsolutePath().toString() }
         val annotationsClasspath = runtimeClasspath
             .filter { "plugin-annotations" in it.toString() }
@@ -238,24 +252,56 @@ object FixedOutputCompilerTestMain {
                     tags = emptySet(),
                 )
             )
-            runner.run(filePath)
+            try {
+                runner.run(filePath)
+            } catch (failure: AssertionFailedError) {
+                System.err.println("Expected test data:\n${Files.readString(Paths.get(filePath))}")
+                System.err.println("Actual test data:\n${failure.actual?.value}")
+                throw failure
+            }
         }
     }
 }
 
 @OptIn(ExperimentalCompilerApi::class)
-private class FixedOutputDiagnosticRunner : DevKitTest(
-    object : AbstractFirPhasedDiagnosticTest(FirParser.LightTree) {},
-    {
+private class FixedOutputDiagnosticRunner : AbstractFirPhasedDiagnosticTest(FirParser.LightTree) {
+    override fun createKotlinStandardLibrariesPathProvider(): KotlinStandardLibrariesPathProvider =
+        EnvironmentBasedStandardLibrariesPathProvider
+
+    override fun configure(builder: TestConfigurationBuilder) = with(builder) {
+        super.configure(builder)
         defaultDirectives {
             +JvmEnvironmentConfigurationDirectives.FULL_JDK
             +CodegenTestDirectives.IGNORE_DEXING
             +FirDiagnosticsDirectives.DISABLE_GENERATED_FIR_TAGS
         }
-    },
-    { configurePlugin(WatchdogCompilerPluginRegistrar()) },
-) {
+        useConfigurators(::WatchdogExtensionRegistrarConfigurator)
+    }
+
     fun run(filePath: String) = runTest(filePath)
+}
+
+private class WatchdogExtensionRegistrarConfigurator(testServices: TestServices) :
+    EnvironmentConfigurator(testServices) {
+    override fun configureCompilerConfiguration(
+        configuration: CompilerConfiguration,
+        module: TestModule,
+    ) {
+        configuration.addJvmClasspathRoots(
+            System.getProperty("defaultTestDataLibraries.jvm.classpath")
+                .split(PATH_SEPARATOR)
+                .map(::File),
+        )
+    }
+
+    override fun CompilerPluginRegistrar.ExtensionStorage.registerCompilerExtensions(
+        module: TestModule,
+        configuration: CompilerConfiguration,
+    ) {
+        with(WatchdogComponentRegistrar()) {
+            registerExtensions(configuration)
+        }
+    }
 }
 
 private data class TestDataSection(

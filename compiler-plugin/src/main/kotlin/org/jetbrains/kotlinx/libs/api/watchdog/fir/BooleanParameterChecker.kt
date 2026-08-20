@@ -8,7 +8,6 @@ import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFunctionChecker
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirFunction
-import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirValueParameter
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.isLegacyContextReceiver
@@ -36,7 +35,7 @@ internal class BooleanParameterChecker(
 ) : FirFunctionChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirFunction) {
-        if (declaration !is FirNamedFunction || declaration.isOverride || declaration.isConstructorFunction()) {
+        if (!declaration.isNamedFunction() || declaration.isOverride || declaration.isConstructorFunction()) {
             return
         }
 
@@ -56,7 +55,7 @@ internal class BooleanParameterChecker(
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun checkParameter(
         parameter: FirValueParameter,
-        declaration: FirNamedFunction,
+        declaration: FirFunction,
         factory: KtDiagnosticFactory2<Name, Name>,
     ) {
         if (parameter.isLegacyContextReceiver() || parameter.isExempt()) return
@@ -65,7 +64,7 @@ internal class BooleanParameterChecker(
         reporter.reportOn(
             source = parameter.source ?: declaration.source,
             factory = factory,
-            a = declaration.name,
+            a = declaration.namedFunctionName,
             b = parameter.name,
         )
     }
@@ -74,8 +73,8 @@ internal class BooleanParameterChecker(
      * A constructor function is named after the type it creates - the alias, not its expansion,
      * when the declared return type is a type alias, since that is the name the call site reads.
      */
-    private fun FirNamedFunction.isConstructorFunction(): Boolean =
-        returnTypeRef.coneType.abbreviatedTypeOrSelf.classId?.shortClassName == name
+    private fun FirFunction.isConstructorFunction(): Boolean =
+        returnTypeRef.coneType.abbreviatedTypeOrSelf.classId?.shortClassName == namedFunctionName
 
     /**
      * The type users pass arguments as: the fully expanded parameter type, unwrapped to the

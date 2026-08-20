@@ -2,22 +2,11 @@ package org.jetbrains.kotlinx.libs.api.watchdog.conventions
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.tasks.compile.JavaCompile
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 class CompilerPluginConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
-            tasks.named("animalsnifferMain").configure { enabled = false }
-
-            // The version-pinned dev-kit test suites consume this project through a project
-            // dependency whose selected artifact is the relocated compiler plugin jar.
-            tasks.withType(JavaCompile::class.java).configureEach {
-                if (name != "compileJava") {
-                    dependsOn("shadowJar")
-                }
-            }
-
             val generateDiagnosticMessages = tasks.register(
                 "generateDiagnosticMessages",
                 GenerateDiagnosticMessages::class.java,
@@ -33,9 +22,16 @@ class CompilerPluginConventionPlugin : Plugin<Project> {
                 )
             }
 
-            extensions.configure(KotlinJvmProjectExtension::class.java) {
-                sourceSets.named("main").configure {
+            extensions.configure(KotlinMultiplatformExtension::class.java) {
+                sourceSets.named("commonMain").configure {
                     kotlin.srcDir(generateDiagnosticMessages)
+                    kotlin.srcDir("src/main/kotlin")
+                }
+                sourceSets.named("commonTestFixtures").configure {
+                    kotlin.srcDir("src/testFixtures/kotlin")
+                }
+                sourceSets.named("commonTest").configure {
+                    resources.srcDir("src/test/data")
                 }
             }
         }

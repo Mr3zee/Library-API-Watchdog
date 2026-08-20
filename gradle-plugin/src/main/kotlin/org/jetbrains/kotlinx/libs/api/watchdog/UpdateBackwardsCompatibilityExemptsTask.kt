@@ -1,18 +1,23 @@
 package org.jetbrains.kotlinx.libs.api.watchdog
 
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import javax.inject.Inject
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.UntrackedTask
 import org.gradle.process.ExecOperations
+import org.jetbrains.kotlin.compiler.plugin.devkit.KotlinToolingVersion
+import org.jetbrains.kotlin.compiler.plugin.devkit.VersionResolution
 
 /**
  * Rewrites the module's Kotlin sources so that every recorded watchdog diagnostic is
@@ -39,9 +44,17 @@ public abstract class UpdateBackwardsCompatibilityExemptsTask : DefaultTask() {
     @get:Internal
     public abstract val diagnosticReports: ConfigurableFileCollection
 
-    /** The standalone fixer tool and kotlin-compiler-embeddable used for PSI parsing. */
+    /** The dev-kit multi-version artifact containing the standalone fixer tool. */
+    @get:Classpath
+    public abstract val fixerArtifact: ConfigurableFileCollection
+
+    /** kotlin-compiler and its runtime dependencies used for PSI parsing. */
     @get:Classpath
     public abstract val fixerClasspath: ConfigurableFileCollection
+
+    /** The consuming project's Kotlin version, used to select the matching fixer overlay. */
+    @get:Input
+    public abstract val kotlinVersion: Property<String>
 
     /** The directory console output relativizes source paths against. */
     @get:Internal
@@ -63,6 +76,7 @@ public abstract class UpdateBackwardsCompatibilityExemptsTask : DefaultTask() {
         }
         val requestFile = workDir.resolve("request.txt")
         val responseFile = workDir.resolve("response.txt")
+        val fixerClasses = unpackFixer(workDir.resolve("classes"))
         requestFile.writeText(buildString {
             diagnosticReports.files.sortedBy(File::getAbsolutePath).forEach {
                 appendLine("reportFile=${it.absolutePath}")
@@ -71,7 +85,7 @@ public abstract class UpdateBackwardsCompatibilityExemptsTask : DefaultTask() {
         })
 
         val execResult = execOperations.javaexec { spec ->
-            spec.classpath = fixerClasspath
+            spec.classpath(fixerClasses, fixerClasspath)
             spec.mainClass.set(FIXER_MAIN_CLASS)
             spec.args(requestFile.absolutePath)
             spec.isIgnoreExitValue = true
@@ -128,6 +142,53 @@ public abstract class UpdateBackwardsCompatibilityExemptsTask : DefaultTask() {
     private fun relativize(path: String): String =
         File(path).relativeToOrSelf(projectDirectory.get().asFile).path
 
+    /**
+     * Compiler-library artifacts use the same dev-kit overlay layout as compiler plugins, but a
+     * standalone Java process does not go through compiler-plugin class loading. Select and
+     * materialize the compatible overlay before starting the fixer process.
+     */
+    private fun unpackFixer(outputDirectory: File): File {
+        outputDirectory.deleteRecursively()
+        check(outputDirectory.mkdirs()) { "Could not create $outputDirectory" }
+
+        val artifact = fixerArtifact.singleFile.toPath()
+        val currentVersion = KotlinToolingVersion(kotlinVersion.get())
+        var selectedVersion: KotlinToolingVersion? = null
+        val opened = VersionResolution.run {
+            artifact.openDirectory { root ->
+                selectedVersion = mutableListOf<java.nio.file.Path>().addOverlayAndDependencies(
+                    FIXER_MULTI_RELEASE_ID,
+                    root,
+                    currentVersion,
+                )
+                val version = selectedVersion ?: return@openDirectory
+                val source = root
+                    .resolve(PLUGIN_PATH)
+                    .resolve(FIXER_MULTI_RELEASE_ID)
+                    .resolve(VERSIONS_PATH)
+                    .resolve(version.toString())
+                Files.walk(source).use { paths ->
+                    paths.forEach { path ->
+                        val relativePath = source.relativize(path).toString()
+                        val destination = outputDirectory.toPath().resolve(relativePath)
+                        if (Files.isDirectory(path)) {
+                            Files.createDirectories(destination)
+                        } else {
+                            Files.copy(path, destination, StandardCopyOption.REPLACE_EXISTING)
+                        }
+                    }
+                }
+            }
+        }
+        if (!opened || selectedVersion == null) {
+            throw GradleException(
+                "The exempts fixer has no compiler-API overlay compatible with Kotlin " +
+                    kotlinVersion.get(),
+            )
+        }
+        return outputDirectory
+    }
+
     private fun String.unescapeNewlines(): String {
         val result = StringBuilder(length)
         var index = 0
@@ -150,5 +211,6 @@ public abstract class UpdateBackwardsCompatibilityExemptsTask : DefaultTask() {
 
     private companion object {
         private const val FIXER_MAIN_CLASS = "org.jetbrains.kotlinx.libs.api.watchdog.fixer.ExemptsFixerMain"
+        private const val FIXER_MULTI_RELEASE_ID = "org.jetbrains.kotlin.library.api.watchdog.fixer"
     }
 }

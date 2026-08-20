@@ -54,30 +54,40 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
 
     /**
      * Registers the fixer task. [applyToCompilation] wires every main Kotlin compilation into it,
-     * so KGP itself drives JVM, JS, native, Wasm, and metadata analysis. The fixer classpath uses
-     * the compiler embeddable matching the project's Kotlin Gradle plugin for PSI parsing only.
+     * so KGP itself drives JVM, JS, native, Wasm, and metadata analysis. The fixer selects the
+     * compiler-library overlay and compiler distribution matching the project's Kotlin version.
      */
     private fun Project.registerUpdateBackwardsCompatibilityExemptsTask(
         collectDiagnostics: Property<Boolean>,
     ): TaskProvider<UpdateBackwardsCompatibilityExemptsTask> {
         val dependencyHandler = dependencies
-        val kotlinCompilerDependency = provider {
-            val kotlinVersion = plugins.withType(KotlinBasePlugin::class.java)
+        val kotlinVersion = provider {
+            plugins.withType(KotlinBasePlugin::class.java)
                 .firstOrNull()?.pluginVersion
                 ?: error("The Kotlin Gradle plugin must be applied alongside library-api-watchdog")
-            dependencyHandler.create("org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlinVersion")
         }
+        val fixerDependency = dependencyHandler.create(
+            "${info.artifact.groupId}:$FIXER_ARTIFACT_ID:${info.artifact.version}",
+        )
+        val kotlinCompilerDependency = kotlinVersion.map {
+            dependencyHandler.create("org.jetbrains.kotlin:kotlin-compiler:$it")
+        }
+        val fixerArtifact = configurations.register(
+            FIXER_ARTIFACT_CONFIGURATION_NAME,
+            Action { configuration ->
+                configuration.isCanBeConsumed = false
+                configuration.isCanBeResolved = true
+                configuration.isTransitive = false
+                configuration.description = "The multi-version watchdog exemption fixer artifact"
+                configuration.dependencies.add(fixerDependency)
+            },
+        )
         val fixerClasspath = configurations.register(
             FIXER_CLASSPATH_CONFIGURATION_NAME,
             Action { configuration ->
                 configuration.isCanBeConsumed = false
                 configuration.isCanBeResolved = true
-                configuration.description = "The watchdog exemption fixer and its Kotlin PSI runtime"
-                configuration.dependencies.add(
-                    dependencyHandler.create(
-                        "${info.artifact.groupId}:$FIXER_ARTIFACT_ID:${info.artifact.version}",
-                    ),
-                )
+                configuration.description = "The Kotlin PSI runtime for the watchdog exemption fixer"
                 configuration.dependencies.addLater(kotlinCompilerDependency)
             },
         )
@@ -92,6 +102,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                     "FOR_BACKWARDS_COMPATIBILITY reason"
             task.compilationNames.convention(emptyList())
             task.projectDirectory.set(layout.projectDirectory)
+            task.kotlinVersion.set(kotlinVersion)
+            task.fixerArtifact.from(fixerArtifact)
             task.fixerClasspath.from(fixerClasspath)
         }
     }
@@ -249,6 +261,9 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
 
         /** Resolvable runtime used only by [UpdateBackwardsCompatibilityExemptsTask]. */
         private const val FIXER_CLASSPATH_CONFIGURATION_NAME = "apiWatchdogExemptsFixerClasspath"
+
+        /** Multi-version fixer artifact resolved separately from its matching compiler runtime. */
+        private const val FIXER_ARTIFACT_CONFIGURATION_NAME = "apiWatchdogExemptsFixerArtifact"
 
         /** The standalone Binary Compatibility Validator's plugin id. */
         private const val BCV_PLUGIN_ID = "org.jetbrains.kotlinx.binary-compatibility-validator"

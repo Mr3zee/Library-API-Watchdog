@@ -18,7 +18,6 @@ import org.jetbrains.kotlin.fir.resolve.toClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
-import org.jetbrains.kotlin.library.metadata.KlibDeserializedContainerSource
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinarySourceElement
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
@@ -79,6 +78,14 @@ private class DependencyExposureIndex(
             return false
         }
 
+        // The Kotlin standard library is implicit for every Kotlin compilation. Older Kotlin
+        // Gradle plugins do not consistently expose it through the target's API elements, so
+        // classifying kotlin.* types from those configurations would produce false positives.
+        val packageName = symbol.classId.packageFqName.asString()
+        if (packageName == "kotlin" || packageName.startsWith("kotlin.")) {
+            return false
+        }
+
         val origin = symbol.dependencyPath()
         if (origin != null) {
             if (transitiveRoots.any { it.containsOrigin(origin) }) {
@@ -105,8 +112,7 @@ private class DependencyExposureIndex(
 
     private fun FirClassSymbol<*>.dependencyPath(): Path? = when (val source = sourceElement) {
         is KotlinJvmBinarySourceElement -> source.binaryClass.containingLibraryPath?.path?.toString()?.let(::normalizedPath)
-        is KlibDeserializedContainerSource -> normalizedPath(source.klib.libraryFile.path)
-        else -> null
+        else -> source?.klibPathCompat()
     }
 
     private fun Path.containsOrigin(origin: Path): Boolean =

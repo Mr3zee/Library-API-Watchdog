@@ -9,7 +9,6 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFunctionChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.unsubstitutedScope
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirFunction
-import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirValueParameter
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
@@ -41,7 +40,7 @@ internal class OverloadParameterOrderChecker(
     override fun check(declaration: FirFunction) {
         val factory = severities[WatchdogDiagnostics.INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS] ?: return
 
-        if (declaration !is FirNamedFunction && declaration !is FirConstructor) {
+        if (declaration !is FirConstructor && !declaration.isNamedFunction()) {
             return
         }
 
@@ -103,9 +102,10 @@ internal class OverloadParameterOrderChecker(
                 }
             }
 
-            this !is FirNamedFunction -> Unit
+            !isNamedFunction() -> Unit
 
             else -> {
+                val name = namedFunctionName
                 if (containingClass != null) {
                     containingClass.forEachMemberNamed(name, action)
                 } else {
@@ -156,7 +156,7 @@ internal class OverloadParameterOrderChecker(
             for (j in i + 1 until current.size) {
                 val secondName = current[j].name
                 val secondOtherIndex = other.indexOfFirst { it.name == secondName }
-                if (secondOtherIndex >= 0 && firstOtherIndex > secondOtherIndex) {
+                if (secondOtherIndex in 0..<firstOtherIndex) {
                     reporter.reportOn(
                         source = declaration.source,
                         factory = factory,

@@ -17,8 +17,8 @@ import org.jetbrains.kotlin.fir.caches.getValue
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirEnumEntry
+import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirMemberDeclaration
-import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.FirTypeAlias
@@ -117,7 +117,7 @@ internal class UndocumentedApiChecker(
         }
         this is FirTypeAlias -> "type alias"
         this is FirEnumEntry -> "enum entry"
-        this is FirNamedFunction -> if (isOverride) null else "function"
+        this is FirFunction && isNamedFunction() -> if (isOverride) null else "function"
         this is FirProperty -> if (isOverride) null else "property"
         this is FirConstructor -> if (isPrimary) null else "constructor"
         else -> null
@@ -128,7 +128,7 @@ internal class UndocumentedApiChecker(
         is FirRegularClass -> name
         is FirTypeAlias -> name
         is FirEnumEntry -> name
-        is FirNamedFunction -> name
+        is FirFunction if isNamedFunction() -> namedFunctionName
         is FirProperty -> name
         is FirConstructor -> context.containingClassSymbol?.classId?.shortClassName ?: symbol.name
         else -> null

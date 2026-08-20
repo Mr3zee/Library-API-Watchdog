@@ -39,7 +39,9 @@ class UpdateBackwardsCompatibilityExemptsTest {
 
     @Test
     fun fixesEveryFixableDiagnosticAndTheBuildPasses() {
-        val project = object : WatchdogProject() {
+        val project = object : WatchdogProject(
+            extraBuildScript = CONTEXT_PARAMETERS_BUILD_SCRIPT,
+        ) {
             override fun sources() = listOf(source(fixableFile, "legacy"))
         }.gradleProject
 
@@ -87,7 +89,9 @@ class UpdateBackwardsCompatibilityExemptsTest {
 
     @Test
     fun secondRunFindsNothingLeftToExempt() {
-        val project = object : WatchdogProject() {
+        val project = object : WatchdogProject(
+            extraBuildScript = CONTEXT_PARAMETERS_BUILD_SCRIPT,
+        ) {
             override fun sources() = listOf(source(fixableFile, "legacy"))
         }.gradleProject
 
@@ -299,6 +303,12 @@ class UpdateBackwardsCompatibilityExemptsTest {
 
     private companion object {
         const val UPDATE_TASK = "updateBackwardsCompatibilityExempts"
+
+        val CONTEXT_PARAMETERS_BUILD_SCRIPT = """
+            kotlin {
+                compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")
+            }
+        """.trimIndent()
 
         val WATCHDOG_MESSAGES = listOf(
             "can be subclassed outside the library",

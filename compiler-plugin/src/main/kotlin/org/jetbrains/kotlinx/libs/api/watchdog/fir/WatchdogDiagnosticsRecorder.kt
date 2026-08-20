@@ -56,26 +56,24 @@ internal class RecordingDeclarationChecker<D : FirDeclaration>(
 ) : FirDeclarationChecker<D>(delegate.mppKind) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: D) {
-        val recording = RecordingDiagnosticReporter(reporter, recorder)
+        val recording = recordingDiagnosticReporter(reporter, recorder)
         context(context, recording) { delegate.check(declaration) }
     }
 }
 
-private class RecordingDiagnosticReporter(
-    private val delegate: DiagnosticReporter,
-    private val recorder: WatchdogDiagnosticsRecorder,
-) : DiagnosticReporter() {
-    override val hasErrors: Boolean get() = delegate.hasErrors
-    override val hasWarningsForWError: Boolean get() = delegate.hasWarningsForWError
-
-    override fun report(diagnostic: KtDiagnostic?, context: DiagnosticContext) {
-        // The suppression check sees the annotations in scope at report time. A @Suppress on an
-        // element the checkers have not visited yet (a constructor reported on while checking its
-        // class) is resolved later by the framework's pending reporter and can slip through here;
-        // that only costs a recorded entry for a diagnostic the compiler ends up not reporting.
-        if (diagnostic != null && !context.isDiagnosticSuppressed(diagnostic)) {
-            recorder.record(diagnostic, context)
-        }
-        delegate.report(diagnostic, context)
+@Suppress("unused") // it is used, just IntelliJ bugs
+internal fun recordAndDelegate(
+    delegate: DiagnosticReporter,
+    recorder: WatchdogDiagnosticsRecorder,
+    diagnostic: KtDiagnostic?,
+    context: DiagnosticContext,
+) {
+    // The suppression check sees the annotations in scope at report time. A @Suppress on an
+    // element the checkers have not visited yet (a constructor reported on while checking its
+    // class) is resolved later by the framework's pending reporter and can slip through here;
+    // that only costs a recorded entry for a diagnostic the compiler ends up not reporting.
+    if (diagnostic != null && !context.isDiagnosticSuppressed(diagnostic)) {
+        recorder.record(diagnostic, context)
     }
+    delegate.report(diagnostic, context)
 }

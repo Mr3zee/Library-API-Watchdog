@@ -5,11 +5,8 @@ import java.util.HashMap
 import org.jetbrains.kotlin.compiler.plugin.AbstractCliOption
 import org.jetbrains.kotlin.compiler.plugin.CliOption
 import org.jetbrains.kotlin.compiler.plugin.CliOptionProcessingException
-import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitCLP
-import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitCommandLineProcessor
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
-import org.jetbrains.kotlin.library.api.watchdog.PluginInfo
 import org.jetbrains.kotlinx.libs.api.watchdog.fir.WatchdogDiagnostics
 import org.jetbrains.kotlinx.libs.api.watchdog.fir.WatchdogSeverity
 
@@ -44,8 +41,8 @@ object WatchdogConfigurationKeys {
         CompilerConfigurationKey.create("watchdog transitive dependency paths")
 }
 
-class WatchdogCommandLineProcessor : DevKitCommandLineProcessor(WatchdogCLP::class) {
-    override val pluginId: String = PluginInfo.PLUGIN_ID
+@Suppress("unused") // Instantiated reflectively by the dev-kit entry point.
+internal class WatchdogCommandLineProcessor : WatchdogCommandLineProcessorContract {
     override val pluginOptions: Collection<CliOption> =
         listOf(
             DIAGNOSTIC_SEVERITY_OPTION,
@@ -103,27 +100,24 @@ class WatchdogCommandLineProcessor : DevKitCommandLineProcessor(WatchdogCLP::cla
             allowMultipleOccurrences = false,
         )
     }
-}
-
-class WatchdogCLP : DevKitCLP {
     override fun processOption(option: AbstractCliOption, value: String, configuration: CompilerConfiguration) {
         when (option.optionName) {
-            WatchdogCommandLineProcessor.DIAGNOSTIC_SEVERITY_OPTION.optionName -> {
+            DIAGNOSTIC_SEVERITY_OPTION.optionName -> {
                 processDiagnosticSeverity(value, configuration)
             }
-            WatchdogCommandLineProcessor.DIAGNOSTICS_OUTPUT_FILE_OPTION.optionName -> {
+            DIAGNOSTICS_OUTPUT_FILE_OPTION.optionName -> {
                 configuration.put(WatchdogConfigurationKeys.DIAGNOSTICS_OUTPUT_FILE, value)
             }
-            WatchdogCommandLineProcessor.PUBLIC_TYPE_WITH_INTERNAL_API_OPTION.optionName -> {
+            PUBLIC_TYPE_WITH_INTERNAL_API_OPTION.optionName -> {
                 configuration.put(
                     WatchdogConfigurationKeys.PUBLIC_TYPE_WITH_INTERNAL_API_ENABLED,
                     parseBoolean(option.optionName, value),
                 )
             }
-            WatchdogCommandLineProcessor.COMPILE_DEPENDENCY_PATHS_OPTION.optionName -> {
+            COMPILE_DEPENDENCY_PATHS_OPTION.optionName -> {
                 configuration.put(WatchdogConfigurationKeys.COMPILE_DEPENDENCY_PATHS, parsePaths(value))
             }
-            WatchdogCommandLineProcessor.TRANSITIVE_DEPENDENCY_PATHS_OPTION.optionName -> {
+            TRANSITIVE_DEPENDENCY_PATHS_OPTION.optionName -> {
                 configuration.put(WatchdogConfigurationKeys.TRANSITIVE_DEPENDENCY_PATHS, parsePaths(value))
             }
             else -> error("Unexpected config option: '${option.optionName}'")
