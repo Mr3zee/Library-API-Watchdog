@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.compiler.plugin.devkit.BetaAndRc
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.tooling.core.KotlinToolingVersion
 import org.jetbrains.kotlin.tooling.core.toKotlinVersion
@@ -12,16 +11,6 @@ plugins {
 
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
 pluginDevKit {
-    cliVersions(
-        min = "2.3.20",
-        betaAndRc = BetaAndRc.LATEST,
-    )
-    ideaVersions(
-        min = "262",
-        includeRc = true,
-        includeEap = true,
-    )
-    useLatestDev()
     pluginPackage.set("org.jetbrains.kotlin.library.api.watchdog")
     componentRegistrar.set(
         "org.jetbrains.kotlinx.libs.api.watchdog.WatchdogComponentRegistrar",

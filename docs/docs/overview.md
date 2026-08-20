@@ -4,6 +4,9 @@ slug: /
 
 # Get started
 
+[![Kotlin 2.3.20+](https://img.shields.io/github/actions/workflow/status/Mr3zee/libs-watchdog/compiler-plugin-tests.yml?branch=main&label=Kotlin%202.3.20%2B&logo=kotlin&logoColor=white)](https://github.com/Mr3zee/libs-watchdog/actions/workflows/compiler-plugin-tests.yml)
+[![IntelliJ IDEA 2026.2+](https://img.shields.io/github/actions/workflow/status/Mr3zee/libs-watchdog/compiler-plugin-tests.yml?branch=main&label=IntelliJ%20IDEA%202026.2%2B&logo=intellijidea&logoColor=white)](https://github.com/Mr3zee/libs-watchdog/actions/workflows/compiler-plugin-tests.yml)
+
 `library-api-watchdog` helps library authors to detect public API declarations
 that are hard to evolve. It runs as a set of compiler checks in the module it is applied to.
 

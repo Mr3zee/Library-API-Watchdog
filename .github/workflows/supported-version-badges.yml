@@ -1,0 +1,32 @@
+name: Supported version badges
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'gradle.properties'
+      - 'README.md'
+      - 'docs/docs/overview.md'
+      - 'scripts/verify-supported-version-badges.sh'
+      - '.github/workflows/supported-version-badges.yml'
+  pull_request:
+    paths:
+      - 'gradle.properties'
+      - 'README.md'
+      - 'docs/docs/overview.md'
+      - 'scripts/verify-supported-version-badges.sh'
+      - '.github/workflows/supported-version-badges.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Verify supported-version badges
+        run: ./scripts/verify-supported-version-badges.sh

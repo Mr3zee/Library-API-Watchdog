@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.compiler.plugin.devkit.BetaAndRc
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
@@ -14,16 +13,6 @@ val annotationsJvmClasses = files(
 
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
 pluginDevKit {
-    cliVersions(
-        min = "2.3.20",
-        betaAndRc = BetaAndRc.LATEST,
-    )
-    ideaVersions(
-        min = "262",
-        includeRc = true,
-        includeEap = true,
-    )
-    useLatestDev()
     pluginPackage.set("org.jetbrains.kotlin.library.api.watchdog.fixer")
 
     // The fixer is a compiler-API library, not a compiler plugin. Its caller supplies the
