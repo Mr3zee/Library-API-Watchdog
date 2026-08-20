@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirCallableDeclarationChecker
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
-import org.jetbrains.kotlin.fir.declarations.FirFunction
+import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirPropertyAccessor
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
@@ -40,14 +40,14 @@ internal class MangledJvmNameChecker(
     override fun check(declaration: FirCallableDeclaration) {
         when (declaration) {
             is FirConstructor -> checkConstructor(declaration)
-            is FirFunction -> if (declaration.isNamedFunction()) checkFunction(declaration)
+            is FirNamedFunction -> checkFunction(declaration)
             is FirProperty -> checkProperty(declaration)
             else -> return
         }
     }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun checkFunction(declaration: FirFunction) {
+    private fun checkFunction(declaration: FirNamedFunction) {
         if (declaration.isOverride || declaration.isSuspend || !declaration.isWatchedForMangling()) {
             return
         }
@@ -57,7 +57,7 @@ internal class MangledJvmNameChecker(
         }
 
         val valueClass = declaration.mangledValueClassInSignature() ?: return
-        report(declaration, "function", declaration.namedFunctionName, valueClass)
+        report(declaration, "function", declaration.name, valueClass)
     }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)

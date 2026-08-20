@@ -8,6 +8,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFunctionChecker
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirFunction
+import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.utils.isAbstract
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
@@ -29,7 +30,7 @@ internal class JvmOverloadsChecker(
         when {
             declaration is FirConstructor ->
                 if (context.containingClassSymbol?.classKind == ClassKind.ANNOTATION_CLASS) return
-            declaration.isNamedFunction() ->
+            declaration is FirNamedFunction ->
                 if (declaration.isOverride || declaration.isAbstract || declaration.isSuspend) return
             else -> return
         }

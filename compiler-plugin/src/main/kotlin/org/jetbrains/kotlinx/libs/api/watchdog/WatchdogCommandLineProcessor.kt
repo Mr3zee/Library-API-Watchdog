@@ -5,6 +5,7 @@ import java.util.HashMap
 import org.jetbrains.kotlin.compiler.plugin.AbstractCliOption
 import org.jetbrains.kotlin.compiler.plugin.CliOption
 import org.jetbrains.kotlin.compiler.plugin.CliOptionProcessingException
+import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitCLP
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
 import org.jetbrains.kotlinx.libs.api.watchdog.fir.WatchdogDiagnostics
@@ -42,7 +43,7 @@ object WatchdogConfigurationKeys {
 }
 
 @Suppress("unused") // Instantiated reflectively by the dev-kit entry point.
-internal class WatchdogCommandLineProcessor : WatchdogCommandLineProcessorContract {
+internal class WatchdogCommandLineProcessor : DevKitCLP {
     override val pluginOptions: Collection<CliOption> =
         listOf(
             DIAGNOSTIC_SEVERITY_OPTION,

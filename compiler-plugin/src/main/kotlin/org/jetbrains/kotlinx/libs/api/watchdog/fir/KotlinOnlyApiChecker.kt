@@ -8,6 +8,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFunctionChecker
 import org.jetbrains.kotlin.fir.declarations.FirFunction
+import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirValueParameter
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.utils.isAbstract
@@ -37,7 +38,7 @@ internal class KotlinOnlyApiChecker(
 ) : FirFunctionChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirFunction) {
-        if (!declaration.isNamedFunction() || declaration.isOverride || declaration.isAbstract) {
+        if (declaration !is FirNamedFunction || declaration.isOverride || declaration.isAbstract) {
             return
         }
 
@@ -73,14 +74,14 @@ internal class KotlinOnlyApiChecker(
         reporter.reportOn(
             source = declaration.source,
             factory = factory,
-            a = declaration.namedFunctionName,
+            a = declaration.name,
             b = kotlinOnlyShape,
         )
     }
 
     /** What makes the function's shape Kotlin-only, in words, or null for a Java-usable shape. */
     context(context: CheckerContext)
-    private fun FirFunction.kotlinOnlyShape(): String? {
+    private fun FirNamedFunction.kotlinOnlyShape(): String? {
         if (isSuspend) {
             return sharedShape("suspend")
         }

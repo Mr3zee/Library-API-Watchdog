@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirMemberDeclaration
+import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirPropertyAccessor
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
@@ -27,7 +28,6 @@ import org.jetbrains.kotlin.fir.resolve.transformers.publishedApiEffectiveVisibi
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
-import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirTypeParameterSymbol
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
@@ -103,21 +103,12 @@ internal object WatchdogClassIds {
 internal val CheckerContext.containingClassSymbol: FirClassSymbol<*>?
     get() = containingDeclarations.lastOrNull() as? FirClassSymbol<*>
 
-/**
- * Kotlin 2.3.0 and 2.3.10 do not expose the `FirNamedFunction` declaration type, while its symbol
- * exists throughout the supported compiler range. Use the symbol to recognize and name ordinary
- * functions without splitting every checker at the Kotlin 2.3.20 API boundary.
- */
-internal fun FirFunction.isNamedFunction(): Boolean = symbol is FirNamedFunctionSymbol
-
-internal val FirFunction.namedFunctionName: Name
-    get() = symbol.name
-
 /** The name a diagnostic reports for a callable: a constructor is named after its class. */
 context(context: CheckerContext)
 internal fun FirFunction.reportedName(): Name? = when (this) {
     is FirConstructor -> context.containingClassSymbol?.classId?.shortClassName
-    else -> namedFunctionName.takeIf { isNamedFunction() }
+    is FirNamedFunction -> name
+    else -> null
 }
 
 /**
@@ -247,7 +238,7 @@ internal fun FirCallableDeclaration.returnValueClassIfMember(): Name? =
  * type - or null when the JVM name is kept.
  */
 context(context: CheckerContext)
-internal fun FirFunction.mangledValueClassInSignature(): Name? =
+internal fun FirNamedFunction.mangledValueClassInSignature(): Name? =
     receiverParameter?.typeRef?.coneType?.mangledValueClass()
         ?: contextParameters.firstNotNullOfOrNull { it.returnTypeRef.coneType.mangledValueClass() }
         ?: valueParameters.firstNotNullOfOrNull { it.returnTypeRef.coneType.mangledValueClass() }

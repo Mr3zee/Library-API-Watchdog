@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirCallableDeclarationChecker
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
-import org.jetbrains.kotlin.fir.declarations.FirFunction
+import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
@@ -40,7 +40,7 @@ internal class CompanionJvmExposureChecker(
             return
         }
         when (declaration) {
-            is FirFunction -> if (declaration.isNamedFunction()) checkFunction(declaration, outerClass)
+            is FirNamedFunction -> checkFunction(declaration, outerClass)
             is FirProperty -> checkProperty(declaration, outerClass)
             else -> return
         }
@@ -59,7 +59,7 @@ internal class CompanionJvmExposureChecker(
                 }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun checkFunction(declaration: FirFunction, outerClass: Name) {
+    private fun checkFunction(declaration: FirNamedFunction, outerClass: Name) {
         if (declaration.isOverride || declaration.isSuspend || !declaration.isWatchedPublicSourceApi()) {
             return
         }
@@ -76,7 +76,7 @@ internal class CompanionJvmExposureChecker(
             source = declaration.source,
             factory = factory,
             a = outerClass,
-            b = declaration.namedFunctionName,
+            b = declaration.name,
         )
     }
 

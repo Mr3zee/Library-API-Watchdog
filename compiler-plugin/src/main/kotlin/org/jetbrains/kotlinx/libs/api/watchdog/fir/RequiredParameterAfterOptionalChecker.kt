@@ -7,6 +7,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFunctionChecker
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirFunction
+import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirValueParameter
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.utils.isFun
@@ -29,7 +30,7 @@ internal class RequiredParameterAfterOptionalChecker(
     override fun check(declaration: FirFunction) {
         val factory = severities[WatchdogDiagnostics.REQUIRED_PARAMETER_AFTER_OPTIONAL] ?: return
 
-        if (declaration !is FirConstructor && !declaration.isNamedFunction()) {
+        if (declaration !is FirConstructor && declaration !is FirNamedFunction) {
             return
         }
 

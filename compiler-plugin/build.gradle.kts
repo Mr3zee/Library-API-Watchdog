@@ -13,7 +13,7 @@ plugins {
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
 pluginDevKit {
     cliVersions(
-        min = "2.3.0",
+        min = "2.3.20",
         betaAndRc = BetaAndRc.LATEST,
     )
     ideaVersions(
@@ -35,14 +35,6 @@ pluginDevKit {
     }
 
     kotlin.applyPluginDevKitHierarchyTemplate {
-        preDev(2, 3, 20, "pre2320Dev")
-        postDev(2, 3, 20, "post2320Dev")
-
-        groupVersions("diagnosticReporter2320Dev", {
-            val version = it.toKotlinVersion()
-            version >= KotlinVersion(2, 3, 20) && version < KotlinVersion(2, 4)
-        })
-
         preDev(2, 4, "pre24Dev")
         postDev(2, 4, "post24Dev")
 

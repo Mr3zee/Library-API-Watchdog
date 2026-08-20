@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirCallableDeclarationChecker
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
-import org.jetbrains.kotlin.fir.declarations.FirFunction
+import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirPropertyAccessor
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
@@ -54,14 +54,14 @@ internal class InlineFunctionLogicChecker(
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirCallableDeclaration) {
         when (declaration) {
-            is FirFunction -> if (declaration.isNamedFunction()) checkFunction(declaration)
+            is FirNamedFunction -> checkFunction(declaration)
             is FirProperty -> checkProperty(declaration)
             else -> return
         }
     }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun checkFunction(declaration: FirFunction) {
+    private fun checkFunction(declaration: FirNamedFunction) {
         if (!declaration.isInline || !declaration.isWatchedPublicApi() || declaration.isExempt()) {
             return
         }
@@ -76,7 +76,7 @@ internal class InlineFunctionLogicChecker(
             source = declaration.source,
             factory = factory,
             a = "inline function",
-            b = declaration.namedFunctionName,
+            b = declaration.name,
         )
     }
 

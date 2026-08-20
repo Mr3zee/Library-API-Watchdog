@@ -48,7 +48,7 @@ internal class DslMarkerTypePositionChecker(
                 if (declaration.valueParameterKind != FirValueParameterKind.Regular) return
                 "parameter type"
             }
-            is FirProperty -> if (declaration.isLocalCompat) "variable type" else "property type"
+            is FirProperty -> if (declaration.isLocal) "variable type" else "property type"
             is FirFunction -> "return type"
             else -> return
         }

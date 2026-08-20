@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFunctionChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.unsubstitutedScope
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirFunction
+import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirValueParameter
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
@@ -40,7 +41,7 @@ internal class OverloadParameterOrderChecker(
     override fun check(declaration: FirFunction) {
         val factory = severities[WatchdogDiagnostics.INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS] ?: return
 
-        if (declaration !is FirConstructor && !declaration.isNamedFunction()) {
+        if (declaration !is FirConstructor && declaration !is FirNamedFunction) {
             return
         }
 
@@ -102,10 +103,10 @@ internal class OverloadParameterOrderChecker(
                 }
             }
 
-            !isNamedFunction() -> Unit
+            this !is FirNamedFunction -> Unit
 
             else -> {
-                val name = namedFunctionName
+                val name = this.name
                 if (containingClass != null) {
                     containingClass.forEachMemberNamed(name, action)
                 } else {

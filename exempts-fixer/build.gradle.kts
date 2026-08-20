@@ -15,7 +15,7 @@ val annotationsJvmClasses = files(
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
 pluginDevKit {
     cliVersions(
-        min = "2.3.0",
+        min = "2.3.20",
         betaAndRc = BetaAndRc.LATEST,
     )
     ideaVersions(
@@ -60,7 +60,6 @@ kotlin {
                 kotlin.srcDir("src/compilerIntegrationTest/kotlin")
                 resources.srcDir(rootProject.file("compiler-plugin/src/test/data"))
                 dependencies {
-                    // Post-2.3.20 plugin variants implement the dev-kit registrar contract.
                     implementation(pluginDevKit("compiler-plugin-runtime"))
                     // File dependencies avoid Kotlin version alignment rewriting this project's
                     // org.jetbrains.kotlin modules as external compiler-versioned dependencies.

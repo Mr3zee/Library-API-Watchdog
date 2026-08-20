@@ -23,7 +23,7 @@ dependencies {
 
 pluginDevKit {
     cliVersions(
-        min = "2.3.0",
+        min = "2.3.20",
         betaAndRc = BetaAndRc.LATEST,
     )
     ideaVersions(
