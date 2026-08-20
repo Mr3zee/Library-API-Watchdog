@@ -22,8 +22,55 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  functional-test-matrix:
     runs-on: ubuntu-latest
+    outputs:
+      tasks: ${{ steps.matrix.outputs.tasks }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Discover functional test tasks
+        id: matrix
+        run: |
+          tasks="$(./gradlew -q :kotlin-library-api-watchdog-gradle-plugin:printCiFunctionalTestMatrix)"
+          echo "tasks=$tasks" >> "$GITHUB_OUTPUT"
+
+  exempts-fixer-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Run exempts fixer tests
+        run: ./gradlew :kotlin-library-api-watchdog-exempts-fixer:allTests
+
+  gradle-plugin-tests:
+    name: Gradle plugin tests (${{ matrix.task }})
+    needs: functional-test-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        task: ${{ fromJSON(needs.functional-test-matrix.outputs.tasks) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -43,8 +90,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
 
-      - name: Run Gradle tests
-        run: >-
-          ./gradlew
-          :kotlin-library-api-watchdog-exempts-fixer:allTests
-          :kotlin-library-api-watchdog-gradle-plugin:allVersionedFunctionalTests
+      - name: Run Gradle plugin tests
+        env:
+          FUNCTIONAL_TEST_TASK: ${{ matrix.task }}
+        run: ./gradlew ":kotlin-library-api-watchdog-gradle-plugin:$FUNCTIONAL_TEST_TASK"

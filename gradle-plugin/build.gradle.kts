@@ -50,6 +50,18 @@ pluginDevKit.testAgainst.configureEach {
     }
 }
 
+tasks.register("printCiFunctionalTestMatrix") {
+    group = "help"
+    description = "Prints the versioned functional-test task names as a JSON array for CI."
+
+    val taskNames = pluginDevKit.testAgainst.map { it.testTask.name }.sorted()
+    val json = taskNames.joinToString(prefix = "[\"", separator = "\",\"", postfix = "\"]")
+
+    doLast {
+        logger.quiet(json)
+    }
+}
+
 gradlePlugin {
     plugins {
         create("LibraryApiWatchdog") {
