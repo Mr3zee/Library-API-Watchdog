@@ -9,7 +9,7 @@ import {diagnostics} from './diagnostics.mjs';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const docsDirectory = path.resolve(here, '../docs');
 
-test('every diagnostic name outside its own page or a code block links to its check page', () => {
+test('every diagnostic name outside its own page or a code block has a check-page link', () => {
   const failures = [];
 
   for (const file of markdownFiles(docsDirectory)) {
@@ -24,10 +24,11 @@ test('every diagnostic name outside its own page or a code block links to its ch
         continue;
       }
       if (fence !== undefined || /^\s*\[\/\/\]:/.test(line)) continue;
+      const lineLinks = links(line);
 
       for (const diagnostic of diagnostics.values()) {
         for (const occurrence of occurrences(line, diagnostic.name)) {
-          const link = links(line).find((candidate) =>
+          const link = lineLinks.find((candidate) =>
             candidate.labelStart <= occurrence && occurrence < candidate.labelEnd,
           );
           const location = `${path.relative(docsDirectory, file)}:${index + 1}`;
@@ -39,6 +40,12 @@ test('every diagnostic name outside its own page or a code block links to its ch
           }
 
           if (link === undefined) {
+            const checkPageAlreadyLinked = /^\s*\|/.test(line) && lineLinks.some((candidate) => {
+              const target = candidate.target.split('#', 1)[0];
+              return path.resolve(path.dirname(file), target) === expectedPage;
+            });
+            if (checkPageAlreadyLinked) continue;
+
             failures.push(`${location}: ${diagnostic.name} is not a link`);
             continue;
           }

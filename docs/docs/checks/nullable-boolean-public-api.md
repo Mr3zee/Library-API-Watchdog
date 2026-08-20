@@ -1,5 +1,7 @@
 # Nullable Booleans in public API
 
+[//]: # (// TODO this is next)
+
 `NULLABLE_BOOLEAN_PUBLIC_API` reports `Boolean?` in publicly visible signatures.
 
 |                  |                                                     |
