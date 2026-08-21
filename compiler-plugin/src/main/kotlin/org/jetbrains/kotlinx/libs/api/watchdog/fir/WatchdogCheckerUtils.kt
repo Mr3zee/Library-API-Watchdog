@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.KtRealSourceElementKind
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
+import org.jetbrains.kotlin.fir.SessionHolder
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
@@ -201,7 +202,7 @@ internal fun ConeKotlinType.erasedClassSymbol(): FirClassSymbol<*>? {
     var type: ConeKotlinType = upperBoundIfFlexible()
     var visitedTypeParameters: MutableSet<FirTypeParameterSymbol>? = null
     while (type is ConeTypeParameterType) {
-        val typeParameter = type.typeParameterSymbolCompat(context.session)
+        val typeParameter = type.typeParameterSymbol
         val visited = visitedTypeParameters ?: mutableSetOf<FirTypeParameterSymbol>()
             .also { visitedTypeParameters = it }
         if (!visited.add(typeParameter)) {
@@ -330,7 +331,7 @@ private val apiDesignReason = Name.identifier("API_DESIGN")
  * by a non-blank description. Used by [ExemptionExplanationChecker] for exemption annotations on
  * declarations and type usages.
  */
-context(context: CheckerContext)
+context(context: SessionHolder)
 internal fun FirAnnotation.unexplainedExemptionReason(): Name? {
     val reasonArgument = findArgumentByName(reasonParameter, returnFirstWhenNotFound = false)
     val reason = if (reasonArgument == null) {
@@ -344,7 +345,7 @@ internal fun FirAnnotation.unexplainedExemptionReason(): Name? {
         return null
     }
 
-    if (getStringArgumentCompat(descriptionParameter, context.session)?.isNotBlank() == true) {
+    if (getStringArgumentCompat(descriptionParameter)?.isNotBlank() == true) {
         return null
     }
 

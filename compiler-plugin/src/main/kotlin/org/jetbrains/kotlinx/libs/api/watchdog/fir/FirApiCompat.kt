@@ -2,25 +2,23 @@ package org.jetbrains.kotlinx.libs.api.watchdog.fir
 
 import java.nio.file.Path
 import org.jetbrains.kotlin.descriptors.SourceElement
+import org.jetbrains.kotlin.diagnostics.DiagnosticContext
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
-import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.diagnostics.KtDiagnostic
+import org.jetbrains.kotlin.fir.SessionHolder
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
 import org.jetbrains.kotlin.fir.symbols.impl.FirTypeParameterSymbol
 import org.jetbrains.kotlin.fir.types.ConeTypeParameterType
 import org.jetbrains.kotlin.name.Name
 
-internal expect fun FirAnnotation.getStringArgumentCompat(
-    name: Name,
-    session: FirSession,
-): String?
+context(context: SessionHolder)
+internal expect fun FirAnnotation.getStringArgumentCompat(name: Name): String?
 
-internal expect fun recordingDiagnosticReporter(
+internal expect fun delegatingDiagnosticReporter(
     delegate: DiagnosticReporter,
-    recorder: WatchdogDiagnosticsRecorder,
+    onReport: (diagnostic: KtDiagnostic?, context: DiagnosticContext) -> Unit,
 ): DiagnosticReporter
 
-internal expect fun ConeTypeParameterType.typeParameterSymbolCompat(
-    session: FirSession,
-): FirTypeParameterSymbol
+internal expect val ConeTypeParameterType.typeParameterSymbol: FirTypeParameterSymbol
 
 internal expect fun SourceElement.klibPathCompat(): Path?

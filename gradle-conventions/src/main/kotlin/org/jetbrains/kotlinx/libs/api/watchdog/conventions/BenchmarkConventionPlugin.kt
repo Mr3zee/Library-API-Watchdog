@@ -4,6 +4,7 @@ import java.io.File
 import java.nio.file.Files
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.jvm.java
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -15,8 +16,6 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.JavaExec
-import org.gradle.api.tasks.SourceSet
-import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.jvm.tasks.Jar
 import org.gradle.process.CommandLineArgumentProvider
@@ -32,20 +31,18 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 class BenchmarkConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
-            val sourceSets = extensions.getByType(SourceSetContainer::class.java)
             val versions = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
             val kotlinVersion = versions.findVersion("kotlin").get().requiredVersion
-            val kotlinTargetName =
-                "k" + kotlinVersion.replace(".", "").replace("-", "_").lowercase()
             val kotlin = extensions.getByType(KotlinMultiplatformExtension::class.java)
-            val kotlinTarget = kotlin.targets.getByName(kotlinTargetName)
+            val entryPointCompilation = kotlin.targets.firstNotNullOf { it.compilations.findByName("entryPoint") }
+            val kotlinTarget = entryPointCompilation.target
             val mainCompilation = kotlinTarget.compilations.getByName("main")
             val benchmarkCompilation =
                 kotlinTarget.compilations.create("benchmark") {
                     associateWith(mainCompilation)
                     // The dev kit generates PluginInfo in its entry-point compilation. Benchmarks
                     // use that canonical plugin ID when invoking the compiler programmatically.
-                    associateWith(kotlinTarget.compilations.getByName("entryPoint"))
+                    associateWith(entryPointCompilation)
                     defaultSourceSet.kotlin.srcDir("src/benchmark/kotlin")
                 }
             configurations.named(checkNotNull(benchmarkCompilation.runtimeDependencyConfigurationName)) {
@@ -57,8 +54,6 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                     )
                 attributes.addAllLater(mainRuntime.attributes)
             }
-            val benchmarkSourceSet: SourceSet =
-                sourceSets.getByName(benchmarkCompilation.defaultSourceSet.name)
 
             // What the synthetic corpus compiles against: the annotations library plus its
             // transitive dependencies, notably the Kotlin standard library. This is separate
@@ -80,17 +75,14 @@ class BenchmarkConventionPlugin : Plugin<Project> {
 
             val jmhBytecodeGenerator = configurations.create("jmhBytecodeGenerator")
 
-            dependencies.add(
-                benchmarkCompilation.defaultSourceSet.implementationConfigurationName,
-                "org.openjdk.jmh:jmh-core:$JMH_VERSION",
-            )
-            dependencies.add(
-                benchmarkCompilation.defaultSourceSet.implementationConfigurationName,
-                "org.jetbrains.kotlin:kotlin-compiler:$kotlinVersion",
-            )
+            benchmarkCompilation.defaultSourceSet.dependencies {
+                implementation("org.openjdk.jmh:jmh-core:$JMH_VERSION")
+                implementation("org.jetbrains.kotlin:kotlin-compiler:$kotlinVersion")
+            }
             dependencies.add("benchmarkCorpusClasspath", dependencies.project(mapOf("path" to ":kotlin-library-api-watchdog-plugin-annotations")))
             dependencies.add("jmhBytecodeGenerator", "org.openjdk.jmh:jmh-generator-bytecode:$JMH_VERSION")
 
+            val benchmarkRuntimeClasspath = benchmarkCompilation.runtimeDependencyFiles!!
             val benchmarkGeneratedSources = layout.buildDirectory.dir("benchmark-jmh/sources")
             val benchmarkGeneratedResources = layout.buildDirectory.dir("benchmark-jmh/resources")
             val benchmarkGeneratedClasses = layout.buildDirectory.dir("benchmark-jmh/classes")
@@ -101,7 +93,7 @@ class BenchmarkConventionPlugin : Plugin<Project> {
             val generateBenchmarkJmhSources = tasks.register("generateBenchmarkJmhSources", JavaExec::class.java) {
                 description = "Generates the JMH benchmark wrappers from the compiled benchmark classes."
                 mainClass.set("org.openjdk.jmh.generators.bytecode.JmhBytecodeGenerator")
-                classpath = files(jmhBytecodeGenerator, benchmarkSourceSet.runtimeClasspath)
+                classpath = files(jmhBytecodeGenerator, benchmarkRuntimeClasspath)
                 inputs.files(benchmarkKotlinClasses)
                 outputs.dir(benchmarkGeneratedSources)
                 outputs.dir(benchmarkGeneratedResources)
@@ -121,14 +113,14 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                 description = "Compiles the generated JMH benchmark wrappers."
                 dependsOn(generateBenchmarkJmhSources)
                 source(benchmarkGeneratedSources)
-                classpath = benchmarkSourceSet.runtimeClasspath
+                classpath = benchmarkRuntimeClasspath
                 destinationDirectory.set(benchmarkGeneratedClasses)
             }
 
             /** Passes the plugin jar and the corpus classpath into a benchmark JVM. */
             fun configureWatchdogBenchmarkInputs(task: JavaExec) {
                 val pluginJar: Provider<RegularFile> =
-                    tasks.named("${kotlinTargetName}Jar", Jar::class.java).flatMap { it.archiveFile }
+                    tasks.named(kotlinTarget.artifactsTaskName, Jar::class.java).flatMap { it.archiveFile }
                 val corpusFiles: FileCollection = files(benchmarkCorpusClasspath)
                 task.inputs.file(pluginJar)
                 task.inputs.files(corpusFiles)
@@ -150,7 +142,7 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                         "pass extra JMH options with -Pbenchmark.args='...'."
                 mainClass.set("org.openjdk.jmh.Main")
                 classpath = files(benchmarkGeneratedClasses, benchmarkGeneratedResources) +
-                        benchmarkSourceSet.runtimeClasspath
+                        benchmarkRuntimeClasspath
                 dependsOn(compileBenchmarkJmhSources)
                 configureWatchdogBenchmarkInputs(this)
                 val include = providers.gradleProperty("benchmark.include")
@@ -188,7 +180,7 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                         "-Pprofile.benchmark=isolated -Pprofile.subject=<CheckerName>."
                 mainClass.set("org.openjdk.jmh.Main")
                 classpath = files(benchmarkGeneratedClasses, benchmarkGeneratedResources) +
-                        benchmarkSourceSet.runtimeClasspath
+                        benchmarkRuntimeClasspath
                 dependsOn(compileBenchmarkJmhSources)
                 configureWatchdogBenchmarkInputs(this)
 
@@ -266,7 +258,7 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                         "prints how often each one fired. Set the file count with " +
                         "-Pbenchmark.corpusFiles=<n>."
                 mainClass.set("org.jetbrains.kotlinx.libs.api.watchdog.benchmark.CorpusAudit")
-                classpath = benchmarkSourceSet.runtimeClasspath
+                classpath = benchmarkRuntimeClasspath
                 configureWatchdogBenchmarkInputs(this)
                 val corpusFiles = providers.gradleProperty("benchmark.corpusFiles")
                 argumentProviders.add(
