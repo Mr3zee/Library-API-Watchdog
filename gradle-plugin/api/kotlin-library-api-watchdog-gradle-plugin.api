@@ -3,7 +3,9 @@ public abstract class org/jetbrains/kotlinx/libs/api/watchdog/UpdateBackwardsCom
 	public abstract fun getCompilationNames ()Lorg/gradle/api/provider/ListProperty;
 	public abstract fun getDiagnosticReports ()Lorg/gradle/api/file/ConfigurableFileCollection;
 	protected abstract fun getExecOperations ()Lorg/gradle/process/ExecOperations;
+	public abstract fun getFixerArtifact ()Lorg/gradle/api/file/ConfigurableFileCollection;
 	public abstract fun getFixerClasspath ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getKotlinVersion ()Lorg/gradle/api/provider/Property;
 	public abstract fun getProjectDirectory ()Lorg/gradle/api/file/DirectoryProperty;
 	public final fun updateExempts ()V
 }

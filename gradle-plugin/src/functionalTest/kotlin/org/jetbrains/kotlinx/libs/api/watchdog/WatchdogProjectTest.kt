@@ -13,7 +13,7 @@ import kotlin.test.assertTrue
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.intellij.lang.annotations.Language
-import org.jetbrains.kotlin.compiler.plugin.devkit.test.getTestCompilerVersion
+import org.jetbrains.kotlin.compiler.plugin.devkit.test.getTestCompilerToolingVersion
 import org.junit.Test
 
 class WatchdogProjectTest {
@@ -887,7 +887,8 @@ class WatchdogProjectTest {
 
     @Test
     fun abiValidationSuggestionIsSilentWhenBuiltInAbiValidationIsEnabled() {
-        val abiValidationCall = if (getTestCompilerVersion().startsWith("2.3.")) {
+        val testCompilerVersion = getTestCompilerToolingVersion()
+        val abiValidationCall = if (testCompilerVersion.major <= 2 && testCompilerVersion.minor < 4) {
             "abiValidation { enabled.set(true) }"
         } else {
             "abiValidation()"

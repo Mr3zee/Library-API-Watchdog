@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.declarations.FirMemberDeclaration
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
 import org.jetbrains.kotlin.fir.resolve.getContainingClassSymbol
-import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
+import org.jetbrains.kotlin.fir.resolve.toSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirTypeAliasSymbol
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
@@ -40,20 +40,14 @@ internal class InternalApiTypeExposureChecker : PublicSignatureTypeChecker<Inter
 
     context(context: CheckerContext)
     override fun ConeKotlinType.violatingClassifier(): InternalApiExposure? {
-        val symbol =
-            (this as? ConeClassLikeType)?.lookupTag?.classId?.let {
-                context.session.symbolProvider.getClassLikeSymbolByClassId(it)
-            }
+        val symbol = (this as? ConeClassLikeType)?.lookupTag?.toSymbol(context.session)
         return symbol?.internalApiExposure()
     }
 
     /** An unmarked alias can still expand to an internal-API type. */
     context(context: CheckerContext)
     override fun ConeKotlinType.typeAfterClassifier(): ConeKotlinType? {
-        val symbol =
-            (this as? ConeClassLikeType)?.lookupTag?.classId?.let {
-                context.session.symbolProvider.getClassLikeSymbolByClassId(it)
-            }
+        val symbol = (this as? ConeClassLikeType)?.lookupTag?.toSymbol(context.session)
         return if (symbol is FirTypeAliasSymbol) fullyExpandedType() else null
     }
 
