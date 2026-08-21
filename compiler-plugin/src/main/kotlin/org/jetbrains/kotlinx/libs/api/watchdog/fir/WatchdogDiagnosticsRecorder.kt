@@ -61,19 +61,14 @@ internal class RecordingDeclarationChecker<D : FirDeclaration>(
     }
 }
 
-@Suppress("unused") // it is used, just IntelliJ bugs
-internal fun recordAndDelegate(
-    delegate: DiagnosticReporter,
-    recorder: WatchdogDiagnosticsRecorder,
-    diagnostic: KtDiagnostic?,
-    context: DiagnosticContext,
-) {
-    // The suppression check sees the annotations in scope at report time. A @Suppress on an
-    // element the checkers have not visited yet (a constructor reported on while checking its
-    // class) is resolved later by the framework's pending reporter and can slip through here;
-    // that only costs a recorded entry for a diagnostic the compiler ends up not reporting.
-    if (diagnostic != null && !context.isDiagnosticSuppressed(diagnostic)) {
-        recorder.record(diagnostic, context)
+private fun recordingDiagnosticReporter(delegate: DiagnosticReporter, recorder: WatchdogDiagnosticsRecorder) =
+    delegatingDiagnosticReporter(delegate) { diagnostic, context ->
+        // The suppression check sees the annotations in scope at report time. A @Suppress on an
+        // element the checkers have not visited yet (a constructor reported on while checking its
+        // class) is resolved later by the framework's pending reporter and can slip through here;
+        // that only costs a recorded entry for a diagnostic the compiler ends up not reporting.
+        if (diagnostic != null && !context.isDiagnosticSuppressed(diagnostic)) {
+            recorder.record(diagnostic, context)
+        }
+        delegate.report(diagnostic, context)
     }
-    delegate.report(diagnostic, context)
-}

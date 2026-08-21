@@ -6,28 +6,19 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.Comparator
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
-import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
-import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoots
-import org.jetbrains.kotlin.config.CompilerConfiguration
+import org.jetbrains.kotlin.compiler.plugin.devkit.runners.DevKitTest
+import org.jetbrains.kotlin.compiler.plugin.devkit.services.configurePlugin
 import org.jetbrains.kotlin.test.FirParser
-import org.jetbrains.kotlin.test.builders.TestConfigurationBuilder
 import org.jetbrains.kotlin.test.directives.CodegenTestDirectives
 import org.jetbrains.kotlin.test.directives.FirDiagnosticsDirectives
 import org.jetbrains.kotlin.test.directives.JvmEnvironmentConfigurationDirectives
-import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.runners.AbstractFirPhasedDiagnosticTest
-import org.jetbrains.kotlin.test.services.EnvironmentConfigurator
-import org.jetbrains.kotlin.test.services.EnvironmentBasedStandardLibrariesPathProvider
 import org.jetbrains.kotlin.test.services.KotlinTestInfo
-import org.jetbrains.kotlin.test.services.KotlinStandardLibrariesPathProvider
-import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlinx.libs.api.watchdog.WatchdogComponentRegistrar
 import org.opentest4j.AssertionFailedError
 
@@ -263,45 +254,18 @@ object FixedOutputCompilerTestMain {
     }
 }
 
-@OptIn(ExperimentalCompilerApi::class)
-private class FixedOutputDiagnosticRunner : AbstractFirPhasedDiagnosticTest(FirParser.LightTree) {
-    override fun createKotlinStandardLibrariesPathProvider(): KotlinStandardLibrariesPathProvider =
-        EnvironmentBasedStandardLibrariesPathProvider
-
-    override fun configure(builder: TestConfigurationBuilder) = with(builder) {
-        super.configure(builder)
+private class FixedOutputDiagnosticRunner : DevKitTest(
+    object : AbstractFirPhasedDiagnosticTest(FirParser.LightTree) {},
+    {
         defaultDirectives {
             +JvmEnvironmentConfigurationDirectives.FULL_JDK
             +CodegenTestDirectives.IGNORE_DEXING
             +FirDiagnosticsDirectives.DISABLE_GENERATED_FIR_TAGS
         }
-        useConfigurators(::WatchdogExtensionRegistrarConfigurator)
-    }
-
+    },
+    { configurePlugin(WatchdogComponentRegistrar()) },
+) {
     fun run(filePath: String) = runTest(filePath)
-}
-
-private class WatchdogExtensionRegistrarConfigurator(testServices: TestServices) :
-    EnvironmentConfigurator(testServices) {
-    override fun configureCompilerConfiguration(
-        configuration: CompilerConfiguration,
-        module: TestModule,
-    ) {
-        configuration.addJvmClasspathRoots(
-            System.getProperty("defaultTestDataLibraries.jvm.classpath")
-                .split(PATH_SEPARATOR)
-                .map(::File),
-        )
-    }
-
-    override fun CompilerPluginRegistrar.ExtensionStorage.registerCompilerExtensions(
-        module: TestModule,
-        configuration: CompilerConfiguration,
-    ) {
-        with(WatchdogComponentRegistrar()) {
-            registerExtensions(configuration)
-        }
-    }
 }
 
 private data class TestDataSection(
