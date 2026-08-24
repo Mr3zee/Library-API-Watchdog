@@ -1,0 +1,62 @@
+Module: lib
+FILE: markers.kt
+    package lib.api
+
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/InternalAnnotationMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.PROPERTY|)) public final annotation class InternalLibApi : R|kotlin/Annotation| {
+        public constructor(): R|lib/api/InternalLibApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+Module: main
+FILE: usage.kt
+    package consumer
+
+    @R|lib/api/InternalLibApi|() public open class InternalOpenClass : R|kotlin/Any| {
+        public constructor(): R|consumer/InternalOpenClass| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun memberOfInternal(): R|kotlin/Unit| {
+        }
+
+        public final class NestedInInternal : R|kotlin/Any| {
+            public constructor(): R|consumer/InternalOpenClass.NestedInInternal| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+    @R|lib/api/InternalLibApi|() public final enum class InternalEnum : R|kotlin/Enum<consumer/InternalEnum>| {
+        private constructor(): R|consumer/InternalEnum| {
+            super<R|kotlin/Enum<consumer/InternalEnum>|>()
+        }
+
+        public final static enum entry ENTRY: R|consumer/InternalEnum|
+        public final static fun values(): R|kotlin/Array<consumer/InternalEnum>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|consumer/InternalEnum| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<consumer/InternalEnum>|
+            public get(): R|kotlin/enums/EnumEntries<consumer/InternalEnum>|
+
+    }
+    @R|lib/api/InternalLibApi|() public final fun internalFunction(): R|kotlin/Unit| {
+    }
+    @R|lib/api/InternalLibApi|() public final val internalProperty: R|kotlin/Int| = Int(0)
+        public get(): R|kotlin/Int|
+    public final class WatchedClass : R|kotlin/Any| {
+        public constructor(): R|consumer/WatchedClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public open class WatchedOpenClass : R|kotlin/Any| {
+        public constructor(): R|consumer/WatchedOpenClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }

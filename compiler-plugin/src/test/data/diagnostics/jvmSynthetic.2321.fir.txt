@@ -1,0 +1,137 @@
+FILE: jvmSynthetic.kt
+    package foo.bar
+
+    public final suspend fun fetch(key: R|kotlin/String|): R|kotlin/String| {
+        ^fetch R|<local>/key|
+    }
+    public final inline fun <reified T> instantiate(): R|T?| {
+        ^instantiate Null(null)
+    }
+    public final fun race(work: R|suspend () -> kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final class Config : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Config| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun configure(block: R|foo/bar/Config.() -> kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun onEach(action: R|(kotlin/Int) -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun onEachOrNot(action: R|((kotlin/Int) -> kotlin/Unit)?|): R|kotlin/Unit| {
+    }
+    public final typealias Callback = R|(kotlin/Int) -> kotlin/Unit|
+    public final fun onEvent(callback: R|{foo/bar/Callback=} (kotlin/Int) -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun onEvents(vararg callbacks: R|kotlin/Array<out (kotlin/Int) -> kotlin/Unit>|): R|kotlin/Unit| {
+    }
+    public final fun raceAll(vararg work: R|kotlin/Array<out suspend () -> kotlin/Int>|): R|kotlin/Unit| {
+    }
+    public final fun transformAll(vararg mappers: R|kotlin/Array<out (kotlin/Int) -> kotlin/Int>|): R|kotlin/Unit| {
+    }
+    public open class Loader : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Loader| {
+            super<R|kotlin/Any|>()
+        }
+
+        public open suspend fun load(key: R|kotlin/String|): R|kotlin/String| {
+            ^load R|<local>/key|
+        }
+
+    }
+    public final fun transform(mapper: R|(kotlin/Int) -> kotlin/Int|): R|kotlin/Int| {
+        ^transform R|<local>/mapper|.R|SubstitutionOverride<kotlin/Function1.invoke: R|kotlin/Int|>|(Int(0))
+    }
+    public abstract fun interface Listener : R|kotlin/Any| {
+        public abstract fun onChange(value: R|kotlin/Int|): R|kotlin/Unit|
+
+    }
+    public final fun listen(listener: R|foo/bar/Listener|): R|kotlin/Unit| {
+    }
+    public final inline fun <T> pass(value: R|T|): R|T| {
+        ^pass R|<local>/value|
+    }
+    @R|kotlin/jvm/JvmSynthetic|() public final suspend fun hiddenFetch(key: R|kotlin/String|): R|kotlin/String| {
+        ^hiddenFetch R|<local>/key|
+    }
+    public abstract interface Resolver : R|kotlin/Any| {
+        public abstract suspend fun resolve(key: R|kotlin/String|): R|kotlin/String|
+
+        public open fun forEach(action: R|(kotlin/Int) -> kotlin/Unit|): R|kotlin/Unit| {
+        }
+
+    }
+    public final class MapResolver : R|foo/bar/Resolver| {
+        public constructor(): R|foo/bar/MapResolver| {
+            super<R|kotlin/Any|>()
+        }
+
+        public open override suspend fun resolve(key: R|kotlin/String|): R|kotlin/String| {
+            ^resolve R|<local>/key|
+        }
+
+    }
+    public abstract class BaseResolver : R|kotlin/Any| {
+        public constructor(): R|foo/bar/BaseResolver| {
+            super<R|kotlin/Any|>()
+        }
+
+        public abstract suspend fun resolveBase(key: R|kotlin/String|): R|kotlin/String|
+
+    }
+    public final class Watcher : R|kotlin/Any| {
+        public constructor(onChange: R|() -> kotlin/Unit|): R|foo/bar/Watcher| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/jvm/JvmInline|() public final value class UserId : R|kotlin/Any| {
+        public constructor(raw: R|kotlin/String|): R|foo/bar/UserId| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val raw: R|kotlin/String| = R|<local>/raw|
+            public get(): R|kotlin/String|
+
+    }
+    public final suspend fun fetchUser(id: R|foo/bar/UserId|): R|foo/bar/UserId| {
+        ^fetchUser R|<local>/id|
+    }
+    @R|kotlin/jvm/JvmInline|() public final value class Wrapped : R|kotlin/Any| {
+        public constructor(raw: R|kotlin/String|): R|foo/bar/Wrapped| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val raw: R|kotlin/String| = R|<local>/raw|
+            public get(): R|kotlin/String|
+
+        public final suspend fun refresh(): R|kotlin/String| {
+            ^refresh this@R|foo/bar/Wrapped|.R|foo/bar/Wrapped.raw|
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final suspend fun acknowledgedFetch(key: R|kotlin/String|): R|kotlin/String| {
+        ^acknowledgedFetch R|<local>/key|
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final class KotlinOnlyService : R|kotlin/Any| {
+        public constructor(): R|foo/bar/KotlinOnlyService| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final suspend fun refresh(key: R|kotlin/String|): R|kotlin/String| {
+            ^refresh R|<local>/key|
+        }
+
+        public final fun onEachInside(action: R|(kotlin/Int) -> kotlin/Unit|): R|kotlin/Unit| {
+        }
+
+    }
+    @R|kotlin/PublishedApi|() internal final suspend fun publishedFetch(key: R|kotlin/String|): R|kotlin/String| {
+        ^publishedFetch R|<local>/key|
+    }
+    internal final suspend fun internalFetch(key: R|kotlin/String|): R|kotlin/String| {
+        ^internalFetch R|<local>/key|
+    }
+    private final fun privateEach(action: R|(kotlin/Int) -> kotlin/Unit|): R|kotlin/Unit| {
+    }

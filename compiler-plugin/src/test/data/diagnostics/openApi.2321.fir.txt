@@ -1,0 +1,165 @@
+FILE: openApi.kt
+    package foo.bar
+
+    @R|kotlin/RequiresOptIn|() public final annotation class ExperimentalFooApi : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/ExperimentalFooApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public open class UnprotectedOpenClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/UnprotectedOpenClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public abstract class UnprotectedAbstractClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/UnprotectedAbstractClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public abstract interface UnprotectedInterface : R|kotlin/Any| {
+    }
+    public abstract fun interface UnprotectedFunInterface : R|kotlin/Any| {
+        public abstract fun run(): R|kotlin/Unit|
+
+    }
+    public open class PublicOpenOuter : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PublicOpenOuter| {
+            super<R|kotlin/Any|>()
+        }
+
+        protected open class ProtectedNestedOpenClass : R|kotlin/Any| {
+            public constructor(): R|foo/bar/PublicOpenOuter.ProtectedNestedOpenClass| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+    @R|kotlin/SubclassOptInRequired|(markerClass = vararg(<getClass>(Q|foo/bar/ExperimentalFooApi|))) public open class OptInProtectedClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/OptInProtectedClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/SubclassOptInRequired|(markerClass = vararg(<getClass>(Q|foo/bar/ExperimentalFooApi|))) public abstract interface OptInProtectedInterface : R|kotlin/Any| {
+    }
+    @R|kotlin/SubclassOptInRequired|() public open class OptInWithoutMarkersClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/OptInWithoutMarkersClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/SubclassOptInRequired|() public abstract interface OptInWithoutMarkersInterface : R|kotlin/Any| {
+    }
+    public open class OpenClassWithInternalConstructor : R|kotlin/Any| {
+        internal constructor(): R|foo/bar/OpenClassWithInternalConstructor| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public abstract class AbstractClassWithPrivateConstructor : R|kotlin/Any| {
+        private constructor(): R|foo/bar/AbstractClassWithPrivateConstructor| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public open class OpenClassWithHiddenConstructors : R|kotlin/Any| {
+        internal constructor(): R|foo/bar/OpenClassWithHiddenConstructors| {
+            super<R|kotlin/Any|>()
+        }
+
+        private constructor(x: R|kotlin/Int|): R|foo/bar/OpenClassWithHiddenConstructors| {
+            this<R|foo/bar/OpenClassWithHiddenConstructors|>()
+        }
+
+    }
+    public open class OpenClassWithProtectedConstructor : R|kotlin/Any| {
+        protected constructor(): R|foo/bar/OpenClassWithProtectedConstructor| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public abstract class AbstractClassWithVisibleSecondaryConstructor : R|kotlin/Any| {
+        private constructor(): R|foo/bar/AbstractClassWithVisibleSecondaryConstructor| {
+            super<R|kotlin/Any|>()
+        }
+
+        public constructor(x: R|kotlin/Int|): R|foo/bar/AbstractClassWithVisibleSecondaryConstructor| {
+            this<R|foo/bar/AbstractClassWithVisibleSecondaryConstructor|>()
+        }
+
+    }
+    public abstract class MixedVisibilityConstructors : R|kotlin/Any| {
+        private constructor(): R|foo/bar/MixedVisibilityConstructors| {
+            super<R|kotlin/Any|>()
+        }
+
+        protected constructor(flag: R|kotlin/Boolean|): R|foo/bar/MixedVisibilityConstructors| {
+            this<R|foo/bar/MixedVisibilityConstructors|>()
+        }
+
+        public constructor(value: R|kotlin/Int|): R|foo/bar/MixedVisibilityConstructors| {
+            this<R|foo/bar/MixedVisibilityConstructors|>()
+        }
+
+        private constructor(value: R|kotlin/String|): R|foo/bar/MixedVisibilityConstructors| {
+            this<R|foo/bar/MixedVisibilityConstructors|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|() public open class DeliberatelyOpenClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/DeliberatelyOpenClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|() public abstract interface DeliberatelyOpenInterface : R|kotlin/Any| {
+    }
+    public final class FinalClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/FinalClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final object SomeObject : R|kotlin/Any| {
+        private constructor(): R|foo/bar/SomeObject| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final annotation class SomeAnnotationClass : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/SomeAnnotationClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    internal open class InternalOpenClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/InternalOpenClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    private open class PrivateOpenClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PrivateOpenClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    internal abstract interface InternalInterface : R|kotlin/Any| {
+    }
+    internal final class InternalContainer : R|kotlin/Any| {
+        public constructor(): R|foo/bar/InternalContainer| {
+            super<R|kotlin/Any|>()
+        }
+
+        public open class NestedInsideInternal : R|kotlin/Any| {
+            public constructor(): R|foo/bar/InternalContainer.NestedInsideInternal| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }

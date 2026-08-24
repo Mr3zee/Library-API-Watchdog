@@ -1,0 +1,211 @@
+FILE: jvmStatic.kt
+    package foo.bar
+
+    public final class Registry : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Registry| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/Registry.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun create(): R|foo/bar/Registry| {
+                ^create R|foo/bar/Registry.Registry|()
+            }
+
+            @R|kotlin/jvm/JvmStatic|() public final fun createStatic(): R|foo/bar/Registry| {
+                ^createStatic R|foo/bar/Registry.Registry|()
+            }
+
+            @R|kotlin/jvm/JvmSynthetic|() public final fun createHidden(): R|foo/bar/Registry| {
+                ^createHidden R|foo/bar/Registry.Registry|()
+            }
+
+            public final suspend fun createLater(): R|foo/bar/Registry| {
+                ^createLater R|foo/bar/Registry.Registry|()
+            }
+
+            internal final fun createInternal(): R|foo/bar/Registry| {
+                ^createInternal R|foo/bar/Registry.Registry|()
+            }
+
+            public final val DEFAULT_NAME: R|kotlin/String| = String(registry)
+                public get(): R|kotlin/String|
+
+            public final const val VERSION: R|kotlin/Int| = Int(1)
+                public get(): R|kotlin/Int|
+
+            field:@R|kotlin/jvm/JvmField|() public final val ORIGIN: R|kotlin/String| = String(field)
+                public get(): R|kotlin/String|
+
+            @R|kotlin/jvm/JvmStatic|() public final val EXPOSED: R|kotlin/String| = String(static getter)
+                public get(): R|kotlin/String|
+
+            public final val TARGETED: R|kotlin/String| = String(static getter)
+                @PROPERTY_GETTER:R|kotlin/jvm/JvmStatic|() public get(): R|kotlin/String|
+
+            public final val HIDDEN: R|kotlin/String| = String(kotlin only)
+                @PROPERTY_GETTER:R|kotlin/jvm/JvmSynthetic|() public get(): R|kotlin/String|
+
+            public final val computed: R|kotlin/String|
+                public get(): R|kotlin/String| {
+                    ^ String(computed)
+                }
+
+            public final var mutable: R|kotlin/String| = String(mutable)
+                public get(): R|kotlin/String|
+                public set(value: R|kotlin/String|): R|kotlin/Unit|
+
+            public final val delegated: R|kotlin/String|by R|kotlin/lazy|<R|kotlin/String|>(<L> = lazy@fun <anonymous>(): R|kotlin/String| <inline=NoInline>  {
+                ^ String(lazy)
+            }
+            )
+                public get(): R|kotlin/String| {
+                    ^ this@R|foo/bar/Registry.Companion|.D|foo/bar/Registry.Companion.delegated|.R|kotlin/getValue|<R|kotlin/String|>(this@R|foo/bar/Registry.Companion|, ::R|foo/bar/Registry.Companion.delegated|)
+                }
+
+        }
+
+    }
+    public abstract interface Codec : R|kotlin/Any| {
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/Codec.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun lookup(): R|kotlin/Int| {
+                ^lookup Int(0)
+            }
+
+        }
+
+    }
+    public abstract fun interface Maker : R|kotlin/Any| {
+        public abstract fun make(): R|kotlin/Int|
+
+    }
+    public final class Built : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Built| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|foo/bar/Maker| {
+            private constructor(): R|foo/bar/Built.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public open override fun make(): R|kotlin/Int| {
+                ^make Int(0)
+            }
+
+        }
+
+    }
+    public final class Acknowledged : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Acknowledged| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/Acknowledged.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final fun create(): R|foo/bar/Acknowledged| {
+                ^create R|foo/bar/Acknowledged.Acknowledged|()
+            }
+
+            @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final val DEFAULT_NAME: R|kotlin/String| = String(acknowledged)
+                public get(): R|kotlin/String|
+
+        }
+
+    }
+    public final class AcknowledgedCompanion : R|kotlin/Any| {
+        public constructor(): R|foo/bar/AcknowledgedCompanion| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/AcknowledgedCompanion.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun create(): R|foo/bar/AcknowledgedCompanion| {
+                ^create R|foo/bar/AcknowledgedCompanion.AcknowledgedCompanion|()
+            }
+
+            public final val DEFAULT_NAME: R|kotlin/String| = String(acknowledged)
+                public get(): R|kotlin/String|
+
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final class AcknowledgedOuter : R|kotlin/Any| {
+        public constructor(): R|foo/bar/AcknowledgedOuter| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/AcknowledgedOuter.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun create(): R|foo/bar/AcknowledgedOuter| {
+                ^create R|foo/bar/AcknowledgedOuter.AcknowledgedOuter|()
+            }
+
+            public final val DEFAULT_NAME: R|kotlin/String| = String(acknowledged)
+                public get(): R|kotlin/String|
+
+        }
+
+    }
+    public final object Singleton : R|kotlin/Any| {
+        private constructor(): R|foo/bar/Singleton| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun make(): R|kotlin/Int| {
+            ^make Int(0)
+        }
+
+        public final val NAME: R|kotlin/String| = String(singleton)
+            public get(): R|kotlin/String|
+
+    }
+    public final class Plain : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Plain| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun member(): R|kotlin/Int| {
+            ^member Int(0)
+        }
+
+        public final val value: R|kotlin/Int| = Int(0)
+            public get(): R|kotlin/Int|
+
+    }
+    public final class PublishedMembers : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PublishedMembers| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/PublishedMembers.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            @R|kotlin/PublishedApi|() internal final fun create(): R|foo/bar/PublishedMembers| {
+                ^create R|foo/bar/PublishedMembers.PublishedMembers|()
+            }
+
+            @R|kotlin/PublishedApi|() internal final val DEFAULT_NAME: R|kotlin/String| = String(published)
+                internal get(): R|kotlin/String|
+
+        }
+
+    }

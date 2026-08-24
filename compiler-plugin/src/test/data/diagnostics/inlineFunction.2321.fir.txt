@@ -1,0 +1,425 @@
+FILE: inlineFunction.kt
+    package foo.bar
+
+    @R|kotlin/PublishedApi|() internal final fun logImpl(tag: R|kotlin/String|, message: R|kotlin/String|): R|kotlin/Unit| {
+    }
+    @R|kotlin/PublishedApi|() internal final fun logAllImpl(vararg messages: R|kotlin/Array<out kotlin/String>|): R|kotlin/Unit| {
+    }
+    @R|kotlin/PublishedApi|() internal final fun length(tag: R|kotlin/String|): R|kotlin/Int| {
+        ^length R|<local>/tag|.R|kotlin/String.length|
+    }
+    @R|kotlin/PublishedApi|() internal final fun lengthOrNull(tag: R|kotlin/String|): R|kotlin/Int?| {
+        ^lengthOrNull Null(null)
+    }
+    @R|kotlin/PublishedApi|() internal final fun posImpl(): R|kotlin/Int| {
+        ^posImpl Int(1)
+    }
+    @R|kotlin/PublishedApi|() internal final fun negImpl(): R|kotlin/Int| {
+        ^negImpl Int(-1)
+    }
+    @R|kotlin/PublishedApi|() internal final fun ready(): R|kotlin/Boolean| {
+        ^ready Boolean(true)
+    }
+    @R|kotlin/PublishedApi|() internal final fun transactImpl(work: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+        R|<local>/work|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()
+    }
+    @R|kotlin/PublishedApi|() internal final val counter: R|kotlin/Int| = Int(0)
+        internal get(): R|kotlin/Int|
+    public final object Registry : R|kotlin/Any| {
+        private constructor(): R|foo/bar/Registry| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|kotlin/PublishedApi|() internal final fun lookup(name: R|kotlin/String|, type: R|kotlin/reflect/KClass<*>|): R|kotlin/Any?| {
+            ^lookup Null(null)
+        }
+
+    }
+    public final inline fun log(tag: R|kotlin/String|, message: R|kotlin/String|): R|kotlin/Unit| {
+        ^log R|foo/bar/logImpl|(R|<local>/tag|, R|<local>/message|)
+    }
+    public final inline fun logNamed(tag: R|kotlin/String|, message: R|kotlin/String|): R|kotlin/Unit| {
+        ^logNamed R|foo/bar/logImpl|(R|<local>/message|, R|<local>/tag|)
+    }
+    public final inline fun logAll(vararg messages: R|kotlin/Array<out kotlin/String>|): R|kotlin/Unit| {
+        ^logAll R|foo/bar/logAllImpl|(vararg(*R|<local>/messages|))
+    }
+    public final inline fun logBlock(tag: R|kotlin/String|, message: R|kotlin/String|): R|kotlin/Unit| {
+        R|foo/bar/logImpl|(R|<local>/tag|, R|<local>/message|)
+    }
+    public final inline fun lengthBlock(tag: R|kotlin/String|): R|kotlin/Int| {
+        ^lengthBlock R|foo/bar/length|(R|<local>/tag|)
+    }
+    public final inline fun R|kotlin/String|.selfLength(): R|kotlin/Int| {
+        ^selfLength R|foo/bar/length|(this@R|foo/bar/selfLength|)
+    }
+    public final inline fun currentCount(): R|kotlin/Int| {
+        ^currentCount R|foo/bar/counter|
+    }
+    public final inline fun noop(): R|kotlin/Unit| {
+    }
+    public final inline fun <reified T> lookup(name: R|kotlin/String|): R|T| {
+        ^lookup (Q|foo/bar/Registry|.R|foo/bar/Registry.lookup|(R|<local>/name|, <getClass>(R|T|)) as R|T|)
+    }
+    public final inline fun <R> once(block: R|() -> R|): R|R| {
+        ^once R|<local>/block|.R|SubstitutionOverride<kotlin/Function0.invoke: R|R|>|()
+    }
+    @R|kotlin/OptIn|(markerClass = vararg(<getClass>(Q|kotlin/contracts/ExperimentalContracts|))) public final inline fun <R> measured(block: R|() -> R|): R|R|
+        [R|Contract description]
+         <
+            CallsInPlace(block, EXACTLY_ONCE)
+        >
+     {
+         {
+            R|kotlin/contracts/contract|(<L> = contract@fun R|kotlin/contracts/ContractBuilder|.<anonymous>(): R|kotlin/Unit| <inline=Inline, kind=UNKNOWN>  {
+                this@R|special/anonymous|.R|kotlin/contracts/ContractBuilder.callsInPlace|<R|R|>(R|<local>/block|, Q|kotlin/contracts/InvocationKind|.R|kotlin/contracts/InvocationKind.EXACTLY_ONCE|)
+            }
+            )
+        }
+
+        ^measured R|<local>/block|.R|SubstitutionOverride<kotlin/Function0.invoke: R|R|>|()
+    }
+    public final inline fun transact(crossinline work: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+        ^transact R|foo/bar/transactImpl|(<L> = transactImpl@fun <anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+            R|<local>/work|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()
+        }
+        )
+    }
+    public final inline fun choose(value: R|kotlin/Int|): R|kotlin/Int| {
+        ^choose when () {
+            CMP(<, R|<local>/value|.R|kotlin/Int.compareTo|(Int(0))) ->  {
+                R|foo/bar/negImpl|()
+            }
+            else ->  {
+                R|foo/bar/posImpl|()
+            }
+        }
+
+    }
+    public final inline fun pick(mode: R|kotlin/Int|): R|kotlin/Int| {
+        ^pick when (lval <when-subject>: R|kotlin/Int| = R|<local>/mode|) {
+            ==($subj$, Int(0)) ->  {
+                R|foo/bar/negImpl|()
+            }
+            else ->  {
+                R|foo/bar/posImpl|()
+            }
+        }
+
+    }
+    public final inline fun <reified T> lookupOrDefault(name: R|kotlin/String|, default: R|T|): R|T| {
+        ^lookupOrDefault (Q|foo/bar/Registry|.R|foo/bar/Registry.lookup|(R|<local>/name|, <getClass>(R|T|)) as? R|T|) ?: R|<local>/default|
+    }
+    public final inline fun lengthOrZero(tag: R|kotlin/String?|): R|kotlin/Int?| {
+        ^lengthOrZero R|<local>/tag|?.{ $subj$.R|kotlin/String.length| }
+    }
+    public final inline fun forcedLength(tag: R|kotlin/String|): R|kotlin/Int| {
+        ^forcedLength R|foo/bar/lengthOrNull|(R|<local>/tag|)!!
+    }
+    public final inline fun logTwice(tag: R|kotlin/String|, message: R|kotlin/String|): R|kotlin/Unit| {
+        R|foo/bar/logImpl|(R|<local>/tag|, R|<local>/message|)
+        R|foo/bar/logImpl|(R|<local>/tag|, R|<local>/message|)
+    }
+    public final inline fun cachedLength(tag: R|kotlin/String|): R|kotlin/Int| {
+        lval cached: R|kotlin/Int| = R|foo/bar/length|(R|<local>/tag|)
+        ^cachedLength R|<local>/cached|
+    }
+    public final inline fun doubled(value: R|kotlin/Int|): R|kotlin/Int| {
+        ^doubled R|<local>/value|.R|kotlin/Int.plus|(R|<local>/value|)
+    }
+    public final inline fun greeting(name: R|kotlin/String|): R|kotlin/String| {
+        ^greeting <strcat>(String(Hello, ), R|<local>/name|)
+    }
+    public final inline fun guardedLength(tag: R|kotlin/String|): R|kotlin/Int| {
+        ^guardedLength try {
+            R|foo/bar/length|(R|<local>/tag|)
+        }
+        catch (e: R|{kotlin/Exception=} java/lang/Exception|) {
+            Int(0)
+        }
+
+    }
+    public final inline fun onceMore(block: R|() -> kotlin/Int|): R|kotlin/Int| {
+        ^onceMore R|foo/bar/once|<R|kotlin/Int|>(R|<local>/block|)
+    }
+    public final inline fun transactChecked(crossinline work: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+        ^transactChecked R|foo/bar/transactImpl|(<L> = transactImpl@fun <anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+            when () {
+                R|foo/bar/ready|() ->  {
+                    R|<local>/work|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()
+                }
+            }
+
+        }
+        )
+    }
+    @R|kotlin/PublishedApi|() internal final inline fun publishedWithLogic(value: R|kotlin/Int|): R|kotlin/Int| {
+        lval squared: R|kotlin/Int| = R|<local>/value|.R|kotlin/Int.times|(R|<local>/value|)
+        ^publishedWithLogic R|<local>/squared|
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final inline fun clamped(value: R|kotlin/Int|): R|kotlin/Int| {
+        ^clamped when () {
+            CMP(<, R|<local>/value|.R|kotlin/Int.compareTo|(Int(0))) ->  {
+                Int(0)
+            }
+            else ->  {
+                R|<local>/value|
+            }
+        }
+
+    }
+    internal final inline fun internalChoose(value: R|kotlin/Int|): R|kotlin/Int| {
+        ^internalChoose when () {
+            CMP(<, R|<local>/value|.R|kotlin/Int.compareTo|(Int(0))) ->  {
+                R|foo/bar/negImpl|()
+            }
+            else ->  {
+                R|foo/bar/posImpl|()
+            }
+        }
+
+    }
+    private final inline fun privateChoose(value: R|kotlin/Int|): R|kotlin/Int| {
+        ^privateChoose when () {
+            CMP(<, R|<local>/value|.R|kotlin/Int.compareTo|(Int(0))) ->  {
+                R|foo/bar/negImpl|()
+            }
+            else ->  {
+                R|foo/bar/posImpl|()
+            }
+        }
+
+    }
+    public final fun regularChoose(value: R|kotlin/Int|): R|kotlin/Int| {
+        ^regularChoose when () {
+            CMP(<, R|<local>/value|.R|kotlin/Int.compareTo|(Int(0))) ->  {
+                R|foo/bar/negImpl|()
+            }
+            else ->  {
+                R|foo/bar/posImpl|()
+            }
+        }
+
+    }
+    public final val computedInLibrary: R|kotlin/Int|
+        public get(): R|kotlin/Int| {
+            ^ R|foo/bar/negImpl|().R|kotlin/Int.plus|(R|foo/bar/posImpl|())
+        }
+    @R|kotlin/PublishedApi|() internal final var storedLimit: R|kotlin/Int| = Int(0)
+        internal get(): R|kotlin/Int|
+        internal set(value: R|kotlin/Int|): R|kotlin/Unit|
+    @R|kotlin/PublishedApi|() internal final var storedTag: R|kotlin/String| = String()
+        internal get(): R|kotlin/String|
+        internal set(value: R|kotlin/String|): R|kotlin/Unit|
+    @R|kotlin/PublishedApi|() internal final val storedTagOrNull: R|kotlin/String?| = Null(null)
+        internal get(): R|kotlin/String?|
+    @R|kotlin/PublishedApi|() internal final fun refreshNoop(): R|kotlin/Unit| {
+    }
+    public final var limit: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ R|foo/bar/storedLimit|
+        }
+        public inline set(value: R|kotlin/Int|): R|kotlin/Unit| {
+            R|foo/bar/storedLimit| = R|<local>/value|
+        }
+    public final val currentLength: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ R|foo/bar/length|(String(current))
+        }
+    public final val blockLength: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ R|foo/bar/length|(String(block))
+        }
+    public final val R|kotlin/String|.selfLen: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ R|foo/bar/length|(this@R|foo/bar/selfLen|)
+        }
+    public final val refresher: R|() -> kotlin/Unit|
+        public inline get(): R|() -> kotlin/Unit| {
+            ^ ::R|foo/bar/refreshNoop|
+        }
+    public final val anyLength: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ (Q|foo/bar/Registry|.R|foo/bar/Registry.lookup|(String(length), <getClass>(Q|kotlin/Int|)) as R|kotlin/Int|)
+        }
+    public final var tagged: R|kotlin/String|
+        public inline get(): R|kotlin/String| {
+            ^ R|foo/bar/storedTag|
+        }
+        public inline set(value: R|kotlin/String|): R|kotlin/Unit| {
+            ^ R|foo/bar/logImpl|(String(tag), R|<local>/value|)
+        }
+    public final val threshold: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ Int(1).R|kotlin/Int.plus|(Int(1))
+        }
+    public final val accessorMarkedInline: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ Int(2).R|kotlin/Int.plus|(Int(2))
+        }
+    public final var clampedLimit: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ R|foo/bar/storedLimit|
+        }
+        public inline set(value: R|kotlin/Int|): R|kotlin/Unit| {
+            R|foo/bar/storedLimit| = when () {
+                CMP(<, R|<local>/value|.R|kotlin/Int.compareTo|(Int(0))) ->  {
+                    Int(0)
+                }
+                else ->  {
+                    R|<local>/value|
+                }
+            }
+
+        }
+    public final var mixedAccessors: R|kotlin/Int|
+        public get(): R|kotlin/Int| {
+            ^ R|foo/bar/negImpl|().R|kotlin/Int.plus|(R|foo/bar/posImpl|())
+        }
+        public inline set(value: R|kotlin/Int|): R|kotlin/Unit| {
+            R|foo/bar/storedLimit| = when () {
+                CMP(<, R|<local>/value|.R|kotlin/Int.compareTo|(Int(0))) ->  {
+                    Int(0)
+                }
+                else ->  {
+                    R|<local>/value|
+                }
+            }
+
+        }
+    public final val statusSign: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ when () {
+                R|foo/bar/ready|() ->  {
+                    R|foo/bar/posImpl|()
+                }
+                else ->  {
+                    R|foo/bar/negImpl|()
+                }
+            }
+
+        }
+    public final val modeSign: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ when (lval <when-subject>: R|kotlin/Int| = R|foo/bar/storedLimit|) {
+                ==($subj$, Int(0)) ->  {
+                    R|foo/bar/negImpl|()
+                }
+                else ->  {
+                    R|foo/bar/posImpl|()
+                }
+            }
+
+        }
+    public final val knownLength: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ R|foo/bar/lengthOrNull|(String(known)) ?: Int(0)
+        }
+    public final val forcedKnownLength: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ R|foo/bar/lengthOrNull|(String(known))!!
+        }
+    public final val taggedLength: R|kotlin/Int?|
+        public inline get(): R|kotlin/Int?| {
+            ^ R|foo/bar/storedTagOrNull|?.{ $subj$.R|kotlin/String.length| }
+        }
+    public final val loggedLength: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            R|foo/bar/logImpl|(String(length), String(read))
+            ^ R|foo/bar/length|(String(logged))
+        }
+    public final var doubleLogged: R|kotlin/String|
+        public inline get(): R|kotlin/String| {
+            ^ R|foo/bar/storedTag|
+        }
+        public inline set(value: R|kotlin/String|): R|kotlin/Unit| {
+            R|foo/bar/logImpl|(String(first), R|<local>/value|)
+            R|foo/bar/logImpl|(String(second), R|<local>/value|)
+        }
+    public final val cachedThreshold: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            lval cached: R|kotlin/Int| = R|foo/bar/length|(String(cached))
+            ^ R|<local>/cached|
+        }
+    public final val limitLine: R|kotlin/String|
+        public inline get(): R|kotlin/String| {
+            ^ <strcat>(String(limit: ), R|foo/bar/storedLimit|)
+        }
+    public final val guardedThreshold: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ try {
+                R|foo/bar/length|(String(guarded))
+            }
+            catch (e: R|{kotlin/Exception=} java/lang/Exception|) {
+                Int(0)
+            }
+
+        }
+    public final val onceThreshold: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ R|foo/bar/once|<R|kotlin/Int|>(<L> = once@fun <anonymous>(): R|kotlin/Int| <inline=Inline, kind=UNKNOWN>  {
+                ^ Int(1)
+            }
+            )
+        }
+    public final val relayedThreshold: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ R|foo/bar/threshold|
+        }
+    public final var relayedLimit: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ R|foo/bar/storedLimit|
+        }
+        public inline set(value: R|kotlin/Int|): R|kotlin/Unit| {
+            R|foo/bar/clampedLimit| = R|<local>/value|
+        }
+    @R|kotlin/PublishedApi|() internal final val publishedThreshold: R|kotlin/Int|
+        internal inline get(): R|kotlin/Int| {
+            ^ Int(5).R|kotlin/Int.plus|(Int(5))
+        }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final val fastThreshold: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ Int(3).R|kotlin/Int.plus|(Int(3))
+        }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final var acknowledgedClamped: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ when () {
+                CMP(<, R|foo/bar/storedLimit|.R|kotlin/Int.compareTo|(Int(0))) ->  {
+                    Int(0)
+                }
+                else ->  {
+                    R|foo/bar/storedLimit|
+                }
+            }
+
+        }
+        public inline set(value: R|kotlin/Int|): R|kotlin/Unit| {
+            R|foo/bar/storedLimit| = when () {
+                CMP(<, R|<local>/value|.R|kotlin/Int.compareTo|(Int(0))) ->  {
+                    Int(0)
+                }
+                else ->  {
+                    R|<local>/value|
+                }
+            }
+
+        }
+    internal final var internalClamped: R|kotlin/Int|
+        internal inline get(): R|kotlin/Int| {
+            ^ R|foo/bar/storedLimit|
+        }
+        internal inline set(value: R|kotlin/Int|): R|kotlin/Unit| {
+            R|foo/bar/storedLimit| = when () {
+                CMP(<, R|<local>/value|.R|kotlin/Int.compareTo|(Int(0))) ->  {
+                    Int(0)
+                }
+                else ->  {
+                    R|<local>/value|
+                }
+            }
+
+        }
+    private final val hiddenThreshold: R|kotlin/Int|
+        private inline get(): R|kotlin/Int| {
+            ^ Int(4).R|kotlin/Int.plus|(Int(4))
+        }

@@ -20,7 +20,7 @@ FILE: exemptionExplanation.kt
         }
 
         public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/BareExhaustiveExemption>|
-            public static get(): R|kotlin/enums/EnumEntries<foo/bar/BareExhaustiveExemption>|
+            public get(): R|kotlin/enums/EnumEntries<foo/bar/BareExhaustiveExemption>|
 
     }
     @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() public final class BareUndocumentedExemption : R|kotlin/Any| {
@@ -58,55 +58,55 @@ FILE: exemptionExplanation.kt
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.OTHER| [evaluated = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.OTHER|]) public open class ExplicitOtherWithoutDescription : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.OTHER|) public open class ExplicitOtherWithoutDescription : R|kotlin/Any| {
         public constructor(): R|foo/bar/ExplicitOtherWithoutDescription| {
             super<R|kotlin/Any|>()
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.OTHER| [evaluated = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.OTHER|], description = String() [evaluated = String()]) public open class PositionalEmptyDescription : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.OTHER|, description = String()) public open class PositionalEmptyDescription : R|kotlin/Any| {
         public constructor(): R|foo/bar/PositionalEmptyDescription| {
             super<R|kotlin/Any|>()
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(description = String(   ) [evaluated = String(   )]) public open class BlankDescription : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(description = String(   )) public open class BlankDescription : R|kotlin/Any| {
         public constructor(): R|foo/bar/BlankDescription| {
             super<R|kotlin/Any|>()
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|]) public open class ReasonExplainedExemption : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public open class ReasonExplainedExemption : R|kotlin/Any| {
         public constructor(): R|foo/bar/ReasonExplainedExemption| {
             super<R|kotlin/Any|>()
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY| [evaluated = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|]) public open class PositionalReasonExemption : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|) public open class PositionalReasonExemption : R|kotlin/Any| {
         public constructor(): R|foo/bar/PositionalReasonExemption| {
             super<R|kotlin/Any|>()
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(description = String(extension point for custom transports) [evaluated = String(extension point for custom transports)]) public open class DescriptionExplainedExemption : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(description = String(extension point for custom transports)) public open class DescriptionExplainedExemption : R|kotlin/Any| {
         public constructor(): R|foo/bar/DescriptionExplainedExemption| {
             super<R|kotlin/Any|>()
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.OTHER| [evaluated = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.OTHER|], description = String(kept open for mocking) [evaluated = String(kept open for mocking)]) public open class OtherWithDescriptionExemption : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.OTHER|, description = String(kept open for mocking)) public open class OtherWithDescriptionExemption : R|kotlin/Any| {
         public constructor(): R|foo/bar/OtherWithDescriptionExemption| {
             super<R|kotlin/Any|>()
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.INTEROP| [evaluated = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.INTEROP|]) public open class InteropWithoutDescription : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.INTEROP|) public open class InteropWithoutDescription : R|kotlin/Any| {
         public constructor(): R|foo/bar/InteropWithoutDescription| {
             super<R|kotlin/Any|>()
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyExhaustive|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.EXTERNAL_CONTRACT| [evaluated = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.EXTERNAL_CONTRACT|]) public final enum class ExternalContractWithoutDescription : R|kotlin/Enum<foo/bar/ExternalContractWithoutDescription>| {
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyExhaustive|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.EXTERNAL_CONTRACT|) public final enum class ExternalContractWithoutDescription : R|kotlin/Enum<foo/bar/ExternalContractWithoutDescription>| {
         private constructor(): R|foo/bar/ExternalContractWithoutDescription| {
             super<R|kotlin/Enum<foo/bar/ExternalContractWithoutDescription>|>()
         }
@@ -119,16 +119,16 @@ FILE: exemptionExplanation.kt
         }
 
         public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/ExternalContractWithoutDescription>|
-            public static get(): R|kotlin/enums/EnumEntries<foo/bar/ExternalContractWithoutDescription>|
+            public get(): R|kotlin/enums/EnumEntries<foo/bar/ExternalContractWithoutDescription>|
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.INTEROP| [evaluated = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.INTEROP|], description = String(Spring AOP subclasses this.) [evaluated = String(Spring AOP subclasses this.)]) public open class InteropWithDescription : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.INTEROP|, description = String(Spring AOP subclasses this.)) public open class InteropWithDescription : R|kotlin/Any| {
         public constructor(): R|foo/bar/InteropWithDescription| {
             super<R|kotlin/Any|>()
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyExhaustive|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.EXTERNAL_CONTRACT| [evaluated = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.EXTERNAL_CONTRACT|], description = String(Mirrors ISO 4217.) [evaluated = String(Mirrors ISO 4217.)]) public final enum class ExternalContractWithDescription : R|kotlin/Enum<foo/bar/ExternalContractWithDescription>| {
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyExhaustive|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.EXTERNAL_CONTRACT|, description = String(Mirrors ISO 4217.)) public final enum class ExternalContractWithDescription : R|kotlin/Enum<foo/bar/ExternalContractWithDescription>| {
         private constructor(): R|foo/bar/ExternalContractWithDescription| {
             super<R|kotlin/Enum<foo/bar/ExternalContractWithDescription>|>()
         }
@@ -141,13 +141,13 @@ FILE: exemptionExplanation.kt
         }
 
         public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/ExternalContractWithDescription>|
-            public static get(): R|kotlin/enums/EnumEntries<foo/bar/ExternalContractWithDescription>|
+            public get(): R|kotlin/enums/EnumEntries<foo/bar/ExternalContractWithDescription>|
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.IGNORE_JAVA_INTEROP| [evaluated = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.IGNORE_JAVA_INTEROP|]) public final suspend fun ignoredInteropWithoutDescription(): R|kotlin/Int| {
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.IGNORE_JAVA_INTEROP|) public final suspend fun ignoredInteropWithoutDescription(): R|kotlin/Int| {
         ^ignoredInteropWithoutDescription Int(0)
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.IGNORE_JAVA_INTEROP| [evaluated = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.IGNORE_JAVA_INTEROP|], description = String(Coroutine-first API; Java gets the blocking facade.) [evaluated = String(Coroutine-first API; Java gets the blocking facade.)]) public final suspend fun ignoredInteropWithDescription(): R|kotlin/Int| {
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.IGNORE_JAVA_INTEROP|, description = String(Coroutine-first API; Java gets the blocking facade.)) public final suspend fun ignoredInteropWithDescription(): R|kotlin/Int| {
         ^ignoredInteropWithDescription Int(0)
     }
     public final class Holder : R|kotlin/Any| {
@@ -158,7 +158,7 @@ FILE: exemptionExplanation.kt
         @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() public final val bare: R|kotlin/Int| = R|<local>/bare|
             public get(): R|kotlin/Int|
 
-        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|]) public final val explained: R|kotlin/Int| = R|<local>/explained|
+        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final val explained: R|kotlin/Int| = R|<local>/explained|
             public get(): R|kotlin/Int|
 
     }
@@ -168,7 +168,7 @@ FILE: exemptionExplanation.kt
     public final fun bareTypeUse(): R|@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|()  kotlin/collections/MutableList<kotlin/Int>| {
         ^bareTypeUse R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
     }
-    public final fun explainedTypeUse(): R|@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|])  kotlin/collections/MutableList<kotlin/Int>| {
+    public final fun explainedTypeUse(): R|@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|)  kotlin/collections/MutableList<kotlin/Int>| {
         ^explainedTypeUse R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
     }
     private final fun privateBareTypeUse(): R|@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|()  kotlin/collections/MutableList<kotlin/Int>| {

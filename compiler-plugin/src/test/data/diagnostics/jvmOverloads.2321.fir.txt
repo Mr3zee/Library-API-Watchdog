@@ -1,0 +1,102 @@
+FILE: jvmOverloads.kt
+    package foo.bar
+
+    public final fun connect(host: R|kotlin/String|, port: R|kotlin/Int| = Int(80), timeout: R|kotlin/Int| = Int(30)): R|kotlin/Unit| {
+    }
+    @R|kotlin/jvm/JvmOverloads|() public final fun connectJava(host: R|kotlin/String|, port: R|kotlin/Int| = Int(80)): R|kotlin/Unit| {
+    }
+    public final fun send(host: R|kotlin/String|, port: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun log(vararg entries: R|kotlin/Array<out kotlin/String>|): R|kotlin/Unit| {
+    }
+    @R|kotlin/jvm/JvmSynthetic|() public final fun kotlinConnect(host: R|kotlin/String|, port: R|kotlin/Int| = Int(80)): R|kotlin/Unit| {
+    }
+    public final suspend fun fetch(host: R|kotlin/String|, timeout: R|kotlin/Int| = Int(30)): R|kotlin/String| {
+        ^fetch R|<local>/host|
+    }
+    public final class Connection : R|kotlin/Any| {
+        public constructor(host: R|kotlin/String|, port: R|kotlin/Int| = Int(80)): R|foo/bar/Connection| {
+            super<R|kotlin/Any|>()
+        }
+
+        public constructor(port: R|kotlin/Int| = Int(443)): R|foo/bar/Connection| {
+            this<R|foo/bar/Connection|>(String(localhost), R|<local>/port|)
+        }
+
+        public final fun open(retries: R|kotlin/Int| = Int(3)): R|kotlin/Unit| {
+        }
+
+        @R|kotlin/jvm/JvmOverloads|() public final fun openJava(retries: R|kotlin/Int| = Int(3)): R|kotlin/Unit| {
+        }
+
+    }
+    public final class Tunnel : R|kotlin/Any| {
+        @R|kotlin/jvm/JvmOverloads|() public constructor(host: R|kotlin/String|, port: R|kotlin/Int| = Int(22)): R|foo/bar/Tunnel| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public abstract interface Api : R|kotlin/Any| {
+        public abstract fun call(timeout: R|kotlin/Int| = Int(30)): R|kotlin/Unit|
+
+        public open fun ping(timeout: R|kotlin/Int| = Int(30)): R|kotlin/Int| {
+            ^ping R|<local>/timeout|
+        }
+
+    }
+    public abstract class Base : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Base| {
+            super<R|kotlin/Any|>()
+        }
+
+        public abstract fun run(retries: R|kotlin/Int| = Int(3)): R|kotlin/Unit|
+
+        public final fun walk(steps: R|kotlin/Int| = Int(1)): R|kotlin/Unit| {
+        }
+
+    }
+    public final class Runner : R|foo/bar/Base| {
+        public constructor(): R|foo/bar/Runner| {
+            super<R|foo/bar/Base|>()
+        }
+
+        public open override fun run(retries: R|kotlin/Int|): R|kotlin/Unit| {
+        }
+
+    }
+    public final annotation class Retry : R|kotlin/Annotation| {
+        public constructor(count: R|kotlin/Int| = Int(3)): R|foo/bar/Retry| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val count: R|kotlin/Int| = R|<local>/count|
+            public get(): R|kotlin/Int|
+
+    }
+    @R|kotlin/jvm/JvmInline|() public final value class Port : R|kotlin/Any| {
+        public constructor(number: R|kotlin/Int|): R|foo/bar/Port| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val number: R|kotlin/Int| = R|<local>/number|
+            public get(): R|kotlin/Int|
+
+        public final fun shifted(by: R|kotlin/Int| = Int(1)): R|kotlin/Int| {
+            ^shifted this@R|foo/bar/Port|.R|foo/bar/Port.number|.R|kotlin/Int.plus|(R|<local>/by|)
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutJvmOverloads|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final fun acknowledgedConnect(host: R|kotlin/String|, port: R|kotlin/Int| = Int(80)): R|kotlin/Unit| {
+    }
+    public final class Gateway : R|kotlin/Any| {
+        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutJvmOverloads|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public constructor(host: R|kotlin/String|, port: R|kotlin/Int| = Int(80)): R|foo/bar/Gateway| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/PublishedApi|() internal final fun publishedConnect(host: R|kotlin/String|, port: R|kotlin/Int| = Int(80)): R|kotlin/Unit| {
+    }
+    internal final fun internalConnect(host: R|kotlin/String|, port: R|kotlin/Int| = Int(80)): R|kotlin/Unit| {
+    }
+    private final fun privateConnect(host: R|kotlin/String|, port: R|kotlin/Int| = Int(80)): R|kotlin/Unit| {
+    }

@@ -1,0 +1,344 @@
+FILE: undocumentedApi.kt
+    package foo.bar
+
+    public final class UndocumentedClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/UndocumentedClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public abstract interface UndocumentedInterface : R|kotlin/Any| {
+    }
+    public final object UndocumentedObject : R|kotlin/Any| {
+        private constructor(): R|foo/bar/UndocumentedObject| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final enum class UndocumentedEnum : R|kotlin/Enum<foo/bar/UndocumentedEnum>| {
+        private constructor(): R|foo/bar/UndocumentedEnum| {
+            super<R|kotlin/Enum<foo/bar/UndocumentedEnum>|>()
+        }
+
+        public final static enum entry A: R|foo/bar/UndocumentedEnum|
+        public final static fun values(): R|kotlin/Array<foo/bar/UndocumentedEnum>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/UndocumentedEnum| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/UndocumentedEnum>|
+            public get(): R|kotlin/enums/EnumEntries<foo/bar/UndocumentedEnum>|
+
+    }
+    public final annotation class UndocumentedAnnotation : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/UndocumentedAnnotation| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun undocumentedTopLevelFunction(): R|kotlin/Unit| {
+    }
+    public final val undocumentedTopLevelProperty: R|kotlin/Int| = Int(0)
+        public get(): R|kotlin/Int|
+    public final typealias UndocumentedTypeAlias = R|kotlin/String|
+    public final fun documentedTopLevelFunction(): R|kotlin/Unit| {
+    }
+    public final val documentedTopLevelProperty: R|kotlin/Int| = Int(0)
+        public get(): R|kotlin/Int|
+    public final typealias DocumentedTypeAlias = R|kotlin/String|
+    public final class LineCommentedClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/LineCommentedClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final class BlockCommentedClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/BlockCommentedClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final class DocumentedClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/DocumentedClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public abstract interface DocumentedInterface : R|kotlin/Any| {
+    }
+    public final annotation class Marker : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/Marker| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|foo/bar/Marker|() public final class DocumentedAnnotatedClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/DocumentedAnnotatedClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() public final class DeliberatelyUndocumentedClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/DeliberatelyUndocumentedClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() public final object DeliberatelyUndocumentedObject : R|kotlin/Any| {
+        private constructor(): R|foo/bar/DeliberatelyUndocumentedObject| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() public final typealias DeliberatelyUndocumentedTypeAlias = R|kotlin/Int|
+    public final class WithAcknowledgedMembers : R|kotlin/Any| {
+        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() public constructor(): R|foo/bar/WithAcknowledgedMembers| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() public final fun acknowledgedFunction(): R|kotlin/Unit| {
+        }
+
+        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() public final val acknowledgedProperty: R|kotlin/Int| = Int(0)
+            public get(): R|kotlin/Int|
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() public final class DeliberatelyUndocumentedOuter : R|kotlin/Any| {
+        public constructor(): R|foo/bar/DeliberatelyUndocumentedOuter| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final class UndocumentedNestedInAcknowledged : R|kotlin/Any| {
+            public constructor(): R|foo/bar/DeliberatelyUndocumentedOuter.UndocumentedNestedInAcknowledged| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+    public final class DocumentedOuter : R|kotlin/Any| {
+        public constructor(): R|foo/bar/DocumentedOuter| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final class UndocumentedNested : R|kotlin/Any| {
+            public constructor(): R|foo/bar/DocumentedOuter.UndocumentedNested| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+        public final class DocumentedNested : R|kotlin/Any| {
+            public constructor(): R|foo/bar/DocumentedOuter.DocumentedNested| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+        private final class PrivateNested : R|kotlin/Any| {
+            public constructor(): R|foo/bar/DocumentedOuter.PrivateNested| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+    public final class WithUndocumentedMembers : R|kotlin/Any| {
+        public constructor(): R|foo/bar/WithUndocumentedMembers| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun undocumentedFunction(): R|kotlin/Unit| {
+        }
+
+        public final val undocumentedProperty: R|kotlin/Int| = Int(0)
+            public get(): R|kotlin/Int|
+
+    }
+    public final class DocumentedThroughClassKDocTags : R|kotlin/Any| {
+        public constructor(input: R|kotlin/Int|, fromConstructor: R|kotlin/Int|): R|foo/bar/DocumentedThroughClassKDocTags| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val fromConstructor: R|kotlin/Int| = R|<local>/fromConstructor|
+            public get(): R|kotlin/Int|
+
+        public final val fromBody: R|kotlin/Int| = R|<local>/input|
+            public get(): R|kotlin/Int|
+
+    }
+    public final class EscapedKDocSubjects : R|kotlin/Any| {
+        public constructor(class: R|kotlin/Int|): R|foo/bar/EscapedKDocSubjects| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val class: R|kotlin/Int| = R|<local>/class|
+            public get(): R|kotlin/Int|
+
+        public final val when: R|kotlin/Int| = this@R|foo/bar/EscapedKDocSubjects|.R|foo/bar/EscapedKDocSubjects.class|
+            public get(): R|kotlin/Int|
+
+    }
+    public final class ClassKDocNotCoveringAllProperties : R|kotlin/Any| {
+        public constructor(covered: R|kotlin/Int|): R|foo/bar/ClassKDocNotCoveringAllProperties| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val covered: R|kotlin/Int| = R|<local>/covered|
+            public get(): R|kotlin/Int|
+
+        public final val uncovered: R|kotlin/Int| = Int(0)
+            public get(): R|kotlin/Int|
+
+    }
+    public final class ConstructorPropertyDocumentedInPlace : R|kotlin/Any| {
+        public constructor(documentedParameter: R|kotlin/Int|, undocumentedParameter: R|kotlin/Int|): R|foo/bar/ConstructorPropertyDocumentedInPlace| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val documentedParameter: R|kotlin/Int| = R|<local>/documentedParameter|
+            public get(): R|kotlin/Int|
+
+        public final val undocumentedParameter: R|kotlin/Int| = R|<local>/undocumentedParameter|
+            public get(): R|kotlin/Int|
+
+    }
+    public final class WithSecondaryConstructors : R|kotlin/Any| {
+        public constructor(input: R|kotlin/Int|): R|foo/bar/WithSecondaryConstructors| {
+            super<R|kotlin/Any|>()
+        }
+
+        public constructor(): R|foo/bar/WithSecondaryConstructors| {
+            this<R|foo/bar/WithSecondaryConstructors|>(Int(0))
+        }
+
+        public constructor(a: R|kotlin/Int|, b: R|kotlin/Int|): R|foo/bar/WithSecondaryConstructors| {
+            this<R|foo/bar/WithSecondaryConstructors|>(R|<local>/a|.R|kotlin/Int.plus|(R|<local>/b|))
+        }
+
+    }
+    public abstract interface DocumentedContract : R|kotlin/Any| {
+        public abstract fun documentedMember(): R|kotlin/Int|
+
+        public abstract fun undocumentedMember(): R|kotlin/Int|
+
+        public abstract val undocumentedValue: R|kotlin/Int|
+            public get(): R|kotlin/Int|
+
+    }
+    public final class DocumentedImplementation : R|foo/bar/DocumentedContract| {
+        public constructor(): R|foo/bar/DocumentedImplementation| {
+            super<R|kotlin/Any|>()
+        }
+
+        public open override fun documentedMember(): R|kotlin/Int| {
+            ^documentedMember Int(0)
+        }
+
+        public open override fun undocumentedMember(): R|kotlin/Int| {
+            ^undocumentedMember Int(0)
+        }
+
+        public open override val undocumentedValue: R|kotlin/Int| = Int(0)
+            public get(): R|kotlin/Int|
+
+    }
+    public final enum class DocumentedEnumWithEntries : R|kotlin/Enum<foo/bar/DocumentedEnumWithEntries>| {
+        private constructor(): R|foo/bar/DocumentedEnumWithEntries| {
+            super<R|kotlin/Enum<foo/bar/DocumentedEnumWithEntries>|>()
+        }
+
+        public final static enum entry DOCUMENTED_ENTRY: R|foo/bar/DocumentedEnumWithEntries|
+        public final static enum entry UNDOCUMENTED_ENTRY: R|foo/bar/DocumentedEnumWithEntries|
+        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() public final static enum entry ACKNOWLEDGED_ENTRY: R|foo/bar/DocumentedEnumWithEntries| = object : R|foo/bar/DocumentedEnumWithEntries| {
+            private constructor(): R|foo/bar/<anonymous>| {
+                super<R|foo/bar/DocumentedEnumWithEntries|>()
+            }
+
+        }
+
+        public final static fun values(): R|kotlin/Array<foo/bar/DocumentedEnumWithEntries>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/DocumentedEnumWithEntries| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/DocumentedEnumWithEntries>|
+            public get(): R|kotlin/enums/EnumEntries<foo/bar/DocumentedEnumWithEntries>|
+
+    }
+    public final data class DocumentedDataClass : R|kotlin/Any| {
+        public constructor(value: R|kotlin/Int|): R|foo/bar/DocumentedDataClass| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val value: R|kotlin/Int| = R|<local>/value|
+            public get(): R|kotlin/Int|
+
+        public final operator fun component1(): R|kotlin/Int|
+
+        public final fun copy(value: R|kotlin/Int| = this@R|foo/bar/DocumentedDataClass|.R|foo/bar/DocumentedDataClass.value|): R|foo/bar/DocumentedDataClass|
+
+    }
+    internal final class InternalClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/InternalClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    private final class PrivateClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PrivateClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    internal final class InternalOuter : R|kotlin/Any| {
+        public constructor(): R|foo/bar/InternalOuter| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final class NestedInsideInternal : R|kotlin/Any| {
+            public constructor(): R|foo/bar/InternalOuter.NestedInsideInternal| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+        public final fun memberOfInternal(): R|kotlin/Unit| {
+        }
+
+    }
+    public abstract class WithNonPublicMembers : R|kotlin/Any| {
+        public constructor(): R|foo/bar/WithNonPublicMembers| {
+            super<R|kotlin/Any|>()
+        }
+
+        internal final fun internalFunction(): R|kotlin/Unit| {
+        }
+
+        private final val privateProperty: R|kotlin/Int| = Int(0)
+            private get(): R|kotlin/Int|
+
+        protected abstract fun protectedFunction(): R|kotlin/Int|
+
+    }
+    public final fun documentedFunction(): R|kotlin/Unit| {
+        lval localProperty: R|kotlin/Int| = Int(0)
+        local final fun localFunction(): R|kotlin/Int| {
+            ^localFunction R|<local>/localProperty|
+        }
+
+        local final class LocalClass : R|kotlin/Any| {
+            public constructor(): R|<local>/LocalClass| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun memberOfLocalClass(): R|kotlin/Int| {
+                ^memberOfLocalClass R|<local>/localFunction|()
+            }
+
+        }
+
+        R|<local>/LocalClass.LocalClass|()
+    }

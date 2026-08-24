@@ -1,0 +1,124 @@
+FILE: exhaustiveApi.kt
+    package foo.bar
+
+    public final enum class UnmarkedEnum : R|kotlin/Enum<foo/bar/UnmarkedEnum>| {
+        private constructor(): R|foo/bar/UnmarkedEnum| {
+            super<R|kotlin/Enum<foo/bar/UnmarkedEnum>|>()
+        }
+
+        public final static enum entry A: R|foo/bar/UnmarkedEnum|
+        public final static enum entry B: R|foo/bar/UnmarkedEnum|
+        public final static fun values(): R|kotlin/Array<foo/bar/UnmarkedEnum>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/UnmarkedEnum| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/UnmarkedEnum>|
+            public get(): R|kotlin/enums/EnumEntries<foo/bar/UnmarkedEnum>|
+
+    }
+    public sealed class UnmarkedSealedClass : R|kotlin/Any| {
+        protected constructor(): R|foo/bar/UnmarkedSealedClass| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final class Left : R|foo/bar/UnmarkedSealedClass| {
+            public constructor(): R|foo/bar/UnmarkedSealedClass.Left| {
+                super<R|foo/bar/UnmarkedSealedClass|>()
+            }
+
+        }
+
+        public final class Right : R|foo/bar/UnmarkedSealedClass| {
+            public constructor(): R|foo/bar/UnmarkedSealedClass.Right| {
+                super<R|foo/bar/UnmarkedSealedClass|>()
+            }
+
+        }
+
+        public abstract class Middle : R|foo/bar/UnmarkedSealedClass| {
+            public constructor(): R|foo/bar/UnmarkedSealedClass.Middle| {
+                super<R|foo/bar/UnmarkedSealedClass|>()
+            }
+
+        }
+
+    }
+    public sealed interface UnmarkedSealedInterface : R|kotlin/Any| {
+        public final class Impl : R|foo/bar/UnmarkedSealedInterface| {
+            public constructor(): R|foo/bar/UnmarkedSealedInterface.Impl| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyExhaustive|() public final enum class MarkedEnum : R|kotlin/Enum<foo/bar/MarkedEnum>| {
+        private constructor(): R|foo/bar/MarkedEnum| {
+            super<R|kotlin/Enum<foo/bar/MarkedEnum>|>()
+        }
+
+        public final static enum entry A: R|foo/bar/MarkedEnum|
+        public final static enum entry B: R|foo/bar/MarkedEnum|
+        public final static fun values(): R|kotlin/Array<foo/bar/MarkedEnum>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/MarkedEnum| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/MarkedEnum>|
+            public get(): R|kotlin/enums/EnumEntries<foo/bar/MarkedEnum>|
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyExhaustive|() public sealed class MarkedSealedClass : R|kotlin/Any| {
+        protected constructor(): R|foo/bar/MarkedSealedClass| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final class Only : R|foo/bar/MarkedSealedClass| {
+            public constructor(): R|foo/bar/MarkedSealedClass.Only| {
+                super<R|foo/bar/MarkedSealedClass|>()
+            }
+
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyExhaustive|() public sealed interface MarkedSealedInterface : R|kotlin/Any| {
+        public final class Impl : R|foo/bar/MarkedSealedInterface| {
+            public constructor(): R|foo/bar/MarkedSealedInterface.Impl| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+    internal final enum class InternalEnum : R|kotlin/Enum<foo/bar/InternalEnum>| {
+        private constructor(): R|foo/bar/InternalEnum| {
+            super<R|kotlin/Enum<foo/bar/InternalEnum>|>()
+        }
+
+        public final static enum entry A: R|foo/bar/InternalEnum|
+        public final static fun values(): R|kotlin/Array<foo/bar/InternalEnum>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/InternalEnum| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/InternalEnum>|
+            public get(): R|kotlin/enums/EnumEntries<foo/bar/InternalEnum>|
+
+    }
+    private sealed class PrivateSealedClass : R|kotlin/Any| {
+        protected constructor(): R|foo/bar/PrivateSealedClass| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final class Only : R|foo/bar/PrivateSealedClass| {
+            public constructor(): R|foo/bar/PrivateSealedClass.Only| {
+                super<R|foo/bar/PrivateSealedClass|>()
+            }
+
+        }
+
+    }

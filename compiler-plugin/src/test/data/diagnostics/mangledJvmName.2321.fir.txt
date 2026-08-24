@@ -1,0 +1,216 @@
+FILE: mangledJvmName.kt
+    package foo.bar
+
+    @R|kotlin/jvm/JvmInline|() public final value class UserId : R|kotlin/Any| {
+        public constructor(raw: R|kotlin/String|): R|foo/bar/UserId| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val raw: R|kotlin/String| = R|<local>/raw|
+            public get(): R|kotlin/String|
+
+    }
+    public final fun take(id: R|foo/bar/UserId|): R|kotlin/Unit| {
+    }
+    public final fun find(id: R|foo/bar/UserId?|): R|kotlin/Unit| {
+    }
+    public final fun R|foo/bar/UserId|.describe(): R|kotlin/String| {
+        ^describe String(user)
+    }
+    context(id: R|foo/bar/UserId|)
+    public final fun describeContext(): R|kotlin/String| {
+        ^describeContext R|<local>/id|.R|foo/bar/UserId.raw|
+    }
+    context(id: R|foo/bar/UserId|)
+    public final val contextOwner: R|kotlin/String|
+        public get(): R|kotlin/String| {
+            ^ R|<local>/id|.R|foo/bar/UserId.raw|
+        }
+    public final fun <T : R|foo/bar/UserId|> locate(t: R|T|): R|kotlin/Unit| {
+    }
+    public final fun <T : R|U|, U : R|foo/bar/UserId|> locateChained(t: R|T|): R|kotlin/Unit| {
+    }
+    public final fun handle(result: R|kotlin/Result<kotlin/String>|): R|kotlin/Unit| {
+    }
+    public final fun pad(width: R|kotlin/UInt|): R|kotlin/Unit| {
+    }
+    public final fun ids(list: R|kotlin/collections/List<foo/bar/UserId>|): R|kotlin/collections/List<foo/bar/UserId>| {
+        ^ids R|<local>/list|
+    }
+    public final fun issue(): R|foo/bar/UserId| {
+        ^issue R|foo/bar/UserId.UserId|(String(x))
+    }
+    public final val topId: R|foo/bar/UserId| = R|foo/bar/UserId.UserId|(String(x))
+        public get(): R|foo/bar/UserId|
+    public final var topVar: R|foo/bar/UserId| = R|foo/bar/UserId.UserId|(String(x))
+        public get(): R|foo/bar/UserId|
+        public set(value: R|foo/bar/UserId|): R|kotlin/Unit|
+    public final var topNamed: R|foo/bar/UserId| = R|foo/bar/UserId.UserId|(String(x))
+        public get(): R|foo/bar/UserId|
+        @PROPERTY_SETTER:R|kotlin/jvm/JvmName|(name = String(setTopNamed)) public set(value: R|foo/bar/UserId|): R|kotlin/Unit|
+    public final class Ledger : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Ledger| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun current(): R|foo/bar/UserId| {
+            ^current R|foo/bar/UserId.UserId|(String(x))
+        }
+
+        public final val owner: R|foo/bar/UserId|
+            public get(): R|foo/bar/UserId| {
+                ^ R|foo/bar/UserId.UserId|(String(x))
+            }
+
+        @R|kotlin/jvm/JvmName|(name = String(currentNamed)) public final fun renamed(): R|foo/bar/UserId| {
+            ^renamed R|foo/bar/UserId.UserId|(String(x))
+        }
+
+        public final val ownerNamed: R|foo/bar/UserId|
+            @PROPERTY_GETTER:R|kotlin/jvm/JvmName|(name = String(getOwnerNamed)) public get(): R|foo/bar/UserId| {
+                ^ R|foo/bar/UserId.UserId|(String(x))
+            }
+
+        public final var editor: R|foo/bar/UserId| = R|foo/bar/UserId.UserId|(String(x))
+            @PROPERTY_GETTER:R|kotlin/jvm/JvmName|(name = String(getEditorNamed)) public get(): R|foo/bar/UserId|
+            public set(value: R|foo/bar/UserId|): R|kotlin/Unit|
+
+    }
+    public final class SyntheticLedger : R|kotlin/Any| {
+        public constructor(): R|foo/bar/SyntheticLedger| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val ownerHidden: R|foo/bar/UserId|
+            @PROPERTY_GETTER:R|kotlin/jvm/JvmSynthetic|() public get(): R|foo/bar/UserId| {
+                ^ R|foo/bar/UserId.UserId|(String(x))
+            }
+
+        public final val ownerExplicit: R|foo/bar/UserId|
+            @R|kotlin/jvm/JvmSynthetic|() public get(): R|foo/bar/UserId| {
+                ^ R|foo/bar/UserId.UserId|(String(x))
+            }
+
+        public final var editorHalf: R|foo/bar/UserId| = R|foo/bar/UserId.UserId|(String(x))
+            @PROPERTY_GETTER:R|kotlin/jvm/JvmSynthetic|() public get(): R|foo/bar/UserId|
+            public set(value: R|foo/bar/UserId|): R|kotlin/Unit|
+
+        public final var editorHidden: R|foo/bar/UserId| = R|foo/bar/UserId.UserId|(String(x))
+            @PROPERTY_GETTER:R|kotlin/jvm/JvmSynthetic|() public get(): R|foo/bar/UserId|
+            @PROPERTY_SETTER:R|kotlin/jvm/JvmSynthetic|() public set(value: R|foo/bar/UserId|): R|kotlin/Unit|
+
+    }
+    public final object Registry : R|kotlin/Any| {
+        private constructor(): R|foo/bar/Registry| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun current(): R|foo/bar/UserId| {
+            ^current R|foo/bar/UserId.UserId|(String(x))
+        }
+
+    }
+    public final val R|foo/bar/UserId|.pretty: R|kotlin/String|
+        public get(): R|kotlin/String| {
+            ^ String(user)
+        }
+    public final class Wallet : R|kotlin/Any| {
+        public constructor(id: R|foo/bar/UserId|): R|foo/bar/Wallet| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val id: R|foo/bar/UserId| = R|<local>/id|
+            public get(): R|foo/bar/UserId|
+
+    }
+    public final class Vault : R|kotlin/Any| {
+        public constructor(id: R|foo/bar/UserId|): R|foo/bar/Vault| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final class Purse : R|kotlin/Any| {
+        public constructor(id: R|foo/bar/UserId|): R|foo/bar/Purse| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val id: R|foo/bar/UserId| = R|<local>/id|
+            @PROPERTY_GETTER:R|kotlin/jvm/JvmName|(name = String(getIdNamed)) public get(): R|foo/bar/UserId|
+
+    }
+    public final class Pouch : R|kotlin/Any| {
+        public constructor(id: R|foo/bar/UserId|): R|foo/bar/Pouch| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val id: R|foo/bar/UserId| = R|<local>/id|
+            @PROPERTY_GETTER:R|kotlin/jvm/JvmSynthetic|() public get(): R|foo/bar/UserId|
+
+    }
+    @R|kotlin/jvm/JvmInline|() public final value class Wrapped : R|kotlin/Any| {
+        public constructor(id: R|foo/bar/UserId|): R|foo/bar/Wrapped| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val id: R|foo/bar/UserId| = R|<local>/id|
+            public get(): R|foo/bar/UserId|
+
+        public final fun pretty(): R|kotlin/String| {
+            ^pretty String(user)
+        }
+
+    }
+    public final suspend fun fetch(id: R|foo/bar/UserId|): R|kotlin/Unit| {
+    }
+    public abstract interface Resolver : R|kotlin/Any| {
+        public abstract fun resolve(id: R|foo/bar/UserId|): R|kotlin/Unit|
+
+    }
+    public final class MapResolver : R|foo/bar/Resolver| {
+        public constructor(): R|foo/bar/MapResolver| {
+            super<R|kotlin/Any|>()
+        }
+
+        public open override fun resolve(id: R|foo/bar/UserId|): R|kotlin/Unit| {
+        }
+
+    }
+    @R|kotlin/jvm/JvmSynthetic|() public final fun hidden(id: R|foo/bar/UserId|): R|kotlin/Unit| {
+    }
+    field:@R|kotlin/jvm/JvmSynthetic|() public final var fieldOnlySynthetic: R|foo/bar/UserId| = R|foo/bar/UserId.UserId|(String(x))
+        public get(): R|foo/bar/UserId|
+        public set(value: R|foo/bar/UserId|): R|kotlin/Unit|
+    @R|kotlin/PublishedApi|() internal final fun published(id: R|foo/bar/UserId|): R|kotlin/Unit| {
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final fun acknowledged(id: R|foo/bar/UserId|): R|kotlin/Unit| {
+    }
+    public final class Account : R|kotlin/Any| {
+        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public constructor(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) id: R|foo/bar/UserId|): R|foo/bar/Account| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final val id: R|foo/bar/UserId| = R|<local>/id|
+            public get(): R|foo/bar/UserId|
+
+        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public constructor(id: R|foo/bar/UserId|, label: R|kotlin/String|): R|foo/bar/Account| {
+            this<R|foo/bar/Account|>(R|<local>/id|)
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final class KotlinOnlyLedger : R|kotlin/Any| {
+        public constructor(id: R|foo/bar/UserId|): R|foo/bar/KotlinOnlyLedger| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val id: R|foo/bar/UserId| = R|<local>/id|
+            public get(): R|foo/bar/UserId|
+
+        public final fun current(): R|foo/bar/UserId| {
+            ^current this@R|foo/bar/KotlinOnlyLedger|.R|foo/bar/KotlinOnlyLedger.id|
+        }
+
+    }
+    internal final fun internalTake(id: R|foo/bar/UserId|): R|kotlin/Unit| {
+    }
+    private final fun privateTake(id: R|foo/bar/UserId|): R|kotlin/Unit| {
+    }

@@ -1,0 +1,61 @@
+Module: lib
+FILE: lib.kt
+    @FILE:R|kotlin/jvm/JvmName|(name = String(LibApi))
+    package libapi
+
+    @R|kotlin/PublishedApi|() internal final class LibPublishedClass : R|kotlin/Any| {
+        public constructor(): R|libapi/LibPublishedClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) @R|kotlin/PublishedApi|() internal open class LibPublishedOpenClass : R|kotlin/Any| {
+        public constructor(): R|libapi/LibPublishedOpenClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/PublishedApi|() internal final fun libPublishedHelper(): R|kotlin/Int| {
+        ^libPublishedHelper Int(0)
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final inline fun libInlineApi(block: R|() -> kotlin/Int|): R|kotlin/Int| {
+        ^libInlineApi R|<local>/block|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Int|>|().R|kotlin/Int.plus|(R|libapi/libPublishedHelper|())
+    }
+Module: main
+FILE: main.kt
+    package foo.bar
+
+    @R|kotlin/PublishedApi|() internal final class MainPublishedClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/MainPublishedClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/PublishedApi|() internal open class MainPublishedOpenClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/MainPublishedOpenClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/PublishedApi|() internal final enum class MainPublishedEnum : R|kotlin/Enum<foo/bar/MainPublishedEnum>| {
+        private constructor(): R|foo/bar/MainPublishedEnum| {
+            super<R|kotlin/Enum<foo/bar/MainPublishedEnum>|>()
+        }
+
+        public final static enum entry ENTRY: R|foo/bar/MainPublishedEnum|
+        public final static fun values(): R|kotlin/Array<foo/bar/MainPublishedEnum>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/MainPublishedEnum| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/MainPublishedEnum>|
+            public get(): R|kotlin/enums/EnumEntries<foo/bar/MainPublishedEnum>|
+
+    }
+    @R|kotlin/PublishedApi|() internal final fun mainPublishedHelper(): R|kotlin/Int| {
+        ^mainPublishedHelper Int(0)
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final inline fun mainInlineApi(block: R|() -> kotlin/Int|): R|kotlin/Int| {
+        ^mainInlineApi R|libapi/libInlineApi|(R|<local>/block|).R|kotlin/Int.plus|(R|foo/bar/mainPublishedHelper|())
+    }

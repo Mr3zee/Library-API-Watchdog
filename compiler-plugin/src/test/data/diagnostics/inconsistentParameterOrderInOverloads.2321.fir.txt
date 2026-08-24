@@ -1,0 +1,125 @@
+FILE: overloads.kt
+    package foo.bar
+
+    public final fun draw(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun draw(y: R|kotlin/Int|, x: R|kotlin/Int|, scale: R|kotlin/Double|): R|kotlin/Unit| {
+    }
+    public final fun move(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun move(x: R|kotlin/Int|, y: R|kotlin/Int|, z: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun move(x: R|kotlin/Long|, y: R|kotlin/Long|): R|kotlin/Unit| {
+    }
+    public final fun arrange(prefix: R|kotlin/String|, first: R|kotlin/Int|, middle: R|kotlin/Long|, second: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun arrange(second: R|kotlin/Int|, suffix: R|kotlin/String|, first: R|kotlin/Int|, scale: R|kotlin/Double|): R|kotlin/Unit| {
+    }
+    public final fun align(first: R|kotlin/Int|, separator: R|kotlin/String|, second: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun align(prefix: R|kotlin/String|, first: R|kotlin/Long|, second: R|kotlin/Long|, suffix: R|kotlin/Double|): R|kotlin/Unit| {
+    }
+    public final fun log(message: R|kotlin/String|): R|kotlin/Unit| {
+    }
+    public final fun log(tag: R|kotlin/String|, code: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final class Canvas : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Canvas| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun fill(startIndex: R|kotlin/Int|, endIndex: R|kotlin/Int|): R|kotlin/Unit| {
+        }
+
+        public final fun fill(endIndex: R|kotlin/Int|, startIndex: R|kotlin/Int|, color: R|kotlin/Long|): R|kotlin/Unit| {
+        }
+
+    }
+    public final class Rect : R|kotlin/Any| {
+        public constructor(width: R|kotlin/Int|, height: R|kotlin/Int|): R|foo/bar/Rect| {
+            super<R|kotlin/Any|>()
+        }
+
+        public constructor(height: R|kotlin/Int|, width: R|kotlin/Int|, scale: R|kotlin/Double|): R|foo/bar/Rect| {
+            this<R|foo/bar/Rect|>(R|<local>/width|, R|<local>/height|)
+        }
+
+    }
+    public final class Turtle : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Turtle| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun draw(y: R|kotlin/Int|, x: R|kotlin/Int|): R|kotlin/Unit| {
+        }
+
+    }
+    public abstract interface Shape : R|kotlin/Any| {
+        public open fun place(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
+        }
+
+    }
+    public final class Widget : R|foo/bar/Shape| {
+        public constructor(): R|foo/bar/Widget| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun place(y: R|kotlin/Int|, x: R|kotlin/Int|, scale: R|kotlin/Double|): R|kotlin/Unit| {
+        }
+
+    }
+    public final class Panel : R|foo/bar/Shape| {
+        public constructor(): R|foo/bar/Panel| {
+            super<R|kotlin/Any|>()
+        }
+
+        public open override fun place(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
+        }
+
+        public final fun place(y: R|kotlin/Int|, x: R|kotlin/Int|, scale: R|kotlin/Double|): R|kotlin/Unit| {
+        }
+
+    }
+    public final fun render(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyInconsistentParameterOrder|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|) public final fun render(y: R|kotlin/Int|, x: R|kotlin/Int|, alpha: R|kotlin/Long|): R|kotlin/Unit| {
+    }
+    public final fun render(x: R|kotlin/Int|, y: R|kotlin/Int|, scale: R|kotlin/Double|): R|kotlin/Unit| {
+    }
+    private final fun helper(first: R|kotlin/Int|, second: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun helper(second: R|kotlin/Int|, first: R|kotlin/Int|, extra: R|kotlin/Long|): R|kotlin/Unit| {
+    }
+    public final fun publishedSibling(first: R|kotlin/Int|, second: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    @R|kotlin/PublishedApi|() internal final fun publishedSibling(second: R|kotlin/Int|, first: R|kotlin/Int|, extra: R|kotlin/Long|): R|kotlin/Unit| {
+    }
+    @R|kotlin/PublishedApi|() internal final fun publishedPair(first: R|kotlin/Int|, second: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    @R|kotlin/PublishedApi|() internal final fun publishedPair(second: R|kotlin/Int|, first: R|kotlin/Int|, extra: R|kotlin/Long|): R|kotlin/Unit| {
+    }
+    public final class Grid : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Grid| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun fill(startIndex: R|kotlin/Int|, endIndex: R|kotlin/Int|): R|kotlin/Unit| {
+        }
+
+    }
+    public final fun R|foo/bar/Grid|.fill(endIndex: R|kotlin/Int|, startIndex: R|kotlin/Int|, color: R|kotlin/Long|): R|kotlin/Unit| {
+    }
+    public final fun R|foo/bar/Widget|.place(y: R|kotlin/Int|, x: R|kotlin/Int|, alpha: R|kotlin/Long|): R|kotlin/Unit| {
+    }
+    public final typealias Board = R|foo/bar/Grid|
+    public final fun R|{foo/bar/Board?=} foo/bar/Grid?|.fill(endIndex: R|kotlin/Int|, startIndex: R|kotlin/Int|, alpha: R|kotlin/Long|): R|kotlin/Unit| {
+    }
+    public final fun <T : R|foo/bar/Shape|> R|T|.place(y: R|kotlin/Int|, x: R|kotlin/Int|, tint: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun <T> R|T|.fill(endIndex: R|kotlin/Int|, startIndex: R|kotlin/Int|, gamma: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+FILE: extensions.kt
+    package foo.baz
+
+    public final fun R|foo/bar/Grid|.fill(endIndex: R|kotlin/Int|, startIndex: R|kotlin/Int|, beta: R|kotlin/Int|): R|kotlin/Unit| {
+    }

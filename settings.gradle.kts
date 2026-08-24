@@ -15,7 +15,7 @@ pluginManagement {
     }
 }
 
-plugins { kotlin("compiler.plugin.devkit") version "0.0.2-SNAPSHOT" }
+plugins { kotlin("compiler.plugin.devkit") version "0.0.3-dev-f8877fa" }
 
 dependencyResolutionManagement {
     @Suppress("UnstableApiUsage")

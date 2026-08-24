@@ -1,0 +1,318 @@
+FILE: statefulToString.kt
+    package foo.bar
+
+    public final class Connection : R|kotlin/Any| {
+        public constructor(host: R|kotlin/String|): R|foo/bar/Connection| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val host: R|kotlin/String| = R|<local>/host|
+            public get(): R|kotlin/String|
+
+    }
+    public final class Counter : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Counter| {
+            super<R|kotlin/Any|>()
+        }
+
+        private final var count: R|kotlin/Int| = Int(0)
+            private get(): R|kotlin/Int|
+            private set(value: R|kotlin/Int|): R|kotlin/Unit|
+
+        public final fun increment(): R|kotlin/Unit| {
+             {
+                lval <unary>: R|kotlin/Int| = this@R|foo/bar/Counter|.R|foo/bar/Counter.count|
+                this@R|foo/bar/Counter|.R|foo/bar/Counter.count| = R|<local>/<unary>|.R|kotlin/Int.inc|()
+                R|<local>/<unary>|
+            }
+
+        }
+
+    }
+    public final class Container : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Container| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final class Nested : R|kotlin/Any| {
+            public constructor(value: R|kotlin/Int|): R|foo/bar/Container.Nested| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final val value: R|kotlin/Int| = R|<local>/value|
+                public get(): R|kotlin/Int|
+
+        }
+
+    }
+    public abstract class StatefulBase : R|kotlin/Any| {
+        public constructor(id: R|kotlin/Int|): R|foo/bar/StatefulBase| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val id: R|kotlin/Int| = R|<local>/id|
+            public get(): R|kotlin/Int|
+
+    }
+    public final class LateBound : R|kotlin/Any| {
+        public constructor(): R|foo/bar/LateBound| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final lateinit var target: R|kotlin/String|
+            public get(): R|kotlin/String|
+            public set(value: R|kotlin/String|): R|kotlin/Unit|
+
+    }
+    @R|kotlin/PublishedApi|() internal final class PublishedState : R|kotlin/Any| {
+        public constructor(x: R|kotlin/Int|): R|foo/bar/PublishedState| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val x: R|kotlin/Int| = R|<local>/x|
+            public get(): R|kotlin/Int|
+
+    }
+    public final class WithToString : R|kotlin/Any| {
+        public constructor(host: R|kotlin/String|): R|foo/bar/WithToString| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val host: R|kotlin/String| = R|<local>/host|
+            public get(): R|kotlin/String|
+
+        public open override fun toString(): R|kotlin/String| {
+            ^toString <strcat>(String(WithToString(host=), this@R|foo/bar/WithToString|.R|foo/bar/WithToString.host|, String()))
+        }
+
+    }
+    public final class WithEquality : R|kotlin/Any| {
+        public constructor(id: R|kotlin/Int|): R|foo/bar/WithEquality| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val id: R|kotlin/Int| = R|<local>/id|
+            public get(): R|kotlin/Int|
+
+        public open override operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean| {
+            ^equals (R|<local>/other| is R|foo/bar/WithEquality|) && ==(this@R|foo/bar/WithEquality|.R|foo/bar/WithEquality.id|, R|<local>/other|.R|foo/bar/WithEquality.id|)
+        }
+
+        public open override fun hashCode(): R|kotlin/Int| {
+            ^hashCode this@R|foo/bar/WithEquality|.R|foo/bar/WithEquality.id|
+        }
+
+    }
+    public final class EqualsOverload : R|kotlin/Any| {
+        public constructor(id: R|kotlin/Int|): R|foo/bar/EqualsOverload| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val id: R|kotlin/Int| = R|<local>/id|
+            public get(): R|kotlin/Int|
+
+        public final fun equals(other: R|kotlin/String|): R|kotlin/Boolean| {
+            ^equals ==(this@R|foo/bar/EqualsOverload|.R|foo/bar/EqualsOverload.id|.R|kotlin/Int.toString|(), R|<local>/other|)
+        }
+
+    }
+    public open class GeneratedBase : R|kotlin/Any| {
+        public constructor(id: R|kotlin/Int|): R|foo/bar/GeneratedBase| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val id: R|kotlin/Int| = R|<local>/id|
+            public get(): R|kotlin/Int|
+
+        public open override operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean| {
+            ^equals (R|<local>/other| is R|foo/bar/GeneratedBase|) && ==(this@R|foo/bar/GeneratedBase|.R|foo/bar/GeneratedBase.id|, R|<local>/other|.R|foo/bar/GeneratedBase.id|)
+        }
+
+        public open override fun hashCode(): R|kotlin/Int| {
+            ^hashCode this@R|foo/bar/GeneratedBase|.R|foo/bar/GeneratedBase.id|
+        }
+
+        public open override fun toString(): R|kotlin/String| {
+            ^toString <strcat>(String(GeneratedBase(id=), this@R|foo/bar/GeneratedBase|.R|foo/bar/GeneratedBase.id|, String()))
+        }
+
+    }
+    public final class GeneratedDerived : R|foo/bar/GeneratedBase| {
+        public constructor(id: R|kotlin/Int|, extra: R|kotlin/Int|): R|foo/bar/GeneratedDerived| {
+            super<R|foo/bar/GeneratedBase|>(R|<local>/id|)
+        }
+
+        public final val extra: R|kotlin/Int| = R|<local>/extra|
+            public get(): R|kotlin/Int|
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutEquals|() @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutHashCode|() @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutToString|() public final class MarkedOpaque : R|kotlin/Any| {
+        public constructor(secret: R|kotlin/String|): R|foo/bar/MarkedOpaque| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val secret: R|kotlin/String| = R|<local>/secret|
+            public get(): R|kotlin/String|
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutEqualsHashCodeOrToString|() public final class CombinedMarkedOpaque : R|kotlin/Any| {
+        public constructor(secret: R|kotlin/String|): R|foo/bar/CombinedMarkedOpaque| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val secret: R|kotlin/String| = R|<local>/secret|
+            public get(): R|kotlin/String|
+
+    }
+    public final class Stateless : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Stateless| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val computed: R|kotlin/Int|
+            public get(): R|kotlin/Int| {
+                ^ Int(42)
+            }
+
+    }
+    public final class DelegatedOnly : R|kotlin/Any| {
+        public constructor(): R|foo/bar/DelegatedOnly| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val value: R|kotlin/String|by R|kotlin/lazy|<R|kotlin/String|>(<L> = lazy@fun <anonymous>(): R|kotlin/String| <inline=NoInline>  {
+            ^ String(value)
+        }
+        )
+            public get(): R|kotlin/String| {
+                ^ this@R|foo/bar/DelegatedOnly|.D|foo/bar/DelegatedOnly.value|.R|kotlin/getValue|<R|kotlin/String|>(this@R|foo/bar/DelegatedOnly|, ::R|foo/bar/DelegatedOnly.value|)
+            }
+
+    }
+    public final class NoProperties : R|kotlin/Any| {
+        public constructor(): R|foo/bar/NoProperties| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun doWork(): R|kotlin/Unit| {
+        }
+
+    }
+    public final data class DataPoint : R|kotlin/Any| {
+        public constructor(x: R|kotlin/Int|): R|foo/bar/DataPoint| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val x: R|kotlin/Int| = R|<local>/x|
+            public get(): R|kotlin/Int|
+
+        public final operator fun component1(): R|kotlin/Int|
+
+        public final fun copy(x: R|kotlin/Int| = this@R|foo/bar/DataPoint|.R|foo/bar/DataPoint.x|): R|foo/bar/DataPoint|
+
+    }
+    @R|kotlin/jvm/JvmInline|() public final value class UserId : R|kotlin/Any| {
+        public constructor(raw: R|kotlin/Int|): R|foo/bar/UserId| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val raw: R|kotlin/Int| = R|<local>/raw|
+            public get(): R|kotlin/Int|
+
+    }
+    public final enum class Size : R|kotlin/Enum<foo/bar/Size>| {
+        private constructor(px: R|kotlin/Int|): R|foo/bar/Size| {
+            super<R|kotlin/Enum<foo/bar/Size>|>()
+        }
+
+        public final val px: R|kotlin/Int| = R|<local>/px|
+            public get(): R|kotlin/Int|
+
+        public final static enum entry SMALL: R|foo/bar/Size| = object : R|foo/bar/Size| {
+            private constructor(): R|foo/bar/<anonymous>| {
+                super<R|foo/bar/Size|>(Int(8))
+            }
+
+        }
+
+        public final static enum entry LARGE: R|foo/bar/Size| = object : R|foo/bar/Size| {
+            private constructor(): R|foo/bar/<anonymous>| {
+                super<R|foo/bar/Size|>(Int(64))
+            }
+
+        }
+
+        public final static fun values(): R|kotlin/Array<foo/bar/Size>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/Size| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/Size>|
+            public get(): R|kotlin/enums/EnumEntries<foo/bar/Size>|
+
+    }
+    public final object Registry : R|kotlin/Any| {
+        private constructor(): R|foo/bar/Registry| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val entries: R|kotlin/Int| = Int(0)
+            public get(): R|kotlin/Int|
+
+    }
+    public final class WithCompanion : R|kotlin/Any| {
+        public constructor(): R|foo/bar/WithCompanion| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/WithCompanion.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final val Default: R|foo/bar/WithCompanion| = R|foo/bar/WithCompanion.WithCompanion|()
+                public get(): R|foo/bar/WithCompanion|
+
+        }
+
+    }
+    public abstract interface Config : R|kotlin/Any| {
+        public abstract val timeout: R|kotlin/Int|
+            public get(): R|kotlin/Int|
+
+    }
+    internal final class InternalState : R|kotlin/Any| {
+        public constructor(x: R|kotlin/Int|): R|foo/bar/InternalState| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val x: R|kotlin/Int| = R|<local>/x|
+            public get(): R|kotlin/Int|
+
+    }
+    private final class PrivateState : R|kotlin/Any| {
+        public constructor(x: R|kotlin/Int|): R|foo/bar/PrivateState| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val x: R|kotlin/Int| = R|<local>/x|
+            public get(): R|kotlin/Int|
+
+    }
+    public final class Outer : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Outer| {
+            super<R|kotlin/Any|>()
+        }
+
+        internal final class Hidden : R|kotlin/Any| {
+            public constructor(x: R|kotlin/Int|): R|foo/bar/Outer.Hidden| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final val x: R|kotlin/Int| = R|<local>/x|
+                public get(): R|kotlin/Int|
+
+        }
+
+    }

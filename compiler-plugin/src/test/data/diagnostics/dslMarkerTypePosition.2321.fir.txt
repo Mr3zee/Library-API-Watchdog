@@ -1,0 +1,78 @@
+FILE: dslMarkerTypePosition.kt
+    package foo.bar
+
+    @R|kotlin/DslMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.TYPE|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.TYPEALIAS|)) public final annotation class TreeDsl : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/TreeDsl| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/DslMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.TYPE|)) public final annotation class LayoutDsl : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/LayoutDsl| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public open class Tag : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Tag| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun process(tag: R|@R|foo/bar/TreeDsl|()  foo/bar/Tag|): R|kotlin/Unit| {
+    }
+    public final fun processTwice(tag: R|@R|foo/bar/TreeDsl|()  @R|foo/bar/LayoutDsl|()  foo/bar/Tag|): R|kotlin/Unit| {
+    }
+    public final fun make(): R|@R|foo/bar/TreeDsl|()  foo/bar/Tag| {
+        ^make R|foo/bar/Tag.Tag|()
+    }
+    public final val current: R|@R|foo/bar/TreeDsl|()  foo/bar/Tag| = R|foo/bar/Tag.Tag|()
+        public get(): R|@R|foo/bar/TreeDsl|()  foo/bar/Tag|
+    public final class Holder : R|kotlin/Any| {
+        public constructor(tag: R|@R|foo/bar/TreeDsl|()  foo/bar/Tag|): R|foo/bar/Holder| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val tag: R|@R|foo/bar/TreeDsl|()  foo/bar/Tag| = R|<local>/tag|
+            public get(): R|@R|foo/bar/TreeDsl|()  foo/bar/Tag|
+
+    }
+    public final fun local(): R|kotlin/Unit| {
+        lval tag: R|@R|foo/bar/TreeDsl|()  foo/bar/Tag| = R|foo/bar/Tag.Tag|()
+        R|<local>/tag|.R|kotlin/Any.toString|()
+    }
+    public final fun run(block: R|@R|foo/bar/TreeDsl|()  () -> kotlin/Unit|): R|kotlin/Unit| {
+        ^run R|<local>/block|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()
+    }
+    internal final fun internalProcess(tag: R|@R|foo/bar/TreeDsl|()  foo/bar/Tag|): R|kotlin/Unit| {
+    }
+    public final fun tree(block: R|@R|foo/bar/TreeDsl|()  foo/bar/Tag.() -> kotlin/Unit|): R|kotlin/Unit| {
+        ^tree R|<local>/block|.R|SubstitutionOverride<kotlin/Function1.invoke: R|kotlin/Unit|>|(R|foo/bar/Tag.Tag|())
+    }
+    public final fun layoutTree(block: R|@R|foo/bar/TreeDsl|()  @R|foo/bar/LayoutDsl|()  foo/bar/Tag.() -> kotlin/Unit|): R|kotlin/Unit| {
+        ^layoutTree R|<local>/block|.R|SubstitutionOverride<kotlin/Function1.invoke: R|kotlin/Unit|>|(R|foo/bar/Tag.Tag|())
+    }
+    public final fun contextualTree(block: R|@ContextFunctionTypeParams(1) @R|foo/bar/TreeDsl|()  context(foo/bar/Tag) () -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun tree2(block: R|@R|foo/bar/TreeDsl|()  foo/bar/Tag.() -> kotlin/Unit|): R|kotlin/Unit| {
+        ^tree2 R|<local>/block|.R|SubstitutionOverride<kotlin/Function1.invoke: R|kotlin/Unit|>|(R|foo/bar/Tag.Tag|())
+    }
+    public final fun R|@R|foo/bar/TreeDsl|()  foo/bar/Tag|.build(): R|kotlin/Unit| {
+    }
+    public final class Div : R|@R|foo/bar/TreeDsl|()  foo/bar/Tag| {
+        public constructor(): R|foo/bar/Div| {
+            super<R|@R|foo/bar/TreeDsl|()  foo/bar/Tag|>()
+        }
+
+    }
+    public final typealias MarkedTag = R|@R|foo/bar/TreeDsl|()  foo/bar/Tag|
+    @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.TYPE|)) public final annotation class PlainTypeAnnotation : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/PlainTypeAnnotation| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun plain(tag: R|@R|foo/bar/PlainTypeAnnotation|()  foo/bar/Tag|): R|kotlin/Unit| {
+    }
+    public final val tags: R|kotlin/collections/List<@R|foo/bar/TreeDsl|()  foo/bar/Tag>| = R|kotlin/collections/emptyList|<R|@R|foo/bar/TreeDsl|()  foo/bar/Tag|>()
+        public get(): R|kotlin/collections/List<@R|foo/bar/TreeDsl|()  foo/bar/Tag>|

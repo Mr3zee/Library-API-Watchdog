@@ -1,0 +1,201 @@
+FILE: booleanParameter.kt
+    package foo.bar
+
+    public final fun doWork(optimizeForSpeed: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public final fun mixed(first: R|kotlin/Boolean|, count: R|kotlin/Int|, second: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public final fun withDefault(eager: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit| {
+    }
+    public final fun tristate(flag: R|kotlin/Boolean?|): R|kotlin/Unit| {
+    }
+    public final typealias Flag = R|kotlin/Boolean|
+    public final fun aliased(flag: R|{foo/bar/Flag=} kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public final fun varargFlags(vararg flags: R|kotlin/BooleanArray|): R|kotlin/Unit| {
+    }
+    context(verbose: R|kotlin/Boolean|)
+    public final fun logLine(message: R|kotlin/String|): R|kotlin/Unit| {
+    }
+    context(<unused var>: R|kotlin/Boolean|)
+    public final fun trace(message: R|kotlin/String|): R|kotlin/Unit| {
+    }
+    public final class Logger : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Logger| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    context(logger: R|foo/bar/Logger|)
+    public final fun logNamed(message: R|kotlin/String|): R|kotlin/Unit| {
+    }
+    public abstract class Base : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Base| {
+            super<R|kotlin/Any|>()
+        }
+
+        protected final fun guarded(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    @R|kotlin/PublishedApi|() internal final fun published(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public final class Bits : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Bits| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final operator fun set(index: R|kotlin/Int|, value: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    public abstract interface Togglable : R|kotlin/Any| {
+        public abstract fun toggle(state: R|kotlin/Boolean|): R|kotlin/Unit|
+
+    }
+    public final class Switch : R|foo/bar/Togglable| {
+        public constructor(): R|foo/bar/Switch| {
+            super<R|kotlin/Any|>()
+        }
+
+        public open override fun toggle(state: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    public final class Widget : R|kotlin/Any| {
+        public constructor(visible: R|kotlin/Boolean|): R|foo/bar/Widget| {
+            super<R|kotlin/Any|>()
+        }
+
+        public constructor(visible: R|kotlin/Boolean|, tag: R|kotlin/String|): R|foo/bar/Widget| {
+            this<R|foo/bar/Widget|>(R|<local>/visible|)
+        }
+
+        public final fun refresh(force: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    public final class Config : R|kotlin/Any| {
+        public constructor(enabled: R|kotlin/Boolean|): R|foo/bar/Config| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val enabled: R|kotlin/Boolean| = R|<local>/enabled|
+            public get(): R|kotlin/Boolean|
+
+    }
+    public final data class DataFlags : R|kotlin/Any| {
+        public constructor(debug: R|kotlin/Boolean|): R|foo/bar/DataFlags| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val debug: R|kotlin/Boolean| = R|<local>/debug|
+            public get(): R|kotlin/Boolean|
+
+        public final operator fun component1(): R|kotlin/Boolean|
+
+        public final fun copy(debug: R|kotlin/Boolean| = this@R|foo/bar/DataFlags|.R|foo/bar/DataFlags.debug|): R|foo/bar/DataFlags|
+
+    }
+    public final enum class Mode : R|kotlin/Enum<foo/bar/Mode>| {
+        private constructor(fast: R|kotlin/Boolean|): R|foo/bar/Mode| {
+            super<R|kotlin/Enum<foo/bar/Mode>|>()
+        }
+
+        public final val fast: R|kotlin/Boolean| = R|<local>/fast|
+            public get(): R|kotlin/Boolean|
+
+        public final static enum entry QUICK: R|foo/bar/Mode| = object : R|foo/bar/Mode| {
+            private constructor(): R|foo/bar/<anonymous>| {
+                super<R|foo/bar/Mode|>(Boolean(true))
+            }
+
+        }
+
+        public final static enum entry FULL: R|foo/bar/Mode| = object : R|foo/bar/Mode| {
+            private constructor(): R|foo/bar/<anonymous>| {
+                super<R|foo/bar/Mode|>(Boolean(false))
+            }
+
+        }
+
+        public final static fun values(): R|kotlin/Array<foo/bar/Mode>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/Mode| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/Mode>|
+            public get(): R|kotlin/enums/EnumEntries<foo/bar/Mode>|
+
+    }
+    public final annotation class Feature : R|kotlin/Annotation| {
+        public constructor(enabled: R|kotlin/Boolean|): R|foo/bar/Feature| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val enabled: R|kotlin/Boolean| = R|<local>/enabled|
+            public get(): R|kotlin/Boolean|
+
+    }
+    public final fun Widget(visible: R|kotlin/Boolean|, scale: R|kotlin/Int|): R|foo/bar/Widget| {
+        ^Widget R|foo/bar/Widget.Widget|(R|<local>/visible|)
+    }
+    public final fun Config(enabled: R|kotlin/Boolean|, validate: R|kotlin/Boolean|): R|foo/bar/Config?| {
+        ^Config when () {
+            R|<local>/validate| ->  {
+                R|foo/bar/Config.Config|(R|<local>/enabled|)
+            }
+            else ->  {
+                Null(null)
+            }
+        }
+
+    }
+    public final typealias Toggle = R|foo/bar/Widget|
+    public final fun Toggle(on: R|kotlin/Boolean|, brightness: R|kotlin/Int|): R|{foo/bar/Toggle=} foo/bar/Widget| {
+        ^Toggle R|foo/bar/Widget.Widget|(R|<local>/on|)
+    }
+    public final fun createWidget(visible: R|kotlin/Boolean|): R|foo/bar/Widget| {
+        ^createWidget R|foo/bar/Widget.Widget|(R|<local>/visible|)
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final fun acknowledgedSignature(enabled: R|kotlin/Boolean|, verbose: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public final fun acknowledgedParameter(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) accepted: R|kotlin/Boolean|, rejected: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    context(verbose: R|kotlin/Boolean|)
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final fun acknowledgedContext(message: R|kotlin/String|): R|kotlin/Unit| {
+    }
+    context(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) verbose: R|kotlin/Boolean|)
+    public final fun acknowledgedContextParameter(message: R|kotlin/String|): R|kotlin/Unit| {
+    }
+    public final fun isReady(): R|kotlin/Boolean| {
+        ^isReady Boolean(true)
+    }
+    public final class Session : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Session| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final var active: R|kotlin/Boolean| = Boolean(false)
+            public get(): R|kotlin/Boolean|
+            public set(value: R|kotlin/Boolean|): R|kotlin/Unit|
+
+    }
+    public final fun filter(items: R|kotlin/collections/List<kotlin/String>|, predicate: R|(kotlin/String) -> kotlin/Boolean|): R|kotlin/collections/List<kotlin/String>| {
+        ^filter R|<local>/items|.R|kotlin/collections/filter|<R|kotlin/String|>(R|<local>/predicate|)
+    }
+    public final fun R|kotlin/Boolean|.negated(): R|kotlin/Boolean| {
+        ^negated this@R|foo/bar/negated|.R|kotlin/Boolean.not|()
+    }
+    internal final fun internalToggle(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    private final fun privateToggle(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public final fun outer(): R|kotlin/Unit| {
+        local final fun local(flag: R|kotlin/Boolean|): R|kotlin/Boolean| {
+            ^local R|<local>/flag|
+        }
+
+        R|<local>/local|(Boolean(true))
+    }

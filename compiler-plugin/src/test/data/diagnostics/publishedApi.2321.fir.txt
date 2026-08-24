@@ -1,0 +1,143 @@
+FILE: publishedApi.kt
+    package foo.bar
+
+    @R|kotlin/PublishedApi|() internal final class PublishedClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PublishedClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/PublishedApi|() internal final fun publishedFunction(): R|kotlin/Unit| {
+    }
+    @R|kotlin/PublishedApi|() internal final val publishedProperty: R|kotlin/Int| = Int(0)
+        internal get(): R|kotlin/Int|
+    @R|kotlin/PublishedApi|() internal final class DocumentedPublishedClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/DocumentedPublishedClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final class PublicOuterWithPublishedMembers : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PublicOuterWithPublishedMembers| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|kotlin/PublishedApi|() internal final fun publishedMember(): R|kotlin/Unit| {
+        }
+
+        @R|kotlin/PublishedApi|() internal final val publishedMemberProperty: R|kotlin/Int| = Int(0)
+            internal get(): R|kotlin/Int|
+
+        internal final fun plainInternalMember(): R|kotlin/Unit| {
+        }
+
+        public final inline fun useMembers(block: R|() -> kotlin/Unit|): R|kotlin/Int| {
+            R|<local>/block|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()
+            this@R|foo/bar/PublicOuterWithPublishedMembers|.R|foo/bar/PublicOuterWithPublishedMembers.publishedMember|()
+            ^useMembers this@R|foo/bar/PublicOuterWithPublishedMembers|.R|foo/bar/PublicOuterWithPublishedMembers.publishedMemberProperty|
+        }
+
+    }
+    public final class WithPublishedConstructor : R|kotlin/Any| {
+        private constructor(value: R|kotlin/Int|): R|foo/bar/WithPublishedConstructor| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val value: R|kotlin/Int| = R|<local>/value|
+            public get(): R|kotlin/Int|
+
+        @R|kotlin/PublishedApi|() internal constructor(): R|foo/bar/WithPublishedConstructor| {
+            this<R|foo/bar/WithPublishedConstructor|>(Int(0))
+        }
+
+    }
+    @R|kotlin/PublishedApi|() internal final class PublishedOuter : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PublishedOuter| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun undocumentedMember(): R|kotlin/Unit| {
+        }
+
+        private final fun privateMember(): R|kotlin/Unit| {
+        }
+
+    }
+    @R|kotlin/PublishedApi|() internal open class PublishedOpenClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PublishedOpenClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|() @R|kotlin/PublishedApi|() internal open class AcknowledgedPublishedOpenClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/AcknowledgedPublishedOpenClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/SubclassOptInRequired|() @R|kotlin/PublishedApi|() internal open class PublishedOpenClassWithEmptyOptIn : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PublishedOpenClassWithEmptyOptIn| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/PublishedApi|() internal final enum class PublishedEnum : R|kotlin/Enum<foo/bar/PublishedEnum>| {
+        private constructor(): R|foo/bar/PublishedEnum| {
+            super<R|kotlin/Enum<foo/bar/PublishedEnum>|>()
+        }
+
+        public final static enum entry ENTRY: R|foo/bar/PublishedEnum|
+        public final static fun values(): R|kotlin/Array<foo/bar/PublishedEnum>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/PublishedEnum| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/PublishedEnum>|
+            public get(): R|kotlin/enums/EnumEntries<foo/bar/PublishedEnum>|
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyExhaustive|() @R|kotlin/PublishedApi|() internal final enum class AcknowledgedPublishedEnum : R|kotlin/Enum<foo/bar/AcknowledgedPublishedEnum>| {
+        private constructor(): R|foo/bar/AcknowledgedPublishedEnum| {
+            super<R|kotlin/Enum<foo/bar/AcknowledgedPublishedEnum>|>()
+        }
+
+        public final static enum entry ENTRY: R|foo/bar/AcknowledgedPublishedEnum|
+        public final static fun values(): R|kotlin/Array<foo/bar/AcknowledgedPublishedEnum>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/AcknowledgedPublishedEnum| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/AcknowledgedPublishedEnum>|
+            public get(): R|kotlin/enums/EnumEntries<foo/bar/AcknowledgedPublishedEnum>|
+
+    }
+    internal final class PlainInternalClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PlainInternalClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    internal open class PlainInternalOpenClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PlainInternalOpenClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    internal final enum class PlainInternalEnum : R|kotlin/Enum<foo/bar/PlainInternalEnum>| {
+        private constructor(): R|foo/bar/PlainInternalEnum| {
+            super<R|kotlin/Enum<foo/bar/PlainInternalEnum>|>()
+        }
+
+        public final static enum entry ENTRY: R|foo/bar/PlainInternalEnum|
+        public final static fun values(): R|kotlin/Array<foo/bar/PlainInternalEnum>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/PlainInternalEnum| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/PlainInternalEnum>|
+            public get(): R|kotlin/enums/EnumEntries<foo/bar/PlainInternalEnum>|
+
+    }

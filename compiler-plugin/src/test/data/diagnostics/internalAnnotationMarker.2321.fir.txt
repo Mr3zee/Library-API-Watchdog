@@ -1,0 +1,122 @@
+FILE: internalAnnotationMarker.kt
+    package foo.bar
+
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/InternalAnnotationMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.TYPEALIAS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.PROPERTY|)) public final annotation class InternalLibApi : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/InternalLibApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|foo/bar/InternalLibApi|() public open class InternalOpenClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/InternalOpenClass| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun memberOfInternal(): R|kotlin/Unit| {
+        }
+
+        public final val propertyOfInternal: R|kotlin/Int| = Int(0)
+            public get(): R|kotlin/Int|
+
+        public final class NestedInInternal : R|kotlin/Any| {
+            public constructor(): R|foo/bar/InternalOpenClass.NestedInInternal| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+        public final enum class NestedEnumInInternal : R|kotlin/Enum<foo/bar/InternalOpenClass.NestedEnumInInternal>| {
+            private constructor(): R|foo/bar/InternalOpenClass.NestedEnumInInternal| {
+                super<R|kotlin/Enum<foo/bar/InternalOpenClass.NestedEnumInInternal>|>()
+            }
+
+            public final static enum entry ENTRY: R|foo/bar/InternalOpenClass.NestedEnumInInternal|
+            public final static fun values(): R|kotlin/Array<foo/bar/InternalOpenClass.NestedEnumInInternal>| {
+            }
+
+            public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/InternalOpenClass.NestedEnumInInternal| {
+            }
+
+            public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/InternalOpenClass.NestedEnumInInternal>|
+                public get(): R|kotlin/enums/EnumEntries<foo/bar/InternalOpenClass.NestedEnumInInternal>|
+
+        }
+
+    }
+    @R|foo/bar/InternalLibApi|() public abstract interface InternalInterface : R|kotlin/Any| {
+    }
+    @R|foo/bar/InternalLibApi|() public final enum class InternalEnum : R|kotlin/Enum<foo/bar/InternalEnum>| {
+        private constructor(): R|foo/bar/InternalEnum| {
+            super<R|kotlin/Enum<foo/bar/InternalEnum>|>()
+        }
+
+        public final static enum entry ENTRY: R|foo/bar/InternalEnum|
+        public final static fun values(): R|kotlin/Array<foo/bar/InternalEnum>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/InternalEnum| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/InternalEnum>|
+            public get(): R|kotlin/enums/EnumEntries<foo/bar/InternalEnum>|
+
+    }
+    @R|foo/bar/InternalLibApi|() public sealed class InternalSealed : R|kotlin/Any| {
+        protected constructor(): R|foo/bar/InternalSealed| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|foo/bar/InternalLibApi|() public final typealias InternalCallback = R|() -> kotlin/Unit|
+    @R|foo/bar/InternalLibApi|() public final fun internalFunction(): R|kotlin/Unit| {
+    }
+    @R|foo/bar/InternalLibApi|() public final val internalProperty: R|kotlin/Int| = Int(0)
+        public get(): R|kotlin/Int|
+    public final typealias AliasedInternalLibApi = R|foo/bar/InternalLibApi|
+    @R|{foo/bar/AliasedInternalLibApi=} foo/bar/InternalLibApi|() public final class InternalThroughAlias : R|kotlin/Any| {
+        public constructor(): R|foo/bar/InternalThroughAlias| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/libs/api/watchdog/InternalAnnotationMarker|() public final annotation class UndocumentedMarker : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/UndocumentedMarker| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final annotation class OrdinaryAnnotation : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/OrdinaryAnnotation| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|foo/bar/OrdinaryAnnotation|() public final class WatchedDespiteAnnotated : R|kotlin/Any| {
+        public constructor(): R|foo/bar/WatchedDespiteAnnotated| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public open class WatchedOpenClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/WatchedOpenClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final enum class WatchedEnum : R|kotlin/Enum<foo/bar/WatchedEnum>| {
+        private constructor(): R|foo/bar/WatchedEnum| {
+            super<R|kotlin/Enum<foo/bar/WatchedEnum>|>()
+        }
+
+        public final static enum entry ENTRY: R|foo/bar/WatchedEnum|
+        public final static fun values(): R|kotlin/Array<foo/bar/WatchedEnum>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/WatchedEnum| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/WatchedEnum>|
+            public get(): R|kotlin/enums/EnumEntries<foo/bar/WatchedEnum>|
+
+    }
+    public final typealias WatchedCallback = R|() -> kotlin/Unit|

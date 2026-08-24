@@ -13,7 +13,7 @@ FILE: dslMarker.kt
         }
 
     }
-    @R|kotlin/DslMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(*<collectionLiteralCall>(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.TYPE|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.LOCAL_VARIABLE|)) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.TYPE|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.LOCAL_VARIABLE|)]) public final annotation class ArrayFormDsl : R|kotlin/Annotation| {
+    @R|kotlin/DslMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(*<collectionLiteralCall>(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.TYPE|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.LOCAL_VARIABLE|)) [evaluated = vararg(*<collectionLiteralCall>(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.TYPE|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.LOCAL_VARIABLE|))]) public final annotation class ArrayFormDsl : R|kotlin/Annotation| {
         public constructor(): R|foo/bar/ArrayFormDsl| {
             super<R|kotlin/Any|>()
         }
