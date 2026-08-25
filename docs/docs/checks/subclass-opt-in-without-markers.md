@@ -14,7 +14,7 @@ marker classes.
 
 `markerClass` is a vararg parameter, so `@SubclassOptInRequired` compiles fine with zero
 arguments. The annotation restricts nothing in this case: the class or
-interface stays open to external subclassing exactly as if it were unannotated.
+interface stays open to external subclassing exactly as if it was unannotated.
 
 ```kotlin
 // !hide-focused
@@ -57,13 +57,7 @@ public annotation class UnstableApi
 /** A connector implemented under an opt-in contract. */
 @SubclassOptInRequired(UnstableApi::class)
 public abstract class Connector
-
-// !hide-focused
-/** A plugin implemented under an opt-in contract. */
-@SubclassOptInRequired(UnstableApi::class)
-public interface Plugin
 ```
-
 
 ## Notes
 

@@ -37,7 +37,19 @@ Unrestricted open API is one of the classic ways a
 /** Base type for UI elements rendered by an application. */
 // !diag[/Widget/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["class","Widget"]
 public open class Widget
+```
 
+### Do
+
+```kotlin
+// !hide-focused
+/** A UI widget whose internal constructor prevents external subclasses. */
+public open class Widget internal constructor()
+```
+
+### Don't
+
+```kotlin
 // !hide-focused
 /** Extension point invoked during application startup. */
 // !diag[/Plugin/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["interface","Plugin"]
@@ -51,9 +63,6 @@ public interface Plugin {
 ### Do
 
 ```kotlin
-// !hide-focused
-/** A UI widget whose internal constructor prevents external subclasses. */
-public open class Widget internal constructor()
 
 // !hide-focused
 /** Marks APIs that require an opt-in. */

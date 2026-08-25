@@ -80,8 +80,6 @@ public class Connection(public val host: String)
 
 ### Do
 
-Generate the members with Poko:
-
 ```kotlin
 // !hide-focused(1:5)
 /**
@@ -139,10 +137,7 @@ example, a sensitive handle may intentionally use identity equality and avoid re
  *
  * @property host network host serving requests.
  */
-@IntentionallyWithoutEqualsHashCodeOrToString(
-    reason = ExemptionReason.API_DESIGN,
-    description = "A live connection uses identity semantics and omits configuration from logs.",
-)
+@IntentionallyWithoutEqualsHashCodeOrToString(reason = ExemptionReason.API_DESIGN)
 public class Connection(public val host: String)
 ```
 
@@ -164,8 +159,7 @@ plugins {
 }
 ```
 
-Annotate each class whose `equals`, `hashCode`, and `toString` should be generated with `@Poko`, as
-shown in the [usage sample](#do).
+Annotate each class whose `equals`, `hashCode`, and `toString` should be generated with `@Poko`.
 
 ### Check severity
 

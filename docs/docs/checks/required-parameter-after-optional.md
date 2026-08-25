@@ -51,9 +51,7 @@ public fun configure(
 A required parameter behind an optional one can't be passed positionally,
 which pushes callers toward named arguments for a parameter that should have been more trivial to supply.
 See the Kotlin library authors' guide on
-[parameter order, naming, and usage](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage):
-essential inputs first, optional inputs last.
-
+[parameter order, naming, and usage](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage).
 
 ### Don't
 
@@ -115,8 +113,7 @@ public class Server
 - A `vararg` parameter counts as optional too: callers can omit it entirely, so a required
   parameter after it is still reported.
 - A required function-type or `fun interface` parameter in the **last** position is not reported:
-  keeping it last is what makes trailing-lambda call syntax available, and the standard library itself
-  places such parameters after defaulted ones (`joinToString(separator = ..., transform)`). The
+  keeping it last is what makes trailing-lambda call syntax available. The
   same required function-type parameter is still reported when it is *not* last, since there is no
   trailing-lambda syntax to preserve there.
 - Overrides are not reported: they can't declare default values, and their parameter order is
@@ -160,5 +157,5 @@ With direct compiler invocation:
 ## See also
 
 - [Preserve parameter order, naming, and usage](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage)
-- [Inconsistent parameter order in overloads](./inconsistent-parameter-order-in-overloads.md), a sibling check on parameter order across overloads
+- [Inconsistent parameter order in overloads](./inconsistent-parameter-order-in-overloads.md)
 - [Exemptions and internal API](../exemptions.md)

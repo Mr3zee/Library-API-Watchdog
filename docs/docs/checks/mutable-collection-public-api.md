@@ -135,18 +135,14 @@ the API contract.
 // !hide-focused
 @Poko
 public class Holder(
-    @IntentionallyMutableCollection(
-        reason = ExemptionReason.API_DESIGN,
-    )
+    @IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)
     public val items: MutableList<Int>,
 )
 
 // !hide-focused
 /** Removes all scheduled item IDs from [items]. */
 public fun consume(
-    @IntentionallyMutableCollection(
-        reason = ExemptionReason.API_DESIGN,
-    )
+    @IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)
     items: MutableSet<Int>,
 ) {
     items.clear()
@@ -169,6 +165,5 @@ With direct compiler invocation:
 ## See also
 
 - [Avoid exposing mutable state](https://kotlinlang.org/docs/api-guidelines-predictability.html#avoid-exposing-mutable-state)
-- [Pair and Triple in public API](./pair-or-triple-public-api.md), a sibling check for tuple types
-  found by the same signature sweep.
+- [Pair and Triple in public API](./pair-or-triple-public-api.md)
 - [Exemptions and internal API](../exemptions.md)

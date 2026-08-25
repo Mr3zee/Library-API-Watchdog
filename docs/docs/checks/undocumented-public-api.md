@@ -11,10 +11,8 @@
 
 ## What it reports
 
-Each publicly visible declaration a user can reference - classes, interfaces, objects, enum
-classes, annotation classes, type aliases, functions, properties, secondary constructors, and enum
-entries - is reported when it carries no KDoc. Only the presence of a KDoc is checked, not its
-content:
+Each publicly visible declaration a user can reference is reported when it carries no KDoc. 
+Only the presence of a KDoc is checked, not its content:
 
 ```kotlin
 // !diag[/Store/] UNDOCUMENTED_PUBLIC_API ["class","Store"]
@@ -38,8 +36,8 @@ supported. Writing the contract down helps your library avoid these issues. See 
 public class Cache {
     // !diag[/get/] UNDOCUMENTED_PUBLIC_API ["function","get"]
     public fun get(key: String): String? = store[key]
+    // !hide-focused(1:3)
 
-    // !hide-focused(1:2)
     // Supporting implementation
     private val store: MutableMap<String, String> = mutableMapOf()
 }
@@ -57,8 +55,8 @@ public class Cache {
      * or null when nothing is cached under it.
      */
     public fun get(key: String): String? = store[key]
+    // !hide-focused(1:3)
 
-    // !hide-focused(1:2)
     // Supporting implementation
     private val store: MutableMap<String, String> = mutableMapOf()
 }
@@ -95,15 +93,14 @@ public class Profile(
 // !hide-focused
 @Poko
 public class Profile(
-  public val name: String,
-  public val age: Int,
+    public val name: String,
+    public val age: Int,
 )
 ```
 
-
 ## Notes
 
-- Overrides and `actual` declarations inherit the KDoc of the declaration they implement.
+- Overrides and `actual` declarations inherit the KDoc of the declaration they implement and are not reported.
 - Compiler-generated members (data class `copy`/`componentN`, enum `values`/`valueOf`/`entries`)
   have no source of their own and are never reported.
 - A plain `//` or `/* */` comment doesn't count, only a KDoc block (`/** ... */`) satisfies the
@@ -120,8 +117,8 @@ constructor, or enum entry that stays undocumented. It doesn't cover nested or m
 declarations:
 
 ```kotlin
-// No example here, because I couldn't find a good one when an API
-// shouldn't be documented.
+// No example here, because I couldn't find a valid case when an API
+// shouldn't be documented 🤷
 ```
 
 ## Configuration

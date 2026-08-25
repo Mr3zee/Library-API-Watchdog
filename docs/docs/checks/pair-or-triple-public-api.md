@@ -45,23 +45,6 @@ optional property with a default value. See the
 /** Returns unnamed dimensions. */
 // !diag[/Triple<Int, Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","dimensions","Triple"]
 public fun dimensions(): Triple<Int, Int, Int> = Triple(0, 0, 0)
-
-// !hide-focused(1:5)
-/**
- * Attaches content to an unnamed coordinate pair.
- *
- * @property position horizontal and vertical anchor coordinates.
- */
-// !hide-focused
-@Poko
-// !diag[/Pair<Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["property","position","Pair"]
-public class Anchor(public val position: Pair<Int, Int>)
-
-// !hide-focused
-/** Returns unnamed edges. */
-// !diag[/List<Pair<Int, Int>>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","edges","Pair"]
-public fun edges(): List<Pair<Int, Int>> = emptyList()
-
 ```
 
 ### Do
@@ -89,7 +72,26 @@ public class Dimensions(
 // !hide-focused
 /** Returns the dimensions. */
 public fun dimensions(): Dimensions = Dimensions(0, 0, 0)
+```
 
+### Don't
+
+```kotlin
+// !hide-focused(1:5)
+/**
+ * Attaches content to an unnamed coordinate pair.
+ *
+ * @property position horizontal and vertical anchor coordinates.
+ */
+// !hide-focused
+@Poko
+// !diag[/Pair<Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["property","position","Pair"]
+public class Anchor(public val position: Pair<Int, Int>)
+```
+
+### Do
+
+```kotlin
 // !hide-focused(1:6)
 /**
  * A position in Cartesian coordinate space.
@@ -113,12 +115,30 @@ public class Point(
 // !hide-focused
 @Poko
 public class Anchor(public val position: Point)
+```
+
+### Don't
+
+```kotlin
+// !hide-focused
+@file:JvmName("Geometry")
+
+// !hide-focused
+/** Returns unnamed edges. */
+// !diag[/List<Pair<Int, Int>>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","edges","Pair"]
+public fun edges(): List<Pair<Int, Int>> = emptyList()
+```
+
+### Do
+
+```kotlin
+// !hide-focused
+@file:JvmName("Geometry")
 
 // !hide-focused
 /** Returns edges. */
 public fun edges(): List<Point> = emptyList()
 ```
-
 
 ## Notes
 
@@ -133,8 +153,7 @@ public fun edges(): List<Point> = emptyList()
 
 ## Exemption
 
-Apply `@IntentionallyPairOrTriple` on the whole declaration, on a single parameter or type
-parameter, or on a type usage, where it covers the annotated type and everything nested in it:
+Apply `@IntentionallyPairOrTriple` on the whole declaration when the usage of a tuple type is intended:
 
 ```kotlin
 // !hide-focused
@@ -144,25 +163,6 @@ parameter, or on a type usage, where it covers the annotated type and everything
 /** Returns deliberately unnamed dimensions. */
 @IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN)
 public fun dimensions(): Triple<Int, Int, Int> = Triple(0, 0, 0)
-
-// !hide-focused(1:5)
-/**
- * Attaches content to a deliberately unnamed coordinate pair.
- *
- * @property position horizontal and vertical anchor coordinates.
- */
-// !hide-focused
-@Poko
-public class Anchor(
-    public val position: @IntentionallyPairOrTriple(
-        reason = ExemptionReason.API_DESIGN,
-    ) Pair<Int, Int>,
-)
-
-// !hide-focused
-/** Returns deliberately unnamed edges. */
-@IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN)
-public fun edges(): List<Pair<Int, Int>> = emptyList()
 ```
 
 ## Configuration

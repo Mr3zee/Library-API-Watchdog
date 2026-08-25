@@ -204,6 +204,5 @@ With direct compiler invocation:
 ## See also
 
 - [Preserve parameter order, naming, and usage](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage)
-- [Required parameters after optional ones](./required-parameter-after-optional.md), a sibling check
-  on parameter order within one declaration
+- [Required parameters after optional ones](./required-parameter-after-optional.md)
 - [Exemptions and internal API](../exemptions.md)

@@ -1,7 +1,5 @@
 # Nullable Booleans in public API
 
-[//]: # (// TODO this is next)
-
 `NULLABLE_BOOLEAN_PUBLIC_API` reports `Boolean?` in publicly visible signatures.
 
 |                  |                                                     |
@@ -64,10 +62,12 @@ public enum class ConnectionState {
     // !hide-focused
     /** An active transport can carry requests. */
     CONNECTED,
+    // !hide-focused
 
     // !hide-focused
     /** No transport is currently available. */
     DISCONNECTED,
+    // !hide-focused
 
     // !hide-focused
     /** The transport has not reported its state yet. */
@@ -107,10 +107,12 @@ public enum class CheckState {
     // !hide-focused
     /** The control is selected. */
     CHECKED,
+    // !hide-focused
 
     // !hide-focused
     /** The control is not selected. */
     UNCHECKED,
+    // !hide-focused
 
     // !hide-focused
     /** The control has not been initialized. */
@@ -134,8 +136,8 @@ public class Holder(public val checked: CheckState)
 - `@PublishedApi internal` declarations are not reported because their types do not cross the
   supported source API boundary.
 - Unlike [`BOOLEAN_PARAMETER_PUBLIC_API`](./boolean-parameter-public-api.md), constructors are checked too.
-- A type alias resolves to its expansion, and a `Boolean?` bound on a type parameter
-  (`<T : Boolean?>`) is reported the same as a direct mention.
+- A typealias is reported.
+- A `Boolean?` bound on a type parameter `<T : Boolean?>`) is reported.
 - Extension receivers are not reported: an extension on `Boolean?`, typically a remedial helper
   like `fun Boolean?.orFalse()`, serves values the user already holds.
 - Overrides are not reported: their signature is fixed by the overridden declaration, which is
@@ -173,6 +175,5 @@ With direct compiler invocation:
 ## See also
 
 - [Avoid using the Boolean type as an argument](https://kotlinlang.org/docs/api-guidelines-readability.html#avoid-using-the-boolean-type-as-an-argument)
-- [Boolean parameters in public API](./boolean-parameter-public-api.md), a sibling check that skips
-  constructors and only looks at parameters, not return types or properties.
+- [Boolean parameters in public API](./boolean-parameter-public-api.md)
 - [Exemptions and internal API](../exemptions.md)
