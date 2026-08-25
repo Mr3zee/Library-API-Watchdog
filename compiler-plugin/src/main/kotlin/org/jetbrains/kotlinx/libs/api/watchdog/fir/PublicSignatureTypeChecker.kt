@@ -86,7 +86,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
     protected open fun ConeKotlinType.declaredBound(): ConeKotlinType = upperBoundIfFlexible()
 
     /** Whether this annotated type and everything nested in it should be skipped. */
-    context(context: CheckerContext, reporter: DiagnosticReporter)
+    context(context: CheckerContext)
     protected open fun ConeKotlinType.isTypeExempt(): Boolean = false
 
     /** An alternate type whose classifier must be inspected before this type's classifier. */

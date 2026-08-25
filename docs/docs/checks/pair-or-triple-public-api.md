@@ -142,14 +142,14 @@ public fun edges(): List<Point> = emptyList()
 
 ## Notes
 
-- `@PublishedApi internal` declarations are not reported because their tuple types do not cross the
-  supported source API boundary.
 - A tuple type parameter bound (`<T : Pair<Int, Int>>`) is reported too: it constrains every
   instantiation to the tuple shape, exposing it just like a direct mention.
 - Extension receivers are not reported: `fun Pair<Int, Int>.manhattanLength(): Int` serves a
   value the user already holds instead of handing out a new tuple.
 - Overrides are not reported: their signature is fixed by the overridden declaration, which is
   reported instead.
+- `@PublishedApi internal` declarations are not reported because their tuple types do not cross the
+  supported source API boundary.
 
 ## Exemption
 

@@ -124,10 +124,10 @@ only fix for constructors and overridable members, since `@JvmName` doesn't acce
 - `suspend` functions are reported by [`KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`](./kotlin-only-api-without-jvm-synthetic.md) instead.
 - Overrides are not reported: their signature is fixed by the overridden declaration, which is
   reported instead.
-- `@PublishedApi internal` declarations are not reported: their public bytecode entry is a binary
-  implementation detail, not supported Java source API.
 - `@JvmSynthetic` declarations are hidden from Java on purpose and are not reported.
 - Non-JVM compilations never register this check at all.
+- `@PublishedApi internal` declarations are not reported because their public bytecode entries are
+  binary implementation details rather than supported Java source API.
 
 ## Exemption
 

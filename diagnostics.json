@@ -31,7 +31,7 @@
       "name": "OPEN_API_WITHOUT_SUBCLASS_OPT_IN",
       "title": "Open API without subclass opt-in",
       "docs": "checks/open-api-without-subclass-opt-in",
-      "message": "The {0} `{1}` can be subclassed outside the library without restriction, which makes it hard to evolve. Mark it with `@SubclassOptInRequired` to control external subclassing, or with `@IntentionallyOpen` if unrestricted subclassing is intended."
+      "message": "The {0} `{1}` can be subclassed outside the library without restriction, which makes it hard to evolve. For classes, another option is to make every externally visible constructor `internal`. Mark it with `@SubclassOptInRequired` to control external subclassing, or with `@IntentionallyOpen` if unrestricted subclassing is intended."
     },
     {
       "name": "SUBCLASS_OPT_IN_WITHOUT_MARKERS",

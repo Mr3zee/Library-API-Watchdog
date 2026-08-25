@@ -103,14 +103,21 @@ public class Holder(
     @IntentionallyUndocumented(reason = ExemptionReason.API_DESIGN) public val explained: Int,
 )
 
-// Exemptions on type parameters and type usages must explain themselves too. The type-use form
-// never reaches the declaration checker and is validated where it is honored.
+// Exemptions on type parameters and type usages must explain themselves too. A dedicated type
+// checker validates the type-use form, including outside watched public API.
 
 public fun <<!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyMutableCollection<!> T : MutableList<Int>> bareBound(source: T): List<Int> = source.toList()
 
 public fun bareTypeUse(): <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyMutableCollection<!> MutableList<Int> = mutableListOf()
 
 public fun explainedTypeUse(): @IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN) MutableList<Int> = mutableListOf()
+
+private fun privateBareTypeUse(): <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyMutableCollection<!> MutableList<Int> = mutableListOf()
+
+public fun localBareTypeUse(): Unit {
+    val items: <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyMutableCollection<!> MutableList<Int> = mutableListOf()
+    items.clear()
+}
 
 // The check validates the annotation call itself, so it also fires on declarations that are
 // not watched public API: non-public declarations and internal API subtrees.

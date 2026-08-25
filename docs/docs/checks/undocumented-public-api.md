@@ -105,10 +105,9 @@ public class Profile(
   have no source of their own and are never reported.
 - A plain `//` or `/* */` comment doesn't count, only a KDoc block (`/** ... */`) satisfies the
   check.
-- Declarations that only `@PublishedApi` puts on the API surface are not reported, together with
-  everything inside a `@PublishedApi internal` class. They stay `internal` in sources, so no user
-  writes code against them and there is no usage contract to document - unlike their binary shape,
-  which the other checks still watch.
+- `@PublishedApi internal` declarations, including declarations inside a `@PublishedApi internal`
+  class, are not reported because library users cannot write source code against them and there is
+  no usage contract to document. Other checks still watch their binary shape.
 
 ## Exemption
 

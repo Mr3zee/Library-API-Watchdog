@@ -108,8 +108,6 @@ public class Server
 
 ## Notes
 
-- `@PublishedApi internal` functions and constructors are not reported because library users cannot
-  call them in source.
 - A `vararg` parameter counts as optional too: callers can omit it entirely, so a required
   parameter after it is still reported.
 - A required function-type or `fun interface` parameter in the **last** position is not reported:
@@ -118,6 +116,8 @@ public class Server
   trailing-lambda syntax to preserve there.
 - Overrides are not reported: they can't declare default values, and their parameter order is
   fixed by the overridden declaration, which is reported instead.
+- `@PublishedApi internal` functions and constructors are not reported because library users cannot
+  call them in source.
 
 ## Exemption
 

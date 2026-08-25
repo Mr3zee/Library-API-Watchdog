@@ -129,7 +129,9 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     val REQUIRED_PARAMETER_AFTER_OPTIONAL by configurable2<KtParameter, Name, Name>(NAME_IDENTIFIER)
 
     /** Parameters: the two swapped parameter names, the callable name. */
-    val INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS by configurable3<KtDeclaration, Name, Name, Name>(NAME_IDENTIFIER)
+    val INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS by configurable3<KtDeclaration, Name, Name, Name>(
+        CALLABLE_NAME_OR_CONSTRUCTOR_KEYWORD,
+    )
 
     /** Parameters: the function name, the parameter name. Reported on the parameter name. */
     val BOOLEAN_PARAMETER_PUBLIC_API by configurable2<KtParameter, Name, Name>(NAME_IDENTIFIER)

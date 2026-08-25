@@ -65,12 +65,14 @@ public class InternalModel
 public fun loadInternalModel(): InternalModel = InternalModel()
 ```
 
-`@PublishedApi internal` declarations are not reported. Although their binary shape is available
-to public inline code, users cannot name those declarations as source API, so exposing an internal
-type within their signatures does not create a supported source contract.
-
 There is no `@Intentionally*` exemption: either remove the internal type from the supported
 signature or mark the exposing declaration as internal API as well.
+
+## Notes
+
+- `@PublishedApi internal` declarations are not reported because library users cannot name them as
+  source API, so exposing an internal type in their signatures does not create a supported source
+  contract even though public inline code can use their binary shape.
 
 ## Configuration
 

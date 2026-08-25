@@ -8,6 +8,8 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirClassChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFileChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFunctionChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirTypeAliasChecker
+import org.jetbrains.kotlin.fir.analysis.checkers.type.FirResolvedTypeRefChecker
+import org.jetbrains.kotlin.fir.analysis.checkers.type.TypeCheckers
 import org.jetbrains.kotlinx.libs.api.watchdog.fir.BooleanParameterChecker
 import org.jetbrains.kotlinx.libs.api.watchdog.fir.CompanionJvmExposureChecker
 import org.jetbrains.kotlinx.libs.api.watchdog.fir.DataClassChecker
@@ -47,7 +49,12 @@ internal class CheckerSubject(
     val name: String,
     val configurableDiagnostics: List<String>,
     val needsDependencyPaths: Boolean = false,
-    val createCheckers: (environment: CheckerEnvironment) -> DeclarationCheckers,
+    val createCheckers: (environment: CheckerEnvironment) -> IsolatedCheckers,
+)
+
+internal class IsolatedCheckers(
+    val declarations: DeclarationCheckers = DeclarationCheckers.EMPTY,
+    val types: TypeCheckers = TypeCheckers.EMPTY,
 )
 
 internal class CheckerEnvironment(
@@ -93,7 +100,16 @@ internal object CheckerSubjects {
             ofBasic(UndocumentedApiChecker(environment.session, severities))
         },
         CheckerSubject("ExemptionExplanationChecker", emptyList()) {
-            ofBasic(ExemptionExplanationChecker())
+            IsolatedCheckers(
+                declarations = object : DeclarationCheckers() {
+                    override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> =
+                        setOf(ExemptionExplanationChecker.declarationChecker)
+                },
+                types = object : TypeCheckers() {
+                    override val resolvedTypeRefCheckers: Set<FirResolvedTypeRefChecker> =
+                        setOf(ExemptionExplanationChecker.typeChecker)
+                },
+            )
         },
         CheckerSubject("MutableCollectionChecker", listOf("MUTABLE_COLLECTION_PUBLIC_API")) { environment ->
             ofBasic(MutableCollectionChecker(environment.session, severities))
@@ -171,35 +187,47 @@ internal object CheckerSubjects {
     val byName: Map<String, CheckerSubject> = all.associateBy { it.name }
 
     /** Traversal-only baseline for the isolated benchmark. */
-    val emptyCheckers: DeclarationCheckers = object : DeclarationCheckers() {}
+    val emptyCheckers: IsolatedCheckers = IsolatedCheckers()
 
-    private fun ofClass(checker: FirClassChecker): DeclarationCheckers =
-        object : DeclarationCheckers() {
-            override val classCheckers: Set<FirClassChecker> = setOf(checker)
-        }
+    private fun ofClass(checker: FirClassChecker): IsolatedCheckers =
+        IsolatedCheckers(
+            declarations = object : DeclarationCheckers() {
+                override val classCheckers: Set<FirClassChecker> = setOf(checker)
+            },
+        )
 
-    private fun ofBasic(checker: FirBasicDeclarationChecker): DeclarationCheckers =
-        object : DeclarationCheckers() {
-            override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> = setOf(checker)
-        }
+    private fun ofBasic(checker: FirBasicDeclarationChecker): IsolatedCheckers =
+        IsolatedCheckers(
+            declarations = object : DeclarationCheckers() {
+                override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> = setOf(checker)
+            },
+        )
 
-    private fun ofFunction(checker: FirFunctionChecker): DeclarationCheckers =
-        object : DeclarationCheckers() {
-            override val functionCheckers: Set<FirFunctionChecker> = setOf(checker)
-        }
+    private fun ofFunction(checker: FirFunctionChecker): IsolatedCheckers =
+        IsolatedCheckers(
+            declarations = object : DeclarationCheckers() {
+                override val functionCheckers: Set<FirFunctionChecker> = setOf(checker)
+            },
+        )
 
-    private fun ofFile(checker: FirFileChecker): DeclarationCheckers =
-        object : DeclarationCheckers() {
-            override val fileCheckers: Set<FirFileChecker> = setOf(checker)
-        }
+    private fun ofFile(checker: FirFileChecker): IsolatedCheckers =
+        IsolatedCheckers(
+            declarations = object : DeclarationCheckers() {
+                override val fileCheckers: Set<FirFileChecker> = setOf(checker)
+            },
+        )
 
-    private fun ofTypeAlias(checker: FirTypeAliasChecker): DeclarationCheckers =
-        object : DeclarationCheckers() {
-            override val typeAliasCheckers: Set<FirTypeAliasChecker> = setOf(checker)
-        }
+    private fun ofTypeAlias(checker: FirTypeAliasChecker): IsolatedCheckers =
+        IsolatedCheckers(
+            declarations = object : DeclarationCheckers() {
+                override val typeAliasCheckers: Set<FirTypeAliasChecker> = setOf(checker)
+            },
+        )
 
-    private fun ofCallable(checker: FirCallableDeclarationChecker): DeclarationCheckers =
-        object : DeclarationCheckers() {
-            override val callableDeclarationCheckers: Set<FirCallableDeclarationChecker> = setOf(checker)
-        }
+    private fun ofCallable(checker: FirCallableDeclarationChecker): IsolatedCheckers =
+        IsolatedCheckers(
+            declarations = object : DeclarationCheckers() {
+                override val callableDeclarationCheckers: Set<FirCallableDeclarationChecker> = setOf(checker)
+            },
+        )
 }

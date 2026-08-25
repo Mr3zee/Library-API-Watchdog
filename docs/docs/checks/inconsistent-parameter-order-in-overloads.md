@@ -79,11 +79,11 @@ public fun draw(x: Int, y: Int, scale: Double) { }
 ```kotlin
 // !hide-focused
 /** Rectangle defined by its horizontal and vertical extents. */
-// !diag[/[(]width: Int, height: Int[)]/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["width","height","Rect"]
+// !diag[/Rect/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["width","height","Rect"]
 public class Rect(width: Int, height: Int) {
     // !hide-focused
     /** Creates a rectangle and applies [scale] to both extents. */
-    // !diag[/public constructor[(]height: Int, width: Int, scale: Double[)] : this[(]width, height[)]/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["height","width","Rect"]
+    // !diag[/constructor/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["height","width","Rect"]
     public constructor(height: Int, width: Int, scale: Double) : this(width, height)
 }
 ```
@@ -150,8 +150,6 @@ public fun Grid.fill(
 
 ## Notes
 
-- `@PublishedApi internal` overloads are neither reported nor used as comparison references because
-  library users cannot call them in source.
 - Overloads that share fewer than two parameter names can't disagree on order and are never
   reported, which is why single-argument conversion overloads with the same parameter name but
   different types (`BigDecimal(value: Int)` next to `BigDecimal(value: String)`) stay silent.
@@ -163,6 +161,8 @@ public fun Grid.fill(
   the subtype's overload, and it is the new declaration that differs from the supertype's order.
   Same for the extensions: only the extension itself is reposted,
   since the class can't see the extensions that are declared on it.
+- `@PublishedApi internal` overloads are neither reported nor used as comparison references because
+  library users cannot call them in source.
 
 ## Exemption
 

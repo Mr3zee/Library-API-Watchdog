@@ -327,9 +327,8 @@ private val apiDesignReason = Name.identifier("API_DESIGN")
 /**
  * The reason that fails to explain this exemption annotation on its own ([otherReason] when the
  * argument is absent), or null when the exemption is explained - by a self-sufficient reason or
- * by a non-blank description. Shared between [ExemptionExplanationChecker], which validates
- * exemptions on declarations, and the checkers that honor exemptions in positions declaration
- * checkers can't see (type-use annotations).
+ * by a non-blank description. Used by [ExemptionExplanationChecker] for exemption annotations on
+ * declarations and type usages.
  */
 context(context: CheckerContext)
 internal fun FirAnnotation.unexplainedExemptionReason(): Name? {

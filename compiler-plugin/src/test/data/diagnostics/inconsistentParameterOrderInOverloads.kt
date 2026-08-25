@@ -62,8 +62,8 @@ public class Canvas {
 
 // Constructors of a class are overloads of each other.
 
-public class Rect<!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>(width: Int, height: Int)<!> {
-    <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>public constructor(height: Int, width: Int, scale: Double) : this(width, height)<!>
+public class <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>Rect<!>(width: Int, height: Int) {
+    public <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>constructor<!>(height: Int, width: Int, scale: Double) : this(width, height)
 }
 
 // A member doesn't overload a same-named top-level function.

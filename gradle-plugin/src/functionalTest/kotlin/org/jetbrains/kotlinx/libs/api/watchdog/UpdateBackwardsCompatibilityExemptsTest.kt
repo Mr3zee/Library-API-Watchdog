@@ -504,7 +504,7 @@ private val alwaysErrorDiagnosticsFile = """
         /** Leaks a type consumers cannot obtain transitively. */
         public fun loadExternalModel(): ExternalModel = ExternalModel()
 
-        /** Carries an invalid type-use exemption, which declaration checkers cannot see. */
+        /** Carries an invalid type-use exemption handled by the dedicated type checker. */
         public fun loadMutable(): @IntentionallyMutableCollection MutableList<String> = mutableListOf()
     }
 """.trimIndent()

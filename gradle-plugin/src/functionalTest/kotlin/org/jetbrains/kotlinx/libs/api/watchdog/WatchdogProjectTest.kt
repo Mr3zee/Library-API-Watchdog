@@ -210,13 +210,13 @@ class WatchdogProjectTest {
 
     @Test
     fun unexplainedExemptionIsAlwaysAnError() {
-        // The only configurable diagnostic the file triggers is demoted, so the remaining error
-        // proves EXEMPTION_WITHOUT_EXPLANATION ignores severity configuration: the extension
-        // deliberately offers no property for it.
+        // The checker that honors this type-use exemption is disabled, so the remaining error
+        // proves EXEMPTION_WITHOUT_EXPLANATION is enforced independently and ignores severity
+        // configuration: the extension deliberately offers no property for it.
         val project = object : WatchdogProject(
             extraBuildScript = """
                 apiWatchdog {
-                    undocumentedPublicApi = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.WARNING
+                    mutableCollectionPublicApi = org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity.NONE
                 }
             """.trimIndent(),
         ) {
@@ -1153,8 +1153,8 @@ private val unacknowledgedFile = """
 @Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val unexplainedExemptionFile = """
-    @IntentionallyUndocumented
-    public class UnexplainedExemption
+    /** Returns a deliberately mutable result. */
+    public fun unexplainedExemption(): @IntentionallyMutableCollection MutableList<Int> = mutableListOf()
 """.trimIndent()
 
 @Suppress("RedundantVisibilityModifier")

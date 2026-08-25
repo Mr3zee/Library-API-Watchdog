@@ -123,10 +123,10 @@ computed default.
   reported: it exposes behavior rather than a fixed value, and `@JvmField` would not apply to most
   of these shapes anyway.
 - Overrides are not reported: their Java-facing shape is fixed by the overridden declaration.
-- `@PublishedApi internal` properties are not reported: their public bytecode entry is a binary
-  implementation detail, not supported Java source API.
 - `@JvmSynthetic` members are hidden from Java on purpose and are not reported.
 - Non-JVM compilations never register this check at all.
+- `@PublishedApi internal` properties are not reported because their public bytecode entries are
+  binary implementation details rather than supported Java source API.
 
 ## Exemption
 

@@ -16,8 +16,7 @@ import org.jetbrains.kotlin.name.Name
  */
 internal class PairOrTripleChecker(
     private val severities: WatchdogDiagnosticSeverities,
-    validateExemptionExplanations: Boolean = true,
-) : ExposedTypeChecker(WatchdogClassIds.IntentionallyPairOrTriple, validateExemptionExplanations) {
+) : ExposedTypeChecker(WatchdogClassIds.IntentionallyPairOrTriple) {
     context(context: CheckerContext)
     override fun ConeKotlinType.violatingClassifier(): Name? {
         val classId = (this as? ConeClassLikeType)?.lookupTag?.classId ?: return null

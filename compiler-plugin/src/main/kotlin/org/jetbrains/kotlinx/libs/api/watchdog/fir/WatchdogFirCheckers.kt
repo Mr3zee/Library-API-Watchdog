@@ -11,6 +11,8 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirDeclarationChec
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFileChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFunctionChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirTypeAliasChecker
+import org.jetbrains.kotlin.fir.analysis.checkers.type.FirResolvedTypeRefChecker
+import org.jetbrains.kotlin.fir.analysis.checkers.type.TypeCheckers
 import org.jetbrains.kotlin.fir.analysis.extensions.FirAdditionalCheckersExtension
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.languageVersionSettings
@@ -33,10 +35,10 @@ class WatchdogFirCheckers internal constructor(
     publicTypeWithInternalApiEnabled: Boolean = true,
     updatingBackwardsCompatibilityExempts: Boolean = false,
 ) : FirAdditionalCheckersExtension(session) {
-    override val declarationCheckers: DeclarationCheckers = object : DeclarationCheckers() {
-        private val enabled =
-            session.languageVersionSettings.getFlag(AnalysisFlags.explicitApiMode) != ExplicitApiMode.DISABLED
+    private val enabled =
+        session.languageVersionSettings.getFlag(AnalysisFlags.explicitApiMode) != ExplicitApiMode.DISABLED
 
+    override val declarationCheckers: DeclarationCheckers = object : DeclarationCheckers() {
         private fun <C : Any> C.unlessDisabled(vararg diagnostics: ConfigurableWatchdogDiagnostic<*>): C? =
             takeIf { enabled && diagnostics.any(severities::isEnabled) }
 
@@ -66,13 +68,14 @@ class WatchdogFirCheckers internal constructor(
         override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> = setOfNotNull(
             UndocumentedApiChecker(session, severities)
                 .unlessDisabled(WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API),
-            ExemptionExplanationChecker() // Not user-configurable; skipped only by the adoption task.
+            // Not user-configurable; skipped only by the adoption task.
+            ExemptionExplanationChecker.declarationChecker
                 .takeIf { enabled && !updatingBackwardsCompatibilityExempts },
-            MutableCollectionChecker(session, severities, !updatingBackwardsCompatibilityExempts)
+            MutableCollectionChecker(session, severities)
                 .unlessDisabled(WatchdogDiagnostics.MUTABLE_COLLECTION_PUBLIC_API),
-            PairOrTripleChecker(severities, !updatingBackwardsCompatibilityExempts)
+            PairOrTripleChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.PAIR_OR_TRIPLE_PUBLIC_API),
-            NullableBooleanChecker(severities, !updatingBackwardsCompatibilityExempts)
+            NullableBooleanChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.NULLABLE_BOOLEAN_PUBLIC_API),
             InternalApiTypeExposureChecker() // Skipped only while the adoption task collects fixable diagnostics.
                 .takeIf { enabled && publicTypeWithInternalApiEnabled && !updatingBackwardsCompatibilityExempts },
@@ -122,5 +125,16 @@ class WatchdogFirCheckers internal constructor(
                     WatchdogDiagnostics.COMPANION_CONSTANT_WITHOUT_JVM_FIELD,
                 ),
         ).recorded()
+    }
+
+    override val typeCheckers: TypeCheckers = object : TypeCheckers() {
+        override val resolvedTypeRefCheckers: Set<FirResolvedTypeRefChecker> = setOfNotNull(
+            ExemptionExplanationChecker.typeChecker
+                .takeIf { enabled && !updatingBackwardsCompatibilityExempts },
+        ).let { checkers ->
+            if (recorder == null) checkers else checkers.mapTo(mutableSetOf()) {
+                RecordingTypeChecker(it, recorder)
+            }
+        }
     }
 }

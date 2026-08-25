@@ -133,8 +133,6 @@ public class Holder(public val checked: CheckState)
 
 ## Notes
 
-- `@PublishedApi internal` declarations are not reported because their types do not cross the
-  supported source API boundary.
 - Unlike [`BOOLEAN_PARAMETER_PUBLIC_API`](./boolean-parameter-public-api.md), constructors are checked too.
 - A typealias is reported.
 - A `Boolean?` bound on a type parameter `<T : Boolean?>`) is reported.
@@ -143,6 +141,8 @@ public class Holder(public val checked: CheckState)
 - Overrides are not reported: their signature is fixed by the overridden declaration, which is
   reported instead.
 - Java platform types are not reported: their nullability is not declared in Kotlin sources.
+- `@PublishedApi internal` declarations are not reported because their types do not cross the
+  supported source API boundary.
 
 ## Exemption
 

@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.config.Services
 import org.jetbrains.kotlin.diagnostics.impl.DiagnosticsCollectorImpl
 import org.jetbrains.kotlin.diagnostics.impl.PendingDiagnosticsReporterImpl
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.DeclarationCheckersDiagnosticComponent
+import org.jetbrains.kotlin.fir.analysis.checkers.type.TypeCheckersDiagnosticComponent
 import org.jetbrains.kotlin.fir.analysis.collectors.CliDiagnosticsCollector
 import org.jetbrains.kotlin.fir.analysis.collectors.DiagnosticCollectorComponents
 import org.jetbrains.kotlin.fir.analysis.collectors.components.ReportCommitterDiagnosticComponent
@@ -129,7 +130,10 @@ open class IsolatedCheckerBenchmark {
         }
         collector = CliDiagnosticsCollector(output.session, output.scopeSession) { reporter ->
             DiagnosticCollectorComponents(
-                arrayOf(DeclarationCheckersDiagnosticComponent(output.session, reporter, checkers)),
+                arrayOf(
+                    DeclarationCheckersDiagnosticComponent(output.session, reporter, checkers.declarations),
+                    TypeCheckersDiagnosticComponent(output.session, reporter, checkers.types),
+                ),
                 ReportCommitterDiagnosticComponent(output.session, reporter),
             )
         }

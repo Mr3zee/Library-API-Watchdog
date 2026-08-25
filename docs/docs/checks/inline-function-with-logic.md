@@ -75,8 +75,9 @@ public inline fun <reified T : Any> resolveFunctionsCount(): Int {
 - A contract declared with `contract { ... }` doesn't count as a statement.
 - Calling another inline function, or reading or writing through an inline accessor, is logic: the
   inliner drags that body into the user transitively even with no visible control flow.
-- `@PublishedApi internal` inline functions and accessors are checked exactly like public ones: a
-  public inline wrapper can call them, which inlines their body into users just as transitively.
+- `@PublishedApi internal` inline functions and accessors are checked exactly like public ones
+  because a public inline wrapper can call them and transitively inline their bodies into user
+  binaries.
 
 ## Exemption
 

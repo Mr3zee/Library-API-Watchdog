@@ -84,10 +84,10 @@ public class Registry {
 - Overrides are not reported: their Java-facing shape is fixed by the overridden declaration, and
   `@JvmStatic` can't be applied to an override anyway.
 - Interface companions compile the same way and are checked identically to class companions.
-- `@PublishedApi internal` functions are not reported: their public bytecode entry is a binary
-  implementation detail, not supported Java source API.
 - `@JvmSynthetic` members are hidden from Java on purpose and are not reported.
 - Non-JVM compilations never register this check at all.
+- `@PublishedApi internal` functions are not reported because their public bytecode entries are
+  binary implementation details rather than supported Java source API.
 
 ## Exemption
 

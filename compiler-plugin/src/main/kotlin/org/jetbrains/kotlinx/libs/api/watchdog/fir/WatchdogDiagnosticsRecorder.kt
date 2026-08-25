@@ -7,7 +7,9 @@ import org.jetbrains.kotlin.diagnostics.KtDiagnostic
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticWithSource
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirDeclarationChecker
+import org.jetbrains.kotlin.fir.analysis.checkers.type.FirTypeChecker
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
+import org.jetbrains.kotlin.fir.types.FirTypeRef
 
 /**
  * Appends every reported watchdog diagnostic to [outputFile] as a tab-separated line:
@@ -46,9 +48,9 @@ class WatchdogDiagnosticsRecorder(private val outputFile: File) {
 }
 
 /**
- * Runs the wrapped checker with a [DiagnosticReporter] that records every diagnostic into
- * [recorder] before handing it to the real reporter. One generic wrapper covers every checker
- * category [WatchdogFirCheckers] registers: they are all type aliases of [FirDeclarationChecker].
+ * Runs the wrapped declaration checker with a [DiagnosticReporter] that records every diagnostic
+ * into [recorder] before handing it to the real reporter. One generic wrapper covers every
+ * declaration checker category [WatchdogFirCheckers] registers.
  */
 internal class RecordingDeclarationChecker<D : FirDeclaration>(
     private val delegate: FirDeclarationChecker<D>,
@@ -58,6 +60,18 @@ internal class RecordingDeclarationChecker<D : FirDeclaration>(
     override fun check(declaration: D) {
         val recording = recordingDiagnosticReporter(reporter, recorder)
         context(context, recording) { delegate.check(declaration) }
+    }
+}
+
+/** The type-checker counterpart of [RecordingDeclarationChecker]. */
+internal class RecordingTypeChecker<T : FirTypeRef>(
+    private val delegate: FirTypeChecker<T>,
+    private val recorder: WatchdogDiagnosticsRecorder,
+) : FirTypeChecker<T>(delegate.mppKind) {
+    context(context: CheckerContext, reporter: DiagnosticReporter)
+    override fun check(typeRef: T) {
+        val recording = recordingDiagnosticReporter(reporter, recorder)
+        context(context, recording) { delegate.check(typeRef) }
     }
 }
 
