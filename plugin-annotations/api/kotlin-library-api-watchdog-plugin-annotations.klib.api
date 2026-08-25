@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <org.jetbrains.kotlinx:kotlin-library-api-watchdog-plugin-annotations>
+// Library unique name: <org.jetbrains.kotlin:kotlin-library-api-watchdog-plugin-annotations>
 open annotation class org.jetbrains.kotlinx.libs.api.watchdog/IntentionallyBooleanParameter : kotlin/Annotation { // org.jetbrains.kotlinx.libs.api.watchdog/IntentionallyBooleanParameter|null[0]
     constructor <init>(org.jetbrains.kotlinx.libs.api.watchdog/ExemptionReason = ..., kotlin/String = ...) // org.jetbrains.kotlinx.libs.api.watchdog/IntentionallyBooleanParameter.<init>|<init>(org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason;kotlin.String){}[0]
 
