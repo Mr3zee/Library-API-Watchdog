@@ -80,7 +80,7 @@ public class Registry {
 ## Notes
 
 - `suspend` companion functions are not reported here - they are not Java-callable regardless of
-  placement, and [`KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`](./kotlin-only-api-without-jvm-synthetic.md) reports them with the fitting fix.
+  placement, and are reported by the [`KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`](./kotlin-only-api-without-jvm-synthetic.md) check instead.
 - Overrides are not reported: their Java-facing shape is fixed by the overridden declaration, and
   `@JvmStatic` can't be applied to an override anyway.
 - Interface companions compile the same way and are checked identically to class companions.
@@ -134,7 +134,6 @@ With direct compiler invocation:
 ## See also
 
 - [Static methods](https://kotlinlang.org/docs/java-to-kotlin-interop.html#static-methods)
-- [Companion constants without JvmField](./companion-constant-without-jvm-field.md), the sibling
-  check for constant-shaped companion properties
+- [Companion constants without JvmField](./companion-constant-without-jvm-field.md)
 - [Java interop checks](./java-interop.md)
 - [Exemptions and internal API](../../exemptions.md)

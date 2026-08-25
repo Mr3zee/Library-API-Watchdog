@@ -176,7 +176,7 @@
       "name": "DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS",
       "title": "Default parameters without JvmOverloads",
       "docs": "checks/java-interop/default-parameters-without-jvm-overloads",
-      "message": "The {0} `{1}` declares default parameter values, but for Java callers the defaults don't exist: only the full signature is compiled, and every argument must be spelled out. Mark the {0} with `@JvmOverloads` to generate overloads that omit trailing defaulted parameters, or with `@IntentionallyWithoutJvmOverloads` if serving Java callers the full signature only is intended."
+      "message": "The {0} `{1}` declares default parameter values, but for Java callers the defaults don't exist: only the full signature is compiled, and every argument must be spelled out. Mark the {0} with `@JvmOverloads` to generate overloads that omit trailing defaulted parameters, or mark it with `@IntentionallyWithoutJvmOverloads` if serving Java callers the full signature only is intended."
     },
     {
       "name": "PUBLIC_TYPE_WITH_INTERNAL_API",

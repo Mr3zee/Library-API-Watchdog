@@ -56,3 +56,8 @@ apiWatchdog {
 
 The check needs Gradle's dependency model and therefore does not run during direct compiler
 invocation.
+
+## See also
+
+- [Public types marked as internal API](./public-type-with-internal-api.md)
+- [Exemptions and internal API](../../exemptions.md)

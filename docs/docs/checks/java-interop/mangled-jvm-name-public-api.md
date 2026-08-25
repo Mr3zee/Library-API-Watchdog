@@ -167,6 +167,5 @@ With direct compiler invocation:
 
 - [Inline value classes and mangling](https://kotlinlang.org/docs/java-to-kotlin-interop.html#inline-value-classes)
 - [Java interop checks](./java-interop.md)
-- [Kotlin-only API without JvmSynthetic](./kotlin-only-api-without-jvm-synthetic.md), the sibling
-  check for shapes that stay visible to Java but are not idiomatically callable
+- [Kotlin-only API without JvmSynthetic](./kotlin-only-api-without-jvm-synthetic.md)
 - [Exemptions and internal API](../../exemptions.md)

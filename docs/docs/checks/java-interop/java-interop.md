@@ -6,16 +6,16 @@ six only run in JVM compilations.
 
 ## The checks
 
-- [Mangled JVM names in public API](./mangled-jvm-name-public-api.md) - a value class in a signature makes the JVM backend mangle the compiled name, so Java can't call it.
-- [Kotlin-only API without JvmSynthetic](./kotlin-only-api-without-jvm-synthetic.md) - `suspend` functions, reified generics, and Kotlin-specific function types
-  stay visible to Java even though Java can't call them idiomatically.
 - [Companion API without JvmStatic](./companion-api-without-jvm-static.md) - companion object functions compile to instance methods and
   are only reachable from Java through the companion instance getter.
 - [Companion constants without JvmField](./companion-constant-without-jvm-field.md) - constant-shaped companion properties are only reachable from Java through the companion instance getter.
-- [Top-level API without JvmName](./top-level-api-without-jvm-name.md) - a file's public top-level declarations compile into a facade class named after the file,
-  so renaming the file breaks Java callers.
 - [Default parameters without JvmOverloads](./default-parameters-without-jvm-overloads.md) - default parameter values are a Kotlin-only feature.
   Without `@JvmOverloads` Java callers must specify every argument.
+- [Kotlin-only API without JvmSynthetic](./kotlin-only-api-without-jvm-synthetic.md) - `suspend` functions, reified generics, and Kotlin-specific function types
+  stay visible to Java even though Java can't call them idiomatically.
+- [Mangled JVM names in public API](./mangled-jvm-name-public-api.md) - a value class in a signature makes the JVM backend mangle the compiled name, so Java can't call it.
+- [Top-level API without JvmName](./top-level-api-without-jvm-name.md) - a file's public top-level declarations compile into a facade class named after the file,
+  so renaming the file breaks Java callers.
 
 ## Kotlin-only audience
 
@@ -64,7 +64,6 @@ reason. See [Exemptions and internal API](../../exemptions.md) for the full exem
 ## See also
 
 - [Kotlin's Java-to-Kotlin interop guide](https://kotlinlang.org/docs/java-to-kotlin-interop.html)
-  for background on how Kotlin declarations compile for Java callers.
 - [Mangled JVM names in public API](./mangled-jvm-name-public-api.md)
 - [Kotlin-only API without JvmSynthetic](./kotlin-only-api-without-jvm-synthetic.md)
 - [Companion API without JvmStatic](./companion-api-without-jvm-static.md)

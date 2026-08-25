@@ -162,6 +162,5 @@ With direct compiler invocation:
 
 - [Overloads generation](https://kotlinlang.org/docs/java-to-kotlin-interop.html#overloads-generation)
 - [Java interop checks](./java-interop.md)
-- [Required parameters after optional ones](../required-parameter-after-optional.md), which keeps
-  defaulted parameters last so the generated overloads are useful
+- [Required parameters after optional ones](../required-parameter-after-optional.md)
 - [Exemptions and internal API](../../exemptions.md)

@@ -100,5 +100,5 @@ With direct compiler invocation:
 
 ## See also
 
-- [Exemptions and internal API](../../exemptions.md)
 - [Public types from non-transitive dependencies](./public-type-from-non-transitive-dependency.md)
+- [Exemptions and internal API](../../exemptions.md)

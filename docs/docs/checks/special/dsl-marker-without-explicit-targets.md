@@ -110,6 +110,5 @@ With direct compiler invocation:
 ## See also
 
 - [Scope control: @DslMarker](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker)
-- [DSL markers with no-op targets](./dsl-marker-noop-target.md), the sibling check for markers that
-  declare an explicit `@Target` but still list ineffective ones
+- [DSL markers with no-op targets](./dsl-marker-noop-target.md)
 - [Exemptions and internal API](../../exemptions.md)
