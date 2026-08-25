@@ -11,7 +11,8 @@ import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
 /**
  * Reports declaration-level watchdog exemptions whose reason requires a description and whose
  * description is blank. All declaration visibilities are checked, and the diagnostic is always an
- * error.
+ * error in ordinary compilations. The backwards-compatibility exemptions task temporarily omits
+ * this checker because it cannot repair explanations written by an API author.
  *
  * Type-use exemptions do not reach declaration checkers and are validated by the checker that
  * honors them through [FirAnnotation.unexplainedExemptionReason].

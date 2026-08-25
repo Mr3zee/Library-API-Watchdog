@@ -20,7 +20,6 @@ above its other annotations, with imports added as needed.
 
 ## Details worth knowing
 
-[//]: # (TODO update how UNDOCUMENTED_PUBLIC_API is handled in the fixer)
 - **Undocumented APIs are not exempt**
   [`UNDOCUMENTED_PUBLIC_API`](./checks/undocumented-public-api.md) is not auto-fixed, but reported as a warning during the task run instead.
 - **Run it on a clean working tree and review the diff.** The task edits sources in place. 
@@ -30,11 +29,15 @@ above its other annotations, with imports added as needed.
   regular main compilations write reports, forces explicit API warning mode, and temporarily
   demotes every enabled configurable watchdog diagnostic to a warning so the fixer can run.
   Ordinary compilation tasks are unchanged when the update task is not in the task graph.
+- **Unfixable always-error checks are skipped during collection.** The task temporarily disables
+  [`EXEMPTION_WITHOUT_EXPLANATION`](./checks/special/exemption-without-explanation.md),
+  [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md),
+  and [`PUBLIC_TYPE_WITH_INTERNAL_API`](./checks/special/public-type-with-internal-api.md) because it
+  can neither demote nor acknowledge them automatically. Ordinary compilations still enforce all
+  three, so resolve any violations separately after adopting the generated exemptions.
 - **Real compilation errors still fail the task.** Since these are the project's regular compilation
-  tasks, unresolved references, syntax errors, and the always-error
-  [`EXEMPTION_WITHOUT_EXPLANATION`](./checks/special/exemption-without-explanation.md), [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md) and
-  [`PUBLIC_TYPE_WITH_INTERNAL_API`](./checks/special/public-type-with-internal-api.md) diagnostics
-  must be fixed before the fixer can run while their checks are enabled.
+  tasks, unresolved references, syntax errors, and other compiler errors must be fixed before the
+  fixer can run.
 - **Severity configuration is respected.** A check set to `NONE` in `apiWatchdog` records nothing
   and generates no exemptions. `ERROR` and `WARNING` are treated the same during the task run.
 - **One diagnostic is fixed by a replacement.** A markerless `@SubclassOptInRequired`

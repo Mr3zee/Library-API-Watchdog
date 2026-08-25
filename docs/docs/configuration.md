@@ -171,7 +171,10 @@ Each check's severity is a `WatchdogSeverity`:
 [`PUBLIC_TYPE_WITH_INTERNAL_API`](./checks/special/public-type-with-internal-api.md) and
 [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md) are always errors when
 enabled. Their Gradle properties are `Boolean` whole-check switches rather than severities. See
-[Exemptions and internal API](./exemptions.md).
+[Exemptions and internal API](./exemptions.md). 
+
+The [`updateBackwardsCompatibilityExempts` task](./existing-libs.md) temporarily disables all three
+while collecting diagnostics it can acknowledge automatically.
 
 ## Property reference
 

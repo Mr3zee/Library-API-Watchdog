@@ -45,6 +45,8 @@ annotation. Docs CI also compiles every public-API Kotlin sample with all watchd
   `compiler-plugin/src/main/kotlin/org/jetbrains/kotlinx/libs/api/watchdog/fir/`, the annotation KDoc in
   `plugin-annotations/src/commonMain/kotlin/org/jetbrains/kotlinx/libs/api/watchdog/WatchdogAnnotations.kt`,
   and the extension in `gradle-plugin/src/main/kotlin/org/jetbrains/kotlinx/libs/api/watchdog/WatchdogGradleExtension.kt`.
+- Check order and descriptions in `docs/docs/overview.md` are the source of truth for the README's
+  Checks section. `npm test` verifies that they match.
 - No imports in code snippets
 - On check pages, use a standalone API in "What it reports" that is different from the rationale
   examples. Reuse the same API names across the matching "Don't", "Do", and "Exemption" samples

@@ -47,7 +47,9 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 project.logger.warn(missingExplicitApiWarning(project.path))
             }
             if (extension.suggestAbiValidation.get() && !project.hasAbiValidation()) {
-                project.logger.warn(abiValidationSuggestion(project.path))
+                project.logger.warn(
+                    abiValidationSuggestion(project.path, project.kotlinPluginVersion()),
+                )
             }
         }
     }
@@ -61,11 +63,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         collectDiagnostics: Property<Boolean>,
     ): TaskProvider<UpdateBackwardsCompatibilityExemptsTask> {
         val dependencyHandler = dependencies
-        val kotlinVersion = provider {
-            plugins.withType(KotlinBasePlugin::class.java)
-                .firstOrNull()?.pluginVersion
-                ?: error("The Kotlin Gradle plugin must be applied alongside library-api-watchdog")
-        }
+        val kotlinVersion = provider { kotlinPluginVersion() }
         val fixerDependency = dependencyHandler.create(
             "${info.artifact.groupId}:$FIXER_ARTIFACT_ID:${info.artifact.version}",
         )
@@ -172,14 +170,15 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 }
                 if (collect.get()) {
                     add(FilesSubpluginOption("diagnosticsOutputFile", listOf(reportFile.get().asFile)))
+                    add(SubpluginOption("updatingBackwardsCompatibilityExempts", "true"))
                 }
                 add(
                     SubpluginOption(
                         "publicTypeWithInternalApi",
-                        extension.publicTypeWithInternalApi.get().toString(),
+                        (extension.publicTypeWithInternalApi.get() && !collect.get()).toString(),
                     ),
                 )
-                if (extension.publicTypesMustBeTransitiveDependencies.get()) {
+                if (extension.publicTypesMustBeTransitiveDependencies.get() && !collect.get()) {
                     add(
                         SubpluginOption(
                             "compileDependencyPaths",
@@ -283,6 +282,12 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 .map(String::toBoolean)
                 .getOrElse(false)
 
+        /** The version of the Kotlin Gradle plugin applied alongside the watchdog. */
+        private fun Project.kotlinPluginVersion(): String =
+            plugins.withType(KotlinBasePlugin::class.java)
+                .firstOrNull()?.pluginVersion
+                ?: error("The Kotlin Gradle plugin must be applied alongside library-api-watchdog")
+
         /**
          * Whether explicit API mode (strict or warning) is enabled through the `kotlin` DSL or a
          * raw flag in its top-level compiler options. Inspecting the extension keeps compile tasks
@@ -333,26 +338,51 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             |The `explicitApiWarning()` variant and the `-Xexplicit-api` compiler flag also count.
         """.trimMargin()
 
-        private fun abiValidationSuggestion(projectPath: String): String = """
+        private fun abiValidationSuggestion(projectPath: String, kotlinVersion: String): String {
+            val setupSnippet = if (kotlinVersion.usesLegacyAbiValidationDsl()) {
+                """
+                    import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
+
+                    kotlin {
+                        @OptIn(ExperimentalAbiValidation::class)
+                        abiValidation {
+                            enabled.set(true)
+                        }
+                    }
+                """.trimIndent()
+            } else {
+                """
+                    import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
+
+                    kotlin {
+                        @OptIn(ExperimentalAbiValidation::class)
+                        abiValidation()
+                    }
+                """.trimIndent()
+            }.prependIndent("    ")
+            return """
             |Project '$projectPath' applies library-api-watchdog but no binary compatibility validation is enabled.
             |The watchdog reviews the shape of new API declarations, while binary compatibility validation
             |compares each build against a committed dump of the released API surface and catches accidental
-            |breaking changes to it. Enable the Kotlin Gradle plugin's built-in ABI validation in the
-            |module's build script (on Kotlin 2.2 and 2.3, write `abiValidation { enabled.set(true) }`
-            |instead):
+            |breaking changes to it. Enable the Kotlin Gradle plugin's built-in ABI validation in the module's
+            |build script:
             |
-            |    import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
-            |
-            |    kotlin {
-            |        @OptIn(ExperimentalAbiValidation::class)
-            |        abiValidation()
-            |    }
+            |$setupSnippet
             |
             |See https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html for the check and
             |dump tasks and the full configuration reference. On older Kotlin versions, apply the standalone
             |Binary Compatibility Validator plugin instead: https://github.com/Kotlin/binary-compatibility-validator.
             |
             |Disable this suggestion with `apiWatchdog { suggestAbiValidation = false }`.
-        """.trimMargin()
+            """.trimMargin()
+        }
+
+        /** Kotlin 2.2 and 2.3 use an `enabled` property instead of an activating DSL function. */
+        private fun String.usesLegacyAbiValidationDsl(): Boolean {
+            val components = substringBefore('-').split('.')
+            val major = components.getOrNull(0)?.toIntOrNull() ?: return false
+            val minor = components.getOrNull(1)?.toIntOrNull() ?: return false
+            return major == 2 && minor in 2..3
+        }
     }
 }

@@ -4,6 +4,7 @@ package org.jetbrains.kotlinx.libs.api.watchdog
 
 import com.autonomousapps.kit.GradleBuilder.build
 import com.autonomousapps.kit.GradleBuilder.buildAndFail
+import com.autonomousapps.kit.gradle.Dependency.Companion.implementation
 import java.io.File
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -213,17 +214,32 @@ class UpdateBackwardsCompatibilityExemptsTest {
     }
 
     @Test
-    fun internalApiExposureFailsBeforeTheFixerAndDoesNotTouchSources() {
+    fun unfixableAlwaysErrorDiagnosticsAreDisabledOnlyDuringTheUpdate() {
         val project = object : WatchdogProject() {
-            override fun sources() = listOf(source(internalApiExposureFile, "internalApiExposure"))
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(alwaysErrorDiagnosticsFile, "alwaysErrors", "test.consumer"))
+                    dependencies(implementation(":model"))
+                }
+                subproject("model") {
+                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
+                }
+            }
         }.gradleProject
-        val original = project.rootDir.mainSource("internalApiExposure").readText()
+        val sourceFile = project.rootDir.resolve("src/main/kotlin/test/consumer/alwaysErrors.kt")
+        val original = sourceFile.readText()
 
-        val result = buildAndFail(project.rootDir, UPDATE_TASK)
+        val updateResult = build(project.rootDir, UPDATE_TASK)
 
-        assertContains(result.output, "type is marked as internal API")
-        assertEquals(null, result.task(":$UPDATE_TASK")?.outcome)
-        assertEquals(original, project.rootDir.mainSource("internalApiExposure").readText())
+        assertEquals(TaskOutcome.SUCCESS, updateResult.task(":$UPDATE_TASK")?.outcome)
+        assertContains(updateResult.output, "No watchdog diagnostics to exempt.")
+        assertEquals(original, sourceFile.readText())
+
+        // The suppression is task-scoped: an ordinary compilation still enforces all three.
+        val compileResult = buildAndFail(project.rootDir, "compileKotlin")
+        assertContains(compileResult.output, "exemption doesn't explain why it is applied")
+        assertContains(compileResult.output, "type is marked as internal API")
+        assertContains(compileResult.output, "not published transitively to consumers")
     }
 
     @Test
@@ -462,10 +478,12 @@ private val unfixableFile = """
     public fun processTag(tag: @ScopedDsl String) { }
 """.trimIndent()
 
-/** An always-error diagnostic that must be fixed before the adoption task can run. */
+/** Always-error diagnostics that the adoption task cannot acknowledge and therefore skips. */
 @Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
-private val internalApiExposureFile = """
+private val alwaysErrorDiagnosticsFile = """
+    import test.model.ExternalModel
+
     /** Marks declarations that are public only for technical reasons. */
     @InternalAnnotationMarker
     @Target(AnnotationTarget.CLASS)
@@ -474,8 +492,28 @@ private val internalApiExposureFile = """
     @InternalLibApi
     public class InternalModel
 
-    /** Leaks an explicitly unsupported type. */
-    public fun loadModel(): InternalModel = InternalModel()
+    /** Existing open API with an invalid, unfixable exemption. */
+    @IntentionallyOpen
+    public open class ExistingOpenApi
+
+    /** Public entry points that expose unsupported and non-transitive types. */
+    public object Api {
+        /** Leaks an explicitly unsupported type. */
+        public fun loadInternalModel(): InternalModel = InternalModel()
+
+        /** Leaks a type consumers cannot obtain transitively. */
+        public fun loadExternalModel(): ExternalModel = ExternalModel()
+
+        /** Carries an invalid type-use exemption, which declaration checkers cannot see. */
+        public fun loadMutable(): @IntentionallyMutableCollection MutableList<String> = mutableListOf()
+    }
+""".trimIndent()
+
+@Suppress("RedundantVisibilityModifier")
+@Language("kotlin")
+private val dependencyTypeFile = """
+    /** A model supplied by another module. */
+    public class ExternalModel
 """.trimIndent()
 
 @Suppress("RedundantVisibilityModifier")

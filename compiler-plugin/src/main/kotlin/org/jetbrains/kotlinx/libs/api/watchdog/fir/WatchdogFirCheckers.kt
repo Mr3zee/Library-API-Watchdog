@@ -31,6 +31,7 @@ class WatchdogFirCheckers internal constructor(
     recorder: WatchdogDiagnosticsRecorder? = null,
     dependencyExposure: DependencyExposureCheckConfiguration? = null,
     publicTypeWithInternalApiEnabled: Boolean = true,
+    updatingBackwardsCompatibilityExempts: Boolean = false,
 ) : FirAdditionalCheckersExtension(session) {
     override val declarationCheckers: DeclarationCheckers = object : DeclarationCheckers() {
         private val enabled =
@@ -65,18 +66,18 @@ class WatchdogFirCheckers internal constructor(
         override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> = setOfNotNull(
             UndocumentedApiChecker(session, severities)
                 .unlessDisabled(WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API),
-            ExemptionExplanationChecker() // Not configurable: exemption explanations are enforced whenever the plugin runs.
-                .takeIf { enabled },
-            MutableCollectionChecker(session, severities)
+            ExemptionExplanationChecker() // Not user-configurable; skipped only by the adoption task.
+                .takeIf { enabled && !updatingBackwardsCompatibilityExempts },
+            MutableCollectionChecker(session, severities, !updatingBackwardsCompatibilityExempts)
                 .unlessDisabled(WatchdogDiagnostics.MUTABLE_COLLECTION_PUBLIC_API),
-            PairOrTripleChecker(severities)
+            PairOrTripleChecker(severities, !updatingBackwardsCompatibilityExempts)
                 .unlessDisabled(WatchdogDiagnostics.PAIR_OR_TRIPLE_PUBLIC_API),
-            NullableBooleanChecker(severities)
+            NullableBooleanChecker(severities, !updatingBackwardsCompatibilityExempts)
                 .unlessDisabled(WatchdogDiagnostics.NULLABLE_BOOLEAN_PUBLIC_API),
-            InternalApiTypeExposureChecker() // Not configurable: contradictory API contracts are always errors.
-                .takeIf { enabled && publicTypeWithInternalApiEnabled },
+            InternalApiTypeExposureChecker() // Skipped only while the adoption task collects fixable diagnostics.
+                .takeIf { enabled && publicTypeWithInternalApiEnabled && !updatingBackwardsCompatibilityExempts },
             dependencyExposure?.let { NonTransitiveDependencyChecker(session, it) }
-                ?.takeIf { enabled },
+                ?.takeIf { enabled && !updatingBackwardsCompatibilityExempts },
         ).recorded()
 
         // Dispatched to named functions and constructors alike: both declare parameter lists.

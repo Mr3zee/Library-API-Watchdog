@@ -25,11 +25,13 @@ import org.jetbrains.kotlin.name.Name
  * - The exemption annotation is honored on a whole declaration, on a single (type) parameter, or
  *   on a type usage, where it covers the annotated type and everything nested in it.
  *
- * Type-use exemptions never reach [ExemptionExplanationChecker], so this class enforces their
- * explanation requirement while honoring them.
+ * Type-use exemptions never reach [ExemptionExplanationChecker], so this class normally enforces
+ * their explanation requirement while honoring them. The adoption task disables that validation
+ * through [validateExemptionExplanations].
  */
 internal abstract class ExposedTypeChecker(
     private val exemption: ClassId,
+    private val validateExemptionExplanations: Boolean = true,
 ) : PublicSignatureTypeChecker<Name>(
     checkExtensionReceivers = false,
     checkClassSupertypes = false,
@@ -51,13 +53,17 @@ internal abstract class ExposedTypeChecker(
 
     /**
      * A type-use [exemption] exempts the annotated type and everything nested in it. The
-     * explanation requirement is enforced here because declaration checkers never see it.
+     * explanation requirement is normally enforced here because declaration checkers never see it.
      */
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun ConeKotlinType.isTypeExempt(): Boolean {
         val typeUseExemption = customAnnotations.firstOrNull {
             it.toAnnotationClassIdSafe(context.session) == exemption
         } ?: return false
+
+        if (!validateExemptionExplanations) {
+            return true
+        }
 
         typeUseExemption.unexplainedExemptionReason()?.let { reason ->
             reporter.reportOn(

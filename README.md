@@ -48,9 +48,9 @@ kotlin {
 
 Applying the Gradle plugin registers the compiler plugin for every compilation except test
 compilations, whose sources are never published, and automatically
-adds the `org.jetbrains.kotlin:kotlin-library-api-watchdog-plugin-annotations` dependency with
-the `@Intentionally*` exemption annotations. The
-plugin is intentionally restrictive by default: every check reports a compilation error until it
+adds the dependency with the `@Intentionally*` exemption annotations. 
+
+The plugin is intentionally restrictive by default: every check reports a compilation error until it
 is individually demoted to a warning or disabled through the `apiWatchdog` extension:
 
 ```kotlin
@@ -87,62 +87,56 @@ acknowledges all of them in one sweep:
 ./gradlew updateBackwardsCompatibilityExempts
 ```
 
-The task depends on the regular main Kotlin compilation tasks for every KGP target, including JS,
-Native, Wasm, and metadata-only projects. Those compilations record diagnostics with their exact
-source positions. The task merges and deduplicates the reports, then inserts the matching
-`@Intentionally*` annotations with `reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY` (adding
-imports as needed). A markerless `@SubclassOptInRequired` is replaced by `@IntentionallyOpen`
-rather than annotated, since it restricts nothing to begin with. Checks disabled through
-`apiWatchdog` are not exempted, and the few diagnostics no annotation can acknowledge are listed
-as warnings for manual follow-up. Enabled always-error diagnostics must be fixed before the task
-can run. Run it on a clean
-working tree and review the diff. From then on the checks only guard newly added API. See the
-[existing-library guide](https://mr3zee.github.io/Library-API-Watchdog/existing-libs) for details.
+See the [existing-library guide](https://mr3zee.github.io/Library-API-Watchdog/existing-libs) for details.
 
 ## Checks
 
 ### API surface
 
-- [`OPEN_API_WITHOUT_SUBCLASS_OPT_IN`](https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in) -
-  open/abstract classes and interfaces that can be subclassed outside the library without
-  restriction.
-- [`SUBCLASS_OPT_IN_WITHOUT_MARKERS`](https://mr3zee.github.io/Library-API-Watchdog/checks/subclass-opt-in-without-markers) -
-  `@SubclassOptInRequired` annotations that list no marker classes and so restrict nothing.
-- [`EXHAUSTIVE_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/exhaustive-public-api) -
-  enums and sealed hierarchies, which users can match exhaustively, so adding an entry or a
-  subtype later breaks them.
-- [`UNDOCUMENTED_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api) -
-  public declarations of every kind without KDoc.
-- [`FUNCTION_TYPE_ALIAS_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/function-type-alias-public-api) -
-  type aliases of function types. The alias is erased from the compiled API, unlike a
-  `fun interface`.
-- [`DATA_CLASS_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/data-class-public-api) -
-  data classes, whose generated `copy`/`componentN` bake the exact property list into the
-  compiled API.
-- [`STATEFUL_CLASS_WITHOUT_EQUALS`, `STATEFUL_CLASS_WITHOUT_HASH_CODE`, and `STATEFUL_CLASS_WITHOUT_TO_STRING`](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string) -
-  stateful classes relying on identity equality, identity hashing, or opaque rendering.
-- [`MUTABLE_COLLECTION_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/mutable-collection-public-api) -
-  mutable collection types (arrays included) in public signatures.
-- [`PAIR_OR_TRIPLE_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/pair-or-triple-public-api) -
-  `Pair` and `Triple` in public signatures. Tuple components carry no domain meaning.
 - [`BOOLEAN_PARAMETER_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/boolean-parameter-public-api) -
-  Boolean parameters of public functions, context parameters included. A bare `true`/`false`
-  reveals nothing at the call site.
-- [`NULLABLE_BOOLEAN_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/nullable-boolean-public-api) -
-  `Boolean?` in public signatures: three states with only two of them named.
-- [`REQUIRED_PARAMETER_AFTER_OPTIONAL`](https://mr3zee.github.io/Library-API-Watchdog/checks/required-parameter-after-optional) -
-  required parameters declared after optional ones.
+  Boolean value parameters are confusing at the call site, as unnamed `true`/`false` arguments
+  reveal nothing about their meaning.
+- [`DATA_CLASS_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/data-class-public-api) -
+  data classes generate `copy`, `componentN` methods and constructor, which is hard to evolve and
+  it defies the purpose of the data class in the first place.
+- [`EXHAUSTIVE_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/exhaustive-public-api) -
+  users can exhaustively match enums and sealed hierarchies, so a new entry or a subtype breaks
+  source compatibility.
+- [`FUNCTION_TYPE_ALIAS_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/function-type-alias-public-api) -
+  type aliases that abbreviate function types erase from the compiled API, so the type can't
+  evolve into a richer abstraction later.
 - [`INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS`](https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads) -
-  same-named parameters ordered differently across overloads, inviting silently swapped
-  arguments.
+  overloads with same-named parameters that appear in a different relative order have a risk
+  silently swapped arguments and unintuitive call sites.
 - [`INLINE_FUNCTION_WITH_LOGIC`](https://mr3zee.github.io/Library-API-Watchdog/checks/inline-function-with-logic) -
-  public inline bodies that do more than delegate. The logic freezes into user binaries.
+  public inline functions with a body that does more than delegate will have the compiler copy
+  that body, and its bugs, into every user binary.
+- [`MUTABLE_COLLECTION_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/mutable-collection-public-api) -
+  mutable collection types in public signatures leave it unclear whether user-side and
+  library-side mutations affect each other.
+- [`NULLABLE_BOOLEAN_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/nullable-boolean-public-api) -
+  nullable `Boolean`s in public signatures model three states, but name only two.
+- [`OPEN_API_WITHOUT_SUBCLASS_OPT_IN`](https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in) -
+  open or abstract classes and interfaces that any outside code can subclass without restriction.
+- [`PAIR_OR_TRIPLE_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/pair-or-triple-public-api) -
+  the tuple types `Pair` and `Triple` carry no domain meaning and can't evolve because of the
+  fixed shape.
+- [`REQUIRED_PARAMETER_AFTER_OPTIONAL`](https://mr3zee.github.io/Library-API-Watchdog/checks/required-parameter-after-optional) -
+  required parameters declared after an optional one can't be passed positionally without
+  restating the earlier defaults.
+- [`STATEFUL_CLASS_WITHOUT_EQUALS`, `STATEFUL_CLASS_WITHOUT_HASH_CODE`, and `STATEFUL_CLASS_WITHOUT_TO_STRING`](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string) -
+  classes with a backing-field property that don't declare or inherit `equals`, `hashCode`, and
+  `toString`, so instances render as an opaque default in logs and debuggers, and comparison is
+  reference based.
+- [`SUBCLASS_OPT_IN_WITHOUT_MARKERS`](https://mr3zee.github.io/Library-API-Watchdog/checks/subclass-opt-in-without-markers) -
+  `@SubclassOptInRequired` annotations that list no marker classes don't actually restrict
+  subclassing.
+- [`UNDOCUMENTED_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api) -
+  public declarations that have no KDoc.
 - [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency) -
-  public signatures using dependency types that are not published transitively to consumers.
-  Always an error while enabled.
+  dependency types exposed in public signatures but not provided transitively to consumers.
 - [`PUBLIC_TYPE_WITH_INTERNAL_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api) -
-  supported public signatures exposing types marked as internal API. Mark the exposing declaration
-  as internal API too, or remove the internal type from its signature. Always an error while enabled.
+  public signatures that expose effectively internal types.
 
 ### Java interop
 
@@ -150,34 +144,40 @@ These checks only run in JVM compilations. A Kotlin-only library disables the gr
 `javaInterop { enabled = false }`. See the
 [group overview](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop).
 
-- [`MANGLED_JVM_NAME_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api) -
-  value classes in signatures mangle the compiled JVM name out of Java's reach.
-- [`KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic) -
-  suspend/reified/Kotlin-function-type shapes left visible to Java sources.
 - [`COMPANION_API_WITHOUT_JVM_STATIC`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-api-without-jvm-static) -
-  companion functions Java can only reach as `Outer.Companion.member(...)`.
+  public companion object functions without `@JvmStatic`, which Java callers can only use with
+  the `Companion` instance.
 - [`COMPANION_CONSTANT_WITHOUT_JVM_FIELD`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-constant-without-jvm-field) -
-  constant-shaped companion `val`s readable from Java only through the companion instance.
-- [`TOP_LEVEL_API_WITHOUT_JVM_NAME`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/top-level-api-without-jvm-name) -
-  file facades without `@file:JvmName`, leaking the file name into the Java API surface.
+  public companion object properties without `@JvmField` or `const` which Java callers can only
+  use with the `Companion` instance.
 - [`DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/default-parameters-without-jvm-overloads) -
-  for functions with default parameter values without `@JvmOverloads` Java callers must pass every argument.
+  functions and constructors with default parameters but without `@JvmOverloads` force Java
+  callers to pass every argument.
+- [`KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic) -
+  functions with a shape only Kotlin callers can use idiomatically.
+- [`MANGLED_JVM_NAME_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api) -
+  public API that Java sources can't call because a value class in the signature gets its JVM
+  name mangled.
+- [`TOP_LEVEL_API_WITHOUT_JVM_NAME`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/top-level-api-without-jvm-name) -
+  files with public top-level declarations that compile into a facade `*Kt` class without a
+  pinned `@file:JvmName`, so a file renaming breaks Java binary compatibility.
 
 ### DSL markers
 
 - [`DSL_MARKER_NOOP_TARGET`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target) -
-  `@Target` entries on which a `@DslMarker` annotation has no effect.
+  `@DslMarker` annotation targets on which the marker has no effect give a false sense of scope
+  control.
 - [`DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-without-explicit-targets) -
-  DSL markers relying on the default target set, which allows nine no-op targets and forbids the
-  effective ones.
+  `@DslMarker` annotations without an explicit `@Target` allow target set with mostly no-op
+  targets.
 - [`DSL_MARKER_NOOP_TYPE_POSITION`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-type-position) -
-  DSL markers written on type positions where receiver scope control ignores them.
+  DSL markers written on type positions where scope control doesn't react to them.
 
 ### Exemption hygiene
 
 - [`EXEMPTION_WITHOUT_EXPLANATION`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/exemption-without-explanation) -
-  `@Intentionally*` exemptions whose reason and description explain nothing. Always an error,
-  not configurable.
+  an `@Intentionally*` exemption annotation left with the default `OTHER` reason and a blank
+  description explains nothing.
 
 ### Build-level suggestions
 

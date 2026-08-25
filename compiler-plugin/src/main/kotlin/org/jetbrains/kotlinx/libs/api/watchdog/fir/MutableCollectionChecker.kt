@@ -26,7 +26,8 @@ import org.jetbrains.kotlin.name.StandardClassIds
 internal class MutableCollectionChecker(
     private val session: FirSession,
     private val severities: WatchdogDiagnosticSeverities,
-) : ExposedTypeChecker(WatchdogClassIds.IntentionallyMutableCollection) {
+    validateExemptionExplanations: Boolean = true,
+) : ExposedTypeChecker(WatchdogClassIds.IntentionallyMutableCollection, validateExemptionExplanations) {
     /**
      * A checker instance belongs to one FIR session. Public signatures repeatedly use the same
      * classifiers, so retain the hierarchy answer instead of rebuilding the complete transitive

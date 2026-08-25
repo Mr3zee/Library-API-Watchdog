@@ -864,8 +864,18 @@ class WatchdogProjectTest {
         val project = WatchdogProject().gradleProject
 
         val result = build(project.rootDir, "help")
+        val legacyDsl = getTestCompilerVersion().startsWith("2.3.")
         assertTrue(result.output.contains("but no binary compatibility validation is enabled"))
-        assertTrue(result.output.contains("abiValidation()"))
+        assertEquals(
+            legacyDsl,
+            result.output.contains("abiValidation {"),
+            "The warning should display the ABI validation setup for the tested KGP version",
+        )
+        assertEquals(
+            !legacyDsl,
+            result.output.contains("abiValidation()"),
+            "The warning should display the ABI validation setup for the tested KGP version",
+        )
         assertTrue(result.output.contains("https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html"))
         assertTrue(result.output.contains("https://github.com/Kotlin/binary-compatibility-validator"))
         assertTrue(result.output.contains("suggestAbiValidation = false"))

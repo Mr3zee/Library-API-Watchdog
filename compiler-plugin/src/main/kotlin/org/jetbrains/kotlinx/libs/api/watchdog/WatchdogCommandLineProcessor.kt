@@ -30,6 +30,10 @@ object WatchdogConfigurationKeys {
     val PUBLIC_TYPE_WITH_INTERNAL_API_ENABLED: CompilerConfigurationKey<Boolean> =
         CompilerConfigurationKey.create("watchdog public type with internal API enabled")
 
+    /** Whether diagnostics are being collected for the backwards-compatibility exemptions task. */
+    val UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS: CompilerConfigurationKey<Boolean> =
+        CompilerConfigurationKey.create("watchdog updating backwards-compatibility exempts")
+
     /**
      * The compilation classpath and the subset published transitively to consumers. These are
      * supplied only by the Gradle plugin: without the build model the compiler cannot tell an
@@ -48,6 +52,7 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
         listOf(
             DIAGNOSTIC_SEVERITY_OPTION,
             PUBLIC_TYPE_WITH_INTERNAL_API_OPTION,
+            UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS_OPTION,
             DIAGNOSTICS_OUTPUT_FILE_OPTION,
             COMPILE_DEPENDENCY_PATHS_OPTION,
             TRANSITIVE_DEPENDENCY_PATHS_OPTION,
@@ -83,6 +88,14 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             allowMultipleOccurrences = false,
         )
 
+        val UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS_OPTION: CliOption = CliOption(
+            optionName = "updatingBackwardsCompatibilityExempts",
+            valueDescription = "<true|false>",
+            description = "Enable task-scoped collection for updateBackwardsCompatibilityExempts.",
+            required = false,
+            allowMultipleOccurrences = false,
+        )
+
         val COMPILE_DEPENDENCY_PATHS_OPTION: CliOption = dependencyPathsOption(
             optionName = "compileDependencyPaths",
             description = "Compilation dependency paths used by the public dependency exposure check.",
@@ -112,6 +125,12 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             PUBLIC_TYPE_WITH_INTERNAL_API_OPTION.optionName -> {
                 configuration.put(
                     WatchdogConfigurationKeys.PUBLIC_TYPE_WITH_INTERNAL_API_ENABLED,
+                    parseBoolean(option.optionName, value),
+                )
+            }
+            UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS_OPTION.optionName -> {
+                configuration.put(
+                    WatchdogConfigurationKeys.UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS,
                     parseBoolean(option.optionName, value),
                 )
             }

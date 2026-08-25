@@ -19,7 +19,8 @@ import org.jetbrains.kotlin.name.StandardClassIds
  */
 internal class NullableBooleanChecker(
     private val severities: WatchdogDiagnosticSeverities,
-) : ExposedTypeChecker(WatchdogClassIds.IntentionallyNullableBoolean) {
+    validateExemptionExplanations: Boolean = true,
+) : ExposedTypeChecker(WatchdogClassIds.IntentionallyNullableBoolean, validateExemptionExplanations) {
     /** Nullability lives on the upper bound, so the lower one is what Kotlin sources declare. */
     override fun ConeKotlinType.declaredBound(): ConeKotlinType = lowerBoundIfFlexible()
 

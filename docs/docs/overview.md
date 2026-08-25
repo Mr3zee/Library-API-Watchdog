@@ -78,35 +78,35 @@ See [Configuration](./configuration.md) for more details.
 
 ### API surface checks
 
-- [Data classes in public API](./checks/data-class-public-api.md): data classes generate `copy`, `componentN` methods 
-  and constructor, which is hard to evolve and it defies the purpose of the data class in the first place.   
-- [Open API without subclass opt-in](./checks/open-api-without-subclass-opt-in.md): open or abstract
-  classes and interfaces that any outside code can subclass without restriction.
-- [Subclass opt-in without markers](./checks/subclass-opt-in-without-markers.md): `@SubclassOptInRequired`
-  annotations that list no marker classes don't actually restrict subclassing.
+- [Boolean parameters in public API](./checks/boolean-parameter-public-api.md): Boolean value parameters are confusing at the call site,
+  as unnamed `true`/`false` arguments reveal nothing about their meaning.
+- [Data classes in public API](./checks/data-class-public-api.md): data classes generate `copy`, `componentN` methods
+  and constructor, which is hard to evolve and it defies the purpose of the data class in the first place.
 - [Exhaustive public API](./checks/exhaustive-public-api.md): users can exhaustively match enums and sealed hierarchies,
   so a new entry or a subtype breaks source compatibility.
-- [Undocumented public API](./checks/undocumented-public-api.md): public declarations that have no KDoc.
 - [Function type aliases in public API](./checks/function-type-alias-public-api.md): type aliases that
   abbreviate function types erase from the compiled API, so the type can't evolve
   into a richer abstraction later.
-- [Stateful classes without equals, hashCode, and toString](./checks/stateful-class-without-equals-hashcode-to-string.md): classes with a
-  backing-field property that don't declare or inherit `equals`, `hashCode`, and `toString`,
-  so instances render as an opaque default in logs and debuggers, and comparison is reference based.
+- [Inconsistent parameter order in overloads](./checks/inconsistent-parameter-order-in-overloads.md): overloads with same-named parameters that appear in a different relative order
+  have a risk silently swapped arguments and unintuitive call sites.
+- [Inline functions with logic](./checks/inline-function-with-logic.md): public inline functions with a body that does more than delegate
+  will have the compiler copy that body, and its bugs, into every user binary.
 - [Mutable collections in public API](./checks/mutable-collection-public-api.md): mutable collection
   types in public signatures leave it unclear whether user-side and library-side
   mutations affect each other.
+- [Nullable Booleans in public API](./checks/nullable-boolean-public-api.md): nullable `Boolean`s in public signatures model three states, but name only two.
+- [Open API without subclass opt-in](./checks/open-api-without-subclass-opt-in.md): open or abstract
+  classes and interfaces that any outside code can subclass without restriction.
 - [Pair and Triple in public API](./checks/pair-or-triple-public-api.md): the tuple types `Pair` and
   `Triple` carry no domain meaning and can't evolve because of the fixed shape.
-- [Boolean parameters in public API](./checks/boolean-parameter-public-api.md): Boolean value parameters are confusing at the call site,
-  as unnamed `true`/`false` arguments reveal nothing about their meaning.
-- [Nullable Booleans in public API](./checks/nullable-boolean-public-api.md): nullable `Boolean`s in public signatures model three states, but name only two.
 - [Required parameters after optional ones](./checks/required-parameter-after-optional.md): required parameters declared after an optional one can't be passed positionally without
   restating the earlier defaults.
-- [Inconsistent parameter order in overloads](./checks/inconsistent-parameter-order-in-overloads.md): overloads with same-named parameters that appear in a different relative order 
-  have a risk silently swapped arguments and unintuitive call sites.
-- [Inline functions with logic](./checks/inline-function-with-logic.md): public inline functions with a body that does more than delegate  
-  will have the compiler copy that body, and its bugs, into every user binary.
+- [Stateful classes without equals, hashCode, and toString](./checks/stateful-class-without-equals-hashcode-to-string.md): classes with a
+  backing-field property that don't declare or inherit `equals`, `hashCode`, and `toString`,
+  so instances render as an opaque default in logs and debuggers, and comparison is reference based.
+- [Subclass opt-in without markers](./checks/subclass-opt-in-without-markers.md): `@SubclassOptInRequired`
+  annotations that list no marker classes don't actually restrict subclassing.
+- [Undocumented public API](./checks/undocumented-public-api.md): public declarations that have no KDoc.
 - [Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md):
   dependency types exposed in public signatures but not provided transitively to consumers.
 - [Public types marked as internal API](./checks/special/public-type-with-internal-api.md):
@@ -118,18 +118,18 @@ These checks only run in JVM compilations, and are only valuable for libraries t
 consumers. The whole group can be disabled with `javaInterop { enabled = false }`. See
 [Java interop checks](./checks/java-interop/java-interop.md) for the whole group overview.
 
-- [Mangled JVM names in public API](./checks/java-interop/mangled-jvm-name-public-api.md): public API that Java sources
-  can't call because a value class in the signature gets its JVM name mangled.
-- [Kotlin-only API without JvmSynthetic](./checks/java-interop/kotlin-only-api-without-jvm-synthetic.md): functions with a shape only Kotlin callers can use idiomatically.
 - [Companion API without JvmStatic](./checks/java-interop/companion-api-without-jvm-static.md): public companion object functions without `@JvmStatic`,
   which Java callers can only use with the `Companion` instance.
 - [Companion constants without JvmField](./checks/java-interop/companion-constant-without-jvm-field.md): public companion object properties without `@JvmField` or `const`
   which Java callers can only use with the `Companion` instance.
+- [Default parameters without JvmOverloads](./checks/java-interop/default-parameters-without-jvm-overloads.md): functions and constructors with default parameters but without `@JvmOverloads`
+  force Java callers to pass every argument.
+- [Kotlin-only API without JvmSynthetic](./checks/java-interop/kotlin-only-api-without-jvm-synthetic.md): functions with a shape only Kotlin callers can use idiomatically.
+- [Mangled JVM names in public API](./checks/java-interop/mangled-jvm-name-public-api.md): public API that Java sources
+  can't call because a value class in the signature gets its JVM name mangled.
 - [Top-level API without JvmName](./checks/java-interop/top-level-api-without-jvm-name.md): files with public top-level
   declarations that compile into a facade `*Kt` class without a pinned `@file:JvmName`, so a file renaming
   breaks Java binary compatibility.
-- [Default parameters without JvmOverloads](./checks/java-interop/default-parameters-without-jvm-overloads.md): functions and constructors with default parameters but without `@JvmOverloads` 
-  force Java callers to pass every argument.
 
 ### DSL marker checks
 

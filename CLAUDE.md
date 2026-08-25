@@ -77,7 +77,9 @@ bootstrap/dev repositories configured in `settings.gradle.kts`.
   `@InternalAnnotationMarker`, and `ExemptionReason`. Added automatically as a dependency by the Gradle plugin.
 - `:kotlin-library-api-watchdog-exempts-fixer` - a standalone command-line tool (main class `ExemptsFixerMain`) behind the
   `updateBackwardsCompatibilityExempts` task. It merges and deduplicates the diagnostics reports written by regular
-  KGP compilation tasks, then inserts the matching `@Intentionally*` annotation with the
+  KGP compilation tasks while task-scoped collection disables `EXEMPTION_WITHOUT_EXPLANATION`,
+  `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`, and `PUBLIC_TYPE_WITH_INTERNAL_API`, then inserts the matching
+  `@Intentionally*` annotation with the
   `FOR_BACKWARDS_COMPATIBILITY` reason for each recorded diagnostic via text edits computed on
   Kotlin PSI (`kotlin-compiler-embeddable`, K2 entry points only, relocated `org.jetbrains.kotlin.com.intellij`
   imports). The `REPORTED_ANNOTATION` target strategy replaces the reported annotation instead of adding one, which
