@@ -77,7 +77,7 @@ function CodePre({
       <Pre
         className={clsx(styles.pre, named && styles.namedPre, tabbed && styles.tabbedPre)}
         code={mergeDiagnosticsOnTheSameRange(codeblock)}
-        handlers={[copyButton, diagnostics]}
+        handlers={[copyButton, codeLink, diagnostics]}
       />
     </CopyTextContext>
   );
@@ -418,6 +418,12 @@ async function copyToClipboard(text: string): Promise<boolean> {
   const {default: copy} = await import('copy-text-to-clipboard');
   return copy(text);
 }
+
+/** Turns `// !link[/range/] /route` annotations into links inside code blocks. */
+const codeLink: AnnotationHandler = {
+  name: 'link',
+  Inline: ({annotation, children}) => <Link to={annotation.query}>{children}</Link>,
+};
 
 /**
  * Underlines the exact source range reported by the compiler and shows its diagnostics in an

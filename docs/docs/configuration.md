@@ -88,40 +88,70 @@ See the list of configurable properties:
 
 ```kotlin build.gradle.kts
 apiWatchdog {
+    // !link[/suggestAbiValidation/] /abi-validation-suggestion
     suggestAbiValidation = true
+    // !link[/publicTypesMustBeTransitiveDependencies/] /checks/special/public-type-from-non-transitive-dependency
     publicTypesMustBeTransitiveDependencies = true
+    // !link[/publicTypeWithInternalApi/] /checks/special/public-type-with-internal-api
     publicTypeWithInternalApi = true
 
+    // !link[/openApiWithoutSubclassOptIn/] /checks/open-api-without-subclass-opt-in
     openApiWithoutSubclassOptIn = WatchdogSeverity.ERROR
+    // !link[/subclassOptInWithoutMarkers/] /checks/subclass-opt-in-without-markers
     subclassOptInWithoutMarkers = WatchdogSeverity.ERROR
+    // !link[/exhaustivePublicApi/] /checks/exhaustive-public-api
     exhaustivePublicApi = WatchdogSeverity.ERROR
+    // !link[/undocumentedPublicApi/] /checks/undocumented-public-api
     undocumentedPublicApi = WatchdogSeverity.ERROR
+    // !link[/functionTypeAliasPublicApi/] /checks/function-type-alias-public-api
     functionTypeAliasPublicApi = WatchdogSeverity.ERROR
+    // !link[/dataClassPublicApi/] /checks/data-class-public-api
     dataClassPublicApi = WatchdogSeverity.ERROR
+    // !link[/statefulClassWithoutEquals/] /checks/stateful-class-without-equals-hashcode-to-string
     statefulClassWithoutEquals = WatchdogSeverity.ERROR
+    // !link[/statefulClassWithoutHashCode/] /checks/stateful-class-without-equals-hashcode-to-string
     statefulClassWithoutHashCode = WatchdogSeverity.ERROR
+    // !link[/statefulClassWithoutToString/] /checks/stateful-class-without-equals-hashcode-to-string
     statefulClassWithoutToString = WatchdogSeverity.ERROR
+    // !link[/mutableCollectionPublicApi/] /checks/mutable-collection-public-api
     mutableCollectionPublicApi = WatchdogSeverity.ERROR
+    // !link[/pairOrTriplePublicApi/] /checks/pair-or-triple-public-api
     pairOrTriplePublicApi = WatchdogSeverity.ERROR
+    // !link[/booleanParameterPublicApi/] /checks/boolean-parameter-public-api
     booleanParameterPublicApi = WatchdogSeverity.ERROR
+    // !link[/nullableBooleanPublicApi/] /checks/nullable-boolean-public-api
     nullableBooleanPublicApi = WatchdogSeverity.ERROR
+    // !link[/requiredParameterAfterOptional/] /checks/required-parameter-after-optional
     requiredParameterAfterOptional = WatchdogSeverity.ERROR
+    // !link[/inconsistentParameterOrderInOverloads/] /checks/inconsistent-parameter-order-in-overloads
     inconsistentParameterOrderInOverloads = WatchdogSeverity.ERROR
+    // !link[/inlineFunctionWithLogic/] /checks/inline-function-with-logic
     inlineFunctionWithLogic = WatchdogSeverity.ERROR
+    // !link[/dslMarkerNoopTarget/] /checks/special/dsl-marker-noop-target
     dslMarkerNoopTarget = WatchdogSeverity.ERROR
+    // !link[/dslMarkerWithoutExplicitTargets/] /checks/special/dsl-marker-without-explicit-targets
     dslMarkerWithoutExplicitTargets = WatchdogSeverity.ERROR
+    // !link[/dslMarkerNoopTypePosition/] /checks/special/dsl-marker-noop-type-position
     dslMarkerNoopTypePosition = WatchdogSeverity.ERROR
 
+    // !link[/javaInterop/] /checks/java-interop/
     javaInterop {
         // One switch for the whole Java interop group,
         // it overrides the severities below.
+        // !link[/enabled/] /checks/java-interop/
         enabled = true
 
+        // !link[/mangledJvmNamePublicApi/] /checks/java-interop/mangled-jvm-name-public-api
         mangledJvmNamePublicApi = WatchdogSeverity.ERROR
+        // !link[/kotlinOnlyApiWithoutJvmSynthetic/] /checks/java-interop/kotlin-only-api-without-jvm-synthetic
         kotlinOnlyApiWithoutJvmSynthetic = WatchdogSeverity.ERROR
+        // !link[/companionApiWithoutJvmStatic/] /checks/java-interop/companion-api-without-jvm-static
         companionApiWithoutJvmStatic = WatchdogSeverity.ERROR
+        // !link[/companionConstantWithoutJvmField/] /checks/java-interop/companion-constant-without-jvm-field
         companionConstantWithoutJvmField = WatchdogSeverity.ERROR
+        // !link[/topLevelApiWithoutJvmName/] /checks/java-interop/top-level-api-without-jvm-name
         topLevelApiWithoutJvmName = WatchdogSeverity.ERROR
+        // !link[/defaultParametersWithoutJvmOverloads/] /checks/java-interop/default-parameters-without-jvm-overloads
         defaultParametersWithoutJvmOverloads = WatchdogSeverity.ERROR
     }
 }
