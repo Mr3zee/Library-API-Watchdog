@@ -32,12 +32,10 @@ public suspend fun load(key: String) { }
 ## Rationale
 
 A Kotlin-only shape still compiles a method Java sources can see and try to call, even though
-Java can't use it the way Kotlin callers do, or can't use it at all. Leaving it visible without
-comment misleads Java-facing API browsing and, for a `reified` type parameter, produces a call
-that compiles in Java but fails at runtime. See Kotlin's
+Java can't use it the way Kotlin callers do, or can't use it at all. Leaving it pollutes Java-visible APIs and,
+for a `reified` type parameter, produces a call that compiles in Java but fails at runtime. See Kotlin's
 [Java-to-Kotlin interop guide](https://kotlinlang.org/docs/java-to-kotlin-interop.html) for how
 these shapes actually compile.
-
 
 ### Don't
 
@@ -45,28 +43,10 @@ these shapes actually compile.
 // !hide-focused
 @file:JvmName("KotlinOnly")
 
-// Java sees a trailing Continuation parameter
-// it can't provide idiomatically.
-//
 // !hide-focused
 /** Refreshes [key]. */
 // !diag[/refresh/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["refresh","$suspend"]
 public suspend fun refresh(key: String) { }
-
-// Only inlining Kotlin call sites can substitute T.
-// Calling the compiled method from Java fails at runtime.
-//
-// !hide-focused
-/** Creates an instance of [T]. */
-// !diag[/instantiate/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["instantiate","$reified"]
-public inline fun <reified T> instantiate(): T? = null
-
-// A Java lambda has to return the Unit.INSTANCE token explicitly.
-//
-// !hide-focused
-/** Invokes [action] for each value. */
-// !diag[/onEach/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["onEach","$unitFunctionType(action)"]
-public fun onEach(action: (Int) -> Unit) { }
 ```
 
 ### Do
@@ -79,11 +59,50 @@ public fun onEach(action: (Int) -> Unit) { }
 /** Refreshes [key]. */
 @JvmSynthetic
 public suspend fun refresh(key: String) { }
+```
+
+### Don't
+
+```kotlin
+// !hide-focused
+@file:JvmName("KotlinOnly")
+
+// !hide-focused
+/** Creates an instance of [T]. */
+// !diag[/instantiate/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["instantiate","$reified"]
+public inline fun <reified T> instantiate(): T? = null
+```
+
+### Do
+
+```kotlin
+// !hide-focused
+@file:JvmName("KotlinOnly")
 
 // !hide-focused
 /** Creates an instance of [T]. */
 @JvmSynthetic
 public inline fun <reified T> instantiate(): T? = null
+```
+
+
+### Don't
+
+```kotlin
+// !hide-focused
+@file:JvmName("KotlinOnly")
+
+// !hide-focused
+/** Invokes [action] for each value. */
+// !diag[/onEach/] KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC ["onEach","$unitFunctionType(action)"]
+public fun onEach(action: (Int) -> Unit) { }
+```
+
+### Do
+
+```kotlin
+// !hide-focused
+@file:JvmName("KotlinOnly")
 
 // !hide-focused
 /** Consumes values produced by an iteration. */
@@ -100,13 +119,13 @@ public fun interface Action {
 public fun onEach(action: Action) { }
 ```
 
-- `@JvmSynthetic` hides the Kotlin-only member from Java entirely.
-  (A `suspend` function can instead ship alongside a blocking or `CompletableFuture`-returning bridge for Java callers.)
-- A `fun interface` parameter gives Java a lambda-friendly type instead of a Kotlin function type.
 
 
 ## Notes
 
+- `@JvmSynthetic` hides the Kotlin-only member from Java entirely.
+- A `suspend` function can instead ship alongside a blocking or `CompletableFuture`-returning bridge for Java callers.
+- A `fun interface` parameter gives Java a lambda-friendly type instead of a Kotlin function type.
 - Abstract and interface members are not reported: `@JvmSynthetic` can't hide a member that
   implementations must provide.
 - Overrides are not reported: their shape is fixed by the overridden declaration, which is
@@ -126,16 +145,6 @@ function inside, when leaving the Kotlin-only shape visible to Java is intended:
 ```kotlin
 // !hide-focused
 @file:JvmName("KotlinOnly")
-
-// !hide-focused
-/** Refreshes [key] through a deliberately Kotlin-only API. */
-@IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)
-public suspend fun refresh(key: String) {}
-
-// !hide-focused
-/** Creates an instance of [T] through a deliberately Kotlin-only API. */
-@IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)
-public inline fun <reified T> instantiate(): T? = null
 
 // !hide-focused
 /** Invokes [action] through a deliberately Kotlin-only API. */

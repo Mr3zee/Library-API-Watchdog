@@ -18,8 +18,6 @@ Kotlin files with top-level properties or functions that can be called from Java
 The diagnostic fires once per file, anchored on the first public top-level function or property.
 
 ```kotlin Health.kt
-package com.example
-
 // !hide-focused
 /** Checks whether the network is reachable. */
 // !diag[/ping/] TOP_LEVEL_API_WITHOUT_JVM_NAME ["HealthKt"]
@@ -28,7 +26,7 @@ public fun ping(): Int = 0
 
 ## Rationale
 
-The derived facade name reads as an implementation detail at Java call sites (`NetworkKt.connect()`
+The derived facade name reads as an implementation detail at Java call sites (`HealthKt.ping()`
 instead of something Java-idiomatic), and it is tied to a fact Kotlin callers never see: the file
 name. Renaming the file silently renames the facade and breaks Java sources and binaries compiled
 against it. See Kotlin's
@@ -39,10 +37,6 @@ for how top-level declarations actually compile.
 ### Don't
 
 ```kotlin Network.kt
-package com.example
-
-// Facade class NetworkKt
-// renaming this file to NetworkClient.kt breaks every Java caller.
 // !hide-focused
 /** Connects to the network. */
 // !diag[/connect/] TOP_LEVEL_API_WITHOUT_JVM_NAME ["NetworkKt"]
@@ -58,10 +52,6 @@ public fun disconnect(): Int = 0
 ```kotlin Network.kt
 @file:JvmName("Network")
 
-package com.example
-
-// Java callers write Network.connect(),
-// the file can be renamed freely.
 // !hide-focused
 /** Connects to the network. */
 public fun connect(): Int = 0
@@ -90,8 +80,6 @@ public fun disconnect(): Int = 0
 @file:IntentionallyDefaultFacadeName(
     reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY,
 )
-
-package com.example
 
 import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason
 import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyDefaultFacadeName

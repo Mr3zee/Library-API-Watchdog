@@ -21,20 +21,19 @@ function or property - nullable types and type parameters bounded by a value cla
 // !hide-focused
 @file:JvmName("Accounts")
 
-// Supporting value class
 // !hide-focused(1:5)
 /**
- * Stable identifier assigned to an account.
+ * Stable identifier assigned to a user.
  *
- * @property raw identifier as stored by the account service.
+ * @property raw identifier as stored by the user service.
  */
 @JvmInline
-public value class AccountId(public val raw: String)
+public value class UserId(public val raw: String)
 
 // !hide-focused
 /** Finds the account identified by [id]. */
-// !diag[/find/] MANGLED_JVM_NAME_PUBLIC_API ["function","find","AccountId"]
-public fun find(id: AccountId) { }
+// !diag[/take/] MANGLED_JVM_NAME_PUBLIC_API ["function","take","UserId"]
+public fun take(id: UserId) { }
 ```
 
 ## Rationale
@@ -117,13 +116,12 @@ only fix for constructors and overridable members, since `@JvmName` doesn't acce
 
 - A value class inside a type argument (`List<UserId>`) is boxed and keeps the JVM name. Only the
   classifier itself mangles, not a type it is nested in.
-- A top-level callable that merely *returns* a value class keeps its JVM name. The return type
-  only mangles for members, where the dispatch receiver makes the difference.
+- A top-level callable that only *returns* a value class keeps its JVM name. 
 - A `var` property's setter mangles independently of the getter - renaming or hiding one accessor
   leaves the other checked on its own.
 - Members and constructors of the value class itself are not reported: declaring the public value class
-  is the deliberate choice, and `@JvmName` is not even applicable inside it.
-- `suspend` functions are not reported: an unmangled name would not make them Java-callable anyway.
+  is the deliberate choice.
+- `suspend` functions are reported by [`KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`](./kotlin-only-api-without-jvm-synthetic.md) instead.
 - Overrides are not reported: their signature is fixed by the overridden declaration, which is
   reported instead.
 - `@PublishedApi internal` declarations are not reported: their public bytecode entry is a binary

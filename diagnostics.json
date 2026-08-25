@@ -206,7 +206,7 @@
       "name": "DSL_MARKER_WITHOUT_EXPLICIT_TARGETS",
       "title": "DSL markers without explicit targets",
       "docs": "checks/special/dsl-marker-without-explicit-targets",
-      "message": "The DSL marker `{0}` declares no explicit `@Target`, so it defaults to targets like functions and properties where a DSL marker has no effect, while the effective type usage (`TYPE`) and type alias (`TYPEALIAS`) targets stay unavailable. Declare `@Target(CLASS, TYPE, TYPEALIAS)` or a subset of it, or mark the marker with `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` if the default targets must stay for compatibility with existing users."
+      "message": "The DSL marker `{0}` declares no explicit `@Target`, so it defaults to targets like functions and properties where a DSL marker has no effect, while the effective type usage (`TYPE`) and type alias (`TYPEALIAS`) targets stay unavailable. Declare `@Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPEALIAS, AnnotationTarget.ANNOTTAION_CLASS)` or a subset of it, or mark the marker with `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` if the default targets must stay for compatibility with existing users."
     },
     {
       "name": "DSL_MARKER_NOOP_TYPE_POSITION",

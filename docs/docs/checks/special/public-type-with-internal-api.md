@@ -10,7 +10,7 @@ supported public signature exposes them.
 | Gradle property  | [`publicTypeWithInternalApi`](../../configuration.md) |
 | Exemption        | none                                                  |
 
-An annotation whose class carries `@InternalAnnotationMarker` says that its declarations have no
+An annotation whose class carries [`@InternalAnnotationMarker`](../../exemptions.md#internal-api-annotations) says that its declarations have no
 supported compatibility contract. Exposing one of those declarations from supported API makes
 the contract contradictory: users have to name and use an explicitly unsupported type to call
 the supported declaration.
@@ -18,8 +18,6 @@ the supported declaration.
 ```kotlin
 // !hide-focused
 @file:JvmName("InternalModels")
-
-package com.example
 
 // !hide-focused
 /** Marks declarations that are public only for technical reasons. */
@@ -32,7 +30,7 @@ public class InternalModel
 
 // !hide-focused
 /** Loads the current model. */
-// !diag[/InternalModel/] PUBLIC_TYPE_WITH_INTERNAL_API ["function","loadModel","com.example.InternalModel","InternalLibApi"]
+// !diag[/InternalModel/] PUBLIC_TYPE_WITH_INTERNAL_API ["function","loadModel","InternalModel","InternalLibApi"]
 public fun loadModel(): InternalModel = InternalModel()
 ```
 
@@ -66,12 +64,6 @@ public class InternalModel
 @InternalLibApi
 public fun loadInternalModel(): InternalModel = InternalModel()
 ```
-
-The check covers return, receiver, value and context parameter types, nested type arguments,
-generic bounds, class supertypes, and public type aliases. A nested class is internal when an
-enclosing class is marked, and an internal type alias is detected independently of its expanded
-type. Its diagnostic names the annotation that marks each exposed internal type. Markers declared
-in dependency modules are resolved too.
 
 `@PublishedApi internal` declarations are not reported. Although their binary shape is available
 to public inline code, users cannot name those declarations as source API, so exposing an internal

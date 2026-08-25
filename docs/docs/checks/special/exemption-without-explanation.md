@@ -62,8 +62,8 @@ public open class Widget
 
 // !hide-focused
 /** Base type for UI elements supplied by extensions. */
-// !diag[/@IntentionallyOpen.*$/] EXEMPTION_WITHOUT_EXPLANATION ["IntentionallyOpen","OTHER"]
-@IntentionallyOpen(reason = ExemptionReason.OTHER)
+// !diag[/@IntentionallyOpen.*$/] EXEMPTION_WITHOUT_EXPLANATION ["IntentionallyOpen","EXTERNAL_CONTRACT"]
+@IntentionallyOpen(reason = ExemptionReason.EXTERNAL_CONTRACT)
 public open class OtherWidget
 
 // !diag[/@IntentionallyUndocumented.*$/] EXEMPTION_WITHOUT_EXPLANATION ["IntentionallyUndocumented","OTHER"]
@@ -84,21 +84,18 @@ public open class Widget
 @IntentionallyOpen(description = "Kept open for internal testing")
 public open class OtherWidget
 
-@IntentionallyUndocumented(reason = ExemptionReason.API_DESIGN)
+@IntentionallyUndocumented(reason = "There is no good reason to not document APIs")
 public class UndocumentedThing
 ```
 
 
 ## Notes
 
-- Checked wherever an `@Intentionally*` call appears, including type parameters
-  (`<@IntentionallyMutableCollection T : MutableList<Int>>`) and type usages
-  (`List<@IntentionallyMutableCollection MutableList<Int>>`).
 - An exemption on a property promoted from a constructor parameter is validated once, on the
   property.
-- `@InternalAnnotationMarker` is a different annotation, not one of the exemption annotations this
-  check covers: the marked annotation class documents the internal API surface itself and needs no
-  `reason` or `description`.
+- [`@InternalAnnotationMarker`](../../exemptions.md#internal-api-annotations) is a different annotation, 
+  not one of the exemption annotations this check covers:
+  the marked annotation class documents the internal API surface itself and needs no `reason` or `description`.
 
 ## How to satisfy it
 

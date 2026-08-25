@@ -20,7 +20,6 @@ restricts nothing:
 // !hide-focused
 @file:JvmName("Branches")
 
-// Supporting DSL declarations
 // !hide-focused
 /** Marks branch DSL receivers. */
 @DslMarker
@@ -59,7 +58,7 @@ wrong scope's functions. See the Kotlin guide on [scope control for DSL markers]
 // !hide-focused
 @JvmSynthetic
 // !diag[/@TreeDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["TreeDsl","return type"]
-public fun configure(block: Tag.() -> Unit): @TreeDsl Unit { }
+public fun configure(block: Tag.() -> Unit): @TreeDsl Result { }
 ```
 
 ### Do
@@ -74,7 +73,7 @@ public class Tag
 /** Applies [block] while constructing a tree tag. */
 // !hide-focused
 @JvmSynthetic
-public fun configure(block: Tag.() -> Unit) { }
+public fun configure(block: Tag.() -> Unit): Result { }
 ```
 
 
@@ -102,7 +101,6 @@ public fun process(tag: @TreeDsl Tag) { }
 /** Adds [tag] to the current tree. */
 public fun process(tag: Tag) { }
 ```
-
 
 ## Notes
 
