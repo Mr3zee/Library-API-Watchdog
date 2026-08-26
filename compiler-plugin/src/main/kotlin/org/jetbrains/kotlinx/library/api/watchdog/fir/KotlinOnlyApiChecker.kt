@@ -10,7 +10,6 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFunctionChecker
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirValueParameter
-import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.utils.isAbstract
 import org.jetbrains.kotlin.fir.declarations.utils.isInline
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
@@ -38,7 +37,9 @@ internal class KotlinOnlyApiChecker(
 ) : FirFunctionChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirFunction) {
-        if (declaration !is FirNamedFunction || declaration.isOverride || declaration.isAbstract) {
+        if (declaration !is FirNamedFunction || declaration.isExpectedDeclaration() ||
+            declaration.isOverride || declaration.isAbstract
+        ) {
             return
         }
 
@@ -51,7 +52,7 @@ internal class KotlinOnlyApiChecker(
             return
         }
 
-        if (declaration.hasAnnotation(JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID, context.session)) {
+        if (declaration.hasAnnotationOnActualOrExpect(JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID)) {
             return
         }
 
@@ -61,9 +62,10 @@ internal class KotlinOnlyApiChecker(
 
         // The exemption is honored on the function itself and on any enclosing class, where it
         // acknowledges every function inside as deliberately Kotlin-only.
-        if (declaration.hasAnnotation(WatchdogClassIds.IntentionallyKotlinOnlyApi, context.session) ||
+        if (declaration.hasAnnotationOnActualOrExpect(WatchdogClassIds.IntentionallyKotlinOnlyApi) ||
             context.containingDeclarations.any {
-                it is FirClassSymbol<*> && it.hasAnnotation(WatchdogClassIds.IntentionallyKotlinOnlyApi, context.session)
+                it is FirClassSymbol<*> &&
+                        it.hasAnnotationOnActualOrExpect(WatchdogClassIds.IntentionallyKotlinOnlyApi)
             }
         ) {
             return

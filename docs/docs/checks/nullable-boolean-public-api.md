@@ -91,6 +91,7 @@ public fun connectionState(): ConnectionState = ConnectionState.UNKNOWN
  * @property checked whether the control is selected, or null before it is initialized.
  */
 // !hide-focused
+// !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 // !diag[/Boolean[?]/] NULLABLE_BOOLEAN_PUBLIC_API ["property","checked"]
 public class Holder(public val checked: Boolean?)
@@ -126,6 +127,7 @@ public enum class CheckState {
  * @property checked current selection state.
  */
 // !hide-focused
+// !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Holder(public val checked: CheckState)
 ```
@@ -146,8 +148,11 @@ public class Holder(public val checked: CheckState)
 
 ## Exemption
 
-Apply `@IntentionallyNullableBoolean` when the nullable Boolean is a deliberate part of the API
-contract.
+<!-- diagnostic-exemption: NULLABLE_BOOLEAN_PUBLIC_API -->
+If this API shape is intentional, apply `@IntentionallyNullableBoolean` to the reported declaration,
+parameter, or type usage.
+
+Use the exemption when the nullable Boolean is a deliberate part of the API contract.
 
 ```kotlin
 // !hide-focused

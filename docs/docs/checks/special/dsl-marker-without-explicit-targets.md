@@ -75,9 +75,12 @@ public annotation class KtorDsl
 
 ## Exemption
 
-For an already-published marker, adding a `@Target` at all is a breaking change: it rejects
-user code that currently applies the marker to a now-disallowed target. Acknowledge the legacy
-shape with `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` instead of fixing it:
+<!-- diagnostic-exemption: DSL_MARKER_WITHOUT_EXPLICIT_TARGETS -->
+If this API shape is intentional, apply
+`@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker.
+
+Use the exemption when the marker is already published and adding a `@Target` would reject existing
+user code:
 
 ```kotlin
 // !hide-focused

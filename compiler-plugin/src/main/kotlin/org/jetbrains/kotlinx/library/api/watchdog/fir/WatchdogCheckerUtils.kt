@@ -8,18 +8,23 @@ import org.jetbrains.kotlin.fir.SessionHolder
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
+import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirMemberDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirPropertyAccessor
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
+import org.jetbrains.kotlin.fir.declarations.FirValueParameter
 import org.jetbrains.kotlin.fir.declarations.extractEnumValueArgumentInfo
 import org.jetbrains.kotlin.fir.declarations.findArgumentByName
+import org.jetbrains.kotlin.fir.declarations.getSingleMatchedExpectForActualOrNull
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
 import org.jetbrains.kotlin.fir.declarations.toAnnotationClassLikeSymbol
 import org.jetbrains.kotlin.fir.declarations.utils.isConst
+import org.jetbrains.kotlin.fir.declarations.utils.isActual
+import org.jetbrains.kotlin.fir.declarations.utils.isExpect
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
 import org.jetbrains.kotlin.fir.declarations.utils.effectiveVisibility
 import org.jetbrains.kotlin.fir.declarations.utils.visibility
@@ -28,6 +33,7 @@ import org.jetbrains.kotlin.fir.resolve.toClassSymbol
 import org.jetbrains.kotlin.fir.resolve.transformers.publishedApiEffectiveVisibility
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirTypeParameterSymbol
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
@@ -103,6 +109,47 @@ internal object WatchdogClassIds {
 /** The class the checked declaration is a member of, or null for a top-level declaration. */
 internal val CheckerContext.containingClassSymbol: FirClassSymbol<*>?
     get() = containingDeclarations.lastOrNull() as? FirClassSymbol<*>
+
+/**
+ * Whether this source declaration is the implementation of an `expect` contract. Contract-shape
+ * checks report the `expect` once and skip its `actual`; declarations added only by an actual
+ * class are not actualized and remain eligible for checking.
+ *
+ * Value parameters do not carry the expect/actual status themselves, so their closest containing
+ * callable owns the answer.
+ */
+context(context: CheckerContext)
+internal fun FirDeclaration.isActualizedDeclaration(): Boolean =
+    (this as? FirMemberDeclaration)?.isActual == true ||
+            this is FirValueParameter &&
+            context.containingDeclarations.lastOrNull { it is FirCallableSymbol<*> }
+                ?.let { (it as FirCallableSymbol<*>).isActual } == true
+
+/** Whether this declaration belongs to an `expect` tree and therefore has no implementation. */
+context(context: CheckerContext)
+internal fun FirDeclaration.isExpectedDeclaration(): Boolean =
+    (this as? FirMemberDeclaration)?.isExpect == true ||
+            context.containingDeclarations.any { symbol ->
+                when (symbol) {
+                    is FirCallableSymbol<*> -> symbol.isExpect
+                    is FirClassLikeSymbol<*> -> symbol.isExpect
+                    else -> false
+                }
+            }
+
+/**
+ * An implementation-side check accepts an annotation written either on the `actual` declaration
+ * or on its matched `expect`. This makes the contract declaration the canonical place for a
+ * watchdog exemption while still honoring platform-only annotations.
+ */
+context(context: CheckerContext)
+internal fun FirBasedSymbol<*>.hasAnnotationOnActualOrExpect(classId: ClassId): Boolean =
+    hasAnnotation(classId, context.session) ||
+            getSingleMatchedExpectForActualOrNull()?.hasAnnotation(classId, context.session) == true
+
+context(context: CheckerContext)
+internal fun FirDeclaration.hasAnnotationOnActualOrExpect(classId: ClassId): Boolean =
+    symbol.hasAnnotationOnActualOrExpect(classId)
 
 /** The name a diagnostic reports for a callable: a constructor is named after its class. */
 context(context: CheckerContext)

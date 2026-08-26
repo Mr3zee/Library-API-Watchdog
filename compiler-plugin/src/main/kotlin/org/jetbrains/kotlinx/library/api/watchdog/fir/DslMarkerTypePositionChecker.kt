@@ -36,6 +36,10 @@ internal class DslMarkerTypePositionChecker(
     override fun check(declaration: FirCallableDeclaration) {
         val factory = severities[WatchdogDiagnostics.DSL_MARKER_NOOP_TYPE_POSITION] ?: return
 
+        if (declaration.isActualizedDeclaration()) {
+            return
+        }
+
         // `val`/`var` constructor parameters also produce a property with a fake source pointing
         // at the same parameter text; skipping fake sources keeps the report single.
         if (declaration.source?.kind != KtRealSourceElementKind) {

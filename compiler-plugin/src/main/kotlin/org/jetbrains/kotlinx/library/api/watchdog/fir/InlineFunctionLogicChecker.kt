@@ -10,7 +10,6 @@ import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirPropertyAccessor
-import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.utils.isInline
 import org.jetbrains.kotlin.fir.expressions.FirAnonymousFunctionExpression
 import org.jetbrains.kotlin.fir.expressions.FirBlock
@@ -62,7 +61,9 @@ internal class InlineFunctionLogicChecker(
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun checkFunction(declaration: FirNamedFunction) {
-        if (!declaration.isInline || !declaration.isWatchedPublicApi() || declaration.isExempt()) {
+        if (declaration.isExpectedDeclaration() || !declaration.isInline ||
+            !declaration.isWatchedPublicApi() || declaration.isExempt()
+        ) {
             return
         }
 
@@ -87,7 +88,9 @@ internal class InlineFunctionLogicChecker(
      */
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun checkProperty(declaration: FirProperty) {
-        if (!declaration.isWatchedPublicApi() || declaration.isExempt()) {
+        if (declaration.isExpectedDeclaration() ||
+            !declaration.isWatchedPublicApi() || declaration.isExempt()
+        ) {
             return
         }
 
@@ -117,7 +120,7 @@ internal class InlineFunctionLogicChecker(
 
     context(context: CheckerContext)
     private fun FirCallableDeclaration.isExempt(): Boolean =
-        hasAnnotation(WatchdogClassIds.IntentionallyInlinedLogic, context.session)
+        hasAnnotationOnActualOrExpect(WatchdogClassIds.IntentionallyInlinedLogic)
 
     /**
      * An empty body freezes nothing. Otherwise the single statement - a contract declared in the

@@ -9,6 +9,8 @@
     "serve": "docusaurus serve",
     "clear": "docusaurus clear",
     "test": "node --test plugins/*.test.mjs",
+    "sync:diagnostic-exemptions": "node scripts/sync-diagnostic-exemptions.mjs",
+    "check:diagnostic-exemptions": "node scripts/sync-diagnostic-exemptions.mjs --check",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

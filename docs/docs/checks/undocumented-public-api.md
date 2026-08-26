@@ -31,6 +31,7 @@ supported. Writing the contract down helps your library avoid these issues. See 
 
 ```kotlin
 // !hide-focused
+// !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 // !diag[/Cache/] UNDOCUMENTED_PUBLIC_API ["class","Cache"]
 public class Cache {
@@ -48,6 +49,7 @@ public class Cache {
 ```kotlin
 /** An in-memory string cache. */
 // !hide-focused
+// !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Cache {
     /**
@@ -72,6 +74,7 @@ A class KDoc alone doesn't document its constructor properties. Each one still n
 ```kotlin
 /** Profile information displayed for a user. */
 // !hide-focused
+// !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Profile(
     // !diag[/name/] UNDOCUMENTED_PUBLIC_API ["property","name"]
@@ -91,6 +94,7 @@ public class Profile(
  * @property age the user's age in years.
  */
 // !hide-focused
+// !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Profile(
     public val name: String,
@@ -111,9 +115,9 @@ public class Profile(
 
 ## Exemption
 
-Apply `@IntentionallyUndocumented` directly on the class, type alias, function, property,
-constructor, or enum entry that stays undocumented. It doesn't cover nested or member
-declarations:
+<!-- diagnostic-exemption: UNDOCUMENTED_PUBLIC_API -->
+If this API shape is intentional, apply `@IntentionallyUndocumented` directly to the undocumented
+declaration.
 
 ```kotlin
 // No example here, because I couldn't find a valid case when an API

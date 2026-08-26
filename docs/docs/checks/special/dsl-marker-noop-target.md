@@ -81,8 +81,12 @@ public annotation class KtorDsl
 
 ## Exemption
 
-For a marker that already shipped with a no-op target, narrowing `@Target` rejects user code
-that applied the marker there - a breaking change. Acknowledge the legacy shape instead:
+<!-- diagnostic-exemption: DSL_MARKER_NOOP_TARGET -->
+If this API shape is intentional, apply
+`@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker.
+
+Use the exemption when the marker already shipped with a no-op target and narrowing `@Target`
+would reject existing user code:
 
 ```kotlin
 // !hide-focused

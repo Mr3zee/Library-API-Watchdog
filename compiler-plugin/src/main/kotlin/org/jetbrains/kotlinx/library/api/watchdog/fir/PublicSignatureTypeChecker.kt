@@ -49,6 +49,8 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
 ) : FirBasicDeclarationChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     final override fun check(declaration: FirDeclaration) {
+        if (declaration.isActualizedDeclaration()) return
+
         when (declaration) {
             // Parameters are swept from their containing callable, where its public API gate and
             // any signature-wide exemption are evaluated once.

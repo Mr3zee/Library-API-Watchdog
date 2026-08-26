@@ -45,8 +45,10 @@ internal class TopLevelJvmNameChecker(
 
     context(context: CheckerContext)
     private fun FirDeclaration.isJavaVisibleTopLevelCallable(): Boolean = when (this) {
-        is FirNamedFunction -> isWatchedPublicApi() && !isHiddenFromJavaWithJvmSynthetic()
-        is FirProperty -> isWatchedPublicApi() && !isHiddenFromJavaWithJvmSynthetic()
+        is FirNamedFunction -> !isExpectedDeclaration() &&
+                isWatchedPublicApi() && !isHiddenFromJavaWithJvmSynthetic()
+        is FirProperty -> !isExpectedDeclaration() &&
+                isWatchedPublicApi() && !isHiddenFromJavaWithJvmSynthetic()
         else -> false
     }
 }

@@ -86,6 +86,7 @@ public fun take(id: UserId) { }
  * @property id identifier of the account that owns the wallet.
  */
 // !hide-focused
+// !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 // !diag[/[(]public val id: UserId[)]/] MANGLED_JVM_NAME_PUBLIC_API ["constructor","Wallet","UserId"]
 // !diag[/id/] MANGLED_JVM_NAME_PUBLIC_API ["property","id","UserId"]
@@ -104,6 +105,7 @@ public class Wallet(public val id: UserId)
 @OptIn(ExperimentalStdlibApi::class)
 @JvmExposeBoxed
 // !hide-focused
+// !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Wallet(public val id: UserId)
 ```
@@ -131,7 +133,9 @@ only fix for constructors and overridable members, since `@JvmName` doesn't acce
 
 ## Exemption
 
-Apply `@IntentionallyMangledJvmName` when Java callers are not supported for this declaration:
+<!-- diagnostic-exemption: MANGLED_JVM_NAME_PUBLIC_API -->
+If this API shape is intentional, apply `@IntentionallyMangledJvmName` to the declaration or an
+enclosing class.
 
 ```kotlin
 // !hide-focused

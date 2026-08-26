@@ -91,7 +91,8 @@ public fun interface SuspendAction {
 
 ## Exemption
 
-Apply `@IntentionallyFunctionTypeAlias` when exposing the bare function type via a typealias is intended.
+<!-- diagnostic-exemption: FUNCTION_TYPE_ALIAS_PUBLIC_API -->
+If this API shape is intentional, apply `@IntentionallyFunctionTypeAlias` to the type alias.
 
 ```kotlin
 // !hide-focused

@@ -139,8 +139,9 @@ public fun onEach(action: Action) { }
 
 ## Exemption
 
-Apply `@IntentionallyKotlinOnlyApi` to the function, or to an enclosing class to cover every
-function inside, when leaving the Kotlin-only shape visible to Java is intended:
+<!-- diagnostic-exemption: KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC -->
+If this API shape is intentional, apply `@IntentionallyKotlinOnlyApi` to the function or an
+enclosing class.
 
 ```kotlin
 // !hide-focused

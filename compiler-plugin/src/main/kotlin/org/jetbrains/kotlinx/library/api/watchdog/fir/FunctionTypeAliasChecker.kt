@@ -18,7 +18,7 @@ internal class FunctionTypeAliasChecker(
     override fun check(declaration: FirTypeAlias) {
         val factory = severities[WatchdogDiagnostics.FUNCTION_TYPE_ALIAS_PUBLIC_API] ?: return
 
-        if (!declaration.isWatchedPublicSourceApi()) {
+        if (declaration.isActualizedDeclaration() || !declaration.isWatchedPublicSourceApi()) {
             return
         }
 

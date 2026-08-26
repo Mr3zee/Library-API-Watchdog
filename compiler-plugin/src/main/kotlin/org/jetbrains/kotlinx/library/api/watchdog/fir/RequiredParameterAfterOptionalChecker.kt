@@ -34,7 +34,9 @@ internal class RequiredParameterAfterOptionalChecker(
             return
         }
 
-        if (!declaration.isWatchedPublicSourceApi() || declaration.isOverride) {
+        if (declaration.isActualizedDeclaration() ||
+            !declaration.isWatchedPublicSourceApi() || declaration.isOverride
+        ) {
             return
         }
 

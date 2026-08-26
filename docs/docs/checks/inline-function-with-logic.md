@@ -81,8 +81,11 @@ public inline fun <reified T : Any> resolveFunctionsCount(): Int {
 
 ## Exemption
 
-Apply `@IntentionallyInlinedLogic` when inlining the logic is intended, for example when a lambda
-must run inline for non-local returns or a hot path must not pay for an extra call:
+<!-- diagnostic-exemption: INLINE_FUNCTION_WITH_LOGIC -->
+If this API shape is intentional, apply `@IntentionallyInlinedLogic` to the declaration.
+
+Use the exemption when a lambda must run inline for non-local returns or a hot path must not pay
+for an extra call:
 
 ```kotlin
 // !hide-focused

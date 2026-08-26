@@ -1,0 +1,123 @@
+Module: common
+FILE: common.kt
+    package foo.bar
+
+    public final expect fun reported(flag: R|kotlin/Boolean|): R|kotlin/Pair<kotlin/String, kotlin/Boolean?>|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNullableBoolean|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect fun exemptContract(flag: R|kotlin/Boolean|): R|kotlin/Pair<kotlin/String, kotlin/Boolean?>|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDataClass|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect class ExemptData : R|kotlin/Any| {
+        public expect constructor(value: R|kotlin/Int|): R|foo/bar/ExemptData|
+
+        public final expect val value: R|kotlin/Int|
+            public get(): R|kotlin/Int|
+
+    }
+    public final expect class ReportedData : R|kotlin/Any| {
+        public expect constructor(value: R|kotlin/Int|): R|foo/bar/ReportedData|
+
+        public final expect val value: R|kotlin/Int|
+            public get(): R|kotlin/Int|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutEqualsHashCodeOrToString|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect class ExemptState : R|kotlin/Any| {
+        public expect constructor(value: R|kotlin/Int|): R|foo/bar/ExemptState|
+
+        public final expect val value: R|kotlin/Int|
+            public get(): R|kotlin/Int|
+
+    }
+    public final expect class ReportedState : R|kotlin/Any| {
+        public expect constructor(value: R|kotlin/Int|): R|foo/bar/ReportedState|
+
+        public final expect val value: R|kotlin/Int|
+            public get(): R|kotlin/Int|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect inline fun exemptInline(value: R|kotlin/Int|): R|kotlin/Int|
+    public final expect inline fun reportedInline(value: R|kotlin/Int|): R|kotlin/Int|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect suspend fun exemptSuspend(): R|kotlin/Int|
+    public final expect suspend fun reportedSuspend(): R|kotlin/Int|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutJvmOverloads|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect fun exemptDefault(value: R|kotlin/Int| = Int(1)): R|kotlin/Int|
+    public final expect fun reportedDefault(value: R|kotlin/Int| = Int(1)): R|kotlin/Int|
+Module: jvm
+FILE: jvm.kt
+    package foo.bar
+
+    public final actual fun reported(flag: R|kotlin/Boolean|): R|kotlin/Pair<kotlin/String, kotlin/Boolean?>| {
+        ^reported R|<local>/flag|.R|kotlin/Boolean.toString|().R|kotlin/to|<R|kotlin/String|, R|kotlin/Boolean|>(R|<local>/flag|)
+    }
+    public final actual fun exemptContract(flag: R|kotlin/Boolean|): R|kotlin/Pair<kotlin/String, kotlin/Boolean?>| {
+        ^exemptContract R|<local>/flag|.R|kotlin/Boolean.toString|().R|kotlin/to|<R|kotlin/String|, R|kotlin/Boolean|>(R|<local>/flag|)
+    }
+    public final fun platformOnly(flag: R|kotlin/Boolean|): R|kotlin/Int| {
+        ^platformOnly when () {
+            R|<local>/flag| ->  {
+                Int(1)
+            }
+            else ->  {
+                Int(0)
+            }
+        }
+
+    }
+    public final actual data class ExemptData : R|kotlin/Any| {
+        public actual constructor(value: R|kotlin/Int|): R|foo/bar/ExemptData| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual val value: R|kotlin/Int| = R|<local>/value|
+            public get(): R|kotlin/Int|
+
+        public final operator fun component1(): R|kotlin/Int|
+
+        public final fun copy(value: R|kotlin/Int| = this@R|foo/bar/ExemptData|.R|foo/bar/ExemptData.value|): R|foo/bar/ExemptData|
+
+    }
+    public final actual data class ReportedData : R|kotlin/Any| {
+        public actual constructor(value: R|kotlin/Int|): R|foo/bar/ReportedData| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual val value: R|kotlin/Int| = R|<local>/value|
+            public get(): R|kotlin/Int|
+
+        public final operator fun component1(): R|kotlin/Int|
+
+        public final fun copy(value: R|kotlin/Int| = this@R|foo/bar/ReportedData|.R|foo/bar/ReportedData.value|): R|foo/bar/ReportedData|
+
+    }
+    public final actual class ExemptState : R|kotlin/Any| {
+        public actual constructor(value: R|kotlin/Int|): R|foo/bar/ExemptState| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual val value: R|kotlin/Int| = R|<local>/value|
+            public get(): R|kotlin/Int|
+
+    }
+    public final actual class ReportedState : R|kotlin/Any| {
+        public actual constructor(value: R|kotlin/Int|): R|foo/bar/ReportedState| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual val value: R|kotlin/Int| = R|<local>/value|
+            public get(): R|kotlin/Int|
+
+    }
+    public final actual inline fun exemptInline(value: R|kotlin/Int|): R|kotlin/Int| {
+        ^exemptInline R|<local>/value|.R|kotlin/Int.plus|(Int(1))
+    }
+    public final actual inline fun reportedInline(value: R|kotlin/Int|): R|kotlin/Int| {
+        ^reportedInline R|<local>/value|.R|kotlin/Int.plus|(Int(1))
+    }
+    public final actual suspend fun exemptSuspend(): R|kotlin/Int| {
+        ^exemptSuspend Int(1)
+    }
+    public final actual suspend fun reportedSuspend(): R|kotlin/Int| {
+        ^reportedSuspend Int(1)
+    }
+    public final actual fun exemptDefault(value: R|kotlin/Int|): R|kotlin/Int| {
+        ^exemptDefault R|<local>/value|
+    }
+    public final actual fun reportedDefault(value: R|kotlin/Int|): R|kotlin/Int| {
+        ^reportedDefault R|<local>/value|
+    }

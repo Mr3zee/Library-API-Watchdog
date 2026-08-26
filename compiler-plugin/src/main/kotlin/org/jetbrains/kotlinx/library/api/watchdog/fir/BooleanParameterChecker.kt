@@ -36,7 +36,9 @@ internal class BooleanParameterChecker(
 ) : FirFunctionChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirFunction) {
-        if (declaration !is FirNamedFunction || declaration.isOverride || declaration.isConstructorFunction()) {
+        if (declaration !is FirNamedFunction || declaration.isActualizedDeclaration() ||
+            declaration.isOverride || declaration.isConstructorFunction()
+        ) {
             return
         }
 

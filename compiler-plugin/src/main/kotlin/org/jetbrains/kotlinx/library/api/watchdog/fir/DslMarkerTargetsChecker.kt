@@ -29,7 +29,9 @@ internal class DslMarkerTargetsChecker(
 ) : FirClassChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirClass) {
-        if (declaration !is FirRegularClass || declaration.classKind != ClassKind.ANNOTATION_CLASS) {
+        if (declaration !is FirRegularClass || declaration.isActualizedDeclaration() ||
+            declaration.classKind != ClassKind.ANNOTATION_CLASS
+        ) {
             return
         }
 

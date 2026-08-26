@@ -11,7 +11,6 @@ import org.jetbrains.kotlin.fir.analysis.checkers.unsubstitutedScope
 import org.jetbrains.kotlin.fir.containingClassLookupTag
 import org.jetbrains.kotlin.fir.declarations.FirClass
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
-import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
 import org.jetbrains.kotlin.fir.declarations.utils.hasBackingField
 import org.jetbrains.kotlin.fir.declarations.utils.isData
@@ -35,7 +34,9 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
 ) : FirClassChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirClass) {
-        if (declaration !is FirRegularClass || !declaration.isWatchedPublicSourceApi()) {
+        if (declaration !is FirRegularClass || declaration.isExpectedDeclaration() ||
+            !declaration.isWatchedPublicSourceApi()
+        ) {
             return
         }
 
@@ -55,7 +56,10 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
             return
         }
 
-        if (declaration.hasAnnotation(WatchdogClassIds.IntentionallyWithoutEqualsHashCodeOrToString, context.session)) {
+        if (declaration.hasAnnotationOnActualOrExpect(
+                WatchdogClassIds.IntentionallyWithoutEqualsHashCodeOrToString,
+            )
+        ) {
             return
         }
 
@@ -85,7 +89,7 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
     ) {
         val factory = severities[diagnostic] ?: return
 
-        if (hasAnnotation(exemption, context.session) || provides(member)) {
+        if (hasAnnotationOnActualOrExpect(exemption) || provides(member)) {
             return
         }
 

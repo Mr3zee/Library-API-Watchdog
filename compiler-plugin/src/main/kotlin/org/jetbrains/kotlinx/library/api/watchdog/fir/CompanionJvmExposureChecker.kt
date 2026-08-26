@@ -34,6 +34,8 @@ internal class CompanionJvmExposureChecker(
 ) : FirCallableDeclarationChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirCallableDeclaration) {
+        if (declaration.isExpectedDeclaration()) return
+
         val companion = context.containingClassSymbol?.takeIf { it.isCompanion } ?: return
         val outerClass = companion.classId.outerClassId?.shortClassName ?: return
         if (declaration.isExempt()) {
@@ -52,10 +54,10 @@ internal class CompanionJvmExposureChecker(
      */
     context(context: CheckerContext)
     private fun FirCallableDeclaration.isExempt(): Boolean =
-        hasAnnotation(WatchdogClassIds.IntentionallyNonStaticCompanionApi, context.session) ||
+        hasAnnotationOnActualOrExpect(WatchdogClassIds.IntentionallyNonStaticCompanionApi) ||
                 context.containingDeclarations.any {
                     it is FirClassSymbol<*> &&
-                            it.hasAnnotation(WatchdogClassIds.IntentionallyNonStaticCompanionApi, context.session)
+                            it.hasAnnotationOnActualOrExpect(WatchdogClassIds.IntentionallyNonStaticCompanionApi)
                 }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
@@ -64,9 +66,8 @@ internal class CompanionJvmExposureChecker(
             return
         }
 
-        val session = context.session
-        if (declaration.hasAnnotation(JvmStandardClassIds.Annotations.JvmStatic, session) ||
-            declaration.hasAnnotation(JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID, session)
+        if (declaration.hasAnnotationOnActualOrExpect(JvmStandardClassIds.Annotations.JvmStatic) ||
+            declaration.hasAnnotationOnActualOrExpect(JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID)
         ) {
             return
         }

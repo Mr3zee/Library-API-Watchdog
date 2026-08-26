@@ -60,6 +60,7 @@ public data class Coordinates(public val x: Int, public val y: Int)
  * @property x distance from the vertical axis.
  * @property y distance from the horizontal axis.
  */
+// !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Coordinates(
     public val x: Int,
@@ -77,8 +78,10 @@ public class Coordinates(
 
 ## Exemption
 
-Apply `@IntentionallyDataClass` to the class declaration when the property list is a deliberate,
-stable part of the contract:
+<!-- diagnostic-exemption: DATA_CLASS_PUBLIC_API -->
+If this API shape is intentional, apply `@IntentionallyDataClass` to the class.
+
+Use the exemption when the property list is a deliberate, stable part of the contract:
 
 ```kotlin
 // !hide-focused(1:6)

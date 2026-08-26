@@ -110,9 +110,9 @@ public class Connection @JvmOverloads constructor(
 
 ## Exemption
 
-Apply `@IntentionallyWithoutJvmOverloads` to the function or constructor when serving Java callers
-the full signature only is intended, for example when the defaulted parameters make no sense
-without Kotlin's named arguments:
+<!-- diagnostic-exemption: DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS -->
+If this API shape is intentional, apply `@IntentionallyWithoutJvmOverloads` to the function or
+constructor.
 
 ```kotlin
 // !hide-focused

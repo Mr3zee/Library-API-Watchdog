@@ -131,8 +131,11 @@ public interface Event {
 
 ## Exemption
 
-Apply `@IntentionallyExhaustive` to the enum or sealed hierarchy when a fixed set of
-entries or subtypes is a deliberate, stable part of the contract:
+<!-- diagnostic-exemption: EXHAUSTIVE_PUBLIC_API -->
+If this API shape is intentional, apply `@IntentionallyExhaustive` to the enum or sealed hierarchy.
+
+Use the exemption when a fixed set of entries or subtypes is a deliberate, stable part of the
+contract:
 
 ```kotlin
 // !hide-focused

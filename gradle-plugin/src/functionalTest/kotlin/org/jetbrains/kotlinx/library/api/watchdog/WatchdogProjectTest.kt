@@ -380,6 +380,192 @@ class WatchdogProjectTest {
     }
 
     @Test
+    fun expectOwnsContractChecksAndExemptions() {
+        val project = object : WatchdogProject(multiplatform = true) {
+            override fun multiplatformTargetsBlock(): String = "kotlin { jvm() }"
+
+            override fun sources() = listOf(
+                Source.kotlin(
+                    """
+                        package test
+
+                        import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+                        import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyBooleanParameter
+                        import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyNullableBoolean
+                        import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyPairOrTriple
+
+                        /** The shared contract owns its source-shape exemptions. */
+                        @IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)
+                        @IntentionallyNullableBoolean(reason = ExemptionReason.API_DESIGN)
+                        @IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN)
+                        public expect fun shared(flag: Boolean): Pair<String, Boolean?>
+
+                        /** An unexempt shared contract is reported from common source. */
+                        public expect fun reported(flag: Boolean): Pair<String, Boolean?>
+                    """.trimIndent(),
+                ).withSourceSet("commonMain").withPath("test", "CommonApi").build(),
+                Source.kotlin(
+                    """
+                        @file:org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName(
+                            reason = org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason.API_DESIGN,
+                        )
+
+                        package test
+
+                        public actual fun shared(flag: Boolean): Pair<String, Boolean?> =
+                            flag.toString() to flag
+
+                        public actual fun reported(flag: Boolean): Pair<String, Boolean?> =
+                            flag.toString() to flag
+
+                        /** Platform-only declarations remain part of the checked source API. */
+                        public fun platformOnly(flag: Boolean): Int = if (flag) 1 else 0
+                    """.trimIndent(),
+                ).withSourceSet("jvmMain").withPath("test", "JvmApi").build(),
+            )
+        }.gradleProject
+
+        val result = buildAndFail(project.rootDir, "compileKotlinJvm")
+        val booleanReports = result.output.lineSequence()
+            .filter { ".kt:" in it && "takes the `Boolean` parameter" in it }
+            .toList()
+        val nullableBooleanReports = result.output.lineSequence()
+            .filter { ".kt:" in it && "exposes a nullable `Boolean`" in it }
+            .toList()
+        val tupleReports = result.output.lineSequence()
+            .filter { ".kt:" in it && "exposes the tuple type" in it }
+            .toList()
+        assertEquals(2, booleanReports.size, result.output)
+        assertEquals(1, booleanReports.count { "CommonApi.kt" in it }, result.output)
+        assertEquals(1, booleanReports.count { "JvmApi.kt" in it }, result.output)
+        assertEquals(1, nullableBooleanReports.size, result.output)
+        assertTrue(nullableBooleanReports.single().contains("CommonApi.kt"), result.output)
+        assertEquals(1, tupleReports.size, result.output)
+        assertTrue(tupleReports.single().contains("CommonApi.kt"), result.output)
+    }
+
+    @Test
+    fun jvmChecksReportActualOnceUsingExpectSignature() {
+        val project = object : WatchdogProject(
+            multiplatform = true,
+            extraBuildScript = """
+                apiWatchdog {
+                    javaInterop {
+                        kotlinOnlyApiWithoutJvmSynthetic = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
+                        defaultParametersWithoutJvmOverloads = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
+                    }
+                }
+            """.trimIndent(),
+        ) {
+            override fun multiplatformTargetsBlock(): String = "kotlin { jvm() }"
+
+            override fun sources() = listOf(
+                Source.kotlin(
+                    """
+                        package test
+
+                        /** A Kotlin-only shared contract. */
+                        public expect suspend fun suspended(): Int
+
+                        /** A shared contract with a default argument. */
+                        public expect fun defaulted(value: Int = 1): Int
+                    """.trimIndent(),
+                ).withSourceSet("commonMain").withPath("test", "CommonApi").build(),
+                Source.kotlin(
+                    """
+                        @file:org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName(
+                            reason = org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason.API_DESIGN,
+                        )
+
+                        package test
+
+                        public actual suspend fun suspended(): Int = 1
+
+                        public actual fun defaulted(value: Int): Int = value
+                    """.trimIndent(),
+                ).withSourceSet("jvmMain").withPath("test", "JvmApi").build(),
+            )
+        }.gradleProject
+
+        val result = build(project.rootDir, "compileKotlinJvm")
+        val kotlinOnlyReports = result.output.lineSequence()
+            .filter { "still lands in the API surface Java sources see" in it }
+            .toList()
+        val defaultReports = result.output.lineSequence()
+            .filter { "declares default parameter values" in it }
+            .toList()
+        assertEquals(1, kotlinOnlyReports.size, result.output)
+        assertEquals(1, defaultReports.size, result.output)
+        assertTrue(kotlinOnlyReports.single().contains("JvmApi.kt"), result.output)
+        assertTrue(defaultReports.single().contains("JvmApi.kt"), result.output)
+        assertFalse(result.output.contains("CommonApiKt"), result.output)
+    }
+
+    @Test
+    fun implementationChecksHonorExpectExemptions() {
+        val project = object : WatchdogProject(multiplatform = true) {
+            override fun multiplatformTargetsBlock(): String = "kotlin { jvm() }"
+
+            override fun sources() = listOf(
+                Source.kotlin(
+                    """
+                        package test
+
+                        import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+                        import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDataClass
+                        import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyInlinedLogic
+                        import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEqualsHashCodeOrToString
+
+                        /**
+                         * A platform data holder.
+                         *
+                         * @property value its value.
+                         */
+                        @IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)
+                        public expect class Model(value: Int) {
+                            public val value: Int
+                        }
+
+                        /**
+                         * A platform state holder.
+                         *
+                         * @property value its value.
+                         */
+                        @IntentionallyWithoutEqualsHashCodeOrToString(reason = ExemptionReason.API_DESIGN)
+                        public expect class Stateful(value: Int) {
+                            public val value: Int
+                        }
+
+                        /** Platform logic deliberately inlined into callers. */
+                        @IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)
+                        public expect inline fun increment(value: Int): Int
+                    """.trimIndent(),
+                ).withSourceSet("commonMain").withPath("test", "CommonApi").build(),
+                Source.kotlin(
+                    """
+                        @file:org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName(
+                            reason = org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason.API_DESIGN,
+                        )
+
+                        package test
+
+                        public actual data class Model public actual constructor(public actual val value: Int)
+
+                        public actual class Stateful public actual constructor(public actual val value: Int)
+
+                        public actual inline fun increment(value: Int): Int = value + 1
+                    """.trimIndent(),
+                ).withSourceSet("jvmMain").withPath("test", "JvmApi").build(),
+            )
+        }.gradleProject
+
+        val result = build(project.rootDir, "compileKotlinJvm")
+        assertFalse(result.output.contains("bakes its constructor property list"), result.output)
+        assertFalse(result.output.contains("neither declares nor inherits"), result.output)
+        assertFalse(result.output.contains("does more than delegate"), result.output)
+    }
+
+    @Test
     fun compilationsNamedAfterATestVariantAreNotChecked() {
         // Only the Kotlin/JVM and multiplatform targets have a compilation literally called
         // `test`. Android names them after the variant (`debugUnitTest`, `debugAndroidTest`), the

@@ -121,9 +121,12 @@ public class Server
 
 ## Exemption
 
-Apply `@IntentionallyRequiredParameterAfterOptional` to the function or constructor when the order
-is a deliberate, stable part of the contract, for example an old parameter list kept for source
-compatibility:
+<!-- diagnostic-exemption: REQUIRED_PARAMETER_AFTER_OPTIONAL -->
+If this API shape is intentional, apply `@IntentionallyRequiredParameterAfterOptional` to the
+function or constructor.
+
+Use the exemption when the order is a deliberate, stable part of the contract, for example an old
+parameter list kept for source compatibility:
 
 ```kotlin
 // !hide-focused

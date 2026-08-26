@@ -38,6 +38,8 @@ internal class MangledJvmNameChecker(
 ) : FirCallableDeclarationChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirCallableDeclaration) {
+        if (declaration.isExpectedDeclaration()) return
+
         when (declaration) {
             is FirConstructor -> checkConstructor(declaration)
             is FirNamedFunction -> checkFunction(declaration)
@@ -52,7 +54,7 @@ internal class MangledJvmNameChecker(
             return
         }
 
-        if (declaration.hasAnnotation(JvmStandardClassIds.Annotations.JvmName, context.session)) {
+        if (declaration.hasAnnotationOnActualOrExpect(JvmStandardClassIds.Annotations.JvmName)) {
             return
         }
 
@@ -111,16 +113,16 @@ internal class MangledJvmNameChecker(
             return false
         }
 
-        val session = context.session
-        if (hasAnnotation(JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID, session)) {
+        if (hasAnnotationOnActualOrExpect(JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID)) {
             return false
         }
 
         // @JvmExposeBoxed - on the declaration or anywhere up the class nesting - generates
         // Java-callable boxed variants next to the mangled entry points.
-        if (hasAnnotation(JvmStandardClassIds.JVM_EXPOSE_BOXED_ANNOTATION_CLASS_ID, session) ||
+        if (hasAnnotationOnActualOrExpect(JvmStandardClassIds.JVM_EXPOSE_BOXED_ANNOTATION_CLASS_ID) ||
             context.containingDeclarations.any {
-                it is FirClassSymbol<*> && it.hasAnnotation(JvmStandardClassIds.JVM_EXPOSE_BOXED_ANNOTATION_CLASS_ID, session)
+                it is FirClassSymbol<*> &&
+                        it.hasAnnotationOnActualOrExpect(JvmStandardClassIds.JVM_EXPOSE_BOXED_ANNOTATION_CLASS_ID)
             }
         ) {
             return false
@@ -137,11 +139,12 @@ internal class MangledJvmNameChecker(
     context(context: CheckerContext)
     private fun FirCallableDeclaration.isExempt(): Boolean {
         val session = context.session
-        return hasAnnotation(WatchdogClassIds.IntentionallyMangledJvmName, session) ||
+        return hasAnnotationOnActualOrExpect(WatchdogClassIds.IntentionallyMangledJvmName) ||
                 (this as? FirProperty)?.correspondingValueParameterFromPrimaryConstructor
                     ?.hasAnnotation(WatchdogClassIds.IntentionallyMangledJvmName, session) == true ||
                 context.containingDeclarations.any {
-                    it is FirClassSymbol<*> && it.hasAnnotation(WatchdogClassIds.IntentionallyMangledJvmName, session)
+                    it is FirClassSymbol<*> &&
+                            it.hasAnnotationOnActualOrExpect(WatchdogClassIds.IntentionallyMangledJvmName)
                 }
     }
 

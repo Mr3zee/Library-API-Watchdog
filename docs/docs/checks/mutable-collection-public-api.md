@@ -58,6 +58,7 @@ behavioral change for users that relied on mutating the exposed instance. See th
  * @property items live collection of scheduled values.
  */
 // !hide-focused
+// !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 // !diag[/MutableList<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["property","items","MutableList"]
 public class Holder(public val items: MutableList<Int>)
@@ -73,6 +74,7 @@ public class Holder(public val items: MutableList<Int>)
  * @property items immutable snapshot of the scheduled values.
  */
 // !hide-focused
+// !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Holder(public val items: List<Int>)
 ```
@@ -110,8 +112,18 @@ public fun consume(items: Set<Int>) {
 
 - `vararg` parameters are not reported - the compiler already passes a defensive copy of
   the array. But a mutable element type is still reported (`vararg groups: MutableList<Int>`).
-- Extension receivers are not reported: an extension on a mutable collection serves values the
-  user already holds, unlike a builder lambda receiver, which is reported.
+- Extension receivers are not reported because the caller already has the collection. Builder
+  lambda receivers are reported because the library gives a mutable collection to caller code:
+
+  ```kotlin
+  // Extension receiver: not reported.
+  public fun MutableList<Int>.snapshot(): List<Int> = toList()
+
+  // Builder lambda receiver: reported.
+  // !diag[/MutableList<Int>\.\(\) -> Unit/] MUTABLE_COLLECTION_PUBLIC_API ["parameter","block","MutableList"]
+  public fun build(block: MutableList<Int>.() -> Unit): List<Int> =
+      mutableListOf<Int>().apply(block).toList()
+  ```
 - Overrides are not reported: their signature is fixed by the overridden declaration, which is
   reported instead.
 - `@PublishedApi internal` declarations are not reported because their types do not cross the
@@ -119,8 +131,11 @@ public fun consume(items: Set<Int>) {
 
 ## Exemption
 
-Apply `@IntentionallyMutableCollection` when sharing the mutable collection is a deliberate part of
-the API contract.
+<!-- diagnostic-exemption: MUTABLE_COLLECTION_PUBLIC_API -->
+If this API shape is intentional, apply `@IntentionallyMutableCollection` to the reported
+declaration, parameter, or type usage.
+
+Use the exemption when sharing the mutable collection is a deliberate part of the API contract.
 
 ```kotlin
 // !hide-focused
@@ -133,6 +148,7 @@ the API contract.
  * @property items live collection of scheduled values.
  */
 // !hide-focused
+// !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Holder(
     @IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)

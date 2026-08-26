@@ -62,6 +62,7 @@ public fun dimensions(): Triple<Int, Int, Int> = Triple(0, 0, 0)
  * @property depth front-to-back extent in pixels.
  */
 // !hide-focused
+// !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Dimensions(
     public val width: Int,
@@ -84,6 +85,7 @@ public fun dimensions(): Dimensions = Dimensions(0, 0, 0)
  * @property position horizontal and vertical anchor coordinates.
  */
 // !hide-focused
+// !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 // !diag[/Pair<Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["property","position","Pair"]
 public class Anchor(public val position: Pair<Int, Int>)
@@ -100,6 +102,7 @@ public class Anchor(public val position: Pair<Int, Int>)
  * @property y distance from the horizontal axis.
  */
 // !hide-focused
+// !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Point(
     public val x: Int,
@@ -113,6 +116,7 @@ public class Point(
  * @property position point at which the content is anchored.
  */
 // !hide-focused
+// !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Anchor(public val position: Point)
 ```
@@ -143,6 +147,7 @@ public fun edges(): List<Pair<Int, Int>> = emptyList()
  * @property y distance from the horizontal axis.
  */
 // !hide-focused(1:6)
+// !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Point(
   public val x: Int,
@@ -167,7 +172,8 @@ public fun edges(): List<Point> = emptyList()
 
 ## Exemption
 
-Apply `@IntentionallyPairOrTriple` on the whole declaration when the usage of a tuple type is intended:
+<!-- diagnostic-exemption: PAIR_OR_TRIPLE_PUBLIC_API -->
+If this API shape is intentional, apply `@IntentionallyPairOrTriple` to the whole declaration.
 
 ```kotlin
 // !hide-focused

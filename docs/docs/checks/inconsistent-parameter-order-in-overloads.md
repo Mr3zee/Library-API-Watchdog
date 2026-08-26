@@ -166,11 +166,14 @@ public fun Grid.fill(
 
 ## Exemption
 
-Apply `@IntentionallyInconsistentParameterOrder` to the function or constructor when the differing
-order is a deliberate, stable part of the contract, for example an old overload kept for source
-compatibility. The annotation also removes the declaration as an ordering reference: it is skipped
-both as a reporter and as a comparison target, so one acknowledged legacy overload doesn't force
-its order onto otherwise-consistent newer ones.
+<!-- diagnostic-exemption: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS -->
+If this API shape is intentional, apply `@IntentionallyInconsistentParameterOrder` to the function
+or constructor.
+
+Use the exemption when the differing order is a deliberate, stable part of the contract, for
+example an old overload kept for source compatibility. The annotation also removes the declaration
+as an ordering reference: it is skipped both as a reporter and as a comparison target, so one
+acknowledged legacy overload doesn't force its order onto otherwise-consistent newer ones.
 
 ```kotlin
 // !hide-focused

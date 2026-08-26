@@ -46,6 +46,10 @@ jobs:
         working-directory: docs
         run: npm test
 
+      - name: Check diagnostic exemption wording
+        working-directory: docs
+        run: npm run check:diagnostic-exemptions
+
       # Docusaurus fails on a broken link or anchor, so this is the docs check as well.
       - name: Build the docs website
         working-directory: docs

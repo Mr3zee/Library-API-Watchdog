@@ -30,7 +30,7 @@ internal class OpenApiChecker(
 ) : FirClassChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirClass) {
-        if (declaration !is FirRegularClass) {
+        if (declaration !is FirRegularClass || declaration.isActualizedDeclaration()) {
             return
         }
 

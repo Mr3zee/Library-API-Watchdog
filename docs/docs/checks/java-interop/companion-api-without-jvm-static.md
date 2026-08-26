@@ -91,8 +91,9 @@ public class Registry {
 
 ## Exemption
 
-Acknowledge the companion-instance access path with `@IntentionallyNonStaticCompanionApi` when
-keeping it is a deliberate choice:
+<!-- diagnostic-exemption: COMPANION_API_WITHOUT_JVM_STATIC -->
+If this API shape is intentional, apply `@IntentionallyNonStaticCompanionApi` to the function or an
+enclosing class.
 
 ```kotlin
 // !hide-focused

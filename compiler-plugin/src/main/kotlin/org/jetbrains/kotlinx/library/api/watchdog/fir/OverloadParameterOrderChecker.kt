@@ -45,7 +45,9 @@ internal class OverloadParameterOrderChecker(
             return
         }
 
-        if (!declaration.isWatchedPublicSourceApi() || declaration.isOverride || declaration.symbol.isExempt()) {
+        if (declaration.isActualizedDeclaration() || !declaration.isWatchedPublicSourceApi() ||
+            declaration.isOverride || declaration.symbol.isExempt()
+        ) {
             return
         }
 

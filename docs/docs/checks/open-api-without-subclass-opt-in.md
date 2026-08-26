@@ -97,8 +97,10 @@ public interface Plugin {
 
 ## Exemption
 
-When unrestricted subclassing is an intended, stable part of the contract, acknowledge it
-instead of adding an opt-in marker:
+<!-- diagnostic-exemption: OPEN_API_WITHOUT_SUBCLASS_OPT_IN -->
+If this API shape is intentional, apply `@IntentionallyOpen` to the class.
+
+Use the exemption when unrestricted subclassing is an intended, stable part of the contract:
 
 ```kotlin
 // !hide-focused
@@ -106,8 +108,6 @@ instead of adding an opt-in marker:
 @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public open class Widget
 ```
-
-`@IntentionallyOpen` targets the class declaration only.
 
 ## Configuration
 

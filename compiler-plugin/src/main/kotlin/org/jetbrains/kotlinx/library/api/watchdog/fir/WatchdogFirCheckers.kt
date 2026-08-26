@@ -26,6 +26,11 @@ import org.jetbrains.kotlin.platform.jvm.isJvm
  *
  * A checker whose every diagnostic is configured to [WatchdogSeverity.NONE] is not registered at
  * all, so a disabled check costs nothing per declaration.
+ *
+ * For multiplatform declarations, contract-shape checks report on `expect` declarations,
+ * implementation and JVM checks report on `actual` declarations, and the latter inherit matching
+ * `expect` annotations. [ExemptionExplanationChecker] is occurrence-based and validates annotations
+ * wherever they are written.
  */
 class WatchdogFirCheckers internal constructor(
     session: FirSession,

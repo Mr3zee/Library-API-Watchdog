@@ -23,7 +23,6 @@ import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.FirTypeAlias
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
-import org.jetbrains.kotlin.fir.declarations.utils.isActual
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.text
@@ -104,8 +103,9 @@ internal class UndocumentedApiChecker(
      * users can't reference it directly, or its documentation lives on another declaration -
      * overrides and `actual`s inherit it, and the primary constructor is described by class KDoc.
      */
+    context(context: CheckerContext)
     private fun FirMemberDeclaration.watchedKind(): String? = when {
-        isActual -> null
+        isActualizedDeclaration() -> null
         // Comparisons instead of a `when` over the enum: an exhaustive `when` compiles to an
         // `ordinal()` switch, and AnimalSniffer rejects that call against the compiler API baseline.
         this is FirRegularClass -> when {

@@ -87,6 +87,7 @@ public class Connection(public val host: String)
  *
  * @property host network host serving requests.
  */
+// !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Connection(public val host: String)
 ```
@@ -128,8 +129,15 @@ public class Connection(public val host: String) {
 
 ## Exemptions
 
-Apply `@IntentionallyWithoutEqualsHashCodeOrToString` when all three behaviors are intentional. For
-example, a sensitive handle may intentionally use identity equality and avoid rendering its state:
+<!-- diagnostic-exemption-table -->
+| Missing behavior | Individual exemption            | Combined exemption                              |
+|------------------|---------------------------------|-------------------------------------------------|
+| `equals`         | `@IntentionallyWithoutEquals`   | `@IntentionallyWithoutEqualsHashCodeOrToString` |
+| `hashCode`       | `@IntentionallyWithoutHashCode` | `@IntentionallyWithoutEqualsHashCodeOrToString` |
+| `toString`       | `@IntentionallyWithoutToString` | `@IntentionallyWithoutEqualsHashCodeOrToString` |
+
+Apply the individual exemption to acknowledge one behavior, or the combined exemption to
+acknowledge all three inherited implementations:
 
 ```kotlin
 // !hide-focused(1:5)
@@ -142,10 +150,8 @@ example, a sensitive handle may intentionally use identity equality and avoid re
 public class Connection(public val host: String)
 ```
 
-The individual `@IntentionallyWithoutEquals`, `@IntentionallyWithoutHashCode`, and
-`@IntentionallyWithoutToString` exemptions remain available when only some behaviors are
-intentional. For example, a class can acknowledge identity equality and hashing while still
-providing a safe `toString`.
+Choose the individual exemptions when only some behaviors are intentional. For example, a class can
+acknowledge identity equality and hashing while still providing a safe `toString`.
 
 ## Configuration
 

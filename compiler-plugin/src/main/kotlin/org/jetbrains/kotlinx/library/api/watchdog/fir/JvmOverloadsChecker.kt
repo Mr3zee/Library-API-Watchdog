@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFunctionChecker
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
-import org.jetbrains.kotlin.fir.declarations.hasAnnotation
+import org.jetbrains.kotlin.fir.declarations.itOrExpectHasDefaultParameterValue
 import org.jetbrains.kotlin.fir.declarations.utils.isAbstract
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
 import org.jetbrains.kotlin.fir.declarations.utils.isSuspend
@@ -27,6 +27,8 @@ internal class JvmOverloadsChecker(
 ) : FirFunctionChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirFunction) {
+        if (declaration.isExpectedDeclaration()) return
+
         when {
             declaration is FirConstructor ->
                 if (context.containingClassSymbol?.classKind == ClassKind.ANNOTATION_CLASS) return
@@ -40,7 +42,7 @@ internal class JvmOverloadsChecker(
             return
         }
 
-        if (declaration.valueParameters.none { it.defaultValue != null }) {
+        if (declaration.valueParameters.indices.none(declaration::itOrExpectHasDefaultParameterValue)) {
             return
         }
 
@@ -48,10 +50,9 @@ internal class JvmOverloadsChecker(
             return
         }
 
-        val session = context.session
-        if (declaration.hasAnnotation(JvmStandardClassIds.JVM_OVERLOADS_CLASS_ID, session) ||
-            declaration.hasAnnotation(JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID, session) ||
-            declaration.hasAnnotation(WatchdogClassIds.IntentionallyWithoutJvmOverloads, session)
+        if (declaration.hasAnnotationOnActualOrExpect(JvmStandardClassIds.JVM_OVERLOADS_CLASS_ID) ||
+            declaration.hasAnnotationOnActualOrExpect(JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID) ||
+            declaration.hasAnnotationOnActualOrExpect(WatchdogClassIds.IntentionallyWithoutJvmOverloads)
         ) {
             return
         }

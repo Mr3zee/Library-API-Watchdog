@@ -130,8 +130,9 @@ computed default.
 
 ## Exemption
 
-Acknowledge the companion-instance access path with `@IntentionallyNonStaticCompanionApi` when
-keeping it is a deliberate choice:
+<!-- diagnostic-exemption: COMPANION_CONSTANT_WITHOUT_JVM_FIELD -->
+If this API shape is intentional, apply `@IntentionallyNonStaticCompanionApi` to the property or an
+enclosing class.
 
 ```kotlin
 // !hide-focused
