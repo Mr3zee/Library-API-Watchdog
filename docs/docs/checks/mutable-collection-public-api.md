@@ -11,7 +11,8 @@
 
 ## What it reports
 
-Flags public APIs that expose a mutable collection type (any of the `kotlin.collections` mutable interfaces):
+Flags declarations in the public API that expose a mutable collection type (any of the
+`kotlin.collections` mutable interfaces):
  - `MutableList`
  - `MutableSet` 
  - `MutableMap`
@@ -129,8 +130,8 @@ public fun consume(items: Set<Int>) {
 ## Exemption
 
 <!-- diagnostic-exemption: MUTABLE_COLLECTION_PUBLIC_API -->
-If this API shape is intentional, apply `@IntentionallyMutableCollection` to the reported
-declaration, parameter, or type usage.
+If this API shape is intentional, apply `@IntentionallyMutableCollection` to the declaration,
+parameter, or type usage.
 
 Use the exemption when sharing the mutable collection is a deliberate part of the API contract.
 

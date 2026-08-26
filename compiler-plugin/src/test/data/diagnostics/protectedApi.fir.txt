@@ -1,0 +1,179 @@
+FILE: protectedApi.kt
+    package foo.bar
+
+    @R|kotlin/jvm/JvmInline|() public final value class UserId : R|kotlin/Any| {
+        public constructor(value: R|kotlin/String|): R|foo/bar/UserId| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val value: R|kotlin/String| = R|<local>/value|
+            public get(): R|kotlin/String|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/InternalAnnotationMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|)]) public final annotation class InternalApi : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/InternalApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|foo/bar/InternalApi|() public final class InternalType : R|kotlin/Any| {
+        public constructor(): R|foo/bar/InternalType| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun facadeAnchor(): R|kotlin/Int| {
+        ^facadeAnchor Int(0)
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public open class ProtectedApi : R|kotlin/Any| {
+        public constructor(): R|foo/bar/ProtectedApi| {
+            super<R|kotlin/Any|>()
+        }
+
+        protected open class OpenType : R|kotlin/Any| {
+            public constructor(): R|foo/bar/ProtectedApi.OpenType| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+        @R|kotlin/SubclassOptInRequired|() protected open class EmptyOptIn : R|kotlin/Any| {
+            public constructor(): R|foo/bar/ProtectedApi.EmptyOptIn| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+        protected final enum class Status : R|kotlin/Enum<foo/bar/ProtectedApi.Status>| {
+            private constructor(): R|foo/bar/ProtectedApi.Status| {
+                super<R|kotlin/Enum<foo/bar/ProtectedApi.Status>|>()
+            }
+
+            public final static enum entry ACTIVE: R|foo/bar/ProtectedApi.Status|
+            public final static fun values(): R|kotlin/Array<foo/bar/ProtectedApi.Status>| {
+            }
+
+            public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/ProtectedApi.Status| {
+            }
+
+            public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/ProtectedApi.Status>|
+                public static get(): R|kotlin/enums/EnumEntries<foo/bar/ProtectedApi.Status>|
+
+        }
+
+        protected final typealias Callback = R|() -> kotlin/Unit|
+
+        protected final data class Point : R|kotlin/Any| {
+            public constructor(x: R|kotlin/Int|): R|foo/bar/ProtectedApi.Point| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final val x: R|kotlin/Int| = R|<local>/x|
+                public get(): R|kotlin/Int|
+
+            public final operator fun component1(): R|kotlin/Int|
+
+            public final fun copy(x: R|kotlin/Int| = this@R|foo/bar/ProtectedApi.Point|.R|foo/bar/ProtectedApi.Point.x|): R|foo/bar/ProtectedApi.Point|
+
+        }
+
+        protected final class Stateful : R|kotlin/Any| {
+            public constructor(value: R|kotlin/Int|): R|foo/bar/ProtectedApi.Stateful| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final val value: R|kotlin/Int| = R|<local>/value|
+                public get(): R|kotlin/Int|
+
+        }
+
+        protected final fun undocumented(): R|kotlin/Unit| {
+        }
+
+        protected final fun mutableValues(): R|kotlin/collections/MutableList<kotlin/String>| {
+            ^mutableValues R|kotlin/collections/mutableListOf|<R|kotlin/String|>()
+        }
+
+        protected final fun coordinates(): R|kotlin/Pair<kotlin/Int, kotlin/Int>| {
+            ^coordinates Int(0).R|kotlin/to|<R|kotlin/Int|, R|kotlin/Int|>(Int(0))
+        }
+
+        protected final fun decision(): R|kotlin/Boolean?| {
+            ^decision Null(null)
+        }
+
+        protected final fun booleanArgument(enabled: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+        @R|kotlin/jvm/JvmOverloads|() protected final fun request(retries: R|kotlin/Int| = Int(3), host: R|kotlin/String|): R|kotlin/Unit| {
+        }
+
+        protected final fun move(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
+        }
+
+        protected final fun move(y: R|kotlin/Int|, x: R|kotlin/Int|, scale: R|kotlin/Long|): R|kotlin/Unit| {
+        }
+
+        protected final inline fun doubled(value: R|kotlin/Int|): R|kotlin/Int| {
+            ^doubled R|<local>/value|.R|kotlin/Int.plus|(R|<local>/value|)
+        }
+
+        protected final fun take(id: R|foo/bar/UserId|): R|kotlin/Unit| {
+        }
+
+        protected final suspend fun load(): R|kotlin/String| {
+            ^load String(loaded)
+        }
+
+        protected final fun connect(port: R|kotlin/Int| = Int(80)): R|kotlin/Unit| {
+        }
+
+        protected final fun internalType(): R|foo/bar/InternalType| {
+            ^internalType R|foo/bar/InternalType.InternalType|()
+        }
+
+        protected final class CompanionHost : R|kotlin/Any| {
+            public constructor(): R|foo/bar/ProtectedApi.CompanionHost| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final companion object Companion : R|kotlin/Any| {
+                private constructor(): R|foo/bar/ProtectedApi.CompanionHost.Companion| {
+                    super<R|kotlin/Any|>()
+                }
+
+                public final fun create(): R|foo/bar/ProtectedApi.CompanionHost| {
+                    ^create R|foo/bar/ProtectedApi.CompanionHost.CompanionHost|()
+                }
+
+                public final val instanceValue: R|kotlin/Int| = Int(1)
+                    public get(): R|kotlin/Int|
+
+            }
+
+        }
+
+    }
+    internal final class InternalContainer : R|kotlin/Any| {
+        public constructor(): R|foo/bar/InternalContainer| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final data class HiddenData : R|kotlin/Any| {
+            public constructor(value: R|kotlin/Int|): R|foo/bar/InternalContainer.HiddenData| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final val value: R|kotlin/Int| = R|<local>/value|
+                public get(): R|kotlin/Int|
+
+            public final operator fun component1(): R|kotlin/Int|
+
+            public final fun copy(value: R|kotlin/Int| = this@R|foo/bar/InternalContainer.HiddenData|.R|foo/bar/InternalContainer.HiddenData.value|): R|foo/bar/InternalContainer.HiddenData|
+
+        }
+
+        public final fun hiddenBoolean(enabled: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }

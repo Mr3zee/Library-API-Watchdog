@@ -28,8 +28,8 @@ Combined exemption: [`@IntentionallyWithoutEqualsHashCodeOrToString`](../exempti
 
 ## What they report
 
-The checks flag a public or protected regular class that has at least one property storing its
-value in a backing field and that doesn't declare or inherit the corresponding implementation:
+The checks flag a regular class in the public API that has at least one property storing its value
+in a backing field and that doesn't declare or inherit the corresponding implementation:
 
 ```kotlin
 // !hide-focused(1:5)
@@ -158,7 +158,7 @@ acknowledge identity equality and hashing while still providing a safe `toString
 ### Poko
 
 [Poko](https://github.com/drewhamilton/Poko) supports Kotlin/JVM and Kotlin Multiplatform. Apply the
-version compatible with the Kotlin version used by the project. For Kotlin 2.4.0:
+version compatible with the Kotlin version used by the project. For Kotlin `{{kotlinVersion}}`:
 
 ```kotlin build.gradle.kts
 plugins {

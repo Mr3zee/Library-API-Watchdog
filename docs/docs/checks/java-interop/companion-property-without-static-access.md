@@ -14,7 +14,8 @@ least one Java-visible accessor exists only on the nested `Companion` class.
 ## What it reports
 
 The check covers immutable, mutable, computed, delegated, `lateinit`, extension, and override
-properties. It reports only the accessors that remain visible through the companion instance.
+properties in the public API. It reports only the accessors that remain visible through the
+companion instance.
 
 ```kotlin
 // !hide-focused

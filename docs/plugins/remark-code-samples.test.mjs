@@ -1,6 +1,24 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import test from 'node:test';
+import {fileURLToPath} from 'node:url';
 import {remarkCodeSamples} from './remark-code-samples.mjs';
+
+const docsDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../docs');
+
+test('validates diagnostic annotations in every documentation code sample', () => {
+  for (const file of markdownFiles(docsDirectory)) {
+    const markdown = fs.readFileSync(file, 'utf8');
+    const children = [...markdown.matchAll(/^```([^\r\n]*)\r?\n([\s\S]*?)^```[ \t]*$/gm)].map((match) => ({
+      type: 'code',
+      lang: match[1].trim().split(/\s+/, 1)[0] || null,
+      meta: null,
+      value: match[2].replace(/\r?\n$/, ''),
+    }));
+    remarkCodeSamples()({type: 'root', children}, {path: file});
+  }
+});
 
 test('accepts several diagnostics on shared and distinct inline ranges', () => {
   assert.doesNotThrow(() =>
@@ -99,4 +117,12 @@ function transform(value) {
   };
   remarkCodeSamples()(tree, {path: 'sample.md'});
   return tree;
+}
+
+function* markdownFiles(directory) {
+  for (const entry of fs.readdirSync(directory, {withFileTypes: true})) {
+    const resolved = path.join(directory, entry.name);
+    if (entry.isDirectory()) yield* markdownFiles(resolved);
+    else if (entry.isFile() && entry.name.endsWith('.md')) yield resolved;
+  }
 }

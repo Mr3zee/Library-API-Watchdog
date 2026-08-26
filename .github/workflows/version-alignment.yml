@@ -1,0 +1,34 @@
+name: Version alignment
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'gradle.properties'
+      - 'gradle/libs.versions.toml'
+      - 'README.md'
+      - 'docs/**'
+      - 'scripts/verify-version-alignment.sh'
+      - '.github/workflows/version-alignment.yml'
+  pull_request:
+    paths:
+      - 'gradle.properties'
+      - 'gradle/libs.versions.toml'
+      - 'README.md'
+      - 'docs/**'
+      - 'scripts/verify-version-alignment.sh'
+      - '.github/workflows/version-alignment.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Verify version alignment
+        run: ./scripts/verify-version-alignment.sh

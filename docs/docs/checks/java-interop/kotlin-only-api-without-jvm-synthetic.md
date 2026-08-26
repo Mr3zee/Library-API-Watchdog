@@ -13,7 +13,7 @@ can use idiomatically, while the function still lands in the API surface Java so
 
 ## What it reports
 
-Three shapes trigger it:
+Three function shapes in the public API trigger it:
 - A `suspend` function (Java sees a trailing `Continuation` parameter it can't provide idiomatically)
 - An `inline` function with a `reified` type parameter (calling the compiled method from Java fails at runtime)
 - A function taking a Kotlin-specific function type as a value or context parameter - a suspend

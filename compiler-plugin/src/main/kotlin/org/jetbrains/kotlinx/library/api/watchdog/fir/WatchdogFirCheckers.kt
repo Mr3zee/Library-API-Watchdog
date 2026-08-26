@@ -35,6 +35,7 @@ import org.jetbrains.kotlin.platform.jvm.isJvm
 class WatchdogFirCheckers internal constructor(
     session: FirSession,
     severities: WatchdogDiagnosticSeverities,
+    annotationBasedExclusions: AnnotationBasedCheckExclusions = AnnotationBasedCheckExclusions.NONE,
     recorder: WatchdogDiagnosticsRecorder? = null,
     dependencyExposure: DependencyExposureCheckConfiguration? = null,
     publicTypeWithInternalApiEnabled: Boolean = true,
@@ -55,6 +56,13 @@ class WatchdogFirCheckers internal constructor(
         private fun <D : FirDeclaration> Set<FirDeclarationChecker<D>>.recorded(): Set<FirDeclarationChecker<D>> =
             if (recorder == null) this else mapTo(mutableSetOf()) { RecordingDeclarationChecker(it, recorder) }
 
+        /** Filters configured annotation rules before diagnostics reach recording and reporting. */
+        private fun <D : FirDeclaration> Set<FirDeclarationChecker<D>>.excludingConfiguredAnnotations():
+                Set<FirDeclarationChecker<D>> =
+            if (annotationBasedExclusions.isEmpty) this else mapTo(mutableSetOf()) {
+                AnnotationExcludingDeclarationChecker(it, annotationBasedExclusions)
+            }
+
         override val classCheckers: Set<FirClassChecker> = setOfNotNull(
             OpenApiChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.OPEN_API_WITHOUT_SUBCLASS_OPT_IN, WatchdogDiagnostics.SUBCLASS_OPT_IN_WITHOUT_MARKERS),
@@ -66,7 +74,7 @@ class WatchdogFirCheckers internal constructor(
                 .unlessDisabled(WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_EQUALS, WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_HASH_CODE, WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_TO_STRING,),
             DslMarkerTargetsChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.DSL_MARKER_NOOP_TARGET, WatchdogDiagnostics.DSL_MARKER_WITHOUT_EXPLICIT_TARGETS),
-        ).recorded()
+        ).excludingConfiguredAnnotations().recorded()
 
         // These checkers watch every declaration kind, not just classes. MutableCollectionChecker
         // is one of them because it also inspects class-level type parameter bounds.
@@ -86,7 +94,7 @@ class WatchdogFirCheckers internal constructor(
                 .takeIf { enabled && publicTypeWithInternalApiEnabled && !updatingBackwardsCompatibilityExempts },
             dependencyExposure?.let { NonTransitiveDependencyChecker(session, it) }
                 ?.takeIf { enabled && !updatingBackwardsCompatibilityExempts },
-        ).recorded()
+        ).excludingConfiguredAnnotations().recorded()
 
         // Dispatched to named functions and constructors alike: both declare parameter lists.
         override val functionCheckers: Set<FirFunctionChecker> = setOfNotNull(
@@ -102,17 +110,17 @@ class WatchdogFirCheckers internal constructor(
             JvmOverloadsChecker(severities)
                 .onlyOnJvm()
                 ?.unlessDisabled(WatchdogDiagnostics.DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS),
-        ).recorded()
+        ).excludingConfiguredAnnotations().recorded()
 
         override val fileCheckers: Set<FirFileChecker> = setOfNotNull(
             TopLevelJvmNameChecker(severities)
                 .onlyOnJvm()
                 ?.unlessDisabled(WatchdogDiagnostics.TOP_LEVEL_API_WITHOUT_JVM_NAME),
-        ).recorded()
+        ).excludingConfiguredAnnotations().recorded()
 
         override val typeAliasCheckers: Set<FirTypeAliasChecker> = setOfNotNull(
             FunctionTypeAliasChecker(severities).unlessDisabled(WatchdogDiagnostics.FUNCTION_TYPE_ALIAS_PUBLIC_API),
-        ).recorded()
+        ).excludingConfiguredAnnotations().recorded()
 
         // Dispatched to every callable: functions, properties, accessors, and value parameters.
         override val callableDeclarationCheckers: Set<FirCallableDeclarationChecker> = setOfNotNull(
@@ -129,7 +137,7 @@ class WatchdogFirCheckers internal constructor(
                     WatchdogDiagnostics.COMPANION_API_WITHOUT_JVM_STATIC,
                     WatchdogDiagnostics.COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS,
                 ),
-        ).recorded()
+        ).excludingConfiguredAnnotations().recorded()
     }
 
     override val typeCheckers: TypeCheckers = object : TypeCheckers() {

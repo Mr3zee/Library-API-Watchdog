@@ -210,6 +210,32 @@ class WatchdogProjectTest {
     }
 
     @Test
+    fun configuredAnnotationsCanIgnoreOneCheck() {
+        val project = object : WatchdogProject(
+            extraBuildScript = """
+                apiWatchdog {
+                    ignore(
+                        "STATEFUL_CLASS_WITHOUT_EQUALS",
+                        whenAnnotatedWith = listOf(
+                            "test.GeneratedValueMembers",
+                            "test.AlternateGeneratedValueMembers",
+                        ),
+                    )
+                }
+            """.trimIndent(),
+        ) {
+            override fun sources() = listOf(source(annotationIgnoreFile))
+        }.gradleProject
+
+        val result = buildAndFail(project.rootDir, "build")
+        assertFalse(result.hasStatefulDiagnostic("GeneratedState", "an `equals`"))
+        assertFalse(result.hasStatefulDiagnostic("AlternateGeneratedState", "an `equals`"))
+        assertTrue(result.hasStatefulDiagnostic("GeneratedState", "a `hashCode`"))
+        assertTrue(result.hasStatefulDiagnostic("GeneratedState", "a `toString`"))
+        assertTrue(result.hasStatefulDiagnostic("RegularState", "an `equals`"))
+    }
+
+    @Test
     fun unexplainedExemptionIsAlwaysAnError() {
         // The checker that honors this type-use exemption is disabled, so the remaining error
         // proves EXEMPTION_WITHOUT_EXPLANATION is enforced independently and ignores severity
@@ -778,6 +804,7 @@ class WatchdogProjectTest {
         result.assertDiagnosticReported("e: ", "The supertype of `Consumer` publicly exposes")
         result.assertDiagnosticReported("e: ", "The function receiver `acceptModels` publicly exposes")
         result.assertDiagnosticReported("e: ", "The parameter `models` publicly exposes")
+        result.assertDiagnosticReported("e: ", "The function `protectedModel` publicly exposes")
     }
 
     @Test
@@ -1205,6 +1232,9 @@ class WatchdogProjectTest {
         )
     }
 
+    private fun BuildResult.hasStatefulDiagnostic(className: String, missingMember: String): Boolean =
+        output.lineSequence().any { "`$className`" in it && "inherits $missingMember" in it }
+
     private fun ideaGenerateShortcut(): String =
         if (System.getProperty("os.name").startsWith("Mac", ignoreCase = true)) "⌘N" else "Alt+Insert"
 }
@@ -1348,6 +1378,31 @@ private val unexplainedExemptionFile = """
 
 @Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
+private val annotationIgnoreFile = """
+    /** Marks classes whose value members are generated. */
+    @Target(AnnotationTarget.CLASS)
+    @Retention(AnnotationRetention.SOURCE)
+    public annotation class GeneratedValueMembers
+
+    /** An alternate annotation that generates the same value members. */
+    @Target(AnnotationTarget.CLASS)
+    @Retention(AnnotationRetention.SOURCE)
+    public annotation class AlternateGeneratedValueMembers
+
+    /** State whose equals, hashCode, and toString implementations are generated. */
+    @GeneratedValueMembers
+    public class GeneratedState(public val value: Int)
+
+    /** State whose value members are generated under the alternate annotation. */
+    @AlternateGeneratedValueMembers
+    public class AlternateGeneratedState(public val value: Int)
+
+    /** State with no generated value members. */
+    public class RegularState(public val value: Int)
+""".trimIndent()
+
+@Suppress("RedundantVisibilityModifier")
+@Language("kotlin")
 private val markerLibraryFile = """
     /** Flags declarations that are public for technical reasons but are not supported API. */
     @InternalAnnotationMarker
@@ -1426,9 +1481,13 @@ private val exposesDependencyTypeFile = """
     public typealias ExternalModels = List<ExternalModel>
 
     /** A documented and otherwise settled API owner. */
-    public class Consumer : ExternalContract {
+    @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
+    public open class Consumer : ExternalContract {
         /** Returns a model whose class must be available to consumers. */
         public fun model(): ExternalModel = ExternalModel()
+
+        /** Returns a dependency type from protected API. */
+        protected fun protectedModel(): ExternalModel = ExternalModel()
 
         /** Uses a dependency type as both a receiver and a nested parameter type. */
         public fun ExternalModel.acceptModels(models: ExternalModels): ExternalModel = this

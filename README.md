@@ -13,7 +13,7 @@ annotations.
 
 ## Setup
 
-Add the snapshot repository to `settings.gradle.kts` for both plugin and library resolution:
+Add the Space EAP repository to `settings.gradle.kts` for both plugin and library resolution:
 
 ```kotlin
 pluginManagement {
@@ -38,7 +38,7 @@ plugin prints a warning.
 
 ```kotlin
 plugins {
-    kotlin("library.api-watchdog") version "<version>"
+    kotlin("library.api-watchdog") version "0.1.0"
 }
 
 kotlin {

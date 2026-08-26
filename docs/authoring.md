@@ -29,12 +29,20 @@ watchdog checks enabled:
 - Use American English, concise active voice, and straight ASCII punctuation. Never use an em dash
   or smart quotes.
 - Keep implementation details such as FIR and checker class names out of user-facing pages.
+- Use **public API** for effective public-or-protected visibility. Do not shorten that scope to
+  just "public" or repeat "public or protected" on individual check pages. Explicitly mention
+  `@PublishedApi internal` on pages for checks that include the published binary surface.
+- Don't write report-target lists in the check page's **What it reports** section. Mention the
+  target only when it helps explain the diagnostic or a non-obvious behavior.
 - Verify technical claims against `README.md`, `diagnostics.json`, the checker sources under
   `compiler-plugin/src/main/kotlin/org/jetbrains/kotlinx/library/api/watchdog/fir/`, annotation KDoc
   in `plugin-annotations/src/commonMain/kotlin/org/jetbrains/kotlinx/library/api/watchdog/WatchdogAnnotations.kt`,
   and `WatchdogGradleExtension.kt` in the Gradle plugin.
 - Treat `docs/docs/overview.md` as the source of truth for README check order and descriptions.
 - Use `docs/variables.mjs` only for values shared by `docusaurus.config.ts` and `sidebars.ts`.
+- Use `{{libraryApiWatchdogVersion}}` for the Watchdog version and `{{kotlinVersion}}` for the base
+  Kotlin version in fenced or inline code. The docs build reads them from `gradle.properties` and
+  `gradle/libs.versions.toml`, respectively.
 
 ## Diagnostic exemption wording
 

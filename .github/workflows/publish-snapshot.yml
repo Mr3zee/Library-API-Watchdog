@@ -1,4 +1,4 @@
-name: Publish snapshot
+name: Publish development build
 
 on:
   push:
@@ -26,8 +26,21 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
 
-      - name: Publish snapshot to Space
+      - name: Calculate development version
+        id: version
         env:
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          base_version="$(awk -F= '$1 == "version" { print substr($0, length($1) + 2) }' gradle.properties)"
+          if [[ ! "$base_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Expected a release version in gradle.properties, got: $base_version" >&2
+            exit 1
+          fi
+          echo "value=${base_version}-dev-${BUILD_NUMBER}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish development build to Space
+        env:
+          DEVELOPMENT_VERSION: ${{ steps.version.outputs.value }}
           KOTLIN_LIBRARY_SPACE_USERNAME: ${{ secrets.KOTLIN_LIBRARY_SPACE_USERNAME }}
           KOTLIN_LIBRARY_SPACE_PASSWORD: ${{ secrets.KOTLIN_LIBRARY_SPACE_PASSWORD }}
-        run: ./gradlew publishAllPublicationsToSpaceRepository
+        run: ./gradlew "-Pversion=$DEVELOPMENT_VERSION" publishAllPublicationsToSpaceRepository

@@ -12,14 +12,15 @@ marker classes.
 
 ## What it reports
 
-`markerClass` is a vararg parameter, so `@SubclassOptInRequired` compiles fine with zero
-arguments. The annotation restricts nothing in this case: the class or
-interface stays open to external subclassing exactly as if it was unannotated.
+For an open class or interface in the public API, `markerClass` is a vararg parameter, so
+`@SubclassOptInRequired` compiles fine with zero arguments. The annotation restricts nothing in
+this case: the class or interface stays open to external subclassing exactly as if it was
+unannotated.
 
 ```kotlin
 // !hide-focused
 /** Base type for application extensions. */
-// !diag[/@SubclassOptInRequired/] SUBCLASS_OPT_IN_WITHOUT_MARKERS
+// !diag[/@SubclassOptInRequired/] SUBCLASS_OPT_IN_WITHOUT_MARKERS ["ExtensionPoint"]
 @SubclassOptInRequired
 public abstract class ExtensionPoint
 ```
@@ -40,7 +41,7 @@ for the intended pattern.
 ```kotlin
 // !hide-focused
 /** Establishes communication with a remote service. */
-// !diag[/@SubclassOptInRequired/] SUBCLASS_OPT_IN_WITHOUT_MARKERS
+// !diag[/@SubclassOptInRequired/] SUBCLASS_OPT_IN_WITHOUT_MARKERS ["Connector"]
 @SubclassOptInRequired
 public abstract class Connector
 ```

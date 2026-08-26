@@ -10,9 +10,10 @@ their artifacts are not available transitively to consumers.
 | Gradle property  | [`publicTypesMustBeTransitiveDependencies`](../../configuration.md) |
 | Exemption        | none                                                                |
 
-Library consumers must be able to resolve every type in the public API. A type from an
-`implementation` dependency is available while the library itself compiles, but it is absent from
-the consumer's compile classpath. The consumer then can't use the affected declaration.
+Library consumers must be able to resolve every type in the public API and in
+`@PublishedApi internal` signatures. A type from an `implementation` dependency is available while
+the library itself compiles, but it is absent from the consumer's compile classpath. The consumer
+then can't use the affected declaration.
 
 ```kotlin build.gradle.kts
 dependencies {

@@ -2,6 +2,7 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import {remarkCodeHike, type CodeHikeConfig} from 'codehike/mdx';
 import {remarkCodeSamples} from './plugins/remark-code-samples.mjs';
+import {remarkProjectVersion} from './plugins/remark-project-version.mjs';
 import {variables} from './variables.mjs';
 
 // "github-from-css" resolves every colour to a --ch-* CSS variable (see src/css/custom.css), so
@@ -36,6 +37,7 @@ const config: Config = {
           editUrl: `${variables['repo-tree-path'].replace('/tree/', '/edit/')}/docs/`,
           // These have to run before the Docusaurus plugins turn code blocks into <Code> elements.
           beforeDefaultRemarkPlugins: [
+            remarkProjectVersion,
             remarkCodeSamples,
             [remarkCodeHike, codeHike],
           ],

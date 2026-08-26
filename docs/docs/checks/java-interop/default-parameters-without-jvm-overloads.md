@@ -13,8 +13,8 @@ default parameter values without `@JvmOverloads`.
 
 ## What it reports
 
-A public function or constructor that declares at least one default parameter value but carries
-no `@JvmOverloads`.
+A function or constructor in the public API that declares at least one default parameter value but
+carries no `@JvmOverloads`.
 
 ```kotlin
 // !hide-focused

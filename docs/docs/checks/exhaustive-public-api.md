@@ -12,8 +12,7 @@ exhaustively with a `when` expression.
 
 ## What it reports
 
-The check reports every public `enum class`, `sealed class`, and `sealed interface`
-declaration.
+The check reports every `enum class`, `sealed class`, and `sealed interface` in the public API.
 
 ```kotlin
 // !hide-focused

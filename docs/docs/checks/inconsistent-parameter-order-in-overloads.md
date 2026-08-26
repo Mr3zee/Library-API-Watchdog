@@ -12,9 +12,9 @@ whose shared parameter names appear in a different relative order.
 
 ## What it reports
 
-For every pair of public overloads that share at least two parameter names, the check compares the
-relative order of those shared names. No overload is treated as the canonical order: both members
-of a disagreeing pair are reported, and reordering either one clears both.
+For every pair of overloads in the public API that share at least two parameter names, the check
+compares the relative order of those shared names. No overload is treated as the canonical order:
+both members of a disagreeing pair are reported, and reordering either one clears both.
 
 ```kotlin
 // !hide-focused

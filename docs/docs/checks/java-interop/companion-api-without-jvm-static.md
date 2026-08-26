@@ -14,8 +14,8 @@ class.
 
 ## What it reports
 
-Flags a public function declared directly in a companion object - of a class
-or an interface - that carries neither `@JvmStatic` nor `@JvmSynthetic`.
+Flags a function in the public API declared directly in a companion object - of a class or an
+interface - that carries neither `@JvmStatic` nor `@JvmSynthetic`.
 
 ```kotlin
 // !hide-focused

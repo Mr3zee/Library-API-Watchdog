@@ -12,7 +12,7 @@ constructor property list as part of the compiled API.
 
 ## What it reports
 
-Any `data class` declared in the public API.
+Any `data class` in the public API or declared as `@PublishedApi internal`.
 
 ```kotlin
 // !hide-focused(1:6)

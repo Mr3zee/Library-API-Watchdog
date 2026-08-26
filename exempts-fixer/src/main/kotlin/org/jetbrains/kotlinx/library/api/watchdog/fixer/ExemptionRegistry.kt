@@ -96,7 +96,7 @@ internal object ExemptionRegistry {
         .filterIsInstance<FixResolution.Fixable>()
         .associate { it.fix.annotationShortName to it.fix.hasReasonParameter }
 
-    /** The annotation a diagnostic would receive, or null when it cannot be acknowledged automatically. */
+    /** The annotation a diagnostic would receive, or null when it can't be acknowledged automatically. */
     fun annotationFor(diagnostic: String): String? =
         (resolutions[diagnostic] as? FixResolution.Fixable)?.fix?.annotationShortName
 

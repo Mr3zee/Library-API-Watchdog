@@ -12,8 +12,8 @@ can be subclassed outside the library without any restriction.
 
 ## What it reports
 
-A public `open`/`abstract` class with at least one public or protected constructor, or a public
-non-sealed interface.
+An `open` or `abstract` class with at least one public or protected constructor,
+or a non-sealed interface in the public API.
 
 ```kotlin
 // !hide-focused

@@ -11,7 +11,7 @@
 
 ## What it reports
 
-Each publicly visible declaration a user can reference is reported when it carries no KDoc. 
+Each declaration in the public API that a user can reference is reported when it carries no KDoc.
 Only the presence of a KDoc is checked, not its content:
 
 ```kotlin

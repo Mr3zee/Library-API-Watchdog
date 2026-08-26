@@ -214,7 +214,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
 
         return providers.provider {
             buildList {
-                extension.diagnosticSeverities().forEach { (diagnostic, severity) ->
+                extension.diagnosticSeverities.forEach { (diagnostic, severity) ->
                     val configured = severity.get()
                     val effective = if (collect.get() && configured != WatchdogSeverity.NONE) {
                         WatchdogSeverity.WARNING
@@ -222,6 +222,9 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                         configured
                     }
                     add(SubpluginOption("diagnosticSeverity", "$diagnostic:${effective.name.lowercase()}"))
+                }
+                extension.annotationIgnoreRules().get().forEach { rule ->
+                    add(SubpluginOption("ignoreWhenAnnotated", rule))
                 }
                 if (collect.get()) {
                     add(FilesSubpluginOption("diagnosticsOutputFile", listOf(reportFile.get().asFile)))

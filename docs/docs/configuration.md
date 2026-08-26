@@ -26,7 +26,7 @@ Then apply the plugin:
 
 ```kotlin build.gradle.kts
 plugins {
-    kotlin("library.api-watchdog") version "0.1.0-SNAPSHOT"
+    kotlin("library.api-watchdog") version "{{libraryApiWatchdogVersion}}"
 }
 ```
 
@@ -156,6 +156,28 @@ apiWatchdog {
     }
 }
 ```
+
+## Annotation ignore rules
+
+Use `ignore` when annotations already guarantee the condition a check is looking for. Name the
+check by its diagnostic name and the annotations by their fully qualified class names:
+
+```kotlin
+apiWatchdog {
+    ignore(
+        "STATEFUL_CLASS_WITHOUT_EQUALS",
+        whenAnnotatedWith = listOf(
+            "com.example.GeneratedValueMembers",
+            "com.example.GeneratedEntityMembers",
+        ),
+    )
+}
+```
+
+The diagnostic is ignored only on declarations directly carrying one of those annotations. Repeat
+the call to associate the annotations with several checks. These rules are available for the
+configurable diagnostics in the [Property reference](#property-reference). Always-error safety
+checks can't be ignored by annotation.
 
 ## Severity semantics
 

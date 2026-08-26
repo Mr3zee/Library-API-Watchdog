@@ -62,8 +62,8 @@ Add Kotlin and Watchdog plugins and enable explicit API mode:
 
 ```kotlin build.gradle.kts
 plugins {
-    kotlin("multiplatform") version "2.4.0"
-    kotlin("library.api-watchdog") version "0.1.0-SNAPSHOT"
+    kotlin("multiplatform") version "{{kotlinVersion}}"
+    kotlin("library.api-watchdog") version "{{libraryApiWatchdogVersion}}"
 }
 
 kotlin {

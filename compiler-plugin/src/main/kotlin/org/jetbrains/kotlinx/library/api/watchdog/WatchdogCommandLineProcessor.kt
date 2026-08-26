@@ -19,6 +19,10 @@ object WatchdogConfigurationKeys {
     val DIAGNOSTIC_SEVERITIES: CompilerConfigurationKey<Map<String, WatchdogSeverity>> =
         CompilerConfigurationKey.create("watchdog diagnostic severities")
 
+    /** Annotation FQ names that ignore a configurable diagnostic on an annotated declaration. */
+    val ANNOTATION_IGNORE_RULES: CompilerConfigurationKey<Map<String, Set<String>>> =
+        CompilerConfigurationKey.create("watchdog annotation ignore rules")
+
     /**
      * Path of the file every reported watchdog diagnostic is appended to as a tab-separated
      * line. See [org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnosticsRecorder].
@@ -51,6 +55,7 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
     override val pluginOptions: Collection<CliOption> =
         listOf(
             DIAGNOSTIC_SEVERITY_OPTION,
+            IGNORE_WHEN_ANNOTATED_OPTION,
             PUBLIC_TYPE_WITH_INTERNAL_API_OPTION,
             UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS_OPTION,
             DIAGNOSTICS_OUTPUT_FILE_OPTION,
@@ -65,6 +70,15 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             description = "Report the named watchdog diagnostic with the given severity, " +
                     "or disable its check with 'none'. " +
                     "Every diagnostic not mentioned is reported as an error.",
+            required = false,
+            allowMultipleOccurrences = true,
+        )
+
+        val IGNORE_WHEN_ANNOTATED_OPTION: CliOption = CliOption(
+            optionName = "ignoreWhenAnnotated",
+            valueDescription = "<diagnostic name>:<annotation fully qualified name>",
+            description = "Do not report the named configurable watchdog diagnostic on a " +
+                    "declaration carrying the annotation.",
             required = false,
             allowMultipleOccurrences = true,
         )
@@ -118,6 +132,9 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
         when (option.optionName) {
             DIAGNOSTIC_SEVERITY_OPTION.optionName -> {
                 processDiagnosticSeverity(value, configuration)
+            }
+            IGNORE_WHEN_ANNOTATED_OPTION.optionName -> {
+                processAnnotationIgnoreRule(value, configuration)
             }
             DIAGNOSTICS_OUTPUT_FILE_OPTION.optionName -> {
                 configuration.put(WatchdogConfigurationKeys.DIAGNOSTICS_OUTPUT_FILE, value)
@@ -176,5 +193,28 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
         val severities = HashMap(configuration[key, emptyMap()])
         severities[diagnostic.name] = severity
         configuration.put(key, severities)
+    }
+
+    private fun processAnnotationIgnoreRule(value: String, configuration: CompilerConfiguration) {
+        val diagnosticName = value.substringBefore(':')
+        val diagnostic = WatchdogDiagnostics.allDiagnostics.find { it.name == diagnosticName }
+            ?: throw CliOptionProcessingException(
+                "Unknown watchdog diagnostic '$diagnosticName'. Known configurable diagnostics: " +
+                        WatchdogDiagnostics.allDiagnostics.joinToString { it.name },
+            )
+        val annotationName = value.substringAfter(':', missingDelimiterValue = "")
+        if (annotationName.isBlank() || ':' in annotationName) {
+            throw CliOptionProcessingException(
+                "Invalid annotation name '$annotationName' for watchdog diagnostic '${diagnostic.name}': " +
+                        "expected a fully qualified class name.",
+            )
+        }
+
+        val key = WatchdogConfigurationKeys.ANNOTATION_IGNORE_RULES
+        val rules = configuration[key, emptyMap()].mapValuesTo(HashMap()) { (_, annotations) ->
+            annotations.toMutableSet()
+        }
+        rules.getOrPut(diagnostic.name, ::linkedSetOf).add(annotationName)
+        configuration.put(key, rules)
     }
 }

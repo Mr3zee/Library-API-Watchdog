@@ -13,9 +13,10 @@ compile into a file facade class without an explicit `@file:JvmName`.
 
 ## What it reports
 
-Kotlin files with top-level properties or functions that can be called from Java sources.
+Kotlin files with top-level properties or functions in the public API or declared as
+`@PublishedApi internal` that can be called from Java bytecode.
 
-The diagnostic fires once per file, anchored on the first public top-level function or property.
+The diagnostic fires once per file.
 
 ```kotlin Health.kt
 // !hide-focused

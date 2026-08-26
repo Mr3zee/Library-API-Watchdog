@@ -87,10 +87,11 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     val allDiagnostics: List<ConfigurableWatchdogDiagnostic<*>>
         field = mutableListOf()
 
-    /** Parameters: class kind, declaration name. Reported on the class or on a constructor. */
+    /** Parameters: class kind, declaration name. */
     val OPEN_API_WITHOUT_SUBCLASS_OPT_IN by configurable2<KtDeclaration, ClassKind, Name>(NAME_IDENTIFIER)
 
-    val SUBCLASS_OPT_IN_WITHOUT_MARKERS by configurable0<KtAnnotationEntry>()
+    /** Parameter: the annotated type's name. */
+    val SUBCLASS_OPT_IN_WITHOUT_MARKERS by configurable1<KtAnnotationEntry, Name>()
 
     /** Parameters: class kind, declaration name, class kind again for the member wording. */
     val EXHAUSTIVE_PUBLIC_API by configurable3<KtClassOrObject, ClassKind, Name, ClassKind>(NAME_IDENTIFIER)
@@ -113,19 +114,13 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     /** Parameters: the class name, generation-library hint, and IDEA Generate shortcut. */
     val STATEFUL_CLASS_WITHOUT_TO_STRING by configurable3<KtClassOrObject, Name, String, String>(NAME_IDENTIFIER)
 
-    /**
-     * Parameters: declaration kind in words, declaration name, the mutable type's name. Reported
-     * on the offending type reference.
-     */
+    /** Parameters: declaration kind in words, declaration name, the mutable type's name. */
     val MUTABLE_COLLECTION_PUBLIC_API by configurable3<KtElement, String, Name, Name>()
 
-    /**
-     * Parameters: declaration kind in words, declaration name, the tuple type's name. Reported
-     * on the offending type reference.
-     */
+    /** Parameters: declaration kind in words, declaration name, the tuple type's name. */
     val PAIR_OR_TRIPLE_PUBLIC_API by configurable3<KtElement, String, Name, Name>()
 
-    /** Parameters: the parameter name, the callable name. Reported on the parameter name. */
+    /** Parameters: the parameter name, the callable name. */
     val REQUIRED_PARAMETER_AFTER_OPTIONAL by configurable2<KtParameter, Name, Name>(NAME_IDENTIFIER)
 
     /** Parameters: the two swapped parameter names, the callable name. */
@@ -133,13 +128,10 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
         CALLABLE_NAME_OR_CONSTRUCTOR_KEYWORD,
     )
 
-    /** Parameters: the function name, the parameter name. Reported on the parameter name. */
+    /** Parameters: the function name, the parameter name. */
     val BOOLEAN_PARAMETER_PUBLIC_API by configurable2<KtParameter, Name, Name>(NAME_IDENTIFIER)
 
-    /**
-     * Parameters: declaration kind in words, declaration name. Reported on the offending type
-     * reference.
-     */
+    /** Parameters: declaration kind in words, declaration name. */
     val NULLABLE_BOOLEAN_PUBLIC_API by configurable2<KtElement, String, Name>()
 
     /** Parameters: the inlined declaration kind in words, the declaration name. */
@@ -157,16 +149,16 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     /** Parameters: the outer class name, the property name, the instance accessors in words. */
     val COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS by configurable3<KtDeclaration, Name, Name, String>(NAME_IDENTIFIER)
 
-    /** Parameter: the facade class name. Reported once per file, on its first facade member. */
+    /** Parameter: the facade class name. Emitted once per file. */
     val TOP_LEVEL_API_WITHOUT_JVM_NAME by configurable1<KtDeclaration, String>(NAME_IDENTIFIER)
 
     /** Parameters: declaration kind in words, declaration name. */
     val DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS by configurable2<KtDeclaration, String, Name>(NAME_IDENTIFIER)
 
     /**
-     * Parameters: the exemption annotation name, the reason that needs a description. Reported
-     * on the annotation entry. Deliberately not configurable, unlike the other diagnostics: the
-     * explanation requirement is what keeps every exemption honest, so it is always an error.
+     * Parameters: the exemption annotation name, the reason that needs a description. Deliberately
+     * not configurable, unlike the other diagnostics: the explanation requirement is what keeps
+     * every exemption honest, so it is always an error.
      */
     val EXEMPTION_WITHOUT_EXPLANATION by error2<KtAnnotationEntry, Name, Name>()
 
@@ -183,13 +175,13 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
      */
     val PUBLIC_TYPE_WITH_INTERNAL_API by error4<KtElement, String, Name, String, Name>()
 
-    /** Parameters: the marker name, the no-op target name. Reported on the `@Target` argument. */
+    /** Parameters: the marker name, the no-op target name. */
     val DSL_MARKER_NOOP_TARGET by configurable2<KtExpression, Name, String>()
 
     /** Parameter: the marker name. */
     val DSL_MARKER_WITHOUT_EXPLICIT_TARGETS by configurable1<KtClassOrObject, Name>(NAME_IDENTIFIER)
 
-    /** Parameters: the marker name, the type position in words. Reported on the annotation entry. */
+    /** Parameters: the marker name, the type position in words. */
     val DSL_MARKER_NOOP_TYPE_POSITION by configurable2<KtAnnotationEntry, Name, String>()
 
     override fun getRendererFactory(): BaseDiagnosticRendererFactory = WatchdogErrorMessages
@@ -255,7 +247,10 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             rendererA = CLASS_KIND,
             rendererB = NAME,
         )
-        map.put(diagnostic = WatchdogDiagnostics.SUBCLASS_OPT_IN_WITHOUT_MARKERS)
+        map.put(
+            diagnostic = WatchdogDiagnostics.SUBCLASS_OPT_IN_WITHOUT_MARKERS,
+            rendererA = NAME,
+        )
         map.put(
             diagnostic = WatchdogDiagnostics.EXHAUSTIVE_PUBLIC_API,
             rendererA = CLASS_KIND,

@@ -10,7 +10,6 @@ import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.types.functionTypeKind
 
-/** Reports watched type aliases whose fully expanded type is a function type unless exempted. */
 internal class FunctionTypeAliasChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirTypeAliasChecker(MppCheckerKind.Common) {

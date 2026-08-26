@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitComponentRegistrar
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
+import org.jetbrains.kotlinx.library.api.watchdog.fir.AnnotationBasedCheckExclusions
 import org.jetbrains.kotlinx.library.api.watchdog.fir.DependencyExposureCheckConfiguration
 import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnosticSeverities
 import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnosticsRecorder
@@ -14,6 +15,9 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
     override fun CompilerPluginRegistrar.ExtensionStorage.registerExtensions(configuration: CompilerConfiguration) {
         val severities = WatchdogDiagnosticSeverities(
             configuration[WatchdogConfigurationKeys.DIAGNOSTIC_SEVERITIES, emptyMap()],
+        )
+        val annotationBasedExclusions = AnnotationBasedCheckExclusions(
+            configuration[WatchdogConfigurationKeys.ANNOTATION_IGNORE_RULES, emptyMap()],
         )
         val recorder = configuration[WatchdogConfigurationKeys.DIAGNOSTICS_OUTPUT_FILE]
             ?.let { WatchdogDiagnosticsRecorder(File(it)) }
@@ -32,6 +36,7 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
         FirExtensionRegistrarAdapter.registerExtension(
             WatchdogFirExtensionRegistrar(
                 severities = severities,
+                annotationBasedExclusions = annotationBasedExclusions,
                 recorder = recorder,
                 dependencyExposure = dependencyExposure,
                 publicTypeWithInternalApiEnabled = publicTypeWithInternalApiEnabled,

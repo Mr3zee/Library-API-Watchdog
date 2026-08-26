@@ -12,7 +12,7 @@
 ## What it reports
 
 Flags return types, property types, value parameter types (constructors included), context
-parameter types, and type parameter bounds that mention `Boolean?`.
+parameter types, and type parameter bounds in the public API that mention `Boolean?`.
 
 ```kotlin
 // !hide-focused
@@ -136,8 +136,8 @@ public class Holder(public val checked: CheckState)
 ## Notes
 
 - Unlike [`BOOLEAN_PARAMETER_PUBLIC_API`](./boolean-parameter-public-api.md), constructors are checked too.
-- A typealias is reported.
-- A `Boolean?` bound on a type parameter `<T : Boolean?>`) is reported.
+- Type aliases are expanded and reported, so they don't hide a nullable Boolean.
+- A `Boolean?` type parameter bound constrains every substitution to the same three-state shape.
 - Extension receivers are not reported: an extension on `Boolean?`, typically a remedial helper
   like `fun Boolean?.orFalse()`, serves values the user already holds.
 - Overrides are not reported: their signature is fixed by the overridden declaration, which is
@@ -149,7 +149,7 @@ public class Holder(public val checked: CheckState)
 ## Exemption
 
 <!-- diagnostic-exemption: NULLABLE_BOOLEAN_PUBLIC_API -->
-If this API shape is intentional, apply `@IntentionallyNullableBoolean` to the reported declaration,
+If this API shape is intentional, apply `@IntentionallyNullableBoolean` to the declaration,
 parameter, or type usage.
 
 Use the exemption when the nullable Boolean is a deliberate part of the API contract.

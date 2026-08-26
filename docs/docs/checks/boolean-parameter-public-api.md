@@ -11,8 +11,8 @@
 
 ## What it reports
 
-Every value parameter, and every context parameter, of a public or protected function whose
-type is `Boolean`, including the declared element type of `vararg` parameter.
+Every value parameter, and every context parameter, of a function in the public API whose type is
+`Boolean`, including the declared element type of a `vararg` parameter.
 
 ```kotlin
 // !hide-focused

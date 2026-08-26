@@ -12,8 +12,8 @@ constructors declared after an optional (defaulted or `vararg`) parameter.
 
 ## What it reports
 
-Every required parameter (one that doesn't have a default value) that comes after the first optional one - defaulted
-or `vararg` - in the parameter list of a public function or constructor:
+Every required parameter (one that doesn't have a default value) that comes after the first
+optional one - defaulted or `vararg` - in a function or constructor in the public API:
 
 ```kotlin
 // !hide-focused

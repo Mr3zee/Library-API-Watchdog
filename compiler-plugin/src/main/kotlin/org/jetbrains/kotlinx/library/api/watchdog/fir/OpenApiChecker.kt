@@ -75,6 +75,7 @@ internal class OpenApiChecker(
                 reporter.reportOn(
                     source = subclassOptIn.source,
                     factory = markersFactory,
+                    a = declaration.name,
                 )
             }
             return

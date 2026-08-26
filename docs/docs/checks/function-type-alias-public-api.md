@@ -11,7 +11,7 @@
 
 ## What it reports
 
-A public or protected type alias whose expanded type is a function type.
+A type alias in the public API whose expanded type is a function type.
 
 ```kotlin
 // !hide-focused

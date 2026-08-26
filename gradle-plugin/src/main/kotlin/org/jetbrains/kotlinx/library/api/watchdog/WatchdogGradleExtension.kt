@@ -3,6 +3,7 @@ package org.jetbrains.kotlinx.library.api.watchdog
 import javax.inject.Inject
 import org.gradle.api.Action
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 
@@ -31,6 +32,9 @@ import org.gradle.api.provider.Provider
  * ```
  */
 public open class WatchdogGradleExtension(objectFactory: ObjectFactory) {
+    private val annotationIgnoreRules: ListProperty<String> =
+        objectFactory.listProperty(String::class.java).convention(emptyList())
+
     /** Severity of `OPEN_API_WITHOUT_SUBCLASS_OPT_IN`: unrestricted external subclassing. */
     public val openApiWithoutSubclassOptIn: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
@@ -125,7 +129,46 @@ public open class WatchdogGradleExtension(objectFactory: ObjectFactory) {
         action.execute(javaInterop)
     }
 
-    internal fun diagnosticSeverities(): Map<String, Provider<WatchdogSeverity>> = mapOf(
+    /**
+     * Ignores [check] on a declaration carrying any annotation identified by
+     * [whenAnnotatedWith]. The check is named by its uppercase diagnostic name and the annotations
+     * by their fully qualified class names:
+     *
+     * ```kotlin
+     * apiWatchdog {
+     *     ignore(
+     *         "STATEFUL_CLASS_WITHOUT_EQUALS",
+     *         whenAnnotatedWith = listOf(
+     *             "com.example.GeneratedValue",
+     *             "com.example.GeneratedEntity",
+     *         ),
+     *     )
+     * }
+     * ```
+     *
+     * Call this method repeatedly to associate the annotations with several checks. Only
+     * configurable checks support annotation ignore rules. The diagnostics documented as always
+     * errors can't be ignored.
+     */
+    public fun ignore(check: String, whenAnnotatedWith: List<String>) {
+        val knownChecks = diagnosticSeverities.keys
+        require(check in knownChecks) {
+            "Unknown API Watchdog check '$check'. Known configurable checks: ${knownChecks.joinToString()}"
+        }
+        require(whenAnnotatedWith.isNotEmpty()) {
+            "At least one annotation name must be supplied for API Watchdog check '$check'"
+        }
+        whenAnnotatedWith.forEach { annotationName ->
+            require(annotationName.isNotBlank() && ':' !in annotationName) {
+                "The annotation name must be a non-blank fully qualified class name: '$annotationName'"
+            }
+            annotationIgnoreRules.add("$check:$annotationName")
+        }
+    }
+
+    internal fun annotationIgnoreRules(): Provider<List<String>> = annotationIgnoreRules
+
+    internal val diagnosticSeverities: Map<String, Provider<WatchdogSeverity>> = mapOf(
         "OPEN_API_WITHOUT_SUBCLASS_OPT_IN" to openApiWithoutSubclassOptIn,
         "SUBCLASS_OPT_IN_WITHOUT_MARKERS" to subclassOptInWithoutMarkers,
         "EXHAUSTIVE_PUBLIC_API" to exhaustivePublicApi,

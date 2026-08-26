@@ -52,7 +52,7 @@
       "title": "Subclass opt-in without markers",
       "docs": "checks/subclass-opt-in-without-markers",
       "message": [
-        "`@SubclassOptInRequired` lists no marker classes, so any external class can subclass the type",
+        "`@SubclassOptInRequired` lists no marker classes, so any external class can subclass `{0}`",
         "without opting in to anything, and the library keeps the evolution risk it meant to opt out of.",
         "Pass at least one opt-in marker class with a description of why the subclassing is restricted."
       ]
@@ -190,8 +190,8 @@
         "the API boundary, it is unclear whether user-side and library-side mutations affect each other, freely.",
         "Accept and return read-only types instead (arrays count as mutable collections too), handing out defensive copies where needed.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyMutableCollection` to the reported",
-        "declaration, parameter, or type usage."
+        "If this API shape is intentional, apply `@IntentionallyMutableCollection` to the declaration,",
+        "parameter, or type usage."
       ]
     },
     {
@@ -258,7 +258,7 @@
         "them, so every use site has to know what `null` stands for, and three-state logic hides in",
         "two-branch `if`s. Replace it with an `enum class` naming all three states, or drop the third state.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyNullableBoolean` to the reported declaration,",
+        "If this API shape is intentional, apply `@IntentionallyNullableBoolean` to the declaration,",
         "parameter, or type usage."
       ]
     },

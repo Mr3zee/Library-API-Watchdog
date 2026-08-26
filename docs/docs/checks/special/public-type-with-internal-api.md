@@ -11,9 +11,9 @@ supported public signature exposes them.
 | Exemption        | none                                                  |
 
 An annotation whose class carries [`@InternalAnnotationMarker`](../../exemptions.md#internal-api-annotations) says that its declarations have no
-supported compatibility contract. Exposing one of those declarations from supported API makes
-the contract contradictory: users have to name and use an explicitly unsupported type to call
-the supported declaration.
+supported compatibility contract. Exposing one of those declarations from the public API makes
+the contract contradictory: users have to name and use an explicitly unsupported type to call the
+supported declaration.
 
 ```kotlin
 // !hide-focused

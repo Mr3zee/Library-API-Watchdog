@@ -14,9 +14,9 @@ compiled name.
 
 ## What it reports
 
-A value class among the value parameters, the extension receiver, or the context parameters of a
-function, property, or constructor. A class member is also reported when the value class is its return type, 
-which mangles members but not top-level callables.
+A function, property, or constructor in the public API with a value class among its value
+parameters, extension receiver, or context parameters. A class member is also reported when the
+value class is its return type, which mangles members but not top-level callables.
 
 ```kotlin
 // !hide-focused

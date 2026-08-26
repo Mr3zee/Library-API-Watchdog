@@ -12,9 +12,10 @@ body does more than a thin delegation.
 
 ## What it reports
 
-Public and `@PublishedApi internal` inline functions and property accessors are reported unless
-their body is a thin wrapper. A thin wrapper contains at most one statement, besides an optional
-contract, and uses only the [permitted operations](#permitted-thin-wrapper-operations).
+Inline functions and property accessors in the public API, and `@PublishedApi internal` ones, are
+reported unless their body is a thin wrapper. A thin wrapper contains at most one statement,
+besides an optional contract, and uses only the
+[permitted operations](#permitted-thin-wrapper-operations).
 
 ```kotlin
 // !hide-focused

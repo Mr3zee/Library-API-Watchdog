@@ -13,7 +13,8 @@ signatures.
 ## What it reports
 
 The check reports `Pair` and `Triple` in return types, property types, parameter types, and type
-parameter bounds, including their type arguments (like `List<Pair<Int, String>>`):
+parameter bounds in the public API, including their type arguments (like
+`List<Pair<Int, String>>`):
 
 ```kotlin
 // !hide-focused

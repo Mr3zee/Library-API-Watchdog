@@ -35,7 +35,7 @@ Apply the report aggregation plugin in the root project and declare the modules 
 
 ```kotlin build.gradle.kts
 plugins {
-    id("org.jetbrains.kotlin.library.api-watchdog-report-aggregation") version "0.1.0-SNAPSHOT"
+    kotlin("library.api-watchdog-report-aggregation") version "{{libraryApiWatchdogVersion}}"
 }
 
 dependencies {

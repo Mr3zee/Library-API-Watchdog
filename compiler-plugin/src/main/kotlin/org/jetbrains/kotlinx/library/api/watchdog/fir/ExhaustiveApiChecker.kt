@@ -12,7 +12,6 @@ import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.utils.modality
 
-/** Reports watched enum classes and sealed classes or interfaces unless exempted. */
 internal class ExhaustiveApiChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirClassChecker(MppCheckerKind.Common) {
