@@ -127,7 +127,7 @@ class WatchdogFirCheckers internal constructor(
                 .onlyOnJvm()
                 ?.unlessDisabled(
                     WatchdogDiagnostics.COMPANION_API_WITHOUT_JVM_STATIC,
-                    WatchdogDiagnostics.COMPANION_CONSTANT_WITHOUT_JVM_FIELD,
+                    WatchdogDiagnostics.COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS,
                 ),
         ).recorded()
     }

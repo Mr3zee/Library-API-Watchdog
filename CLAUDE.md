@@ -85,17 +85,29 @@ bootstrap/dev repositories configured in `settings.gradle.kts`.
   imports). The `REPORTED_ANNOTATION` target strategy replaces the reported annotation instead of adding one, which
   is how a markerless `@SubclassOptInRequired` becomes `@IntentionallyOpen`.
   `ExemptionRegistry` maps each diagnostic to its annotation and target strategy or marks it unfixable;
-  request/response travel as `key=value` files (`FixerProtocol`). Compile-only deps; at runtime the Gradle task
-  supplies `kotlin-compiler-embeddable` of the project's Kotlin version.
+  `ExemptionScanner` also finds every Watchdog `@Intentionally*` annotation already present in main sources,
+  regardless of its reason. The fixer has a dry-run mode used by report generation, so it can return applicable and
+  unfixable diagnostics without changing source files. Request/response travel as `key=value` files
+  (`FixerProtocol`). Compile-only deps; at runtime the Gradle task supplies `kotlin-compiler-embeddable` of the
+  project's Kotlin version.
 - `:kotlin-library-api-watchdog-gradle-plugin` - `WatchdogSupportPlugin` applies the compiler plugin and the annotations dependency to every
   compilation except test compilations (`isApplicable`), so a raw `-Xexplicit-api` flag spread over all compilations
   can't turn the checks on for unpublished test sources;
   `WatchdogGradleExtension` (`apiWatchdog { ... }`) exposes one severity `Property` per configurable diagnostic and
   turns them into `diagnosticSeverity` subplugin options. Realizing `UpdateBackwardsCompatibilityExemptsTask`
-  (untracked) activates an internal collection property that injects a unique `diagnosticsOutputFile` into every main
-  KGP compilation across all targets, forces explicit API warning mode, and demotes enabled configurable watchdog
-  diagnostics to warnings for the adoption run. The task depends on those compilations and launches the PSI-only
-  `:kotlin-library-api-watchdog-exempts-fixer` once over all reports. There is no public collection flag; selecting the task activates it.
+  (untracked) or `GenerateBackwardsCompatibilityExemptsReportTask` activates an internal collection property that
+  injects a unique `diagnosticsOutputFile` into every main KGP compilation across all targets, forces explicit API
+  warning mode, and demotes enabled configurable watchdog diagnostics to warnings for the adoption run. Each task
+  depends on those compilations and launches the PSI-only
+  `:kotlin-library-api-watchdog-exempts-fixer` once over all reports. Only the update task writes sources. The report
+  task writes module HTML and data reports, and its data output is exposed as a consumable Gradle variant. There is no
+  public collection flag; selecting either task activates it.
+- `:kotlin-library-api-watchdog-report-aggregation` - standalone Gradle plugin and shared report renderer. The
+  `org.jetbrains.kotlin.library.api-watchdog-report-aggregation` plugin resolves explicitly declared
+  `backwardsCompatibilityExemptsReports` project dependencies and combines their variants through
+  `aggregateBackwardsCompatibilityExemptsReport`. It stays in a separate artifact so applying it at the root does
+  not put the KGP-dependent compiler support plugin on every project's plugin classpath, and dependency-driven
+  resolution keeps it compatible with Gradle project isolation.
 
 ### Shared diagnostics registry
 

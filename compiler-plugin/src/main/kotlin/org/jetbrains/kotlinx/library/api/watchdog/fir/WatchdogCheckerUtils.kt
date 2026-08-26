@@ -274,7 +274,7 @@ internal fun ConeKotlinType.mangledValueClass(): Name? {
 
 /**
  * Return types only mangle members: a dispatch receiver is what distinguishes `give()` - a
- * top-level function keeping its JVM name - from `member-aWk8GsU()`.
+ * top-level function keeping its JVM name - from `member-<hash>()`.
  */
 context(context: CheckerContext)
 internal fun FirCallableDeclaration.returnValueClassIfMember(): Name? =

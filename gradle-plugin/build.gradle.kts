@@ -17,6 +17,7 @@ kotlin {
 
 dependencies {
     implementation(pluginDevKit("version-resolution"))
+    implementation(project(":kotlin-library-api-watchdog-report-aggregation"))
 }
 
 pluginDevKit {

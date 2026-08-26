@@ -51,6 +51,16 @@ public fun layoutTree(block: @TreeDsl @LayoutDsl Tag.() -> Unit): Unit = Tag().b
 // A context parameter is an implicit function-type value too.
 public fun contextualTree(block: @TreeDsl context(Tag) () -> Unit): Unit { }
 
+// A declaration-level context parameter is an implicit value taking part in scope control:
+// a nearer implicit value with the same marker hides it from context resolution.
+context(tag: @TreeDsl Tag)
+public fun buildInScope() { }
+
+// The marker is effective on an unnamed context parameter too: the value is only ever
+// used implicitly.
+context(_: @TreeDsl Tag)
+public fun buildUnnamed() { }
+
 // The marker on the receiver type inside a function type marks the lambda receiver.
 public fun tree2(block: (@TreeDsl Tag).() -> Unit): Unit = Tag().block()
 

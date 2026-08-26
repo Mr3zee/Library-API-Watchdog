@@ -1,5 +1,6 @@
 package org.jetbrains.kotlinx.library.api.watchdog.fir
 
+import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
@@ -16,6 +17,7 @@ import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
 import org.jetbrains.kotlin.fir.declarations.utils.correspondingValueParameterFromPrimaryConstructor
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
 import org.jetbrains.kotlin.fir.declarations.utils.isSuspend
+import org.jetbrains.kotlin.fir.declarations.utils.modality
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.types.coneType
@@ -118,12 +120,14 @@ internal class MangledJvmNameChecker(
         }
 
         // @JvmExposeBoxed - on the declaration or anywhere up the class nesting - generates
-        // Java-callable boxed variants next to the mangled entry points.
-        if (hasAnnotationOnActualOrExpect(JvmStandardClassIds.JVM_EXPOSE_BOXED_ANNOTATION_CLASS_ID) ||
-            context.containingDeclarations.any {
-                it is FirClassSymbol<*> &&
-                        it.hasAnnotationOnActualOrExpect(JvmStandardClassIds.JVM_EXPOSE_BOXED_ANNOTATION_CLASS_ID)
-            }
+        // Java-callable boxed variants next to the mangled entry points. Open and abstract
+        // members get no boxed variant even inside an annotated class, so they stay watched.
+        if (modality != Modality.OPEN && modality != Modality.ABSTRACT &&
+            (hasAnnotationOnActualOrExpect(JvmStandardClassIds.JVM_EXPOSE_BOXED_ANNOTATION_CLASS_ID) ||
+                    context.containingDeclarations.any {
+                        it is FirClassSymbol<*> &&
+                                it.hasAnnotationOnActualOrExpect(JvmStandardClassIds.JVM_EXPOSE_BOXED_ANNOTATION_CLASS_ID)
+                    })
         ) {
             return false
         }

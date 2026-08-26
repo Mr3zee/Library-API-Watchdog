@@ -52,7 +52,7 @@ Each member is checked independently. A class that implements `toString` but not
 State usually gives instances their meaning. Identity equality treats two instances with the same
 state as different values. Identity hashing carries that behavior into sets and map keys. An
 instance that only prints as `Connection@1a2b3c4d` reveals nothing in a log line, exception message,
-or debugger watch.
+or debugger view.
 
 Generate all three members together so they use the same state. [Poko](#poko) does this for Kotlin
 classes without exposing the `copy` and `componentN` API of a data class. In IntelliJ IDEA, press

@@ -180,7 +180,7 @@ internal object CheckerSubjects {
         },
         CheckerSubject(
             "CompanionJvmExposureChecker",
-            listOf("COMPANION_API_WITHOUT_JVM_STATIC", "COMPANION_CONSTANT_WITHOUT_JVM_FIELD"),
+            listOf("COMPANION_API_WITHOUT_JVM_STATIC", "COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS"),
         ) { ofCallable(CompanionJvmExposureChecker(severities)) },
     )
 

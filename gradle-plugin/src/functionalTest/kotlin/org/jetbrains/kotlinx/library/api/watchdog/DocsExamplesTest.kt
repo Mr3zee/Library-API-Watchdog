@@ -286,7 +286,7 @@ class DocsExamplesTest {
                     mangledJvmNamePublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
                     kotlinOnlyApiWithoutJvmSynthetic = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
                     companionApiWithoutJvmStatic = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    companionConstantWithoutJvmField = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
+                    companionPropertyWithoutStaticAccess = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
                     topLevelApiWithoutJvmName = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
                     defaultParametersWithoutJvmOverloads = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
                 }

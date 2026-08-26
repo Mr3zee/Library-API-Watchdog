@@ -154,8 +154,8 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     /** Parameters: the outer class name, the function name. */
     val COMPANION_API_WITHOUT_JVM_STATIC by configurable2<KtDeclaration, Name, Name>(NAME_IDENTIFIER)
 
-    /** Parameters: the outer class name, the property name. */
-    val COMPANION_CONSTANT_WITHOUT_JVM_FIELD by configurable2<KtDeclaration, Name, Name>(NAME_IDENTIFIER)
+    /** Parameters: the outer class name, the property name, the instance accessors in words. */
+    val COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS by configurable3<KtDeclaration, Name, Name, String>(NAME_IDENTIFIER)
 
     /** Parameter: the facade class name. Reported once per file, on its first facade member. */
     val TOP_LEVEL_API_WITHOUT_JVM_NAME by configurable1<KtDeclaration, String>(NAME_IDENTIFIER)
@@ -380,9 +380,10 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             rendererB = NAME,
         )
         map.put(
-            diagnostic = WatchdogDiagnostics.COMPANION_CONSTANT_WITHOUT_JVM_FIELD,
+            diagnostic = WatchdogDiagnostics.COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS,
             rendererA = NAME,
             rendererB = NAME,
+            rendererC = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.TOP_LEVEL_API_WITHOUT_JVM_NAME,

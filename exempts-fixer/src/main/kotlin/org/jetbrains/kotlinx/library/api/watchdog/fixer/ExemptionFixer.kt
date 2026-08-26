@@ -42,7 +42,12 @@ internal class FileFixResult(
  */
 internal class ExemptionFixer(private val parser: KotlinFileParser) {
 
-    fun fix(filePath: String, originalText: String, diagnostics: List<RecordedDiagnostic>): FileFixResult {
+    fun fix(
+        filePath: String,
+        originalText: String,
+        diagnostics: List<RecordedDiagnostic>,
+        rewriteLocations: Boolean = true,
+    ): FileFixResult {
         // PSI only parses `\n`-normalized text, so targets are resolved on the normalized form
         // and every insertion offset is mapped back to the original text before applying: the
         // file's existing line endings survive untouched, whatever mix they are.
@@ -118,7 +123,11 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
             )
         }
         val newText = applyEdits(originalText, rawEdits)
-        val locations = RewrittenLocations(originalText, newText, rawEdits)
+        val locations = if (rewriteLocations) {
+            RewrittenLocations(originalText, newText, rawEdits)
+        } else {
+            RewrittenLocations(originalText, originalText, emptyList())
+        }
         return FileFixResult(
             newText = newText,
             applied = applied.map {

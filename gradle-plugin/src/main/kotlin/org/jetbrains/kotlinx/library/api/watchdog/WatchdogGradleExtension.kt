@@ -145,7 +145,7 @@ public open class WatchdogGradleExtension(objectFactory: ObjectFactory) {
         "MANGLED_JVM_NAME_PUBLIC_API" to javaInterop.effectiveSeverity { mangledJvmNamePublicApi },
         "KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC" to javaInterop.effectiveSeverity { kotlinOnlyApiWithoutJvmSynthetic },
         "COMPANION_API_WITHOUT_JVM_STATIC" to javaInterop.effectiveSeverity { companionApiWithoutJvmStatic },
-        "COMPANION_CONSTANT_WITHOUT_JVM_FIELD" to javaInterop.effectiveSeverity { companionConstantWithoutJvmField },
+        "COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS" to javaInterop.effectiveSeverity { companionPropertyWithoutStaticAccess },
         "TOP_LEVEL_API_WITHOUT_JVM_NAME" to javaInterop.effectiveSeverity { topLevelApiWithoutJvmName },
         "DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS" to javaInterop.effectiveSeverity { defaultParametersWithoutJvmOverloads },
         "DSL_MARKER_NOOP_TARGET" to dslMarkerNoopTarget,
@@ -175,8 +175,8 @@ public open class WatchdogJavaInteropExtension @Inject constructor(objectFactory
     /** Severity of `COMPANION_API_WITHOUT_JVM_STATIC`: companion functions Java reaches through the instance. */
     public val companionApiWithoutJvmStatic: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `COMPANION_CONSTANT_WITHOUT_JVM_FIELD`: companion constants Java reads through the instance. */
-    public val companionConstantWithoutJvmField: Property<WatchdogSeverity> = objectFactory.severityProperty()
+    /** Severity of `COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS`: non-static companion property accessors. */
+    public val companionPropertyWithoutStaticAccess: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
     /** Severity of `TOP_LEVEL_API_WITHOUT_JVM_NAME`: file facades leaking the file name to Java. */
     public val topLevelApiWithoutJvmName: Property<WatchdogSeverity> = objectFactory.severityProperty()

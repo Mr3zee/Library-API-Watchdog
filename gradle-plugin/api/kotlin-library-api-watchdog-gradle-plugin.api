@@ -1,3 +1,19 @@
+public abstract class org/jetbrains/kotlinx/library/api/watchdog/GenerateBackwardsCompatibilityExemptsReportTask : org/gradle/api/DefaultTask {
+	public fun <init> ()V
+	public final fun generateReport ()V
+	public abstract fun getCompilationNames ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getDiagnosticReports ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	protected abstract fun getExecOperations ()Lorg/gradle/process/ExecOperations;
+	public abstract fun getFixerArtifact ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getFixerClasspath ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getKotlinVersion ()Lorg/gradle/api/provider/Property;
+	public abstract fun getProjectDirectory ()Lorg/gradle/api/file/DirectoryProperty;
+	public abstract fun getProjectIdentityPath ()Lorg/gradle/api/provider/Property;
+	public abstract fun getReportDataFile ()Lorg/gradle/api/file/RegularFileProperty;
+	public abstract fun getReportFile ()Lorg/gradle/api/file/RegularFileProperty;
+	public abstract fun getSourceFiles ()Lorg/gradle/api/file/ConfigurableFileCollection;
+}
+
 public abstract class org/jetbrains/kotlinx/library/api/watchdog/UpdateBackwardsCompatibilityExemptsTask : org/gradle/api/DefaultTask {
 	public fun <init> ()V
 	public abstract fun getCompilationNames ()Lorg/gradle/api/provider/ListProperty;
@@ -41,7 +57,7 @@ public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension 
 public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogJavaInteropExtension {
 	public fun <init> (Lorg/gradle/api/model/ObjectFactory;)V
 	public final fun getCompanionApiWithoutJvmStatic ()Lorg/gradle/api/provider/Property;
-	public final fun getCompanionConstantWithoutJvmField ()Lorg/gradle/api/provider/Property;
+	public final fun getCompanionPropertyWithoutStaticAccess ()Lorg/gradle/api/provider/Property;
 	public final fun getDefaultParametersWithoutJvmOverloads ()Lorg/gradle/api/provider/Property;
 	public final fun getEnabled ()Lorg/gradle/api/provider/Property;
 	public final fun getKotlinOnlyApiWithoutJvmSynthetic ()Lorg/gradle/api/provider/Property;

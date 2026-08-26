@@ -34,7 +34,7 @@ const sidebars: SidebarsConfig = {
           link: {type: 'doc', id: 'checks/java-interop/java-interop'},
           items: [
             'checks/java-interop/companion-api-without-jvm-static',
-            'checks/java-interop/companion-constant-without-jvm-field',
+            'checks/java-interop/companion-property-without-static-access',
             'checks/java-interop/default-parameters-without-jvm-overloads',
             'checks/java-interop/kotlin-only-api-without-jvm-synthetic',
             'checks/java-interop/mangled-jvm-name-public-api',

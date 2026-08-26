@@ -42,11 +42,8 @@ public fun nested(): List<MutableList<Int>> = emptyList()
 
 A mutable return type or property lets users mutate a collection they don't own. A mutable
 parameter lets the library mutate an argument the user still holds. Either way, once a mutable
-collection crosses the API boundary it is unclear which mutations are safe, and the library can
-no longer swap its internal representation for a different collection type without risking a
-behavioral change for users that relied on mutating the exposed instance. See the Kotlin guide on
+collection crosses the API boundary, it is unclear which mutations are safe. See the Kotlin guide on
 [avoiding exposing mutable state](https://kotlinlang.org/docs/api-guidelines-predictability.html#avoid-exposing-mutable-state).
-
 
 ### Don't
 

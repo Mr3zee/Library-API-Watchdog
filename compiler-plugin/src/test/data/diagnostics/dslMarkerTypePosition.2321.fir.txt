@@ -54,6 +54,12 @@ FILE: dslMarkerTypePosition.kt
     }
     public final fun contextualTree(block: R|@ContextFunctionTypeParams(1) @R|foo/bar/TreeDsl|()  context(foo/bar/Tag) () -> kotlin/Unit|): R|kotlin/Unit| {
     }
+    context(tag: R|@R|foo/bar/TreeDsl|()  foo/bar/Tag|)
+    public final fun buildInScope(): R|kotlin/Unit| {
+    }
+    context(<unused var>: R|@R|foo/bar/TreeDsl|()  foo/bar/Tag|)
+    public final fun buildUnnamed(): R|kotlin/Unit| {
+    }
     public final fun tree2(block: R|@R|foo/bar/TreeDsl|()  foo/bar/Tag.() -> kotlin/Unit|): R|kotlin/Unit| {
         ^tree2 R|<local>/block|.R|SubstitutionOverride<kotlin/Function1.invoke: R|kotlin/Unit|>|(R|foo/bar/Tag.Tag|())
     }

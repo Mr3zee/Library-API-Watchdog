@@ -365,7 +365,7 @@ Take this example of a builder API:
 
 // !hide-focused
 /** Immutable query parameters of a request. */
-public class Parameters(val values: Map<String, List<String>>)
+public class Parameters(public val values: Map<String, List<String>>)
 
 // !hide-focused
 /** Mutable collector of query parameters. */

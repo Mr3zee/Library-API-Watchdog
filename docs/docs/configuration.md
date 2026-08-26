@@ -147,8 +147,8 @@ apiWatchdog {
         kotlinOnlyApiWithoutJvmSynthetic = WatchdogSeverity.ERROR
         // !link[/companionApiWithoutJvmStatic/] /checks/java-interop/companion-api-without-jvm-static
         companionApiWithoutJvmStatic = WatchdogSeverity.ERROR
-        // !link[/companionConstantWithoutJvmField/] /checks/java-interop/companion-constant-without-jvm-field
-        companionConstantWithoutJvmField = WatchdogSeverity.ERROR
+        // !link[/companionPropertyWithoutStaticAccess/] /checks/java-interop/companion-property-without-static-access
+        companionPropertyWithoutStaticAccess = WatchdogSeverity.ERROR
         // !link[/topLevelApiWithoutJvmName/] /checks/java-interop/top-level-api-without-jvm-name
         topLevelApiWithoutJvmName = WatchdogSeverity.ERROR
         // !link[/defaultParametersWithoutJvmOverloads/] /checks/java-interop/default-parameters-without-jvm-overloads
@@ -209,14 +209,14 @@ compilations, and `javaInterop.enabled` (default `true`) is a single switch for 
 it to `false` and every one of the six resolves to `NONE`, no matter what its own property says.
 See [Java interop checks](./checks/java-interop/java-interop.md) for more details.
 
-| Check                                                                                                        | Property                               | Diagnostic                                  |
-|--------------------------------------------------------------------------------------------------------------|----------------------------------------|---------------------------------------------|
-| [Companion API without JvmStatic](./checks/java-interop/companion-api-without-jvm-static.md)                 | `companionApiWithoutJvmStatic`         | `COMPANION_API_WITHOUT_JVM_STATIC`          |
-| [Companion constants without JvmField](./checks/java-interop/companion-constant-without-jvm-field.md)        | `companionConstantWithoutJvmField`     | `COMPANION_CONSTANT_WITHOUT_JVM_FIELD`      |
-| [Default parameters without JvmOverloads](./checks/java-interop/default-parameters-without-jvm-overloads.md) | `defaultParametersWithoutJvmOverloads` | `DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS`  |
-| [Kotlin-only API without JvmSynthetic](./checks/java-interop/kotlin-only-api-without-jvm-synthetic.md)       | `kotlinOnlyApiWithoutJvmSynthetic`     | `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`     |
-| [Mangled JVM names in public API](./checks/java-interop/mangled-jvm-name-public-api.md)                      | `mangledJvmNamePublicApi`              | `MANGLED_JVM_NAME_PUBLIC_API`               |
-| [Top-level API without JvmName](./checks/java-interop/top-level-api-without-jvm-name.md)                     | `topLevelApiWithoutJvmName`            | `TOP_LEVEL_API_WITHOUT_JVM_NAME`            |
+| Check                                                                                                         | Property                               | Diagnostic                                  |
+|---------------------------------------------------------------------------------------------------------------|----------------------------------------|---------------------------------------------|
+| [Companion function without JvmStatic](./checks/java-interop/companion-api-without-jvm-static.md)             | `companionApiWithoutJvmStatic`         | `COMPANION_API_WITHOUT_JVM_STATIC`          |
+| [Companion property without static access](./checks/java-interop/companion-property-without-static-access.md) | `companionPropertyWithoutStaticAccess` | `COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS`  |
+| [Default parameters without JvmOverloads](./checks/java-interop/default-parameters-without-jvm-overloads.md)  | `defaultParametersWithoutJvmOverloads` | `DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS`  |
+| [Kotlin-only API without JvmSynthetic](./checks/java-interop/kotlin-only-api-without-jvm-synthetic.md)        | `kotlinOnlyApiWithoutJvmSynthetic`     | `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`     |
+| [Mangled JVM names in public API](./checks/java-interop/mangled-jvm-name-public-api.md)                       | `mangledJvmNamePublicApi`              | `MANGLED_JVM_NAME_PUBLIC_API`               |
+| [Top-level API without JvmName](./checks/java-interop/top-level-api-without-jvm-name.md)                      | `topLevelApiWithoutJvmName`            | `TOP_LEVEL_API_WITHOUT_JVM_NAME`            |
 
 ## Without Gradle
 

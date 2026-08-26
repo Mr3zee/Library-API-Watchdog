@@ -7,10 +7,11 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.attributes.Attribute
 import org.gradle.api.attributes.AttributeContainer
+import org.gradle.api.attributes.Category
+import org.gradle.api.attributes.Usage
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitSupportPlugin
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.HasConfigurableKotlinCompilerOptions
@@ -20,11 +21,10 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
-import org.jetbrains.kotlinx.library.api.watchdog.PluginInfo
 
 @Suppress("unused") // Used via reflection.
 public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO) {
-    /** Enabled lazily when Gradle realizes the update task. Never exposed as user configuration. */
+    /** Enabled lazily when Gradle realizes an exemptions update or report task. */
     private lateinit var collectDiagnosticsForExempts: Property<Boolean>
 
     /**
@@ -41,7 +41,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         val extension = target.extensions.create("apiWatchdog", WatchdogGradleExtension::class.java)
         val collectDiagnostics = target.objects.property(Boolean::class.java).convention(false)
         collectDiagnosticsForExempts = collectDiagnostics
-        target.registerUpdateBackwardsCompatibilityExemptsTask(collectDiagnostics)
+        target.registerBackwardsCompatibilityExemptsTasks(collectDiagnostics)
         target.afterEvaluate { project ->
             if (!project.explicitApiWarningSuppressed() && !project.hasExplicitApiMode()) {
                 project.logger.warn(missingExplicitApiWarning(project.path))
@@ -55,13 +55,12 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
     }
 
     /**
-     * Registers the fixer task. [applyToCompilation] wires every main Kotlin compilation into it,
-     * so KGP itself drives JVM, JS, native, Wasm, and metadata analysis. The fixer selects the
-     * compiler-library overlay and compiler distribution matching the project's Kotlin version.
+     * Registers the source update and non-mutating report tasks. [applyToCompilation] wires every
+     * main Kotlin compilation into both, so KGP drives JVM, JS, native, Wasm, and metadata analysis.
      */
-    private fun Project.registerUpdateBackwardsCompatibilityExemptsTask(
+    private fun Project.registerBackwardsCompatibilityExemptsTasks(
         collectDiagnostics: Property<Boolean>,
-    ): TaskProvider<UpdateBackwardsCompatibilityExemptsTask> {
+    ) {
         val dependencyHandler = dependencies
         val kotlinVersion = provider { kotlinPluginVersion() }
         val fixerDependency = dependencyHandler.create(
@@ -90,7 +89,10 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             },
         )
 
-        return tasks.register(UPDATE_EXEMPTS_TASK_NAME, UpdateBackwardsCompatibilityExemptsTask::class.java) { task ->
+        tasks.register(
+            UPDATE_EXEMPTS_TASK_NAME,
+            UpdateBackwardsCompatibilityExemptsTask::class.java,
+        ) { task ->
             // Realizing the task enables collection. Compile-task inputs and options
             // consume this property lazily during task-graph construction and execution.
             collectDiagnostics.set(true)
@@ -103,6 +105,45 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             task.kotlinVersion.set(kotlinVersion)
             task.fixerArtifact.from(fixerArtifact)
             task.fixerClasspath.from(fixerClasspath)
+        }
+        val reportTask = tasks.register(
+            GENERATE_EXEMPTS_REPORT_TASK_NAME,
+            GenerateBackwardsCompatibilityExemptsReportTask::class.java,
+        ) { task ->
+            // Variant resolution realizes this task, which enables task-scoped diagnostics collection.
+            collectDiagnostics.set(true)
+            task.group = "api watchdog"
+            task.description =
+                "Reports applied and not-applied backwards-compatibility exemptions without changing sources"
+            task.compilationNames.convention(emptyList())
+            task.projectDirectory.set(layout.projectDirectory)
+            task.projectIdentityPath.set(isolated.buildTreePath)
+            task.kotlinVersion.set(kotlinVersion)
+            task.fixerArtifact.from(fixerArtifact)
+            task.fixerClasspath.from(fixerClasspath)
+            task.reportFile.convention(
+                layout.buildDirectory.file("reports/api-watchdog/backwards-compatibility-exempts.html")
+            )
+            task.reportDataFile.convention(
+                layout.buildDirectory.file("reports/api-watchdog/backwards-compatibility-exempts.data")
+            )
+        }
+        configurations.register(EXEMPTS_REPORT_ELEMENTS_CONFIGURATION) { configuration ->
+            configuration.isCanBeConsumed = true
+            configuration.isCanBeResolved = false
+            configuration.description =
+                "The backwards-compatibility exemptions report for this project"
+            configuration.attributes.attribute(
+                Usage.USAGE_ATTRIBUTE,
+                objects.named(Usage::class.java, EXEMPTS_REPORT_USAGE),
+            )
+            configuration.attributes.attribute(
+                Category.CATEGORY_ATTRIBUTE,
+                objects.named(Category::class.java, Category.DOCUMENTATION),
+            )
+            configuration.outgoing.artifact(reportTask.flatMap { it.reportDataFile }) { artifact ->
+                artifact.builtBy(reportTask)
+            }
         }
     }
 
@@ -123,8 +164,22 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 UPDATE_EXEMPTS_TASK_NAME,
                 UpdateBackwardsCompatibilityExemptsTask::class.java,
             )
+            val reportTask = tasks.named(
+                GENERATE_EXEMPTS_REPORT_TASK_NAME,
+                GenerateBackwardsCompatibilityExemptsReportTask::class.java,
+            )
             updateTask.configure { task ->
                 task.compilationNames.add(kotlinCompilation.compileKotlinTaskName)
+                task.diagnosticReports.from(provider {
+                    if (collect.get()) reportFile.get().asFile else emptyList<File>()
+                })
+                task.dependsOn(provider {
+                    if (collect.get()) kotlinCompilation.compileTaskProvider else emptyList<Any>()
+                })
+            }
+            reportTask.configure { task ->
+                task.compilationNames.add(kotlinCompilation.compileKotlinTaskName)
+                task.sourceFiles.from(kotlinCompilation.allKotlinSourceSets.map { it.kotlin })
                 task.diagnosticReports.from(provider {
                     if (collect.get()) reportFile.get().asFile else emptyList<File>()
                 })
@@ -240,6 +295,9 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         /** The name of the task that acknowledges existing diagnostics as backwards-compatibility exemptions. */
         private const val UPDATE_EXEMPTS_TASK_NAME = "updateBackwardsCompatibilityExempts"
 
+        /** The non-mutating module report task whose data variant can be aggregated. */
+        private const val GENERATE_EXEMPTS_REPORT_TASK_NAME = "generateBackwardsCompatibilityExemptsReport"
+
         /**
          * The suffix every test compilation that isn't simply called `test` carries. Android
          * compilations are named after their variant (`debugUnitTest`, `debugAndroidTest`,
@@ -258,7 +316,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         /** The artifact carrying the standalone fixer tool, published next to this plugin. */
         private const val FIXER_ARTIFACT_ID = "kotlin-library-api-watchdog-exempts-fixer"
 
-        /** Resolvable runtime used only by [UpdateBackwardsCompatibilityExemptsTask]. */
+        /** Resolvable runtime used by the exemptions update and report tasks. */
         private const val FIXER_CLASSPATH_CONFIGURATION_NAME = "apiWatchdogExemptsFixerClasspath"
 
         /** Multi-version fixer artifact resolved separately from its matching compiler runtime. */

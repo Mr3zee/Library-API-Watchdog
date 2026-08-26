@@ -117,6 +117,35 @@ public class Purse<!MANGLED_JVM_NAME_PUBLIC_API!>(@get:JvmName("getIdNamed") pub
 // The @get:JvmSynthetic on the parameter hides the property getter; the constructor stays hidden.
 public class Pouch<!MANGLED_JVM_NAME_PUBLIC_API!>(@get:JvmSynthetic public val id: UserId)<!>
 
+// @JvmExposeBoxed generates Java-callable boxed variants next to the mangled entry points:
+// no warning for constructors and final members.
+
+@OptIn(ExperimentalStdlibApi::class)
+@JvmExposeBoxed
+public fun exposedTake(id: UserId) {}
+
+@OptIn(ExperimentalStdlibApi::class)
+@JvmExposeBoxed
+public class ExposedWallet(public val id: UserId) {
+    public fun current(): UserId = id
+}
+
+// Open and abstract members get no boxed variant even inside an annotated class: should warn.
+
+@OptIn(ExperimentalStdlibApi::class)
+@JvmExposeBoxed
+public open class ExposedService {
+    public open fun <!MANGLED_JVM_NAME_PUBLIC_API!>handle<!>(id: UserId) {}
+
+    public open val <!MANGLED_JVM_NAME_PUBLIC_API!>owner<!>: UserId get() = UserId("x")
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+@JvmExposeBoxed
+public abstract class ExposedStore {
+    public abstract fun <!MANGLED_JVM_NAME_PUBLIC_API!>store<!>(id: UserId)
+}
+
 // Everything declared inside the value class itself is exempt: declaring the public value class
 // is the deliberate choice, and @JvmName is not even applicable inside.
 

@@ -25,7 +25,11 @@
     "  parameterValues - optional named values for long or reusable diagnostic parameters, using the",
     "                    same source-wrapped line format as message. Values may have {0}, {1}, ...",
     "                    placeholders. Compiler checkers resolve them through generated code; docs",
-    "                    annotations use $name or $name(value) references."
+    "                    annotations use $name or $name(value) references.",
+    "",
+    "  Links in message, messageTrailer, and parameterValues are written as Markdown links,",
+    "  [text](url). The docs render them as links. The generator rewrites them to 'text (url)'",
+    "  so compiler output stays readable."
   ],
   "docsBaseUrl": "https://mr3zee.github.io/Library-API-Watchdog/",
   "diagnostics": [
@@ -34,9 +38,11 @@
       "title": "Open API without subclass opt-in",
       "docs": "checks/open-api-without-subclass-opt-in",
       "message": [
-        "The {0} `{1}` can be subclassed outside the library without restriction, which makes it hard to",
-        "evolve. For classes, another option is to make every externally visible constructor `internal`. Mark",
-        "it with `@SubclassOptInRequired` to control external subclassing.",
+        "The {0} `{1}` can be subclassed outside the library without restriction, so the library can no",
+        "longer add abstract members, change existing members' signatures, or tighten invariants without",
+        "breaking external subclasses. Mark it with `@SubclassOptInRequired` to control external",
+        "subclassing. For classes, another option is to make every externally visible constructor",
+        "`internal` or `private`.",
         "",
         "If this API shape is intentional, apply `@IntentionallyOpen` to the class."
       ]
@@ -46,8 +52,9 @@
       "title": "Subclass opt-in without markers",
       "docs": "checks/subclass-opt-in-without-markers",
       "message": [
-        "`@SubclassOptInRequired` lists no marker classes, so it doesn't restrict external subclassing. Pass",
-        "at least one opt-in marker class with a description of why the subclassing is restricted."
+        "`@SubclassOptInRequired` lists no marker classes, so any external class can subclass the type",
+        "without opting in to anything, and the library keeps the evolution risk it meant to opt out of.",
+        "Pass at least one opt-in marker class with a description of why the subclassing is restricted."
       ]
     },
     {
@@ -55,7 +62,8 @@
       "title": "Exhaustive public API",
       "docs": "checks/exhaustive-public-api",
       "message": [
-        "The {0} `{1}` can be matched exhaustively by users, so adding {2} later is a breaking change.",
+        "The {0} `{1}` can be matched exhaustively by users (a `when` with no `else` branch), so adding {2}",
+        "later makes every such `when` stop compiling.",
         "",
         "If this API shape is intentional, apply `@IntentionallyExhaustive` to the enum or sealed hierarchy."
       ]
@@ -65,8 +73,9 @@
       "title": "Undocumented public API",
       "docs": "checks/undocumented-public-api",
       "message": [
-        "The {0} `{1}` is part of the public API but has no `KDoc`. Document it so users don't have to guess",
-        "its purpose and usage contract.",
+        "The {0} `{1}` is part of the public API but has no `KDoc`, so users can only guess the usage",
+        "contract from the implementation, and any later change risks breaking a usage nobody wrote down as",
+        "supported. Document the behavior users can rely on.",
         "",
         "If this API shape is intentional, apply `@IntentionallyUndocumented` directly to the undocumented",
         "declaration."
@@ -77,9 +86,10 @@
       "title": "Function type aliases in public API",
       "docs": "checks/function-type-alias-public-api",
       "message": [
-        "The type alias `{0}` abbreviates a function type. The alias is erased from the compiled API and",
-        "can't evolve into a richer abstraction later. Declare a `fun interface` instead to keep lambda",
-        "ergonomics behind a stable nominal type.",
+        "The type alias `{0}` abbreviates a function type. The alias is erased from the compiled API, and users",
+        "bind to the bare function type. The problem is that it can never grow members, default implementations, or",
+        "constraints later. Declare a `fun interface` instead to keep lambda ergonomics behind a stable",
+        "nominal type.",
         "",
         "If this API shape is intentional, apply `@IntentionallyFunctionTypeAlias` to the type alias."
       ]
@@ -92,7 +102,8 @@
         "The `data class` `{0}` bakes its constructor property list into the compiled API through the",
         "generated `copy` and `componentN` functions and the constructor itself, so adding, removing, or",
         "reordering a property later is a breaking change. Declare a regular class and implement",
-        "`equals`/`hashCode`/`toString` explicitly (or use the Poko library).",
+        "`equals`/`hashCode`/`toString` explicitly, or generate them with the",
+        "[Poko](https://github.com/drewhamilton/Poko) library.",
         "",
         "If this API shape is intentional, apply `@IntentionallyDataClass` to the class."
       ]
@@ -176,9 +187,8 @@
       "docs": "checks/mutable-collection-public-api",
       "message": [
         "The {0} `{1}` exposes the mutable collection type `{2}`. Once a mutable collection is shared across",
-        "the API boundary, it is unclear whether user-side and library-side mutations affect each other, and",
-        "the library can no longer evolve its internal representation freely. Accept and return read-only",
-        "types instead (arrays count as mutable collections too), handing out defensive copies where needed.",
+        "the API boundary, it is unclear whether user-side and library-side mutations affect each other, freely.",
+        "Accept and return read-only types instead (arrays count as mutable collections too), handing out defensive copies where needed.",
         "",
         "If this API shape is intentional, apply `@IntentionallyMutableCollection` to the reported",
         "declaration, parameter, or type usage."
@@ -218,8 +228,8 @@
       "message": [
         "The parameters `{0}` and `{1}` of `{2}` appear in the opposite relative order in another overload.",
         "Users transfer their expectations between overloads, so an inconsistent order of same-named",
-        "parameters invites silently swapped arguments. Keep shared parameters in the same relative order",
-        "across overloads.",
+        "parameters invites silently swapped arguments that still compile. Keep shared parameters in the",
+        "same relative order across overloads.",
         "",
         "If this API shape is intentional, apply `@IntentionallyInconsistentParameterOrder` to the function",
         "or constructor."
@@ -316,7 +326,7 @@
     },
     {
       "name": "COMPANION_API_WITHOUT_JVM_STATIC",
-      "title": "Companion API without JvmStatic",
+      "title": "Companion function without JvmStatic",
       "docs": "checks/java-interop/companion-api-without-jvm-static",
       "message": [
         "The `companion object` function `{1}` compiles to an instance method on the nested `Companion`",
@@ -329,15 +339,15 @@
       ]
     },
     {
-      "name": "COMPANION_CONSTANT_WITHOUT_JVM_FIELD",
-      "title": "Companion constants without JvmField",
-      "docs": "checks/java-interop/companion-constant-without-jvm-field",
+      "name": "COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS",
+      "title": "Companion property without static access",
+      "docs": "checks/java-interop/companion-property-without-static-access",
       "message": [
-        "The `companion object` property `{1}` compiles to an instance getter on the nested `Companion`",
-        "class, so Java callers have to read it through `{0}.Companion`. Expose the value on `{0}` itself: as",
-        "a static field with `@JvmField`, as a compile-time constant with `const val` (primitives and",
-        "strings), or as a static getter with `@JvmStatic`. Alternatively, hide the property from Java with",
-        "`@get:JvmSynthetic`.",
+        "The `companion object` property `{1}` leaves its {2} on the nested `Companion` class, so Java callers",
+        "have to use `{0}.Companion`. Mark the property with `@JvmStatic` to add static",
+        "accessors on `{0}`. Accessor-targeted annotations can expose or hide the getter and setter",
+        "independently. For properties eligible for field exposure, `@JvmField` or `const val` also provides",
+        "static access.",
         "",
         "If this API shape is intentional, apply `@IntentionallyNonStaticCompanionApi` to the property or an",
         "enclosing class."
@@ -394,8 +404,9 @@
       "docs": "checks/special/exemption-without-explanation",
       "message": [
         "The `@{0}` exemption doesn't explain why it is applied: the `{1}` reason doesn't speak for itself,",
-        "and the `description` is empty. Pass a self-explanatory reason (`FOR_BACKWARDS_COMPATIBILITY`,",
-        "`API_DESIGN`), or describe the motivation in the `description` argument."
+        "and the `description` is empty, so the exemption records nothing for the next reader. Pass a",
+        "self-explanatory reason (`FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`), or describe the motivation",
+        "in the `description` argument."
       ]
     },
     {
@@ -420,7 +431,7 @@
         "The DSL marker `{0}` declares no explicit `@Target`, so it defaults to targets like functions and",
         "properties where a DSL marker has no effect, while the effective type usage (`TYPE`) and type alias",
         "(`TYPEALIAS`) targets stay unavailable. Declare `@Target(AnnotationTarget.CLASS,",
-        "AnnotationTarget.TYPE, AnnotationTarget.TYPEALIAS, AnnotationTarget.ANNOTTAION_CLASS)` or a subset",
+        "AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPEALIAS)` or a subset",
         "of it.",
         "",
         "If this API shape is intentional, apply",

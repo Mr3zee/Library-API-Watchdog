@@ -76,7 +76,7 @@ internal object ExemptionRegistry {
         "MANGLED_JVM_NAME_PUBLIC_API" to fixable("IntentionallyMangledJvmName", TargetStrategy.ENCLOSING_CALLABLE),
         "KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC" to fixable("IntentionallyKotlinOnlyApi", TargetStrategy.REPORTED_DECLARATION),
         "COMPANION_API_WITHOUT_JVM_STATIC" to fixable("IntentionallyNonStaticCompanionApi", TargetStrategy.REPORTED_DECLARATION),
-        "COMPANION_CONSTANT_WITHOUT_JVM_FIELD" to fixable("IntentionallyNonStaticCompanionApi", TargetStrategy.REPORTED_DECLARATION),
+        "COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS" to fixable("IntentionallyNonStaticCompanionApi", TargetStrategy.REPORTED_DECLARATION),
         "TOP_LEVEL_API_WITHOUT_JVM_NAME" to fixable("IntentionallyDefaultFacadeName", TargetStrategy.CONTAINING_FILE),
         "DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS" to fixable("IntentionallyWithoutJvmOverloads", TargetStrategy.ENCLOSING_FUNCTION_OR_CONSTRUCTOR),
 
@@ -90,6 +90,15 @@ internal object ExemptionRegistry {
     )
 
     val knownDiagnostics: Set<String> get() = resolutions.keys
+
+    /** Every exemption annotation the fixer can add, and whether its reason is an argument. */
+    val exemptionAnnotations: Map<String, Boolean> = resolutions.values
+        .filterIsInstance<FixResolution.Fixable>()
+        .associate { it.fix.annotationShortName to it.fix.hasReasonParameter }
+
+    /** The annotation a diagnostic would receive, or null when it cannot be acknowledged automatically. */
+    fun annotationFor(diagnostic: String): String? =
+        (resolutions[diagnostic] as? FixResolution.Fixable)?.fix?.annotationShortName
 
     fun resolutionFor(diagnostic: String): FixResolution = resolutions[diagnostic] ?: FixResolution.Unfixable(
         "Unknown diagnostic. This fixer version doesn't know how to exempt it"

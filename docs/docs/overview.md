@@ -119,10 +119,10 @@ These checks only run in JVM compilations, and are only valuable for libraries t
 consumers. The whole group can be disabled with `javaInterop { enabled = false }`. See
 [Java interop checks](./checks/java-interop/java-interop.md) for the whole group overview.
 
-- [Companion API without JvmStatic](./checks/java-interop/companion-api-without-jvm-static.md): public companion object functions without `@JvmStatic`,
+- [Companion function without JvmStatic](./checks/java-interop/companion-api-without-jvm-static.md): public companion object functions without `@JvmStatic`,
   which Java callers can only use with the `Companion` instance.
-- [Companion constants without JvmField](./checks/java-interop/companion-constant-without-jvm-field.md): public companion object properties without `@JvmField` or `const`
-  which Java callers can only use with the `Companion` instance.
+- [Companion property without static access](./checks/java-interop/companion-property-without-static-access.md): public companion object properties with Java-visible accessors
+  that remain on the `Companion` instance instead of the outer class.
 - [Default parameters without JvmOverloads](./checks/java-interop/default-parameters-without-jvm-overloads.md): functions and constructors with default parameters but without `@JvmOverloads`
   force Java callers to pass every argument.
 - [Kotlin-only API without JvmSynthetic](./checks/java-interop/kotlin-only-api-without-jvm-synthetic.md): functions with a shape only Kotlin callers can use idiomatically.

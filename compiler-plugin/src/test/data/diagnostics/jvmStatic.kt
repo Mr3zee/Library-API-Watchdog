@@ -16,18 +16,22 @@ public class Registry {
         @JvmStatic
         public fun createStatic(): Registry = Registry()
 
+        @JvmStatic
+        public suspend fun createStaticLater(): Registry = Registry()
+
         // @JvmSynthetic hides the member from Java on purpose: no warning.
         @JvmSynthetic
         public fun createHidden(): Registry = Registry()
 
-        // suspend members are Kotlin-only sugar with their own diagnostic (muted here).
-        public suspend fun createLater(): Registry = Registry()
+        // A suspend member can still be placed on the outer class. Its separate Kotlin-only API
+        // diagnostic is muted in this test.
+        public suspend fun <!COMPANION_API_WITHOUT_JVM_STATIC!>createLater<!>(): Registry = Registry()
 
         // Not visible outside the library: no warning.
         internal fun createInternal(): Registry = Registry()
 
         // A constant-shaped val is only reachable through the Companion instance getter.
-        public val <!COMPANION_CONSTANT_WITHOUT_JVM_FIELD!>DEFAULT_NAME<!>: String = "registry"
+        public val <!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>DEFAULT_NAME<!>: String = "registry"
 
         // const, @JvmField, and a @JvmStatic getter expose the value statically: no warning.
 
@@ -46,13 +50,55 @@ public class Registry {
         @get:JvmSynthetic
         public val HIDDEN: String = "kotlin only"
 
-        // Custom getters, vars, and delegates expose behavior, not a constant: no warning.
+        // Every property shape can expose static accessors with @JvmStatic.
 
-        public val computed: String get() = "computed"
+        public val <!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>computed<!>: String get() = "computed"
 
-        public var mutable: String = "mutable"
+        public var <!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>mutable<!>: String = "mutable"
 
-        public val delegated: String by lazy { "lazy" }
+        public val <!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>delegated<!>: String by lazy { "lazy" }
+
+        public lateinit var <!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>late<!>: String
+
+        public val String.<!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>qualified<!>: String get() = this
+
+        @JvmStatic
+        public var staticMutable: String = "static"
+
+        @JvmStatic
+        public val staticComputed: String get() = "computed"
+
+        @JvmStatic
+        public val staticDelegated: String by lazy { "lazy" }
+
+        @JvmStatic
+        public lateinit var staticLate: String
+
+        @JvmStatic
+        public val String.staticQualified: String get() = this
+
+        @JvmField
+        public var mutableField: String = "field"
+
+        // A var is clean only when every supported Java accessor is static or hidden.
+
+        @get:JvmStatic
+        public var <!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>staticRead<!>: String = "read"
+
+        @set:JvmStatic
+        public var <!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>staticWrite<!>: String = "write"
+
+        @get:JvmStatic
+        @set:JvmSynthetic
+        public var staticReadOnly: String = "read"
+
+        @get:JvmSynthetic
+        @set:JvmStatic
+        public var staticWriteOnly: String = "write"
+
+        @get:JvmStatic
+        public var privatelySet: String = "private"
+            private set
     }
 }
 
@@ -63,7 +109,7 @@ public interface Codec {
     }
 }
 
-// An override is dictated by the supertype contract, not designed as a static factory: no warning.
+// Companion overrides can add a static bridge on the outer class.
 
 public fun interface Maker {
     public fun make(): Int
@@ -71,7 +117,31 @@ public fun interface Maker {
 
 public class Built {
     public companion object : Maker {
+        override fun <!COMPANION_API_WITHOUT_JVM_STATIC!>make<!>(): Int = 0
+    }
+}
+
+public class StaticBuilt {
+    public companion object : Maker {
+        @JvmStatic
         override fun make(): Int = 0
+    }
+}
+
+public interface Named {
+    public val name: String
+}
+
+public class NamedBuilt {
+    public companion object : Named {
+        override val <!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>name<!>: String = "built"
+    }
+}
+
+public class StaticNamedBuilt {
+    public companion object : Named {
+        @JvmStatic
+        override val name: String = "built"
     }
 }
 

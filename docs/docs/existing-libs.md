@@ -18,6 +18,40 @@ Each diagnostic gets the matching `@Intentionally*` annotation with
 `ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`, placed under the declaration's KDoc and
 above its other annotations, with imports added as needed.
 
+## Generate a report
+
+```bash
+./gradlew generateBackwardsCompatibilityExemptsReport
+```
+
+This separate task writes `build/reports/api-watchdog/backwards-compatibility-exempts.html`.
+The report groups every applied Watchdog `@Intentionally*` annotation, regardless of its reason.
+Diagnostics that have not been acknowledged are grouped separately by the
+annotation they need, or under **No automatic annotation** when no such annotation exists.
+
+### Aggregate a multi-project build
+
+Apply the report aggregation plugin in the root project and declare the modules to include:
+
+```kotlin build.gradle.kts
+plugins {
+    id("org.jetbrains.kotlin.library.api-watchdog-report-aggregation") version "0.1.0-SNAPSHOT"
+}
+
+dependencies {
+    backwardsCompatibilityExemptsReports(project(":library-core"))
+    backwardsCompatibilityExemptsReports(project(":library-client"))
+}
+```
+
+Then run:
+
+```bash
+./gradlew aggregateBackwardsCompatibilityExemptsReport
+```
+
+The aggregate task writes `build/reports/api-watchdog/backwards-compatibility-exempts-aggregate.html`.
+
 ## Details worth knowing
 
 - **Undocumented APIs are not exempt**
@@ -25,10 +59,11 @@ above its other annotations, with imports added as needed.
 - **Run it on a clean working tree and review the diff.** The task edits sources in place. 
   Review the diff, commit, and let the checks guard only the API added afterwards. 
   New code deserves a thought-through decision instead - fix the shape or pick the exemption reason by hand.
-- **Collection mode is task-scoped.** `updateBackwardsCompatibilityExempts` makes
-  regular main compilations write reports, forces explicit API warning mode, and temporarily
-  demotes every enabled configurable watchdog diagnostic to a warning so the fixer can run.
-  Ordinary compilation tasks are unchanged when the update task is not in the task graph.
+- **Collection mode is task-scoped.** `updateBackwardsCompatibilityExempts` and
+  `generateBackwardsCompatibilityExemptsReport` make
+  regular main compilations write reports, force explicit API warning mode, and temporarily
+  demote every enabled configurable watchdog diagnostic to a warning so the fixer can run.
+  Ordinary compilation tasks are unchanged when neither task is in the task graph.
 - **Unfixable always-error checks are skipped during collection.** The task temporarily disables
   [`EXEMPTION_WITHOUT_EXPLANATION`](./checks/special/exemption-without-explanation.md),
   [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md),

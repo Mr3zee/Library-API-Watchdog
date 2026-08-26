@@ -14,6 +14,7 @@ class GradlePluginConventionPlugin : Plugin<Project> {
                 dependsOn(
                     ":kotlin-library-api-watchdog-compiler-plugin:installForFunctionalTest",
                     ":kotlin-library-api-watchdog-exempts-fixer:installForFunctionalTest",
+                    ":kotlin-library-api-watchdog-report-aggregation:publishAllPublicationsToFunctionalTestRepository",
                     ":kotlin-library-api-watchdog-plugin-annotations:publishJsPublicationToFunctionalTestRepository",
                     ":kotlin-library-api-watchdog-plugin-annotations:publishJvmPublicationToFunctionalTestRepository",
                     ":kotlin-library-api-watchdog-plugin-annotations:publishKotlinMultiplatformPublicationToFunctionalTestRepository",

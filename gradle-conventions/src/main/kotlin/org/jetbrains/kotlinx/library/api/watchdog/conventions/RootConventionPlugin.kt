@@ -31,6 +31,10 @@ class RootConventionPlugin : Plugin<Project> {
                 "dokka",
                 dependencies.project(mapOf("path" to ":kotlin-library-api-watchdog-gradle-plugin")),
             )
+            dependencies.add(
+                "dokka",
+                dependencies.project(mapOf("path" to ":kotlin-library-api-watchdog-report-aggregation")),
+            )
         }
     }
 }

@@ -27,7 +27,7 @@ fun main(args: Array<String>) {
 
 private fun run(request: FixerRequest, response: FixerResponse) {
     val diagnosticsByFile = RecordedDiagnostic.parseReports(request.reportFiles).groupBy { it.filePath }
-    if (diagnosticsByFile.isEmpty()) {
+    if (diagnosticsByFile.isEmpty() && request.sourceFiles.isEmpty()) {
         return
     }
 
@@ -41,12 +41,24 @@ private fun run(request: FixerRequest, response: FixerResponse) {
                 }
                 continue
             }
-            val fixResult = fixer.fix(filePath, Files.readString(file), diagnostics)
+            val fixResult = fixer.fix(
+                filePath,
+                Files.readString(file),
+                diagnostics,
+                rewriteLocations = request.updateSources,
+            )
             response.applied += fixResult.applied
             response.skipped += fixResult.skipped
-            if (fixResult.newText != null) {
+            if (request.updateSources && fixResult.newText != null) {
                 Files.writeString(file, fixResult.newText)
                 response.modifiedFiles += filePath
+            }
+        }
+
+        val scanner = ExemptionScanner(parser)
+        request.sourceFiles.distinct().sorted().forEach { file ->
+            if (Files.isRegularFile(file)) {
+                response.exemptions += scanner.scan(file.toString(), Files.readString(file))
             }
         }
     }

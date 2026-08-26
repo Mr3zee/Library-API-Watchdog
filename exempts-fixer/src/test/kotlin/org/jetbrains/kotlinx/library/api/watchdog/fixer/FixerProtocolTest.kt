@@ -31,6 +31,8 @@ class FixerProtocolTest {
                 """
                     reportFile=/project/build/reports/jvm=main.tsv
                     reportFile=/project/build/reports/js=main.tsv
+                    sourceFile=/project/src/commonMain/kotlin/Common.kt
+                    updateSources=false
                     responseFile=/tmp/response.txt
                 """.trimIndent(),
             )
@@ -43,17 +45,27 @@ class FixerProtocolTest {
             ),
             request.reportFiles,
         )
+        assertEquals(
+            listOf(Paths.get("/project/src/commonMain/kotlin/Common.kt")),
+            request.sourceFiles,
+        )
+        assertEquals(false, request.updateSources)
         assertEquals(Paths.get("/tmp/response.txt"), request.responseFile)
     }
 
     @Test
     fun requestRejectsMissingAndDuplicatedSingleKeys() {
         assertFailsWith<IllegalArgumentException> {
-            FixerRequest.parse(file("missing.txt", "reportFile=/tmp/report"))
+            FixerRequest.parse(
+                file("missing.txt", "reportFile=/tmp/report\nupdateSources=true")
+            )
         }
         assertFailsWith<IllegalArgumentException> {
             FixerRequest.parse(
-                file("duplicated.txt", "responseFile=/tmp/a\nresponseFile=/tmp/b")
+                file(
+                    "duplicated.txt",
+                    "updateSources=true\nresponseFile=/tmp/a\nresponseFile=/tmp/b",
+                )
             )
         }
     }
@@ -117,6 +129,7 @@ class FixerProtocolTest {
         val response = FixerResponse().apply {
             applied += AppliedFix("DATA_CLASS_PUBLIC_API", "IntentionallyDataClass", "/p/A.kt", 3)
             skipped += SkippedDiagnostic("EXEMPTION_WITHOUT_EXPLANATION", "/p/B.kt", 7, "needs a human")
+            exemptions += AppliedExemption("IntentionallyDataClass", "/p/A.kt", 2)
             modifiedFiles += "/p/A.kt"
         }
         val target = tempDir.resolve("response.txt")
@@ -127,7 +140,8 @@ class FixerProtocolTest {
         assertEquals(
             listOf(
                 "fixed=DATA_CLASS_PUBLIC_API\tIntentionallyDataClass\t3\t/p/A.kt",
-                "skipped=EXEMPTION_WITHOUT_EXPLANATION\t7\t/p/B.kt\tneeds a human",
+                "skipped=EXEMPTION_WITHOUT_EXPLANATION\t\t7\t/p/B.kt\tneeds a human",
+                "exemption=IntentionallyDataClass\t2\t/p/A.kt",
                 "modifiedFile=/p/A.kt",
             ),
             lines,
@@ -144,7 +158,7 @@ class FixerProtocolTest {
         response.writeTo(target)
 
         assertEquals(
-            listOf("skipped=SOME_DIAGNOSTIC\t7\t/p/B.kt\tline one\\nline two"),
+            listOf("skipped=SOME_DIAGNOSTIC\t\t7\t/p/B.kt\tline one\\nline two"),
             Files.readAllLines(target).filter { it.isNotBlank() },
         )
     }
@@ -171,7 +185,7 @@ class FixerProtocolTest {
             "MANGLED_JVM_NAME_PUBLIC_API",
             "KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC",
             "COMPANION_API_WITHOUT_JVM_STATIC",
-            "COMPANION_CONSTANT_WITHOUT_JVM_FIELD",
+            "COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS",
             "TOP_LEVEL_API_WITHOUT_JVM_NAME",
             "DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS",
             "EXEMPTION_WITHOUT_EXPLANATION",

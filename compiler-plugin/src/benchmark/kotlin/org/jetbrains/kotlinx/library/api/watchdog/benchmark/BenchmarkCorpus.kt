@@ -284,7 +284,7 @@ internal object BenchmarkCorpus {
 
     /**
      * Companion-object API. Intended diagnostics: COMPANION_API_WITHOUT_JVM_STATIC,
-     * COMPANION_CONSTANT_WITHOUT_JVM_FIELD.
+     * COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS.
      */
     private fun companionFile(i: Int): String = header(i, null) + """
         /** Registry with factory-only construction. */
@@ -307,7 +307,7 @@ internal object BenchmarkCorpus {
                 /** Default registry name. */
                 public const val DEFAULT_NAME: String = "default"
 
-                /** Version marker kept as an instance field of Companion. */
+                /** Version marker kept behind an instance getter on Companion. */
                 public val VERSION: String = "1.0"
 
                 /** Upper bound on registry entries. */

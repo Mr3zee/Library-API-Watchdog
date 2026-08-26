@@ -32,12 +32,13 @@ class WatchdogProjectTest {
         result.assertDiagnosticReported("e: ", "has no `KDoc`")
         result.assertDiagnosticReported("e: ", "abbreviates a function type")
         result.assertDiagnosticReported("e: ", "bakes its constructor property list")
+        result.assertDiagnosticReported("e: ", "Poko (https://github.com/drewhamilton/Poko)")
         result.assertDiagnosticReported("e: ", "neither declares nor inherits an `equals`")
         result.assertDiagnosticReported("e: ", "neither declares nor inherits a `hashCode`")
         result.assertDiagnosticReported("e: ", "neither declares nor inherits a `toString`")
         result.assertDiagnosticReported(
             "e: ",
-            "[Poko](https://mr3zee.github.io/Library-API-Watchdog/checks/" +
+            "Poko (https://mr3zee.github.io/Library-API-Watchdog/checks/" +
                     "stateful-class-without-equals-hashcode-to-string#poko)",
         )
         result.assertDiagnosticReported("e: ", "press `${ideaGenerateShortcut()}`")
@@ -51,7 +52,7 @@ class WatchdogProjectTest {
         result.assertDiagnosticReported("e: ", "compiled JVM name is mangled")
         result.assertDiagnosticReported("e: ", "still lands in the API surface Java sources see")
         result.assertDiagnosticReported("e: ", "compiles to an instance method on the nested `Companion` class")
-        result.assertDiagnosticReported("e: ", "compiles to an instance getter on the nested `Companion` class")
+        result.assertDiagnosticReported("e: ", "leaves its getter on the nested `Companion` class")
         result.assertDiagnosticReported("e: ", "compile into the facade class")
         result.assertDiagnosticReported("e: ", "declares default parameter values")
         result.assertDiagnosticReported("e: ", "allows the `FUNCTION` annotation target")
@@ -96,7 +97,7 @@ class WatchdogProjectTest {
                         mangledJvmNamePublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
                         kotlinOnlyApiWithoutJvmSynthetic = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
                         companionApiWithoutJvmStatic = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                        companionConstantWithoutJvmField = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
+                        companionPropertyWithoutStaticAccess = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
                         topLevelApiWithoutJvmName = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
                         defaultParametersWithoutJvmOverloads = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
                     }
@@ -125,7 +126,7 @@ class WatchdogProjectTest {
         result.assertDiagnosticReported("w: ", "compiled JVM name is mangled")
         result.assertDiagnosticReported("w: ", "still lands in the API surface Java sources see")
         result.assertDiagnosticReported("w: ", "compiles to an instance method on the nested `Companion` class")
-        result.assertDiagnosticReported("w: ", "compiles to an instance getter on the nested `Companion` class")
+        result.assertDiagnosticReported("w: ", "leaves its getter on the nested `Companion` class")
         result.assertDiagnosticReported("w: ", "compile into the facade class")
         result.assertDiagnosticReported("w: ", "declares default parameter values")
         result.assertDiagnosticReported("w: ", "allows the `FUNCTION` annotation target")

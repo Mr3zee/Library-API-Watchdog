@@ -1,0 +1,75 @@
+public abstract class org/jetbrains/kotlinx/library/api/watchdog/AggregateBackwardsCompatibilityExemptsReportTask : org/gradle/api/DefaultTask {
+	public fun <init> ()V
+	public final fun generateReport ()V
+	public abstract fun getReportDataFiles ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getReportFile ()Lorg/gradle/api/file/RegularFileProperty;
+}
+
+public final class org/jetbrains/kotlinx/library/api/watchdog/AppliedExemptionReportEntry {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lorg/jetbrains/kotlinx/library/api/watchdog/AppliedExemptionReportEntry;
+	public static synthetic fun copy$default (Lorg/jetbrains/kotlinx/library/api/watchdog/AppliedExemptionReportEntry;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lorg/jetbrains/kotlinx/library/api/watchdog/AppliedExemptionReportEntry;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAnnotation ()Ljava/lang/String;
+	public final fun getLocation ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/jetbrains/kotlinx/library/api/watchdog/BackwardsCompatibilityExemptsHtmlReport {
+	public static final field INSTANCE Lorg/jetbrains/kotlinx/library/api/watchdog/BackwardsCompatibilityExemptsHtmlReport;
+	public final fun write (Ljava/util/List;Ljava/io/File;Z)V
+}
+
+public final class org/jetbrains/kotlinx/library/api/watchdog/BackwardsCompatibilityExemptsProjectReport {
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;Ljava/util/List;Ljava/util/List;)Lorg/jetbrains/kotlinx/library/api/watchdog/BackwardsCompatibilityExemptsProjectReport;
+	public static synthetic fun copy$default (Lorg/jetbrains/kotlinx/library/api/watchdog/BackwardsCompatibilityExemptsProjectReport;Ljava/lang/String;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lorg/jetbrains/kotlinx/library/api/watchdog/BackwardsCompatibilityExemptsProjectReport;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getApplied ()Ljava/util/List;
+	public final fun getNotApplied ()Ljava/util/List;
+	public final fun getProjectPath ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/jetbrains/kotlinx/library/api/watchdog/BackwardsCompatibilityExemptsReportData {
+	public static final field INSTANCE Lorg/jetbrains/kotlinx/library/api/watchdog/BackwardsCompatibilityExemptsReportData;
+	public final fun read (Ljava/io/File;)Lorg/jetbrains/kotlinx/library/api/watchdog/BackwardsCompatibilityExemptsProjectReport;
+	public final fun write (Lorg/jetbrains/kotlinx/library/api/watchdog/BackwardsCompatibilityExemptsProjectReport;Ljava/io/File;)V
+}
+
+public final class org/jetbrains/kotlinx/library/api/watchdog/BackwardsCompatibilityExemptsReportKt {
+	public static final field EXEMPTS_REPORT_DEPENDENCIES_CONFIGURATION Ljava/lang/String;
+	public static final field EXEMPTS_REPORT_ELEMENTS_CONFIGURATION Ljava/lang/String;
+	public static final field EXEMPTS_REPORT_USAGE Ljava/lang/String;
+}
+
+public final class org/jetbrains/kotlinx/library/api/watchdog/NotAppliedExemptionReportEntry {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/jetbrains/kotlinx/library/api/watchdog/NotAppliedExemptionReportEntry;
+	public static synthetic fun copy$default (Lorg/jetbrains/kotlinx/library/api/watchdog/NotAppliedExemptionReportEntry;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lorg/jetbrains/kotlinx/library/api/watchdog/NotAppliedExemptionReportEntry;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAnnotation ()Ljava/lang/String;
+	public final fun getDiagnostic ()Ljava/lang/String;
+	public final fun getLocation ()Ljava/lang/String;
+	public final fun getReason ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/jetbrains/kotlinx/library/api/watchdog/WatchdogReportAggregationPlugin : org/gradle/api/Plugin {
+	public fun <init> ()V
+	public synthetic fun apply (Ljava/lang/Object;)V
+	public fun apply (Lorg/gradle/api/Project;)V
+}
+

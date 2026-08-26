@@ -6,9 +6,9 @@ six only run in JVM compilations.
 
 ## The checks
 
-- [Companion API without JvmStatic](./companion-api-without-jvm-static.md) - companion object functions compile to instance methods and
+- [Companion function without JvmStatic](./companion-api-without-jvm-static.md) - companion object functions compile to instance methods and
   are only reachable from Java through the companion instance getter.
-- [Companion constants without JvmField](./companion-constant-without-jvm-field.md) - constant-shaped companion properties are only reachable from Java through the companion instance getter.
+- [Companion property without static access](./companion-property-without-static-access.md) - companion property accessors remain on the companion instance instead of the outer class.
 - [Default parameters without JvmOverloads](./default-parameters-without-jvm-overloads.md) - default parameter values are a Kotlin-only feature.
   Without `@JvmOverloads` Java callers must specify every argument.
 - [Kotlin-only API without JvmSynthetic](./kotlin-only-api-without-jvm-synthetic.md) - `suspend` functions, reified generics, and Kotlin-specific function types
@@ -72,7 +72,7 @@ reason. See [Exemptions and internal API](../../exemptions.md) for the full exem
 - [Kotlin's Java-to-Kotlin interop guide](https://kotlinlang.org/docs/java-to-kotlin-interop.html)
 - [Mangled JVM names in public API](./mangled-jvm-name-public-api.md)
 - [Kotlin-only API without JvmSynthetic](./kotlin-only-api-without-jvm-synthetic.md)
-- [Companion API without JvmStatic](./companion-api-without-jvm-static.md)
-- [Companion constants without JvmField](./companion-constant-without-jvm-field.md)
+- [Companion function without JvmStatic](./companion-api-without-jvm-static.md)
+- [Companion property without static access](./companion-property-without-static-access.md)
 - [Top-level API without JvmName](./top-level-api-without-jvm-name.md)
 - [Default parameters without JvmOverloads](./default-parameters-without-jvm-overloads.md)

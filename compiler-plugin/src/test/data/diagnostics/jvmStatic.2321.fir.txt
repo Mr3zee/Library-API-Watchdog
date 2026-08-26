@@ -19,6 +19,10 @@ FILE: jvmStatic.kt
                 ^createStatic R|foo/bar/Registry.Registry|()
             }
 
+            @R|kotlin/jvm/JvmStatic|() public final suspend fun createStaticLater(): R|foo/bar/Registry| {
+                ^createStaticLater R|foo/bar/Registry.Registry|()
+            }
+
             @R|kotlin/jvm/JvmSynthetic|() public final fun createHidden(): R|foo/bar/Registry| {
                 ^createHidden R|foo/bar/Registry.Registry|()
             }
@@ -66,6 +70,65 @@ FILE: jvmStatic.kt
                     ^ this@R|foo/bar/Registry.Companion|.D|foo/bar/Registry.Companion.delegated|.R|kotlin/getValue|<R|kotlin/String|>(this@R|foo/bar/Registry.Companion|, ::R|foo/bar/Registry.Companion.delegated|)
                 }
 
+            public final lateinit var late: R|kotlin/String|
+                public get(): R|kotlin/String|
+                public set(value: R|kotlin/String|): R|kotlin/Unit|
+
+            public final val R|kotlin/String|.qualified: R|kotlin/String|
+                public get(): R|kotlin/String| {
+                    ^ this@R|foo/bar/Registry.Companion.qualified|
+                }
+
+            @R|kotlin/jvm/JvmStatic|() public final var staticMutable: R|kotlin/String| = String(static)
+                public get(): R|kotlin/String|
+                public set(value: R|kotlin/String|): R|kotlin/Unit|
+
+            @R|kotlin/jvm/JvmStatic|() public final val staticComputed: R|kotlin/String|
+                public get(): R|kotlin/String| {
+                    ^ String(computed)
+                }
+
+            @R|kotlin/jvm/JvmStatic|() public final val staticDelegated: R|kotlin/String|by R|kotlin/lazy|<R|kotlin/String|>(<L> = lazy@fun <anonymous>(): R|kotlin/String| <inline=NoInline>  {
+                ^ String(lazy)
+            }
+            )
+                public get(): R|kotlin/String| {
+                    ^ this@R|foo/bar/Registry.Companion|.D|foo/bar/Registry.Companion.staticDelegated|.R|kotlin/getValue|<R|kotlin/String|>(this@R|foo/bar/Registry.Companion|, ::R|foo/bar/Registry.Companion.staticDelegated|)
+                }
+
+            @R|kotlin/jvm/JvmStatic|() public final lateinit var staticLate: R|kotlin/String|
+                public get(): R|kotlin/String|
+                public set(value: R|kotlin/String|): R|kotlin/Unit|
+
+            @R|kotlin/jvm/JvmStatic|() public final val R|kotlin/String|.staticQualified: R|kotlin/String|
+                public get(): R|kotlin/String| {
+                    ^ this@R|foo/bar/Registry.Companion.staticQualified|
+                }
+
+            field:@R|kotlin/jvm/JvmField|() public final var mutableField: R|kotlin/String| = String(field)
+                public get(): R|kotlin/String|
+                public set(value: R|kotlin/String|): R|kotlin/Unit|
+
+            public final var staticRead: R|kotlin/String| = String(read)
+                @PROPERTY_GETTER:R|kotlin/jvm/JvmStatic|() public get(): R|kotlin/String|
+                public set(value: R|kotlin/String|): R|kotlin/Unit|
+
+            public final var staticWrite: R|kotlin/String| = String(write)
+                public get(): R|kotlin/String|
+                @PROPERTY_SETTER:R|kotlin/jvm/JvmStatic|() public set(value: R|kotlin/String|): R|kotlin/Unit|
+
+            public final var staticReadOnly: R|kotlin/String| = String(read)
+                @PROPERTY_GETTER:R|kotlin/jvm/JvmStatic|() public get(): R|kotlin/String|
+                @PROPERTY_SETTER:R|kotlin/jvm/JvmSynthetic|() public set(value: R|kotlin/String|): R|kotlin/Unit|
+
+            public final var staticWriteOnly: R|kotlin/String| = String(write)
+                @PROPERTY_GETTER:R|kotlin/jvm/JvmSynthetic|() public get(): R|kotlin/String|
+                @PROPERTY_SETTER:R|kotlin/jvm/JvmStatic|() public set(value: R|kotlin/String|): R|kotlin/Unit|
+
+            public final var privatelySet: R|kotlin/String| = String(private)
+                @PROPERTY_GETTER:R|kotlin/jvm/JvmStatic|() public get(): R|kotlin/String|
+                private set(value: R|kotlin/String|): R|kotlin/Unit|
+
         }
 
     }
@@ -99,6 +162,60 @@ FILE: jvmStatic.kt
             public open override fun make(): R|kotlin/Int| {
                 ^make Int(0)
             }
+
+        }
+
+    }
+    public final class StaticBuilt : R|kotlin/Any| {
+        public constructor(): R|foo/bar/StaticBuilt| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|foo/bar/Maker| {
+            private constructor(): R|foo/bar/StaticBuilt.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            @R|kotlin/jvm/JvmStatic|() public open override fun make(): R|kotlin/Int| {
+                ^make Int(0)
+            }
+
+        }
+
+    }
+    public abstract interface Named : R|kotlin/Any| {
+        public abstract val name: R|kotlin/String|
+            public get(): R|kotlin/String|
+
+    }
+    public final class NamedBuilt : R|kotlin/Any| {
+        public constructor(): R|foo/bar/NamedBuilt| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|foo/bar/Named| {
+            private constructor(): R|foo/bar/NamedBuilt.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public open override val name: R|kotlin/String| = String(built)
+                public get(): R|kotlin/String|
+
+        }
+
+    }
+    public final class StaticNamedBuilt : R|kotlin/Any| {
+        public constructor(): R|foo/bar/StaticNamedBuilt| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|foo/bar/Named| {
+            private constructor(): R|foo/bar/StaticNamedBuilt.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            @R|kotlin/jvm/JvmStatic|() public open override val name: R|kotlin/String| = String(built)
+                public get(): R|kotlin/String|
 
         }
 

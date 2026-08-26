@@ -1,4 +1,4 @@
-# Companion API without JvmStatic
+# Companion function without JvmStatic
 
 `COMPANION_API_WITHOUT_JVM_STATIC` reports public companion object functions that compile to an
 instance method on the nested `Companion` class instead of a static entry point on the outer
@@ -77,13 +77,12 @@ public class Registry {
 
 ## Notes
 
-- `suspend` companion functions are not reported here - they compile to a method taking a
-  `Continuation`, which `@JvmStatic` would not make any friendlier to call from Java. The
+- `suspend` companion functions are also reported because `@JvmStatic` can add an outer-class
+  entry point. Their `Continuation` parameter is still awkward for Java, so the
   [`KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`](./kotlin-only-api-without-jvm-synthetic.md) check
-  reports them instead.
-- Overrides are not reported: the member is dictated by a supertype contract rather than designed
-  as a static-looking factory or utility. `@JvmStatic` can still be applied to a companion override
-  to additionally expose a static entry point when needed.
+  also reports them. Hiding them with `@JvmSynthetic` usually resolves both diagnostics.
+- Overrides are reported because `@JvmStatic` can add a static entry point without changing the
+  implemented function contract.
 - Interface companions compile the same way and are checked identically to class companions.
 - `@JvmSynthetic` members are hidden from Java on purpose and are not reported.
 - Non-JVM compilations never register this check at all.
@@ -113,7 +112,8 @@ public class Registry {
 }
 ```
 
-The same annotation also acknowledges [`COMPANION_CONSTANT_WITHOUT_JVM_FIELD`](./companion-constant-without-jvm-field.md).
+The same annotation also acknowledges
+[`COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS`](./companion-property-without-static-access.md).
 
 ## Configuration
 
@@ -136,6 +136,6 @@ With direct compiler invocation:
 ## See also
 
 - [Static methods](https://kotlinlang.org/docs/java-to-kotlin-interop.html#static-methods)
-- [Companion constants without JvmField](./companion-constant-without-jvm-field.md)
+- [Companion property without static access](./companion-property-without-static-access.md)
 - [Java interop checks](./java-interop.md)
 - [Exemptions and internal API](../../exemptions.md)

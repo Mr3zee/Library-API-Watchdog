@@ -88,7 +88,7 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
             appendLine("        \"${entry["name"]}\" to mapOf(")
             for ((name, lines) in values) {
                 appendLine("            \"$name\" to")
-                val chunks = lines.joinTextLines().wrap()
+                val chunks = lines.joinTextLines().plainLinks().wrap()
                 for ((index, chunk) in chunks.withIndex()) {
                     val tail = if (index == chunks.lastIndex) "," else " +"
                     appendLine("                \"${chunk.escaped()}\"$tail")
@@ -107,7 +107,7 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
             append((entry["message"] as List<*>).joinTextLines())
             if (trailer != null) append(' ').append(trailer)
             append("\n\nSee more: ").append(docsUrl)
-        }
+        }.plainLinks()
         val template = if (PARAMETER.containsMatchIn(message)) message.replace("'", "''") else message
 
         appendLine("        \"$name\" to")
@@ -122,6 +122,10 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
     /** Joins source-wrapped lines while keeping empty lines as paragraph separators. */
     private fun List<*>.joinTextLines(): String =
         joinToString("\n") { it as String }.replace(SOFT_LINE_BREAK, " ")
+
+    /** Rewrites Markdown links, which only the docs render natively, into `text (url)`. */
+    private fun String.plainLinks(): String =
+        replace(MARKDOWN_LINK) { "${it.groupValues[1]} (${it.groupValues[2]})" }
 
     private fun String.wrap(): List<String> {
         val chunks = mutableListOf<String>()
@@ -143,6 +147,7 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
 
     private companion object {
         val PARAMETER = Regex("\\{\\d+}")
+        val MARKDOWN_LINK = Regex("\\[([^\\]]+)]\\(([^)]+)\\)")
         val SOFT_LINE_BREAK = Regex("(?<!\\n)\\n(?!\\n)")
         const val MAX_CHUNK_LENGTH = 88
     }

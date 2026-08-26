@@ -104,8 +104,9 @@ public fun process(tag: Tag) { }
 
 ## Notes
 
-- A context parameter's type is an implicit value just like a receiver, so a marker there is
-  effective and not reported.
+- A context parameter is an implicit value, so a marker on its type is effective and not
+  reported: when a nearer implicit value carries the same marker, the parameter is hidden
+  from context resolution.
 - Markers on supertypes, type parameter bounds, and type alias expansions are effective carriers
   and are not reported: `class Div : @TreeDsl Tag()`, `typealias MarkedTag = @TreeDsl Tag`.
 - A marker nested inside a type argument is not analyzed at all (`List<@TreeDsl Tag>` triggers

@@ -4,12 +4,12 @@ package org.jetbrains.kotlinx.library.api.watchdog
  * Explains why a watchdog exemption annotation is applied.
  *
  * Every exemption annotation in this package carries a `reason` and a free-form `description`.
- * The library-api-watchdog compiler plugin requires the explanation to be meaningful: the description
+ * The compiler plugin requires the explanation to be meaningful: the description
  * may be left empty only when the reason explains the exemption on its own
  * ([FOR_BACKWARDS_COMPATIBILITY], [API_DESIGN]). The other reasons only categorize the exemption
  * and keep the description shorter - the specific constraint still has to be spelled out there.
  *
- * See [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions) for how reasons and descriptions are validated.
+ * See [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions) for the full explanation of how reasons and descriptions are validated.
  */
 public enum class ExemptionReason {
     /** The exempted shape is kept to stay compatible with existing users. */
@@ -52,14 +52,14 @@ public enum class ExemptionReason {
  * Acknowledges that the annotated class or interface is deliberately open for unrestricted
  * subclassing outside the library.
  *
- * The library-api-watchdog compiler plugin warns about publicly visible open/abstract classes and
- * interfaces that are not protected with [kotlin.SubclassOptInRequired], because every external
- * subclass
- * [constrains how the library can evolve](https://kotlinlang.org/docs/api-guidelines-predictability.html#prevent-unwanted-and-invalid-extensions).
- * Apply this annotation to suppress the warning when unrestricted subclassing is an intended
- * part of the API contract.
+ * Once external code subclasses a type, the library can no longer add abstract members, change
+ * existing members' signatures, or tighten invariants without breaking those subclasses. The
+ * compiler plugin warns about publicly visible open or abstract
+ * classes and interfaces not protected with [kotlin.SubclassOptInRequired]. 
+ * 
+ * Apply this annotation when unrestricted subclassing is an intended part of the API contract.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in) for the full rationale and examples.
  *
  * @param reason why the class is deliberately open.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -76,14 +76,13 @@ public annotation class IntentionallyOpen(
 /**
  * Acknowledges that the annotated enum or sealed hierarchy is deliberately exhaustive.
  *
- * The library-api-watchdog compiler plugin warns about publicly visible enums and sealed hierarchies,
- * because users can
- * [match on them exhaustively](https://kotlinlang.org/docs/api-guidelines-predictability.html#prevent-unwanted-and-invalid-extensions)
- * (`when` without an `else` branch), which turns adding an entry or a subtype into a breaking
- * change. Apply this annotation to suppress the warning when the set of entries/subtypes is an
- * intended, stable part of the API contract.
+ * Users can `when`-match an enum or a sealed hierarchy without an `else` branch, so their code
+ * depends on today's exact set of entries or subtypes: adding one later stops every such `when`
+ * from compiling. The compiler plugin warns about publicly visible enums and sealed hierarchies.
+ * 
+ * Apply this annotation when the set of entries or subtypes is an intended, stable part of the API contract.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/exhaustive-public-api) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/exhaustive-public-api) for the full rationale and examples.
  *
  * @param reason why the hierarchy is deliberately exhaustive.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -100,13 +99,13 @@ public annotation class IntentionallyExhaustive(
 /**
  * Acknowledges that the annotated declaration is deliberately left without KDoc.
  *
- * The library-api-watchdog compiler plugin warns about publicly visible declarations that have no KDoc -
- * classifiers, type aliases, functions, properties, constructors, and enum entries - because
- * [undocumented API forces users to guess the usage contract](https://kotlinlang.org/docs/api-guidelines-informative-documentation.html#thoroughly-document-your-api).
- * Apply this annotation to suppress the warning when leaving the declaration undocumented is
- * intended (for example, when it is self-explanatory or documented elsewhere).
+ * A KDoc is the contract users can rely on. Without one, they can only guess intent from the
+ * implementation, and any later change - even a bug fix - risks breaking a usage nobody wrote
+ * down as supported. The compiler plugin warns about publicly visible declarations that have no KDoc.
+ * 
+ * Apply this annotation when leaving the declaration undocumented is intended.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api) for the full rationale and examples.
  *
  * @param reason why the declaration is deliberately undocumented.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -129,14 +128,13 @@ public annotation class IntentionallyUndocumented(
 /**
  * Acknowledges that the annotated type alias deliberately exposes a bare function type.
  *
- * The library-api-watchdog compiler plugin warns about publicly visible type aliases that abbreviate
- * function types, because the alias is erased from the compiled API: users bind to the bare
- * function shape, and the type can't grow members or constraints later without breaking them,
- * [unlike a `fun interface`](https://kotlinlang.org/docs/fun-interfaces.html#functional-interfaces-vs-type-aliases).
- * Apply this annotation to suppress the warning when exposing the function type is intended
- * (for example, for lambdas that only travel through inline functions).
+ * A type alias is erased at compile time, so users bind to the bare function type, and the
+ * alias can never grow members or constraints the way a `fun interface` with the same lambda
+ * ergonomics can. The compiler plugin warns about publicly visible type aliases that abbreviate function types.
+ * 
+ * Apply this annotation when exposing the function type is intended.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/function-type-alias-public-api) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/function-type-alias-public-api) for the full rationale and examples.
  *
  * @param reason why the alias deliberately exposes a function type.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -153,14 +151,14 @@ public annotation class IntentionallyFunctionTypeAlias(
 /**
  * Acknowledges that the annotated data class is deliberately part of the public API.
  *
- * The library-api-watchdog compiler plugin warns about
- * [publicly visible data classes](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#avoid-using-data-classes-in-your-api),
- * because the generated `copy` and `componentN` functions and the constructor bake the exact
- * property list into the compiled API: adding, removing, or reordering a property later breaks
- * users. Apply this annotation to suppress the warning when the property list is an intended,
- * stable part of the API contract.
+ * The `data` modifier generates positional `copy` and `componentN` functions and
+ * `equals`/`hashCode`/`toString` over the exact ordered primary-constructor property list, so
+ * adding, removing, or reordering a property later breaks users, and working around that by hand
+ * negates the convenience the modifier was chosen for. The compiler plugin warns about publicly visible data classes.
+ * 
+ * Apply this annotation when the property list is an intended, stable part of the API contract.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/data-class-public-api) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/data-class-public-api) for the full rationale and examples.
  *
  * @param reason why the class is deliberately a data class.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -177,12 +175,14 @@ public annotation class IntentionallyDataClass(
 /**
  * Acknowledges that the annotated stateful class deliberately uses identity equality.
  *
- * The library-api-watchdog compiler plugin warns about publicly visible stateful classes - classes
- * with at least one property backed by a field - that neither declare nor inherit `equals`,
- * because two instances holding the same meaningful state otherwise compare as different values.
- * Apply this annotation to suppress the warning when identity equality is intended.
+ * State usually gives instances their meaning, and identity equality treats two instances holding
+ * the same state as different values. The compiler plugin warns
+ * about publicly visible stateful classes - classes with at least one property backed by a
+ * field - that neither declare nor inherit `equals`. 
+ * 
+ * Apply this annotation when identity equality is intended.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string) for the full rationale and examples.
  *
  * @param reason why the class deliberately has no `equals` implementation.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -199,12 +199,14 @@ public annotation class IntentionallyWithoutEquals(
 /**
  * Acknowledges that the annotated stateful class deliberately uses identity hashing.
  *
- * The library-api-watchdog compiler plugin warns about publicly visible stateful classes - classes
- * with at least one property backed by a field - that neither declare nor inherit `hashCode`,
- * because hash-based collections otherwise organize instances by identity instead of meaningful
- * state. Apply this annotation to suppress the warning when identity hashing is intended.
+ * Identity hashing carries identity equality into hash-based collections: sets and map keys
+ * organize instances by identity instead of their meaningful state. The compiler plugin
+ * warns about publicly visible stateful classes - classes with at least
+ * one property backed by a field - that neither declare nor inherit `hashCode`. 
+ * 
+ * Apply this annotation when identity hashing is intended.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string) for the full rationale and examples.
  *
  * @param reason why the class deliberately has no `hashCode` implementation.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -221,15 +223,14 @@ public annotation class IntentionallyWithoutHashCode(
 /**
  * Acknowledges that the annotated class deliberately provides no `toString` implementation.
  *
- * The library-api-watchdog compiler plugin warns about publicly visible stateful classes - classes with
- * at least one property backed by a field - that neither declare nor inherit
- * [a `toString` implementation](https://kotlinlang.org/docs/api-guidelines-debuggability.html#provide-a-tostring-method-for-stateful-types),
- * because their instances render as the opaque default class-name-with-hash-code,
- * which makes logs and debugger output meaningless. Apply this annotation to suppress the warning
- * when the opaque rendering is intended (for example, when the state is sensitive and must not
- * leak into logs).
+ * An instance that only prints as the opaque default `Connection@1a2b3c4d` reveals nothing in a
+ * log line, exception message, or debugger view. The compiler plugin
+ * warns about publicly visible stateful classes - classes with at least one property
+ * backed by a field - that neither declare nor inherit `toString`. 
+ * 
+ * Apply this annotation when the opaque rendering is intended.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string) for the full rationale and examples.
  *
  * @param reason why the class deliberately has no `toString`.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -247,14 +248,15 @@ public annotation class IntentionallyWithoutToString(
  * Acknowledges that the annotated stateful class deliberately uses identity equality and hashing
  * and the opaque default rendering inherited from `kotlin.Any`.
  *
- * The library-api-watchdog compiler plugin warns about publicly visible stateful classes - classes
+ * The compiler plugin warns about publicly visible stateful classes - classes
  * with at least one property backed by a field - that neither declare nor inherit meaningful
- * `equals`, `hashCode`, and `toString` implementations. Apply this annotation to suppress all
- * three warnings when identity semantics and opaque rendering are intended. Use
- * [IntentionallyWithoutEquals], [IntentionallyWithoutHashCode], or
- * [IntentionallyWithoutToString] when only one behavior is intentional.
+ * `equals`, `hashCode`, and `toString` implementations. 
+ * 
+ * Apply this annotation to acknowledge all three inherited implementations at once. Use [IntentionallyWithoutEquals],
+ * [IntentionallyWithoutHashCode], or [IntentionallyWithoutToString] when only one behavior is
+ * intentional.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string) for the full rationale and examples.
  *
  * @param reason why the class deliberately inherits all three implementations from `kotlin.Any`.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -272,19 +274,15 @@ public annotation class IntentionallyWithoutEqualsHashCodeOrToString(
  * Acknowledges that the annotated declaration deliberately exposes a mutable collection type in
  * the public API.
  *
- * The library-api-watchdog compiler plugin warns about public signatures - return types, property
- * types, and parameter types, including their type arguments - that mention mutable collection
- * types (`MutableList`, `MutableMap`, ..., their implementations, and arrays, which are mutable
- * collections too), as well as mutable bounds on type parameters.
- * [Sharing a mutable collection](https://kotlinlang.org/docs/api-guidelines-predictability.html#avoid-exposing-mutable-state)
- * across the API boundary makes it unclear whether user-side and library-side mutations affect
- * each other. Apply this annotation to suppress the warning when sharing the mutable collection
- * is an intended part of the API contract. On a function, a property, or a constructor it covers the
- * whole signature. On a single parameter or type parameter it covers just that parameter. On a
- * type usage (`List<@IntentionallyMutableCollection MutableList<Int>>`) it covers the annotated
- * type and everything nested in it.
+ * Once a mutable collection crosses the API boundary, it is unclear which mutations are safe.
+ * Users can mutate a collection the library owns, and the library can mutate an argument the user
+ * still holds. The compiler plugin warns about public signatures that mention
+ * mutable collection types (`MutableList`, `MutableMap`, ..., their implementations, and arrays,
+ * which are mutable collections too). 
+ * 
+ * Apply this annotation when sharing the mutable collection is an intended part of the API contract.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/mutable-collection-public-api) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/mutable-collection-public-api) for the full rationale and examples.
  *
  * @param reason why the declaration deliberately exposes a mutable collection.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -309,20 +307,14 @@ public annotation class IntentionallyMutableCollection(
  * Acknowledges that the annotated declaration deliberately exposes the tuple type `Pair` or
  * `Triple` in the public API.
  *
- * The library-api-watchdog compiler plugin warns about public signatures - return types, property
- * types, and parameter types, including their type arguments (`List<Pair<Int, String>>` exposes
- * the tuple all the same) - that mention `Pair` or `Triple`, as well as tuple bounds on type
- * parameters. Tuple components carry no domain meaning: at the use site `first`/`second`/`third`
- * and positional destructuring reveal nothing about the values, and the fixed shape can't
- * evolve - adding a value means switching to a different type, breaking users. Prefer a
- * [small class with descriptively named properties](https://kotlinlang.org/docs/api-guidelines-consistency.html#use-object-oriented-design-for-data-and-state).
- * Apply this annotation to suppress the warning when exposing the tuple is an intended part of
- * the API contract. On a function, a property, or a constructor it covers the whole signature.
- * On a single parameter or type parameter it covers just that parameter. On a type usage
- * (`List<@IntentionallyPairOrTriple Pair<Int, String>>`) it covers the annotated type and
- * everything nested in it.
+ * Tuple components carry no domain meaning - `first`/`second`/`third` and positional
+ * destructuring reveal nothing about the values - and the fixed shape can't grow another
+ * component without switching to a different type and breaking users. The compiler plugin
+ * warns about public signatures that mention `Pair` or `Triple`.
+ * 
+ * Apply this annotation when exposing the tuple is an intended part of the API contract.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/pair-or-triple-public-api) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/pair-or-triple-public-api) for the full rationale and examples.
  *
  * @param reason why the declaration deliberately exposes a tuple type.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -346,21 +338,15 @@ public annotation class IntentionallyPairOrTriple(
 /**
  * Acknowledges that the annotated function or parameter deliberately takes a Boolean argument.
  *
- * The checker warns about
- * [Boolean value parameters](https://kotlinlang.org/docs/api-guidelines-readability.html#avoid-using-the-boolean-type-as-an-argument),
- * including nullable, `vararg`, and context ones - in publicly visible functions.
+ * At the call site a positional `true`/`false` says nothing about its meaning, and users can't be
+ * forced to name the argument they pass. The compiler plugin warns
+ * about Boolean value parameters in publicly visible functions,
+ * except constructors and factory functions named after the type they create.
+ * 
+ * Apply this annotation when the Boolean parameter is intended (for example, when its meaning is
+ * unmistakable from the function name alone, as in `setEnabled(enabled: Boolean)`).
  *
- * At the call site a bare `true`/`false` reveals nothing about its meaning, and users can't be
- * forced to name the argument they pass. Prefer separate, descriptively named functions for
- * each mode, or an enum class naming the modes. Constructors and constructor functions -
- * factory functions named after the type they create - are not checked: a construction site
- * stores data in the named type rather than switching an operation mode.
- *
- * Apply this annotation to suppress the warning when the Boolean parameter is intended
- * (for example, when the parameter is unmistakable from the function name alone, as in `setEnabled(enabled: Boolean)`).
- * On a function it covers every parameter. On a single parameter it covers just that parameter.
- *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/boolean-parameter-public-api) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/boolean-parameter-public-api) for the full rationale and examples.
  *
  * @param reason why the Boolean parameter is intended.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -381,20 +367,13 @@ public annotation class IntentionallyBooleanParameter(
  * Acknowledges that the annotated declaration deliberately exposes a nullable Boolean in the
  * public API.
  *
- * The library-api-watchdog compiler plugin warns about public signatures - return types, property
- * types, and parameter types, including their type arguments - that mention `Boolean?`, as well
- * as `Boolean?` bounds on type parameters. A nullable Boolean models three states but names only
- * two of them, so every use site has to know what `null` stands for, and three-state logic hides
- * in two-branch `if`s. Prefer an
- * [enum class naming all three states](https://kotlinlang.org/docs/api-guidelines-readability.html#avoid-using-the-boolean-type-as-an-argument).
- * Apply this annotation to suppress the warning when the nullable Boolean is an intended part
- * of the API contract. On a
- * function, a property, or a constructor it covers the whole signature. On a single parameter or
- * type parameter it covers just that parameter. On a type usage
- * (`List<@IntentionallyNullableBoolean Boolean?>`) it covers the annotated type and everything
- * nested in it.
+ * `Boolean?` models three states but names only two of them, so every use site has to remember
+ * what `null` stands for, and three-state logic hides in two-branch `if`s. The
+ * compiler plugin warns about public signatures that mention `Boolean?`.
+ * 
+ * Apply this annotation when the nullable Boolean is an intended part of the API contract. 
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/nullable-boolean-public-api) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/nullable-boolean-public-api) for the full rationale and examples.
  *
  * @param reason why the declaration deliberately exposes a nullable Boolean.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -419,17 +398,14 @@ public annotation class IntentionallyNullableBoolean(
  * Acknowledges that the annotated function or constructor deliberately declares a required
  * parameter after optional ones.
  *
- * The library-api-watchdog compiler plugin warns about publicly visible functions and constructors that
- * declare a required parameter - one without a default value - after an optional (defaulted or
- * `vararg`) parameter, because
- * [parameters should go from the general to the specific](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage):
- * essential inputs first, optional inputs last. A required parameter behind optional ones can't
- * be passed positionally without re-stating the defaults in front of it. A required function-type
- * (or `fun interface`) parameter in the last position is not reported: it keeps trailing-lambda
- * call syntax available. Apply this annotation to suppress the warning when the order is intended
- * (for example, when appending a parameter anywhere else would break existing users).
+ * A required parameter behind an optional (defaulted or `vararg`) one can't be passed positionally
+ * without re-stating the defaults in front of it, which pushes callers toward named arguments for
+ * an input that should be trivial to supply. The compiler plugin
+ * warns about publicly visible functions and constructors with such parameter orders. 
+ * 
+ * Apply this annotation when the order is intended.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/required-parameter-after-optional) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/required-parameter-after-optional) for the full rationale and examples.
  *
  * @param reason why the parameter order is intended.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -447,14 +423,14 @@ public annotation class IntentionallyRequiredParameterAfterOptional(
  * Acknowledges that the annotated function or constructor deliberately orders its parameters
  * differently from its other overloads.
  *
- * The library-api-watchdog compiler plugin warns about publicly visible overloads that declare the same
- * parameter names in a different relative order, because
- * [users transfer their expectations between overloads](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage):
- * an inconsistent order of same-named parameters invites silently swapped arguments. Apply this
- * annotation to suppress the warning when the differing order is intended. The annotated
- * declaration is also no longer used as an ordering reference for other overloads.
+ * Users transfer their intuition about one overload's parameter order to the next, so an overload
+ * that reverses same-named parameters invites a silently swapped call, especially when the
+ * swapped parameters share a type and the mistake still compiles. The compiler plugin
+ * warns about publicly visible overloads declaring the same parameter names in a different relative order.
+ * 
+ * Apply this annotation when the differing order is intended.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads) for the full rationale and examples.
  *
  * @param reason why the differing parameter order is intended.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -472,20 +448,16 @@ public annotation class IntentionallyInconsistentParameterOrder(
  * Acknowledges that the annotated inline function or the annotated property's inline accessors
  * deliberately carry logic in their body.
  *
- * The library-api-watchdog compiler plugin warns about publicly visible inline functions and inline
- * property accessors whose body does more than delegate to a non-inline function, because the
- * compiler
- * [copies an inline body into every user binary](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#considerations-for-using-the-publishedapi-annotation):
- * logic placed there - and its bugs - stays frozen in users compiled against an old library
- * version until they recompile. Keep
- * public inline functions thin wrappers that resolve what only the call site knows (a reified
- * type argument, an inlined lambda) and hand the actual work to a non-inline function, marked
- * `@PublishedApi internal` when it should stay out of the public API. Apply this annotation to
- * suppress the warning when inlining the logic is intended (for example, when a lambda must run
- * inline for non-local returns, or when a hot path must not pay for an extra call). On a
- * property it covers both accessors.
+ * The compiler copies an inline body into every call site, so logic placed there - and its bugs -
+ * stays in each user's binary until that binary is recompiled, while a regular call runs the
+ * library version present at runtime. The compiler plugin warns
+ * about publicly visible inline functions and inline property accessors whose body does more than
+ * delegate to a non-inline function.
+ * 
+ * Apply this annotation when inlining the logic is intended (for example, when a lambda
+ * must run inline for non-local returns, or when a hot path must not pay for an extra call).
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/inline-function-with-logic) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/inline-function-with-logic) for the full rationale and examples.
  *
  * @param reason why the logic is deliberately inlined.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -503,20 +475,17 @@ public annotation class IntentionallyInlinedLogic(
  * Acknowledges that the annotated declaration deliberately compiles to a JVM shape that Java
  * sources can't call.
  *
- * The library-api-watchdog compiler plugin warns, in JVM compilations, about publicly visible functions,
- * properties, and constructors that have a
- * [value class](https://kotlinlang.org/docs/inline-classes.html#mangling) in their signature - as
- * a parameter or receiver type, or as the return type of a class member. The compiler mangles the
- * JVM name of such entry points with a hash suffix (and hides such constructors behind a synthetic
- * one), so Kotlin users are unaffected but
- * [Java users can't call them](https://kotlinlang.org/docs/java-to-kotlin-interop.html#inline-value-classes).
- * Prefer giving the
- * compiled code a Java-callable shape with `@JvmName` (`@get:`/`@set:JvmName` on property
- * accessors) or `@JvmExposeBoxed`, and apply this annotation to suppress the warning when the
- * declaration is deliberately Kotlin-only. On a class it covers every declaration inside. On a
- * primary constructor `val`/`var` parameter it covers the property created from it.
+ * A value class in a signature makes the compiler mangle the compiled JVM name with a hash suffix
+ * (and hide such constructors behind a synthetic one), so Kotlin callers never notice, but Java
+ * sources can't call the declaration. The compiler plugin warns,
+ * in JVM compilations, about publicly visible functions, properties, and constructors with a
+ * value class in their signature. 
+ * 
+ * Apply this annotation when the declaration is deliberately
+ * Kotlin-only, or give the compiled code a Java-callable shape with `@JvmName`
+ * (`@get:`/`@set:JvmName` on property accessors) or `@JvmExposeBoxed` instead.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api) for the full rationale and examples.
  *
  * @param reason why the Java-inaccessible shape is intended.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -540,20 +509,15 @@ public annotation class IntentionallyMangledJvmName(
  * Acknowledges that the annotated function - or every function inside the annotated class - is
  * deliberately Kotlin-only API left visible to Java sources.
  *
- * The library-api-watchdog compiler plugin warns, in JVM compilations, about publicly visible functions
- * whose shape
- * [only Kotlin callers can use idiomatically](https://kotlinlang.org/docs/java-to-kotlin-interop.html):
- * `suspend` functions (Java sees a
- * trailing `Continuation` parameter it can't provide idiomatically), `inline` functions with a
- * `reified` type parameter (calling the compiled method from Java fails at runtime), and
- * functions taking a Kotlin-specific function type as a value or context parameter - a suspend
- * function type, a function type with receiver, or a `Unit`-returning function type. Prefer hiding
- * such members from Java with `@JvmSynthetic`, or provide a Java-friendly alternative alongside
- * (a blocking or `CompletableFuture`-returning bridge, a `fun interface` parameter), and apply this
- * annotation to suppress the warning when leaving the Kotlin-only shape visible to Java is
- * intended. On a class it covers every function declared inside.
+ * A Kotlin-only shape - a `suspend` function, an `inline` function with a `reified` type
+ * parameter, or a function taking a Kotlin-specific function type - still compiles a method Java
+ * sources see and may try to call, unidiomatically or, for `reified`, failing at runtime. The
+ * compiler plugin warns, in JVM compilations, about such publicly visible functions.
+ * 
+ * Apply this annotation when leaving the Kotlin-only shape visible to Java is
+ * intended, or hide it with `@JvmSynthetic` or provide a Java-friendly alternative instead. 
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic) for the full rationale and examples.
  *
  * @param reason why the Kotlin-only shape deliberately stays visible to Java.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -572,20 +536,20 @@ public annotation class IntentionallyKotlinOnlyApi(
  * annotated companion object or class - is deliberately reachable from Java only through the
  * companion instance.
  *
- * The library-api-watchdog compiler plugin warns, in JVM compilations, about publicly visible companion
- * object functions without
- * [`@JvmStatic`](https://kotlinlang.org/docs/java-to-kotlin-interop.html#static-methods) and
- * constant-shaped companion `val`s without
- * [`@JvmField`](https://kotlinlang.org/docs/java-to-kotlin-interop.html#static-fields): both
- * compile to members of the nested `Companion` class, so Java callers have to go through
- * `Outer.Companion`. Prefer exposing such members on the outer class itself (`@JvmStatic`,
- * `@JvmField`, `const val`) or hiding them from Java (`@JvmSynthetic`), and apply this
- * annotation to suppress the warnings when the companion-instance access path is intended. On a
- * class - the companion object itself or its outer class - it covers every member inside.
+ * Java has no companion-object syntax: companion members compile to the nested `Companion`
+ * class, so Java callers must use forms such as `Registry.Companion.getCurrentEndpoint()`, which
+ * expose a Kotlin implementation detail in the Java API. The compiler plugin
+ * warns, in JVM compilations, about publicly visible companion functions without
+ * `@JvmStatic` and companion properties whose Java-visible accessors remain on the nested
+ * `Companion` class. 
+ * 
+ * Apply this annotation when the companion-instance access path is intended,
+ * or add static access on the outer class (`@JvmStatic`, `@JvmField`, `const val`) or hide the
+ * member from Java with `@JvmSynthetic` instead.
  *
- * See the check documentation for rationale and examples:
+ * See the check documentation for the full rationale and examples:
  * [companion functions](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-api-without-jvm-static),
- * [companion constants](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-constant-without-jvm-field).
+ * [companion properties](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-property-without-static-access).
  *
  * @param reason why the companion-instance access path is intended.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -603,17 +567,14 @@ public annotation class IntentionallyNonStaticCompanionApi(
  * Acknowledges that the annotated file deliberately keeps the file facade class name derived
  * from the file name.
  *
- * The library-api-watchdog compiler plugin warns, in JVM compilations, about files whose public
- * top-level functions or properties
- * [compile into a facade class](https://kotlinlang.org/docs/java-to-kotlin-interop.html#package-level-functions)
- * without an explicit `@file:JvmName`: the derived name (`foo.kt` → `FooKt`) leaks the file name
- * into the Java API
- * surface, and renaming the file - invisible to Kotlin callers - renames the facade and breaks
- * Java users. Prefer choosing and pinning the facade name with `@file:JvmName`, and apply
- * this annotation - as `@file:IntentionallyDefaultFacadeName(...)` - to suppress the warning
- * when keeping the derived name is intended.
+ * Public top-level functions and properties compile into a facade class whose derived name
+ * (`foo.kt` becomes `FooKt`) reads as an implementation detail at Java call sites and is tied to
+ * a fact Kotlin callers never see: renaming the file silently renames the facade and breaks Java
+ * callers. The compiler plugin warns, in JVM compilations, about such files without an explicit `@file:JvmName`.
+ * 
+ * Apply this annotation - as `@file:IntentionallyDefaultFacadeName(...)` - when keeping the derived name is intended.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/top-level-api-without-jvm-name) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/top-level-api-without-jvm-name) for the full rationale and examples.
  *
  * @param reason why the derived facade name is intended.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -631,17 +592,15 @@ public annotation class IntentionallyDefaultFacadeName(
  * Acknowledges that the annotated function or constructor deliberately keeps its default
  * parameter values invisible to Java callers.
  *
- * The library-api-watchdog compiler plugin warns, in JVM compilations, about publicly visible functions
- * and constructors that declare default parameter values without `@JvmOverloads`: only the full
- * signature is compiled, so for Java callers the defaults don't exist and every argument must
- * be spelled out. Prefer
- * [`@JvmOverloads`](https://kotlinlang.org/docs/java-to-kotlin-interop.html#overloads-generation),
- * which additionally compiles the overloads that omit defaulted parameters from the right, and
- * apply this annotation to suppress the warning when
- * serving Java callers the full signature only is intended (for example, when the defaulted
- * parameters make no sense without Kotlin's named arguments).
+ * Only the full signature of a function with default parameter values is compiled, so for Java
+ * callers the defaults don't exist, and every argument must be spelled out at every call site.
+ * The compiler plugin warns, in JVM compilations, about publicly
+ * visible functions and constructors declaring defaults without `@JvmOverloads`, which would
+ * additionally compile the overloads that omit trailing defaulted parameters. 
+ * 
+ * Apply this annotation when serving Java callers the full signature only is intended.
  *
- * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/default-parameters-without-jvm-overloads) for rationale and examples.
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/default-parameters-without-jvm-overloads) for the full rationale and examples.
  *
  * @param reason why the defaults deliberately stay invisible to Java callers.
  * @param description free-form explanation of the exemption. May be empty only when [reason]
@@ -656,23 +615,24 @@ public annotation class IntentionallyWithoutJvmOverloads(
 )
 
 /**
- * Acknowledges that the annotated DSL marker deliberately keeps a wrong target set - no-op
+ * Acknowledges that the annotated DSL marker deliberately keeps wrong target set - no-op
  * targets in its `@Target`, or no explicit `@Target` at all - because fixing it would break
  * existing users.
  *
- * The library-api-watchdog compiler plugin warns about
- * [DSL marker](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker)
- * targets on which the marker has no effect. For an already-published marker the fix is
- * breaking: removing a target rejects user
- * code that applies the marker there, and declaring an explicit `@Target` forbids the previously
- * allowed default targets. Apply this annotation to suppress the warnings for such legacy
- * markers.
+ * DSL marker scope control only reacts to markers on classifier declarations, type usages, and
+ * type aliases, so other targets restrict nothing and only give a false sense of receiver scope
+ * control. The compiler plugin warns about such target sets, but for an
+ * already-published marker the fix is breaking: removing a target rejects user code that applies
+ * the marker there, and declaring an explicit `@Target` forbids the previously allowed default
+ * targets. 
+ * 
+ * Apply this annotation to suppress the warnings for such legacy markers.
  *
- * Wrong marker targets are never good API design, so unlike the other exemptions this one bakes
+ * Wrong marker targets are never good API design, so unlike the other exemptions, this one bakes
  * its only accepted reason - backwards compatibility - into its name and carries no
  * [ExemptionReason]. New DSL markers must declare effective targets instead.
  *
- * See the check documentation for rationale and examples:
+ * See the check documentation for the full rationale and examples:
  * [no-op targets](https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target),
  * [missing explicit targets](https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-without-explicit-targets).
  *
@@ -689,22 +649,12 @@ public annotation class IntentionallyWrongDslMarkerTargetsForBackwardsCompatibil
  * the marked annotation, and everything nested in them, are exempt from all public API checks.
  *
  * Libraries sometimes expose declarations that are public for technical reasons but are not part
- * of the supported API surface, and flag them with a dedicated annotation (usually one that also
- * requires opt-in). Such declarations carry no compatibility contract, so the library-api-watchdog
- * compiler plugin shouldn't demand documentation or evolution safeguards for them:
+ * of the supported API surface and flag them with a dedicated annotation (usually one that also
+ * requires opt-in). Such declarations carry no compatibility contract, so the compiler plugin
+ * shouldn't demand documentation or evolution safeguards for them. The marker
+ * annotation class itself remains part of the public API surface and is still watched.
  *
- * ```
- * @InternalAnnotationMarker
- * @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
- * public annotation class InternalMyLibraryApi
- *
- * @InternalMyLibraryApi // Not watched: internal API despite the public visibility.
- * public class ReflectionHelper
- * ```
- *
- * The marker annotation class itself remains part of the public API surface and is still watched.
- *
- * See [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions) for details.
+ * See [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions) for the full explanation and examples.
  */
 @Target(AnnotationTarget.ANNOTATION_CLASS)
 @Retention(AnnotationRetention.BINARY)

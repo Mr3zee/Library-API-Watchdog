@@ -42,5 +42,8 @@ project(":kotlin-library-api-watchdog-exempts-fixer").projectDir = file("exempts
 include("kotlin-library-api-watchdog-gradle-plugin")
 project(":kotlin-library-api-watchdog-gradle-plugin").projectDir = file("gradle-plugin")
 
+include("kotlin-library-api-watchdog-report-aggregation")
+project(":kotlin-library-api-watchdog-report-aggregation").projectDir = file("report-aggregation")
+
 include("kotlin-library-api-watchdog-plugin-annotations")
 project(":kotlin-library-api-watchdog-plugin-annotations").projectDir = file("plugin-annotations")

@@ -43,11 +43,17 @@ internal data class RecordedDiagnostic(
 internal class FixerRequest(
     /** Reports produced by the regular Kotlin compile tasks for every main target. */
     val reportFiles: List<Path>,
+    /** Main Kotlin sources scanned for exemptions that are already present. */
+    val sourceFiles: List<Path>,
+    /** Whether planned fixes are written back to the source files. */
+    val updateSources: Boolean,
     /** Where the fixer writes its [FixerResponse]. */
     val responseFile: Path,
 ) {
     companion object {
         const val REPORT_FILE = "reportFile"
+        const val SOURCE_FILE = "sourceFile"
+        const val UPDATE_SOURCES = "updateSources"
         const val RESPONSE_FILE = "responseFile"
 
         fun parse(file: Path): FixerRequest {
@@ -65,13 +71,15 @@ internal class FixerRequest(
 
             return FixerRequest(
                 reportFiles = values[REPORT_FILE].orEmpty().map(Paths::get),
+                sourceFiles = values[SOURCE_FILE].orEmpty().map(Paths::get),
+                updateSources = single(UPDATE_SOURCES).toBooleanStrict(),
                 responseFile = Paths.get(single(RESPONSE_FILE)),
             )
         }
     }
 }
 
-/** An exemption annotation the fixer added, located in the rewritten source file. */
+/** An exemption annotation the fixer added or could add. */
 internal data class AppliedFix(
     val diagnostic: String,
     val annotation: String,
@@ -79,12 +87,19 @@ internal data class AppliedFix(
     val line: Int,
 )
 
-/** A diagnostic the fixer could not resolve, located after any other fixes to its source file. */
+/** A diagnostic the fixer could not resolve. */
 internal data class SkippedDiagnostic(
     val diagnostic: String,
     val filePath: String,
     val line: Int,
     val reason: String,
+)
+
+/** A Watchdog `@Intentionally*` annotation found in a requested source file. */
+internal data class AppliedExemption(
+    val annotation: String,
+    val filePath: String,
+    val line: Int,
 )
 
 /**
@@ -94,6 +109,7 @@ internal data class SkippedDiagnostic(
 internal class FixerResponse {
     val applied = mutableListOf<AppliedFix>()
     val skipped = mutableListOf<SkippedDiagnostic>()
+    val exemptions = mutableListOf<AppliedExemption>()
     val modifiedFiles = mutableListOf<String>()
     var error: String? = null
 
@@ -106,7 +122,13 @@ internal class FixerResponse {
             skipped.forEach {
                 // The reason is free-form text and the line's last field: escaping its line
                 // breaks keeps the line-based protocol intact (tabs are fine in a last field).
-                appendLine("$SKIPPED=${it.diagnostic}\t${it.line}\t${it.filePath}\t${it.reason.escapeNewlines()}")
+                val annotation = ExemptionRegistry.annotationFor(it.diagnostic).orEmpty()
+                appendLine(
+                    "$SKIPPED=${it.diagnostic}\t$annotation\t${it.line}\t${it.filePath}\t${it.reason.escapeNewlines()}"
+                )
+            }
+            exemptions.forEach {
+                appendLine("$EXEMPTION=${it.annotation}\t${it.line}\t${it.filePath}")
             }
             modifiedFiles.forEach { appendLine("$MODIFIED_FILE=$it") }
             error?.let { appendLine("$ERROR=${it.escapeNewlines()}") }
@@ -121,6 +143,7 @@ internal class FixerResponse {
     companion object {
         const val FIXED = "fixed"
         const val SKIPPED = "skipped"
+        const val EXEMPTION = "exemption"
         const val MODIFIED_FILE = "modifiedFile"
         const val ERROR = "error"
     }

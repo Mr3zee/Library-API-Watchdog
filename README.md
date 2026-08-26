@@ -87,6 +87,11 @@ acknowledges all of them in one sweep:
 ./gradlew updateBackwardsCompatibilityExempts
 ```
 
+The separate, non-mutating `generateBackwardsCompatibilityExemptsReport` task writes a grouped
+HTML report to `build/reports/api-watchdog/backwards-compatibility-exempts.html`, including
+every applied Watchdog `@Intentionally*` annotation and diagnostics that have not been acknowledged.
+Multi-project builds can use the dependency-driven report aggregation plugin.
+
 See the [existing-library guide](https://mr3zee.github.io/Library-API-Watchdog/existing-libs) for details.
 
 ## Checks
@@ -147,9 +152,9 @@ These checks only run in JVM compilations. A Kotlin-only library disables the gr
 - [`COMPANION_API_WITHOUT_JVM_STATIC`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-api-without-jvm-static) -
   public companion object functions without `@JvmStatic`, which Java callers can only use with
   the `Companion` instance.
-- [`COMPANION_CONSTANT_WITHOUT_JVM_FIELD`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-constant-without-jvm-field) -
-  public companion object properties without `@JvmField` or `const` which Java callers can only
-  use with the `Companion` instance.
+- [`COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-property-without-static-access) -
+  public companion object properties with Java-visible accessors that remain on the `Companion`
+  instance instead of the outer class.
 - [`DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/default-parameters-without-jvm-overloads) -
   functions and constructors with default parameters but without `@JvmOverloads` force Java
   callers to pass every argument.

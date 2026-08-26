@@ -1,6 +1,5 @@
 package org.jetbrains.kotlinx.library.api.watchdog.fir
 
-import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
@@ -10,24 +9,24 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirCallableDeclara
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
+import org.jetbrains.kotlin.fir.declarations.FirPropertyAccessor
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
+import org.jetbrains.kotlin.fir.declarations.utils.effectiveVisibility
 import org.jetbrains.kotlin.fir.declarations.utils.isCompanion
 import org.jetbrains.kotlin.fir.declarations.utils.isConst
-import org.jetbrains.kotlin.fir.declarations.utils.isOverride
-import org.jetbrains.kotlin.fir.declarations.utils.isSuspend
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
+import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.JvmStandardClassIds
 import org.jetbrains.kotlin.name.Name
 
 /**
- * Reports watched companion functions without `@JvmStatic` and constant-shaped companion `val`s
- * without `@JvmField`. A constant-shaped property is final, initialized in place, uses the default
- * getter, and is neither `const` nor delegated; a `@JvmStatic` getter also satisfies the check.
+ * Reports watched companion functions without static access and companion properties whose
+ * Java-visible accessors are not all exposed statically or hidden from Java. `@JvmStatic` applies
+ * to functions and every property shape, while `const val` and `@JvmField` provide static fields.
  *
- * Exemptions are honored on the member and enclosing classes. Overrides, `suspend` functions,
- * Java-hidden members, mutable properties, and properties with custom accessors or delegates are
- * skipped. [WatchdogFirCheckers] registers this checker only for JVM compilations.
+ * Exemptions are honored on the member and enclosing classes. Java-hidden members are skipped.
+ * [WatchdogFirCheckers] registers this checker only for JVM compilations.
  */
 internal class CompanionJvmExposureChecker(
     private val severities: WatchdogDiagnosticSeverities,
@@ -62,7 +61,7 @@ internal class CompanionJvmExposureChecker(
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun checkFunction(declaration: FirNamedFunction, outerClass: Name) {
-        if (declaration.isOverride || declaration.isSuspend || !declaration.isWatchedPublicSourceApi()) {
+        if (!declaration.isWatchedPublicSourceApi()) {
             return
         }
 
@@ -83,49 +82,60 @@ internal class CompanionJvmExposureChecker(
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun checkProperty(declaration: FirProperty, outerClass: Name) {
-        if (declaration.isVar || declaration.isConst || declaration.isOverride) {
-            return
-        }
-
-        if (declaration.initializer == null || declaration.delegate != null || declaration.hasCustomAccessor()) {
-            return
-        }
-
         if (!declaration.isWatchedPublicSourceApi()) {
             return
         }
 
-        if (declaration.isExposedToJavaStatically() || declaration.isHiddenFromJavaWithJvmSynthetic()) {
+        if (declaration.isConst || declaration.hasJvmFieldAnnotation() ||
+            declaration.hasAnnotationOnActualOrExpect(JvmStandardClassIds.Annotations.JvmStatic)
+        ) {
             return
         }
 
-        val factory = severities[WatchdogDiagnostics.COMPANION_CONSTANT_WITHOUT_JVM_FIELD] ?: return
+        val instanceAccessors = buildList {
+            if (declaration.accessorRemainsOnCompanion(
+                    declaration.getter,
+                    AnnotationUseSiteTarget.PROPERTY_GETTER,
+                )
+            ) {
+                add("getter")
+            }
+            if (declaration.accessorRemainsOnCompanion(
+                    declaration.setter,
+                    AnnotationUseSiteTarget.PROPERTY_SETTER,
+                )
+            ) {
+                add("setter")
+            }
+        }
+        if (instanceAccessors.isEmpty()) return
+
+        val factory = severities[WatchdogDiagnostics.COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS] ?: return
         reporter.reportOn(
             source = declaration.source,
             factory = factory,
             a = outerClass,
             b = declaration.name,
+            c = instanceAccessors.joinToString(" and "),
         )
     }
 
-    /** Default accessors carry a fake source pointing at the property they are generated for. */
-    private fun FirProperty.hasCustomAccessor(): Boolean =
-        (getter != null && getter?.source?.kind !is KtFakeSourceElementKind) ||
-                (setter != null && setter?.source?.kind !is KtFakeSourceElementKind)
-
-    /** Whether `@JvmField` or a `@JvmStatic` getter already puts the value on the outer class. */
+    /** Whether a supported Java accessor still exists only on the companion instance. */
     context(context: CheckerContext)
-    private fun FirProperty.isExposedToJavaStatically(): Boolean {
-        val session = context.session
-        if (hasJvmFieldAnnotation() ||
-            hasAnnotation(JvmStandardClassIds.Annotations.JvmStatic, session) ||
-            getter?.hasAnnotation(JvmStandardClassIds.Annotations.JvmStatic, session) == true
-        ) {
-            return true
-        }
-        return annotations.any {
-            it.useSiteTarget == AnnotationUseSiteTarget.PROPERTY_GETTER &&
-                    it.toAnnotationClassIdSafe(session) == JvmStandardClassIds.Annotations.JvmStatic
-        }
+    private fun FirProperty.accessorRemainsOnCompanion(
+        accessor: FirPropertyAccessor?,
+        useSiteTarget: AnnotationUseSiteTarget,
+    ): Boolean = accessor != null && accessor.effectiveVisibility.publicApi &&
+            !hasAccessorAnnotation(accessor, useSiteTarget, JvmStandardClassIds.Annotations.JvmStatic) &&
+            !hasAccessorAnnotation(accessor, useSiteTarget, JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID)
+
+    /** Accessor annotations may resolve onto the accessor or remain use-site-targeted on the property. */
+    context(context: CheckerContext)
+    private fun FirProperty.hasAccessorAnnotation(
+        accessor: FirPropertyAccessor,
+        useSiteTarget: AnnotationUseSiteTarget,
+        annotationClassId: ClassId,
+    ): Boolean = accessor.hasAnnotation(annotationClassId, context.session) || annotations.any {
+        it.useSiteTarget == useSiteTarget && it.toAnnotationClassIdSafe(context.session) == annotationClassId
     }
 }

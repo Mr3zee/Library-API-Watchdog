@@ -15,7 +15,8 @@ compiled name.
 ## What it reports
 
 A value class among the value parameters, the extension receiver, or the context parameters of a
-function or property - nullable types and type parameters bounded by a value class included.
+function, property, or constructor. A class member is also reported when the value class is its return type, 
+which mangles members but not top-level callables.
 
 ```kotlin
 // !hide-focused
@@ -40,7 +41,7 @@ public fun take(id: UserId) { }
 
 Value classes compile to their underlying type, so the backend needs a hashed suffix to keep the
 compiled method distinct from an overload taking the underlying type directly - `take(id: UserId)`
-compiles to `take-4ZD5Yi0(...)`. A constructor gets no such suffix: the visible one becomes
+compiles to `take-<hash>(...)`. A constructor gets no such suffix: the visible one becomes
 private and a synthetic overload with a marker parameter takes its place. Kotlin callers resolve
 by the source signature and never notice, but for Java the declaration is unreachable. See the
 Kotlin guide on
@@ -53,7 +54,7 @@ Kotlin guide on
 // !hide-focused
 @file:JvmName("Users")
 
-// Compiles to take-4ZD5Yi0(...): an illegal Java identifier.
+// Compiles to take-<hash>(...): an illegal Java identifier.
 // !hide-focused
 /** Queues a refresh for the account identified by [id]. */
 // !diag[/take/] MANGLED_JVM_NAME_PUBLIC_API ["function","take","UserId"]
@@ -71,8 +72,6 @@ public fun take(id: UserId) { }
 @JvmName("take")
 public fun take(id: UserId) { }
 ```
-
-
 
 ### Don't {#dont-2}
 
@@ -111,8 +110,38 @@ public class Wallet(public val id: UserId)
 ```
 
 `@JvmExposeBoxed` generates Java-callable boxed variants alongside the mangled ones. It is the
-only fix for constructors and overridable members, since `@JvmName` doesn't accept them.
+only fix for constructors, since the compiler doesn't accept `@JvmName` on them.
 
+### Don't {#dont-3}
+
+```kotlin
+// The return type alone mangles a member,
+// unlike a top-level function, which keeps its JVM name.
+// !hide-focused
+/** Account operations of the user service. */
+public class Ledger {
+    // !hide-focused
+    /** The identifier of the current account. */
+    // !diag[/current/] MANGLED_JVM_NAME_PUBLIC_API ["function","current","UserId"]
+    public fun current(): UserId = UserId("x")
+}
+```
+
+### Do {#do-3}
+
+```kotlin
+// !hide-focused
+/** Account operations of the user service. */
+public class Ledger {
+    // !hide-focused
+    /** The identifier of the current account. */
+    @JvmName("current")
+    public fun current(): UserId = UserId("x")
+}
+```
+
+For a `val` or `var` member, put the rename on the accessors with `@get:JvmName` and
+`@set:JvmName` instead.
 
 ## Notes
 
@@ -126,6 +155,9 @@ only fix for constructors and overridable members, since `@JvmName` doesn't acce
 - `suspend` functions are reported by [`KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`](./kotlin-only-api-without-jvm-synthetic.md) instead.
 - Overrides are not reported: their signature is fixed by the overridden declaration, which is
   reported instead.
+- `@JvmName` is not applicable to open and abstract members, and `@JvmExposeBoxed` exposes only
+  constructors and final members, even when it annotates the enclosing class, so such members
+  stay reported. Only a final override in a subclass can carry a boxed variant.
 - `@JvmSynthetic` declarations are hidden from Java on purpose and are not reported.
 - Non-JVM compilations never register this check at all.
 - `@PublishedApi internal` declarations are not reported because their public bytecode entries are

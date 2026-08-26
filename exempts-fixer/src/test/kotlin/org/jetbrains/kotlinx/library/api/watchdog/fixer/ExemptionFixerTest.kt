@@ -908,7 +908,7 @@ class ExemptionFixerTest {
         val result = fix(
             text,
             diagnostic("COMPANION_API_WITHOUT_JVM_STATIC", text, "public fun instance(): Coordinator = Coordinator()"),
-            diagnostic("COMPANION_CONSTANT_WITHOUT_JVM_FIELD", text, "public val DEFAULT_LABEL: String = \"coordinator\""),
+            diagnostic("COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS", text, "public val DEFAULT_LABEL: String = \"coordinator\""),
         )
 
         val newText = result.newText!!

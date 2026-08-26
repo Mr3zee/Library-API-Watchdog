@@ -147,6 +147,43 @@ FILE: mangledJvmName.kt
             @PROPERTY_GETTER:R|kotlin/jvm/JvmSynthetic|() public get(): R|foo/bar/UserId|
 
     }
+    @R|kotlin/OptIn|(markerClass = vararg(<getClass>(Q|kotlin/ExperimentalStdlibApi|)) [evaluated = vararg(<getClass>(Q|kotlin/ExperimentalStdlibApi|))]) @R|kotlin/jvm/JvmExposeBoxed|() public final fun exposedTake(id: R|foo/bar/UserId|): R|kotlin/Unit| {
+    }
+    @R|kotlin/OptIn|(markerClass = vararg(<getClass>(Q|kotlin/ExperimentalStdlibApi|)) [evaluated = vararg(<getClass>(Q|kotlin/ExperimentalStdlibApi|))]) @R|kotlin/jvm/JvmExposeBoxed|() public final class ExposedWallet : R|kotlin/Any| {
+        public constructor(id: R|foo/bar/UserId|): R|foo/bar/ExposedWallet| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val id: R|foo/bar/UserId| = R|<local>/id|
+            public get(): R|foo/bar/UserId|
+
+        public final fun current(): R|foo/bar/UserId| {
+            ^current this@R|foo/bar/ExposedWallet|.R|foo/bar/ExposedWallet.id|
+        }
+
+    }
+    @R|kotlin/OptIn|(markerClass = vararg(<getClass>(Q|kotlin/ExperimentalStdlibApi|)) [evaluated = vararg(<getClass>(Q|kotlin/ExperimentalStdlibApi|))]) @R|kotlin/jvm/JvmExposeBoxed|() public open class ExposedService : R|kotlin/Any| {
+        public constructor(): R|foo/bar/ExposedService| {
+            super<R|kotlin/Any|>()
+        }
+
+        public open fun handle(id: R|foo/bar/UserId|): R|kotlin/Unit| {
+        }
+
+        public open val owner: R|foo/bar/UserId|
+            public get(): R|foo/bar/UserId| {
+                ^ R|foo/bar/UserId.UserId|(String(x))
+            }
+
+    }
+    @R|kotlin/OptIn|(markerClass = vararg(<getClass>(Q|kotlin/ExperimentalStdlibApi|)) [evaluated = vararg(<getClass>(Q|kotlin/ExperimentalStdlibApi|))]) @R|kotlin/jvm/JvmExposeBoxed|() public abstract class ExposedStore : R|kotlin/Any| {
+        public constructor(): R|foo/bar/ExposedStore| {
+            super<R|kotlin/Any|>()
+        }
+
+        public abstract fun store(id: R|foo/bar/UserId|): R|kotlin/Unit|
+
+    }
     @R|kotlin/jvm/JvmInline|() public final value class Wrapped : R|kotlin/Any| {
         public constructor(id: R|foo/bar/UserId|): R|foo/bar/Wrapped| {
             super<R|kotlin/Any|>()
