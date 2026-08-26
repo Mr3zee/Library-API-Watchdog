@@ -59,6 +59,9 @@
   --ch-26: #afb8c133;
   --watchdog-diagnostic-color: #cf222e;
   --watchdog-diagnostic-highlight: #cf222e14;
+  --watchdog-dont-color: #cf222e;
+  --watchdog-do-color: #1a7f37;
+  --watchdog-sample-badge-glyph: #fff;
 }
 
 [data-theme='dark'] {
@@ -90,6 +93,9 @@
   --ch-26: #6e768166;
   --watchdog-diagnostic-color: #ff7b72;
   --watchdog-diagnostic-highlight: #ff7b7217;
+  --watchdog-dont-color: #ff7b72;
+  --watchdog-do-color: #3fb950;
+  --watchdog-sample-badge-glyph: #1b1b1d;
 }
 
 /*
@@ -152,4 +158,89 @@ pre[data-ch] {
 .theme-doc-markdown .table-wrapper--overflow-left::before,
 .theme-doc-markdown .table-wrapper--overflow-right::after {
   opacity: 1;
+}
+
+/*
+ * Don't / Do sample pairs on check pages. Their headings follow the dont/do anchor id
+ * convention (#dont, #do, #dont-2, ...), so the styling keys on those ids: a colored badge
+ * and heading text, a matching accent edge on the sample right after the heading, and extra
+ * space before each Don't so consecutive pairs read as separate examples.
+ */
+.theme-doc-markdown h3[id='dont'],
+.theme-doc-markdown h3[id^='dont-'],
+.theme-doc-markdown h3[id='do'],
+.theme-doc-markdown h3[id^='do-'] {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.theme-doc-markdown h3[id='dont']::before,
+.theme-doc-markdown h3[id^='dont-']::before,
+.theme-doc-markdown h3[id='do']::before,
+.theme-doc-markdown h3[id^='do-']::before {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 50%;
+  color: var(--watchdog-sample-badge-glyph);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.theme-doc-markdown h3[id='dont'],
+.theme-doc-markdown h3[id^='dont-'] {
+  --ifm-h3-vertical-rhythm-top: 2.5;
+  color: var(--watchdog-dont-color);
+}
+
+/*
+ * Each pair after the first (its Don't heading carries a dont-N id) opens with a divider, so
+ * consecutive examples don't blur together. When a lead-in paragraph introduces the pair, the
+ * divider moves above that paragraph.
+ */
+.theme-doc-markdown h3[id^='dont-'],
+.theme-doc-markdown p:has(+ h3[id^='dont-']) {
+  border-top: 1px solid var(--ifm-color-emphasis-300);
+  padding-top: var(--ifm-leading);
+}
+
+.theme-doc-markdown p:has(+ h3[id^='dont-']) {
+  margin-top: calc(2.5 * var(--ifm-leading));
+}
+
+.theme-doc-markdown p:has(+ h3[id^='dont-']) + h3[id^='dont-'] {
+  --ifm-h3-vertical-rhythm-top: 1.5;
+  border-top: 0;
+  padding-top: 0;
+}
+
+.theme-doc-markdown h3[id='dont']::before,
+.theme-doc-markdown h3[id^='dont-']::before {
+  content: '\2715';
+  background: var(--watchdog-dont-color);
+}
+
+.theme-doc-markdown h3[id='do'],
+.theme-doc-markdown h3[id^='do-'] {
+  color: var(--watchdog-do-color);
+}
+
+.theme-doc-markdown h3[id='do']::before,
+.theme-doc-markdown h3[id^='do-']::before {
+  content: '\2713';
+  background: var(--watchdog-do-color);
+}
+
+.theme-doc-markdown h3[id='dont'] + *,
+.theme-doc-markdown h3[id^='dont-'] + * {
+  border-left: 3px solid var(--watchdog-dont-color);
+}
+
+.theme-doc-markdown h3[id='do'] + *,
+.theme-doc-markdown h3[id^='do-'] + * {
+  border-left: 3px solid var(--watchdog-do-color);
 }

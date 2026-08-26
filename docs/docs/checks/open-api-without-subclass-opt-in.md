@@ -47,7 +47,7 @@ public open class Widget
 public open class Widget internal constructor()
 ```
 
-### Don't
+### Don't {#dont-2}
 
 ```kotlin
 // !hide-focused
@@ -60,7 +60,7 @@ public interface Plugin {
 }
 ```
 
-### Do
+### Do {#do-2}
 
 ```kotlin
 

@@ -61,7 +61,7 @@ public suspend fun refresh(key: String) { }
 public suspend fun refresh(key: String) { }
 ```
 
-### Don't
+### Don't {#dont-2}
 
 ```kotlin
 // !hide-focused
@@ -73,7 +73,7 @@ public suspend fun refresh(key: String) { }
 public inline fun <reified T> instantiate(): T? = null
 ```
 
-### Do
+### Do {#do-2}
 
 ```kotlin
 // !hide-focused
@@ -86,7 +86,7 @@ public inline fun <reified T> instantiate(): T? = null
 ```
 
 
-### Don't
+### Don't {#dont-3}
 
 ```kotlin
 // !hide-focused
@@ -98,7 +98,7 @@ public inline fun <reified T> instantiate(): T? = null
 public fun onEach(action: (Int) -> Unit) { }
 ```
 
-### Do
+### Do {#do-3}
 
 ```kotlin
 // !hide-focused

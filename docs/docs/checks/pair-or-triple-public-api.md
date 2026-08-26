@@ -76,7 +76,7 @@ public class Dimensions(
 public fun dimensions(): Dimensions = Dimensions(0, 0, 0)
 ```
 
-### Don't
+### Don't {#dont-2}
 
 ```kotlin
 // !hide-focused(1:5)
@@ -92,7 +92,7 @@ public fun dimensions(): Dimensions = Dimensions(0, 0, 0)
 public class Anchor(public val position: Pair<Int, Int>)
 ```
 
-### Do
+### Do {#do-2}
 
 ```kotlin
 // !hide-focused(1:6)
@@ -122,7 +122,7 @@ public class Point(
 public class Anchor(public val position: Point)
 ```
 
-### Don't
+### Don't {#dont-3}
 
 ```kotlin
 // !hide-focused
@@ -134,7 +134,7 @@ public class Anchor(public val position: Point)
 public fun edges(): List<Pair<Int, Int>> = emptyList()
 ```
 
-### Do
+### Do {#do-3}
 
 ```kotlin
 // !hide-focused

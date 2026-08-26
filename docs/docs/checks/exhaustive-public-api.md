@@ -61,19 +61,6 @@ public enum class LogLevel {
     /** A failure that prevented an operation from completing. */
     ERROR,
 }
-
-// !hide-focused
-/** A change in the service lifecycle. */
-// !diag[/Event/] EXHAUSTIVE_PUBLIC_API ["interface","Event","a subtype","$sealedFix"]
-public sealed interface Event {
-    // !hide-focused
-    /** Emitted after the service becomes ready. */
-    public class Started : Event
-
-    // !hide-focused
-    /** Emitted after the service finishes shutting down. */
-    public class Stopped : Event
-}
 ```
 
 ### Do
@@ -104,7 +91,28 @@ public class LogLevel {
         public val ERROR: LogLevel = LogLevel()
     }
 }
+```
 
+### Don't {#dont-2}
+
+```kotlin
+// !hide-focused
+/** A change in the service lifecycle. */
+// !diag[/Event/] EXHAUSTIVE_PUBLIC_API ["interface","Event","a subtype","$sealedFix"]
+public sealed interface Event {
+    // !hide-focused
+    /** Emitted after the service becomes ready. */
+    public class Started : Event
+
+    // !hide-focused
+    /** Emitted after the service finishes shutting down. */
+    public class Stopped : Event
+}
+```
+
+### Do {#do-2}
+
+```kotlin 
 // !hide-focused
 /** A lifecycle event implemented under an opt-in contract. */
 @SubclassOptInRequired(InternalMyLibrarySubclassApi::class)
@@ -118,7 +126,6 @@ public interface Event {
     public class Stopped : Event
 }
 ```
-
 
 ## Notes
 

@@ -64,12 +64,7 @@ public class Cache {
 }
 ```
 
-
-
 ### Don't {#dont-2}
-
-A class KDoc alone doesn't document its constructor properties. Each one still needs a matching
-`@property` tag (or `@param` for a `val`/`var` declared in the primary constructor):
 
 ```kotlin
 /** Profile information displayed for a user. */
@@ -83,6 +78,10 @@ public class Profile(
     public val age: Int,
 )
 ```
+
+A class KDoc alone doesn't document its constructor properties. Each one still needs a matching
+`@property` tag (or `@param` for a `val`/`var` declared in the primary constructor).
+
 
 ### Do {#do-2}
 
