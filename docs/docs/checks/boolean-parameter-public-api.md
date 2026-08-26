@@ -81,7 +81,7 @@ public fun disableLogging() {}
 - Constructors, and constructor functions - factory functions named after the type they create,
   such as `fun Widget(visible: Boolean): Widget` - are not reported.
 - `Boolean` return types and `Boolean` properties are not arguments and are not reported.
-- `@PublishedApi internal` functions are not reported because library users cannot call them in
+- `@PublishedApi internal` functions are not reported because library users can't call them in
   source.
 
 ## Exemption

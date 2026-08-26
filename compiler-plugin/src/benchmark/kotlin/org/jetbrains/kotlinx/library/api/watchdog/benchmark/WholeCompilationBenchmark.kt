@@ -36,7 +36,7 @@ import java.nio.file.Path
  * - `<CheckerName>` - only that checker's diagnostics enabled at `warning`, everything else
  *   `none`. The per-checker cost is this mode minus `pluginBaseline`.
  *
- * `ExemptionExplanationChecker` has no mode of its own: it cannot be enabled separately, and its
+ * `ExemptionExplanationChecker` has no mode of its own: it can't be enabled separately, and its
  * cost is `pluginBaseline` minus `noPlugin` less the fixed plugin-infrastructure overhead.
  *
  * Allocation numbers come from JMH's GC profiler, which the Gradle `benchmark` task enables.

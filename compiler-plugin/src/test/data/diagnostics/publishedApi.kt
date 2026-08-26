@@ -65,7 +65,7 @@ internal class PublishedOuter {
     private fun privateMember() {}
 }
 
-// Published classes cannot be subclassed by external Kotlin source.
+// Published classes can't be subclassed by external Kotlin source.
 
 @PublishedApi
 internal open class PublishedOpenClass
@@ -78,7 +78,7 @@ internal open class AcknowledgedPublishedOpenClass
 @PublishedApi
 internal open class PublishedOpenClassWithEmptyOptIn
 
-// Published enums cannot be matched by external Kotlin source.
+// Published enums can't be matched by external Kotlin source.
 
 @PublishedApi
 internal enum class PublishedEnum {

@@ -32,7 +32,8 @@ import org.jetbrains.kotlin.name.Name
  * Both declarations in a local inconsistent pair report. For inherited-member and extension-member
  * pairs, only the declaration introduced alongside the existing members reports. Overrides remain
  * comparison references but do not report. Exempt declarations are excluded as both reporters and
- * references.
+ * references. Only value parameters are compared because context parameters are resolved
+ * implicitly rather than passed in the call's argument list.
  */
 internal class OverloadParameterOrderChecker(
     private val severities: WatchdogDiagnosticSeverities,

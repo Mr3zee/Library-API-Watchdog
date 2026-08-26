@@ -70,14 +70,14 @@ signature or mark the exposing declaration as internal API as well.
 
 ## Notes
 
-- `@PublishedApi internal` declarations are not reported because library users cannot name them as
+- `@PublishedApi internal` declarations are not reported because library users can't name them as
   source API, so exposing an internal type in their signatures does not create a supported source
   contract even though public inline code can use their binary shape.
 
 ## Configuration
 
 The mismatch between a supported declaration and an explicitly unsupported signature type is
-always an error while the check is enabled. It cannot be demoted to a warning. Disable the whole
+always an error while the check is enabled. It can't be demoted to a warning. Disable the whole
 check only when the library deliberately permits this mismatch:
 
 ```kotlin

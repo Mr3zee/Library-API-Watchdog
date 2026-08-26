@@ -26,6 +26,9 @@ internal fun length(tag: String): Int = tag.length
 internal fun lengthOrNull(tag: String): Int? = null
 
 @PublishedApi
+internal fun consumeImpl(value: Any?) {}
+
+@PublishedApi
 internal fun posImpl(): Int = 1
 
 @PublishedApi
@@ -38,6 +41,9 @@ internal fun ready(): Boolean = true
 internal fun transactImpl(work: () -> Unit) {
     work()
 }
+
+@PublishedApi
+internal suspend fun awaitImpl(): String = "ready"
 
 @PublishedApi
 internal val counter: Int = 0
@@ -68,16 +74,28 @@ public inline fun String.selfLength(): Int = length(this)
 
 public inline fun currentCount(): Int = counter
 
+public inline fun fixedProtocolVersion(): Int = 1
+
+public inline fun consumeLength(tag: String): Unit = consumeImpl(length(tag))
+
+public inline fun newBuffer(value: String): Any = StringBuilder(value)
+
 public inline fun noop() {}
 
-// The wrapper resolves the reified type argument and hands it over; the `as` cast only narrows
+// The wrapper resolves the reified type argument and hands it over; `as` and `as?` only narrow
 // the delegate's result. No warning.
 
 public inline fun <reified T> lookup(name: String): T = Registry.lookup(name, T::class) as T
 
-// Calling the wrapper's own functional parameter executes no library code. No warning.
+public inline fun <reified T> find(name: String): T? = Registry.lookup(name, T::class) as? T
+
+// Calling the wrapper's own functional parameter executes caller code rather than library code.
+// When called from a suspend function, direct in-place invocation also lets a non-suspend lambda
+// inherit that call site's suspend context. No warning.
 
 public inline fun <R> once(block: () -> R): R = block()
+
+public suspend fun suspensionPropagatesFromCallSite(): String = once { awaitImpl() }
 
 // A contract doesn't count against the single delegating statement. No warning.
 

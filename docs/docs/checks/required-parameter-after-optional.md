@@ -116,7 +116,7 @@ public class Server
   trailing-lambda syntax to preserve there.
 - Overrides are not reported: they can't declare default values, and their parameter order is
   fixed by the overridden declaration, which is reported instead.
-- `@PublishedApi internal` functions and constructors are not reported because library users cannot
+- `@PublishedApi internal` functions and constructors are not reported because library users can't
   call them in source.
 
 ## Exemption

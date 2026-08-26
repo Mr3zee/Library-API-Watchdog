@@ -482,7 +482,7 @@ function Diagnostic({report}: {report: DiagnosticReport}): ReactNode {
   const parameters = report.parameters.map((parameter) =>
     resolveParameter(diagnostic, parameter, ideaGenerateShortcut.label),
   );
-  const message = formatMessage(diagnostic.message, parameters);
+  const message = formatMessage(joinTextLines(diagnostic.message), parameters);
   const trailer = 'messageTrailer' in diagnostic ? diagnostic.messageTrailer : undefined;
   return (
     <div className={styles.diagnostic}>
@@ -529,17 +529,25 @@ function resolveParameter(
 
   const values =
     'parameterValues' in diagnostic
-      ? (diagnostic.parameterValues as Record<string, string>)
+      ? (diagnostic.parameterValues as Record<string, readonly string[]>)
       : undefined;
   const template = values?.[reference[1]];
   if (!template) return parameter;
 
   const arguments_ = reference[2] === undefined ? [] : reference[2].split(',').map((it) => it.trim());
-  return formatMessage(template, arguments_);
+  return formatMessage(joinTextLines(template), arguments_);
 }
 
 function formatMessage(template: string, parameters: string[]): string {
   return template.replace(/\{(\d+)\}/g, (_, index: string) => parameters[Number(index)]);
+}
+
+/** Joins source-wrapped lines while keeping empty lines as paragraph separators. */
+function joinTextLines(lines: readonly string[]): string {
+  return lines.reduce((message, line, index) => {
+    if (index === 0) return line;
+    return `${message}${line === '' || lines[index - 1] === '' ? '\n' : ' '}${line}`;
+  }, '');
 }
 
 function parseReport(query: string): DiagnosticReport {

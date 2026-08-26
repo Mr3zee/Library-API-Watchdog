@@ -84,11 +84,11 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
         appendLine("    private val parameterValues: Map<String, Map<String, String>> = mapOf(")
         for (entry in entries) {
             @Suppress("UNCHECKED_CAST")
-            val values = entry["parameterValues"] as Map<String, String>? ?: continue
+            val values = entry["parameterValues"] as Map<String, List<*>>? ?: continue
             appendLine("        \"${entry["name"]}\" to mapOf(")
-            for ((name, value) in values) {
+            for ((name, lines) in values) {
                 appendLine("            \"$name\" to")
-                val chunks = value.wrap()
+                val chunks = lines.joinTextLines().wrap()
                 for ((index, chunk) in chunks.withIndex()) {
                     val tail = if (index == chunks.lastIndex) "," else " +"
                     appendLine("                \"${chunk.escaped()}\"$tail")
@@ -104,7 +104,7 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
         val docsUrl = docsBaseUrl + (entry["docs"] as String)
         val trailer = entry["messageTrailer"] as String?
         val message = buildString {
-            append(entry["message"] as String)
+            append((entry["message"] as List<*>).joinTextLines())
             if (trailer != null) append(' ').append(trailer)
             append("\n\nSee more: ").append(docsUrl)
         }
@@ -118,6 +118,10 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
             appendLine("$indent\"${chunk.escaped()}\"$tail")
         }
     }
+
+    /** Joins source-wrapped lines while keeping empty lines as paragraph separators. */
+    private fun List<*>.joinTextLines(): String =
+        joinToString("\n") { it as String }.replace(SOFT_LINE_BREAK, " ")
 
     private fun String.wrap(): List<String> {
         val chunks = mutableListOf<String>()
@@ -139,6 +143,7 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
 
     private companion object {
         val PARAMETER = Regex("\\{\\d+}")
+        val SOFT_LINE_BREAK = Regex("(?<!\\n)\\n(?!\\n)")
         const val MAX_CHUNK_LENGTH = 88
     }
 }

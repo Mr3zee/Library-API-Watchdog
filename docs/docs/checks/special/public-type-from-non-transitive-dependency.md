@@ -12,7 +12,7 @@ their artifacts are not available transitively to consumers.
 
 Library consumers must be able to resolve every type in the public API. A type from an
 `implementation` dependency is available while the library itself compiles, but it is absent from
-the consumer's compile classpath. The consumer then cannot use the affected declaration.
+the consumer's compile classpath. The consumer then can't use the affected declaration.
 
 ```kotlin build.gradle.kts
 dependencies {
@@ -39,7 +39,7 @@ dependencies {
 ```
 
 The check covers return, receiver, value and context parameter types, nested type arguments, generic
-bounds, class supertypes, and public type aliases. It is always reported as an error and cannot be
+bounds, class supertypes, and public type aliases. It is always reported as an error and can't be
 suppressed in source or demoted to a warning.
 
 If dependency exposure is deliberately managed outside Gradle metadata, disable the check for the

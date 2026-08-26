@@ -135,7 +135,7 @@ in `gradle-plugin/build.gradle.kts`) and cover four setups: an AGP 8 library wit
 library with AGP's built-in Kotlin support (no Kotlin Android plugin; the Kotlin version under test is pinned onto the
 build classpath with `apply false` to override the KGP that AGP embeds), and the KMP android target from
 `com.android.kotlin.multiplatform.library` on both AGP generations (its target block is `androidLibrary` on AGP 8 and
-`android` on AGP 9). AGP 8 projects launch with the pinned `agpCompatibleGradle` version because AGP 8 cannot run on
+`android` on AGP 9). AGP 8 projects launch with the pinned `agpCompatibleGradle` version because AGP 8 can't run on
 Gradle 9.6+; AGP 9 projects run with the current Gradle.
 
 ### Adding a new diagnostic

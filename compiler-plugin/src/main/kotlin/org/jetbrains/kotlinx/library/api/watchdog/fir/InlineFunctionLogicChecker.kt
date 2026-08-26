@@ -41,8 +41,8 @@ import org.jetbrains.kotlin.name.Name
  * Reports watched inline functions and inline property accessors whose body is not classified as a
  * thin delegation. Besides an optional contract, a thin body has one statement composed only of
  * value reads or writes, casts, callable or class references, lambda literals with thin bodies,
- * and calls to non-inline declarations. Calls through inline functions or accessors and all other
- * FIR constructs are classified as logic.
+ * calls to non-inline declarations, and direct calls to caller-provided function values. Calls
+ * through inline functions or accessors and all other FIR constructs are classified as logic.
  *
  * `@PublishedApi internal` inline declarations are included. Bodiless functions and non-inline
  * accessors are skipped. An exemption on a property covers both accessors.
@@ -152,8 +152,11 @@ internal class InlineFunctionLogicChecker(
         is FirResolvedQualifier -> true
         is FirResolvedReifiedParameterReference -> true
         is FirGetClassCall -> argument.isPlain()
-        // Calling a value - typically the wrapper's own functional parameter - executes no
-        // library code, however the call resolves its `invoke` operator.
+        // Calling a function value executes caller code or code reached through a runtime value.
+        // For the wrapper's own functional parameter, keeping direct invocation plain also
+        // preserves Kotlin's in-place lambda behavior: at a suspend call site, the inlined lambda
+        // can inherit the caller's suspend context. The call resolves to the function value's
+        // non-inline `invoke` operator.
         is FirImplicitInvokeCall -> isPlainCall()
         is FirFunctionCall -> origin == FirFunctionCallOrigin.Regular && isPlainCall()
         is FirCallableReferenceAccess -> explicitReceiver?.isPlain() != false

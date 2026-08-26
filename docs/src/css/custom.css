@@ -101,6 +101,15 @@ pre[data-ch] {
   color: var(--ch-4);
 }
 
+/* Keep loose Markdown lists aligned with the spacing of simple, tight lists. */
+.theme-doc-markdown li > p:first-child {
+  margin-top: 0;
+}
+
+.theme-doc-markdown li > p:last-child {
+  margin-bottom: 0;
+}
+
 .theme-doc-markdown .table-wrapper {
   position: relative;
   max-width: 100%;

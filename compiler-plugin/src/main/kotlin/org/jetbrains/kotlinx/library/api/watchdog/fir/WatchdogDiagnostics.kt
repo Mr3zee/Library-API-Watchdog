@@ -179,7 +179,7 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     /**
      * Parameters: declaration kind, declaration name, internal type FQ name, annotation name.
      * A supported API exposing a type that explicitly has no supported contract is always an
-     * error. The whole check has a Boolean off-switch, but its diagnostic cannot be demoted.
+     * error. The whole check has a Boolean off-switch, but its diagnostic can't be demoted.
      */
     val PUBLIC_TYPE_WITH_INTERNAL_API by error4<KtElement, String, Name, String, Name>()
 

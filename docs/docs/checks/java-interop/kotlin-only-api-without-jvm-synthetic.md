@@ -16,8 +16,8 @@ can use idiomatically, while the function still lands in the API surface Java so
 Three shapes trigger it:
 - A `suspend` function (Java sees a trailing `Continuation` parameter it can't provide idiomatically)
 - An `inline` function with a `reified` type parameter (calling the compiled method from Java fails at runtime)
-- A function taking a Kotlin-specific function type - a suspend function type, a
-  function type with receiver, or a `Unit`-returning function type
+- A function taking a Kotlin-specific function type as a value or context parameter - a suspend
+  function type, a function type with receiver, or a `Unit`-returning function type
 
 ```kotlin
 // !hide-focused
@@ -126,6 +126,8 @@ public fun onEach(action: Action) { }
 - `@JvmSynthetic` hides the Kotlin-only member from Java entirely.
 - A `suspend` function can instead ship alongside a blocking or `CompletableFuture`-returning bridge for Java callers.
 - A `fun interface` parameter gives Java a lambda-friendly type instead of a Kotlin function type.
+- Context parameters become ordinary parameters in the JVM method. Kotlin-specific function types
+  in those positions are therefore reported just like Kotlin-specific value-parameter types.
 - Abstract and interface members are not reported: `@JvmSynthetic` can't hide a member that
   implementations must provide.
 - Overrides are not reported: their shape is fixed by the overridden declaration, which is

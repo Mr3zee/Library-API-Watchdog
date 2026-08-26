@@ -231,7 +231,7 @@ Parameters:
 - `<severity>` is `error`, `warning`, or `none`.
 
 The [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md) check is not available without Gradle because the
-compiler alone cannot distinguish dependencies declared with `api` from those declared with
+compiler alone can't distinguish dependencies declared with `api` from those declared with
 `implementation`.
 
 For example, to demote undocumented public API to a warning use the following argument form:

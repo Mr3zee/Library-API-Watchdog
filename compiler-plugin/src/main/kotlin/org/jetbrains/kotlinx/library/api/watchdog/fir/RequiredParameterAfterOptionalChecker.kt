@@ -21,7 +21,8 @@ import org.jetbrains.kotlin.fir.types.functionTypeKind
 /**
  * Reports each required parameter after the first defaulted or `vararg` parameter in a watched
  * function or constructor. A final required function-type or `fun interface` parameter is skipped
- * to preserve trailing-lambda shapes. Overrides are skipped.
+ * to preserve trailing-lambda shapes. Only value parameters participate because context parameters
+ * are not arguments in the call's ordered argument list. Overrides are skipped.
  */
 internal class RequiredParameterAfterOptionalChecker(
     private val severities: WatchdogDiagnosticSeverities,

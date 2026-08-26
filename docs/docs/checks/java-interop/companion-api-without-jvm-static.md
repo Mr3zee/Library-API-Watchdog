@@ -35,12 +35,11 @@ public class ServiceFactory {
 ## Rationale
 
 A companion function without `@JvmStatic` compiles only as an instance method on the generated
-`Companion` class, so Java code must call `Outer.Companion.member(...)` for what looks, from
+`Companion` class, so Java code must call `ServiceFactory.Companion.create(...)` for what looks, from
 Kotlin, like a plain static factory or utility.
-`@JvmStatic` additionally compiles a static `Outer.member(...)` entry point for Java, without
+`@JvmStatic` additionally compiles a static `ServiceFactory.create(...)` entry point for Java, without
 changing how Kotlin resolves the same call. See the Kotlin guide on
 [static methods](https://kotlinlang.org/docs/java-to-kotlin-interop.html#static-methods).
-
 
 ### Don't
 
@@ -76,13 +75,15 @@ public class Registry {
 }
 ```
 
-
 ## Notes
 
-- `suspend` companion functions are not reported here - they are not Java-callable regardless of
-  placement, and are reported by the [`KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`](./kotlin-only-api-without-jvm-synthetic.md) check instead.
-- Overrides are not reported: their Java-facing shape is fixed by the overridden declaration, and
-  `@JvmStatic` can't be applied to an override anyway.
+- `suspend` companion functions are not reported here - they compile to a method taking a
+  `Continuation`, which `@JvmStatic` would not make any friendlier to call from Java. The
+  [`KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`](./kotlin-only-api-without-jvm-synthetic.md) check
+  reports them instead.
+- Overrides are not reported: the member is dictated by a supertype contract rather than designed
+  as a static-looking factory or utility. `@JvmStatic` can still be applied to a companion override
+  to additionally expose a static entry point when needed.
 - Interface companions compile the same way and are checked identically to class companions.
 - `@JvmSynthetic` members are hidden from Java on purpose and are not reported.
 - Non-JVM compilations never register this check at all.

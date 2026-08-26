@@ -166,7 +166,7 @@ class CompilerPluginTestDataFixerTest {
     /**
      * [KotlinFileParser] initializes a standalone Kotlin PSI application before this validation.
      * Run the diagnostics framework in a clean child JVM so its compiler application and
-     * disposables cannot conflict with the parser environment.
+     * disposables can't conflict with the parser environment.
      */
     private fun validateWithCompilerPlugin(generatedFiles: List<Path>) {
         val runtimeClasspath = System.getProperty("java.class.path")

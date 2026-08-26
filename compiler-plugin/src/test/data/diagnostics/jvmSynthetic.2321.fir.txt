@@ -28,7 +28,20 @@ FILE: jvmSynthetic.kt
     }
     public final fun raceAll(vararg work: R|kotlin/Array<out suspend () -> kotlin/Int>|): R|kotlin/Unit| {
     }
+    context(action: R|(kotlin/Int) -> kotlin/Unit|)
+    public final fun onEachContextually(): R|kotlin/Unit| {
+    }
+    context(work: R|suspend () -> kotlin/Int|)
+    public final fun raceContextually(): R|kotlin/Unit| {
+    }
+    context(block: R|foo/bar/Config.() -> kotlin/Int|)
+    public final fun configureContextually(): R|kotlin/Unit| {
+    }
     public final fun transformAll(vararg mappers: R|kotlin/Array<out (kotlin/Int) -> kotlin/Int>|): R|kotlin/Unit| {
+    }
+    context(mapper: R|(kotlin/Int) -> kotlin/Int|)
+    public final fun transformContextually(): R|kotlin/Int| {
+        ^transformContextually R|<local>/mapper|.R|SubstitutionOverride<kotlin/Function1.invoke: R|kotlin/Int|>|(Int(0))
     }
     public open class Loader : R|kotlin/Any| {
         public constructor(): R|foo/bar/Loader| {

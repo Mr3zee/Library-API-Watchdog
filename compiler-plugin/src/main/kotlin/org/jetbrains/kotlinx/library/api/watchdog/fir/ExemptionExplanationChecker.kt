@@ -18,7 +18,7 @@ import org.jetbrains.kotlin.fir.types.forEachType
  * The declaration checker covers annotations attached to declarations; the type checker covers
  * annotations anywhere inside resolved types. The diagnostic is always an error in ordinary
  * compilations. The backwards-compatibility exemptions task temporarily omits both checkers because
- * it cannot repair explanations written by an API author. Unlike declaration-shape checks, this is
+ * it can't repair explanations written by an API author. Unlike declaration-shape checks, this is
  * occurrence-based: annotations on both `expect` and `actual` declarations are validated.
  */
 internal object ExemptionExplanationChecker {

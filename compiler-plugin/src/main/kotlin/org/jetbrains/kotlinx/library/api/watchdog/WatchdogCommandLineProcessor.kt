@@ -36,7 +36,7 @@ object WatchdogConfigurationKeys {
 
     /**
      * The compilation classpath and the subset published transitively to consumers. These are
-     * supplied only by the Gradle plugin: without the build model the compiler cannot tell an
+     * supplied only by the Gradle plugin: without the build model the compiler can't tell an
      * `api` dependency from an `implementation` dependency.
      */
     val COMPILE_DEPENDENCY_PATHS: CompilerConfigurationKey<Set<String>> =

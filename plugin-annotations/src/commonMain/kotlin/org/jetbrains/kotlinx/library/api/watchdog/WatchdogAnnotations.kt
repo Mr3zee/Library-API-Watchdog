@@ -546,12 +546,12 @@ public annotation class IntentionallyMangledJvmName(
  * `suspend` functions (Java sees a
  * trailing `Continuation` parameter it can't provide idiomatically), `inline` functions with a
  * `reified` type parameter (calling the compiled method from Java fails at runtime), and
- * functions taking a Kotlin-specific function type - a suspend function type, a function type
- * with receiver, or a `Unit`-returning function type. Prefer hiding such members from Java with
- * `@JvmSynthetic`, or provide a Java-friendly alternative alongside (a blocking or
- * `CompletableFuture`-returning bridge, a `fun interface` parameter), and apply this annotation
- * to suppress the warning when leaving the Kotlin-only shape visible to Java is intended. On a
- * class it covers every function declared inside.
+ * functions taking a Kotlin-specific function type as a value or context parameter - a suspend
+ * function type, a function type with receiver, or a `Unit`-returning function type. Prefer hiding
+ * such members from Java with `@JvmSynthetic`, or provide a Java-friendly alternative alongside
+ * (a blocking or `CompletableFuture`-returning bridge, a `fun interface` parameter), and apply this
+ * annotation to suppress the warning when leaving the Kotlin-only shape visible to Java is
+ * intended. On a class it covers every function declared inside.
  *
  * See the [check documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic) for rationale and examples.
  *

@@ -26,7 +26,8 @@ import org.jetbrains.kotlin.name.JvmStandardClassIds
 
 /**
  * Reports watched functions that are `suspend`, have a reified type parameter, or take a suspend,
- * extension, or `Unit`-returning function type.
+ * extension, or `Unit`-returning function type as a context or value parameter.
+ * Legacy context receivers count too because they also become parameters in the JVM method.
  *
  * Abstract and interface members, overrides, constructors, value-class members, value-class-mangled
  * signatures, and Java-hidden declarations are skipped. A class-level exemption covers its
@@ -90,7 +91,8 @@ internal class KotlinOnlyApiChecker(
         if (isInline && typeParameters.any { it.symbol.isReified }) {
             return sharedShape("reified")
         }
-        return valueParameters.firstNotNullOfOrNull { it.kotlinOnlyFunctionType() }
+        return contextParameters.firstNotNullOfOrNull { it.kotlinOnlyFunctionType() }
+            ?: valueParameters.firstNotNullOfOrNull { it.kotlinOnlyFunctionType() }
     }
 
     context(context: CheckerContext)

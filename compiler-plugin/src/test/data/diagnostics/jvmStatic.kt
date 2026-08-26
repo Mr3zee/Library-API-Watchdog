@@ -63,7 +63,7 @@ public interface Codec {
     }
 }
 
-// An override's Java-facing shape is fixed by the overridden declaration: no warning.
+// An override is dictated by the supertype contract, not designed as a static factory: no warning.
 
 public fun interface Maker {
     public fun make(): Int

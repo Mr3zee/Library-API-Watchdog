@@ -124,7 +124,7 @@ public class Connection(public val host: String) {
   annotation classes can't hold backing fields.
 - A delegated property stores its value in the delegate, not in a backing field, so it doesn't
   make a class stateful on its own.
-- `@PublishedApi internal` classes are not reported because library users cannot reference them in
+- `@PublishedApi internal` classes are not reported because library users can't reference them in
   source.
 
 ## Exemptions

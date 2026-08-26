@@ -11,6 +11,8 @@ FILE: inlineFunction.kt
     @R|kotlin/PublishedApi|() internal final fun lengthOrNull(tag: R|kotlin/String|): R|kotlin/Int?| {
         ^lengthOrNull Null(null)
     }
+    @R|kotlin/PublishedApi|() internal final fun consumeImpl(value: R|kotlin/Any?|): R|kotlin/Unit| {
+    }
     @R|kotlin/PublishedApi|() internal final fun posImpl(): R|kotlin/Int| {
         ^posImpl Int(1)
     }
@@ -22,6 +24,9 @@ FILE: inlineFunction.kt
     }
     @R|kotlin/PublishedApi|() internal final fun transactImpl(work: R|() -> kotlin/Unit|): R|kotlin/Unit| {
         R|<local>/work|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()
+    }
+    @R|kotlin/PublishedApi|() internal final suspend fun awaitImpl(): R|kotlin/String| {
+        ^awaitImpl String(ready)
     }
     @R|kotlin/PublishedApi|() internal final val counter: R|kotlin/Int| = Int(0)
         internal get(): R|kotlin/Int|
@@ -56,13 +61,31 @@ FILE: inlineFunction.kt
     public final inline fun currentCount(): R|kotlin/Int| {
         ^currentCount R|foo/bar/counter|
     }
+    public final inline fun fixedProtocolVersion(): R|kotlin/Int| {
+        ^fixedProtocolVersion Int(1)
+    }
+    public final inline fun consumeLength(tag: R|kotlin/String|): R|kotlin/Unit| {
+        ^consumeLength R|foo/bar/consumeImpl|(R|foo/bar/length|(R|<local>/tag|))
+    }
+    public final inline fun newBuffer(value: R|kotlin/String|): R|kotlin/Any| {
+        ^newBuffer R|java/lang/StringBuilder.StringBuilder|(R|<local>/value|)
+    }
     public final inline fun noop(): R|kotlin/Unit| {
     }
     public final inline fun <reified T> lookup(name: R|kotlin/String|): R|T| {
         ^lookup (Q|foo/bar/Registry|.R|foo/bar/Registry.lookup|(R|<local>/name|, <getClass>(R|T|)) as R|T|)
     }
+    public final inline fun <reified T> find(name: R|kotlin/String|): R|T?| {
+        ^find (Q|foo/bar/Registry|.R|foo/bar/Registry.lookup|(R|<local>/name|, <getClass>(R|T|)) as? R|T|)
+    }
     public final inline fun <R> once(block: R|() -> R|): R|R| {
         ^once R|<local>/block|.R|SubstitutionOverride<kotlin/Function0.invoke: R|R|>|()
+    }
+    public final suspend fun suspensionPropagatesFromCallSite(): R|kotlin/String| {
+        ^suspensionPropagatesFromCallSite R|foo/bar/once|<R|kotlin/String|>(<L> = once@fun <anonymous>(): R|kotlin/String| <inline=Inline, kind=UNKNOWN>  {
+            ^ R|foo/bar/awaitImpl|()
+        }
+        )
     }
     @R|kotlin/OptIn|(markerClass = vararg(<getClass>(Q|kotlin/contracts/ExperimentalContracts|)) [evaluated = vararg(<getClass>(Q|kotlin/contracts/ExperimentalContracts|))]) public final inline fun <R> measured(block: R|() -> R|): R|R|
         [R|Contract description]

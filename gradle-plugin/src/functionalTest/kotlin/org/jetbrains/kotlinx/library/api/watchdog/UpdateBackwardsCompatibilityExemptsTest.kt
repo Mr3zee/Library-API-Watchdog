@@ -341,7 +341,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
             "exposes a nullable `Boolean`",
             "is required but declared after an optional parameter",
             "appear in the opposite order in another overload",
-            "does more than delegate to a function without the `inline` modifier",
+            "contains logic beyond a single thin delegating statement",
             "compiled JVM name is mangled",
             "still lands in the API surface Java sources see",
             "nested `Companion` class",
@@ -478,7 +478,7 @@ private val unfixableFile = """
     public fun processTag(tag: @ScopedDsl String) { }
 """.trimIndent()
 
-/** Always-error diagnostics that the adoption task cannot acknowledge and therefore skips. */
+/** Always-error diagnostics that the adoption task can't acknowledge and therefore skips. */
 @Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val alwaysErrorDiagnosticsFile = """
@@ -501,7 +501,7 @@ private val alwaysErrorDiagnosticsFile = """
         /** Leaks an explicitly unsupported type. */
         public fun loadInternalModel(): InternalModel = InternalModel()
 
-        /** Leaks a type consumers cannot obtain transitively. */
+        /** Leaks a type consumers can't obtain transitively. */
         public fun loadExternalModel(): ExternalModel = ExternalModel()
 
         /** Carries an invalid type-use exemption handled by the dedicated type checker. */

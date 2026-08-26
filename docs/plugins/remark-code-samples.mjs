@@ -8,7 +8,7 @@
 //         public data class Point(val x: Int, val y: Int)
 //
 //     are validated here, then Code Hike drops the comment and gives the selected range to the
-//     tooltip handler. A name-shaped legacy comment is rejected so diagnostics cannot silently
+//     tooltip handler. A name-shaped legacy comment is rejected so diagnostics can't silently
 //     fall back to highlighting a whole line.
 import {visit} from 'unist-util-visit';
 import {diagnostics} from './diagnostics.mjs';

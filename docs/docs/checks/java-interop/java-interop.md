@@ -38,24 +38,30 @@ list of severity properties.
 ## Per-declaration exceptions
 
 A library that generally supports Java can still let individual declarations sacrifice Java
-ergonomics on purpose - for example, a coroutine-based API with no blocking bridge planned.
-Acknowledge that in place with the matching `@Intentionally*` exemption annotation for the check,
-using the `IGNORE_JAVA_INTEROP` reason and a description of why this declaration ignores Java
-callers:
+ergonomics on purpose. An exemption fits when the declaration stays usable from Java, just not
+idiomatically - for example, a callback kept as a Kotlin function type, which Java callers can
+still pass a lambda to. Acknowledge the wart in place with the matching `@Intentionally*`
+exemption annotation for the check, using the `IGNORE_JAVA_INTEROP` reason and a description of
+why this declaration ignores Java ergonomics:
 
 ```kotlin
 // !hide-focused
-@file:JvmName("Refresh")
-
-// !hide-focused
-/** Fetches the latest value. */
-@IntentionallyKotlinOnlyApi(
-    reason = ExemptionReason.IGNORE_JAVA_INTEROP,
-    description = "Coroutine-only API," +
-            "no blocking or CompletableFuture bridge planned.",
-)
-public suspend fun refresh(): String = fetchLatest()
+/** Watches application configuration for changes. */
+public class ConfigWatcher {
+    // !hide-focused
+    /** Invokes [listener] on every configuration change. */
+    @IntentionallyKotlinOnlyApi(
+        reason = ExemptionReason.IGNORE_JAVA_INTEROP,
+        description = "Java callers can pass a lambda that returns Unit.INSTANCE. " +
+                "Forking the API into a fun interface overload is not worth it.",
+    )
+    public fun onChange(listener: (String) -> Unit) { }
+}
 ```
+
+An exemption is not a fix: the reported shape stays in the Java-visible API surface. A declaration
+Java callers should not see at all is better hidden with `@JvmSynthetic`, the fix suggested by
+[Kotlin-only API without JvmSynthetic](./kotlin-only-api-without-jvm-synthetic.md).
 
 `IGNORE_JAVA_INTEROP` only categorizes the exemption. The description still has to state the
 reason. See [Exemptions and internal API](../../exemptions.md) for the full exemption model, including

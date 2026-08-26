@@ -20,6 +20,9 @@ import org.jetbrains.kotlin.name.JvmStandardClassIds
  * Abstract and interface members, annotation constructors, `suspend` functions, value-class
  * members, overrides, and Java-hidden declarations are skipped.
  *
+ * Only value parameters participate: context parameters are supplied implicitly and can't have
+ * the default values that `@JvmOverloads` expands into overloads.
+ *
  * [WatchdogFirCheckers] registers this checker only for JVM compilations.
  */
 internal class JvmOverloadsChecker(

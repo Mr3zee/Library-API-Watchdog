@@ -92,7 +92,7 @@ public interface Plugin {
 - `fun interface`s are checked like any other interface.
 - Sealed interfaces are not reported here. They are covered by
   [`EXHAUSTIVE_PUBLIC_API`](./exhaustive-public-api.md) instead.
-- `@PublishedApi internal` types are not reported by either diagnostic because library users cannot
+- `@PublishedApi internal` types are not reported by either diagnostic because library users can't
   subclass them in Kotlin source.
 
 ## Exemption

@@ -22,10 +22,15 @@ if (failures.length > 0) {
   const changed = [];
   for (const [name, exemption] of exemptions) {
     const diagnostic = diagnostics.get(name);
-    const separator = diagnostic.message.lastIndexOf('\n\n');
-    const message = `${diagnostic.message.slice(0, separator)}\n\n${exemption.wording}`;
-    if (message !== diagnostic.message) changed.push(name);
-    diagnostic.message = message;
+    const separator = diagnostic.message.lastIndexOf('');
+    const currentWording = diagnostic.message.slice(separator + 1).join(' ');
+    if (currentWording !== exemption.wording) {
+      changed.push(name);
+      diagnostic.message = [
+        ...diagnostic.message.slice(0, separator + 1),
+        ...wrapMessageParagraph(exemption.wording),
+      ];
+    }
   }
 
   const synchronized = `${JSON.stringify(registry, null, 2)}\n`;
@@ -41,6 +46,18 @@ if (failures.length > 0) {
     fs.writeFileSync(diagnosticsFile, synchronized);
     console.log(`Synchronized diagnostic exemption wording (${exemptions.size} diagnostics).`);
   }
+}
+
+function wrapMessageParagraph(paragraph) {
+  const lines = [];
+  for (const word of paragraph.split(' ')) {
+    if (lines.length === 0 || `${lines.at(-1)} ${word}`.length > 100) {
+      lines.push(word);
+    } else {
+      lines[lines.length - 1] += ` ${word}`;
+    }
+  }
+  return lines;
 }
 
 function readExemptions() {
@@ -82,7 +99,7 @@ function readExemptions() {
 function validateExemptions() {
   const failures = [...parsingFailures];
   const synchronizedDiagnostics = [...diagnostics.values()].filter((diagnostic) =>
-    diagnostic.message.includes('Intentionally'),
+    diagnostic.message.some((line) => line.includes('Intentionally')),
   );
 
   for (const diagnostic of synchronizedDiagnostics) {
@@ -115,7 +132,7 @@ function validateExemptions() {
     ) {
       failures.push(`${location}: exemption wording must use the standard opening.`);
     }
-    if (diagnostic.message.lastIndexOf('\n\n') === -1) {
+    if (!diagnostic.message.includes('')) {
       failures.push(`${name}: diagnostic message needs a separate exemption paragraph.`);
     }
   }

@@ -78,7 +78,7 @@ val testAndroidSdkPath: String? = System.getProperty("watchdog.test.androidHome"
  */
 val agpCompatibleGradle: GradleVersion = GradleVersion.version("9.5.1")
 
-/** Skips the calling test when the environment cannot build Android projects. */
+/** Skips the calling test when the environment can't build Android projects. */
 fun assumeAndroidBuildEnvironment() {
     assumeTrue(
         "No AGP versions are wired in, see build.gradle.kts",

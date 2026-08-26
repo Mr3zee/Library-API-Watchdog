@@ -5,6 +5,7 @@
 .pre {
   margin-bottom: var(--ifm-leading);
   padding: var(--ifm-pre-padding);
+  border: var(--ifm-global-border-width) solid var(--ifm-color-emphasis-300);
   border-radius: var(--ifm-code-border-radius);
   font-size: var(--ifm-code-font-size);
   line-height: var(--ifm-pre-line-height);
@@ -13,8 +14,10 @@
 
 .namedCodeBlock {
   margin-bottom: var(--ifm-leading);
+  border: var(--ifm-global-border-width) solid var(--ifm-color-emphasis-300);
   border-radius: var(--ifm-code-border-radius);
   overflow: hidden;
+  background: var(--prism-background-color);
 }
 
 .filename {
@@ -30,6 +33,7 @@
 
 .namedPre {
   margin-bottom: 0;
+  border: 0;
   border-radius: 0;
 }
 
@@ -132,6 +136,7 @@
 
 .tabbedPre {
   margin-bottom: 0;
+  border: 0;
   border-radius: 0;
 }
 

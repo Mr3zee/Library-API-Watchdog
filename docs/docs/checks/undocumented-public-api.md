@@ -110,7 +110,7 @@ public class Profile(
 - A plain `//` or `/* */` comment doesn't count, only a KDoc block (`/** ... */`) satisfies the
   check.
 - `@PublishedApi internal` declarations, including declarations inside a `@PublishedApi internal`
-  class, are not reported because library users cannot write source code against them and there is
+  class, are not reported because library users can't write source code against them and there is
   no usage contract to document. Other checks still watch their binary shape.
 
 ## Exemption

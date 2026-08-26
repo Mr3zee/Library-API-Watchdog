@@ -31,7 +31,7 @@ internal data class DependencyExposureCheckConfiguration(
 /**
  * Reports dependency types in public signatures unless their artifacts are published to
  * consumers. Dependency scope is a build-model concern, so this checker is registered only when
- * the Gradle plugin supplies [DependencyExposureCheckConfiguration]. It cannot be suppressed or
+ * the Gradle plugin supplies [DependencyExposureCheckConfiguration]. It can't be suppressed or
  * demoted: the Gradle extension's Boolean switch is its only opt-out.
  *
  * The sweep includes callable return, receiver, value and context parameter types; class

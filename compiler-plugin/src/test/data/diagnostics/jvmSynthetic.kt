@@ -34,8 +34,22 @@ public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>onEvents<!>(vararg callbacks
 
 public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>raceAll<!>(vararg work: suspend () -> Int) {}
 
+// Context parameters become ordinary JVM parameters. Their Kotlin-only function types are just
+// as awkward for Java callers even though Kotlin callers obtain the values implicitly.
+context(action: (Int) -> Unit)
+public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>onEachContextually<!>() {}
+
+context(work: suspend () -> Int)
+public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>raceContextually<!>() {}
+
+context(block: Config.() -> Int)
+public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>configureContextually<!>() {}
+
 // Function types Java can invoke naturally remain accepted in vararg position too.
 public fun transformAll(vararg mappers: (Int) -> Int) {}
+
+context(mapper: (Int) -> Int)
+public fun transformContextually(): Int = mapper(0)
 
 // An open (non-abstract) member still has a body Java sees: should warn.
 public open class Loader {

@@ -64,7 +64,7 @@ internal class CheckerEnvironment(
 
 /**
  * Registry of independently benchmarkable watchdog checkers. Checkers whose diagnostics are
- * unavoidable errors are omitted when they cannot run against the triggering corpus without
+ * unavoidable errors are omitted when they can't run against the triggering corpus without
  * failing compilation.
  */
 internal object CheckerSubjects {

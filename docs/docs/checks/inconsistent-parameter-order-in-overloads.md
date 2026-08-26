@@ -162,7 +162,7 @@ public fun Grid.fill(
   Same for the extensions: only the extension itself is reposted,
   since the class can't see the extensions that are declared on it.
 - `@PublishedApi internal` overloads are neither reported nor used as comparison references because
-  library users cannot call them in source.
+  library users can't call them in source.
 
 ## Exemption
 
