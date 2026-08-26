@@ -4,7 +4,7 @@
 
 // Published declarations are watched in every module of a multimodule compilation. The
 // dependency module acknowledges everything its published API is reported for, so it compiles
-// into a binary cleanly; the consuming module reports its own published declarations while using
+// into a binary cleanly. The consuming module reports its own published declarations while using
 // the dependency's published API through its public inline functions. Neither module documents a
 // published declaration: the KDoc check leaves them alone.
 
@@ -28,7 +28,7 @@ internal open class LibPublishedOpenClass
 @PublishedApi
 internal fun libPublishedHelper(): Int = 0
 
-/** Documented; the inlined logic exists to exercise the published declarations above. */
+/** Documented. The inlined logic exists to exercise the published declarations above. */
 @IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)
 public inline fun libInlineApi(block: () -> Int): Int {
     return block() + libPublishedHelper()
@@ -57,7 +57,7 @@ internal enum class MainPublishedEnum {
 @PublishedApi
 internal fun mainPublishedHelper(): Int = 0
 
-/** Documented; the inlined logic exists to exercise the published declarations above. */
+/** Documented. The inlined logic exists to exercise the published declarations above. */
 @IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)
 public inline fun mainInlineApi(block: () -> Int): Int {
     return libInlineApi(block) + mainPublishedHelper()

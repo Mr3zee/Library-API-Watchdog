@@ -2,6 +2,12 @@ Module: common
 FILE: common.kt
     package foo.bar
 
+    @R|org/jetbrains/kotlinx/library/api/watchdog/InternalAnnotationMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|)]) public final annotation class PlatformInternalApi : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/PlatformInternalApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
     public final expect fun reported(flag: R|kotlin/Boolean|): R|kotlin/Pair<kotlin/String, kotlin/Boolean?>|
     @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNullableBoolean|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final expect fun exemptContract(flag: R|kotlin/Boolean|): R|kotlin/Pair<kotlin/String, kotlin/Boolean?>|
     @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDataClass|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final expect class ExemptData : R|kotlin/Any| {
@@ -38,6 +44,8 @@ FILE: common.kt
     public final expect suspend fun reportedSuspend(): R|kotlin/Int|
     @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutJvmOverloads|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final expect fun exemptDefault(value: R|kotlin/Int| = Int(1)): R|kotlin/Int|
     public final expect fun reportedDefault(value: R|kotlin/Int| = Int(1)): R|kotlin/Int|
+    public final expect class PlatformAlias : R|kotlin/Any| {
+    }
 Module: jvm
 FILE: jvm.kt
     package foo.bar
@@ -121,3 +129,10 @@ FILE: jvm.kt
     public final actual fun reportedDefault(value: R|kotlin/Int|): R|kotlin/Int| {
         ^reportedDefault R|<local>/value|
     }
+    @R|foo/bar/PlatformInternalApi|() public final class PlatformInternalType : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PlatformInternalType| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final actual typealias PlatformAlias = R|foo/bar/PlatformInternalType|

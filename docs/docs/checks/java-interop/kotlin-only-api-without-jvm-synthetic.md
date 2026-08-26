@@ -133,7 +133,9 @@ public fun onEach(action: Action) { }
 - Overrides are not reported: their shape is fixed by the overridden declaration, which is
   reported instead.
 - Constructors are not reported: `@JvmSynthetic` doesn't apply to them.
-- A signature mangled by a value class is reported by [`MANGLED_JVM_NAME_PUBLIC_API`](./mangled-jvm-name-public-api.md) instead.
+- A non-suspend signature mangled by a value class is reported by
+  [`MANGLED_JVM_NAME_PUBLIC_API`](./mangled-jvm-name-public-api.md) instead. Suspend functions stay
+  with this check even when their signature is also mangled.
 - `@JvmSynthetic` declarations are hidden from Java on purpose and are not reported.
 - Non-JVM compilations never register this check at all.
 - `@PublishedApi internal` functions are not reported because their public bytecode entries are

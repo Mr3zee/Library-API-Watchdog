@@ -108,7 +108,7 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
 
     /**
      * Whether the class declares or inherits [member]. The scope resolves the name to the most
-     * specific override; only `kotlin.Any` itself provides the identity/opaque defaults these
+     * specific override. Only `kotlin.Any` itself provides the identity/opaque defaults these
      * diagnostics exist to flag.
      */
     context(context: CheckerContext)

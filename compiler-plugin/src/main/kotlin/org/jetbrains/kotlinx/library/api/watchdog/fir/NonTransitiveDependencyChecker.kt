@@ -34,8 +34,8 @@ internal data class DependencyExposureCheckConfiguration(
  * the Gradle plugin supplies [DependencyExposureCheckConfiguration]. It can't be suppressed or
  * demoted: the Gradle extension's Boolean switch is its only opt-out.
  *
- * The sweep includes callable return, receiver, value and context parameter types; class
- * supertypes and context parameters; type parameter bounds; public type aliases; and every type
+ * The sweep includes callable return, receiver, value and context parameter types. It also includes class
+ * supertypes and context parameters, type parameter bounds, public type aliases, and every type
  * argument nested inside those types. Overrides still count because their hand-written signature
  * remains part of this library's API even when another declaration fixed its shape.
  */

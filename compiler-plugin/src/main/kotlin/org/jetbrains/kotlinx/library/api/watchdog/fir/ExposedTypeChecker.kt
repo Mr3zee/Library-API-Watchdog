@@ -14,7 +14,7 @@ import org.jetbrains.kotlin.name.Name
 /**
  * Base for style checks that hunt a type down in publicly visible callable signatures and type
  * parameter bounds. The full declaration and type traversal comes from
- * [PublicSignatureTypeChecker]; this specialization applies their common policy:
+ * [PublicSignatureTypeChecker]. This specialization applies their common policy:
  *
  * - Overrides are skipped because their signature is fixed by the overridden declaration.
  * - Extension receivers are skipped because they provide functionality for values users already

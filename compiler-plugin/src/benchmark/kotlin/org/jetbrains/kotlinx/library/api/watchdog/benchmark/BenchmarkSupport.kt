@@ -55,7 +55,7 @@ internal class ErrorSummaryMessageCollector : MessageCollector {
     fun summary(): String = errors.joinToString("\n")
 }
 
-/** Compiler arguments shared by both benchmarks; the plugin is configured on top of these. */
+/** Compiler arguments shared by both benchmarks. The plugin is configured on top of these. */
 internal fun corpusCompilerArguments(sourceRoot: Path, destination: Path): K2JVMCompilerArguments =
     K2JVMCompilerArguments().apply {
         freeArgs = listOf(sourceRoot.toAbsolutePath().toString())

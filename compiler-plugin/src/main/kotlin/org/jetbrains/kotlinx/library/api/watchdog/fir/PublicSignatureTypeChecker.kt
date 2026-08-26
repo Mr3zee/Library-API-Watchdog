@@ -32,8 +32,8 @@ import org.jetbrains.kotlin.name.Name
 
 /**
  * Shared sweep for checks that find a type in public signatures. It covers callable return,
- * receiver, value and context parameter types; class supertypes and context parameters; type
- * parameter bounds; type aliases; and nested type arguments. The constructor options let checks
+ * receiver, value and context parameter types. It also covers class supertypes and context parameters, type
+ * parameter bounds, type aliases, and nested type arguments. The constructor options let checks
  * omit positions that do not expose the trait they police.
  *
  * Subclasses decide which declarations belong to their API surface, which classifier violates
@@ -49,7 +49,10 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
 ) : FirBasicDeclarationChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     final override fun check(declaration: FirDeclaration) {
-        if (declaration.isActualizedDeclaration()) return
+        // Ordinary actual declarations repeat the common contract and would duplicate its
+        // diagnostics. An actual typealias is different: its platform expansion is absent from
+        // the expect declaration and can expose types that the common signature never mentions.
+        if (declaration.isActualizedDeclaration() && declaration !is FirTypeAlias) return
 
         when (declaration) {
             // Parameters are swept from their containing callable, where its public API gate and
@@ -97,7 +100,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
 
     /**
      * The type whose classifier and arguments are inspected. Expanding aliases is the normal
-     * public-signature behavior; checks interested in an alias declaration itself may opt out.
+     * public-signature behavior. Checks interested in an alias declaration itself may opt out.
      */
     context(context: CheckerContext)
     protected open fun ConeKotlinType.classifierType(): ConeKotlinType =
@@ -108,7 +111,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
     protected open fun ConeKotlinType.typeAfterClassifier(): ConeKotlinType? = null
 
     /**
-     * The violation a `vararg` parameter exposes. Most checks inspect its array type normally;
+     * The violation a `vararg` parameter exposes. Most checks inspect its array type normally.
      * checks for which the compiler-generated array is not itself exposure may customize this.
      */
     context(context: CheckerContext, reporter: DiagnosticReporter)
@@ -238,7 +241,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
 
     /**
      * Reports violating bounds. Outer-class parameters reappear as [FirTypeParameterRef]s without
-     * their own declaration and are skipped; they are reported on the declaring class.
+     * their own declaration and are skipped. They are reported on the declaring class.
      */
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun checkTypeParameters(typeParameters: List<FirTypeParameterRef>) {

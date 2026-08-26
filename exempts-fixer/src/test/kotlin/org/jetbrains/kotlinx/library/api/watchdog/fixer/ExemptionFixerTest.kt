@@ -755,7 +755,7 @@ class ExemptionFixerTest {
         """.trimIndent()
 
         // OPEN_API_WITHOUT_SUBCLASS_OPT_IN reports once per accessible constructor when the
-        // class has no public primary constructor; both resolve to the one class annotation.
+        // class has no public primary constructor. Both resolve to the one class annotation.
         val result = fix(
             text,
             diagnostic("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", text, "public constructor(x: Int)"),

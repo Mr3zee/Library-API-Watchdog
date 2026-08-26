@@ -112,7 +112,7 @@ internal val CheckerContext.containingClassSymbol: FirClassSymbol<*>?
 
 /**
  * Whether this source declaration is the implementation of an `expect` contract. Contract-shape
- * checks report the `expect` once and skip its `actual`; declarations added only by an actual
+ * checks report the `expect` once and skip its `actual`. Declarations added only by an actual
  * class are not actualized and remain eligible for checking.
  *
  * Value parameters do not carry the expect/actual status themselves, so their closest containing
@@ -192,7 +192,7 @@ internal fun FirMemberDeclaration.isWatchedPublicApi(): Boolean {
 
 /**
  * Whether this declaration is part of the supported source API. `@PublishedApi` only makes an
- * internal declaration available to compiled inline bodies; it does not make the declaration
+ * internal declaration available to compiled inline bodies. It does not make the declaration
  * referenceable by library users in Kotlin source.
  *
  * Checks concerned with call-site readability, source extensibility, or Java ergonomics use this
@@ -235,7 +235,7 @@ internal fun FirBasedSymbol<*>.internalApiAnnotation(): ClassId? =
  */
 internal fun FirMemberDeclaration.isPublishedApiOnly(): Boolean = !effectiveVisibility.publicApi
 
-/** `value class` sets the `isValue` status flag; `isInline` covers the legacy `inline class`. */
+/** `value class` sets the `isValue` status flag. `isInline` covers the legacy `inline class`. */
 internal fun FirClassSymbol<*>.isValueClass(): Boolean =
     resolvedStatus.let { it.isValue || it.isInline }
 
@@ -295,7 +295,7 @@ internal fun FirNamedFunction.mangledValueClassInSignature(): Name? =
 /**
  * Whether Java sources can't see this declaration because it is marked `@JvmSynthetic`. A
  * property is hidden when its every Java entry point is: the getter - and the setter of a
- * `var` - via `@get:`/`@set:JvmSynthetic`; or, for a `const` or `@JvmField` property, its sole
+ * `var` - via `@get:`/`@set:JvmSynthetic`. For a `const` or `@JvmField` property, its sole
  * backing-field entry point.
  */
 context(context: CheckerContext)
@@ -331,7 +331,7 @@ internal fun FirProperty.hasJvmFieldAnnotation(): Boolean =
             }
 
 /**
- * `@JvmSynthetic` sits on an explicit accessor directly; the `@get:`/`@set:` use-site form
+ * `@JvmSynthetic` sits on an explicit accessor directly. The `@get:`/`@set:` use-site form
  * stays on the property with the accessor as its use-site target.
  */
 context(context: CheckerContext)

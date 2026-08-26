@@ -29,7 +29,7 @@ import java.nio.file.Path
  * Modes:
  * - `noPlugin` - the compiler alone, without the watchdog jar.
  * - `pluginBaseline` - the plugin applied with every configurable diagnostic set to `none`. The
- *   non-configurable `ExemptionExplanationChecker` still runs; this is the honest floor every
+ *   non-configurable `ExemptionExplanationChecker` still runs. This is the honest floor every
  *   per-checker mode is compared against.
  * - `allCheckers` - every configurable diagnostic enabled at `warning` severity,
  *   dependency-path options included.

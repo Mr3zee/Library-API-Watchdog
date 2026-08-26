@@ -9,7 +9,7 @@ import java.nio.file.Path
  * comparable across runs and modes.
  *
  * The corpus is written in the explicit API style and rotates through ten file templates, each
- * exercising a different group of checkers. Most declarations are clean; every template carries
+ * exercising a different group of checkers. Most declarations are clean. Every template carries
  * a small fixed set of intended diagnostics so that report construction is also measured. The
  * templates reference the watchdog exemption annotations, so the annotations library must be on
  * the compilation classpath.
@@ -103,12 +103,12 @@ internal object BenchmarkCorpus {
             override fun toString(): String = "ModelId$i(raw=" + raw + ")"
         }
 
-        /** Snapshot of a model; renders itself but deliberately misses equality. */
+        /** Snapshot of a model. Renders itself but deliberately misses equality. */
         public class Snapshot$i(public val id: Long, public val label: String) {
             override fun toString(): String = "Snapshot$i(id=" + id + ", label=" + label + ")"
         }
 
-        /** Position of a model cursor; keeps equality but deliberately misses toString. */
+        /** Position of a model cursor. Keeps equality but deliberately misses toString. */
         public class Cursor$i(public val offset: Int) {
             override fun equals(other: Any?): Boolean = other is Cursor$i && other.offset == offset
             override fun hashCode(): Int = offset
@@ -127,7 +127,7 @@ internal object BenchmarkCorpus {
      * stage class, SUBCLASS_OPT_IN_WITHOUT_MARKERS on the markerless observer.
      */
     private fun servicesFile(i: Int): String = header(i, null) + """
-        /** Contract for key resolvers; external implementations must opt in. */
+        /** Contract for key resolvers. External implementations must opt in. */
         @SubclassOptInRequired(BenchExperimental::class)
         public interface Resolver$i {
             /** Resolves a key to its display form. */
@@ -176,7 +176,7 @@ internal object BenchmarkCorpus {
         @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
         public annotation class MixedDsl$i
 
-        /** Names the current route scope; the marker on the return type has no effect. */
+        /** Names the current route scope. The marker on the return type has no effect. */
         public fun label$i(): @BenchDsl String = "routes"
 
         /** Mutable scope collecting route definitions. */
@@ -221,7 +221,7 @@ internal object BenchmarkCorpus {
             FANCY,
         }
 
-        /** Formats a label; the default parameter is not mirrored for Java callers. */
+        /** Formats a label. The default parameter is not mirrored for Java callers. */
         public fun formatLabel$i(value: String, mode: LabelMode$i = LabelMode$i.PLAIN): String =
             if (mode == LabelMode$i.FANCY) "[" + value + "]" else value
 
@@ -229,11 +229,11 @@ internal object BenchmarkCorpus {
         public fun truncate$i(text: String, keepSuffix: Boolean): String =
             if (keepSuffix) text.takeLast(4) else text.take(4)
 
-        /** Enables tracing; the toggle shape is an accepted part of this API. */
+        /** Enables tracing. The toggle shape is an accepted part of this API. */
         @IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)
         public fun trace$i(enabled: Boolean): String = if (enabled) "on" else "off"
 
-        /** Pads text; the defaults are mirrored to Java. */
+        /** Pads text. The defaults are mirrored to Java. */
         @JvmOverloads
         public fun pad$i(text: String, width: Int = 8, filler: Char = ' '): String =
             text.padEnd(width, filler)
@@ -243,7 +243,7 @@ internal object BenchmarkCorpus {
         public fun join$i(separator: String = ", ", parts: List<String>): String =
             parts.joinToString(separator)
 
-        /** Fetches one value; visible to Java despite the suspend shape. */
+        /** Fetches one value. Visible to Java despite the suspend shape. */
         public suspend fun fetch$i(key: String): String = key
 
         /** Fetches one value, hidden from Java callers. */
@@ -253,7 +253,7 @@ internal object BenchmarkCorpus {
         /** Emits one record. */
         public fun emit$i(target: String): Int = target.length
 
-        /** Emits one record at the given level; parameter order matches the base overload. */
+        /** Emits one record at the given level. Parameter order matches the base overload. */
         public fun emit$i(target: String, level: Int): Int = target.length + level
     """.trimIndent() + "\n"
 
@@ -298,7 +298,7 @@ internal object BenchmarkCorpus {
                 @JvmStatic
                 public fun create(): Registry$i = Registry$i()
 
-                /** Parses a registry from text; reachable from Java only via Companion. */
+                /** Parses a registry from text. Reachable from Java only via Companion. */
                 public fun parse(text: String): Registry$i {
                     require(text.isNotEmpty()) { "empty registry text" }
                     return Registry$i()
@@ -321,7 +321,7 @@ internal object BenchmarkCorpus {
      * Sealed hierarchy and enum. Intended diagnostics: EXHAUSTIVE_PUBLIC_API on the enum.
      */
     private fun sealedFile(i: Int): String = header(i, null) + """
-        /** Shape of one report cell; the closed set of cases is part of the contract. */
+        /** Shape of one report cell. The closed set of cases is part of the contract. */
         @IntentionallyExhaustive(reason = ExemptionReason.API_DESIGN)
         public sealed interface Cell$i {
             /** Width of the rendered cell. */
@@ -364,14 +364,14 @@ internal object BenchmarkCorpus {
         /** Wraps a raw count. */
         public fun toMillis$i(raw: Long): Millis$i = Millis$i(raw)
 
-        /** Advances a duration; the value class parameter mangles the JVM name. */
+        /** Advances a duration. The value class parameter mangles the JVM name. */
         public fun advance$i(base: Millis$i, delta: Long): Millis$i = Millis$i(base.value + delta)
 
-        /** Doubles a duration; the mangling is accepted for this Kotlin-first helper. */
+        /** Doubles a duration. The mangling is accepted for this Kotlin-first helper. */
         @IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN)
         public fun doubled$i(base: Millis$i): Millis$i = Millis$i(base.value * 2)
 
-        /** Sums block results; the loop body is baked into every call site. */
+        /** Sums block results. The loop body is baked into every call site. */
         public inline fun retry$i(times: Int, block: () -> Int): Int {
             var total = 0
             repeat(times) {
@@ -413,7 +413,7 @@ internal object BenchmarkCorpus {
         /** Renders a report line. */
         public fun render$i(name: String, width: Int): String = name + ":" + width
 
-        /** Renders a padded report line; the first two parameters come in swapped order. */
+        /** Renders a padded report line. The first two parameters come in swapped order. */
         public fun render$i(width: Int, name: String, pad: Int): String =
             name + ":" + width + ":" + pad
 

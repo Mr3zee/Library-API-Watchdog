@@ -56,7 +56,7 @@ public val kotlinOnlyValue: Int = 0
 // FILE: syntheticFields.kt
 package foo.bar
 
-// A const or @JvmField property has no accessors; a synthetic backing field hides its only Java
+// A const or @JvmField property has no accessors. A synthetic backing field hides its only Java
 // entry point, so this file exposes no Java-visible facade member.
 
 @JvmSynthetic
@@ -76,7 +76,7 @@ public var <!TOP_LEVEL_API_WITHOUT_JVM_NAME!>partiallyHidden<!>: Int = 0
 // FILE: fieldAnnotationOnly.kt
 package foo.bar
 
-// On an ordinary property the untargeted annotation hides only the backing field; accessors stay
+// On an ordinary property the untargeted annotation hides only the backing field. Accessors stay
 // visible and still require a stable facade name.
 @JvmSynthetic
 public val <!TOP_LEVEL_API_WITHOUT_JVM_NAME!>fieldAnnotationOnly<!>: Int = 0

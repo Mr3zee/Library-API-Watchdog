@@ -1,7 +1,7 @@
 # DSL markers without explicit targets
 
 `DSL_MARKER_WITHOUT_EXPLICIT_TARGETS` reports a `@DslMarker` annotation class that declares no
-explicit `@Target`.
+explicit annotation targets, either because `@Target` is absent or because it is empty.
 
 |                  |                                                                                       |
 |------------------|---------------------------------------------------------------------------------------|
@@ -12,7 +12,8 @@ explicit `@Target`.
 
 ## What it reports
 
-Any annotation class annotated with `@DslMarker` that has no `@Target` of its own:
+Any annotation class annotated with `@DslMarker` that has no `@Target` of its own or declares
+an empty `@Target()`:
 
 ```kotlin
 // !hide-focused
@@ -20,6 +21,11 @@ Any annotation class annotated with `@DslMarker` that has no `@Target` of its ow
 @DslMarker
 // !diag[/DefaultTargetsDsl/] DSL_MARKER_WITHOUT_EXPLICIT_TARGETS ["DefaultTargetsDsl"]
 public annotation class DefaultTargetsDsl
+
+@DslMarker
+@Target()
+// !diag[/EmptyTargetsDsl/] DSL_MARKER_WITHOUT_EXPLICIT_TARGETS ["EmptyTargetsDsl"]
+public annotation class EmptyTargetsDsl
 ```
 
 ## Rationale
@@ -28,8 +34,9 @@ public annotation class DefaultTargetsDsl
 only reacts to a marker found on a classifier declaration (`CLASS`, `ANNOTATION_CLASS`), a type
 usage (`TYPE`), or a type alias (`TYPEALIAS`). The default target set includes `CLASS`, but omits
 `TYPE` and `TYPEALIAS` while allowing parameters, properties, functions, and other positions where
-the marker has no effect. An explicit target set makes the effective placements available without
-advertising ineffective ones.
+the marker has no effect. An empty target set is worse: the marker can't be applied anywhere.
+An explicit, non-empty target set makes the effective placements available without advertising
+ineffective ones.
 
 
 ### Don't

@@ -70,7 +70,7 @@ internal class MangledJvmNameChecker(
             return
         }
 
-        // A receiver or context parameter is passed to both accessors, so it mangles both; the
+        // A receiver or context parameter is passed to both accessors, so it mangles both. The
         // property type itself is the getter's return type - mangled for members only - and the
         // setter's parameter type - mangled everywhere.
         val receiverValueClass = declaration.receiverParameter?.typeRef?.coneType?.mangledValueClass()
@@ -103,8 +103,10 @@ internal class MangledJvmNameChecker(
             return
         }
 
-        val valueClass = declaration.valueParameters
+        val valueClass = declaration.contextParameters
             .firstNotNullOfOrNull { it.returnTypeRef.coneType.mangledValueClass() }
+            ?: declaration.valueParameters
+                .firstNotNullOfOrNull { it.returnTypeRef.coneType.mangledValueClass() }
             ?: return
         val className = declaration.reportedName() ?: return
         report(declaration, "constructor", className, valueClass)
@@ -161,7 +163,7 @@ internal class MangledJvmNameChecker(
 
     /**
      * Whether the accessor's Java-facing shape is already settled - renamed with `@JvmName` or
-     * hidden with `@JvmSynthetic`. The annotation sits on an explicit accessor directly; the
+     * hidden with `@JvmSynthetic`. The annotation sits on an explicit accessor directly. The
      * `@get:`/`@set:` use-site form stays on the property - or on the primary constructor
      * parameter for a `val`/`var` parameter - with the accessor as its use-site target.
      */

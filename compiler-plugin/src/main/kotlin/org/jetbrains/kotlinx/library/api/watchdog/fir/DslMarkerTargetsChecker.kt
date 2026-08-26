@@ -18,7 +18,7 @@ import org.jetbrains.kotlin.fir.expressions.unwrapAndFlattenArgument
 import org.jetbrains.kotlin.name.StandardClassIds
 
 /**
- * Reports `@DslMarker` annotation classes with no explicit `@Target` or with targets other than
+ * Reports `@DslMarker` annotation classes with no declared targets or with targets other than
  * `CLASS`, `ANNOTATION_CLASS`, `TYPE`, and `TYPEALIAS`. All marker visibilities are checked.
  *
  * The backwards-compatibility exemption applies to the annotation class and covers both
@@ -52,8 +52,12 @@ internal class DslMarkerTargetsChecker(
             return
         }
 
-        val targetAnnotation = declaration.getTargetAnnotation(session)
-        if (targetAnnotation == null) {
+        val allowedTargets = declaration.getTargetAnnotation(session)
+            ?.findArgumentByName(StandardClassIds.Annotations.ParameterNames.targetAllowedTargets)
+            ?.unwrapAndFlattenArgument(flattenArrays = true)
+            .orEmpty()
+
+        if (allowedTargets.isEmpty()) {
             val factory = severities[WatchdogDiagnostics.DSL_MARKER_WITHOUT_EXPLICIT_TARGETS] ?: return
             reporter.reportOn(
                 source = declaration.source,
@@ -64,11 +68,6 @@ internal class DslMarkerTargetsChecker(
         }
 
         val noopTargetFactory = severities[WatchdogDiagnostics.DSL_MARKER_NOOP_TARGET] ?: return
-        val allowedTargets = targetAnnotation
-            .findArgumentByName(StandardClassIds.Annotations.ParameterNames.targetAllowedTargets)
-            ?.unwrapAndFlattenArgument(flattenArrays = true)
-            .orEmpty()
-
         for (argument in allowedTargets) {
             val target = argument.extractEnumValueArgumentInfo()?.enumEntryName?.asString()
                 ?.let(KotlinTarget::valueOrNull) ?: continue
@@ -84,7 +83,7 @@ internal class DslMarkerTargetsChecker(
     }
 
     /**
-     * The targets on which scope control reacts to a marker; `ANNOTATION_CLASS` counts because
+     * The targets on which scope control reacts to a marker. `ANNOTATION_CLASS` counts because
      * it is a classifier declaration.
      */
     private fun KotlinTarget.isEffectiveDslMarkerTarget(): Boolean =

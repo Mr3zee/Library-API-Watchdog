@@ -598,7 +598,7 @@ class WatchdogProjectTest {
         // `test`. Android names them after the variant (`debugUnitTest`, `debugAndroidTest`), the
         // Android target of a multiplatform project uses `hostTest` and `deviceTest`, and custom
         // compilations follow the same shape. A locally declared one stands in for all of them
-        // without needing an Android SDK; the SDK-gated Android tests below build the real names.
+        // without needing an Android SDK. The SDK-gated Android tests below build the real names.
         val project = object : WatchdogProject(
             explicitApi = false,
             extraBuildScript = """

@@ -59,7 +59,7 @@ From `docs/`, run `npm run sync:diagnostic-exemptions` to copy every marked para
 separate paragraph of its message in `diagnostics.json`. CI runs
 `npm run check:diagnostic-exemptions` and fails when the registry is stale or a marker is missing.
 The stateful-class page uses a `diagnostic-exemption-table` marker instead because its three
-diagnostics share one page; the task composes their standard messages from the table rows.
+diagnostics share one page. The task composes their standard messages from the table rows.
 
 When the page needs to name every possible declaration kind but the diagnostic has a kind argument,
 add a substitution marker between the exemption marker and its paragraph. The page keeps the

@@ -85,11 +85,11 @@ internal class OverloadParameterOrderChecker(
      * top-level functions of the same package, or the sibling constructors of the class, which
      * are not inherited. An extension is called like a member of the type it extends, so the
      * same-named members of its receiver class join the list, wherever the extension itself is
-     * declared; a receiver that is no class - a type parameter without a class bound, say -
+     * declared. A receiver that is no class - a type parameter without a class bound, say -
      * contributes nothing.
      *
      * Inherited members surface as fake overrides and are unwrapped to the original declaration,
-     * whose source, visibility, and exemption the sibling gate inspects; members originating in
+     * whose source, visibility, and exemption the sibling gate inspects. Members originating in
      * dependencies fall out there, having no real source.
      */
     context(context: CheckerContext)
@@ -141,7 +141,7 @@ internal class OverloadParameterOrderChecker(
 
     /**
      * Reports the first pair of names shared by both parameter lists whose relative order
-     * differs, in [current]'s order, and returns true; returns false without reporting when
+     * differs, in [current]'s order, and returns true. Returns false without reporting when
      * the shared names are ordered consistently.
      */
     context(context: CheckerContext, reporter: DiagnosticReporter)

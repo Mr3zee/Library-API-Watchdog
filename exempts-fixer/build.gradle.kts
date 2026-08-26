@@ -33,7 +33,7 @@ kotlin {
     pluginDevKit.testAgainst.configureEach { test { dependsOn(compilerIntegrationTest) } }
 }
 
-// These are regular unit tests; unlike compiler-plugin suites, they do not generate Java runners.
+// These are regular unit tests. Unlike compiler-plugin suites, they do not generate Java runners.
 tasks.generateTests { enabled = false }
 
 tasks.withType<Test>().configureEach {

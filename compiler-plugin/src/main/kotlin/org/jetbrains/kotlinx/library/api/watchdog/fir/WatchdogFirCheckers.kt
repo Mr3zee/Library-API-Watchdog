@@ -81,7 +81,7 @@ class WatchdogFirCheckers internal constructor(
         override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> = setOfNotNull(
             UndocumentedApiChecker(session, severities)
                 .unlessDisabled(WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API),
-            // Not user-configurable; skipped only by the adoption task.
+            // Not user-configurable. Skipped only by the adoption task.
             ExemptionExplanationChecker.declarationChecker
                 .takeIf { enabled && !updatingBackwardsCompatibilityExempts },
             MutableCollectionChecker(session, severities)

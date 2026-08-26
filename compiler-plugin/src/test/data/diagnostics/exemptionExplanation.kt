@@ -92,7 +92,7 @@ public enum class ExternalContractWithDescription { ENTRY }
 <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyKotlinOnlyApi(reason = ExemptionReason.IGNORE_JAVA_INTEROP)<!>
 public suspend fun ignoredInteropWithoutDescription(): Int = 0
 
-@IntentionallyKotlinOnlyApi(reason = ExemptionReason.IGNORE_JAVA_INTEROP, description = "Coroutine-first API; Java gets the blocking facade.")
+@IntentionallyKotlinOnlyApi(reason = ExemptionReason.IGNORE_JAVA_INTEROP, description = "Coroutine-first API. Java gets the blocking facade.")
 public suspend fun ignoredInteropWithDescription(): Int = 0
 
 // Exemptions on properties from constructor parameters are validated once, on the property.

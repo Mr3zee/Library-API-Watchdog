@@ -20,6 +20,11 @@ import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyNullableBoolean
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyPairOrTriple
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEqualsHashCodeOrToString
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutJvmOverloads
+import org.jetbrains.kotlinx.library.api.watchdog.InternalAnnotationMarker
+
+@InternalAnnotationMarker
+@Target(AnnotationTarget.CLASS)
+public annotation class PlatformInternalApi
 
 // Contract diagnostics are reported once, on the expect declaration.
 
@@ -72,6 +77,11 @@ public expect fun exemptDefault(value: Int = 1): Int
 
 public expect fun reportedDefault(value: Int = 1): Int
 
+// Platform typealias expansions must still be swept because the expect contract can't expose
+// dependencies that exist only in an actual source set.
+
+public expect class PlatformAlias
+
 // MODULE: jvm()()(common)
 // FILE: jvm.kt
 
@@ -107,3 +117,8 @@ public actual suspend fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>reportedSuspe
 public actual fun exemptDefault(value: Int): Int = value
 
 public actual fun <!DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS!>reportedDefault<!>(value: Int): Int = value
+
+@PlatformInternalApi
+public class PlatformInternalType
+
+public actual typealias PlatformAlias = <!PUBLIC_TYPE_WITH_INTERNAL_API!>PlatformInternalType<!>

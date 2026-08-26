@@ -21,7 +21,7 @@ public fun tag(vararg values: String, <!REQUIRED_PARAMETER_AFTER_OPTIONAL!>name<
 // A function-type parameter that is not last has no trailing-lambda syntax to preserve.
 public fun schedule(delay: Long = 0L, <!REQUIRED_PARAMETER_AFTER_OPTIONAL!>action<!>: () -> Unit, <!REQUIRED_PARAMETER_AFTER_OPTIONAL!>name<!>: String) {}
 
-// A trailing lambda excuses only itself; an earlier required parameter is still reported.
+// A trailing lambda excuses only itself. An earlier required parameter is still reported.
 public fun namedSchedule(
     delay: Long = 0L,
     <!REQUIRED_PARAMETER_AFTER_OPTIONAL!>name<!>: String,

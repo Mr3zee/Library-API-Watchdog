@@ -16,7 +16,7 @@ import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnostics
  * Compiles the synthetic corpus once with every watchdog diagnostic enabled as a warning and
  * prints how often each diagnostic fired, using the plugin's `diagnosticsOutputFile` recorder.
  * Run it through the Gradle `benchmarkCorpusAudit` task after changing the corpus templates to
- * verify that every benchmark-eligible checker still has work to do; it doubles as a smoke test
+ * verify that every benchmark-eligible checker still has work to do. It doubles as a smoke test
  * of the whole-compilation benchmark path. Always-error diagnostics have no triggering corpus
  * shape.
  */

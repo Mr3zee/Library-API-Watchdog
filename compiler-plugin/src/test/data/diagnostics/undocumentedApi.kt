@@ -145,7 +145,7 @@ public class EscapedKDocSubjects(
     public val `when`: Int = `class`
 }
 
-// A class KDoc covers a property only through a matching `@property` tag; the KDoc's mere
+// A class KDoc covers a property only through a matching `@property` tag. The KDoc's mere
 // presence doesn't document the properties.
 
 /**

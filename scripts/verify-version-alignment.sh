@@ -66,7 +66,7 @@ while IFS= read -r usage; do
   fi
 
   if [[ "$actual_version" != "$expected_version" ]]; then
-    echo "$file:$line_number uses '$actual_version'; expected '$expected_version'." >&2
+    echo "$file:$line_number uses '$actual_version'. Expected '$expected_version'." >&2
     failures=1
   fi
 done <<< "$usages"
@@ -104,7 +104,7 @@ while IFS= read -r usage; do
   fi
 
   if [[ "$actual_version" != "$expected_version" ]]; then
-    echo "$file:$line_number uses Kotlin '$actual_version'; expected '$expected_version'." >&2
+    echo "$file:$line_number uses Kotlin '$actual_version'. Expected '$expected_version'." >&2
     failures=1
   fi
 done <<< "$kotlin_plugin_usages"
@@ -135,7 +135,7 @@ while IFS= read -r usage; do
   fi
 
   if [[ "$actual_version" != "$expected_version" ]]; then
-    echo "$file:$line_number references Kotlin '$actual_version'; expected '$expected_version'." >&2
+    echo "$file:$line_number references Kotlin '$actual_version'. Expected '$expected_version'." >&2
     failures=1
   fi
 done <<< "$kotlin_reference_usages"

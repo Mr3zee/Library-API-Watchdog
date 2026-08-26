@@ -82,7 +82,7 @@ public inline fun newBuffer(value: String): Any = StringBuilder(value)
 
 public inline fun noop() {}
 
-// The wrapper resolves the reified type argument and hands it over; `as` and `as?` only narrow
+// The wrapper resolves the reified type argument and hands it over. `as` and `as?` only narrow
 // the delegate's result. No warning.
 
 public inline fun <reified T> lookup(name: String): T = Registry.lookup(name, T::class) as T
@@ -189,7 +189,7 @@ internal inline fun internalChoose(value: Int): Int = if (value < 0) negImpl() e
 
 private inline fun privateChoose(value: Int): Int = if (value < 0) negImpl() else posImpl()
 
-// Only inline bodies freeze into users; a non-inline function or accessor keeps its logic in
+// Only inline bodies freeze into users. A non-inline function or accessor keeps its logic in
 // the library binary. No warning.
 
 public fun regularChoose(value: Int): Int = if (value < 0) negImpl() else posImpl()

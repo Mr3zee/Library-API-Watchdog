@@ -24,7 +24,7 @@ public annotation class InternalApi
 @InternalApi
 public class InternalType
 
-/** Anchors the file-facade diagnostic, whose top-level scope cannot be protected. */
+/** Anchors the file-facade diagnostic, whose top-level scope can't be protected. */
 public fun <!TOP_LEVEL_API_WITHOUT_JVM_NAME!>facadeAnchor<!>(): Int = 0
 
 /** Hosts protected declarations for every declaration-level API check. */

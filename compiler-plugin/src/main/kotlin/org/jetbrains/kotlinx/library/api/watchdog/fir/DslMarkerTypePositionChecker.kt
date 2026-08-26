@@ -41,7 +41,7 @@ internal class DslMarkerTypePositionChecker(
         }
 
         // `val`/`var` constructor parameters also produce a property with a fake source pointing
-        // at the same parameter text; skipping fake sources keeps the report single.
+        // at the same parameter text. Skipping fake sources keeps the report single.
         if (declaration.source?.kind != KtRealSourceElementKind) {
             return
         }

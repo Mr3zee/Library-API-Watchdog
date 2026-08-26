@@ -197,7 +197,7 @@ open class AndroidLibraryWatchdogProject(
  * `com.android.kotlin.multiplatform.library` plugin, from AGP 8 or, with [agp9], from AGP 9.
  * The android target names its main compilation `main`, its unit test compilation `hostTest`,
  * and its instrumented test compilation `deviceTest`. Tests must call
- * [assumeAndroidBuildEnvironment] first; AGP 8 builds are launched with [agpCompatibleGradle]
+ * [assumeAndroidBuildEnvironment] first. AGP 8 builds are launched with [agpCompatibleGradle]
  * and AGP 9 builds with the current Gradle.
  */
 open class KmpAndroidWatchdogProject(

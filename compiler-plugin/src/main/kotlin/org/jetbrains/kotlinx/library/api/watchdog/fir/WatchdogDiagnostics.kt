@@ -61,7 +61,7 @@ class ConfigurableWatchdogDiagnostic<out F : AbstractKtDiagnosticFactory>(
 }
 
 /**
- * Per-compilation severity overrides keyed by diagnostic name; unlisted diagnostics are errors.
+ * Per-compilation severity overrides keyed by diagnostic name. Unlisted diagnostics are errors.
  * Returns null for diagnostics overridden to [WatchdogSeverity.NONE]: their check is disabled,
  * and [WatchdogFirCheckers] doesn't even register a checker all of whose diagnostics are
  * disabled.

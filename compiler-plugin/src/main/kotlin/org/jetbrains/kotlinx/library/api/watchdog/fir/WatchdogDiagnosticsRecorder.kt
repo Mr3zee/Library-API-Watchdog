@@ -79,7 +79,7 @@ private fun recordingDiagnosticReporter(delegate: DiagnosticReporter, recorder: 
     delegatingDiagnosticReporter(delegate) { diagnostic, context ->
         // The suppression check sees the annotations in scope at report time. A @Suppress on an
         // element the checkers have not visited yet (a constructor reported on while checking its
-        // class) is resolved later by the framework's pending reporter and can slip through here;
+        // class) is resolved later by the framework's pending reporter and can slip through here.
         // that only costs a recorded entry for a diagnostic the compiler ends up not reporting.
         if (diagnostic != null && !context.isDiagnosticSuppressed(diagnostic)) {
             recorder.record(diagnostic, context)

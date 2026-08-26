@@ -111,10 +111,16 @@ public class Vault {
     <!MANGLED_JVM_NAME_PUBLIC_API!>public constructor(id: UserId)<!>
 }
 
-// The @get:JvmName on the parameter fixes the property getter; the constructor stays hidden.
+// A context parameter is also passed to the constructor and hides it behind a synthetic one.
+public class ContextWallet {
+    <!MANGLED_JVM_NAME_PUBLIC_API!><!UNSUPPORTED!>context(id: UserId)<!>
+    public constructor()<!>
+}
+
+// The @get:JvmName on the parameter fixes the property getter. The constructor stays hidden.
 public class Purse<!MANGLED_JVM_NAME_PUBLIC_API!>(@get:JvmName("getIdNamed") public val id: UserId)<!>
 
-// The @get:JvmSynthetic on the parameter hides the property getter; the constructor stays hidden.
+// The @get:JvmSynthetic on the parameter hides the property getter. The constructor stays hidden.
 public class Pouch<!MANGLED_JVM_NAME_PUBLIC_API!>(@get:JvmSynthetic public val id: UserId)<!>
 
 // @JvmExposeBoxed generates Java-callable boxed variants next to the mangled entry points:
@@ -159,8 +165,8 @@ public value class Wrapped(public val id: UserId) {
     public fun pretty(): String = "user"
 }
 
-// suspend functions are not Java-friendly regardless of the name: no warning.
-public suspend fun fetch(id: UserId) {}
+// Suspend functions are reported by the Kotlin-only API check instead of this one.
+public suspend fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>fetch<!>(id: UserId) {}
 
 // Overrides repeat the fixed signature reported on the base declaration.
 
@@ -190,7 +196,7 @@ internal fun published(id: UserId) {}
 @IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN)
 public fun acknowledged(id: UserId) {}
 
-// The parameter exemption covers the property made from it; each constructor is acknowledged
+// The parameter exemption covers the property made from it. Each constructor is acknowledged
 // separately.
 public class Account @IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN) constructor(
     @IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN) public val id: UserId,

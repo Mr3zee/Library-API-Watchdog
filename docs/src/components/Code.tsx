@@ -427,7 +427,7 @@ const codeLink: AnnotationHandler = {
 
 /**
  * Underlines the exact source range reported by the compiler and shows its diagnostics in an
- * IntelliJ-style tooltip. The remark plugin validates the `// !diag[/range/] NAME` annotations;
+ * IntelliJ-style tooltip. The remark plugin validates the `// !diag[/range/] NAME` annotations.
  * see plugins/remark-code-samples.mjs.
  */
 const diagnostics: AnnotationHandler = {

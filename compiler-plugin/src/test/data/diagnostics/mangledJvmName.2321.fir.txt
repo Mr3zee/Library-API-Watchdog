@@ -129,6 +129,13 @@ FILE: mangledJvmName.kt
         }
 
     }
+    public final class ContextWallet : R|kotlin/Any| {
+        context(id: R|foo/bar/UserId|)
+        public constructor(): R|foo/bar/ContextWallet| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
     public final class Purse : R|kotlin/Any| {
         public constructor(id: R|foo/bar/UserId|): R|foo/bar/Purse| {
             super<R|kotlin/Any|>()

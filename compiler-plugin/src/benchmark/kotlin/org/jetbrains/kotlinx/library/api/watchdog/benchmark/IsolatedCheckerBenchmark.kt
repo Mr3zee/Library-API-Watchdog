@@ -42,7 +42,7 @@ import org.openjdk.jmh.infra.Blackhole
  * The setup compiles the corpus to resolved FIR once, without the watchdog. Each operation then
  * sweeps the whole corpus with the compiler's own checker-running collector visitor, wired to
  * exactly one checker (the `none` value runs the traversal with zero checkers and is the
- * baseline to subtract). Time is the per-sweep average; the GC profiler's `gc.alloc.rate.norm`
+ * baseline to subtract). Time is the per-sweep average. The GC profiler's `gc.alloc.rate.norm`
  * is bytes allocated per sweep.
  *
  * Compared to the whole-compilation benchmark this excludes plugin loading, message rendering,

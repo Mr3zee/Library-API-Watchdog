@@ -1,0 +1,9 @@
+FILE: dslMarkerEmptyTarget.kt
+    package foo.bar
+
+    @R|kotlin/DslMarker|() @R|kotlin/annotation/Target|() public final annotation class EmptyTargetsDsl : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/EmptyTargetsDsl| {
+            super<R|kotlin/Any|>()
+        }
+
+    }

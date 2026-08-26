@@ -29,7 +29,7 @@ public typealias Callback = (Int) -> Unit
 
 public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>onEvent<!>(callback: Callback) {}
 
-// A vararg's array is compiler-generated; callers still pass Kotlin function values one by one.
+// A vararg's array is compiler-generated. Callers still pass Kotlin function values one by one.
 public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>onEvents<!>(vararg callbacks: (Int) -> Unit) {}
 
 public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>raceAll<!>(vararg work: suspend () -> Int) {}
@@ -92,13 +92,14 @@ public abstract class BaseResolver {
 // Constructors can't carry @JvmSynthetic: no warning.
 public class Watcher(onChange: () -> Unit)
 
-// A signature mangled by a value class is already invisible to Java sources and reported by
-// MANGLED_JVM_NAME_PUBLIC_API (muted here), and so is everything inside a value class.
+// A non-suspend signature mangled by a value class is already invisible to Java sources and
+// reported by MANGLED_JVM_NAME_PUBLIC_API (muted here). Suspend functions remain owned by this
+// check even when their signature is also mangled. Everything inside a value class is skipped.
 
 @JvmInline
 public value class UserId(public val raw: String)
 
-public suspend fun fetchUser(id: UserId): UserId = id
+public suspend fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>fetchUser<!>(id: UserId): UserId = id
 
 @JvmInline
 public value class Wrapped(public val raw: String) {
