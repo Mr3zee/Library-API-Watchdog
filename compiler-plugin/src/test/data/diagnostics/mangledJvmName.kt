@@ -138,6 +138,11 @@ public open class ExposedService {
     public open fun <!MANGLED_JVM_NAME_PUBLIC_API!>handle<!>(id: UserId) {}
 
     public open val <!MANGLED_JVM_NAME_PUBLIC_API!>owner<!>: UserId get() = UserId("x")
+
+    public open var <!MANGLED_JVM_NAME_PUBLIC_API!>editor<!>: UserId = UserId("x")
+
+    @get:JvmSynthetic
+    public open var <!MANGLED_JVM_NAME_PUBLIC_API!>setterOnly<!>: UserId = UserId("x")
 }
 
 @OptIn(ExperimentalStdlibApi::class)

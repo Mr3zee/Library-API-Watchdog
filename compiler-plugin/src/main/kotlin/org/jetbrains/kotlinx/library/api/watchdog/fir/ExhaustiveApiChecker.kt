@@ -36,12 +36,17 @@ internal class ExhaustiveApiChecker(
             return
         }
 
+        val fix = WatchdogDiagnosticMessages.parameterValueFor(
+            diagnostic = WatchdogDiagnostics.EXHAUSTIVE_PUBLIC_API.name,
+            value = if (declaration.classKind == ClassKind.ENUM_CLASS) "enumFix" else "sealedFix",
+        )
         reporter.reportOn(
             source = declaration.source,
             factory = factory,
             a = declaration.classKind,
             b = declaration.name,
             c = declaration.classKind,
+            d = fix,
         )
     }
 }

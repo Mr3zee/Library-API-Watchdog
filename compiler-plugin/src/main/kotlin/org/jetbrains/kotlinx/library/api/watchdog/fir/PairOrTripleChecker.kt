@@ -26,12 +26,17 @@ internal class PairOrTripleChecker(
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun report(source: KtSourceElement?, kind: String, name: Name, violation: Name) {
         val factory = severities[WatchdogDiagnostics.PAIR_OR_TRIPLE_PUBLIC_API] ?: return
+        val components = WatchdogDiagnosticMessages.parameterValueFor(
+            diagnostic = WatchdogDiagnostics.PAIR_OR_TRIPLE_PUBLIC_API.name,
+            value = if (violation == pairType.shortClassName) "pairComponents" else "tripleComponents",
+        )
         reporter.reportOn(
             source = source,
             factory = factory,
             a = kind,
             b = name,
             c = violation,
+            d = components,
         )
     }
 

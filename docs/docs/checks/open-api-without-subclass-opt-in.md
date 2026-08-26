@@ -18,7 +18,7 @@ or a non-sealed interface in the public API.
 ```kotlin
 // !hide-focused
 /** Base type for components hosted by an application. */
-// !diag[/Component/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["class","Component"]
+// !diag[/Component/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["class","Component","$classFix"]
 public open class Component
 ```
 
@@ -35,7 +35,7 @@ Unrestricted open API is one of the classic ways a
 ```kotlin
 // !hide-focused
 /** Base type for UI elements rendered by an application. */
-// !diag[/Widget/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["class","Widget"]
+// !diag[/Widget/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["class","Widget","$classFix"]
 public open class Widget
 ```
 
@@ -52,7 +52,7 @@ public open class Widget internal constructor()
 ```kotlin
 // !hide-focused
 /** Extension point invoked during application startup. */
-// !diag[/Plugin/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["interface","Plugin"]
+// !diag[/Plugin/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["interface","Plugin","$interfaceFix"]
 public interface Plugin {
     // !hide-focused
     /** Initializes the plugin for the current application. */
@@ -98,7 +98,8 @@ public interface Plugin {
 ## Exemption
 
 <!-- diagnostic-exemption: OPEN_API_WITHOUT_SUBCLASS_OPT_IN -->
-If this API shape is intentional, apply `@IntentionallyOpen` to the class.
+<!-- diagnostic-exemption-substitution: class or interface => {0} -->
+If this API shape is intentional, apply `@IntentionallyOpen` to the class or interface.
 
 Use the exemption when unrestricted subclassing is an intended, stable part of the contract:
 

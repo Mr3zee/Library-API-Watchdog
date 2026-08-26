@@ -1,7 +1,7 @@
 # DSL markers on no-op type positions
 
-`DSL_MARKER_NOOP_TYPE_POSITION` reports a `@DslMarker` annotation written directly on a type
-position where it has no effect on scope control.
+`DSL_MARKER_NOOP_TYPE_POSITION` reports a `@DslMarker` annotation written directly on a named
+value's type where it has no effect on scope control.
 
 |                  |                                                       |
 |------------------|-------------------------------------------------------|
@@ -12,9 +12,8 @@ position where it has no effect on scope control.
 
 ## What it reports
 
-A `@DslMarker` written on a function, a property, a plain parameter type, a return
-type, or a property or variable type marks a value that is only ever accessed by name, thus it
-restricts nothing:
+A `@DslMarker` directly on a regular parameter, function return, property, or local variable type
+marks a value that is accessed by name at that declaration, so it restricts nothing there.
 
 ```kotlin
 // !hide-focused
@@ -109,21 +108,15 @@ public fun process(tag: Tag) { }
   from context resolution.
 - Markers on supertypes, type parameter bounds, and type alias expansions are effective carriers
   and are not reported: `class Div : @TreeDsl Tag()`, `typealias MarkedTag = @TreeDsl Tag`.
-- A marker nested inside a type argument is not analyzed at all (`List<@TreeDsl Tag>` triggers
-  nothing), which is a known limitation rather than an endorsement.
-
-[//]: # (TODO known limittaion? `List<@TreeDsl Tag>`)
+- Markers nested inside type arguments are deliberately accepted. Generic substitution can expose
+  the annotated type later: `tags.first()` from a `List<@TreeDsl Tag>` has the annotated type, and
+  the marker becomes effective if that value is then used as an implicit receiver (inside the `with` function, for example).
 
 ## Exemption
 
-[//]: # (TODO huh? - investigate)
-
 There is no `@Intentionally*` annotation for this diagnostic: a marker on a no-op type position
 should normally be moved to an effective position (a receiver, a context parameter, or a supertype)
-or removed. A deliberate flow-through use is the exception: a value whose type carries the marker
-can later become an implicit receiver through type inference (`with(value) { ... }`). Suppress the
-diagnostic on that declaration with `@Suppress("DSL_MARKER_NOOP_TYPE_POSITION")` when that use is
-intended. To silence the check project-wide, lower its severity with the Gradle property below.
+or removed.
 
 ## Configuration
 

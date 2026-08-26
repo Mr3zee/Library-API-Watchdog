@@ -80,5 +80,5 @@ public annotation class PlainTypeAnnotation
 
 public fun plain(tag: @PlainTypeAnnotation Tag) { }
 
-// Known limitation: markers nested in type arguments are not analyzed.
+// Nested markers may propagate through generic substitution and are deliberately accepted.
 public val tags: List<@TreeDsl Tag> = emptyList()

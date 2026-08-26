@@ -23,10 +23,10 @@ test('validates diagnostic annotations in every documentation code sample', () =
 test('accepts several diagnostics on shared and distinct inline ranges', () => {
   assert.doesNotThrow(() =>
     transform(`// !diag[/Config/] DATA_CLASS_PUBLIC_API ["Config"]
-// !diag[/Config/] UNDOCUMENTED_PUBLIC_API ["class","Config"]
+// !diag[/Config/] UNDOCUMENTED_PUBLIC_API ["class","Config","$declarationDocumentation"]
 public data class Config(
-    // !diag[/tags/] UNDOCUMENTED_PUBLIC_API ["property","tags"]
-    // !diag[/MutableList<String>/] MUTABLE_COLLECTION_PUBLIC_API ["property","tags","MutableList"]
+    // !diag[/tags/] UNDOCUMENTED_PUBLIC_API ["property","tags","$constructorPropertyDocumentation"]
+    // !diag[/MutableList<String>/] MUTABLE_COLLECTION_PUBLIC_API ["property","tags","MutableList","$returnTypeFix"]
     public val tags: MutableList<String>
 )`),
   );

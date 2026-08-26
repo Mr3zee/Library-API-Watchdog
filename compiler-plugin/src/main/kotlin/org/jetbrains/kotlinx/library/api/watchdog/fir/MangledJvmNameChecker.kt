@@ -82,12 +82,19 @@ internal class MangledJvmNameChecker(
             null
         }
 
-        val valueClass = getterValueClass
+        val affectedGetterValueClass = getterValueClass
             ?.takeUnless { declaration.accessorHasJavaFacingName(declaration.getter, AnnotationUseSiteTarget.PROPERTY_GETTER) }
-            ?: setterValueClass
-                ?.takeUnless { declaration.accessorHasJavaFacingName(declaration.setter, AnnotationUseSiteTarget.PROPERTY_SETTER) }
-            ?: return
-        report(declaration, "property", declaration.name, valueClass)
+        val affectedSetterValueClass = setterValueClass
+            ?.takeUnless { declaration.accessorHasJavaFacingName(declaration.setter, AnnotationUseSiteTarget.PROPERTY_SETTER) }
+
+        val (valueClass, affectedAccessors) = when {
+            affectedGetterValueClass != null && affectedSetterValueClass != null ->
+                affectedGetterValueClass to AffectedPropertyAccessors.GETTER_AND_SETTER
+            affectedGetterValueClass != null -> affectedGetterValueClass to AffectedPropertyAccessors.GETTER
+            affectedSetterValueClass != null -> affectedSetterValueClass to AffectedPropertyAccessors.SETTER
+            else -> return
+        }
+        report(declaration, "property", declaration.name, valueClass, affectedAccessors)
     }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
@@ -187,14 +194,38 @@ internal class MangledJvmNameChecker(
         }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun report(declaration: FirCallableDeclaration, kind: String, name: Name, valueClass: Name) {
+    private fun report(
+        declaration: FirCallableDeclaration,
+        kind: String,
+        name: Name,
+        valueClass: Name,
+        affectedAccessors: AffectedPropertyAccessors? = null,
+    ) {
         val factory = severities[WatchdogDiagnostics.MANGLED_JVM_NAME_PUBLIC_API] ?: return
+        val nonFinal = declaration.modality == Modality.OPEN || declaration.modality == Modality.ABSTRACT
+        val fix = WatchdogDiagnosticMessages.parameterValueFor(
+            diagnostic = WatchdogDiagnostics.MANGLED_JVM_NAME_PUBLIC_API.name,
+            value = when {
+                declaration is FirConstructor -> "constructorFix"
+                declaration is FirProperty && nonFinal -> requireNotNull(affectedAccessors).nonFinalFix
+                declaration is FirProperty -> requireNotNull(affectedAccessors).fix
+                nonFinal -> "nonFinalFunctionFix"
+                else -> "functionFix"
+            },
+        )
         reporter.reportOn(
             source = declaration.source,
             factory = factory,
             a = kind,
             b = name,
             c = valueClass,
+            d = fix,
         )
+    }
+
+    private enum class AffectedPropertyAccessors(val fix: String, val nonFinalFix: String) {
+        GETTER("propertyGetterFix", "nonFinalPropertyGetterFix"),
+        SETTER("propertySetterFix", "nonFinalPropertySetterFix"),
+        GETTER_AND_SETTER("propertyGetterAndSetterFix", "nonFinalPropertyGetterAndSetterFix"),
     }
 }

@@ -21,7 +21,7 @@ The diagnostic fires once per file.
 ```kotlin Health.kt
 // !hide-focused
 /** Checks whether the network is reachable. */
-// !diag[/ping/] TOP_LEVEL_API_WITHOUT_JVM_NAME ["HealthKt"]
+// !diag[/ping/] TOP_LEVEL_API_WITHOUT_JVM_NAME ["HealthKt","Java-visible top-level function"]
 public fun ping(): Int = 0
 ```
 
@@ -40,7 +40,7 @@ for how top-level declarations actually compile.
 ```kotlin Network.kt
 // !hide-focused
 /** Connects to the network. */
-// !diag[/connect/] TOP_LEVEL_API_WITHOUT_JVM_NAME ["NetworkKt"]
+// !diag[/connect/] TOP_LEVEL_API_WITHOUT_JVM_NAME ["NetworkKt","Java-visible top-level functions"]
 public fun connect(): Int = 0
 
 // !hide-focused

@@ -1,7 +1,7 @@
 package org.jetbrains.kotlinx.library.api.watchdog.fir
 
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
-import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactory3
+import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactory4
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
@@ -147,7 +147,7 @@ internal class OverloadParameterOrderChecker(
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun reportSwappedPair(
         declaration: FirFunction,
-        factory: KtDiagnosticFactory3<Name, Name, Name>,
+        factory: KtDiagnosticFactory4<Name, Name, Name, String>,
         callableName: Name,
         other: List<FirValueParameterSymbol>,
         current: List<FirValueParameter>,
@@ -167,6 +167,7 @@ internal class OverloadParameterOrderChecker(
                         a = firstName,
                         b = secondName,
                         c = callableName,
+                        d = if (declaration is FirConstructor) "constructor" else "function",
                     )
                     return true
                 }

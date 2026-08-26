@@ -23,7 +23,7 @@ optional one - defaulted or `vararg` - in a function or constructor in the publi
 /** Sends a request to [host]. */
 // !hide-focused
 @JvmOverloads
-// !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","request"]
+// !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","request","function"]
 public fun request(retries: Int = 3, host: String) { }
 ```
 
@@ -39,9 +39,9 @@ All required parameters behind the first optional one are reported, not just the
 @JvmOverloads
 public fun configure(
     timeout: Long = 0L,
-    // !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","configure"]
+    // !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","configure","function"]
     host: String,
-    // !diag[/port/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["port","configure"]
+    // !diag[/port/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["port","configure","function"]
     port: Int,
 ) { }
 ```
@@ -63,7 +63,7 @@ See the Kotlin library authors' guide on
 /** Connects to [host]. */
 // !hide-focused
 @JvmOverloads
-// !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","connect"]
+// !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","connect","function"]
 public fun connect(retries: Int = 3, host: String) { }
 ```
 
@@ -90,7 +90,7 @@ public fun connect(host: String, retries: Int = 3) { }
 public class Server
     // !hide-focused
     @JvmOverloads
-    // !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","Server"]
+    // !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","Server","constructor"]
     constructor(port: Int = 80, host: String)
 ```
 
@@ -122,6 +122,7 @@ public class Server
 ## Exemption
 
 <!-- diagnostic-exemption: REQUIRED_PARAMETER_AFTER_OPTIONAL -->
+<!-- diagnostic-exemption-substitution: function or constructor => {2} -->
 If this API shape is intentional, apply `@IntentionallyRequiredParameterAfterOptional` to the
 function or constructor.
 

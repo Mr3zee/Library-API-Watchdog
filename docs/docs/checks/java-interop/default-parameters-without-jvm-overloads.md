@@ -111,6 +111,7 @@ public class Connection @JvmOverloads constructor(
 ## Exemption
 
 <!-- diagnostic-exemption: DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS -->
+<!-- diagnostic-exemption-substitution: function or constructor => {0} -->
 If this API shape is intentional, apply `@IntentionallyWithoutJvmOverloads` to the function or
 constructor.
 

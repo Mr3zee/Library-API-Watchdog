@@ -37,14 +37,21 @@
       "name": "OPEN_API_WITHOUT_SUBCLASS_OPT_IN",
       "title": "Open API without subclass opt-in",
       "docs": "checks/open-api-without-subclass-opt-in",
+      "parameterValues": {
+        "classFix": [
+          "Mark it with `@SubclassOptInRequired` to control external subclassing. Alternatively, make",
+          "every externally visible constructor `internal` or `private`."
+        ],
+        "interfaceFix": [
+          "Mark it with `@SubclassOptInRequired` to control external subclassing."
+        ]
+      },
       "message": [
         "The {0} `{1}` can be subclassed outside the library without restriction, so the library can no",
         "longer add abstract members, change existing members' signatures, or tighten invariants without",
-        "breaking external subclasses. Mark it with `@SubclassOptInRequired` to control external",
-        "subclassing. For classes, another option is to make every externally visible constructor",
-        "`internal` or `private`.",
+        "breaking external subclasses. {2}",
         "",
-        "If this API shape is intentional, apply `@IntentionallyOpen` to the class."
+        "If this API shape is intentional, apply `@IntentionallyOpen` to the {0}."
       ]
     },
     {
@@ -61,21 +68,43 @@
       "name": "EXHAUSTIVE_PUBLIC_API",
       "title": "Exhaustive public API",
       "docs": "checks/exhaustive-public-api",
+      "parameterValues": {
+        "enumFix": [
+          "To keep the set extensible, replace the enum with a regular class and named instances."
+        ],
+        "sealedFix": [
+          "To keep the subtype set extensible, replace the sealed hierarchy with a non-sealed class or",
+          "interface and use `@SubclassOptInRequired` to control external subclassing."
+        ]
+      },
       "message": [
         "The {0} `{1}` can be matched exhaustively by users (a `when` with no `else` branch), so adding {2}",
-        "later makes every such `when` stop compiling.",
+        "later makes every such `when` stop compiling. {3}",
         "",
-        "If this API shape is intentional, apply `@IntentionallyExhaustive` to the enum or sealed hierarchy."
+        "If this API shape is intentional, apply `@IntentionallyExhaustive` to the {0}."
       ]
     },
     {
       "name": "UNDOCUMENTED_PUBLIC_API",
       "title": "Undocumented public API",
       "docs": "checks/undocumented-public-api",
+      "parameterValues": {
+        "declarationDocumentation": [
+          "Document the behavior users can rely on."
+        ],
+        "memberPropertyDocumentation": [
+          "Document the behavior users can rely on. Add `KDoc` directly, or add an `@property` tag for",
+          "the property to the containing class's `KDoc`."
+        ],
+        "constructorPropertyDocumentation": [
+          "Document the behavior users can rely on. Add `KDoc` directly, or add an `@property` or `@param`",
+          "tag for the property to the containing class's `KDoc`."
+        ]
+      },
       "message": [
         "The {0} `{1}` is part of the public API but has no `KDoc`, so users can only guess the usage",
         "contract from the implementation, and any later change risks breaking a usage nobody wrote down as",
-        "supported. Document the behavior users can rely on.",
+        "supported. {2}",
         "",
         "If this API shape is intentional, apply `@IntentionallyUndocumented` directly to the undocumented",
         "declaration."
@@ -185,10 +214,22 @@
       "name": "MUTABLE_COLLECTION_PUBLIC_API",
       "title": "Mutable collections in public API",
       "docs": "checks/mutable-collection-public-api",
+      "parameterValues": {
+        "returnTypeFix": [
+          "Expose a read-only type instead (arrays count as mutable collections too), and hand out a",
+          "defensive copy where needed."
+        ],
+        "parameterFix": [
+          "Accept a read-only type instead (arrays count as mutable collections too), and make a copy",
+          "before mutating it."
+        ],
+        "typeParameterFix": [
+          "Constrain the type parameter to a read-only collection type instead."
+        ]
+      },
       "message": [
         "The {0} `{1}` exposes the mutable collection type `{2}`. Once a mutable collection is shared across",
-        "the API boundary, it is unclear whether user-side and library-side mutations affect each other, freely.",
-        "Accept and return read-only types instead (arrays count as mutable collections too), handing out defensive copies where needed.",
+        "the API boundary, it is unclear whether user-side and library-side mutations affect each other. {3}",
         "",
         "If this API shape is intentional, apply `@IntentionallyMutableCollection` to the declaration,",
         "parameter, or type usage."
@@ -198,9 +239,17 @@
       "name": "PAIR_OR_TRIPLE_PUBLIC_API",
       "title": "Pair and Triple in public API",
       "docs": "checks/pair-or-triple-public-api",
+      "parameterValues": {
+        "pairComponents": [
+          "`first` and `second`"
+        ],
+        "tripleComponents": [
+          "`first`, `second`, and `third`"
+        ]
+      },
       "message": [
         "The {0} `{1}` exposes the tuple type `{2}`. Tuple components carry no domain meaning: at the use",
-        "site `first`/`second`/`third` and positional destructuring reveal nothing about the values, and the",
+        "site {3} and positional destructuring reveal nothing about the values, and the",
         "fixed shape can't evolve - adding a value means switching to a different type, breaking users.",
         "Declare a small class with descriptively named properties instead.",
         "",
@@ -217,8 +266,7 @@
         "general to the specific: essential inputs first, optional inputs - defaulted and `vararg` parameters",
         "- last. Move the required parameter in front of the optional ones.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyRequiredParameterAfterOptional` to the",
-        "function or constructor."
+        "If this API shape is intentional, apply `@IntentionallyRequiredParameterAfterOptional` to the {2}."
       ]
     },
     {
@@ -231,8 +279,7 @@
         "parameters invites silently swapped arguments that still compile. Keep shared parameters in the",
         "same relative order across overloads.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyInconsistentParameterOrder` to the function",
-        "or constructor."
+        "If this API shape is intentional, apply `@IntentionallyInconsistentParameterOrder` to the {3}."
       ]
     },
     {
@@ -280,11 +327,51 @@
       "name": "MANGLED_JVM_NAME_PUBLIC_API",
       "title": "Mangled JVM names in public API",
       "docs": "checks/java-interop/mangled-jvm-name-public-api",
+      "parameterValues": {
+        "functionFix": [
+          "This mangles the JVM method name, so Java sources can't call it. Rename it with `@JvmName`,",
+          "or generate a Java-callable boxed variant with `@JvmExposeBoxed`."
+        ],
+        "nonFinalFunctionFix": [
+          "This mangles the JVM method name, so Java sources can't call it. Open and abstract functions",
+          "support neither `@JvmName` nor a boxed variant from `@JvmExposeBoxed`, so change the signature",
+          "to avoid the value class if Java access is required."
+        ],
+        "propertyGetterFix": [
+          "This mangles the getter's JVM name, so Java sources can't call the getter. Rename it with",
+          "`@get:JvmName`, or generate a Java-callable boxed variant with `@JvmExposeBoxed`."
+        ],
+        "propertySetterFix": [
+          "This mangles the setter's JVM name, so Java sources can't call the setter. Rename it with",
+          "`@set:JvmName`, or generate a Java-callable boxed variant with `@JvmExposeBoxed`."
+        ],
+        "propertyGetterAndSetterFix": [
+          "This mangles both accessors' JVM names, so Java sources can't call either accessor. Rename them",
+          "with `@get:JvmName` and `@set:JvmName`, or generate Java-callable boxed variants with",
+          "`@JvmExposeBoxed`."
+        ],
+        "nonFinalPropertyGetterFix": [
+          "This mangles the getter's JVM name, so Java sources can't call the getter. Open and abstract",
+          "properties support neither `@get:JvmName` nor a boxed getter from `@JvmExposeBoxed`, so change",
+          "the signature to avoid the value class if Java access is required."
+        ],
+        "nonFinalPropertySetterFix": [
+          "This mangles the setter's JVM name, so Java sources can't call the setter. Open and abstract",
+          "properties support neither `@set:JvmName` nor a boxed setter from `@JvmExposeBoxed`, so change",
+          "the signature to avoid the value class if Java access is required."
+        ],
+        "nonFinalPropertyGetterAndSetterFix": [
+          "This mangles both accessors' JVM names, so Java sources can't call either accessor. Open and",
+          "abstract properties support neither accessor `@JvmName` annotations nor boxed variants from",
+          "`@JvmExposeBoxed`, so change the signature to avoid the value class if Java access is required."
+        ],
+        "constructorFix": [
+          "This hides the source constructor behind a synthetic one, so Java sources can't call it. Generate",
+          "a Java-callable boxed constructor with `@JvmExposeBoxed`."
+        ]
+      },
       "message": [
-        "The {0} `{1}` has the `value class` `{2}` in its signature, so its compiled JVM name is mangled -",
-        "or, for a constructor, hidden behind a synthetic one - and Java sources can't call it. Kotlin users",
-        "are unaffected. Give the compiled code a Java-callable shape with `@JvmName`",
-        "(`@get:JvmName`/`@set:JvmName` on property accessors) or with `@JvmExposeBoxed`.",
+        "The {0} `{1}` has the `value class` `{2}` in its signature. {3}",
         "",
         "If this API shape is intentional, apply `@IntentionallyMangledJvmName` to the declaration or an",
         "enclosing class."
@@ -342,12 +429,24 @@
       "name": "COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS",
       "title": "Companion property without static access",
       "docs": "checks/java-interop/companion-property-without-static-access",
+      "parameterValues": {
+        "getterFix": [
+          "Mark the property with `@JvmStatic` to add a static getter on `{0}`. To change only this accessor,",
+          "use `@get:JvmStatic` to expose it or `@get:JvmSynthetic` to hide it."
+        ],
+        "setterFix": [
+          "Mark the property with `@JvmStatic` to add a static setter on `{0}`. To change only this accessor,",
+          "use `@set:JvmStatic` to expose it or `@set:JvmSynthetic` to hide it."
+        ],
+        "getterAndSetterFix": [
+          "Mark the property with `@JvmStatic` to add static accessors on `{0}`. To change the accessors",
+          "independently, use `@get:JvmStatic`/`@set:JvmStatic` to expose them or",
+          "`@get:JvmSynthetic`/`@set:JvmSynthetic` to hide them."
+        ]
+      },
       "message": [
         "The `companion object` property `{1}` leaves its {2} on the nested `Companion` class, so Java callers",
-        "have to use `{0}.Companion`. Mark the property with `@JvmStatic` to add static",
-        "accessors on `{0}`. Accessor-targeted annotations can expose or hide the getter and setter",
-        "independently. For properties eligible for field exposure, `@JvmField` or `const val` also provides",
-        "static access.",
+        "have to use `{0}.Companion`. {3}",
         "",
         "If this API shape is intentional, apply `@IntentionallyNonStaticCompanionApi` to the property or an",
         "enclosing class."
@@ -358,8 +457,8 @@
       "title": "Top-level API without JvmName",
       "docs": "checks/java-interop/top-level-api-without-jvm-name",
       "message": [
-        "This file's public top-level functions and properties compile into the facade class `{0}`, a name",
-        "derived from the file name: it reads as an implementation detail at Java call sites, and renaming",
+        "The facade class `{0}` contains this file's {1}. Its name is derived from the file name: it reads as",
+        "an implementation detail at Java call sites, and renaming",
         "the file - invisible to Kotlin callers - renames the facade and breaks Java callers. Choose and pin",
         "the facade name deliberately with `@file:JvmName`.",
         "",
@@ -375,8 +474,7 @@
         "the full signature is compiled, and every argument must be spelled out. Mark the {0} with",
         "`@JvmOverloads` to generate overloads that omit trailing defaulted parameters.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyWithoutJvmOverloads` to the function or",
-        "constructor."
+        "If this API shape is intentional, apply `@IntentionallyWithoutJvmOverloads` to the {0}."
       ]
     },
     {

@@ -111,12 +111,22 @@ internal class CompanionJvmExposureChecker(
         if (instanceAccessors.isEmpty()) return
 
         val factory = severities[WatchdogDiagnostics.COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS] ?: return
+        val fix = WatchdogDiagnosticMessages.parameterValueFor(
+            diagnostic = WatchdogDiagnostics.COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS.name,
+            value = when (instanceAccessors.singleOrNull()) {
+                "getter" -> "getterFix"
+                "setter" -> "setterFix"
+                else -> "getterAndSetterFix"
+            },
+            outerClass.asString(),
+        )
         reporter.reportOn(
             source = declaration.source,
             factory = factory,
             a = outerClass,
             b = declaration.name,
             c = instanceAccessors.joinToString(" and "),
+            d = fix,
         )
     }
 

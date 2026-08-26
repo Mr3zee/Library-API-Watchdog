@@ -175,6 +175,14 @@ FILE: mangledJvmName.kt
                 ^ R|foo/bar/UserId.UserId|(String(x))
             }
 
+        public open var editor: R|foo/bar/UserId| = R|foo/bar/UserId.UserId|(String(x))
+            public get(): R|foo/bar/UserId|
+            public set(value: R|foo/bar/UserId|): R|kotlin/Unit|
+
+        public open var setterOnly: R|foo/bar/UserId| = R|foo/bar/UserId.UserId|(String(x))
+            @PROPERTY_GETTER:R|kotlin/jvm/JvmSynthetic|() public get(): R|foo/bar/UserId|
+            public set(value: R|foo/bar/UserId|): R|kotlin/Unit|
+
     }
     @R|kotlin/OptIn|(markerClass = vararg(<getClass>(Q|kotlin/ExperimentalStdlibApi|))) @R|kotlin/jvm/JvmExposeBoxed|() public abstract class ExposedStore : R|kotlin/Any| {
         public constructor(): R|foo/bar/ExposedStore| {

@@ -30,12 +30,12 @@ Flags declarations in the public API that expose a mutable collection type (any 
 
 // !hide-focused
 /** Returns a caller-owned list of pending job names. */
-// !diag[/MutableList<String>/] MUTABLE_COLLECTION_PUBLIC_API ["function","produce","MutableList"]
+// !diag[/MutableList<String>/] MUTABLE_COLLECTION_PUBLIC_API ["function","produce","MutableList","$returnTypeFix"]
 public fun produce(): MutableList<String> = mutableListOf()
 
 // !hide-focused
 /** Returns batches that callers may edit in place. */
-// !diag[/List<MutableList<Int>>/] MUTABLE_COLLECTION_PUBLIC_API ["function","nested","MutableList"]
+// !diag[/List<MutableList<Int>>/] MUTABLE_COLLECTION_PUBLIC_API ["function","nested","MutableList","$returnTypeFix"]
 public fun nested(): List<MutableList<Int>> = emptyList()
 ```
 
@@ -58,7 +58,7 @@ collection crosses the API boundary, it is unclear which mutations are safe. See
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
-// !diag[/MutableList<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["property","items","MutableList"]
+// !diag[/MutableList<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["property","items","MutableList","$returnTypeFix"]
 public class Holder(public val items: MutableList<Int>)
 ```
 
@@ -85,7 +85,7 @@ public class Holder(public val items: List<Int>)
 
 // !hide-focused
 /** Removes all scheduled item IDs from [items]. */
-// !diag[/MutableSet<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["parameter","items","MutableSet"]
+// !diag[/MutableSet<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["parameter","items","MutableSet","$parameterFix"]
 public fun consume(items: MutableSet<Int>) { 
     items.add(1)
 }
@@ -118,7 +118,7 @@ public fun consume(items: Set<Int>) {
   public fun MutableList<Int>.snapshot(): List<Int> = toList()
 
   // Builder lambda receiver: reported.
-  // !diag[/MutableList<Int>\.\(\) -> Unit/] MUTABLE_COLLECTION_PUBLIC_API ["parameter","block","MutableList"]
+  // !diag[/MutableList<Int>\.\(\) -> Unit/] MUTABLE_COLLECTION_PUBLIC_API ["parameter","block","MutableList","$parameterFix"]
   public fun build(block: MutableList<Int>.() -> Unit): List<Int> =
       mutableListOf<Int>().apply(block).toList()
   ```

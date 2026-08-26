@@ -15,7 +15,7 @@ Each declaration in the public API that a user can reference is reported when it
 Only the presence of a KDoc is checked, not its content:
 
 ```kotlin
-// !diag[/Store/] UNDOCUMENTED_PUBLIC_API ["class","Store"]
+// !diag[/Store/] UNDOCUMENTED_PUBLIC_API ["class","Store","$declarationDocumentation"]
 public class Store
 ```
 
@@ -33,9 +33,9 @@ supported. Writing the contract down helps your library avoid these issues. See 
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
-// !diag[/Cache/] UNDOCUMENTED_PUBLIC_API ["class","Cache"]
+// !diag[/Cache/] UNDOCUMENTED_PUBLIC_API ["class","Cache","$declarationDocumentation"]
 public class Cache {
-    // !diag[/get/] UNDOCUMENTED_PUBLIC_API ["function","get"]
+    // !diag[/get/] UNDOCUMENTED_PUBLIC_API ["function","get","$declarationDocumentation"]
     public fun get(key: String): String? = store[key]
     // !hide-focused(1:3)
 
@@ -77,9 +77,9 @@ A class KDoc alone doesn't document its constructor properties. Each one still n
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Profile(
-    // !diag[/name/] UNDOCUMENTED_PUBLIC_API ["property","name"]
+    // !diag[/name/] UNDOCUMENTED_PUBLIC_API ["property","name","$constructorPropertyDocumentation"]
     public val name: String,
-    // !diag[/age/] UNDOCUMENTED_PUBLIC_API ["property","age"]
+    // !diag[/age/] UNDOCUMENTED_PUBLIC_API ["property","age","$constructorPropertyDocumentation"]
     public val age: Int,
 )
 ```

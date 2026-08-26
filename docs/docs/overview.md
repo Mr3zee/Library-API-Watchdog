@@ -15,23 +15,23 @@ demoted to a warning, disabled, or exempted in place.
 
 ## What it looks like
 
-A public data class that hands out a mutable collection, without documentation, triggers three
+A public data class that hands out a mutable collection, without documentation, triggers four
 diagnostics at once:
-
-```kotlin
-// !diag[/Config/] DATA_CLASS_PUBLIC_API ["Config"]
-// !diag[/Config/] UNDOCUMENTED_PUBLIC_API ["class","Config"]
-public data class Config(
-    // !diag[/tags/] UNDOCUMENTED_PUBLIC_API ["property","tags"]
-    // !diag[/MutableList<String>/] MUTABLE_COLLECTION_PUBLIC_API ["property","tags","MutableList"]
-    public val tags: MutableList<String>
-)
-```
 
 :::tip
 Diagnostics in code examples are interactive. Hover over an underlined range to read the
 diagnostic and follow its link to the full documentation.
 :::
+
+```kotlin
+// !diag[/Config/] DATA_CLASS_PUBLIC_API ["Config"]
+// !diag[/Config/] UNDOCUMENTED_PUBLIC_API ["class","Config","$declarationDocumentation"]
+public data class Config(
+    // !diag[/tags/] UNDOCUMENTED_PUBLIC_API ["property","tags","$constructorPropertyDocumentation"]
+    // !diag[/MutableList<String>/] MUTABLE_COLLECTION_PUBLIC_API ["property","tags","MutableList","$returnTypeFix"]
+    public val tags: MutableList<String>
+)
+```
 
 ### TLDR;
 

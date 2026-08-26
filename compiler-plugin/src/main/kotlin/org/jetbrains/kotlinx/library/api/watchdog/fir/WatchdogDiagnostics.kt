@@ -87,17 +87,17 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     val allDiagnostics: List<ConfigurableWatchdogDiagnostic<*>>
         field = mutableListOf()
 
-    /** Parameters: class kind, declaration name. */
-    val OPEN_API_WITHOUT_SUBCLASS_OPT_IN by configurable2<KtDeclaration, ClassKind, Name>(NAME_IDENTIFIER)
+    /** Parameters: class kind, declaration name, context-specific fix. */
+    val OPEN_API_WITHOUT_SUBCLASS_OPT_IN by configurable3<KtDeclaration, ClassKind, Name, String>(NAME_IDENTIFIER)
 
     /** Parameter: the annotated type's name. */
     val SUBCLASS_OPT_IN_WITHOUT_MARKERS by configurable1<KtAnnotationEntry, Name>()
 
-    /** Parameters: class kind, declaration name, class kind again for the member wording. */
-    val EXHAUSTIVE_PUBLIC_API by configurable3<KtClassOrObject, ClassKind, Name, ClassKind>(NAME_IDENTIFIER)
+    /** Parameters: class kind, declaration name, member wording kind, context-specific fix. */
+    val EXHAUSTIVE_PUBLIC_API by configurable4<KtClassOrObject, ClassKind, Name, ClassKind, String>(NAME_IDENTIFIER)
 
-    /** Parameters: declaration kind in words, declaration name. */
-    val UNDOCUMENTED_PUBLIC_API by configurable2<KtDeclaration, String, Name>(NAME_IDENTIFIER)
+    /** Parameters: declaration kind in words, declaration name, context-specific documentation guidance. */
+    val UNDOCUMENTED_PUBLIC_API by configurable3<KtDeclaration, String, Name, String>(NAME_IDENTIFIER)
 
     /** Parameter: the alias name. */
     val FUNCTION_TYPE_ALIAS_PUBLIC_API by configurable1<KtTypeAlias, Name>(NAME_IDENTIFIER)
@@ -114,17 +114,17 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     /** Parameters: the class name, generation-library hint, and IDEA Generate shortcut. */
     val STATEFUL_CLASS_WITHOUT_TO_STRING by configurable3<KtClassOrObject, Name, String, String>(NAME_IDENTIFIER)
 
-    /** Parameters: declaration kind in words, declaration name, the mutable type's name. */
-    val MUTABLE_COLLECTION_PUBLIC_API by configurable3<KtElement, String, Name, Name>()
+    /** Parameters: declaration kind, declaration name, mutable type name, context-specific fix. */
+    val MUTABLE_COLLECTION_PUBLIC_API by configurable4<KtElement, String, Name, Name, String>()
 
-    /** Parameters: declaration kind in words, declaration name, the tuple type's name. */
-    val PAIR_OR_TRIPLE_PUBLIC_API by configurable3<KtElement, String, Name, Name>()
+    /** Parameters: declaration kind, declaration name, tuple type name, its component names. */
+    val PAIR_OR_TRIPLE_PUBLIC_API by configurable4<KtElement, String, Name, Name, String>()
 
-    /** Parameters: the parameter name, the callable name. */
-    val REQUIRED_PARAMETER_AFTER_OPTIONAL by configurable2<KtParameter, Name, Name>(NAME_IDENTIFIER)
+    /** Parameters: the parameter name, the callable name, and the callable kind. */
+    val REQUIRED_PARAMETER_AFTER_OPTIONAL by configurable3<KtParameter, Name, Name, String>(NAME_IDENTIFIER)
 
-    /** Parameters: the two swapped parameter names, the callable name. */
-    val INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS by configurable3<KtDeclaration, Name, Name, Name>(
+    /** Parameters: the two swapped parameter names, the callable name, and the callable kind. */
+    val INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS by configurable4<KtDeclaration, Name, Name, Name, String>(
         CALLABLE_NAME_OR_CONSTRUCTOR_KEYWORD,
     )
 
@@ -137,8 +137,8 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     /** Parameters: the inlined declaration kind in words, the declaration name. */
     val INLINE_FUNCTION_WITH_LOGIC by configurable2<KtDeclaration, String, Name>(NAME_IDENTIFIER)
 
-    /** Parameters: declaration kind in words, declaration name, the value class's name. */
-    val MANGLED_JVM_NAME_PUBLIC_API by configurable3<KtDeclaration, String, Name, Name>(NAME_IDENTIFIER)
+    /** Parameters: declaration kind, declaration name, value class name, context-specific fix. */
+    val MANGLED_JVM_NAME_PUBLIC_API by configurable4<KtDeclaration, String, Name, Name, String>(NAME_IDENTIFIER)
 
     /** Parameters: the function name, what makes its shape Kotlin-only, in words. */
     val KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC by configurable2<KtDeclaration, Name, String>(NAME_IDENTIFIER)
@@ -146,11 +146,13 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     /** Parameters: the outer class name, the function name. */
     val COMPANION_API_WITHOUT_JVM_STATIC by configurable2<KtDeclaration, Name, Name>(NAME_IDENTIFIER)
 
-    /** Parameters: the outer class name, the property name, the instance accessors in words. */
-    val COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS by configurable3<KtDeclaration, Name, Name, String>(NAME_IDENTIFIER)
+    /** Parameters: outer class, property, instance accessors in words, context-specific fix. */
+    val COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS by configurable4<KtDeclaration, Name, Name, String, String>(
+        NAME_IDENTIFIER,
+    )
 
-    /** Parameter: the facade class name. Emitted once per file. */
-    val TOP_LEVEL_API_WITHOUT_JVM_NAME by configurable1<KtDeclaration, String>(NAME_IDENTIFIER)
+    /** Parameters: facade class name and the file's Java-visible callable kinds. Emitted once per file. */
+    val TOP_LEVEL_API_WITHOUT_JVM_NAME by configurable2<KtDeclaration, String, String>(NAME_IDENTIFIER)
 
     /** Parameters: declaration kind in words, declaration name. */
     val DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS by configurable2<KtDeclaration, String, Name>(NAME_IDENTIFIER)
@@ -246,6 +248,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             diagnostic = WatchdogDiagnostics.OPEN_API_WITHOUT_SUBCLASS_OPT_IN,
             rendererA = CLASS_KIND,
             rendererB = NAME,
+            rendererC = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.SUBCLASS_OPT_IN_WITHOUT_MARKERS,
@@ -256,11 +259,13 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             rendererA = CLASS_KIND,
             rendererB = NAME,
             rendererC = MEMBER_KIND,
+            rendererD = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API,
             rendererA = STRING,
             rendererB = NAME,
+            rendererC = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.FUNCTION_TYPE_ALIAS_PUBLIC_API,
@@ -293,23 +298,27 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             rendererA = STRING,
             rendererB = NAME,
             rendererC = NAME,
+            rendererD = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.PAIR_OR_TRIPLE_PUBLIC_API,
             rendererA = STRING,
             rendererB = NAME,
             rendererC = NAME,
+            rendererD = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.REQUIRED_PARAMETER_AFTER_OPTIONAL,
             rendererA = NAME,
             rendererB = NAME,
+            rendererC = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS,
             rendererA = NAME,
             rendererB = NAME,
             rendererC = NAME,
+            rendererD = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.BOOLEAN_PARAMETER_PUBLIC_API,
@@ -363,6 +372,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             rendererA = STRING,
             rendererB = NAME,
             rendererC = NAME,
+            rendererD = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC,
@@ -379,10 +389,12 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             rendererA = NAME,
             rendererB = NAME,
             rendererC = STRING,
+            rendererD = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.TOP_LEVEL_API_WITHOUT_JVM_NAME,
             rendererA = STRING,
+            rendererB = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS,

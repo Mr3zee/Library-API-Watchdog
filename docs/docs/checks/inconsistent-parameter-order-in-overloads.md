@@ -22,12 +22,12 @@ both members of a disagreeing pair are reported, and reordering either one clear
 
 // !hide-focused
 /** Moves to ([x], [y]). */
-// !diag[/move/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["x","y","move"]
+// !diag[/move/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["x","y","move","function"]
 public fun move(x: Int, y: Int) { }
 
 // !hide-focused
 /** Moves to ([x], [y]) with [scale]. */
-// !diag[/move/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["y","x","move"]
+// !diag[/move/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["y","x","move","function"]
 public fun move(y: Int, x: Int, scale: Double) { }
 ```
 
@@ -48,12 +48,12 @@ authors' guide on
 
 // !hide-focused
 /** Draws at ([x], [y]). */
-// !diag[/draw/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["x","y","draw"]
+// !diag[/draw/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["x","y","draw","function"]
 public fun draw(x: Int, y: Int) { }
 
 // !hide-focused
 /** Draws at ([x], [y]) with [scale]. */
-// !diag[/draw/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["y","x","draw"]
+// !diag[/draw/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["y","x","draw","function"]
 public fun draw(y: Int, x: Int, scale: Double) { }
 ```
 
@@ -79,11 +79,11 @@ public fun draw(x: Int, y: Int, scale: Double) { }
 ```kotlin
 // !hide-focused
 /** Rectangle defined by its horizontal and vertical extents. */
-// !diag[/Rect/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["width","height","Rect"]
+// !diag[/Rect/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["width","height","Rect","constructor"]
 public class Rect(width: Int, height: Int) {
     // !hide-focused
     /** Creates a rectangle and applies [scale] to both extents. */
-    // !diag[/constructor/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["height","width","Rect"]
+    // !diag[/constructor/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["height","width","Rect","constructor"]
     public constructor(height: Int, width: Int, scale: Double) : this(width, height)
 }
 ```
@@ -116,7 +116,7 @@ public class Grid {
 
 // !hide-focused
 /** Fills a range with [color]. */
-// !diag[/fill/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["endIndex","startIndex","fill"]
+// !diag[/fill/] INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS ["endIndex","startIndex","fill","function"]
 public fun Grid.fill(
     endIndex: Int,
     startIndex: Int,
@@ -167,6 +167,7 @@ public fun Grid.fill(
 ## Exemption
 
 <!-- diagnostic-exemption: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS -->
+<!-- diagnostic-exemption-substitution: function or constructor => {3} -->
 If this API shape is intentional, apply `@IntentionallyInconsistentParameterOrder` to the function
 or constructor.
 

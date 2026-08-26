@@ -17,7 +17,7 @@ The check reports every `enum class`, `sealed class`, and `sealed interface` in 
 ```kotlin
 // !hide-focused
 /** Whether the service can accept requests. */
-// !diag[/Status/] EXHAUSTIVE_PUBLIC_API ["enum class","Status","an entry"]
+// !diag[/Status/] EXHAUSTIVE_PUBLIC_API ["enum class","Status","an entry","$enumFix"]
 public enum class Status {
     // !hide-focused
     /** The service is ready to accept requests. */
@@ -45,7 +45,7 @@ library author did not think of as breaking. See the
 ```kotlin
 // !hide-focused
 /** Severity assigned to a log record. */
-// !diag[/LogLevel/] EXHAUSTIVE_PUBLIC_API ["enum class","LogLevel","an entry"]
+// !diag[/LogLevel/] EXHAUSTIVE_PUBLIC_API ["enum class","LogLevel","an entry","$enumFix"]
 public enum class LogLevel {
     // !hide-focused
     /** Fine-grained information used to diagnose behavior. */
@@ -64,7 +64,7 @@ public enum class LogLevel {
 
 // !hide-focused
 /** A change in the service lifecycle. */
-// !diag[/Event/] EXHAUSTIVE_PUBLIC_API ["interface","Event","a subtype"]
+// !diag[/Event/] EXHAUSTIVE_PUBLIC_API ["interface","Event","a subtype","$sealedFix"]
 public sealed interface Event {
     // !hide-focused
     /** Emitted after the service becomes ready. */
@@ -131,6 +131,7 @@ public interface Event {
 ## Exemption
 
 <!-- diagnostic-exemption: EXHAUSTIVE_PUBLIC_API -->
+<!-- diagnostic-exemption-substitution: enum or sealed hierarchy => {0} -->
 If this API shape is intentional, apply `@IntentionallyExhaustive` to the enum or sealed hierarchy.
 
 Use the exemption when a fixed set of entries or subtypes is a deliberate, stable part of the

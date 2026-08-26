@@ -22,7 +22,7 @@ parameter bounds in the public API, including their type arguments (like
 
 // !hide-focused
 /** Returns an unnamed location. */
-// !diag[/Pair<Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","locate","Pair"]
+// !diag[/Pair<Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","locate","Pair","$pairComponents"]
 public fun locate(): Pair<Int, Int> = 0 to 0
 ```
 
@@ -44,7 +44,7 @@ optional property with a default value. See the
 
 // !hide-focused
 /** Returns unnamed dimensions. */
-// !diag[/Triple<Int, Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","dimensions","Triple"]
+// !diag[/Triple<Int, Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","dimensions","Triple","$tripleComponents"]
 public fun dimensions(): Triple<Int, Int, Int> = Triple(0, 0, 0)
 ```
 
@@ -88,7 +88,7 @@ public fun dimensions(): Dimensions = Dimensions(0, 0, 0)
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
-// !diag[/Pair<Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["property","position","Pair"]
+// !diag[/Pair<Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["property","position","Pair","$pairComponents"]
 public class Anchor(public val position: Pair<Int, Int>)
 ```
 
@@ -130,7 +130,7 @@ public class Anchor(public val position: Point)
 
 // !hide-focused
 /** Returns unnamed edges. */
-// !diag[/List<Pair<Int, Int>>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","edges","Pair"]
+// !diag[/List<Pair<Int, Int>>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","edges","Pair","$pairComponents"]
 public fun edges(): List<Pair<Int, Int>> = emptyList()
 ```
 

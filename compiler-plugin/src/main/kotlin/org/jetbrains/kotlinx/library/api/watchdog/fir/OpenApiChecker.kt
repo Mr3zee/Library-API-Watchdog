@@ -84,6 +84,10 @@ internal class OpenApiChecker(
         if (declaration.hasAnnotation(WatchdogClassIds.IntentionallyOpen, session)) return
 
         val factory = severities[WatchdogDiagnostics.OPEN_API_WITHOUT_SUBCLASS_OPT_IN] ?: return
+        val fix = WatchdogDiagnosticMessages.parameterValueFor(
+            diagnostic = WatchdogDiagnostics.OPEN_API_WITHOUT_SUBCLASS_OPT_IN.name,
+            value = if (declaration.classKind == ClassKind.CLASS) "classFix" else "interfaceFix",
+        )
         val hasPublicPrimaryConstructor = constructors.any {
             it.isPrimary && it.visibility == Visibilities.Public
         }
@@ -100,6 +104,7 @@ internal class OpenApiChecker(
                     factory = factory,
                     a = declaration.classKind,
                     b = declaration.name,
+                    c = fix,
                 )
             }
         } else {
@@ -108,6 +113,7 @@ internal class OpenApiChecker(
                 factory = factory,
                 a = declaration.classKind,
                 b = declaration.name,
+                c = fix,
             )
         }
     }

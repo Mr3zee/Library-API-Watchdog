@@ -33,7 +33,7 @@ public value class UserId(public val raw: String)
 
 // !hide-focused
 /** Finds the account identified by [id]. */
-// !diag[/take/] MANGLED_JVM_NAME_PUBLIC_API ["function","take","UserId"]
+// !diag[/take/] MANGLED_JVM_NAME_PUBLIC_API ["function","take","UserId","$functionFix"]
 public fun take(id: UserId) { }
 ```
 
@@ -57,7 +57,7 @@ Kotlin guide on
 // Compiles to take-<hash>(...): an illegal Java identifier.
 // !hide-focused
 /** Queues a refresh for the account identified by [id]. */
-// !diag[/take/] MANGLED_JVM_NAME_PUBLIC_API ["function","take","UserId"]
+// !diag[/take/] MANGLED_JVM_NAME_PUBLIC_API ["function","take","UserId","$functionFix"]
 public fun take(id: UserId) { }
 ```
 
@@ -87,8 +87,8 @@ public fun take(id: UserId) { }
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
-// !diag[/[(]public val id: UserId[)]/] MANGLED_JVM_NAME_PUBLIC_API ["constructor","Wallet","UserId"]
-// !diag[/id/] MANGLED_JVM_NAME_PUBLIC_API ["property","id","UserId"]
+// !diag[/[(]public val id: UserId[)]/] MANGLED_JVM_NAME_PUBLIC_API ["constructor","Wallet","UserId","$constructorFix"]
+// !diag[/id/] MANGLED_JVM_NAME_PUBLIC_API ["property","id","UserId","$propertyGetterFix"]
 public class Wallet(public val id: UserId)
 ```
 
@@ -122,7 +122,7 @@ only fix for constructors, since the compiler doesn't accept `@JvmName` on them.
 public class Ledger {
     // !hide-focused
     /** The identifier of the current account. */
-    // !diag[/current/] MANGLED_JVM_NAME_PUBLIC_API ["function","current","UserId"]
+    // !diag[/current/] MANGLED_JVM_NAME_PUBLIC_API ["function","current","UserId","$functionFix"]
     public fun current(): UserId = UserId("x")
 }
 ```

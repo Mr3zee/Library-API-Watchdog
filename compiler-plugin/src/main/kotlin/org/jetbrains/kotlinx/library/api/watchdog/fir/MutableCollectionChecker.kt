@@ -55,12 +55,21 @@ internal class MutableCollectionChecker(
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun report(source: KtSourceElement?, kind: String, name: Name, violation: Name) {
         val factory = severities[WatchdogDiagnostics.MUTABLE_COLLECTION_PUBLIC_API] ?: return
+        val fix = WatchdogDiagnosticMessages.parameterValueFor(
+            diagnostic = WatchdogDiagnostics.MUTABLE_COLLECTION_PUBLIC_API.name,
+            value = when (kind) {
+                "parameter" -> "parameterFix"
+                "type parameter" -> "typeParameterFix"
+                else -> "returnTypeFix"
+            },
+        )
         reporter.reportOn(
             source = source,
             factory = factory,
             a = kind,
             b = name,
             c = violation,
+            d = fix,
         )
     }
 

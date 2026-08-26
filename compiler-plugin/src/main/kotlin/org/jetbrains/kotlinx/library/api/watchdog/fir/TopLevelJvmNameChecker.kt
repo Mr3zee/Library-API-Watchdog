@@ -34,12 +34,20 @@ internal class TopLevelJvmNameChecker(
             return
         }
 
-        val firstFacadeMember = declaration.declarations.firstOrNull { it.isJavaVisibleTopLevelCallable() } ?: return
+        val facadeMembers = declaration.declarations.filter { it.isJavaVisibleTopLevelCallable() }
+        val firstFacadeMember = facadeMembers.firstOrNull() ?: return
         val factory = severities[WatchdogDiagnostics.TOP_LEVEL_API_WITHOUT_JVM_NAME] ?: return
+        val functionCount = facadeMembers.count { it is FirNamedFunction }
+        val propertyCount = facadeMembers.count { it is FirProperty }
+        val callableKinds = buildList {
+            if (functionCount > 0) add(if (functionCount == 1) "function" else "functions")
+            if (propertyCount > 0) add(if (propertyCount == 1) "property" else "properties")
+        }.joinToString(" and ")
         reporter.reportOn(
             source = firstFacadeMember.source,
             factory = factory,
             a = PackagePartClassUtils.getFilePartShortName(declaration.name),
+            b = "Java-visible top-level $callableKinds",
         )
     }
 

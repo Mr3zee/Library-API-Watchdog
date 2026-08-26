@@ -63,6 +63,8 @@ function wrapMessageParagraph(paragraph) {
 function readExemptions() {
   const result = new Map();
   const marker = /^<!-- diagnostic-exemption: ([A-Z][A-Z0-9_]*) -->$/;
+  const substitutionMarker =
+    /^<!-- diagnostic-exemption-substitution: (.+) => (\{[0-9]+\}) -->$/;
   const tableMarker = '<!-- diagnostic-exemption-table -->';
 
   for (const file of markdownFiles(docsDirectory)) {
@@ -79,16 +81,44 @@ function readExemptions() {
 
       const name = match[1];
       const paragraph = [];
+      const substitutions = [];
       for (let paragraphIndex = index + 1; paragraphIndex < lines.length; paragraphIndex += 1) {
-        if (lines[paragraphIndex].trim() === '') break;
-        paragraph.push(lines[paragraphIndex].trim());
+        const paragraphLine = lines[paragraphIndex].trim();
+        if (paragraphLine === '') break;
+
+        const substitution = paragraphLine.match(substitutionMarker);
+        if (substitution !== null) {
+          substitutions.push({source: substitution[1], argument: substitution[2]});
+          continue;
+        }
+        if (paragraphLine.startsWith('<!-- diagnostic-exemption-substitution:')) {
+          parsingFailures.push(
+            `${relativeMarkdownFile(file)}:${paragraphIndex + 1}: malformed exemption substitution.`,
+          );
+          continue;
+        }
+        paragraph.push(paragraphLine);
+      }
+
+      const documentationWording = paragraph.join(' ');
+      let diagnosticWording = documentationWording;
+      for (const substitution of substitutions) {
+        const occurrences = diagnosticWording.split(substitution.source).length - 1;
+        if (occurrences !== 1) {
+          parsingFailures.push(
+            `${relativeMarkdownFile(file)}:${index + 1}: exemption substitution source ` +
+              `\`${substitution.source}\` must occur exactly once.`,
+          );
+          continue;
+        }
+        diagnosticWording = diagnosticWording.replace(substitution.source, substitution.argument);
       }
 
       addExemption(result, name, {
         file: relativeMarkdownFile(file),
         line: index + 1,
         section,
-        wording: paragraph.join(' '),
+        wording: diagnosticWording,
       });
     }
   }

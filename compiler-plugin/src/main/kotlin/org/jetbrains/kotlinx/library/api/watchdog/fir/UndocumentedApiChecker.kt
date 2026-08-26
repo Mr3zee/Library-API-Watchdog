@@ -23,6 +23,7 @@ import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.FirTypeAlias
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
+import org.jetbrains.kotlin.fir.declarations.utils.correspondingValueParameterFromPrimaryConstructor
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.text
@@ -95,6 +96,21 @@ internal class UndocumentedApiChecker(
             factory = factory,
             a = kind,
             b = declaration.watchedName(context) ?: return,
+            c = declaration.documentationGuidance(context),
+        )
+    }
+
+    /** Adds class-level tag guidance only for properties that a containing class can document. */
+    private fun FirMemberDeclaration.documentationGuidance(context: CheckerContext): String {
+        val value = when {
+            this !is FirProperty -> "declarationDocumentation"
+            correspondingValueParameterFromPrimaryConstructor != null -> "constructorPropertyDocumentation"
+            context.containingClassSymbol != null -> "memberPropertyDocumentation"
+            else -> "declarationDocumentation"
+        }
+        return WatchdogDiagnosticMessages.parameterValueFor(
+            diagnostic = WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API.name,
+            value = value,
         )
     }
 
