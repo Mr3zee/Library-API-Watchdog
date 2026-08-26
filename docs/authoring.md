@@ -20,7 +20,7 @@ annotation. Docs CI also compiles every public-API Kotlin sample with all watchd
   Also avoid smart quotes. Use straight ASCII quotes.
 - Naming: the product is `library-api-watchdog`. The Gradle plugin id is
   `org.jetbrains.kotlin.library.api-watchdog`. The Gradle extension is `apiWatchdog`. The
-  annotations package is `org.jetbrains.kotlinx.libs.api.watchdog`.
+  annotations package is `org.jetbrains.kotlinx.library.api.watchdog`.
 - Every Kotlin API example must compile in explicit API mode and pass all watchdog checks except
   the diagnostics it demonstrates with `!diag` annotations. Use `public` modifiers and explicit
   return types on all API declarations.
@@ -42,9 +42,9 @@ annotation. Docs CI also compiles every public-API Kotlin sample with all watchd
   details (FIR, checker class names) on user-facing pages.
 - Facts must match the sources of truth: `README.md`, the shared diagnostic registry
   `diagnostics.json` at the repository root, the checker sources in
-  `compiler-plugin/src/main/kotlin/org/jetbrains/kotlinx/libs/api/watchdog/fir/`, the annotation KDoc in
-  `plugin-annotations/src/commonMain/kotlin/org/jetbrains/kotlinx/libs/api/watchdog/WatchdogAnnotations.kt`,
-  and the extension in `gradle-plugin/src/main/kotlin/org/jetbrains/kotlinx/libs/api/watchdog/WatchdogGradleExtension.kt`.
+  `compiler-plugin/src/main/kotlin/org/jetbrains/kotlinx/library/api/watchdog/fir/`, the annotation KDoc in
+  `plugin-annotations/src/commonMain/kotlin/org/jetbrains/kotlinx/library/api/watchdog/WatchdogAnnotations.kt`,
+  and the extension in `gradle-plugin/src/main/kotlin/org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension.kt`.
 - Check order and descriptions in `docs/docs/overview.md` are the source of truth for the README's
   Checks section. `npm test` verifies that they match.
 - No imports in code snippets
@@ -254,7 +254,7 @@ parameter, type usage, containing class) when the annotation has several.
 
 With direct compiler invocation:
 \```
--P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=<DIAGNOSTIC_NAME>:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=<DIAGNOSTIC_NAME>:warning
 \```
 
 ## See also

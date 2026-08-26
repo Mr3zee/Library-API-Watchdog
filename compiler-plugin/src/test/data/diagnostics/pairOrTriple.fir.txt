@@ -61,16 +61,16 @@ FILE: pairOrTriple.kt
         }
 
     }
-    public final fun <@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyPairOrTriple|() P : R|kotlin/Pair<kotlin/Int, kotlin/Int>|> render(value: R|P|): R|kotlin/Int| {
+    public final fun <@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|() P : R|kotlin/Pair<kotlin/Int, kotlin/Int>|> render(value: R|P|): R|kotlin/Int| {
         ^render R|<local>/value|.R|SubstitutionOverride<kotlin/Pair.first: R|kotlin/Int|>|
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyPairOrTriple|() public final fun <T : R|kotlin/Pair<kotlin/Int, kotlin/Int>|> renderExempt(value: R|T|): R|kotlin/Int| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|() public final fun <T : R|kotlin/Pair<kotlin/Int, kotlin/Int>|> renderExempt(value: R|T|): R|kotlin/Int| {
         ^renderExempt R|<local>/value|.R|SubstitutionOverride<kotlin/Pair.first: R|kotlin/Int|>|
     }
-    public final fun corners(): R|kotlin/collections/List<@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyPairOrTriple|()  kotlin/Pair<kotlin/Int, kotlin/Int>>| {
-        ^corners R|kotlin/collections/emptyList|<R|@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyPairOrTriple|()  kotlin/Pair<kotlin/Int, kotlin/Int>|>()
+    public final fun corners(): R|kotlin/collections/List<@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|()  kotlin/Pair<kotlin/Int, kotlin/Int>>| {
+        ^corners R|kotlin/collections/emptyList|<R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|()  kotlin/Pair<kotlin/Int, kotlin/Int>|>()
     }
-    public final fun anchorPoint(): R|@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyPairOrTriple|()  kotlin/Pair<kotlin/Int, kotlin/Int>| {
+    public final fun anchorPoint(): R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|()  kotlin/Pair<kotlin/Int, kotlin/Int>| {
         ^anchorPoint Int(0).R|kotlin/to|<R|kotlin/Int|, R|kotlin/Int|>(Int(0))
     }
     public final fun R|kotlin/Pair<kotlin/Int, kotlin/Int>|.manhattanLength(): R|kotlin/Int| {
@@ -90,17 +90,17 @@ FILE: pairOrTriple.kt
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyPairOrTriple|() public final fun rawLocation(): R|kotlin/Pair<kotlin/Int, kotlin/Int>| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|() public final fun rawLocation(): R|kotlin/Pair<kotlin/Int, kotlin/Int>| {
         ^rawLocation Int(0).R|kotlin/to|<R|kotlin/Int|, R|kotlin/Int|>(Int(0))
     }
-    public final fun draw(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyPairOrTriple|() at: R|kotlin/Pair<kotlin/Int, kotlin/Int>|): R|kotlin/Unit| {
+    public final fun draw(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|() at: R|kotlin/Pair<kotlin/Int, kotlin/Int>|): R|kotlin/Unit| {
     }
     public final class Route : R|kotlin/Any| {
-        public constructor(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyPairOrTriple|() waypoint: R|kotlin/Pair<kotlin/Int, kotlin/Int>|): R|foo/bar/Route| {
+        public constructor(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|() waypoint: R|kotlin/Pair<kotlin/Int, kotlin/Int>|): R|foo/bar/Route| {
             super<R|kotlin/Any|>()
         }
 
-        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyPairOrTriple|() public final val waypoint: R|kotlin/Pair<kotlin/Int, kotlin/Int>| = R|<local>/waypoint|
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|() public final val waypoint: R|kotlin/Pair<kotlin/Int, kotlin/Int>| = R|<local>/waypoint|
             public get(): R|kotlin/Pair<kotlin/Int, kotlin/Int>|
 
     }

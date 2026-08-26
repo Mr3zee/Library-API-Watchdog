@@ -9,7 +9,7 @@
 // FILE: internalTypes.kt
 package lib.api
 
-import org.jetbrains.kotlinx.libs.api.watchdog.InternalAnnotationMarker
+import org.jetbrains.kotlinx.library.api.watchdog.InternalAnnotationMarker
 
 /** Marks declarations that are public only for technical reasons. */
 @InternalAnnotationMarker

@@ -4,8 +4,8 @@
 
 package foo.bar
 
-import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason
-import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyMangledJvmName
+import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyMangledJvmName
 
 @JvmInline
 public value class UserId(public val raw: String)

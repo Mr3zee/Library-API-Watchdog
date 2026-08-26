@@ -54,7 +54,7 @@ The plugin is intentionally restrictive by default: every check reports a compil
 is individually demoted to a warning or disabled through the `apiWatchdog` extension:
 
 ```kotlin
-import org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSeverity
+import org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity
 
 apiWatchdog {
     undocumentedPublicApi = WatchdogSeverity.WARNING

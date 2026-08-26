@@ -159,14 +159,14 @@ FILE: booleanParameter.kt
     public final fun createWidget(visible: R|kotlin/Boolean|): R|foo/bar/Widget| {
         ^createWidget R|foo/bar/Widget.Widget|(R|<local>/visible|)
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final fun acknowledgedSignature(enabled: R|kotlin/Boolean|, verbose: R|kotlin/Boolean|): R|kotlin/Unit| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final fun acknowledgedSignature(enabled: R|kotlin/Boolean|, verbose: R|kotlin/Boolean|): R|kotlin/Unit| {
     }
-    public final fun acknowledgedParameter(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) accepted: R|kotlin/Boolean|, rejected: R|kotlin/Boolean|): R|kotlin/Unit| {
+    public final fun acknowledgedParameter(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) accepted: R|kotlin/Boolean|, rejected: R|kotlin/Boolean|): R|kotlin/Unit| {
     }
     context(verbose: R|kotlin/Boolean|)
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final fun acknowledgedContext(message: R|kotlin/String|): R|kotlin/Unit| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final fun acknowledgedContext(message: R|kotlin/String|): R|kotlin/Unit| {
     }
-    context(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) verbose: R|kotlin/Boolean|)
+    context(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) verbose: R|kotlin/Boolean|)
     public final fun acknowledgedContextParameter(message: R|kotlin/String|): R|kotlin/Unit| {
     }
     public final fun isReady(): R|kotlin/Boolean| {

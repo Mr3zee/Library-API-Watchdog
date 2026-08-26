@@ -60,20 +60,20 @@ FILE: mutableCollection.kt
     public final fun assemble(block: R|kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit|): R|kotlin/collections/List<kotlin/Int>| {
         ^assemble R|kotlin/collections/mutableListOf|<R|kotlin/Int|>().R|kotlin/apply|<R|kotlin/collections/MutableList<kotlin/Int>|>(R|<local>/block|).R|kotlin/collections/toList|<R|kotlin/Int|>()
     }
-    public final fun buildInto(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|() block: R|kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit|): R|kotlin/collections/List<kotlin/Int>| {
+    public final fun buildInto(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() block: R|kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit|): R|kotlin/collections/List<kotlin/Int>| {
         ^buildInto R|kotlin/collections/mutableListOf|<R|kotlin/Int|>().R|kotlin/apply|<R|kotlin/collections/MutableList<kotlin/Int>|>(R|<local>/block|).R|kotlin/collections/toList|<R|kotlin/Int|>()
     }
-    public final fun onEachBatch(action: R|(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|()  kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit|): R|kotlin/Unit| {
+    public final fun onEachBatch(action: R|(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|()  kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit|): R|kotlin/Unit| {
     }
-    public final fun drainWith(action: R|@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|()  (kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit|): R|kotlin/Unit| {
+    public final fun drainWith(action: R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|()  (kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit|): R|kotlin/Unit| {
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|() public final fun batchCallbackFactory(): R|(kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() public final fun batchCallbackFactory(): R|(kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit| {
         ^batchCallbackFactory fun <anonymous>(it: R|kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit| <inline=NoInline>  {
             ^ Unit
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|() public final val batchSink: R|(kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit| = fun <anonymous>(it: R|kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit| <inline=NoInline>  {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() public final val batchSink: R|(kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit| = fun <anonymous>(it: R|kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit| <inline=NoInline>  {
         ^ Unit
     }
 
@@ -152,23 +152,23 @@ FILE: mutableCollection.kt
         public get(): R|kotlin/Int| {
             ^ this@R|foo/bar/lastItem|.R|kotlin/collections/last|<R|kotlin/Int|>()
         }
-    public final fun <@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|() C : R|kotlin/collections/MutableCollection<kotlin/Int>|> fillAll(destination: R|C|): R|C| {
+    public final fun <@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() C : R|kotlin/collections/MutableCollection<kotlin/Int>|> fillAll(destination: R|C|): R|C| {
         R|<local>/destination|.R|SubstitutionOverride<kotlin/collections/MutableCollection.add: R|kotlin/Boolean|>|(Int(1))
         ^fillAll R|<local>/destination|
     }
-    public final class Silo<@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|() T : R|kotlin/collections/MutableSet<kotlin/String>|> : R|kotlin/Any| {
-        public constructor<@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|() T : R|kotlin/collections/MutableSet<kotlin/String>|>(): R|foo/bar/Silo<T>| {
+    public final class Silo<@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() T : R|kotlin/collections/MutableSet<kotlin/String>|> : R|kotlin/Any| {
+        public constructor<@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() T : R|kotlin/collections/MutableSet<kotlin/String>|>(): R|foo/bar/Silo<T>| {
             super<R|kotlin/Any|>()
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|() public final fun <T : R|kotlin/collections/MutableList<kotlin/Int>|> drainExempt(source: R|T|): R|kotlin/collections/List<kotlin/Int>| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() public final fun <T : R|kotlin/collections/MutableList<kotlin/Int>|> drainExempt(source: R|T|): R|kotlin/collections/List<kotlin/Int>| {
         ^drainExempt R|<local>/source|.R|kotlin/collections/toList|<R|kotlin/Int|>()
     }
-    public final fun snapshots(): R|kotlin/collections/List<@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|()  kotlin/collections/MutableList<kotlin/Int>>| {
-        ^snapshots R|kotlin/collections/emptyList|<R|@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|()  kotlin/collections/MutableList<kotlin/Int>|>()
+    public final fun snapshots(): R|kotlin/collections/List<@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|()  kotlin/collections/MutableList<kotlin/Int>>| {
+        ^snapshots R|kotlin/collections/emptyList|<R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|()  kotlin/collections/MutableList<kotlin/Int>|>()
     }
-    public final fun buffered(): R|@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|()  kotlin/collections/MutableList<kotlin/Int>| {
+    public final fun buffered(): R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|()  kotlin/collections/MutableList<kotlin/Int>| {
         ^buffered R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
     }
     public final fun R|kotlin/collections/MutableList<kotlin/Int>|.compact(): R|kotlin/collections/List<kotlin/Int>| {
@@ -188,18 +188,18 @@ FILE: mutableCollection.kt
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|() public final fun sharedRegistry(): R|kotlin/collections/MutableList<kotlin/String>| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() public final fun sharedRegistry(): R|kotlin/collections/MutableList<kotlin/String>| {
         ^sharedRegistry R|kotlin/collections/mutableListOf|<R|kotlin/String|>()
     }
-    public final fun fill(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|() target: R|kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit| {
+    public final fun fill(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() target: R|kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit| {
         R|<local>/target|.R|SubstitutionOverride<kotlin/collections/MutableList.add: R|kotlin/Boolean|>|(Int(1))
     }
     public final class Pipeline : R|kotlin/Any| {
-        public constructor(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|() stages: R|kotlin/collections/MutableList<kotlin/String>|): R|foo/bar/Pipeline| {
+        public constructor(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() stages: R|kotlin/collections/MutableList<kotlin/String>|): R|foo/bar/Pipeline| {
             super<R|kotlin/Any|>()
         }
 
-        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection|() public final val stages: R|kotlin/collections/MutableList<kotlin/String>| = R|<local>/stages|
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() public final val stages: R|kotlin/collections/MutableList<kotlin/String>| = R|<local>/stages|
             public get(): R|kotlin/collections/MutableList<kotlin/String>|
 
     }

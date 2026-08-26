@@ -1,0 +1,24 @@
+package org.jetbrains.kotlinx.library.api.watchdog.fir
+
+import org.jetbrains.kotlin.diagnostics.DiagnosticContext
+import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
+import org.jetbrains.kotlin.diagnostics.KtDiagnostic
+import org.jetbrains.kotlin.fir.SessionHolder
+import org.jetbrains.kotlin.fir.declarations.getStringArgument
+import org.jetbrains.kotlin.fir.expressions.FirAnnotation
+import org.jetbrains.kotlin.name.Name
+
+context(context: SessionHolder)
+internal actual fun FirAnnotation.getStringArgumentCompat(name: Name): String? =
+    getStringArgument(name, context.session)
+
+internal actual fun delegatingDiagnosticReporter(
+    delegate: DiagnosticReporter,
+    onReport: (diagnostic: KtDiagnostic?, context: DiagnosticContext) -> Unit
+): DiagnosticReporter =
+    object : DiagnosticReporter() {
+        override val hasErrors: Boolean
+            get() = delegate.hasErrors
+
+        override fun report(diagnostic: KtDiagnostic?, context: DiagnosticContext) = onReport(diagnostic, context)
+    }

@@ -86,8 +86,8 @@ public val <!TOP_LEVEL_API_WITHOUT_JVM_NAME!>fieldAnnotationOnly<!>: Int = 0
 
 package foo.bar
 
-import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason
-import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyDefaultFacadeName
+import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName
 
 // The derived facade name is acknowledged: no warning.
 public fun legacyEntryPoint(): Int = 0

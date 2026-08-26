@@ -146,7 +146,7 @@ FILE: statefulToString.kt
             public get(): R|kotlin/Int|
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutEquals|() @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutHashCode|() @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutToString|() public final class MarkedOpaque : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutEquals|() @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutHashCode|() @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutToString|() public final class MarkedOpaque : R|kotlin/Any| {
         public constructor(secret: R|kotlin/String|): R|foo/bar/MarkedOpaque| {
             super<R|kotlin/Any|>()
         }
@@ -155,7 +155,7 @@ FILE: statefulToString.kt
             public get(): R|kotlin/String|
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutEqualsHashCodeOrToString|() public final class CombinedMarkedOpaque : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutEqualsHashCodeOrToString|() public final class CombinedMarkedOpaque : R|kotlin/Any| {
         public constructor(secret: R|kotlin/String|): R|foo/bar/CombinedMarkedOpaque| {
             super<R|kotlin/Any|>()
         }

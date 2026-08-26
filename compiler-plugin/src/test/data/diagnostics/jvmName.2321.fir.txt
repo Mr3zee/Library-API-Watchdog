@@ -70,7 +70,7 @@ FILE: fieldAnnotationOnly.kt
     field:@R|kotlin/jvm/JvmSynthetic|() public final val fieldAnnotationOnly: R|kotlin/Int| = Int(0)
         public get(): R|kotlin/Int|
 FILE: acknowledged.kt
-    @FILE:R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyDefaultFacadeName|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|)
+    @FILE:R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDefaultFacadeName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|)
     package foo.bar
 
     public final fun legacyEntryPoint(): R|kotlin/Int| {

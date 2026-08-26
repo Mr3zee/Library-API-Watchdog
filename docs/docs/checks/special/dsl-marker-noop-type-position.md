@@ -58,7 +58,7 @@ wrong scope's functions. See the Kotlin guide on [scope control for DSL markers]
 // !hide-focused
 @JvmSynthetic
 // !diag[/@TreeDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["TreeDsl","return type"]
-public fun configure(block: Tag.() -> Unit): @TreeDsl Result { }
+public fun configure(block: Tag.() -> Unit): @TreeDsl String = ""
 ```
 
 ### Do
@@ -73,7 +73,7 @@ public class Tag
 /** Applies [block] while constructing a tree tag. */
 // !hide-focused
 @JvmSynthetic
-public fun configure(block: Tag.() -> Unit): Result { }
+public fun configure(block: Tag.() -> Unit): String = ""
 ```
 
 
@@ -134,7 +134,7 @@ apiWatchdog {
 
 With direct compiler invocation:
 ```
--P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=DSL_MARKER_NOOP_TYPE_POSITION:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=DSL_MARKER_NOOP_TYPE_POSITION:warning
 ```
 
 ## See also

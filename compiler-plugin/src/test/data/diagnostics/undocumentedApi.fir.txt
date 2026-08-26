@@ -79,32 +79,32 @@ FILE: undocumentedApi.kt
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() public final class DeliberatelyUndocumentedClass : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|() public final class DeliberatelyUndocumentedClass : R|kotlin/Any| {
         public constructor(): R|foo/bar/DeliberatelyUndocumentedClass| {
             super<R|kotlin/Any|>()
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() public final object DeliberatelyUndocumentedObject : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|() public final object DeliberatelyUndocumentedObject : R|kotlin/Any| {
         private constructor(): R|foo/bar/DeliberatelyUndocumentedObject| {
             super<R|kotlin/Any|>()
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() public final typealias DeliberatelyUndocumentedTypeAlias = R|kotlin/Int|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|() public final typealias DeliberatelyUndocumentedTypeAlias = R|kotlin/Int|
     public final class WithAcknowledgedMembers : R|kotlin/Any| {
-        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() public constructor(): R|foo/bar/WithAcknowledgedMembers| {
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|() public constructor(): R|foo/bar/WithAcknowledgedMembers| {
             super<R|kotlin/Any|>()
         }
 
-        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() public final fun acknowledgedFunction(): R|kotlin/Unit| {
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|() public final fun acknowledgedFunction(): R|kotlin/Unit| {
         }
 
-        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() public final val acknowledgedProperty: R|kotlin/Int| = Int(0)
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|() public final val acknowledgedProperty: R|kotlin/Int| = Int(0)
             public get(): R|kotlin/Int|
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() public final class DeliberatelyUndocumentedOuter : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|() public final class DeliberatelyUndocumentedOuter : R|kotlin/Any| {
         public constructor(): R|foo/bar/DeliberatelyUndocumentedOuter| {
             super<R|kotlin/Any|>()
         }
@@ -251,7 +251,7 @@ FILE: undocumentedApi.kt
 
         public final static enum entry DOCUMENTED_ENTRY: R|foo/bar/DocumentedEnumWithEntries|
         public final static enum entry UNDOCUMENTED_ENTRY: R|foo/bar/DocumentedEnumWithEntries|
-        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented|() public final static enum entry ACKNOWLEDGED_ENTRY: R|foo/bar/DocumentedEnumWithEntries| = object : R|foo/bar/DocumentedEnumWithEntries| {
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|() public final static enum entry ACKNOWLEDGED_ENTRY: R|foo/bar/DocumentedEnumWithEntries| = object : R|foo/bar/DocumentedEnumWithEntries| {
             private constructor(): R|foo/bar/<anonymous>| {
                 super<R|foo/bar/DocumentedEnumWithEntries|>()
             }

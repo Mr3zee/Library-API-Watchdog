@@ -223,7 +223,7 @@ See [Java interop checks](./checks/java-interop/java-interop.md) for more detail
 When invoking the compiler directly, configure severities with the repeatable plugin option:
 
 ```
--P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=<NAME>:<severity>
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=<NAME>:<severity>
 ```
 
 Parameters:
@@ -237,7 +237,7 @@ compiler alone cannot distinguish dependencies declared with `api` from those de
 For example, to demote undocumented public API to a warning use the following argument form:
 
 ```
--P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:warning
 ```
 
 ## Next steps

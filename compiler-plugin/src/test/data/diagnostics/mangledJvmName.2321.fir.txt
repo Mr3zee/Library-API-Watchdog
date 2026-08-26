@@ -182,22 +182,22 @@ FILE: mangledJvmName.kt
         public set(value: R|foo/bar/UserId|): R|kotlin/Unit|
     @R|kotlin/PublishedApi|() internal final fun published(id: R|foo/bar/UserId|): R|kotlin/Unit| {
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final fun acknowledged(id: R|foo/bar/UserId|): R|kotlin/Unit| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final fun acknowledged(id: R|foo/bar/UserId|): R|kotlin/Unit| {
     }
     public final class Account : R|kotlin/Any| {
-        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public constructor(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) id: R|foo/bar/UserId|): R|foo/bar/Account| {
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public constructor(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) id: R|foo/bar/UserId|): R|foo/bar/Account| {
             super<R|kotlin/Any|>()
         }
 
-        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final val id: R|foo/bar/UserId| = R|<local>/id|
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final val id: R|foo/bar/UserId| = R|<local>/id|
             public get(): R|foo/bar/UserId|
 
-        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public constructor(id: R|foo/bar/UserId|, label: R|kotlin/String|): R|foo/bar/Account| {
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public constructor(id: R|foo/bar/UserId|, label: R|kotlin/String|): R|foo/bar/Account| {
             this<R|foo/bar/Account|>(R|<local>/id|)
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final class KotlinOnlyLedger : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final class KotlinOnlyLedger : R|kotlin/Any| {
         public constructor(id: R|foo/bar/UserId|): R|foo/bar/KotlinOnlyLedger| {
             super<R|kotlin/Any|>()
         }

@@ -4,7 +4,7 @@
 
 package foo.bar
 
-import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyUndocumented
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyUndocumented
 
 // Public API without KDoc: should warn.
 

@@ -86,10 +86,10 @@ FILE: jvmOverloads.kt
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutJvmOverloads|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final fun acknowledgedConnect(host: R|kotlin/String|, port: R|kotlin/Int| = Int(80)): R|kotlin/Unit| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutJvmOverloads|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final fun acknowledgedConnect(host: R|kotlin/String|, port: R|kotlin/Int| = Int(80)): R|kotlin/Unit| {
     }
     public final class Gateway : R|kotlin/Any| {
-        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutJvmOverloads|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public constructor(host: R|kotlin/String|, port: R|kotlin/Int| = Int(80)): R|foo/bar/Gateway| {
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutJvmOverloads|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public constructor(host: R|kotlin/String|, port: R|kotlin/Int| = Int(80)): R|foo/bar/Gateway| {
             super<R|kotlin/Any|>()
         }
 

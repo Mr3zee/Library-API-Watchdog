@@ -110,13 +110,13 @@ FILE: openApi.kt
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|() public open class DeliberatelyOpenClass : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|() public open class DeliberatelyOpenClass : R|kotlin/Any| {
         public constructor(): R|foo/bar/DeliberatelyOpenClass| {
             super<R|kotlin/Any|>()
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|() public abstract interface DeliberatelyOpenInterface : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|() public abstract interface DeliberatelyOpenInterface : R|kotlin/Any| {
     }
     public final class FinalClass : R|kotlin/Any| {
         public constructor(): R|foo/bar/FinalClass| {

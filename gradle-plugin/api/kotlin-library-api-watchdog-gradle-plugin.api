@@ -1,4 +1,4 @@
-public abstract class org/jetbrains/kotlinx/libs/api/watchdog/UpdateBackwardsCompatibilityExemptsTask : org/gradle/api/DefaultTask {
+public abstract class org/jetbrains/kotlinx/library/api/watchdog/UpdateBackwardsCompatibilityExemptsTask : org/gradle/api/DefaultTask {
 	public fun <init> ()V
 	public abstract fun getCompilationNames ()Lorg/gradle/api/provider/ListProperty;
 	public abstract fun getDiagnosticReports ()Lorg/gradle/api/file/ConfigurableFileCollection;
@@ -10,7 +10,7 @@ public abstract class org/jetbrains/kotlinx/libs/api/watchdog/UpdateBackwardsCom
 	public final fun updateExempts ()V
 }
 
-public class org/jetbrains/kotlinx/libs/api/watchdog/WatchdogGradleExtension {
+public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension {
 	public fun <init> (Lorg/gradle/api/model/ObjectFactory;)V
 	public final fun getBooleanParameterPublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun getDataClassPublicApi ()Lorg/gradle/api/provider/Property;
@@ -21,7 +21,7 @@ public class org/jetbrains/kotlinx/libs/api/watchdog/WatchdogGradleExtension {
 	public final fun getFunctionTypeAliasPublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun getInconsistentParameterOrderInOverloads ()Lorg/gradle/api/provider/Property;
 	public final fun getInlineFunctionWithLogic ()Lorg/gradle/api/provider/Property;
-	public final fun getJavaInterop ()Lorg/jetbrains/kotlinx/libs/api/watchdog/WatchdogJavaInteropExtension;
+	public final fun getJavaInterop ()Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogJavaInteropExtension;
 	public final fun getMutableCollectionPublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun getNullableBooleanPublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun getOpenApiWithoutSubclassOptIn ()Lorg/gradle/api/provider/Property;
@@ -38,7 +38,7 @@ public class org/jetbrains/kotlinx/libs/api/watchdog/WatchdogGradleExtension {
 	public final fun javaInterop (Lorg/gradle/api/Action;)V
 }
 
-public class org/jetbrains/kotlinx/libs/api/watchdog/WatchdogJavaInteropExtension {
+public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogJavaInteropExtension {
 	public fun <init> (Lorg/gradle/api/model/ObjectFactory;)V
 	public final fun getCompanionApiWithoutJvmStatic ()Lorg/gradle/api/provider/Property;
 	public final fun getCompanionConstantWithoutJvmField ()Lorg/gradle/api/provider/Property;
@@ -49,16 +49,16 @@ public class org/jetbrains/kotlinx/libs/api/watchdog/WatchdogJavaInteropExtensio
 	public final fun getTopLevelApiWithoutJvmName ()Lorg/gradle/api/provider/Property;
 }
 
-public final class org/jetbrains/kotlinx/libs/api/watchdog/WatchdogSeverity : java/lang/Enum {
-	public static final field ERROR Lorg/jetbrains/kotlinx/libs/api/watchdog/WatchdogSeverity;
-	public static final field NONE Lorg/jetbrains/kotlinx/libs/api/watchdog/WatchdogSeverity;
-	public static final field WARNING Lorg/jetbrains/kotlinx/libs/api/watchdog/WatchdogSeverity;
+public final class org/jetbrains/kotlinx/library/api/watchdog/WatchdogSeverity : java/lang/Enum {
+	public static final field ERROR Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogSeverity;
+	public static final field NONE Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogSeverity;
+	public static final field WARNING Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogSeverity;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lorg/jetbrains/kotlinx/libs/api/watchdog/WatchdogSeverity;
-	public static fun values ()[Lorg/jetbrains/kotlinx/libs/api/watchdog/WatchdogSeverity;
+	public static fun valueOf (Ljava/lang/String;)Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogSeverity;
+	public static fun values ()[Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogSeverity;
 }
 
-public final class org/jetbrains/kotlinx/libs/api/watchdog/WatchdogSupportPlugin : org/jetbrains/kotlin/compiler/plugin/devkit/DevKitSupportPlugin {
+public final class org/jetbrains/kotlinx/library/api/watchdog/WatchdogSupportPlugin : org/jetbrains/kotlin/compiler/plugin/devkit/DevKitSupportPlugin {
 	public fun <init> ()V
 	public synthetic fun apply (Ljava/lang/Object;)V
 	public fun apply (Lorg/gradle/api/Project;)V

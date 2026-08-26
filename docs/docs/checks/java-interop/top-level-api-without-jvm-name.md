@@ -81,8 +81,8 @@ public fun disconnect(): Int = 0
     reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY,
 )
 
-import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason
-import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyDefaultFacadeName
+import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName
 
 // !hide-focused
 /** Connects to the network. */
@@ -108,7 +108,7 @@ this check along with the rest of the [Java interop checks](./java-interop.md) g
 
 With direct compiler invocation:
 ```
--P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=TOP_LEVEL_API_WITHOUT_JVM_NAME:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=TOP_LEVEL_API_WITHOUT_JVM_NAME:warning
 ```
 
 ## See also

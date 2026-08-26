@@ -1,124 +1,124 @@
-public final class org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason : java/lang/Enum {
-	public static final field API_DESIGN Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
-	public static final field EXTERNAL_CONTRACT Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
-	public static final field FOR_BACKWARDS_COMPATIBILITY Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
-	public static final field IGNORE_JAVA_INTEROP Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
-	public static final field INTEROP Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
-	public static final field OTHER Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+public final class org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason : java/lang/Enum {
+	public static final field API_DESIGN Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
+	public static final field EXTERNAL_CONTRACT Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
+	public static final field FOR_BACKWARDS_COMPATIBILITY Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
+	public static final field IGNORE_JAVA_INTEROP Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
+	public static final field INTEROP Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
+	public static final field OTHER Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
-	public static fun values ()[Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public static fun valueOf (Ljava/lang/String;)Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
+	public static fun values ()[Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyBooleanParameter : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyBooleanParameter : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyDataClass : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDataClass : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyDefaultFacadeName : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDefaultFacadeName : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyExhaustive : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExhaustive : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyFunctionTypeAlias : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyFunctionTypeAlias : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyInconsistentParameterOrder : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInconsistentParameterOrder : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyInlinedLogic : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInlinedLogic : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyKotlinOnlyApi : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMangledJvmName : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyMutableCollection : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNonStaticCompanionApi : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNullableBoolean : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNullableBoolean : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyPairOrTriple : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyRequiredParameterAfterOptional : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyRequiredParameterAfterOptional : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyUndocumented : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutEquals : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutEquals : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutEqualsHashCodeOrToString : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutEqualsHashCodeOrToString : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutHashCode : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutHashCode : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutJvmOverloads : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutJvmOverloads : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWithoutToString : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutToString : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
-	public abstract fun reason ()Lorg/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
 }
 
-public abstract interface annotation class org/jetbrains/kotlinx/libs/api/watchdog/InternalAnnotationMarker : java/lang/annotation/Annotation {
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/InternalAnnotationMarker : java/lang/annotation/Annotation {
 }
 

@@ -14,9 +14,9 @@
 
 package libapi
 
-import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason
-import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyInlinedLogic
-import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyOpen
+import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyInlinedLogic
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
 
 @PublishedApi
 internal class LibPublishedClass
@@ -40,8 +40,8 @@ public inline fun libInlineApi(block: () -> Int): Int {
 package foo.bar
 
 import libapi.libInlineApi
-import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason
-import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyInlinedLogic
+import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyInlinedLogic
 
 @PublishedApi
 internal class MainPublishedClass

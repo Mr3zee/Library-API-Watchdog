@@ -20,7 +20,7 @@ dependencies {
 }
 
 pluginDevKit {
-    pluginPackage.set("org.jetbrains.kotlin.library.api.watchdog")
+    pluginPackage.set("org.jetbrains.kotlinx.library.api.watchdog")
 }
 
 tasks.register("printCiFunctionalTestMatrix") {
@@ -42,7 +42,7 @@ gradlePlugin {
             displayName = "Library API Watchdog"
             description =
                 "Warns Kotlin library authors about public API declarations that are hard to evolve"
-            implementationClass = "org.jetbrains.kotlinx.libs.api.watchdog.WatchdogSupportPlugin"
+            implementationClass = "org.jetbrains.kotlinx.library.api.watchdog.WatchdogSupportPlugin"
         }
     }
 }

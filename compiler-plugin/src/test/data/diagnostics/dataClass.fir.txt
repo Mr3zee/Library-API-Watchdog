@@ -52,7 +52,7 @@ FILE: dataClass.kt
         public final fun copy(x: R|kotlin/Int| = this@R|foo/bar/PublishedPoint|.R|foo/bar/PublishedPoint.x|): R|foo/bar/PublishedPoint|
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyDataClass|() public final data class MarkedData : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDataClass|() public final data class MarkedData : R|kotlin/Any| {
         public constructor(x: R|kotlin/Int|): R|foo/bar/MarkedData| {
             super<R|kotlin/Any|>()
         }
