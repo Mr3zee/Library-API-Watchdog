@@ -11,31 +11,31 @@ gradlePlugin {
     plugins {
         register("benchmarkConventions") {
             id = "library-api-watchdog.benchmark-conventions"
-            implementationClass = "org.jetbrains.kotlinx.libs.api.watchdog.conventions.BenchmarkConventionPlugin"
+            implementationClass = "org.jetbrains.kotlinx.library.api.watchdog.conventions.BenchmarkConventionPlugin"
         }
         register("compilerPluginConventions") {
             id = "library-api-watchdog.compiler-plugin-conventions"
-            implementationClass = "org.jetbrains.kotlinx.libs.api.watchdog.conventions.CompilerPluginConventionPlugin"
+            implementationClass = "org.jetbrains.kotlinx.library.api.watchdog.conventions.CompilerPluginConventionPlugin"
         }
         register("dokkaConventions") {
             id = "library-api-watchdog.dokka-conventions"
-            implementationClass = "org.jetbrains.kotlinx.libs.api.watchdog.conventions.DokkaConventionPlugin"
+            implementationClass = "org.jetbrains.kotlinx.library.api.watchdog.conventions.DokkaConventionPlugin"
         }
         register("exemptsFixerConventions") {
             id = "library-api-watchdog.exempts-fixer-conventions"
-            implementationClass = "org.jetbrains.kotlinx.libs.api.watchdog.conventions.ExemptsFixerConventionPlugin"
+            implementationClass = "org.jetbrains.kotlinx.library.api.watchdog.conventions.ExemptsFixerConventionPlugin"
         }
         register("gradlePluginConventions") {
             id = "library-api-watchdog.gradle-plugin-conventions"
-            implementationClass = "org.jetbrains.kotlinx.libs.api.watchdog.conventions.GradlePluginConventionPlugin"
+            implementationClass = "org.jetbrains.kotlinx.library.api.watchdog.conventions.GradlePluginConventionPlugin"
         }
         register("rootConventions") {
             id = "library-api-watchdog.root-conventions"
-            implementationClass = "org.jetbrains.kotlinx.libs.api.watchdog.conventions.RootConventionPlugin"
+            implementationClass = "org.jetbrains.kotlinx.library.api.watchdog.conventions.RootConventionPlugin"
         }
         register("spacePublishingConventions") {
             id = "library-api-watchdog.space-publishing-conventions"
-            implementationClass = "org.jetbrains.kotlinx.libs.api.watchdog.conventions.SpacePublishingConventionPlugin"
+            implementationClass = "org.jetbrains.kotlinx.library.api.watchdog.conventions.SpacePublishingConventionPlugin"
         }
     }
 }

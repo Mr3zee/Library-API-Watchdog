@@ -36,7 +36,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
 
       - name: Run compiler plugin tests
-        run: ./gradlew :kotlin-library-api-watchdog-compiler-plugin:ciTests
+        run: ./gradlew :kotlin-library-api-watchdog-compiler-plugin:allTests
 
       - name: Audit benchmark corpus
         run: ./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkCorpusAudit

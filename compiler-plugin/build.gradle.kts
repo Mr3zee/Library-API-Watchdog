@@ -8,14 +8,14 @@ plugins {
 }
 
 pluginDevKit {
-    pluginPackage.set("org.jetbrains.kotlin.library.api.watchdog")
+    pluginPackage.set("org.jetbrains.kotlinx.library.api.watchdog")
     componentRegistrar.set(
-        "org.jetbrains.kotlinx.libs.api.watchdog.WatchdogComponentRegistrar",
+        "org.jetbrains.kotlinx.library.api.watchdog.WatchdogComponentRegistrar",
     )
     commandLineProcessor.set(
-        "org.jetbrains.kotlinx.libs.api.watchdog.WatchdogCommandLineProcessor",
+        "org.jetbrains.kotlinx.library.api.watchdog.WatchdogCommandLineProcessor",
     )
-    generateTestsClass.set("org.jetbrains.kotlinx.libs.api.watchdog.GenerateTestsKt")
+    generateTestsClass.set("org.jetbrains.kotlinx.library.api.watchdog.GenerateTestsKt")
 
     versionHierarchy {
         splitDev(2, 4)
@@ -24,5 +24,11 @@ pluginDevKit {
         val pathKlibVersion = KotlinToolingVersion("2.4.20-Beta2")
         pre(pathKlibVersion, "legacyKlib")
         post(pathKlibVersion, "pathKlib")
+    }
+}
+
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 }

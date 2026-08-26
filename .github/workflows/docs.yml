@@ -63,7 +63,7 @@ jobs:
       - name: Cross-check documentation examples
         run: >-
           ./gradlew :kotlin-library-api-watchdog-gradle-plugin:k240FunctionalTest
-          --tests org.jetbrains.kotlinx.libs.api.watchdog.DocsExamplesTest
+          --tests org.jetbrains.kotlinx.library.api.watchdog.DocsExamplesTest
 
       - name: Build Dokka API reference
         run: ./gradlew :dokkaGenerate

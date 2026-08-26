@@ -84,7 +84,7 @@ public open class Widget
 @IntentionallyOpen(description = "Kept open for internal testing")
 public open class OtherWidget
 
-@IntentionallyUndocumented(reason = "There is no good reason to not document APIs")
+@IntentionallyUndocumented(description = "There is no good reason to not document APIs")
 public class UndocumentedThing
 ```
 

@@ -135,6 +135,20 @@ public fun edges(): List<Pair<Int, Int>> = emptyList()
 // !hide-focused
 @file:JvmName("Geometry")
 
+// !hide-focused(1:6)
+/**
+ * A position in Cartesian coordinate space.
+ *
+ * @property x distance from the vertical axis.
+ * @property y distance from the horizontal axis.
+ */
+// !hide-focused(1:6)
+@Poko
+public class Point(
+  public val x: Int,
+  public val y: Int,
+)
+
 // !hide-focused
 /** Returns edges. */
 public fun edges(): List<Point> = emptyList()
@@ -175,7 +189,7 @@ apiWatchdog {
 
 With direct compiler invocation:
 ```
--P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=PAIR_OR_TRIPLE_PUBLIC_API:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=PAIR_OR_TRIPLE_PUBLIC_API:warning
 ```
 
 ## See also

@@ -175,9 +175,9 @@ apiWatchdog {
 With direct compiler invocation:
 
 ```text
--P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=STATEFUL_CLASS_WITHOUT_EQUALS:warning
--P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=STATEFUL_CLASS_WITHOUT_HASH_CODE:warning
--P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=STATEFUL_CLASS_WITHOUT_TO_STRING:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=STATEFUL_CLASS_WITHOUT_EQUALS:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=STATEFUL_CLASS_WITHOUT_HASH_CODE:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=STATEFUL_CLASS_WITHOUT_TO_STRING:warning
 ```
 
 ## See also

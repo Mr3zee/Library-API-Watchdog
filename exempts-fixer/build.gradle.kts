@@ -4,7 +4,7 @@ plugins {
 }
 
 pluginDevKit {
-    pluginPackage.set("org.jetbrains.kotlin.library.api.watchdog.fixer")
+    pluginPackage.set("org.jetbrains.kotlinx.library.api.watchdog.fixer")
 }
 
 kotlin {

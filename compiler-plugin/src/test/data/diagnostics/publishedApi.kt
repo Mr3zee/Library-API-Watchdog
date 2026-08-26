@@ -4,8 +4,8 @@
 
 package foo.bar
 
-import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyExhaustive
-import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyOpen
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyExhaustive
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
 
 // A @PublishedApi declaration is internal in sources but part of the published binary API.
 // Source-API checks ignore it because the declaration stays unreferenceable by name.

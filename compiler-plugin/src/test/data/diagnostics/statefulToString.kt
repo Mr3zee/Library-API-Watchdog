@@ -4,10 +4,10 @@
 
 package foo.bar
 
-import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyWithoutToString
-import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyWithoutEquals
-import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyWithoutEqualsHashCodeOrToString
-import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyWithoutHashCode
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutToString
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEquals
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEqualsHashCodeOrToString
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutHashCode
 
 // Stateful classes relying on Any's equality, hashing, and rendering: should warn three times.
 

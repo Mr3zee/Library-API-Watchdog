@@ -4,7 +4,7 @@
 
 package foo.bar
 
-import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyNullableBoolean
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyNullableBoolean
 
 // Nullable Booleans in public signatures: should warn.
 

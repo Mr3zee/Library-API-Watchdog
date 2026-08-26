@@ -6,8 +6,8 @@
 
 package foo.bar
 
-import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason
-import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyInconsistentParameterOrder
+import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyInconsistentParameterOrder
 
 // Overloads disagreeing on the relative order of shared parameter names: no order is preferred
 // as canonical, so both members of the pair warn, and reordering either clears both.

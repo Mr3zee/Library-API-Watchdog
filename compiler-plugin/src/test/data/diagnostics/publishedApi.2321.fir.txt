@@ -69,7 +69,7 @@ FILE: publishedApi.kt
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyOpen|() @R|kotlin/PublishedApi|() internal open class AcknowledgedPublishedOpenClass : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|() @R|kotlin/PublishedApi|() internal open class AcknowledgedPublishedOpenClass : R|kotlin/Any| {
         public constructor(): R|foo/bar/AcknowledgedPublishedOpenClass| {
             super<R|kotlin/Any|>()
         }
@@ -97,7 +97,7 @@ FILE: publishedApi.kt
             public get(): R|kotlin/enums/EnumEntries<foo/bar/PublishedEnum>|
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyExhaustive|() @R|kotlin/PublishedApi|() internal final enum class AcknowledgedPublishedEnum : R|kotlin/Enum<foo/bar/AcknowledgedPublishedEnum>| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExhaustive|() @R|kotlin/PublishedApi|() internal final enum class AcknowledgedPublishedEnum : R|kotlin/Enum<foo/bar/AcknowledgedPublishedEnum>| {
         private constructor(): R|foo/bar/AcknowledgedPublishedEnum| {
             super<R|kotlin/Enum<foo/bar/AcknowledgedPublishedEnum>|>()
         }

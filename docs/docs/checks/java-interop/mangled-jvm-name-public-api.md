@@ -158,7 +158,7 @@ this check along with the rest of the [Java interop checks](./java-interop.md) g
 
 With direct compiler invocation:
 ```
--P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=MANGLED_JVM_NAME_PUBLIC_API:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=MANGLED_JVM_NAME_PUBLIC_API:warning
 ```
 
 ## See also

@@ -54,7 +54,7 @@ FILE: exhaustiveApi.kt
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyExhaustive|() public final enum class MarkedEnum : R|kotlin/Enum<foo/bar/MarkedEnum>| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExhaustive|() public final enum class MarkedEnum : R|kotlin/Enum<foo/bar/MarkedEnum>| {
         private constructor(): R|foo/bar/MarkedEnum| {
             super<R|kotlin/Enum<foo/bar/MarkedEnum>|>()
         }
@@ -71,7 +71,7 @@ FILE: exhaustiveApi.kt
             public get(): R|kotlin/enums/EnumEntries<foo/bar/MarkedEnum>|
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyExhaustive|() public sealed class MarkedSealedClass : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExhaustive|() public sealed class MarkedSealedClass : R|kotlin/Any| {
         protected constructor(): R|foo/bar/MarkedSealedClass| {
             super<R|kotlin/Any|>()
         }
@@ -84,7 +84,7 @@ FILE: exhaustiveApi.kt
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyExhaustive|() public sealed interface MarkedSealedInterface : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExhaustive|() public sealed interface MarkedSealedInterface : R|kotlin/Any| {
         public final class Impl : R|foo/bar/MarkedSealedInterface| {
             public constructor(): R|foo/bar/MarkedSealedInterface.Impl| {
                 super<R|kotlin/Any|>()

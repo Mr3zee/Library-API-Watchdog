@@ -157,7 +157,7 @@ FILE: inlineFunction.kt
         lval squared: R|kotlin/Int| = R|<local>/value|.R|kotlin/Int.times|(R|<local>/value|)
         ^publishedWithLogic R|<local>/squared|
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final inline fun clamped(value: R|kotlin/Int|): R|kotlin/Int| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final inline fun clamped(value: R|kotlin/Int|): R|kotlin/Int| {
         ^clamped when () {
             CMP(<, R|<local>/value|.R|kotlin/Int.compareTo|(Int(0))) ->  {
                 Int(0)
@@ -377,11 +377,11 @@ FILE: inlineFunction.kt
         internal inline get(): R|kotlin/Int| {
             ^ Int(5).R|kotlin/Int.plus|(Int(5))
         }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final val fastThreshold: R|kotlin/Int|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final val fastThreshold: R|kotlin/Int|
         public inline get(): R|kotlin/Int| {
             ^ Int(3).R|kotlin/Int.plus|(Int(3))
         }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final var acknowledgedClamped: R|kotlin/Int|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final var acknowledgedClamped: R|kotlin/Int|
         public inline get(): R|kotlin/Int| {
             ^ when () {
                 CMP(<, R|foo/bar/storedLimit|.R|kotlin/Int.compareTo|(Int(0))) ->  {

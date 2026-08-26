@@ -4,7 +4,7 @@
 
 package foo.bar
 
-import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyFunctionTypeAlias
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyFunctionTypeAlias
 
 // Unacknowledged function type aliases: should warn.
 

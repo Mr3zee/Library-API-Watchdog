@@ -3,7 +3,7 @@
 
 package foo.bar
 
-import org.jetbrains.kotlinx.libs.api.watchdog.InternalAnnotationMarker
+import org.jetbrains.kotlinx.library.api.watchdog.InternalAnnotationMarker
 
 // @InternalAnnotationMarker turns an annotation class into an internal API marker: declarations
 // carrying the marked annotation offer no compatibility contract despite being public, so no

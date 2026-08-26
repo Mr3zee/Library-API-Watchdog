@@ -68,13 +68,13 @@ FILE: nullableBoolean.kt
         }
 
     }
-    public final fun <@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNullableBoolean|() C : R|kotlin/Boolean?|> pick(value: R|C|): R|C| {
+    public final fun <@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNullableBoolean|() C : R|kotlin/Boolean?|> pick(value: R|C|): R|C| {
         ^pick R|<local>/value|
     }
-    public final fun snapshots(): R|kotlin/collections/List<@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNullableBoolean|()  kotlin/Boolean?>| {
-        ^snapshots R|kotlin/collections/emptyList|<R|@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNullableBoolean|()  kotlin/Boolean?|>()
+    public final fun snapshots(): R|kotlin/collections/List<@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNullableBoolean|()  kotlin/Boolean?>| {
+        ^snapshots R|kotlin/collections/emptyList|<R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNullableBoolean|()  kotlin/Boolean?|>()
     }
-    public final fun buffered(): R|@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNullableBoolean|()  kotlin/Boolean?| {
+    public final fun buffered(): R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNullableBoolean|()  kotlin/Boolean?| {
         ^buffered Null(null)
     }
     public final fun R|kotlin/Boolean?|.orFalse(): R|kotlin/Boolean| {
@@ -94,29 +94,29 @@ FILE: nullableBoolean.kt
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNullableBoolean|() public final fun legacyProbe(): R|kotlin/Boolean?| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNullableBoolean|() public final fun legacyProbe(): R|kotlin/Boolean?| {
         ^legacyProbe Null(null)
     }
-    public final fun acknowledgedParameter(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNullableBoolean|() flag: R|kotlin/Boolean?|): R|kotlin/Unit| {
+    public final fun acknowledgedParameter(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNullableBoolean|() flag: R|kotlin/Boolean?|): R|kotlin/Unit| {
     }
     context(state: R|kotlin/Boolean?|)
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNullableBoolean|() public final fun acknowledgedContext(): R|kotlin/String| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNullableBoolean|() public final fun acknowledgedContext(): R|kotlin/String| {
         ^acknowledgedContext R|<local>/state|.R|kotlin/toString|()
     }
-    context(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNullableBoolean|() state: R|kotlin/Boolean?|)
+    context(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNullableBoolean|() state: R|kotlin/Boolean?|)
     public final fun acknowledgedContextParameter(): R|kotlin/String| {
         ^acknowledgedContextParameter R|<local>/state|.R|kotlin/toString|()
     }
     public final class Settings : R|kotlin/Any| {
-        public constructor(@R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNullableBoolean|() checked: R|kotlin/Boolean?|): R|foo/bar/Settings| {
+        public constructor(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNullableBoolean|() checked: R|kotlin/Boolean?|): R|foo/bar/Settings| {
             super<R|kotlin/Any|>()
         }
 
-        @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNullableBoolean|() public final val checked: R|kotlin/Boolean?| = R|<local>/checked|
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNullableBoolean|() public final val checked: R|kotlin/Boolean?| = R|<local>/checked|
             public get(): R|kotlin/Boolean?|
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyNullableBoolean|() public final val acknowledgedOutcome: R|kotlin/Boolean?| = Null(null)
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNullableBoolean|() public final val acknowledgedOutcome: R|kotlin/Boolean?| = Null(null)
         public get(): R|kotlin/Boolean?|
     public final fun isReady(): R|kotlin/Boolean| {
         ^isReady Boolean(true)

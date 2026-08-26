@@ -89,7 +89,7 @@ apiWatchdog {
 With direct compiler invocation:
 
 ```
--P plugin:org.jetbrains.kotlin.library.api.watchdog:publicTypeWithInternalApi=false
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:publicTypeWithInternalApi=false
 ```
 
 ## See also

@@ -8,8 +8,8 @@ FILE: functionTypeAlias.kt
     public final typealias BuilderBlock = R|{kotlin/text/StringBuilder=} java/lang/StringBuilder.() -> kotlin/Unit|
     public final typealias Transformer<T> = R|(T) -> T|
     public final typealias CallbackAlias = R|{foo/bar/Callback=} (kotlin/Int) -> kotlin/Unit|
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyFunctionTypeAlias|() public final typealias MarkedCallback = R|(kotlin/Int) -> kotlin/Unit|
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyFunctionTypeAlias|() public final typealias MarkedSuspendAction = R|suspend () -> kotlin/Unit|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyFunctionTypeAlias|() public final typealias MarkedCallback = R|(kotlin/Int) -> kotlin/Unit|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyFunctionTypeAlias|() public final typealias MarkedSuspendAction = R|suspend () -> kotlin/Unit|
     public final typealias StringList = R|kotlin/collections/List<kotlin/String>|
     public final typealias Callbacks = R|kotlin/collections/List<(kotlin/Int) -> kotlin/Unit>|
     public final typealias FunctionReference = R|kotlin/reflect/KFunction1<kotlin/Int, kotlin/Unit>|

@@ -76,13 +76,13 @@ FILE: dslMarker.kt
         }
         )
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility|() @R|kotlin/DslMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|)]) public final annotation class LegacyNoopTargetDsl : R|kotlin/Annotation| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility|() @R|kotlin/DslMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|)]) public final annotation class LegacyNoopTargetDsl : R|kotlin/Annotation| {
         public constructor(): R|foo/bar/LegacyNoopTargetDsl| {
             super<R|kotlin/Any|>()
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility|(description = String(Published without targets in 1.0.) [evaluated = String(Published without targets in 1.0.)]) @R|kotlin/DslMarker|() public final annotation class LegacyDefaultTargetsDsl : R|kotlin/Annotation| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility|(description = String(Published without targets in 1.0.) [evaluated = String(Published without targets in 1.0.)]) @R|kotlin/DslMarker|() public final annotation class LegacyDefaultTargetsDsl : R|kotlin/Annotation| {
         public constructor(): R|foo/bar/LegacyDefaultTargetsDsl| {
             super<R|kotlin/Any|>()
         }

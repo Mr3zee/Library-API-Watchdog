@@ -5,8 +5,8 @@
 package foo.bar
 
 import kotlin.reflect.KFunction1
-import org.jetbrains.kotlinx.libs.api.watchdog.ExemptionReason
-import org.jetbrains.kotlinx.libs.api.watchdog.IntentionallyRequiredParameterAfterOptional
+import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyRequiredParameterAfterOptional
 
 // Required parameters declared after optional (defaulted or vararg) ones: should warn.
 

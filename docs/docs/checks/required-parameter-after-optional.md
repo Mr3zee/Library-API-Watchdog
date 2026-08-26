@@ -151,7 +151,7 @@ apiWatchdog {
 
 With direct compiler invocation:
 ```
--P plugin:org.jetbrains.kotlin.library.api.watchdog:diagnosticSeverity=REQUIRED_PARAMETER_AFTER_OPTIONAL:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=REQUIRED_PARAMETER_AFTER_OPTIONAL:warning
 ```
 
 ## See also

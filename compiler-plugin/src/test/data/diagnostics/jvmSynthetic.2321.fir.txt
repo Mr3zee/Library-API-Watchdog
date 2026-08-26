@@ -111,10 +111,10 @@ FILE: jvmSynthetic.kt
         }
 
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final suspend fun acknowledgedFetch(key: R|kotlin/String|): R|kotlin/String| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final suspend fun acknowledgedFetch(key: R|kotlin/String|): R|kotlin/String| {
         ^acknowledgedFetch R|<local>/key|
     }
-    @R|org/jetbrains/kotlinx/libs/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/libs/api/watchdog/ExemptionReason.API_DESIGN|) public final class KotlinOnlyService : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final class KotlinOnlyService : R|kotlin/Any| {
         public constructor(): R|foo/bar/KotlinOnlyService| {
             super<R|kotlin/Any|>()
         }
