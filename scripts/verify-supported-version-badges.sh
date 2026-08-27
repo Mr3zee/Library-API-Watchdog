@@ -2,22 +2,21 @@
 
 set -euo pipefail
 
-readonly property_prefix='kotlin.compiler.plugin.devkit'
-readonly properties_file='gradle.properties'
+readonly version_catalog_file='gradle/libs.versions.toml'
 readonly badge_files=('README.md' 'docs/docs/overview.md')
 
-read_property() {
-  local property_name="$1"
-  awk -F= -v property_name="$property_name" \
-    '$1 == property_name { print substr($0, length(property_name) + 2) }' \
-    "$properties_file"
+read_version() {
+  local version_name="$1"
+  awk -F'"' -v version_name="$version_name" \
+    '$0 ~ "^[[:space:]]*" version_name "[[:space:]]*=" { print $2 }' \
+    "$version_catalog_file"
 }
 
-readonly min_cli_version="$(read_property "${property_prefix}.minCliVersion")"
-readonly min_idea_version="$(read_property "${property_prefix}.minIdeaVersion")"
+readonly min_cli_version="$(read_version 'kotlinCliMin')"
+readonly min_idea_version="$(read_version 'kotlinIdeMin')"
 
 if [[ -z "$min_cli_version" || -z "$min_idea_version" ]]; then
-  echo 'The minimum CLI and IDEA versions must be declared in gradle.properties.' >&2
+  echo "The minimum CLI and IDEA versions must be declared in $version_catalog_file." >&2
   exit 1
 fi
 

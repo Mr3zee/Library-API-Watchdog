@@ -5,14 +5,14 @@ on:
     branches:
       - main
     paths:
-      - 'gradle.properties'
+      - 'gradle/libs.versions.toml'
       - 'README.md'
       - 'docs/docs/overview.md'
       - 'scripts/verify-supported-version-badges.sh'
       - '.github/workflows/supported-version-badges.yml'
   pull_request:
     paths:
-      - 'gradle.properties'
+      - 'gradle/libs.versions.toml'
       - 'README.md'
       - 'docs/docs/overview.md'
       - 'scripts/verify-supported-version-badges.sh'
