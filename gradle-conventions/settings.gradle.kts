@@ -10,6 +10,12 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
+        maven("https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap") {
+            credentials {
+                username = ""
+                password = ""
+            }
+        }
         mavenCentral()
         gradlePluginPortal()
         maven("https://redirector.kotlinlang.org/maven/bootstrap")

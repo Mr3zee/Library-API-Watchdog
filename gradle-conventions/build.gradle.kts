@@ -4,6 +4,12 @@ plugins {
 
 dependencies {
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:${libs.versions.dokka.get()}")
+    implementation(
+        "org.jetbrains.kotlin.compiler.plugin.devkit:plugins:${providers.systemProperty("devkitVersion").get()}",
+    ) {
+        // The running Gradle distribution supplies its own public API.
+        exclude(group = "org.gradle.experimental", module = "gradle-public-api")
+    }
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlin.get()}")
 }
 
@@ -16,6 +22,11 @@ gradlePlugin {
         register("compilerPluginConventions") {
             id = "library-api-watchdog.compiler-plugin-conventions"
             implementationClass = "org.jetbrains.kotlinx.library.api.watchdog.conventions.CompilerPluginConventionPlugin"
+        }
+        register("devKitVersionsConventions") {
+            id = "library-api-watchdog.devkit-versions-conventions"
+            implementationClass =
+                "org.jetbrains.kotlinx.library.api.watchdog.conventions.DevKitVersionsConventionPlugin"
         }
         register("dokkaConventions") {
             id = "library-api-watchdog.dokka-conventions"

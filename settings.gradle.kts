@@ -1,5 +1,11 @@
 pluginManagement {
+    val devKitVersion = providers.systemProperty("devkitVersion")
+
     includeBuild("gradle-conventions")
+
+    plugins {
+        kotlin("compiler.plugin.devkit") version devKitVersion.get()
+    }
 
     repositories {
         maven("https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap") {
@@ -15,7 +21,7 @@ pluginManagement {
     }
 }
 
-plugins { kotlin("compiler.plugin.devkit") version "0.0.3-dev-aff9b68" }
+plugins { kotlin("compiler.plugin.devkit") }
 
 dependencyResolutionManagement {
     @Suppress("UnstableApiUsage")

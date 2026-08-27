@@ -1,13 +1,17 @@
 import org.jetbrains.kotlin.tooling.core.KotlinToolingVersion
 
 plugins {
-    pluginDevKit("compiler-plugin")
+    id("org.jetbrains.kotlin.compiler.plugin.devkit.compiler-plugin")
+    id("library-api-watchdog.devkit-versions-conventions")
     id("library-api-watchdog.benchmark-conventions")
     id("library-api-watchdog.compiler-plugin-conventions")
     id("library-api-watchdog.space-publishing-conventions")
 }
 
 pluginDevKit {
+    ideaVersions(libs.versions.kotlinIdeMin.get(), includeRc = true, includeEap = true)
+    useLatestDev()
+
     pluginPackage.set("org.jetbrains.kotlinx.library.api.watchdog")
     componentRegistrar.set(
         "org.jetbrains.kotlinx.library.api.watchdog.WatchdogComponentRegistrar",

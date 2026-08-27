@@ -1,7 +1,10 @@
 plugins {
-    pluginDevKit("compiler-library")
+    id("org.jetbrains.kotlin.compiler.plugin.devkit.compiler-library")
+    id("library-api-watchdog.devkit-versions-conventions")
     id("library-api-watchdog.space-publishing-conventions")
 }
+
+val devKitVersion = providers.systemProperty("devkitVersion").get()
 
 pluginDevKit {
     pluginPackage.set("org.jetbrains.kotlinx.library.api.watchdog.fixer")
@@ -23,7 +26,7 @@ kotlin {
         dependsOn(sourceSets.commonTest.get())
         resources.srcDir(rootProject.file("compiler-plugin/src/test/data"))
         dependencies {
-            implementation(pluginDevKit("compiler-plugin-runtime"))
+            implementation("org.jetbrains.kotlin.compiler.plugin.devkit:compiler-plugin-runtime:$devKitVersion")
             implementation(project(":kotlin-library-api-watchdog-compiler-plugin"))
             implementation(project(":kotlin-library-api-watchdog-plugin-annotations"))
         }

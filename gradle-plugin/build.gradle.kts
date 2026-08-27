@@ -3,11 +3,14 @@
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {
-    pluginDevKit("gradle-plugin")
+    id("org.jetbrains.kotlin.compiler.plugin.devkit.gradle-plugin")
+    id("library-api-watchdog.devkit-versions-conventions")
     id("library-api-watchdog.dokka-conventions")
     id("library-api-watchdog.gradle-plugin-conventions")
     id("library-api-watchdog.space-publishing-conventions")
 }
+
+val devKitVersion = providers.systemProperty("devkitVersion").get()
 
 kotlin {
     explicitApi()
@@ -16,7 +19,7 @@ kotlin {
 }
 
 dependencies {
-    implementation(pluginDevKit("version-resolution"))
+    implementation("org.jetbrains.kotlin.compiler.plugin.devkit:version-resolution:$devKitVersion")
     implementation(project(":kotlin-library-api-watchdog-report-aggregation"))
 }
 

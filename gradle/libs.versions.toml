@@ -1,6 +1,8 @@
 [versions]
 # https://github.com/JetBrains/kotlin
 kotlin = "2.4.0"
+kotlinCliMin = "2.3.20"
+kotlinIdeMin = "262"
 # https://github.com/Kotlin/dokka
 dokka = "2.2.0"
 # https://github.com/GradleUp/shadow
