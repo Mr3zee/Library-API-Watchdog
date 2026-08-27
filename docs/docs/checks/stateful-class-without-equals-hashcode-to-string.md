@@ -92,7 +92,7 @@ public class Connection(public val host: String)
 public class Connection(public val host: String)
 ```
 
-### Or Do
+### Or Do {#do-2}
 
 ```kotlin
 // !hide-focused(1:5)

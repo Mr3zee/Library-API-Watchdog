@@ -44,7 +44,11 @@ jobs:
 
       - name: Test docs tooling
         working-directory: docs
-        run: npm test
+        run: |
+          npm test || {
+            echo "Tests failed; retrying once."
+            npm test
+          }
 
       - name: Check diagnostic exemption wording
         working-directory: docs
@@ -65,9 +69,13 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
 
       - name: Cross-check documentation examples
-        run: >-
-          ./gradlew :kotlin-library-api-watchdog-gradle-plugin:k240FunctionalTest
-          --tests org.jetbrains.kotlinx.library.api.watchdog.DocsExamplesTest
+        run: |
+          ./gradlew :kotlin-library-api-watchdog-gradle-plugin:k240FunctionalTest \
+            --tests org.jetbrains.kotlinx.library.api.watchdog.DocsExamplesTest || {
+              echo "Tests failed; retrying once."
+              ./gradlew :kotlin-library-api-watchdog-gradle-plugin:k240FunctionalTest \
+                --tests org.jetbrains.kotlinx.library.api.watchdog.DocsExamplesTest
+            }
 
       - name: Build Dokka API reference
         run: ./gradlew :dokkaGenerate

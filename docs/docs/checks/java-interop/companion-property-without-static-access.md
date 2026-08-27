@@ -90,7 +90,7 @@ public class Registry {
 }
 ```
 
-### Or do
+### Or Do {#do-2}
 
 ```kotlin
 // !hide-focused
