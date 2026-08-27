@@ -22,6 +22,8 @@ an empty `@Target()`:
 // !diag[/DefaultTargetsDsl/] DSL_MARKER_WITHOUT_EXPLICIT_TARGETS ["DefaultTargetsDsl"]
 public annotation class DefaultTargetsDsl
 
+// !hide-focused
+/** Marks no declarations because its target set is empty. */
 @DslMarker
 @Target()
 // !diag[/EmptyTargetsDsl/] DSL_MARKER_WITHOUT_EXPLICIT_TARGETS ["EmptyTargetsDsl"]

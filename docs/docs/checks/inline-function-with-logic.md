@@ -364,12 +364,18 @@ Take this example of a builder API:
 // !hide-focused
 @file:JvmName("QueryParameters")
 
-// !hide-focused
-/** Immutable query parameters of a request. */
+// !hide-focused(1:6)
+/**
+ * Immutable query parameters of a request.
+ *
+ * @property values query values grouped by parameter name.
+ */
+@Poko
 public class Parameters(public val values: Map<String, List<String>>)
 
-// !hide-focused
+// !hide-focused(1:2)
 /** Mutable collector of query parameters. */
+@IntentionallyWithoutEqualsHashCodeOrToString(reason = ExemptionReason.API_DESIGN)
 public class ParametersBuilder {
     private var map = mutableMapOf<String, MutableList<String>>()
 

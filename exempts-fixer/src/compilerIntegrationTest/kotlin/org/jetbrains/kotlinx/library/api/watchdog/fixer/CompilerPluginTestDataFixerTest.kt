@@ -13,10 +13,12 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.jetbrains.kotlin.compiler.plugin.devkit.runners.DevKitTest
 import org.jetbrains.kotlin.compiler.plugin.devkit.services.configurePlugin
+import org.jetbrains.kotlin.config.LanguageFeature.*
 import org.jetbrains.kotlin.test.FirParser
 import org.jetbrains.kotlin.test.directives.CodegenTestDirectives
 import org.jetbrains.kotlin.test.directives.FirDiagnosticsDirectives
 import org.jetbrains.kotlin.test.directives.JvmEnvironmentConfigurationDirectives
+import org.jetbrains.kotlin.test.directives.LanguageSettingsDirectives.LANGUAGE
 import org.jetbrains.kotlin.test.runners.AbstractFirPhasedDiagnosticTest
 import org.jetbrains.kotlin.test.services.KotlinTestInfo
 import org.jetbrains.kotlinx.library.api.watchdog.WatchdogComponentRegistrar
@@ -78,17 +80,8 @@ class CompilerPluginTestDataFixerTest {
                 append(fixSourceFile(fixtureName, section.fileName, section.markedText))
             }
         }
-        // These sources retain the original fixture's deliberately muted diagnostics, so a clean
-        // expected marker set doesn't necessarily mean that code generation can run.
-        // Older compilers report language-feature and annotation-target migration diagnostics
-        // independently of this plugin. They are irrelevant to whether the inserted watchdog
-        // exemptions suppress the plugin diagnostics.
         return buildString {
             appendLine("// DISABLE_NEXT_PHASE_SUGGESTION")
-            appendLine(
-                "// DIAGNOSTICS: -UNSUPPORTED_FEATURE " +
-                        "-ANNOTATION_WILL_BE_APPLIED_ALSO_TO_PROPERTY_OR_FIELD",
-            )
             append(generated)
         }
     }
@@ -261,6 +254,11 @@ private class FixedOutputDiagnosticRunner : DevKitTest(
             +JvmEnvironmentConfigurationDirectives.FULL_JDK
             +CodegenTestDirectives.IGNORE_DEXING
             +FirDiagnosticsDirectives.DISABLE_GENERATED_FIR_TAGS
+            LANGUAGE with listOf(
+                "+$PropertyParamAnnotationDefaultTargetMode",
+                "-$AnnotationDefaultTargetMigrationWarning",
+                "+$ContextParameters",
+            )
         }
     },
     { configurePlugin(WatchdogComponentRegistrar()) },
