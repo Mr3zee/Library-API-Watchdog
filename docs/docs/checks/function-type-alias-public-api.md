@@ -86,8 +86,11 @@ public fun interface SuspendAction {
   `public typealias Some = StringBuilder.() -> Unit` are both function types under the alias.
 - A function type nested inside another type, such as `List<(Int) -> Unit>`, doesn't trigger the
   check, only the type an alias directly expands to counts.
-- `@PublishedApi internal` aliases are not reported because library users can't name them in
-  source and an alias contributes no binary declaration of its own.
+- Aliases for reflection function types (`KFunction1`, `KSuspendFunction2`, ...) are not
+  reported: a `fun interface` can't replace them.
+- `@PublishedApi` itself can't target a type alias, but an alias nested inside a
+  `@PublishedApi internal` class is not reported: library users can't name it in source, and an
+  alias contributes no binary declaration of its own.
 
 ## Exemption
 

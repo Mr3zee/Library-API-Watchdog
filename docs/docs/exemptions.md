@@ -115,7 +115,9 @@ public class ReflectionHelper
 ```
 
 Every declaration carrying the marked annotation is no
-longer watched by any check, and neither is anything nested inside it.
+longer watched by the public API checks, and neither is anything nested inside it. Only the
+occurrence-based checks still apply there: exemption annotations must be explained, and DSL
+markers are validated at every visibility.
 
 A supported public declaration must not expose one of those internal types in its signature. The
 [`PUBLIC_TYPE_WITH_INTERNAL_API`](./checks/special/public-type-with-internal-api.md) check reports
@@ -128,5 +130,5 @@ other declaration, so it still needs a KDoc comment and the rest.
 ## Configuration
 
 Every `@Intentionally*` annotation, `@InternalAnnotationMarker`, and `ExemptionReason` live in the
-`org.jetbrains.kotlin:kotlin-library-api-watchdog-plugin-annotations` artifact.
+`org.jetbrains.kotlinx:kotlin-library-api-watchdog-plugin-annotations` artifact.
 Applying the Gradle plugin adds this library as a dependency automatically - no manual dependency declaration is needed.

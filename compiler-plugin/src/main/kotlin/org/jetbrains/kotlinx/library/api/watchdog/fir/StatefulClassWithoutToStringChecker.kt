@@ -102,7 +102,7 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
             factory = factory,
             a = name,
             b = generationHint,
-            c = ideaGenerateShortcut(),
+            c = ideaGenerateShortcut(diagnostic.name),
         )
     }
 
@@ -139,5 +139,10 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
 }
 
 /** The shortcut for Code | Generate in IntelliJ IDEA on the compiler's host OS. */
-private fun ideaGenerateShortcut(osName: String = System.getProperty("os.name").orEmpty()): String =
-    if (osName.startsWith("Mac", ignoreCase = true)) "⌘N" else "Alt+Insert"
+private fun ideaGenerateShortcut(
+    diagnostic: String,
+    osName: String = System.getProperty("os.name").orEmpty(),
+): String = WatchdogDiagnosticMessages.parameterValueFor(
+    diagnostic = diagnostic,
+    value = if (osName.startsWith("Mac", ignoreCase = true)) "ideaGenerateShortcutMac" else "ideaGenerateShortcut",
+)

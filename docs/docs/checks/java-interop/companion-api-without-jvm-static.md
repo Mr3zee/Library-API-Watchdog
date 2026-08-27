@@ -26,7 +26,7 @@ public class ServiceFactory {
     public companion object {
         // !hide-focused
         /** Creates an empty service factory. */
-        // !diag[/create/] COMPANION_API_WITHOUT_JVM_STATIC ["ServiceFactory","create"]
+        // !diag[/create/] COMPANION_API_WITHOUT_JVM_STATIC ["ServiceFactory","create","Companion"]
         public fun create(): ServiceFactory = ServiceFactory()
     }
 }
@@ -52,7 +52,7 @@ public class Registry {
     public companion object {
         // !hide-focused
         /** Creates an empty registry. */
-        // !diag[/create/] COMPANION_API_WITHOUT_JVM_STATIC ["Registry","create"]
+        // !diag[/create/] COMPANION_API_WITHOUT_JVM_STATIC ["Registry","create","Companion"]
         public fun create(): Registry = Registry()
     }
 }

@@ -26,17 +26,17 @@ public class Registry {
     public companion object {
         // !hide-focused
         /** The active endpoint. */
-        // !diag[/currentEndpoint/] COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS ["Registry","currentEndpoint","getter and setter","$getterAndSetterFix(Registry)"]
+        // !diag[/currentEndpoint/] COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS ["Registry.Companion","currentEndpoint","getter and setter","$getterAndSetterFix(Registry)"]
         public var currentEndpoint: String = "local"
 
         // !hide-focused
         /** A display name computed on demand. */
-        // !diag[/displayName/] COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS ["Registry","displayName","getter","$getterFix(Registry)"]
+        // !diag[/displayName/] COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS ["Registry.Companion","displayName","getter","$getterFix(Registry)"]
         public val displayName: String get() = "registry"
 
         // !hide-focused
         /** Metadata initialized on first access. */
-        // !diag[/metadata/] COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS ["Registry","metadata","getter","$getterFix(Registry)"]
+        // !diag[/metadata/] COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS ["Registry.Companion","metadata","getter","$getterFix(Registry)"]
         public val metadata: String by lazy { "metadata" }
     }
 }
@@ -65,7 +65,7 @@ public class Registry {
     public companion object {
         // !hide-focused
         /** The active endpoint. */
-        // !diag[/currentEndpoint/] COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS ["Registry","currentEndpoint","getter and setter","$getterAndSetterFix(Registry)"]
+        // !diag[/currentEndpoint/] COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS ["Registry.Companion","currentEndpoint","getter and setter","$getterAndSetterFix(Registry)"]
         public var currentEndpoint: String = "local"
     }
 }

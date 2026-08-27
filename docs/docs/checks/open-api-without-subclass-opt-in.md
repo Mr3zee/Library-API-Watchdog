@@ -89,6 +89,9 @@ public interface Plugin {
   instead of this one.
 - A class whose constructors are all `internal` or `private` can't be subclassed outside the
   library, so it is never reported, even if it is `open` or `abstract`.
+- A class with a `public` primary constructor is reported once, on the class name. A class
+  without one is reported on every `public` or `protected` constructor separately, since each of
+  them permits external subclassing on its own.
 - `fun interface`s are checked like any other interface.
 - Sealed interfaces are not reported here. They are covered by
   [`EXHAUSTIVE_PUBLIC_API`](./exhaustive-public-api.md) instead.

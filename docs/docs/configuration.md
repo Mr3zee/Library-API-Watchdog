@@ -50,7 +50,7 @@ Applying the plugin:
 
 - Registers the compiler plugin for every compilation in the project except test compilations:
   test sources are not published, so they carry no API contract to watch.
-- Adds a dependency on `org.jetbrains.kotlin:kotlin-library-api-watchdog-plugin-annotations`,
+- Adds a dependency on `org.jetbrains.kotlinx:kotlin-library-api-watchdog-plugin-annotations`,
   a runtime library with the `@Intentionally*` exemption annotations.
 - Warns when explicit API mode is not enabled.
 - Checks whether binary compatibility validation is enabled alongside it, printing a

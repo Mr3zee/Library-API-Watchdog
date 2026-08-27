@@ -25,7 +25,7 @@ package consumer
 
 import lib.api.InternalLibApi
 
-// Declarations marked with the dependency's marker are exempt from all public API checks.
+// Declarations marked with the dependency's marker are exempt from the public API checks.
 
 @InternalLibApi
 public open class InternalOpenClass {

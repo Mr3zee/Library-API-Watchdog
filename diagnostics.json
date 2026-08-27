@@ -149,6 +149,9 @@
         ],
         "ideaGenerateShortcut": [
           "Alt+Insert"
+        ],
+        "ideaGenerateShortcutMac": [
+          "⌘N"
         ]
       },
       "message": [
@@ -173,6 +176,9 @@
         ],
         "ideaGenerateShortcut": [
           "Alt+Insert"
+        ],
+        "ideaGenerateShortcutMac": [
+          "⌘N"
         ]
       },
       "message": [
@@ -197,6 +203,9 @@
         ],
         "ideaGenerateShortcut": [
           "Alt+Insert"
+        ],
+        "ideaGenerateShortcutMac": [
+          "⌘N"
         ]
       },
       "message": [
@@ -253,7 +262,8 @@
         "fixed shape can't evolve - adding a value means switching to a different type, breaking users.",
         "Declare a small class with descriptively named properties instead.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyPairOrTriple` to the whole declaration."
+        "If this API shape is intentional, apply `@IntentionallyPairOrTriple` to the declaration,",
+        "parameter, or type usage."
       ]
     },
     {
@@ -391,7 +401,8 @@
           "the compiled method from Java fails at runtime"
         ],
         "suspendFunctionType": [
-          "takes a `suspend` function type in the parameter `{0}`, which no Java lambda can implement"
+          "takes a `suspend` function type in the parameter `{0}`, which a Java lambda can't implement",
+          "correctly"
         ],
         "extensionFunctionType": [
           "takes a function type with receiver in the parameter `{0}`, which a Java lambda can only emulate by",
@@ -416,8 +427,8 @@
       "title": "Companion function without JvmStatic",
       "docs": "checks/java-interop/companion-api-without-jvm-static",
       "message": [
-        "The `companion object` function `{1}` compiles to an instance method on the nested `Companion`",
-        "class, so Java callers have to reach it as `{0}.Companion.{1}(...)`. Mark it with `@JvmStatic` to",
+        "The `companion object` function `{1}` compiles to an instance method on the nested `{2}`",
+        "class, so Java callers have to reach it as `{0}.{2}.{1}(...)`. Mark it with `@JvmStatic` to",
         "additionally compile a static `{0}.{1}(...)` entry point for Java callers - Kotlin call sites are",
         "unaffected. Alternatively, hide it from Java with `@JvmSynthetic`.",
         "",
@@ -445,8 +456,8 @@
         ]
       },
       "message": [
-        "The `companion object` property `{1}` leaves its {2} on the nested `Companion` class, so Java callers",
-        "have to use `{0}.Companion`. {3}",
+        "The `companion object` property `{1}` leaves its {2} on the nested companion class, so Java",
+        "callers have to use `{0}`. {3}",
         "",
         "If this API shape is intentional, apply `@IntentionallyNonStaticCompanionApi` to the property or an",
         "enclosing class."

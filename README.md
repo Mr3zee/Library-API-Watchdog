@@ -206,10 +206,17 @@ library, and compiler-plugin project are declared through the dev-kit's namespac
 Tests:
 
 ```bash
-./gradlew :kotlin-library-api-watchdog-compiler-plugin:test               # diagnostics tests
+./gradlew :kotlin-library-api-watchdog-compiler-plugin:allTests           # diagnostics tests for all supported Kotlin versions
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:generateTests      # regenerate JUnit classes from test data
-./gradlew :kotlin-library-api-watchdog-gradle-plugin:functionalTest       # Gradle integration tests
+./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkCorpusAudit # validate the benchmark corpus
+./gradlew :kotlin-library-api-watchdog-exempts-fixer:allTests             # exemption fixer tests for all supported Kotlin versions
+./gradlew :kotlin-library-api-watchdog-gradle-plugin:functionalTest       # Gradle integration tests for the default Kotlin version
+./gradlew :kotlin-library-api-watchdog-report-aggregation:test            # report aggregation tests
 ```
+
+CI runs the Gradle integration tests against every supported Kotlin version. Use
+`:kotlin-library-api-watchdog-gradle-plugin:printCiFunctionalTestMatrix` to list the corresponding
+versioned test tasks.
 
 Modules:
 
@@ -217,8 +224,13 @@ Modules:
   lives in [compiler-plugin/src/test/data/diagnostics](compiler-plugin/src/test/data/diagnostics).
 - [`:kotlin-library-api-watchdog-plugin-annotations`](plugin-annotations/src/commonMain/kotlin) - the `@Intentionally*`
   exemption annotations, `@InternalAnnotationMarker`, and the `ExemptionReason` enum.
-- [`:kotlin-library-api-watchdog-gradle-plugin`](gradle-plugin/src) - applies the compiler plugin and the annotations
-  dependency (plugin id `org.jetbrains.kotlin.library.api-watchdog`).
+- [`:kotlin-library-api-watchdog-exempts-fixer`](exempts-fixer/src) - reads compiler diagnostic reports and applies
+  backwards-compatibility exemption annotations to Kotlin sources.
+- [`:kotlin-library-api-watchdog-gradle-plugin`](gradle-plugin/src) - applies the compiler plugin and annotations
+  dependency, and registers the exemption update and module report tasks (plugin id
+  `org.jetbrains.kotlin.library.api-watchdog`).
+- [`:kotlin-library-api-watchdog-report-aggregation`](report-aggregation/src) - aggregates exemption reports from
+  multiple projects (plugin id `org.jetbrains.kotlin.library.api-watchdog-report-aggregation`).
 
 The documentation site is a [Docusaurus](https://docusaurus.io/) project in [docs](docs), built by
 [docs.yml](.github/workflows/docs.yml). See [docs/authoring.md](docs/authoring.md) for the page

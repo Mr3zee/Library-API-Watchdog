@@ -143,11 +143,11 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     /** Parameters: the function name, what makes its shape Kotlin-only, in words. */
     val KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC by configurable2<KtDeclaration, Name, String>(NAME_IDENTIFIER)
 
-    /** Parameters: the outer class name, the function name. */
-    val COMPANION_API_WITHOUT_JVM_STATIC by configurable2<KtDeclaration, Name, Name>(NAME_IDENTIFIER)
+    /** Parameters: the outer class name, the function name, the companion class name. */
+    val COMPANION_API_WITHOUT_JVM_STATIC by configurable3<KtDeclaration, Name, Name, Name>(NAME_IDENTIFIER)
 
-    /** Parameters: outer class, property, instance accessors in words, context-specific fix. */
-    val COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS by configurable4<KtDeclaration, Name, Name, String, String>(
+    /** Parameters: companion access path for Java, property, instance accessors in words, context-specific fix. */
+    val COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS by configurable4<KtDeclaration, String, Name, String, String>(
         NAME_IDENTIFIER,
     )
 
@@ -383,10 +383,11 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             diagnostic = WatchdogDiagnostics.COMPANION_API_WITHOUT_JVM_STATIC,
             rendererA = NAME,
             rendererB = NAME,
+            rendererC = NAME,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS,
-            rendererA = NAME,
+            rendererA = STRING,
             rendererB = NAME,
             rendererC = STRING,
             rendererD = STRING,

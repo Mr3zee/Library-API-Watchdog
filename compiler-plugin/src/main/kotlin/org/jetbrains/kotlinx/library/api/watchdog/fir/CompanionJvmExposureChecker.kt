@@ -37,12 +37,13 @@ internal class CompanionJvmExposureChecker(
 
         val companion = context.containingClassSymbol?.takeIf { it.isCompanion } ?: return
         val outerClass = companion.classId.outerClassId?.shortClassName ?: return
+        val companionName = companion.classId.shortClassName
         if (declaration.isExempt()) {
             return
         }
         when (declaration) {
-            is FirNamedFunction -> checkFunction(declaration, outerClass)
-            is FirProperty -> checkProperty(declaration, outerClass)
+            is FirNamedFunction -> checkFunction(declaration, outerClass, companionName)
+            is FirProperty -> checkProperty(declaration, outerClass, companionName)
             else -> return
         }
     }
@@ -60,7 +61,7 @@ internal class CompanionJvmExposureChecker(
                 }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun checkFunction(declaration: FirNamedFunction, outerClass: Name) {
+    private fun checkFunction(declaration: FirNamedFunction, outerClass: Name, companionName: Name) {
         if (!declaration.isWatchedPublicSourceApi()) {
             return
         }
@@ -77,11 +78,12 @@ internal class CompanionJvmExposureChecker(
             factory = factory,
             a = outerClass,
             b = declaration.name,
+            c = companionName,
         )
     }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun checkProperty(declaration: FirProperty, outerClass: Name) {
+    private fun checkProperty(declaration: FirProperty, outerClass: Name, companionName: Name) {
         if (!declaration.isWatchedPublicSourceApi()) {
             return
         }
@@ -123,7 +125,7 @@ internal class CompanionJvmExposureChecker(
         reporter.reportOn(
             source = declaration.source,
             factory = factory,
-            a = outerClass,
+            a = "${outerClass.asString()}.${companionName.asString()}",
             b = declaration.name,
             c = instanceAccessors.joinToString(" and "),
             d = fix,

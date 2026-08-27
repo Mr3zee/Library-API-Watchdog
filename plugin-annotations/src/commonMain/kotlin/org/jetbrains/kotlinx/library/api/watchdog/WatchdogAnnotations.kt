@@ -615,7 +615,9 @@ public annotation class IntentionallyWrongDslMarkerTargetsForBackwardsCompatibil
 
 /**
  * Turns the annotated annotation class into an internal API marker: declarations annotated with
- * the marked annotation, and everything nested in them, are exempt from all public API checks.
+ * the marked annotation, and everything nested in them, are exempt from the public API checks.
+ * Strict checks designed for all APIs still apply to them too: every exemption annotation must be
+ * explained, and DSL markers are validated at every visibility.
  *
  * Libraries sometimes expose declarations that are public for technical reasons but are not part
  * of the supported API surface and flag them with a dedicated annotation (usually one that also

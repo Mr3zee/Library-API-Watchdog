@@ -153,14 +153,17 @@ public fun Grid.fill(
 - Overloads that share fewer than two parameter names can't disagree on order and are never
   reported, which is why single-argument conversion overloads with the same parameter name but
   different types (`BigDecimal(value: Int)` next to `BigDecimal(value: String)`) stay silent.
-- Only declarations users see side by side in (for example, code completion) are compared: the members of one class body -
+- Only declarations users see side by side (in code completion, for example) are compared: the members of one class body -
   inherited members included - the top-level functions of one package, or the constructors of one
   class among each other. A class member is never compared against a same-named top-level
   function, and declarations from dependencies are never compared.
 - For an inherited pair, only the subtype's own declaration is reported: the supertype can't see
   the subtype's overload, and it is the new declaration that differs from the supertype's order.
-  Same for the extensions: only the extension itself is reposted,
+  Same for the extensions: only the extension itself is reported,
   since the class can't see the extensions that are declared on it.
+- Overrides are never reported: the overridden declaration fixes their parameter order and is
+  reported instead. An override still counts as a comparison reference for the other overloads
+  next to it.
 - `@PublishedApi internal` overloads are neither reported nor used as comparison references because
   library users can't call them in source.
 

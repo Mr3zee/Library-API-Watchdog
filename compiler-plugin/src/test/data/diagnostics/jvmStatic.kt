@@ -145,6 +145,16 @@ public class StaticNamedBuilt {
     }
 }
 
+// A named companion compiles to a nested class with the chosen name and is checked the same way.
+
+public class Config {
+    public companion object Factory {
+        public fun <!COMPANION_API_WITHOUT_JVM_STATIC!>create<!>(): Config = Config()
+
+        public val <!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>DEFAULT_LABEL<!>: String = "config"
+    }
+}
+
 // Acknowledged members: no warning.
 
 public class Acknowledged {

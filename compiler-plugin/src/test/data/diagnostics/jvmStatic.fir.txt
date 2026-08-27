@@ -220,6 +220,26 @@ FILE: jvmStatic.kt
         }
 
     }
+    public final class Config : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Config| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Factory : R|kotlin/Any| {
+            private constructor(): R|foo/bar/Config.Factory| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun create(): R|foo/bar/Config| {
+                ^create R|foo/bar/Config.Config|()
+            }
+
+            public final val DEFAULT_LABEL: R|kotlin/String| = String(config)
+                public get(): R|kotlin/String|
+
+        }
+
+    }
     public final class Acknowledged : R|kotlin/Any| {
         public constructor(): R|foo/bar/Acknowledged| {
             super<R|kotlin/Any|>()
