@@ -1,6 +1,7 @@
 package org.jetbrains.kotlinx.library.api.watchdog
 
 import com.autonomousapps.kit.GradleBuilder.build
+import com.autonomousapps.kit.GradleBuilder.buildAndFail
 import com.autonomousapps.kit.GradleProject
 import com.autonomousapps.kit.gradle.Plugin
 import kotlin.test.assertContains
@@ -148,5 +149,21 @@ class GradleCompatibilityTest {
 
         assertFalse(result.output.contains(compileMarker), result.output)
         assertFalse(result.output.contains(updateMarker), result.output)
+    }
+
+    @Test
+    fun realizingEveryTaskKeepsConfiguredSeverities() {
+        // IDE sync and `tasks.all { }` realize the exemption tasks without scheduling them, which
+        // must not switch regular compilations into the all-warnings collection mode.
+        val project = object : WatchdogProject(extraBuildScript = "tasks.all { }") {
+            override fun sources() = listOf(
+                source("/** An open API. */\npublic open class OpenApi", "OpenApi"),
+            )
+        }.gradleProject
+
+        val result = buildAndFail(project.rootDir, "compileKotlin")
+
+        assertContains(result.output, "e: ")
+        assertContains(result.output, "can be subclassed outside the library without restriction")
     }
 }

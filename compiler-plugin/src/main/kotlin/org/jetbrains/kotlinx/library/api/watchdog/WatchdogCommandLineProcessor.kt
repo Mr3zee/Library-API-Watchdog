@@ -91,7 +91,8 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
                     "end offset. Meant for tooling. The Gradle plugin's " +
                     "updateBackwardsCompatibilityExempts task consumes it.",
             required = false,
-            allowMultipleOccurrences = false,
+            // The Gradle plugin's blank placeholder can meet a path passed by other tooling.
+            allowMultipleOccurrences = true,
         )
 
         val PUBLIC_TYPE_WITH_INTERNAL_API_OPTION: CliOption = CliOption(
@@ -137,7 +138,10 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
                 processAnnotationIgnoreRule(value, configuration)
             }
             DIAGNOSTICS_OUTPUT_FILE_OPTION.optionName -> {
-                configuration.put(WatchdogConfigurationKeys.DIAGNOSTICS_OUTPUT_FILE, value)
+                // The Gradle plugin always passes this option and leaves it blank outside collection.
+                if (value.isNotBlank()) {
+                    configuration.put(WatchdogConfigurationKeys.DIAGNOSTICS_OUTPUT_FILE, value)
+                }
             }
             PUBLIC_TYPE_WITH_INTERNAL_API_OPTION.optionName -> {
                 configuration.put(
@@ -152,7 +156,10 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
                 )
             }
             COMPILE_DEPENDENCY_PATHS_OPTION.optionName -> {
-                configuration.put(WatchdogConfigurationKeys.COMPILE_DEPENDENCY_PATHS, parsePaths(value))
+                // A blank value is the Gradle plugin's placeholder for a disabled exposure check.
+                if (value.isNotBlank()) {
+                    configuration.put(WatchdogConfigurationKeys.COMPILE_DEPENDENCY_PATHS, parsePaths(value))
+                }
             }
             TRANSITIVE_DEPENDENCY_PATHS_OPTION.optionName -> {
                 configuration.put(WatchdogConfigurationKeys.TRANSITIVE_DEPENDENCY_PATHS, parsePaths(value))

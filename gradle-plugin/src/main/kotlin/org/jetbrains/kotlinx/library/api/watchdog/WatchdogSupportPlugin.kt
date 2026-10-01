@@ -1,6 +1,5 @@
 package org.jetbrains.kotlinx.library.api.watchdog
 
-import java.io.File
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Project
@@ -16,7 +15,6 @@ import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitSupportPlugin
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.HasConfigurableKotlinCompilerOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
-import org.jetbrains.kotlin.gradle.plugin.FilesSubpluginOption
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
@@ -24,7 +22,7 @@ import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 
 @Suppress("unused") // Used via reflection.
 public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO) {
-    /** Enabled lazily when Gradle realizes an exemptions update or report task. */
+    /** Enabled once the task graph of the build schedules an exemptions update or report task. */
     private lateinit var collectDiagnosticsForExempts: Property<Boolean>
 
     /**
@@ -93,9 +91,6 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             UPDATE_EXEMPTS_TASK_NAME,
             UpdateBackwardsCompatibilityExemptsTask::class.java,
         ) { task ->
-            // Realizing the task enables collection. Compile-task inputs and options
-            // consume this property lazily during task-graph construction and execution.
-            collectDiagnostics.set(true)
             task.group = "api watchdog"
             task.description = "Acknowledges every watchdog diagnostic in the main Kotlin " +
                     "compilation sources with the matching @Intentionally* annotation and the " +
@@ -110,8 +105,6 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             GENERATE_EXEMPTS_REPORT_TASK_NAME,
             GenerateBackwardsCompatibilityExemptsReportTask::class.java,
         ) { task ->
-            // Variant resolution realizes this task, which enables task-scoped diagnostics collection.
-            collectDiagnostics.set(true)
             task.group = "api watchdog"
             task.description =
                 "Reports applied and not-applied backwards-compatibility exemptions without changing sources"
@@ -127,6 +120,16 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             task.reportDataFile.convention(
                 layout.buildDirectory.file("reports/api-watchdog/backwards-compatibility-exempts.data")
             )
+        }
+        // Only a scheduled update or report task enables collection. Task realization is not a
+        // usable signal: IDE sync, `tasks.all { }`, and the `tasks` report realize every task,
+        // which would demote the configured severities in builds that never run these tasks.
+        // The graph also covers a report task scheduled indirectly through variant resolution.
+        // Compile-task inputs and options consume this property lazily during execution.
+        val exemptsTaskPaths = listOf(UPDATE_EXEMPTS_TASK_NAME, GENERATE_EXEMPTS_REPORT_TASK_NAME)
+            .map { if (path == ":") ":$it" else "$path:$it" }
+        gradle.taskGraph.whenReady { graph ->
+            collectDiagnostics.set(exemptsTaskPaths.any(graph::hasTask))
         }
         configurations.register(EXEMPTS_REPORT_ELEMENTS_CONFIGURATION) { configuration ->
             configuration.isCanBeConsumed = true
@@ -170,22 +173,14 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             )
             updateTask.configure { task ->
                 task.compilationNames.add(kotlinCompilation.compileKotlinTaskName)
-                task.diagnosticReports.from(provider {
-                    if (collect.get()) reportFile.get().asFile else emptyList<File>()
-                })
-                task.dependsOn(provider {
-                    if (collect.get()) kotlinCompilation.compileTaskProvider else emptyList<Any>()
-                })
+                task.diagnosticReports.from(reportFile)
+                task.dependsOn(kotlinCompilation.compileTaskProvider)
             }
             reportTask.configure { task ->
                 task.compilationNames.add(kotlinCompilation.compileKotlinTaskName)
                 task.sourceFiles.from(kotlinCompilation.allKotlinSourceSets.map { it.kotlin })
-                task.diagnosticReports.from(provider {
-                    if (collect.get()) reportFile.get().asFile else emptyList<File>()
-                })
-                task.dependsOn(provider {
-                    if (collect.get()) kotlinCompilation.compileTaskProvider else emptyList<Any>()
-                })
+                task.diagnosticReports.from(reportFile)
+                task.dependsOn(kotlinCompilation.compileTaskProvider)
             }
 
             kotlinCompilation.compileTaskProvider.configure { task ->
@@ -212,39 +207,57 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             }
         }
 
+        // Native compile tasks read this option list while they are configured, before the task
+        // graph settles whether diagnostics are collected. The set of options is therefore fixed
+        // and every collection-dependent value is lazy, so it is computed when the compiler
+        // arguments are built. The compiler plugin ignores the blank placeholder values.
+        val checkDependencyExposure = extension.publicTypesMustBeTransitiveDependencies.map { it && !collect.get() }
         return providers.provider {
             buildList {
                 extension.diagnosticSeverities.forEach { (diagnostic, severity) ->
-                    val configured = severity.get()
-                    val effective = if (collect.get() && configured != WatchdogSeverity.NONE) {
-                        WatchdogSeverity.WARNING
-                    } else {
-                        configured
-                    }
-                    add(SubpluginOption("diagnosticSeverity", "$diagnostic:${effective.name.lowercase()}"))
+                    add(
+                        SubpluginOption(
+                            "diagnosticSeverity",
+                            lazy {
+                                val configured = severity.get()
+                                val effective = if (collect.get() && configured != WatchdogSeverity.NONE) {
+                                    WatchdogSeverity.WARNING
+                                } else {
+                                    configured
+                                }
+                                "$diagnostic:${effective.name.lowercase()}"
+                            },
+                        ),
+                    )
                 }
                 extension.annotationIgnoreRules().get().forEach { rule ->
                     add(SubpluginOption("ignoreWhenAnnotated", rule))
                 }
-                if (collect.get()) {
-                    add(FilesSubpluginOption("diagnosticsOutputFile", listOf(reportFile.get().asFile)))
-                    add(SubpluginOption("updatingBackwardsCompatibilityExempts", "true"))
-                }
+                add(
+                    SubpluginOption(
+                        "diagnosticsOutputFile",
+                        lazy { if (collect.get()) reportFile.get().asFile.path else "" },
+                    ),
+                )
+                add(SubpluginOption("updatingBackwardsCompatibilityExempts", lazy { collect.get().toString() }))
                 add(
                     SubpluginOption(
                         "publicTypeWithInternalApi",
-                        (extension.publicTypeWithInternalApi.get() && !collect.get()).toString(),
+                        lazy { (extension.publicTypeWithInternalApi.get() && !collect.get()).toString() },
                     ),
                 )
-                if (extension.publicTypesMustBeTransitiveDependencies.get() && !collect.get()) {
-                    add(
-                        SubpluginOption(
-                            "compileDependencyPaths",
-                            compileDependencies.get().asPath,
-                        ),
-                    )
-                    add(SubpluginOption("transitiveDependencyPaths", transitiveDependencies.get().asPath))
-                }
+                add(
+                    SubpluginOption(
+                        "compileDependencyPaths",
+                        lazy { if (checkDependencyExposure.get()) compileDependencies.get().asPath else "" },
+                    ),
+                )
+                add(
+                    SubpluginOption(
+                        "transitiveDependencyPaths",
+                        lazy { if (checkDependencyExposure.get()) transitiveDependencies.get().asPath else "" },
+                    ),
+                )
             }
         }
     }
