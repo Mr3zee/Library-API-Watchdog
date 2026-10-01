@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.compiler.plugin.devkit.GenerateTestsTask
+
 plugins {
     id("org.jetbrains.kotlin.compiler.plugin.devkit.compiler-library")
     id("library-api-watchdog.devkit-versions-conventions")
@@ -37,7 +39,7 @@ kotlin {
 }
 
 // These are regular unit tests. Unlike compiler-plugin suites, they do not generate Java runners.
-tasks.generateTests { enabled = false }
+tasks.withType<GenerateTestsTask>().configureEach { enabled = false }
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()

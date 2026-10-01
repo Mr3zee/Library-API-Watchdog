@@ -138,7 +138,7 @@ heading ids. Code samples render through Code Hike. The rules and the check page
 Kotlin-compiler-style data-driven tests. Each `compiler-plugin/src/test/data/diagnostics/*.kt` file carries directive
 comments (`// RUN_PIPELINE_TILL: FRONTEND`, `// EXPLICIT_API_MODE: WARNING`, `// DIAGNOSTICS: -NAME` to mute unrelated
 diagnostics) and inline expected diagnostics as `<!NAME!>...<!>` markers, with a matching `.fir.txt` FIR dump alongside.
-`GenerateTests.kt` (in testFixtures) generates two JUnit classes per data set - light-tree (`AbstractJvmDiagnosticTest`)
+`GenerateTests.kt` (in the `generateTests` source set) generates two JUnit classes per data set - light-tree (`AbstractJvmDiagnosticTest`)
 and PSI (`AbstractPsiJvmDiagnosticTest`) runners. After adding, removing, or renaming a test data file, rerun
 `:kotlin-library-api-watchdog-compiler-plugin:generateTests`.
 
