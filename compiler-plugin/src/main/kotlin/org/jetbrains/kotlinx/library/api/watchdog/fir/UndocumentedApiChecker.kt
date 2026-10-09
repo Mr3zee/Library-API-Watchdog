@@ -24,8 +24,10 @@ import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.FirTypeAlias
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.utils.correspondingValueParameterFromPrimaryConstructor
+import org.jetbrains.kotlin.fir.declarations.utils.isCompanion
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.name.SpecialNames
 import org.jetbrains.kotlin.text
 
 /**
@@ -33,8 +35,8 @@ import org.jetbrains.kotlin.text
  * enum entries with no KDoc token. KDoc content is not inspected beyond recognizing class-level
  * `@property` and constructor `@param` tags.
  *
- * Overrides, `actual` declarations, primary constructors, declarations visible only through
- * `@PublishedApi`, and exempt declarations are skipped.
+ * Overrides, `actual` declarations, primary constructors, companion objects with the default
+ * name, declarations visible only through `@PublishedApi`, and exempt declarations are skipped.
  */
 internal class UndocumentedApiChecker(
     session: FirSession,
@@ -118,6 +120,9 @@ internal class UndocumentedApiChecker(
      * The declaration kind for the message, or null when the declaration is not watched: either
      * users can't reference it directly, or its documentation lives on another declaration -
      * overrides and `actual`s inherit it, and the primary constructor is described by class KDoc.
+     * A `companion object` with the default name is a namespace for its members, which are
+     * documented on their own, so it is skipped too. A named companion is a deliberate type
+     * and stays watched.
      */
     context(context: CheckerContext)
     private fun FirMemberDeclaration.watchedKind(): String? = when {
@@ -125,6 +130,7 @@ internal class UndocumentedApiChecker(
         // Comparisons instead of a `when` over the enum: an exhaustive `when` compiles to an
         // `ordinal()` switch, and AnimalSniffer rejects that call against the compiler API baseline.
         this is FirRegularClass -> when {
+            isDefaultNamedCompanion -> null
             classKind == ClassKind.CLASS -> "class"
             classKind == ClassKind.INTERFACE -> "interface"
             classKind == ClassKind.OBJECT -> "object"
@@ -139,6 +145,9 @@ internal class UndocumentedApiChecker(
         this is FirConstructor -> if (isPrimary) null else "constructor"
         else -> null
     }
+
+    private val FirRegularClass.isDefaultNamedCompanion: Boolean
+        get() = isCompanion && name == SpecialNames.DEFAULT_NAME_FOR_COMPANION_OBJECT
 
     /** Secondary constructors report the class name instead of their internal `<init>` name. */
     private fun FirMemberDeclaration.watchedName(context: CheckerContext): Name? = when (this) {

@@ -6,6 +6,7 @@ import org.jetbrains.kotlin.config.LanguageFeature.*
 import org.jetbrains.kotlin.test.FirParser
 import org.jetbrains.kotlin.test.directives.LanguageSettingsDirectives.LANGUAGE
 import org.jetbrains.kotlinx.library.api.watchdog.WatchdogComponentRegistrar
+import org.jetbrains.kotlinx.library.api.watchdog.services.configureWatchdogOptions
 
 /**
  * Runs the same diagnostics over PSI-backed sources - the representation the Analysis API (IDE)
@@ -21,6 +22,7 @@ open class AbstractPsiJvmDiagnosticTest : DevKitJvmDiagnosticTest(
             )
         }
         configurePlugin(WatchdogComponentRegistrar())
+        configureWatchdogOptions()
     },
     parser = FirParser.Psi,
 )

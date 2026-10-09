@@ -1,6 +1,6 @@
 // RUN_PIPELINE_TILL: FRONTEND
 // EXPLICIT_API_MODE: WARNING
-// DIAGNOSTICS: -STATEFUL_CLASS_WITHOUT_EQUALS -STATEFUL_CLASS_WITHOUT_HASH_CODE -STATEFUL_CLASS_WITHOUT_TO_STRING -OPEN_API_WITHOUT_SUBCLASS_OPT_IN -EXHAUSTIVE_PUBLIC_API -EXEMPTION_WITHOUT_EXPLANATION -DATA_CLASS_PUBLIC_API -TOP_LEVEL_API_WITHOUT_JVM_NAME
+// DIAGNOSTICS: -STATEFUL_CLASS_WITHOUT_EQUALS -STATEFUL_CLASS_WITHOUT_HASH_CODE -STATEFUL_CLASS_WITHOUT_TO_STRING -OPEN_API_WITHOUT_SUBCLASS_OPT_IN -EXHAUSTIVE_PUBLIC_API -EXEMPTION_WITHOUT_EXPLANATION -DATA_CLASS_PUBLIC_API -TOP_LEVEL_API_WITHOUT_JVM_NAME -COMPANION_API_WITHOUT_JVM_STATIC -COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS
 
 package foo.bar
 
@@ -175,6 +175,36 @@ public class WithSecondaryConstructors(input: Int) {
 
     /** Documented secondary constructor. */
     public constructor(a: Int, b: Int) : this(a + b)
+}
+
+// A companion object with the default name is a namespace for its members. The members are
+// documented on their own, so the companion itself needs no KDoc. A named companion is a
+// deliberate type and stays watched.
+
+/** Documented. */
+public class WithDefaultNamedCompanion {
+    public companion object {
+        /** Documented member. */
+        public fun documentedMember(): Int = 0
+
+        public fun <!UNDOCUMENTED_PUBLIC_API!>undocumentedMember<!>(): Int = 0
+
+        public val <!UNDOCUMENTED_PUBLIC_API!>undocumentedValue<!>: Int = 0
+    }
+}
+
+/** Documented. */
+public class WithNamedCompanion {
+    public companion object <!UNDOCUMENTED_PUBLIC_API!>Factory<!> {
+        /** Documented member. */
+        public fun create(): WithNamedCompanion = WithNamedCompanion()
+    }
+}
+
+/** Documented. */
+public class WithDocumentedNamedCompanion {
+    /** Documented companion. */
+    public companion object Factory
 }
 
 // Overrides inherit the documentation of the declaration they override: no warning on them.

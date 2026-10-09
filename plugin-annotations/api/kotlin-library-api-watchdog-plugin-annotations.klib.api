@@ -105,6 +105,15 @@ open annotation class org.jetbrains.kotlinx.library.api.watchdog/IntentionallyNo
         final fun <get-reason>(): org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason // org.jetbrains.kotlinx.library.api.watchdog/IntentionallyNonStaticCompanionApi.reason.<get-reason>|<get-reason>(){}[0]
 }
 
+open annotation class org.jetbrains.kotlinx.library.api.watchdog/IntentionallyNonTransitiveDependency : kotlin/Annotation { // org.jetbrains.kotlinx.library.api.watchdog/IntentionallyNonTransitiveDependency|null[0]
+    constructor <init>(org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason = ..., kotlin/String = ...) // org.jetbrains.kotlinx.library.api.watchdog/IntentionallyNonTransitiveDependency.<init>|<init>(org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason;kotlin.String){}[0]
+
+    final val description // org.jetbrains.kotlinx.library.api.watchdog/IntentionallyNonTransitiveDependency.description|{}description[0]
+        final fun <get-description>(): kotlin/String // org.jetbrains.kotlinx.library.api.watchdog/IntentionallyNonTransitiveDependency.description.<get-description>|<get-description>(){}[0]
+    final val reason // org.jetbrains.kotlinx.library.api.watchdog/IntentionallyNonTransitiveDependency.reason|{}reason[0]
+        final fun <get-reason>(): org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason // org.jetbrains.kotlinx.library.api.watchdog/IntentionallyNonTransitiveDependency.reason.<get-reason>|<get-reason>(){}[0]
+}
+
 open annotation class org.jetbrains.kotlinx.library.api.watchdog/IntentionallyNullableBoolean : kotlin/Annotation { // org.jetbrains.kotlinx.library.api.watchdog/IntentionallyNullableBoolean|null[0]
     constructor <init>(org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason = ..., kotlin/String = ...) // org.jetbrains.kotlinx.library.api.watchdog/IntentionallyNullableBoolean.<init>|<init>(org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason;kotlin.String){}[0]
 

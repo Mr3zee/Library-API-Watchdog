@@ -5,11 +5,13 @@ import com.autonomousapps.kit.GradleBuilder.buildAndFail
 import com.autonomousapps.kit.GradleProject
 import com.autonomousapps.kit.Source
 import com.autonomousapps.kit.gradle.Dependency.Companion.api
+import com.autonomousapps.kit.gradle.Dependency.Companion.compileOnly
 import com.autonomousapps.kit.gradle.Dependency.Companion.implementation
 import com.autonomousapps.kit.gradle.Plugin
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import java.io.File
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.intellij.lang.annotations.Language
@@ -781,6 +783,58 @@ class WatchdogProjectTest {
     }
 
     @Test
+    fun configuredInternalApiAnnotationsExemptLikeTheMarker() {
+        // The annotation lives in `:lib` and carries no @InternalAnnotationMarker, standing in
+        // for the internal-API annotation of a dependency the consuming module can't annotate.
+        // Naming it in `internalApiAnnotations` makes it a marker for the consuming module.
+        val project = object : WatchdogProject(
+            extraBuildScript = """
+                apiWatchdog {
+                    internalApiAnnotations.add("test.lib.ThirdPartyInternalApi")
+                }
+            """.trimIndent(),
+        ) {
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(
+                        source(
+                            configuredInternalApiConsumerFile,
+                            "consumer",
+                            "test",
+                            true,
+                            "test.lib.ThirdPartyInternalApi",
+                            "test.lib.ThirdPartyInternalType",
+                        ),
+                    )
+                    dependencies(implementation(":lib"))
+                }
+                subproject("lib") {
+                    sources(source(configuredInternalApiLibraryFile, "markers", "test.lib"))
+                }
+            }
+        }.gradleProject
+
+        val result = buildAndFail(project.rootDir, "build")
+        // The unmarked control declaration proves the checks ran in the consuming module...
+        result.assertDiagnosticReported("e: ", "`WatchedClass` is part of the public API but has no `KDoc`")
+        // ...a supported signature exposing the dependency's internal type is reported, naming
+        // the configured annotation...
+        result.assertDiagnosticReported(
+            "e: ",
+            "publicly exposes `test.lib.ThirdPartyInternalType`, but that type is marked as internal API " +
+                    "with `@ThirdPartyInternalApi`",
+        )
+        // ...while declarations carrying the configured annotation are exempt.
+        assertFalse(result.output.contains("InternalOpenClass"))
+        assertFalse(result.output.contains("memberOfInternal"))
+        assertFalse(result.output.contains("InternalEnum"))
+        assertFalse(result.output.contains("INTERNAL_ENTRY"))
+        assertFalse(result.output.contains("internalFunction"))
+        assertFalse(result.output.contains("can be subclassed outside the library"))
+        assertFalse(result.output.contains("can be matched exhaustively by users"))
+    }
+
+    @Test
     fun publicTypeFromImplementationDependencyIsAnError() {
         val project = object : WatchdogProject() {
             override fun buildGradleProject() = multiModuleProject {
@@ -823,6 +877,44 @@ class WatchdogProjectTest {
 
         val result = build(project.rootDir, "build")
         assertFalse(result.output.contains("not published transitively to consumers"))
+    }
+
+    @Test
+    fun publicTypeFromImplementationDependencyIsAcceptedWhenIntentionallyExempted() {
+        val project = object : WatchdogProject() {
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(exemptedDependencyTypeFile, "Consumer", "test.consumer"))
+                    dependencies(implementation(":model"))
+                }
+                subproject("model") {
+                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
+                }
+            }
+        }.gradleProject
+
+        val result = build(project.rootDir, "build")
+        assertFalse(result.output.contains("not published transitively to consumers"))
+    }
+
+    @Test
+    fun nonTransitiveDependencyExemptionOnAClassCoversOnlyThatClass() {
+        val project = object : WatchdogProject() {
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(partiallyExemptedDependencyTypeFile, "Api", "test.consumer"))
+                    dependencies(implementation(":model"))
+                }
+                subproject("model") {
+                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
+                }
+            }
+        }.gradleProject
+
+        val result = buildAndFail(project.rootDir, "build")
+        result.assertDiagnosticReported("e: ", "The function `unexemptedModel` publicly exposes")
+        assertFalse(result.output.contains("The function `exemptedModel` publicly exposes"))
+        assertFalse(result.output.contains("The supertype of `ExemptedApi` publicly exposes"))
     }
 
     @Test
@@ -1004,7 +1096,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicDependencyExposureCheckCanOnlyBeDisabledAsAWhole() {
+    fun publicDependencyExposureCheckIsDisabledByTheModuleSwitch() {
         val project = object : WatchdogProject(
             extraBuildScript = """
                 apiWatchdog {
@@ -1025,6 +1117,312 @@ class WatchdogProjectTest {
 
         val result = build(project.rootDir, "build")
         assertFalse(result.output.contains("not published transitively to consumers"))
+    }
+
+    @Test
+    fun publicTypeFromAllowedNonTransitiveProjectDependencyIsAccepted() {
+        val project = object : WatchdogProject(
+            extraBuildScript = """
+                dependencies {
+                    apiWatchdogAllowedNonTransitive(project(":model"))
+                }
+            """.trimIndent(),
+        ) {
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+                    dependencies(implementation(":model"))
+                }
+                subproject("model") {
+                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
+                }
+            }
+        }.gradleProject
+
+        val result = build(project.rootDir, "build")
+        assertFalse(result.output.contains("not published transitively to consumers"))
+    }
+
+    @Test
+    fun allowedNonTransitiveDependencyCoversEverythingItPullsIn() {
+        // The consumer never names `:model`. It reaches it through the allowed `:facade`, the
+        // same way a Kotlin Multiplatform dependency reaches its platform artifact.
+        val project = object : WatchdogProject(
+            extraBuildScript = """
+                dependencies {
+                    apiWatchdogAllowedNonTransitive(project(":facade"))
+                }
+            """.trimIndent(),
+        ) {
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+                    dependencies(implementation(":facade"))
+                }
+                subproject("facade") {
+                    dependencies(api(":model"))
+                }
+                subproject("model") {
+                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
+                }
+            }
+        }.gradleProject
+
+        val result = build(project.rootDir, "build")
+        assertFalse(result.output.contains("not published transitively to consumers"))
+    }
+
+    @Test
+    fun allowedNonTransitiveDependencyLeavesOtherDependenciesChecked() {
+        val project = object : WatchdogProject(
+            extraBuildScript = """
+                dependencies {
+                    apiWatchdogAllowedNonTransitive(project(":other"))
+                }
+            """.trimIndent(),
+        ) {
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+                    dependencies(implementation(":model"), implementation(":other"))
+                }
+                subproject("model") {
+                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
+                }
+                subproject("other") {
+                    sources(source(dependencyTypeFile, "OtherModel", "test.other"))
+                }
+            }
+        }.gradleProject
+
+        val result = buildAndFail(project.rootDir, "build")
+        result.assertDiagnosticReported(
+            "e: ",
+            "publicly exposes `test.model.ExternalModel`, but the dependency providing that type " +
+                    "is not published transitively",
+        )
+    }
+
+    @Test
+    fun allowedNonTransitiveDependenciesExtendFromAWholeConfiguration() {
+        // The whole-configuration form is the Gradle plugin case: everything the environment
+        // supplies is declared `compileOnly`, and nothing of it is published.
+        val project = object : WatchdogProject(
+            extraBuildScript = """
+                apiWatchdog {
+                    allowedNonTransitiveDependencies {
+                        extendsFrom(configurations.compileOnly.get())
+                    }
+                }
+            """.trimIndent(),
+        ) {
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+                    dependencies(compileOnly(":model"))
+                }
+                subproject("model") {
+                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
+                }
+            }
+        }.gradleProject
+
+        val result = build(project.rootDir, "build")
+        assertFalse(result.output.contains("not published transitively to consumers"))
+    }
+
+    @Test
+    fun allowedNonTransitiveModuleDependencyIsResolvedConsistentlyWithTheCompileClasspath() {
+        // The allowance names the multiplatform module without a version and without its JVM
+        // artifact. Consistent resolution supplies the compile classpath's version, and the
+        // `available-at` redirect brings the `-jvm` artifact that actually holds the classes.
+        val project = object : WatchdogProject(
+            extraBuildScript = """
+                dependencies {
+                    apiWatchdogAllowedNonTransitive("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+                }
+            """.trimIndent(),
+        ) {
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(exposesCoroutinesTypeFile, "Jobs", "test.consumer"))
+                    dependencies(implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$COROUTINES_VERSION"))
+                }
+            }
+        }.gradleProject
+
+        val result = build(project.rootDir, "build")
+        assertFalse(result.output.contains("not published transitively to consumers"))
+    }
+
+    @Test
+    fun allowedNonTransitiveDependencyFromAVersionCatalog() {
+        val project = object : WatchdogProject(
+            extraBuildScript = """
+                dependencies {
+                    apiWatchdogAllowedNonTransitive(libs.coroutines)
+                }
+            """.trimIndent(),
+        ) {
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(exposesCoroutinesTypeFile, "Jobs", "test.consumer"))
+                    dependencies(implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$COROUTINES_VERSION"))
+                }
+            }
+        }.gradleProject
+        project.rootDir.resolve("gradle/libs.versions.toml").apply {
+            parentFile.mkdirs()
+            writeText(
+                """
+                    [libraries]
+                    coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "$COROUTINES_VERSION" }
+                """.trimIndent(),
+            )
+        }
+
+        val result = build(project.rootDir, "build")
+        assertFalse(result.output.contains("not published transitively to consumers"))
+    }
+
+    @Test
+    fun allowExposingNonTransitivelyInApiFromTheDependencyDeclaration() {
+        // The version catalog form adds the dependency through a provider, so the allowance is
+        // recorded only when the compile classpath realizes its dependencies. The plugin resolves
+        // the transitive view, which is consistent with the compile classpath, before the allowed
+        // view, which is what makes this order-independent for users.
+        val project = object : WatchdogProject(
+            extraBuildScript = """
+                dependencies {
+                    implementation(libs.coroutines) { allowExposingNonTransitivelyInApi(this) }
+                }
+            """.trimIndent(),
+        ) {
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(exposesCoroutinesTypeFile, "Jobs", "test.consumer"))
+                }
+            }
+        }.gradleProject
+        project.rootDir.resolve("gradle/libs.versions.toml").apply {
+            parentFile.mkdirs()
+            writeText(
+                """
+                    [libraries]
+                    coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "$COROUTINES_VERSION" }
+                """.trimIndent(),
+            )
+        }
+        project.rootDir.resolve("build.gradle.kts").prependImport(ALLOW_EXPOSING_IMPORT)
+
+        val result = build(project.rootDir, "build")
+        assertFalse(result.output.contains("not published transitively to consumers"))
+    }
+
+    @Test
+    fun allowExposingNonTransitivelyInApiFromAProjectDependencyDeclaration() {
+        val project = object : WatchdogProject(
+            // The harness appends this script to every project, so keep the self-dependency
+            // out of `:model`.
+            extraBuildScript = """
+                if (project == rootProject) {
+                    dependencies {
+                        implementation(project(":model")) { allowExposingNonTransitivelyInApi(this) }
+                    }
+                }
+            """.trimIndent(),
+        ) {
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+                }
+                subproject("model") {
+                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
+                }
+            }
+        }.gradleProject
+        project.rootDir.resolve("build.gradle.kts").prependImport(ALLOW_EXPOSING_IMPORT)
+        project.rootDir.resolve("model/build.gradle.kts").prependImport(ALLOW_EXPOSING_IMPORT)
+
+        val result = build(project.rootDir, "build")
+        assertFalse(result.output.contains("not published transitively to consumers"))
+    }
+
+    @Test
+    fun publicTypeFromUnallowedModuleDependencyIsAnError() {
+        val project = object : WatchdogProject() {
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(exposesCoroutinesTypeFile, "Jobs", "test.consumer"))
+                    dependencies(implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$COROUTINES_VERSION"))
+                }
+            }
+        }.gradleProject
+
+        val result = buildAndFail(project.rootDir, "build")
+        result.assertDiagnosticReported(
+            "e: ",
+            "publicly exposes `kotlinx.coroutines.Job`, but the dependency providing that type " +
+                    "is not published transitively",
+        )
+    }
+
+    @Test
+    fun allowedNonTransitiveDependenciesDoNotJoinTheCompileClasspath() {
+        // The bucket is a marker. A dependency declared only there is not compiled against.
+        val project = object : WatchdogProject(
+            extraBuildScript = """
+                dependencies {
+                    apiWatchdogAllowedNonTransitive(project(":model"))
+                }
+            """.trimIndent(),
+        ) {
+            override fun buildGradleProject() = multiModuleProject {
+                root {
+                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+                }
+                subproject("model") {
+                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
+                }
+            }
+        }.gradleProject
+
+        val result = buildAndFail(project.rootDir, "build")
+        assertTrue(result.output.contains("Unresolved reference"), result.output)
+    }
+
+    @Test
+    fun transitiveDependencyConfigurationsAreNamedAfterTheCompilation() {
+        // The JVM plugin's target has no disambiguation classifier, which KGP's own
+        // `disambiguatedName` renders as a literal "null".
+        val project = object : WatchdogProject(extraBuildScript = printWatchdogConfigurationsTask) {
+            override fun sources() = listOf(source(unacknowledgedFile))
+        }.gradleProject
+
+        val result = buildAndFail(project.rootDir, "compileKotlin", "printWatchdogConfigurations", "--continue")
+        assertTrue(
+            result.output.contains(
+                "WATCHDOG_CONFIGURATIONS=[apiWatchdogMainAllowedNonTransitiveDependencies, " +
+                        "apiWatchdogMainTransitiveDependencies]"
+            ),
+            result.output,
+        )
+    }
+
+    @Test
+    fun transitiveDependencyConfigurationsAreNamedAfterTheTargetInMultiplatformProjects() {
+        val project = object : WatchdogProject(
+            multiplatform = true,
+            extraBuildScript = printWatchdogConfigurationsTask,
+        ) {
+            override fun multiplatformTargetsBlock(): String = "kotlin {\n  jvm()\n}\n"
+
+            override fun sources() = listOf(source(unacknowledgedFile))
+        }.gradleProject
+
+        val result = buildAndFail(project.rootDir, "compileKotlinJvm", "printWatchdogConfigurations", "--continue")
+        assertTrue(result.output.contains("apiWatchdogJvmMainTransitiveDependencies"))
+        assertFalse(result.output.contains("apiWatchdogNull"))
     }
 
     @Test
@@ -1433,6 +1831,45 @@ private val markerConsumerFile = """
 
 @Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
+private val configuredInternalApiLibraryFile = """
+    /** The dependency's own internal-API annotation. It knows nothing about the watchdog. */
+    @Target(
+        AnnotationTarget.CLASS,
+        AnnotationTarget.FUNCTION,
+        AnnotationTarget.PROPERTY,
+    )
+    public annotation class ThirdPartyInternalApi
+
+    /** A type the dependency marks as internal API. */
+    @ThirdPartyInternalApi
+    public class ThirdPartyInternalType
+""".trimIndent()
+
+@Suppress("RedundantVisibilityModifier")
+@Language("kotlin")
+private val configuredInternalApiConsumerFile = """
+    @ThirdPartyInternalApi
+    public open class InternalOpenClass {
+        public fun memberOfInternal() {}
+    }
+
+    @ThirdPartyInternalApi
+    public enum class InternalEnum { INTERNAL_ENTRY }
+
+    @ThirdPartyInternalApi
+    public fun internalFunction() {}
+
+    /** Supported entry point leaking the dependency's internal type. */
+    public object Api {
+        /** Leaks an explicitly unsupported type of the dependency. */
+        public fun loadInternal(): ThirdPartyInternalType = ThirdPartyInternalType()
+    }
+
+    public class WatchedClass
+""".trimIndent()
+
+@Suppress("RedundantVisibilityModifier")
+@Language("kotlin")
 private val internalApiExposureFile = """
     /** Marks declarations that are public only for technical reasons. */
     @InternalAnnotationMarker
@@ -1469,6 +1906,120 @@ private val dependencyTypeFile = """
     /** A contract supplied by another module. */
     @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
     public interface ExternalContract
+""".trimIndent()
+
+@Suppress("RedundantVisibilityModifier")
+@Language("kotlin")
+private val exemptedDependencyTypeFile = """
+    import test.model.ExternalContract
+    import test.model.ExternalModel
+
+    /** A public alias whose nested type argument comes from a dependency the host supplies. */
+    @IntentionallyNonTransitiveDependency(
+        reason = ExemptionReason.INTEROP,
+        description = "The host application ships the model module.",
+    )
+    public typealias ExternalModels = List<ExternalModel>
+
+    /** A documented API owner whose exemption covers its supertype and every member. */
+    @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
+    @IntentionallyNonTransitiveDependency(
+        reason = ExemptionReason.INTEROP,
+        description = "The host application ships the model module.",
+    )
+    public open class Consumer : ExternalContract {
+        /** Returns a model the host application makes available. */
+        public fun model(): ExternalModel = ExternalModel()
+
+        /** Returns a dependency type from protected API. */
+        protected fun protectedModel(): ExternalModel = ExternalModel()
+
+        /** Uses a dependency type as both a receiver and a nested parameter type. */
+        public fun ExternalModel.acceptModels(models: ExternalModels): ExternalModel = this
+    }
+
+    /** Exempts single parameters and type usages without touching the declaration. */
+    public object Combiner {
+        /** Counts [models] after storing [model]. */
+        public fun combine(
+            @IntentionallyNonTransitiveDependency(
+                reason = ExemptionReason.INTEROP,
+                description = "The host application ships the model module.",
+            )
+            model: ExternalModel,
+            models: List<@IntentionallyNonTransitiveDependency(
+                reason = ExemptionReason.INTEROP,
+                description = "The host application ships the model module.",
+            ) ExternalModel>,
+        ): Int = models.size
+
+        /** Bounds a type parameter by a type the host application supplies. */
+        public fun <@IntentionallyNonTransitiveDependency(
+            reason = ExemptionReason.INTEROP,
+            description = "The host application ships the model module.",
+        ) T : ExternalModel> describe(model: T): String = model.toString()
+    }
+""".trimIndent()
+
+/** A dependency the functional tests resolve from Maven Central as a non-project module. */
+private const val COROUTINES_VERSION = "1.10.2"
+
+private const val ALLOW_EXPOSING_IMPORT =
+    "org.jetbrains.kotlinx.library.api.watchdog.allowExposingNonTransitivelyInApi"
+
+/** Imports must precede the `plugins` block, and the harness appends extra script text after it. */
+private fun File.prependImport(fqName: String) {
+    writeText("import $fqName\n" + readText())
+}
+
+@Suppress("RedundantVisibilityModifier")
+@Language("kotlin")
+private val exposesCoroutinesTypeFile = """
+    import kotlinx.coroutines.Job
+
+    /** Jobs the host application manages. */
+    public object Jobs {
+        /** Hands out a job the host application manages. */
+        public fun hostJob(): Job = Job()
+    }
+""".trimIndent()
+
+@Suppress("RedundantVisibilityModifier")
+@Language("kotlin")
+private val partiallyExemptedDependencyTypeFile = """
+    import test.model.ExternalContract
+    import test.model.ExternalModel
+
+    /** The exemption on the class covers its supertype and its members, nothing else. */
+    @IntentionallyNonTransitiveDependency(
+        reason = ExemptionReason.INTEROP,
+        description = "The host application ships the model module.",
+    )
+    public object ExemptedApi : ExternalContract {
+        /** Returns a model the host application makes available. */
+        public fun exemptedModel(): ExternalModel = ExternalModel()
+    }
+
+    /** A sibling declaration without the exemption. */
+    public object UnexemptedApi {
+        /** Returns a model consumers can't resolve. */
+        public fun unexemptedModel(): ExternalModel = ExternalModel()
+    }
+""".trimIndent()
+
+/**
+ * A task listing the watchdog's transitive-dependency configurations. They are registered when
+ * KGP hands each compilation to the plugin, so the task runs after the compile tasks.
+ */
+@Language("kotlin")
+private val printWatchdogConfigurationsTask = """
+    tasks.register("printWatchdogConfigurations") {
+        mustRunAfter(tasks.matching { it.name.startsWith("compileKotlin") })
+        doLast {
+            val names = configurations.names.filter { it.endsWith("TransitiveDependencies") }.sorted()
+            println("WATCHDOG_CONFIGURATIONS=" + names)
+        }
+    }
 """.trimIndent()
 
 @Suppress("RedundantVisibilityModifier")

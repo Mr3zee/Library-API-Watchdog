@@ -79,10 +79,13 @@ internal class FixerRequest(
     }
 }
 
-/** An exemption annotation the fixer added or could add. */
+/**
+ * A fix the fixer applied or could apply: an exemption annotation, or a placeholder KDoc when
+ * [annotation] is null.
+ */
 internal data class AppliedFix(
     val diagnostic: String,
-    val annotation: String,
+    val annotation: String?,
     val filePath: String,
     val line: Int,
 )
@@ -104,7 +107,8 @@ internal data class AppliedExemption(
 
 /**
  * What the fixer reports back, as a file of `key=value` lines mirroring [FixerRequest]. Tabs
- * separate the fields inside a value.
+ * separate the fields inside a value. The annotation field of a `fixed` line is empty when the
+ * fix is a placeholder KDoc rather than an annotation.
  */
 internal class FixerResponse {
     val applied = mutableListOf<AppliedFix>()
@@ -117,7 +121,7 @@ internal class FixerResponse {
         file.parent?.let { Files.createDirectories(it) }
         Files.writeString(file, buildString {
             applied.forEach {
-                appendLine("$FIXED=${it.diagnostic}\t${it.annotation}\t${it.line}\t${it.filePath}")
+                appendLine("$FIXED=${it.diagnostic}\t${it.annotation.orEmpty()}\t${it.line}\t${it.filePath}")
             }
             skipped.forEach {
                 // The reason is free-form text and the line's last field: escaping its line

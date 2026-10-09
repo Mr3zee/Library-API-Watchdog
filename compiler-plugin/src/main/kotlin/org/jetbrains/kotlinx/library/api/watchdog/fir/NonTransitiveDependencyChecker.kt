@@ -12,6 +12,8 @@ import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.caches.createCache
 import org.jetbrains.kotlin.fir.caches.firCachesFactory
 import org.jetbrains.kotlin.fir.caches.getValue
+import org.jetbrains.kotlin.fir.declarations.FirDeclaration
+import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.utils.sourceElement
 import org.jetbrains.kotlin.fir.moduleData
 import org.jetbrains.kotlin.fir.resolve.toClassSymbol
@@ -31,8 +33,10 @@ internal data class DependencyExposureCheckConfiguration(
 /**
  * Reports dependency types in public signatures unless their artifacts are published to
  * consumers. Dependency scope is a build-model concern, so this checker is registered only when
- * the Gradle plugin supplies [DependencyExposureCheckConfiguration]. It can't be suppressed or
- * demoted: the Gradle extension's Boolean switch is its only opt-out.
+ * the Gradle plugin supplies [DependencyExposureCheckConfiguration]. It can't be demoted: the
+ * Gradle extension's Boolean switch disables it for a whole module, and
+ * `@IntentionallyNonTransitiveDependency` exempts a declaration whose dependency the runtime
+ * environment supplies on its own, as Gradle does for every plugin.
  *
  * The sweep includes callable return, receiver, value and context parameter types. It also includes class
  * supertypes and context parameters, type parameter bounds, public type aliases, and every type
@@ -42,8 +46,19 @@ internal data class DependencyExposureCheckConfiguration(
 internal class NonTransitiveDependencyChecker(
     session: FirSession,
     configuration: DependencyExposureCheckConfiguration,
-) : PublicSignatureTypeChecker<ClassId>() {
+) : PublicSignatureTypeChecker<ClassId>(exemption = WatchdogClassIds.IntentionallyNonTransitiveDependency) {
     private val dependencyIndex = DependencyExposureIndex(session, configuration)
+
+    /**
+     * The exemption on an enclosing class covers everything declared inside it: a Gradle task or
+     * extension class mentions the environment's types in most members, and one acknowledgement
+     * on the class states why for all of them.
+     */
+    context(context: CheckerContext)
+    override fun isDeclarationExempt(declaration: FirDeclaration): Boolean =
+        super.isDeclarationExempt(declaration) || context.containingDeclarations.any {
+            it.hasAnnotation(WatchdogClassIds.IntentionallyNonTransitiveDependency, context.session)
+        }
 
     context(context: CheckerContext)
     override fun ConeKotlinType.violatingClassifier(): ClassId? {

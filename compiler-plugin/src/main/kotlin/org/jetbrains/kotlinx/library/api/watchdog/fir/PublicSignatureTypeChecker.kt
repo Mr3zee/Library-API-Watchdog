@@ -15,8 +15,10 @@ import org.jetbrains.kotlin.fir.declarations.FirTypeAlias
 import org.jetbrains.kotlin.fir.declarations.FirTypeParameter
 import org.jetbrains.kotlin.fir.declarations.FirTypeParameterRef
 import org.jetbrains.kotlin.fir.declarations.FirValueParameter
+import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.isLegacyContextReceiver
 import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
+import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
 import org.jetbrains.kotlin.fir.declarations.utils.correspondingValueParameterFromPrimaryConstructor
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
@@ -26,8 +28,10 @@ import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.fir.types.FirTypeRef
 import org.jetbrains.kotlin.fir.types.coneType
+import org.jetbrains.kotlin.fir.types.customAnnotations
 import org.jetbrains.kotlin.fir.types.type
 import org.jetbrains.kotlin.fir.types.upperBoundIfFlexible
+import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 
 /**
@@ -39,6 +43,9 @@ import org.jetbrains.kotlin.name.Name
  * Subclasses decide which declarations belong to their API surface, which classifier violates
  * their rule, and how a violation is reported. They may also customize alias traversal and
  * exemptions without reimplementing the signature sweep.
+ *
+ * With an [exemption] annotation, the sweep honors it on a whole declaration, on a single (type)
+ * parameter, or on a type usage, where it covers the annotated type and everything nested in it.
  */
 internal abstract class PublicSignatureTypeChecker<Violation : Any>(
     private val checkExtensionReceivers: Boolean = true,
@@ -46,6 +53,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
     private val checkClassContextParameters: Boolean = true,
     private val checkTypeAliases: Boolean = true,
     private val skipOverrides: Boolean = false,
+    private val exemption: ClassId? = null,
 ) : FirBasicDeclarationChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     final override fun check(declaration: FirDeclaration) {
@@ -74,11 +82,13 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
 
     /** Whether an annotation exempts this declaration's whole checked signature. */
     context(context: CheckerContext)
-    protected open fun isDeclarationExempt(declaration: FirDeclaration): Boolean = false
+    protected open fun isDeclarationExempt(declaration: FirDeclaration): Boolean =
+        exemption != null && declaration.hasAnnotation(exemption, context.session)
 
     /** Whether an annotation exempts a single parameter. */
     context(context: CheckerContext)
-    protected open fun isParameterExempt(parameter: FirValueParameterSymbol): Boolean = false
+    protected open fun isParameterExempt(parameter: FirValueParameterSymbol): Boolean =
+        exemption != null && parameter.hasAnnotation(exemption, context.session)
 
     /** The violation represented by this classifier, or null when the classifier is accepted. */
     context(context: CheckerContext)
@@ -92,7 +102,10 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
 
     /** Whether this annotated type and everything nested in it should be skipped. */
     context(context: CheckerContext)
-    protected open fun ConeKotlinType.isTypeExempt(): Boolean = false
+    protected open fun ConeKotlinType.isTypeExempt(): Boolean =
+        exemption != null && customAnnotations.any {
+            it.toAnnotationClassIdSafe(context.session) == exemption
+        }
 
     /** An alternate type whose classifier must be inspected before this type's classifier. */
     context(context: CheckerContext)

@@ -71,10 +71,19 @@ options, including direct compiler invocation without Gradle.
 ## Exemptions
 
 Declarations that are public for technical reasons only are excluded from all checks by marking
-the library's internal-API annotation with `@InternalAnnotationMarker`. A single declaration is
+the library's internal-API annotation with `@InternalAnnotationMarker`, or by listing an
+annotation the library can't mark itself, such as one from a dependency, in
+`apiWatchdog { internalApiAnnotations.add("com.example.InternalApi") }`. A single declaration is
 exempted in place with the matching `@Intentionally*` annotation, which must explain itself
 through an `ExemptionReason` and a description. See
 [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions).
+A configurable check is skipped on every declaration carrying a given annotation with
+`apiWatchdog { ignore("STATEFUL_CLASS_WITHOUT_EQUALS", whenAnnotatedWith = listOf("com.example.GeneratedValueMembers")) }`,
+see [Annotation ignore rules](https://mr3zee.github.io/Library-API-Watchdog/configuration#annotation-ignore-rules).
+Dependencies the runtime environment supplies, such as the Gradle API for a Gradle plugin, are
+allowed in the public API module-wide by declaring them on the `apiWatchdogAllowedNonTransitive`
+configuration, see
+[Allowed non-transitive dependencies](https://mr3zee.github.io/Library-API-Watchdog/configuration#allowed-non-transitive-dependencies).
 
 ## Adopting on an existing library
 

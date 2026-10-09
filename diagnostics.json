@@ -504,7 +504,10 @@
       "docs": "checks/special/public-type-from-non-transitive-dependency",
       "message": [
         "The {0} `{1}` publicly exposes `{2}`, but the dependency providing that type is not published",
-        "transitively to consumers. Declare the dependency with `api` instead of `implementation`."
+        "transitively to consumers. Declare the dependency with `api` instead of `implementation`.",
+        "",
+        "If this API shape is intentional, apply `@IntentionallyNonTransitiveDependency`,",
+        " or add the dependency containing the type to the list of allowed exposed dependencies using `allowExposingNonTransitivelyInApi()` in your build script."
       ]
     },
     {

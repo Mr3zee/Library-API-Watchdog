@@ -218,6 +218,60 @@ FILE: undocumentedApi.kt
         }
 
     }
+    public final class WithDefaultNamedCompanion : R|kotlin/Any| {
+        public constructor(): R|foo/bar/WithDefaultNamedCompanion| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/WithDefaultNamedCompanion.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun documentedMember(): R|kotlin/Int| {
+                ^documentedMember Int(0)
+            }
+
+            public final fun undocumentedMember(): R|kotlin/Int| {
+                ^undocumentedMember Int(0)
+            }
+
+            public final val undocumentedValue: R|kotlin/Int| = Int(0)
+                public get(): R|kotlin/Int|
+
+        }
+
+    }
+    public final class WithNamedCompanion : R|kotlin/Any| {
+        public constructor(): R|foo/bar/WithNamedCompanion| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Factory : R|kotlin/Any| {
+            private constructor(): R|foo/bar/WithNamedCompanion.Factory| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun create(): R|foo/bar/WithNamedCompanion| {
+                ^create R|foo/bar/WithNamedCompanion.WithNamedCompanion|()
+            }
+
+        }
+
+    }
+    public final class WithDocumentedNamedCompanion : R|kotlin/Any| {
+        public constructor(): R|foo/bar/WithDocumentedNamedCompanion| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Factory : R|kotlin/Any| {
+            private constructor(): R|foo/bar/WithDocumentedNamedCompanion.Factory| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
     public abstract interface DocumentedContract : R|kotlin/Any| {
         public abstract fun documentedMember(): R|kotlin/Int|
 

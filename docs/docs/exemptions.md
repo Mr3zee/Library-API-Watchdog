@@ -11,6 +11,12 @@
 Use the first one when the shape itself is the deliberate part of the API. Use the second one
 when a declaration is public only for technical reasons and is not meant to be supported API.
 
+A third option covers one check at a time: an
+[annotation ignore rule](./configuration.md#annotation-ignore-rules) in the `apiWatchdog`
+extension skips a configurable check on every declaration carrying a given annotation. Use it
+when an annotation already guarantees what the check is looking for, such as a code generator
+that provides `equals` and `hashCode` for every annotated class.
+
 ## Exempting a single declaration
 
 Each check has an exemption annotation. It is described in the corresponding "Exemption" section of the check's page
@@ -94,6 +100,7 @@ only valid reason for a exemption.
 | `@IntentionallyNonStaticCompanionApi`                          | [Companion function without JvmStatic](./checks/java-interop/companion-api-without-jvm-static.md) and [Companion property without static access](./checks/java-interop/companion-property-without-static-access.md) |
 | `@IntentionallyDefaultFacadeName`                              | [Top-level API without JvmName](./checks/java-interop/top-level-api-without-jvm-name.md)                                                                                                                            |
 | `@IntentionallyWithoutJvmOverloads`                            | [Default parameters without JvmOverloads](./checks/java-interop/default-parameters-without-jvm-overloads.md)                                                                                                        |
+| `@IntentionallyNonTransitiveDependency`                        | [Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md)                                                                                                     |
 | `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` | [DSL markers with no-op targets](./checks/special/dsl-marker-noop-target.md) and [DSL markers without explicit targets](./checks/special/dsl-marker-without-explicit-targets.md)                                    |
 
 ## Internal API annotations
@@ -126,6 +133,19 @@ declaration as internal API too.
 
 The marker annotation class itself is ordinary public API and stays watched like any
 other declaration, so it still needs a KDoc comment and the rest.
+
+An internal-API annotation that comes from a dependency can't be annotated with
+`@InternalAnnotationMarker`. List it in the `apiWatchdog` extension by its fully qualified class
+name instead, and it is treated exactly like a marked annotation:
+
+```kotlin
+apiWatchdog {
+    internalApiAnnotations.add("com.example.dependency.InternalDependencyApi")
+}
+```
+
+See [Internal API annotations from dependencies](./configuration.md#internal-api-annotations-from-dependencies)
+for details and the matching compiler option.
 
 ## Configuration
 

@@ -44,6 +44,7 @@ open class WatchdogProject(
         "org.jetbrains.kotlinx.library.api.watchdog.IntentionallyNonStaticCompanionApi",
         "org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName",
         "org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutJvmOverloads",
+        "org.jetbrains.kotlinx.library.api.watchdog.IntentionallyNonTransitiveDependency",
         "org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility",
         "org.jetbrains.kotlinx.library.api.watchdog.InternalAnnotationMarker",
     )

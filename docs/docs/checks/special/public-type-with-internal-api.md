@@ -10,8 +10,9 @@ supported public signature exposes them.
 | Gradle property  | [`publicTypeWithInternalApi`](../../configuration.md) |
 | Exemption        | none                                                  |
 
-An annotation whose class carries [`@InternalAnnotationMarker`](../../exemptions.md#internal-api-annotations) says that its declarations have no
-supported compatibility contract. Exposing one of those declarations from the public API makes
+An annotation whose class carries [`@InternalAnnotationMarker`](../../exemptions.md#internal-api-annotations), or
+whose name is listed in [`internalApiAnnotations`](../../configuration.md#internal-api-annotations-from-dependencies),
+says that its declarations have no supported compatibility contract. Exposing one of those declarations from the public API makes
 the contract contradictory: users have to name and use an explicitly unsupported type to call the
 supported declaration.
 

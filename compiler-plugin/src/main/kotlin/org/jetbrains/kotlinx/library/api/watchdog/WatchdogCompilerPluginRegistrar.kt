@@ -19,6 +19,7 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
         val annotationBasedExclusions = AnnotationBasedCheckExclusions(
             configuration[WatchdogConfigurationKeys.ANNOTATION_IGNORE_RULES, emptyMap()],
         )
+        val internalApiAnnotations = configuration[WatchdogConfigurationKeys.INTERNAL_API_ANNOTATIONS, emptySet()]
         val recorder = configuration[WatchdogConfigurationKeys.DIAGNOSTICS_OUTPUT_FILE]
             ?.let { WatchdogDiagnosticsRecorder(File(it)) }
         val publicTypeWithInternalApiEnabled =
@@ -37,6 +38,7 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
             WatchdogFirExtensionRegistrar(
                 severities = severities,
                 annotationBasedExclusions = annotationBasedExclusions,
+                internalApiAnnotations = internalApiAnnotations,
                 recorder = recorder,
                 dependencyExposure = dependencyExposure,
                 publicTypeWithInternalApiEnabled = publicTypeWithInternalApiEnabled,

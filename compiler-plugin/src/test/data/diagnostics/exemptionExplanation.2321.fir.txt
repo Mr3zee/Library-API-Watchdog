@@ -52,6 +52,12 @@ FILE: exemptionExplanation.kt
             public get(): R|kotlin/Int|
 
     }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonTransitiveDependency|() public final class BareNonTransitiveDependencyExemption : R|kotlin/Any| {
+        public constructor(): R|foo/bar/BareNonTransitiveDependencyExemption| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
     @R|org/jetbrains/kotlinx/library/api/watchdog/InternalAnnotationMarker|() public final annotation class UnexplainedMarker : R|kotlin/Annotation| {
         public constructor(): R|foo/bar/UnexplainedMarker| {
             super<R|kotlin/Any|>()

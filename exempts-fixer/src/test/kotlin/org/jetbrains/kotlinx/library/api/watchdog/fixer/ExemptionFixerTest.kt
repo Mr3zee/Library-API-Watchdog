@@ -94,8 +94,10 @@ class ExemptionFixerTest {
         )
         assertEquals(
             lineOf(newText, "public class NeedsDocumentation"),
-            result.skipped.single().line,
+            appliedByDiagnostic.getValue("UNDOCUMENTED_PUBLIC_API").line,
         )
+        assertContains(newText, "$PLACEHOLDER_KDOC\npublic class NeedsDocumentation")
+        assertEquals(emptyList(), result.skipped)
     }
 
     @Test
@@ -235,12 +237,15 @@ class ExemptionFixerTest {
 
         val newText = result.newText!!
         assertEquals(1, Regex.escape("import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen").toRegex().findAll(newText).count())
+        // The placeholder KDoc takes the spot a real KDoc would have: above the annotations.
         assertContains(
             newText,
-            "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic open class Documented",
+            "$PLACEHOLDER_KDOC\n" +
+                    "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+                    "public open class Documented",
         )
         assertFalse("IntentionallyUndocumented" in newText)
-        assertEquals("UNDOCUMENTED_PUBLIC_API", result.skipped.single().diagnostic)
+        assertEquals(emptyList(), result.skipped)
     }
 
     @Test
@@ -443,20 +448,144 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun undocumentedEnumEntryIsSkipped() {
+    fun undocumentedDeclarationGetsAPlaceholderKdoc() {
+        @Language("kotlin")
+        val text = """
+            package com.example
+
+            public class NeedsDocumentation {
+                public fun undocumented() {}
+            }
+        """.trimIndent()
+
+        val result = fix(
+            text,
+            diagnostic("UNDOCUMENTED_PUBLIC_API", text, "NeedsDocumentation"),
+            diagnostic("UNDOCUMENTED_PUBLIC_API", text, "undocumented()"),
+        )
+
+        // No annotation is involved, so no import is added either.
+        assertEquals(
+            """
+                package com.example
+
+                $PLACEHOLDER_KDOC
+                public class NeedsDocumentation {
+                    $PLACEHOLDER_KDOC
+                    public fun undocumented() {}
+                }
+            """.trimIndent(),
+            result.newText,
+        )
+        assertEquals(
+            listOf(
+                AppliedFix("UNDOCUMENTED_PUBLIC_API", null, FILE_PATH, 4),
+                AppliedFix("UNDOCUMENTED_PUBLIC_API", null, FILE_PATH, 6),
+            ),
+            result.applied.sortedBy { it.line },
+        )
+        assertEquals(emptyList(), result.skipped)
+    }
+
+    @Test
+    fun placeholderKdocFollowsCommentsBoundToTheDeclaration() {
+        @Language("kotlin")
+        val text = """
+            package com.example
+
+            // A line comment is not KDoc.
+            /* Neither is a block comment. */
+            public class Commented
+        """.trimIndent()
+
+        val result = fix(text, diagnostic("UNDOCUMENTED_PUBLIC_API", text, "public class Commented"))
+
+        assertContains(
+            result.newText!!,
+            "// A line comment is not KDoc.\n/* Neither is a block comment. */\n$PLACEHOLDER_KDOC\npublic class Commented",
+        )
+    }
+
+    @Test
+    fun alreadyDocumentedDeclarationIsSkipped() {
+        @Language("kotlin")
+        val text = """
+            package com.example
+
+            /** Documented after the report was written. */
+            public class Documented
+        """.trimIndent()
+
+        val result = fix(text, diagnostic("UNDOCUMENTED_PUBLIC_API", text, "public class Documented"))
+
+        assertNull(result.newText)
+        assertContains(result.skipped.single().reason, "already carries a KDoc")
+    }
+
+    @Test
+    fun undocumentedEnumEntriesGetAPlaceholderKdoc() {
         @Language("kotlin")
         val text = """
             package com.example
 
             /** Modes. */
             public enum class Mode { FAST }
+
+            /** Levels. */
+            public enum class Level {
+                LOW,
+            }
         """.trimIndent()
 
-        val result = fix(text, diagnostic("UNDOCUMENTED_PUBLIC_API", text, "FAST"))
+        val result = fix(
+            text,
+            diagnostic("UNDOCUMENTED_PUBLIC_API", text, "FAST"),
+            diagnostic("UNDOCUMENTED_PUBLIC_API", text, "LOW"),
+        )
 
-        assertNull(result.newText)
-        assertEquals(1, result.skipped.size)
-        assertContains(result.skipped.single().reason, "KDocs")
+        val newText = result.newText!!
+        // A mid-line entry is documented inline, one on its own line gets its own KDoc line.
+        assertContains(newText, "public enum class Mode { $PLACEHOLDER_KDOC FAST }")
+        assertContains(newText, "public enum class Level {\n    $PLACEHOLDER_KDOC\n    LOW,\n}")
+        assertEquals(2, result.applied.size)
+        assertEquals(emptyList(), result.skipped)
+    }
+
+    @Test
+    fun undocumentedConstructorPropertyGetsAPlaceholderKdoc() {
+        @Language("kotlin")
+        val text = """
+            package com.example
+
+            /** A session. */
+            public class Session(public val id: Int)
+
+            /** A user. */
+            public class User(
+                /** The name. */
+                public val name: String,
+                public val handle: UserHandle,
+            )
+        """.trimIndent()
+
+        val result = fix(
+            text,
+            diagnostic("UNDOCUMENTED_PUBLIC_API", text, "id"),
+            diagnostic("UNDOCUMENTED_PUBLIC_API", text, "handle"),
+            diagnostic("MANGLED_JVM_NAME_PUBLIC_API", text, "UserHandle"),
+        )
+
+        val newText = result.newText!!
+        assertContains(newText, "public class Session($PLACEHOLDER_KDOC public val id: Int)")
+        // A parameter on its own line is documented like any declaration, above its annotations.
+        assertContains(
+            newText,
+            "    public val name: String,\n" +
+                    "    $PLACEHOLDER_KDOC\n" +
+                    "    @IntentionallyMangledJvmName(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY) " +
+                    "public val handle: UserHandle,\n",
+        )
+        assertEquals(emptyList(), result.skipped)
     }
 
     @Test
@@ -639,13 +768,117 @@ class ExemptionFixerTest {
         // in front of it rather than inside it.
         assertContains(
             result.newText!!,
-            "@IntentionallyWithoutEquals(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
-                    "@IntentionallyWithoutHashCode(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
-                    "@IntentionallyWithoutToString(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+            "@IntentionallyWithoutEqualsHashCodeOrToString(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
                     "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
                     "public abstract class Session(public val id: Int)",
         )
         assertEquals(4, result.applied.size)
+    }
+
+    @Test
+    fun allThreeStatefulDiagnosticsCollapseToTheCombinedAnnotation() {
+        @Language("kotlin")
+        val text = """
+            package com.example
+
+            /** A session. */
+            public class Session(public val id: Int)
+        """.trimIndent()
+        val declaration = "public class Session(public val id: Int)"
+
+        val result = fix(
+            text,
+            diagnostic("STATEFUL_CLASS_WITHOUT_TO_STRING", text, declaration),
+            diagnostic("STATEFUL_CLASS_WITHOUT_EQUALS", text, declaration),
+            diagnostic("STATEFUL_CLASS_WITHOUT_HASH_CODE", text, declaration),
+        )
+
+        val newText = result.newText!!
+        assertContains(
+            newText,
+            "/** A session. */\n" +
+                    "@IntentionallyWithoutEqualsHashCodeOrToString(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+                    declaration,
+        )
+        assertFalse(newText.contains("@IntentionallyWithoutEquals("))
+        assertFalse(newText.contains("@IntentionallyWithoutHashCode("))
+        assertFalse(newText.contains("@IntentionallyWithoutToString("))
+        assertContains(newText, "import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEqualsHashCodeOrToString")
+        assertFalse(newText.contains("import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEquals\n"))
+
+        // Every diagnostic is reported as fixed, all by the one combined annotation.
+        assertEquals(
+            setOf("STATEFUL_CLASS_WITHOUT_EQUALS", "STATEFUL_CLASS_WITHOUT_HASH_CODE", "STATEFUL_CLASS_WITHOUT_TO_STRING"),
+            result.applied.map { it.diagnostic }.toSet(),
+        )
+        assertEquals(
+            setOf("IntentionallyWithoutEqualsHashCodeOrToString"),
+            result.applied.map { it.annotation }.toSet(),
+        )
+        // The two new imports and the annotation line push the declaration from line 4 to line 8.
+        assertEquals(setOf(8), result.applied.map { it.line }.toSet())
+    }
+
+    @Test
+    fun twoOfThreeStatefulDiagnosticsKeepTheirIndividualAnnotations() {
+        @Language("kotlin")
+        val text = """
+            package com.example
+
+            /** A session that renders itself. */
+            public class Session(public val id: Int) {
+                override fun toString(): String = "Session(id=${'$'}id)"
+            }
+        """.trimIndent()
+        val declaration = "public class Session(public val id: Int) {"
+
+        val result = fix(
+            text,
+            diagnostic("STATEFUL_CLASS_WITHOUT_EQUALS", text, declaration),
+            diagnostic("STATEFUL_CLASS_WITHOUT_HASH_CODE", text, declaration),
+        )
+
+        val newText = result.newText!!
+        assertContains(
+            newText,
+            "@IntentionallyWithoutEquals(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+                    "@IntentionallyWithoutHashCode(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+                    declaration,
+        )
+        assertFalse(newText.contains("IntentionallyWithoutEqualsHashCodeOrToString"))
+        assertEquals(2, result.applied.size)
+    }
+
+    @Test
+    fun anExistingIndividualExemptionKeepsTheOthersIndividual() {
+        @Language("kotlin")
+        val text = """
+            package com.example
+
+            import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+            import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEquals
+
+            /** A session acknowledged as identity-compared. */
+            @IntentionallyWithoutEquals(reason = ExemptionReason.API_DESIGN)
+            public class Session(public val id: Int)
+        """.trimIndent()
+        val declaration = "public class Session(public val id: Int)"
+
+        val result = fix(
+            text,
+            diagnostic("STATEFUL_CLASS_WITHOUT_HASH_CODE", text, declaration),
+            diagnostic("STATEFUL_CLASS_WITHOUT_TO_STRING", text, declaration),
+        )
+
+        val newText = result.newText!!
+        assertContains(
+            newText,
+            "@IntentionallyWithoutHashCode(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+                    "@IntentionallyWithoutToString(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+                    "@IntentionallyWithoutEquals(reason = ExemptionReason.API_DESIGN)\n" +
+                    declaration,
+        )
+        assertFalse(newText.contains("IntentionallyWithoutEqualsHashCodeOrToString"))
     }
 
     @Test
@@ -673,7 +906,6 @@ class ExemptionFixerTest {
 
         val result = fix(
             text,
-            diagnostic("UNDOCUMENTED_PUBLIC_API", text, "public class Anything"),
             diagnostic("EXEMPTION_WITHOUT_EXPLANATION", text, "public class Anything"),
             diagnostic("DSL_MARKER_NOOP_TYPE_POSITION", text, "public class Anything"),
             diagnostic("SOME_FUTURE_DIAGNOSTIC", text, "public class Anything"),
@@ -681,8 +913,7 @@ class ExemptionFixerTest {
 
         assertNull(result.newText)
         val reasonsByDiagnostic = result.skipped.associate { it.diagnostic to it.reason }
-        assertEquals(4, reasonsByDiagnostic.size)
-        assertContains(reasonsByDiagnostic.getValue("UNDOCUMENTED_PUBLIC_API"), "KDocs")
+        assertEquals(3, reasonsByDiagnostic.size)
         assertContains(reasonsByDiagnostic.getValue("EXEMPTION_WITHOUT_EXPLANATION"), "author")
         assertContains(reasonsByDiagnostic.getValue("DSL_MARKER_NOOP_TYPE_POSITION"), "DSL marker")
         assertContains(reasonsByDiagnostic.getValue("SOME_FUTURE_DIAGNOSTIC"), "Unknown diagnostic")
@@ -731,11 +962,16 @@ class ExemptionFixerTest {
         val newText = result.newText!!
         assertContains(
             newText,
-            "    @IntentionallyRequiredParameterAfterOptional(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+            "    $PLACEHOLDER_KDOC\n" +
+                    "    @IntentionallyRequiredParameterAfterOptional(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
                     "    public constructor(retries: Int = 3, host: String) : this()",
         )
         assertFalse("IntentionallyUndocumented" in newText)
-        assertEquals("UNDOCUMENTED_PUBLIC_API", result.skipped.single().diagnostic)
+        assertEquals(
+            setOf("REQUIRED_PARAMETER_AFTER_OPTIONAL", "UNDOCUMENTED_PUBLIC_API"),
+            result.applied.map { it.diagnostic }.toSet(),
+        )
+        assertEquals(emptyList(), result.skipped)
     }
 
     @Test
@@ -987,9 +1223,7 @@ class ExemptionFixerTest {
         assertContains(newText, "@IntentionallyDataClass(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic data class Point")
         assertContains(
             newText,
-            "@IntentionallyWithoutEquals(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
-                    "@IntentionallyWithoutHashCode(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
-                    "@IntentionallyWithoutToString(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
+            "@IntentionallyWithoutEqualsHashCodeOrToString(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
                     "public class Session",
         )
     }
@@ -1014,6 +1248,7 @@ class ExemptionFixerTest {
 
     private companion object {
         const val FILE_PATH = "/project/src/main/kotlin/com/example/Sample.kt"
+        const val PLACEHOLDER_KDOC = "/** TODO: Provide kDocs for this declaration */"
 
         fun lineOf(text: String, snippet: String): Int {
             val offset = text.indexOf(snippet)

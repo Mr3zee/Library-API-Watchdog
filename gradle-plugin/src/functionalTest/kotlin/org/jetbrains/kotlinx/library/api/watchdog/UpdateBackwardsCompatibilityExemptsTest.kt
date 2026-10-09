@@ -48,11 +48,16 @@ class UpdateBackwardsCompatibilityExemptsTest {
 
         val updateResult = build(project.rootDir, UPDATE_TASK)
         assertEquals(TaskOutcome.SUCCESS, updateResult.task(":$UPDATE_TASK")?.outcome)
-        assertContains(updateResult.output, "backwards-compatibility exemption(s)")
+        assertContains(updateResult.output, "backwards-compatibility exemption(s) and 3 placeholder KDoc(s)")
 
         val fixedText = project.rootDir.mainSource("legacy").readText()
         val reason = "reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY"
         assertTrue(fixedText.startsWith("@file:IntentionallyDefaultFacadeName($reason)"))
+        // Undocumented declarations get a placeholder KDoc instead of an exemption, above any annotations.
+        assertContains(fixedText, "$PLACEHOLDER_KDOC\n@IntentionallyOpen($reason)\npublic open class UndocumentedOpenClass {")
+        assertContains(fixedText, "    $PLACEHOLDER_KDOC\n    public fun undocumentedMember()")
+        assertContains(fixedText, "public enum class DocumentedEnum { $PLACEHOLDER_KDOC UNDOCUMENTED_ENTRY }")
+        assertFalse(fixedText.contains("@IntentionallyUndocumented"))
         assertContains(fixedText, "@IntentionallyOpen($reason)\npublic open class UnprotectedOpenClass")
         // The markerless @SubclassOptInRequired is replaced, not joined, by the exemption.
         assertContains(fixedText, "@IntentionallyOpen($reason)\npublic open class UnmarkedOptIn")
@@ -60,13 +65,11 @@ class UpdateBackwardsCompatibilityExemptsTest {
         assertContains(fixedText, "@IntentionallyExhaustive($reason)\npublic enum class UnmarkedEnum")
         assertContains(fixedText, "@IntentionallyFunctionTypeAlias($reason)\npublic typealias UnacknowledgedCallback")
         assertContains(fixedText, "@IntentionallyDataClass($reason)\npublic data class UnmarkedData")
-        assertContains(
-            fixedText,
-            "@IntentionallyWithoutEquals($reason)\n" +
-                    "@IntentionallyWithoutHashCode($reason)\n" +
-                    "@IntentionallyWithoutToString($reason)\n" +
-                    "public class UnrenderedSession",
-        )
+        // A class missing all three of equals, hashCode, and toString gets the one combined annotation.
+        assertContains(fixedText, "@IntentionallyWithoutEqualsHashCodeOrToString($reason)\npublic class UnrenderedSession")
+        assertFalse(fixedText.contains("@IntentionallyWithoutEquals("))
+        assertFalse(fixedText.contains("@IntentionallyWithoutHashCode("))
+        assertFalse(fixedText.contains("@IntentionallyWithoutToString("))
         assertContains(fixedText, "@IntentionallyMutableCollection($reason)\npublic fun leakState()")
         assertContains(fixedText, "@IntentionallyPairOrTriple($reason)\npublic fun locateOrigin()")
         assertContains(fixedText, "@IntentionallyBooleanParameter($reason)\npublic fun toggleWork(enabled: Boolean)")
@@ -163,6 +166,24 @@ class UpdateBackwardsCompatibilityExemptsTest {
     }
 
     @Test
+    fun reportShowsThePlaceholderKdocWithoutUpdatingSources() {
+        val project = object : WatchdogProject() {
+            override fun sources() = listOf(source("public class Undocumented", "undocumented"))
+        }.gradleProject
+        val sourceFile = project.rootDir.mainSource("undocumented")
+        val original = sourceFile.readText()
+
+        val result = build(project.rootDir, REPORT_TASK)
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":$REPORT_TASK")?.outcome)
+        assertEquals(original, sourceFile.readText())
+        val report = project.rootDir.exemptsReport().readText()
+        assertContains(report, "No automatic annotation (1)")
+        assertContains(report, "UNDOCUMENTED_PUBLIC_API")
+        assertContains(report, "A placeholder KDoc can be added by updateBackwardsCompatibilityExempts.")
+    }
+
+    @Test
     fun disabledDiagnosticsAreNotExempted() {
         val project = object : WatchdogProject(
             extraBuildScript = """
@@ -178,6 +199,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
 
         val fixedText = project.rootDir.mainSource("legacy").readText()
         assertFalse(fixedText.contains("@IntentionallyUndocumented"))
+        assertFalse(fixedText.contains(PLACEHOLDER_KDOC))
         // The other diagnostics are still exempted.
         assertContains(fixedText, "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)")
     }
@@ -254,13 +276,11 @@ class UpdateBackwardsCompatibilityExemptsTest {
         assertContains(report, "Not applied")
         assertContains(report, "No automatic annotation")
         assertContains(report, "DSL_MARKER_NOOP_TYPE_POSITION")
-        assertContains(report, "UNDOCUMENTED_PUBLIC_API")
 
         val result = build(project.rootDir, UPDATE_TASK)
 
         assertContains(result.output, "needs manual attention")
         assertContains(result.output, "DSL_MARKER_NOOP_TYPE_POSITION")
-        assertContains(result.output, "UNDOCUMENTED_PUBLIC_API")
         assertEquals(TaskOutcome.SUCCESS, reportResult.task(":$REPORT_TASK")?.outcome)
     }
 
@@ -389,6 +409,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
     private companion object {
         const val UPDATE_TASK = "updateBackwardsCompatibilityExempts"
         const val REPORT_TASK = "generateBackwardsCompatibilityExemptsReport"
+        const val PLACEHOLDER_KDOC = "/** TODO: Provide kDocs for this declaration */"
 
         val CONTEXT_PARAMETERS_BUILD_SCRIPT = """
             kotlin {
@@ -426,14 +447,21 @@ class UpdateBackwardsCompatibilityExemptsTest {
 }
 
 /**
- * One specimen of every diagnostic the fixer can acknowledge automatically. Every declaration is
- * documented because `UNDOCUMENTED_PUBLIC_API` requires manual attention.
+ * One specimen of every diagnostic the fixer can resolve automatically. The three undocumented
+ * declarations get a placeholder KDoc, every other one is documented.
  */
 @Suppress("RedundantVisibilityModifier", "RedundantSuspendModifier", "MayBeConstant")
 @Language("kotlin")
 private val fixableFile = """
     /** A deliberately unrestricted base class. */
     public open class UnprotectedOpenClass
+
+    public open class UndocumentedOpenClass {
+        public fun undocumentedMember() {}
+    }
+
+    /** A documented enum with an undocumented entry. */
+    public enum class DocumentedEnum { UNDOCUMENTED_ENTRY }
 
     /** A base class whose subclass opt-in lists no markers and so restricts nothing. */
     @SubclassOptInRequired
@@ -537,8 +565,6 @@ private val fixableFile = """
 @Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val unfixableFile = """
-    public class NeedsDocumentation
-
     /** A DSL marker with tidy targets, misapplied to an inert type position below. */
     @DslMarker
     @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPEALIAS)

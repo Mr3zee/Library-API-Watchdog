@@ -71,6 +71,7 @@ internal object WatchdogClassIds {
     val IntentionallyNonStaticCompanionApi: ClassId = ClassId(annotationsPackage, Name.identifier("IntentionallyNonStaticCompanionApi"))
     val IntentionallyDefaultFacadeName: ClassId = ClassId(annotationsPackage, Name.identifier("IntentionallyDefaultFacadeName"))
     val IntentionallyWithoutJvmOverloads: ClassId = ClassId(annotationsPackage, Name.identifier("IntentionallyWithoutJvmOverloads"))
+    val IntentionallyNonTransitiveDependency: ClassId = ClassId(annotationsPackage, Name.identifier("IntentionallyNonTransitiveDependency"))
     val IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility: ClassId = ClassId(annotationsPackage, Name.identifier("IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility"))
     val InternalAnnotationMarker: ClassId = ClassId(annotationsPackage, Name.identifier("InternalAnnotationMarker"))
 
@@ -103,6 +104,7 @@ internal object WatchdogClassIds {
         IntentionallyNonStaticCompanionApi,
         IntentionallyDefaultFacadeName,
         IntentionallyWithoutJvmOverloads,
+        IntentionallyNonTransitiveDependency,
     )
 }
 
@@ -169,8 +171,9 @@ internal fun FirFunction.reportedName(): Name? = when (this) {
  * public inline functions expose them to users, so they are watched like public declarations.
  *
  * Declarations marked as internal API - annotated, directly or on an enclosing declaration, with
- * an annotation whose class carries `@InternalAnnotationMarker` - offer no compatibility contract
- * despite their visibility, so they are not watched either.
+ * an annotation whose class carries `@InternalAnnotationMarker` or whose name is configured as an
+ * internal API annotation - offer no compatibility contract despite their visibility, so they
+ * are not watched either.
  */
 context(context: CheckerContext)
 internal fun FirMemberDeclaration.isWatchedPublicApi(): Boolean {
@@ -213,16 +216,25 @@ private fun FirMemberDeclaration.isMarkedAsInternalApi(): Boolean =
 context(context: CheckerContext)
 internal fun FirBasedSymbol<*>.hasInternalApiMarker(): Boolean = internalApiAnnotation() != null
 
-/** An annotation on this declaration whose class carries the internal-API meta-annotation. */
+/**
+ * An annotation on this declaration whose class carries the internal-API meta-annotation, or
+ * whose fully qualified name is configured through the `internalApiAnnotation` plugin option
+ * (see [ConfiguredInternalApiAnnotations]). Type aliases of the annotation are expanded first.
+ */
 context(context: CheckerContext)
-internal fun FirBasedSymbol<*>.internalApiAnnotation(): ClassId? =
-    resolvedAnnotationsWithClassIds.firstNotNullOfOrNull { annotation ->
-        val annotationSymbol = annotation.toAnnotationClassLikeSymbol(context.session)
-            ?.takeIf {
-                it.hasAnnotation(WatchdogClassIds.InternalAnnotationMarker, context.session)
-            }
-        annotationSymbol?.classId
+internal fun FirBasedSymbol<*>.internalApiAnnotation(): ClassId? {
+    val session = context.session
+    val configured = session.configuredInternalApiAnnotations
+    return resolvedAnnotationsWithClassIds.firstNotNullOfOrNull { annotation ->
+        val annotationSymbol = annotation.toAnnotationClassLikeSymbol(session)
+            ?: return@firstNotNullOfOrNull null
+        val classId = annotationSymbol.classId
+        classId.takeIf {
+            annotationSymbol.hasAnnotation(WatchdogClassIds.InternalAnnotationMarker, session) ||
+                    configured?.contains(classId) == true
+        }
     }
+}
 
 /**
  * Whether the declaration reaches the API surface only through `@PublishedApi`: it is internal in

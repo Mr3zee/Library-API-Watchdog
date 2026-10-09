@@ -76,11 +76,18 @@ public abstract class UpdateBackwardsCompatibilityExemptsTask : DefaultTask() {
             updateSources = true,
         )
 
-        var appliedCount = 0
+        var exemptionCount = 0
+        var kdocCount = 0
         response["fixed"].orEmpty().forEach { value ->
             val (diagnostic, annotation, line, path) = value.split('\t', limit = 4)
-            appliedCount++
-            logger.lifecycle("@$annotation acknowledges $diagnostic at ${relativize(path)}:$line")
+            // An empty annotation field means the fix is a placeholder KDoc, not an annotation.
+            if (annotation.isEmpty()) {
+                kdocCount++
+                logger.lifecycle("A placeholder KDoc documents $diagnostic at ${relativize(path)}:$line")
+            } else {
+                exemptionCount++
+                logger.lifecycle("@$annotation acknowledges $diagnostic at ${relativize(path)}:$line")
+            }
         }
         val modifiedFiles = response["modifiedFile"].orEmpty().toSet()
         val skipped = response["skipped"].orEmpty().map { value ->
@@ -93,12 +100,13 @@ public abstract class UpdateBackwardsCompatibilityExemptsTask : DefaultTask() {
             )
         }
 
-        if (appliedCount == 0 && skipped.isEmpty()) {
+        if (exemptionCount == 0 && kdocCount == 0 && skipped.isEmpty()) {
             logger.lifecycle("No watchdog diagnostics to exempt.")
         } else {
             logger.lifecycle(
-                "Added $appliedCount backwards-compatibility exemption(s) in " +
-                        "${modifiedFiles.size} file(s)." +
+                "Added $exemptionCount backwards-compatibility exemption(s)" +
+                        (if (kdocCount == 0) "" else " and $kdocCount placeholder KDoc(s)") +
+                        " in ${modifiedFiles.size} file(s)." +
                         if (skipped.isEmpty()) "" else " ${skipped.size} diagnostic(s) need manual attention."
             )
         }

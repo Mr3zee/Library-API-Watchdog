@@ -27,7 +27,8 @@ public abstract class org/jetbrains/kotlinx/library/api/watchdog/UpdateBackwards
 }
 
 public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension {
-	public fun <init> (Lorg/gradle/api/model/ObjectFactory;)V
+	public fun <init> (Lorg/gradle/api/NamedDomainObjectProvider;Lorg/gradle/api/model/ObjectFactory;)V
+	public final fun getAllowedNonTransitiveDependencies ()Lorg/gradle/api/NamedDomainObjectProvider;
 	public final fun getBooleanParameterPublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun getDataClassPublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun getDslMarkerNoopTarget ()Lorg/gradle/api/provider/Property;
@@ -37,6 +38,7 @@ public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension 
 	public final fun getFunctionTypeAliasPublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun getInconsistentParameterOrderInOverloads ()Lorg/gradle/api/provider/Property;
 	public final fun getInlineFunctionWithLogic ()Lorg/gradle/api/provider/Property;
+	public final fun getInternalApiAnnotations ()Lorg/gradle/api/provider/SetProperty;
 	public final fun getJavaInterop ()Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogJavaInteropExtension;
 	public final fun getMutableCollectionPublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun getNullableBooleanPublicApi ()Lorg/gradle/api/provider/Property;
@@ -53,6 +55,10 @@ public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension 
 	public final fun getUndocumentedPublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun ignore (Ljava/lang/String;Ljava/util/List;)V
 	public final fun javaInterop (Lorg/gradle/api/Action;)V
+}
+
+public final class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtensionKt {
+	public static final fun allowExposingNonTransitivelyInApi (Lorg/gradle/api/artifacts/dsl/DependencyHandler;Lorg/gradle/api/artifacts/Dependency;)V
 }
 
 public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogJavaInteropExtension {

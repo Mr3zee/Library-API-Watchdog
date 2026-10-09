@@ -10,6 +10,7 @@ import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyExhaustive
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyFunctionTypeAlias
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyKotlinOnlyApi
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyMutableCollection
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyNonTransitiveDependency
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyUndocumented
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEqualsHashCodeOrToString
@@ -35,6 +36,9 @@ public data class BareDataClassExemption(val x: Int)
 
 <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyWithoutEqualsHashCodeOrToString<!>
 public class BareCombinedStatefulExemption(public val x: Int)
+
+<!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyNonTransitiveDependency<!>
+public class BareNonTransitiveDependencyExemption
 
 // @InternalAnnotationMarker needs no explanation: the marked annotation class documents the
 // internal API surface itself.

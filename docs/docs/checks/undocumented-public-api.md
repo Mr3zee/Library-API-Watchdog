@@ -104,6 +104,9 @@ public class Profile(
 ## Notes
 
 - Overrides and `actual` declarations inherit the KDoc of the declaration they implement and are not reported.
+- A `companion object` with the default name is not reported. It is a namespace for its members,
+  and the members are checked on their own. A named companion (`companion object Factory`) is a
+  deliberate type and is reported like any other object.
 - Compiler-generated members (data class `copy`/`componentN`, enum `values`/`valueOf`/`entries`)
   have no source of their own and are never reported.
 - A plain `//` or `/* */` comment doesn't count, only a KDoc block (`/** ... */`) satisfies the
@@ -122,6 +125,10 @@ declaration.
 // No example here, because I couldn't find a valid case when an API
 // shouldn't be documented 🤷
 ```
+
+The [`updateBackwardsCompatibilityExempts`](../existing-libs.md) task never applies this
+annotation. Documentation can be added without breaking anyone, so the task inserts the
+placeholder KDoc `TODO: Provide kDocs for this declaration` instead, for the author to replace.
 
 ## Configuration
 

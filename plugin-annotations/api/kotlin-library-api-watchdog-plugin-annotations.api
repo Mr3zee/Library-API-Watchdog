@@ -65,6 +65,11 @@ public abstract interface annotation class org/jetbrains/kotlinx/library/api/wat
 	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 }
 
+public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonTransitiveDependency : java/lang/annotation/Annotation {
+	public abstract fun description ()Ljava/lang/String;
+	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
+}
+
 public abstract interface annotation class org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNullableBoolean : java/lang/annotation/Annotation {
 	public abstract fun description ()Ljava/lang/String;
 	public abstract fun reason ()Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;

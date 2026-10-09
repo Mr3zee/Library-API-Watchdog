@@ -1,13 +1,7 @@
 package org.jetbrains.kotlinx.library.api.watchdog.fir
 
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
-import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirMemberDeclaration
-import org.jetbrains.kotlin.fir.declarations.hasAnnotation
-import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
-import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
-import org.jetbrains.kotlin.fir.types.ConeKotlinType
-import org.jetbrains.kotlin.fir.types.customAnnotations
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 
@@ -24,30 +18,16 @@ import org.jetbrains.kotlin.name.Name
  *   on a type usage, where it covers the annotated type and everything nested in it.
  */
 internal abstract class ExposedTypeChecker(
-    private val exemption: ClassId,
+    exemption: ClassId,
 ) : PublicSignatureTypeChecker<Name>(
     checkExtensionReceivers = false,
     checkClassSupertypes = false,
     checkClassContextParameters = false,
     checkTypeAliases = false,
     skipOverrides = true,
+    exemption = exemption,
 ) {
     context(context: CheckerContext)
     override fun isCheckedDeclaration(declaration: FirMemberDeclaration): Boolean =
         declaration.isWatchedPublicSourceApi()
-
-    context(context: CheckerContext)
-    override fun isDeclarationExempt(declaration: FirDeclaration): Boolean =
-        declaration.hasAnnotation(exemption, context.session)
-
-    context(context: CheckerContext)
-    override fun isParameterExempt(parameter: FirValueParameterSymbol): Boolean =
-        parameter.hasAnnotation(exemption, context.session)
-
-    /** A type-use [exemption] exempts the annotated type and everything nested in it. */
-    context(context: CheckerContext)
-    override fun ConeKotlinType.isTypeExempt(): Boolean =
-        customAnnotations.any {
-            it.toAnnotationClassIdSafe(context.session) == exemption
-        }
 }

@@ -35,7 +35,8 @@ internal class FileFixResult(
 /**
  * Turns the watchdog diagnostics recorded for one source file into `@Intentionally*` annotations
  * with `reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`, the reason that explains itself:
- * the shape stays as it is because changing it would break existing users.
+ * the shape stays as it is because changing it would break existing users. Missing documentation
+ * is no shape, so an undocumented declaration gets a placeholder KDoc instead.
  *
  * All edit offsets are computed against the original text and applied from the end of the file
  * backwards, so earlier edits never invalidate later ones.
@@ -84,17 +85,19 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
                 continue
             }
             val target = resolveTarget(element, fix.targetStrategy, ktFile) ?: run {
-                skip("No declaration accepting @${fix.annotationShortName} encloses the reported position")
+                skip("No declaration accepting ${fix.describe()} encloses the reported position")
                 continue
             }
-            if (target.alreadyAnnotated(fix.annotationShortName)) {
-                skip("The target already carries @${fix.annotationShortName}")
+            if (target.alreadyHas(fix)) {
+                skip("The target already carries ${fix.describe()}")
                 continue
             }
 
             plannedFixes.getOrPut(target) { mutableMapOf() }
-                .getOrPut(fix.annotationShortName) { PlannedFix(fix, name, sourceOffset) }
+                .getOrPut(fix.id) { PlannedFix(fix) }
+                .reports.getOrPut(name) { sourceOffset }
         }
+        plannedFixes.values.forEach { it.collapseCombinedExemptions() }
 
         if (plannedFixes.isEmpty()) {
             val locations = RewrittenLocations(originalText, originalText, emptyList())
@@ -108,8 +111,9 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
         val imports = ImportResolver(ktFile)
         val edits = mutableListOf<TextEdit>()
         val applied = mutableListOf<PlannedFix>()
-        for ((target, fixesByAnnotation) in plannedFixes) {
-            val fixes = fixesByAnnotation.values.sortedBy { it.fix.annotationShortName }
+        for ((target, fixesById) in plannedFixes) {
+            // The KDoc goes on top, then the annotations in name order.
+            val fixes = fixesById.values.sortedWith(compareBy({ it.fix !is PlaceholderKdocFix }, { it.fix.id }))
             edits += target.render(fixes, text, imports)
             applied += fixes
         }
@@ -130,13 +134,15 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
         }
         return FileFixResult(
             newText = newText,
-            applied = applied.map {
-                AppliedFix(
-                    it.diagnostic,
-                    it.fix.annotationShortName,
-                    filePath,
-                    locations.lineAt(it.sourceOffset),
-                )
+            applied = applied.flatMap { planned ->
+                planned.reports.map { (diagnostic, sourceOffset) ->
+                    AppliedFix(
+                        diagnostic,
+                        (planned.fix as? ExemptionFix)?.annotationShortName,
+                        filePath,
+                        locations.lineAt(sourceOffset),
+                    )
+                }
             },
             skipped = skipped.map { it.toDiagnostic(filePath, locations) },
             edits = rawEdits,
@@ -144,7 +150,39 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
     }
 }
 
-private class PlannedFix(val fix: ExemptionFix, val diagnostic: String, val sourceOffset: Int)
+/**
+ * One annotation or KDoc to add to a target, with the diagnostics it resolves. [reports] maps
+ * each diagnostic name to the first recorded position that led to this fix: a diagnostic
+ * reported several times on one target (once per constructor, say) is applied once.
+ */
+private class PlannedFix(val fix: Fix) {
+    val reports: MutableMap<String, Int> = linkedMapOf()
+}
+
+private fun Fix.describe(): String = when (this) {
+    is ExemptionFix -> "@$annotationShortName"
+    PlaceholderKdocFix -> "a KDoc"
+}
+
+/**
+ * Replaces every complete group of individual annotations with its combined annotation, so a
+ * class missing `equals`, `hashCode`, and `toString` alike gets the one
+ * `@IntentionallyWithoutEqualsHashCodeOrToString` instead of three annotations.
+ */
+private fun MutableMap<String, PlannedFix>.collapseCombinedExemptions() {
+    for ((combined, parts) in ExemptionRegistry.combinedExemptions) {
+        if (!keys.containsAll(parts)) continue
+        val individual = parts.map { getValue(it) }
+        val merged = PlannedFix(
+            ExemptionFix(combined, individual.first().fix.targetStrategy, hasReasonParameter = true)
+        )
+        individual.forEach { planned ->
+            planned.reports.forEach { (diagnostic, offset) -> merged.reports.getOrPut(diagnostic) { offset } }
+        }
+        parts.forEach { remove(it) }
+        put(combined, merged)
+    }
+}
 
 private class PlannedSkip(val diagnostic: String, val sourceOffset: Int, val reason: String) {
     fun toDiagnostic(filePath: String, locations: RewrittenLocations) =
@@ -201,16 +239,34 @@ internal fun applyEdits(text: String, edits: List<TextEdit>): String {
     return builder.toString()
 }
 
-/** Where a group of exemption annotations goes. */
+/** Where a group of fixes goes. */
 private sealed interface FixTarget {
     fun alreadyAnnotated(annotationShortName: String): Boolean
 
+    /** Whether the target already has a KDoc, so a placeholder would only get in its way. */
+    fun alreadyDocumented(): Boolean = false
+
+    fun alreadyHas(fix: Fix): Boolean = when (fix) {
+        is ExemptionFix -> alreadyAnnotated(fix.annotationShortName)
+        PlaceholderKdocFix -> alreadyDocumented()
+    }
+
+    /**
+     * The edits inserting [fixes], which come KDoc first. Fixes sharing an insertion point go
+     * into one edit, so their order is the list's and not the tie-break of [applyEdits].
+     */
     fun render(fixes: List<PlannedFix>, text: String, imports: ImportResolver): List<TextEdit>
 
-    /** A declaration annotated in front of its first token, keeping its KDoc on top. */
+    /**
+     * A declaration annotated in front of its first token, keeping its KDoc on top. A
+     * placeholder KDoc lands in the same spot, above the annotations: a declaration that has a
+     * KDoc never receives one.
+     */
     data class BeforeDeclaration(val declaration: KtDeclaration) : FixTarget {
         override fun alreadyAnnotated(annotationShortName: String) =
             declaration.hasAnnotationNamed(annotationShortName)
+
+        override fun alreadyDocumented() = declaration.docComment != null
 
         override fun render(fixes: List<PlannedFix>, text: String, imports: ImportResolver): List<TextEdit> {
             var anchor: PsiElement = declaration
@@ -226,12 +282,12 @@ private sealed interface FixTarget {
             val lineStart = text.lastIndexOf('\n', anchorOffset - 1) + 1
             val indent = text.substring(lineStart, anchorOffset)
             return if (indent.isBlank()) {
-                // The declaration starts its line: stack one annotation line above it per fix.
-                fixes.map { TextEdit(lineStart, indent + it.annotationText(imports) + "\n") }
+                // The declaration starts its line: stack one line above it per fix.
+                listOf(TextEdit(lineStart, fixes.joinToString("") { indent + it.insertionText(imports) + "\n" }))
             } else {
                 // Mid-line declarations (an explicit primary constructor, a one-line member) get
-                // the annotations inline, directly in front.
-                fixes.map { TextEdit(anchorOffset, it.annotationText(imports) + " ") }
+                // the fixes inline, directly in front.
+                listOf(TextEdit(anchorOffset, fixes.joinToString("") { it.insertionText(imports) + " " }))
             }
         }
     }
@@ -242,7 +298,7 @@ private sealed interface FixTarget {
             (element as? KtDeclaration)?.hasAnnotationNamed(annotationShortName) ?: false
 
         override fun render(fixes: List<PlannedFix>, text: String, imports: ImportResolver): List<TextEdit> =
-            fixes.map { TextEdit(element.textRange.startOffset, it.annotationText(imports) + " ") }
+            listOf(TextEdit(element.textRange.startOffset, fixes.joinToString("") { it.insertionText(imports) + " " }))
     }
 
     /**
@@ -259,7 +315,7 @@ private sealed interface FixTarget {
 
         override fun render(fixes: List<PlannedFix>, text: String, imports: ImportResolver): List<TextEdit> {
             val owner = entry.annotatedDeclaration()
-            val missing = fixes.filterNot { owner?.hasAnnotationNamed(it.fix.annotationShortName) == true }
+            val missing = fixes.filterNot { owner?.hasAnnotationNamed(it.exemption.annotationShortName) == true }
             if (missing.isEmpty()) {
                 return listOf(removal(text))
             }
@@ -296,7 +352,7 @@ private sealed interface FixTarget {
             constructor.hasAnnotationNamed(annotationShortName)
 
         override fun render(fixes: List<PlannedFix>, text: String, imports: ImportResolver): List<TextEdit> {
-            val annotations = fixes.joinToString(" ") { it.annotationText(imports) }
+            val annotations = fixes.joinToString(" ") { it.insertionText(imports) }
             return listOf(TextEdit(constructor.textRange.startOffset, " $annotations constructor"))
         }
     }
@@ -327,11 +383,22 @@ private sealed interface FixTarget {
     }
 }
 
+/** The text of the fix as it stands on its own: an annotation with its `@`, or a KDoc. */
+private fun PlannedFix.insertionText(imports: ImportResolver, useSite: String = ""): String = when (fix) {
+    is ExemptionFix -> annotationText(imports, useSite)
+    PlaceholderKdocFix -> "/** ${PlaceholderKdocFix.TEXT} */"
+}
+
 private fun PlannedFix.annotationText(imports: ImportResolver, useSite: String = ""): String =
     "@$useSite${annotationCall(imports)}"
 
+/** The fix as an annotation. Only annotations replace annotations or sit on a file. */
+private val PlannedFix.exemption: ExemptionFix
+    get() = fix as? ExemptionFix ?: error("${fix.id} is not an exemption annotation")
+
 /** The annotation without its `@`, the form the entries of an `@[First Second]` list take. */
 private fun PlannedFix.annotationCall(imports: ImportResolver): String {
+    val fix = exemption
     val name = imports.reference(fix.annotationShortName)
     val arguments = if (fix.hasReasonParameter) {
         "(reason = ${imports.reference(ExemptionRegistry.REASON_CLASS)}.${ExemptionRegistry.REASON_ENTRY})"
@@ -369,6 +436,8 @@ private fun resolveTarget(element: PsiElement, strategy: TargetStrategy, ktFile:
 
         TargetStrategy.REPORTED_DECLARATION -> element.resolveDeclarationTarget()
 
+        TargetStrategy.DOCUMENTED_DECLARATION -> element.resolveDocumentedTarget()
+
         TargetStrategy.REPORTED_ANNOTATION ->
             element.ancestorsWithSelf()
                 .filterIsInstance<KtAnnotationEntry>()
@@ -393,6 +462,25 @@ private fun PsiElement.resolveDeclarationTarget(): FixTarget? {
             is KtParameter -> if (candidate.hasValOrVar()) return FixTarget.InlineBefore(candidate)
             is KtPropertyAccessor -> return FixTarget.BeforeDeclaration(candidate.property)
             is KtPrimaryConstructor -> return candidate.asTarget()
+            is KtNamedFunction, is KtSecondaryConstructor, is KtProperty, is KtClassOrObject, is KtTypeAlias ->
+                return FixTarget.BeforeDeclaration(candidate as KtDeclaration)
+        }
+    }
+    return null
+}
+
+/**
+ * The declaration whose KDoc the diagnostic misses. Unlike [resolveDeclarationTarget], enum
+ * entries are documented like any declaration, and a `val`/`var` primary constructor parameter
+ * takes its KDoc the way a declaration does: on a line of its own when the parameter has one.
+ * The primary constructor itself is described by the class KDoc and has no KDoc of its own.
+ */
+private fun PsiElement.resolveDocumentedTarget(): FixTarget? {
+    for (candidate in ancestorsWithSelf()) {
+        when (candidate) {
+            is KtParameter -> return if (candidate.hasValOrVar()) FixTarget.BeforeDeclaration(candidate) else null
+            is KtPropertyAccessor -> return FixTarget.BeforeDeclaration(candidate.property)
+            is KtPrimaryConstructor -> return null
             is KtNamedFunction, is KtSecondaryConstructor, is KtProperty, is KtClassOrObject, is KtTypeAlias ->
                 return FixTarget.BeforeDeclaration(candidate as KtDeclaration)
         }

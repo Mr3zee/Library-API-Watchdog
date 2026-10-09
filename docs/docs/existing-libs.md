@@ -16,7 +16,13 @@ for several targets, and runs a fixer in a separate process.
 
 Each diagnostic gets the matching `@Intentionally*` annotation with
 `ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`, placed under the declaration's KDoc and
-above its other annotations, with imports added as needed.
+above its other annotations, with imports added as needed. An undocumented declaration gets a
+placeholder KDoc instead of an exemption:
+
+```kotlin
+/** TODO: Provide kDocs for this declaration */
+public class Config
+```
 
 ## Generate a report
 
@@ -54,8 +60,10 @@ The aggregate task writes `build/reports/api-watchdog/backwards-compatibility-ex
 
 ## Details worth knowing
 
-- **Undocumented APIs are not exempt**
-  [`UNDOCUMENTED_PUBLIC_API`](./checks/undocumented-public-api.md) is not auto-fixed, but reported as a warning during the task run instead.
+- **Undocumented APIs are not exempt.** Documentation can be added without breaking anyone, so
+  [`UNDOCUMENTED_PUBLIC_API`](./checks/undocumented-public-api.md) gets no `@IntentionallyUndocumented`.
+  The task inserts the placeholder KDoc `TODO: Provide kDocs for this declaration` instead,
+  which satisfies the check until the real documentation replaces it.
 - **Run it on a clean working tree and review the diff.** The task edits sources in place. 
   Review the diff, commit, and let the checks guard only the API added afterwards. 
   New code deserves a thought-through decision instead - fix the shape or pick the exemption reason by hand.
@@ -64,11 +72,15 @@ The aggregate task writes `build/reports/api-watchdog/backwards-compatibility-ex
   regular main compilations write reports, force explicit API warning mode, and temporarily
   demote every enabled configurable watchdog diagnostic to a warning so the fixer can run.
   Ordinary compilation tasks are unchanged when neither task is in the task graph.
-- **Unfixable always-error checks are skipped during collection.** The task temporarily disables
+- **Always-error checks are skipped during collection.** The task temporarily disables
   [`EXEMPTION_WITHOUT_EXPLANATION`](./checks/special/exemption-without-explanation.md),
   [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md),
   and [`PUBLIC_TYPE_WITH_INTERNAL_API`](./checks/special/public-type-with-internal-api.md) because it
-  can neither demote nor acknowledge them automatically. Ordinary compilations still enforce all
+  can't demote them, and acknowledging them for backwards compatibility would be wrong: an
+  unexplained exemption needs its author, an internal type has to leave the signature, and a
+  non-transitive dependency is fixed in the build script by declaring it with `api`, which breaks
+  no consumer. `@IntentionallyNonTransitiveDependency` is reserved for dependencies the runtime
+  environment supplies, which only the author knows. Ordinary compilations still enforce all
   three, so resolve any violations separately after adopting the generated exemptions.
 - **Real compilation errors still fail the task.** Since these are the project's regular compilation
   tasks, unresolved references, syntax errors, and other compiler errors must be fixed before the

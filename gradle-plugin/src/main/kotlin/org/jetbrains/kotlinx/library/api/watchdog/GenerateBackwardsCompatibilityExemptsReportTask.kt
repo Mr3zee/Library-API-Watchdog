@@ -90,11 +90,16 @@ public abstract class GenerateBackwardsCompatibilityExemptsReportTask : DefaultT
         }
         val applicable = response["fixed"].orEmpty().map { value ->
             val (diagnostic, annotation, line, path) = value.split('\t', limit = 4)
+            // An empty annotation field means the fix is a placeholder KDoc, not an annotation.
             NotAppliedExemptionReportEntry(
-                annotation = annotation,
+                annotation = annotation.ifEmpty { null },
                 diagnostic = diagnostic,
                 location = "${relativize(path)}:$line",
-                reason = "Can be applied by updateBackwardsCompatibilityExempts.",
+                reason = if (annotation.isEmpty()) {
+                    "A placeholder KDoc can be added by updateBackwardsCompatibilityExempts."
+                } else {
+                    "Can be applied by updateBackwardsCompatibilityExempts."
+                },
             )
         }
         val skipped = response["skipped"].orEmpty().map { value ->

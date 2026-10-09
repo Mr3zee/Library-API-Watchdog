@@ -12,6 +12,12 @@ internal enum class TargetStrategy {
     REPORTED_DECLARATION,
 
     /**
+     * The reported declaration as the owner of a KDoc: any of [REPORTED_DECLARATION]'s targets,
+     * plus enum entries, which no annotation targets but a KDoc documents all the same.
+     */
+    DOCUMENTED_DECLARATION,
+
+    /**
      * The annotation entry the diagnostic was reported on. The reported annotation is the problem
      * itself, so the exemption replaces it instead of joining it.
      */
@@ -27,24 +33,50 @@ internal enum class TargetStrategy {
     CONTAINING_FILE,
 }
 
-/** The exemption annotation that acknowledges one watchdog diagnostic, and where it goes. */
+/** The source insertion that resolves one watchdog diagnostic, and where it goes. */
+internal sealed interface Fix {
+    /**
+     * Identifies the inserted text: the same fix planned for one target by several diagnostics
+     * is applied once.
+     */
+    val id: String
+
+    val targetStrategy: TargetStrategy
+}
+
+/** The exemption annotation that acknowledges one watchdog diagnostic. */
 internal class ExemptionFix(
     val annotationShortName: String,
-    val targetStrategy: TargetStrategy,
+    override val targetStrategy: TargetStrategy,
     /** `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` bakes its reason in. */
     val hasReasonParameter: Boolean = true,
-)
+) : Fix {
+    override val id: String get() = annotationShortName
+}
+
+/**
+ * A placeholder KDoc in front of an undocumented declaration. Documentation is not an API shape
+ * that users depend on, so instead of an exemption the declaration gets a KDoc that satisfies the
+ * check and asks its author to write the real text.
+ */
+internal object PlaceholderKdocFix : Fix {
+    const val TEXT = "TODO: Provide kDocs for this declaration"
+
+    override val id: String get() = "KDoc"
+    override val targetStrategy: TargetStrategy get() = TargetStrategy.DOCUMENTED_DECLARATION
+}
 
 /** How one watchdog diagnostic can be resolved by the fixer. */
 internal sealed interface FixResolution {
-    class Fixable(val fix: ExemptionFix) : FixResolution
+    class Fixable(val fix: Fix) : FixResolution
 
     class Unfixable(val reason: String) : FixResolution
 }
 
 /**
  * Maps every watchdog diagnostic to the `@Intentionally*` exemption annotation that acknowledges
- * it, or to the reason why no annotation can be added automatically. The diagnostic names mirror
+ * it (or, for `UNDOCUMENTED_PUBLIC_API`, to the placeholder KDoc that documents it), or to the
+ * reason why nothing can be added automatically. The diagnostic names mirror
  * `WatchdogDiagnostics` in `:kotlin-library-api-watchdog-compiler-plugin` and the annotations
  * mirror `:kotlin-library-api-watchdog-plugin-annotations`.
  * The Gradle plugin's functional tests exercise every fixable entry end to end, which keeps the
@@ -83,10 +115,25 @@ internal object ExemptionRegistry {
         "DSL_MARKER_NOOP_TARGET" to fixable("IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility", TargetStrategy.ENCLOSING_ANNOTATION_CLASS, hasReasonParameter = false),
         "DSL_MARKER_WITHOUT_EXPLICIT_TARGETS" to fixable("IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility", TargetStrategy.ENCLOSING_ANNOTATION_CLASS, hasReasonParameter = false),
 
-        "UNDOCUMENTED_PUBLIC_API" to FixResolution.Unfixable("Adding KDocs is not backwards incompatible. Please, add them."),
+        // Documentation is never a compatibility concern, so instead of an exemption the
+        // declaration gets a placeholder KDoc for its author to replace.
+        "UNDOCUMENTED_PUBLIC_API" to FixResolution.Fixable(PlaceholderKdocFix),
         "EXEMPTION_WITHOUT_EXPLANATION" to FixResolution.Unfixable("The existing exemption needs a reason or description only its author can write"),
         "DSL_MARKER_NOOP_TYPE_POSITION" to FixResolution.Unfixable("No exemption annotation exists. Move the DSL marker to an effective position or remove it"),
         "PUBLIC_TYPE_WITH_INTERNAL_API" to FixResolution.Unfixable("Remove the internal type from the public signature or mark the exposing declaration as internal API"),
+    )
+
+    /**
+     * Combined exemption annotations, each standing for the set of individual annotations it
+     * acknowledges at once. When one declaration collects every individual annotation of a group,
+     * the fixer applies the combined annotation instead of stacking all of them.
+     */
+    val combinedExemptions: Map<String, Set<String>> = mapOf(
+        "IntentionallyWithoutEqualsHashCodeOrToString" to setOf(
+            "IntentionallyWithoutEquals",
+            "IntentionallyWithoutHashCode",
+            "IntentionallyWithoutToString",
+        ),
     )
 
     val knownDiagnostics: Set<String> get() = resolutions.keys
@@ -94,11 +141,17 @@ internal object ExemptionRegistry {
     /** Every exemption annotation the fixer can add, and whether its reason is an argument. */
     val exemptionAnnotations: Map<String, Boolean> = resolutions.values
         .filterIsInstance<FixResolution.Fixable>()
-        .associate { it.fix.annotationShortName to it.fix.hasReasonParameter }
+        .map { it.fix }
+        .filterIsInstance<ExemptionFix>()
+        .associate { it.annotationShortName to it.hasReasonParameter } +
+            combinedExemptions.keys.associateWith { true }
 
-    /** The annotation a diagnostic would receive, or null when it can't be acknowledged automatically. */
+    /**
+     * The annotation a diagnostic would receive, or null when it can't be acknowledged with one:
+     * either nothing can be added automatically, or the fix is a placeholder KDoc.
+     */
     fun annotationFor(diagnostic: String): String? =
-        (resolutions[diagnostic] as? FixResolution.Fixable)?.fix?.annotationShortName
+        ((resolutions[diagnostic] as? FixResolution.Fixable)?.fix as? ExemptionFix)?.annotationShortName
 
     fun resolutionFor(diagnostic: String): FixResolution = resolutions[diagnostic] ?: FixResolution.Unfixable(
         "Unknown diagnostic. This fixer version doesn't know how to exempt it"

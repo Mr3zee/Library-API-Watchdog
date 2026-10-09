@@ -92,8 +92,16 @@ apiWatchdog {
     suggestAbiValidation = true
     // !link[/publicTypesMustBeTransitiveDependencies/] /checks/special/public-type-from-non-transitive-dependency
     publicTypesMustBeTransitiveDependencies = true
+    // !link[/allowedNonTransitiveDependencies/] /configuration#allowed-non-transitive-dependencies
+    allowedNonTransitiveDependencies {
+        extendsFrom(configurations.compileOnly.get())
+    }
     // !link[/publicTypeWithInternalApi/] /checks/special/public-type-with-internal-api
     publicTypeWithInternalApi = true
+    // !link[/internalApiAnnotations/] /configuration#internal-api-annotations-from-dependencies
+    internalApiAnnotations.add("com.example.dependency.InternalDependencyApi")
+    // !link[/ignore/] /configuration#annotation-ignore-rules
+    ignore("STATEFUL_CLASS_WITHOUT_EQUALS", whenAnnotatedWith = listOf("com.example.GeneratedValueMembers"))
 
     // !link[/openApiWithoutSubclassOptIn/] /checks/open-api-without-subclass-opt-in
     openApiWithoutSubclassOptIn = WatchdogSeverity.ERROR
@@ -179,6 +187,73 @@ the call to associate the annotations with several checks. These rules are avail
 configurable diagnostics in the [Property reference](#property-reference). Always-error safety
 checks can't be ignored by annotation.
 
+## Internal API annotations from dependencies
+
+Annotating the library's own internal-API annotation with `@InternalAnnotationMarker` is the
+usual way to exclude technical declarations from every check, see
+[Internal API annotations](./exemptions.md#internal-api-annotations). An annotation class that
+comes from a dependency can't be annotated. Name it in `internalApiAnnotations` instead, by its
+fully qualified class name:
+
+```kotlin
+apiWatchdog {
+    internalApiAnnotations.add("com.example.dependency.InternalDependencyApi")
+}
+```
+
+Every listed annotation acts exactly like one whose class carries `@InternalAnnotationMarker`:
+declarations carrying it, and everything nested inside them, are no longer watched, and a
+supported signature exposing a type marked with it is reported by
+[`PUBLIC_TYPE_WITH_INTERNAL_API`](./checks/special/public-type-with-internal-api.md). A nested
+annotation class is named the way Kotlin source names it, with the outer class joined by a dot:
+`com.example.Markers.Internal`.
+
+## Allowed non-transitive dependencies
+
+[`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md)
+reports every dependency type in a public signature unless consumers receive the dependency
+transitively. When the environment that loads the library supplies a dependency on its own, as a
+Gradle process does for every Gradle plugin, declare it on the `apiWatchdogAllowedNonTransitive`
+configuration. The check then accepts its types throughout the module:
+
+```kotlin build.gradle.kts
+dependencies {
+    compileOnly(libs.kotlin.gradle.plugin)
+
+    apiWatchdogAllowedNonTransitive(libs.kotlin.gradle.plugin)
+    apiWatchdogAllowedNonTransitive(project(":host-api"))
+}
+```
+
+To avoid naming the dependency twice, record the allowance from the configuration block of the
+declaration that adds it to the compilation. Inside that block, `this` is the dependency:
+
+```kotlin build.gradle.kts
+import org.jetbrains.kotlinx.library.api.watchdog.allowExposingNonTransitivelyInApi
+
+dependencies {
+    compileOnly(libs.kotlin.gradle.plugin) { allowExposingNonTransitivelyInApi(this) }
+}
+```
+
+Any dependency notation works, and the version is optional because the allowance resolves
+consistently with the compile classpath. The allowance covers everything the dependency pulls onto
+the compile classpath, so a Kotlin Multiplatform library is covered together with its platform
+artifact. The configuration is a marker only: it adds nothing to the compile classpath. The
+`apiWatchdog` extension exposes it as `allowedNonTransitiveDependencies`, which is the place to
+allow a whole configuration at once:
+
+```kotlin build.gradle.kts
+apiWatchdog {
+    allowedNonTransitiveDependencies {
+        extendsFrom(configurations.compileOnly.get())
+    }
+}
+```
+
+Types from every other non-transitive dependency are still reported, and
+`publicTypesMustBeTransitiveDependencies = false` remains the switch for the whole check.
+
 ## Severity semantics
 
 Each check's severity is a `WatchdogSeverity`:
@@ -260,6 +335,13 @@ For example, to demote undocumented public API to a warning use the following ar
 
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:warning
+```
+
+The `internalApiAnnotations` property corresponds to the repeatable `internalApiAnnotation` option,
+one fully qualified annotation class name per occurrence:
+
+```
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:internalApiAnnotation=com.example.dependency.InternalDependencyApi
 ```
 
 ## Next steps

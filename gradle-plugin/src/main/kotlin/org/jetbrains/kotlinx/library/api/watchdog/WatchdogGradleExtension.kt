@@ -2,10 +2,18 @@ package org.jetbrains.kotlinx.library.api.watchdog
 
 import javax.inject.Inject
 import org.gradle.api.Action
+import org.gradle.api.GradleException
+import org.gradle.api.NamedDomainObjectProvider
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.UnknownConfigurationException
+import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.api.provider.SetProperty
+import org.jetbrains.kotlinx.library.api.watchdog.WatchdogSupportPlugin.Companion.ALLOWED_NON_TRANSITIVE_CONFIGURATION_NAME
 
 /**
  * Configures the severity of each configurable watchdog diagnostic. Every configurable
@@ -31,7 +39,44 @@ import org.gradle.api.provider.Provider
  * }
  * ```
  */
-public open class WatchdogGradleExtension(objectFactory: ObjectFactory) {
+public open class WatchdogGradleExtension @Inject constructor(
+    /**
+     * The `apiWatchdogAllowedNonTransitive` configuration: dependencies whose types
+     * `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY` accepts in public signatures although the
+     * module doesn't publish them transitively. Use it when the environment that loads the
+     * library supplies a dependency on its own, so every declaration mentioning its types would
+     * otherwise need an `@IntentionallyNonTransitiveDependency` exemption: a Gradle plugin
+     * compiled against `compileOnly` plugin APIs, an IDE plugin, or a library whose host
+     * application ships a framework.
+     *
+     * Declare dependencies on it like on any other configuration, with coordinates, a version
+     * catalog entry, a project, or `gradleApi()`. A version is optional, the one on the compile
+     * classpath is used. Everything a listed dependency pulls onto the compile classpath is
+     * allowed with it, so a Kotlin Multiplatform library is covered together with its platform
+     * artifact. Allow a whole configuration by extending from it:
+     *
+     * ```kotlin
+     * dependencies {
+     *     apiWatchdogAllowedNonTransitive("org.jetbrains.kotlin:kotlin-gradle-plugin")
+     *     apiWatchdogAllowedNonTransitive(libs.host.api)
+     *     apiWatchdogAllowedNonTransitive(project(":host-api"))
+     * }
+     *
+     * apiWatchdog {
+     *     allowedNonTransitiveDependencies {
+     *         extendsFrom(configurations.compileOnly.get())
+     *     }
+     * }
+     * ```
+     *
+     * The configuration is a marker only: it adds nothing to the compile classpath, and the
+     * dependency itself is still declared as `implementation` or `compileOnly`. Types from any
+     * other non-transitive dependency are still reported. [publicTypesMustBeTransitiveDependencies]
+     * remains the whole-check switch.
+     */
+    public val allowedNonTransitiveDependencies: NamedDomainObjectProvider<Configuration>,
+    objectFactory: ObjectFactory,
+) {
     private val annotationIgnoreRules: ListProperty<String> =
         objectFactory.listProperty(String::class.java).convention(emptyList())
 
@@ -100,10 +145,29 @@ public open class WatchdogGradleExtension(objectFactory: ObjectFactory) {
         objectFactory.property(Boolean::class.java).convention(true)
 
     /**
+     * Fully qualified names of annotation classes that mark internal API in addition to the
+     * annotation classes carrying `@InternalAnnotationMarker`. A declaration annotated with one
+     * of them, directly or through an enclosing declaration, is not watched, and
+     * `PUBLIC_TYPE_WITH_INTERNAL_API` reports its type like any other internal-API type.
+     *
+     * Use it for annotations the library can't mark itself, typically the internal-API annotation
+     * of a dependency:
+     *
+     * ```kotlin
+     * apiWatchdog {
+     *     internalApiAnnotations.add("com.example.dependency.InternalApi")
+     * }
+     * ```
+     */
+    public val internalApiAnnotations: SetProperty<String> =
+        objectFactory.setProperty(String::class.java).convention(emptySet())
+
+    /**
      * Whether public signatures may only expose types from dependencies published transitively
      * to consumers. Enabled by default. Unlike design diagnostics, a violation is always an error
-     * and has no source exemption or warning severity. Setting this Gradle property to `false` is
-     * the check's only off-switch.
+     * and has no warning severity. Setting this Gradle property to `false` is the check's only
+     * off-switch. To keep the check and accept the types of selected dependencies, declare them on
+     * [allowedNonTransitiveDependencies] instead.
      */
     public val publicTypesMustBeTransitiveDependencies: Property<Boolean> =
         objectFactory.property(Boolean::class.java).convention(true)
@@ -195,6 +259,39 @@ public open class WatchdogGradleExtension(objectFactory: ObjectFactory) {
         "DSL_MARKER_WITHOUT_EXPLICIT_TARGETS" to dslMarkerWithoutExplicitTargets,
         "DSL_MARKER_NOOP_TYPE_POSITION" to dslMarkerNoopTypePosition,
     )
+}
+
+/**
+ * Allows [dependency] in the public API although it is not published transitively, from the
+ * declaration that adds it to a compilation. Inside the configuration block of a dependency,
+ * `this` is the dependency being declared:
+ *
+ * ```kotlin
+ * dependencies {
+ *     compileOnly(libs.host.api) { allowExposingNonTransitivelyInApi(this) }
+ *     implementation(project(":host-api")) { allowExposingNonTransitivelyInApi(this) }
+ * }
+ * ```
+ *
+ * Equivalent to declaring the same dependency on `apiWatchdogAllowedNonTransitive` a second
+ * time, see [WatchdogGradleExtension.allowedNonTransitiveDependencies]. The watchdog plugin must
+ * be applied before the `dependencies` block runs.
+ */
+public fun DependencyHandler.allowExposingNonTransitivelyInApi(dependency: Dependency) {
+    try {
+        add(ALLOWED_NON_TRANSITIVE_CONFIGURATION_NAME, dependency)
+    } catch (e: UnknownConfigurationException) {
+        throw GradleException(
+            """
+            Apply the watchdog plugin before calling allowExposingNonTransitivelyInApi.
+
+              plugins {
+                  id("${PluginInfo.PLUGIN_ID}")
+              }
+            """.trimIndent(),
+            e,
+        )
+    }
 }
 
 /**

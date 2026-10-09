@@ -1,0 +1,154 @@
+Module: lib
+FILE: markers.kt
+    package third.party
+
+    @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.TYPEALIAS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.PROPERTY|)) public final annotation class ThirdPartyInternalApi : R|kotlin/Annotation| {
+        public constructor(): R|third/party/ThirdPartyInternalApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final object Markers : R|kotlin/Any| {
+        private constructor(): R|third/party/Markers| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|)) public final annotation class NestedInternalApi : R|kotlin/Annotation| {
+            public constructor(): R|third/party/Markers.NestedInternalApi| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+    @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|)) public final annotation class ThirdPartyOrdinary : R|kotlin/Annotation| {
+        public constructor(): R|third/party/ThirdPartyOrdinary| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|third/party/ThirdPartyInternalApi|() public final class ThirdPartyInternalType : R|kotlin/Any| {
+        public constructor(): R|third/party/ThirdPartyInternalType| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final class ThirdPartySupportedType : R|kotlin/Any| {
+        public constructor(): R|third/party/ThirdPartySupportedType| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+Module: main
+FILE: usage.kt
+    package consumer
+
+    @R|third/party/ThirdPartyInternalApi|() public open class InternalOpenClass : R|kotlin/Any| {
+        public constructor(): R|consumer/InternalOpenClass| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun memberOfInternal(): R|kotlin/Unit| {
+        }
+
+        public final val propertyOfInternal: R|kotlin/Int| = Int(0)
+            public get(): R|kotlin/Int|
+
+        public final class NestedInInternal : R|kotlin/Any| {
+            public constructor(): R|consumer/InternalOpenClass.NestedInInternal| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+        public final enum class NestedEnumInInternal : R|kotlin/Enum<consumer/InternalOpenClass.NestedEnumInInternal>| {
+            private constructor(): R|consumer/InternalOpenClass.NestedEnumInInternal| {
+                super<R|kotlin/Enum<consumer/InternalOpenClass.NestedEnumInInternal>|>()
+            }
+
+            public final static enum entry ENTRY: R|consumer/InternalOpenClass.NestedEnumInInternal|
+            public final static fun values(): R|kotlin/Array<consumer/InternalOpenClass.NestedEnumInInternal>| {
+            }
+
+            public final static fun valueOf(value: R|kotlin/String|): R|consumer/InternalOpenClass.NestedEnumInInternal| {
+            }
+
+            public final static val entries: R|kotlin/enums/EnumEntries<consumer/InternalOpenClass.NestedEnumInInternal>|
+                public get(): R|kotlin/enums/EnumEntries<consumer/InternalOpenClass.NestedEnumInInternal>|
+
+        }
+
+    }
+    @R|third/party/ThirdPartyInternalApi|() public final enum class InternalEnum : R|kotlin/Enum<consumer/InternalEnum>| {
+        private constructor(): R|consumer/InternalEnum| {
+            super<R|kotlin/Enum<consumer/InternalEnum>|>()
+        }
+
+        public final static enum entry ENTRY: R|consumer/InternalEnum|
+        public final static fun values(): R|kotlin/Array<consumer/InternalEnum>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|consumer/InternalEnum| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<consumer/InternalEnum>|
+            public get(): R|kotlin/enums/EnumEntries<consumer/InternalEnum>|
+
+    }
+    @R|third/party/ThirdPartyInternalApi|() public final typealias InternalCallback = R|() -> kotlin/Unit|
+    @R|third/party/ThirdPartyInternalApi|() public final fun internalFunction(): R|kotlin/Unit| {
+    }
+    @R|third/party/ThirdPartyInternalApi|() public final val internalProperty: R|kotlin/Int| = Int(0)
+        public get(): R|kotlin/Int|
+    @R|third/party/Markers.NestedInternalApi|() public open class InternalThroughNestedAnnotation : R|kotlin/Any| {
+        public constructor(): R|consumer/InternalThroughNestedAnnotation| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final typealias AliasedInternalApi = R|third/party/ThirdPartyInternalApi|
+    @R|{consumer/AliasedInternalApi=} third/party/ThirdPartyInternalApi|() public final class InternalThroughAlias : R|kotlin/Any| {
+        public constructor(): R|consumer/InternalThroughAlias| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|third/party/ThirdPartyOrdinary|() public final class WatchedDespiteAnnotated : R|kotlin/Any| {
+        public constructor(): R|consumer/WatchedDespiteAnnotated| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public open class WatchedOpenClass : R|kotlin/Any| {
+        public constructor(): R|consumer/WatchedOpenClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final enum class WatchedEnum : R|kotlin/Enum<consumer/WatchedEnum>| {
+        private constructor(): R|consumer/WatchedEnum| {
+            super<R|kotlin/Enum<consumer/WatchedEnum>|>()
+        }
+
+        public final static enum entry ENTRY: R|consumer/WatchedEnum|
+        public final static fun values(): R|kotlin/Array<consumer/WatchedEnum>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|consumer/WatchedEnum| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<consumer/WatchedEnum>|
+            public get(): R|kotlin/enums/EnumEntries<consumer/WatchedEnum>|
+
+    }
+    public final fun leakedReturn(): R|third/party/ThirdPartyInternalType| {
+        ^leakedReturn R|third/party/ThirdPartyInternalType.ThirdPartyInternalType|()
+    }
+    public final fun leakedParameter(value: R|consumer/InternalThroughNestedAnnotation|): R|kotlin/Unit| {
+    }
+    @R|third/party/ThirdPartyInternalApi|() public final fun internalApiFunction(value: R|third/party/ThirdPartyInternalType|): R|third/party/ThirdPartyInternalType| {
+        ^internalApiFunction R|<local>/value|
+    }
+    public final fun supported(value: R|third/party/ThirdPartySupportedType|): R|third/party/ThirdPartySupportedType| {
+        ^supported R|<local>/value|
+    }

@@ -585,6 +585,46 @@ public annotation class IntentionallyWithoutJvmOverloads(
 )
 
 /**
+ * Acknowledges that the annotated declaration deliberately exposes a type from a dependency that
+ * is not published transitively to consumers.
+ *
+ * A type from an `implementation` or `compileOnly` dependency is available while the library
+ * compiles, but it is absent from a consumer's compile classpath, so the consumer can't use the
+ * declaration that mentions it. Declaring the dependency with `api` is the usual fix.
+ *
+ * Apply this annotation when the environment that loads the library supplies the dependency on
+ * its own, so publishing it transitively is not needed or not possible. A Gradle plugin is the
+ * common case: it compiles against `gradleApi()` yet runs inside a Gradle process that already
+ * provides every Gradle type. Name that environment in the [description], since nothing about
+ * the declaration shows where the dependency comes from.
+ *
+ * On a class, the annotation also covers every declaration nested in it, so a task or extension
+ * class whose members all mention the environment's types needs a single acknowledgement.
+ *
+ * See the [documentation](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency) for the full rationale and examples.
+ *
+ * @param reason why the declaration deliberately exposes a non-transitive dependency type.
+ * @param description free-form explanation of the exemption. May be empty only when [reason]
+ *   explains the exemption on its own ([ExemptionReason.FOR_BACKWARDS_COMPATIBILITY],
+ *   [ExemptionReason.API_DESIGN]).
+ */
+@Target(
+    AnnotationTarget.CLASS,
+    AnnotationTarget.TYPEALIAS,
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.PROPERTY,
+    AnnotationTarget.CONSTRUCTOR,
+    AnnotationTarget.VALUE_PARAMETER,
+    AnnotationTarget.TYPE_PARAMETER,
+    AnnotationTarget.TYPE,
+)
+@Retention(AnnotationRetention.BINARY)
+public annotation class IntentionallyNonTransitiveDependency(
+    val reason: ExemptionReason = ExemptionReason.OTHER,
+    val description: String = "",
+)
+
+/**
  * Acknowledges that the annotated DSL marker deliberately keeps wrong target set - no-op
  * targets in its `@Target`, or no explicit `@Target` at all - because fixing it would break
  * existing users.

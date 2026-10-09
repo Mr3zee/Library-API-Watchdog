@@ -24,6 +24,14 @@ object WatchdogConfigurationKeys {
         CompilerConfigurationKey.create("watchdog annotation ignore rules")
 
     /**
+     * Fully qualified names of annotation classes that mark internal API in addition to the
+     * classes carrying `@InternalAnnotationMarker`. Meant for annotations the library can't
+     * annotate itself.
+     */
+    val INTERNAL_API_ANNOTATIONS: CompilerConfigurationKey<Set<String>> =
+        CompilerConfigurationKey.create("watchdog internal API annotations")
+
+    /**
      * Path of the file every reported watchdog diagnostic is appended to as a tab-separated
      * line. See [org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnosticsRecorder].
      */
@@ -56,6 +64,7 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
         listOf(
             DIAGNOSTIC_SEVERITY_OPTION,
             IGNORE_WHEN_ANNOTATED_OPTION,
+            INTERNAL_API_ANNOTATION_OPTION,
             PUBLIC_TYPE_WITH_INTERNAL_API_OPTION,
             UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS_OPTION,
             DIAGNOSTICS_OUTPUT_FILE_OPTION,
@@ -79,6 +88,16 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             valueDescription = "<diagnostic name>:<annotation fully qualified name>",
             description = "Do not report the named configurable watchdog diagnostic on a " +
                     "declaration carrying the annotation.",
+            required = false,
+            allowMultipleOccurrences = true,
+        )
+
+        val INTERNAL_API_ANNOTATION_OPTION: CliOption = CliOption(
+            optionName = "internalApiAnnotation",
+            valueDescription = "<annotation fully qualified name>",
+            description = "Treat declarations carrying the annotation as internal API, exactly " +
+                    "as if the annotation class were marked with @InternalAnnotationMarker. " +
+                    "Meant for annotations the library can't mark itself.",
             required = false,
             allowMultipleOccurrences = true,
         )
@@ -136,6 +155,9 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             }
             IGNORE_WHEN_ANNOTATED_OPTION.optionName -> {
                 processAnnotationIgnoreRule(value, configuration)
+            }
+            INTERNAL_API_ANNOTATION_OPTION.optionName -> {
+                processInternalApiAnnotation(value, configuration)
             }
             DIAGNOSTICS_OUTPUT_FILE_OPTION.optionName -> {
                 // The Gradle plugin always passes this option and leaves it blank outside collection.
@@ -200,6 +222,21 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
         val severities = HashMap(configuration[key, emptyMap()])
         severities[diagnostic.name] = severity
         configuration.put(key, severities)
+    }
+
+    private fun processInternalApiAnnotation(value: String, configuration: CompilerConfiguration) {
+        val annotationName = value.trim()
+        if (annotationName.isEmpty() || annotationName.any { it.isWhitespace() || it == ':' }) {
+            throw CliOptionProcessingException(
+                "Invalid value '$value' for watchdog option '${INTERNAL_API_ANNOTATION_OPTION.optionName}': " +
+                        "expected a fully qualified annotation class name.",
+            )
+        }
+
+        val key = WatchdogConfigurationKeys.INTERNAL_API_ANNOTATIONS
+        val annotations = LinkedHashSet(configuration[key, emptySet()])
+        annotations.add(annotationName)
+        configuration.put(key, annotations)
     }
 
     private fun processAnnotationIgnoreRule(value: String, configuration: CompilerConfiguration) {

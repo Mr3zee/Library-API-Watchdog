@@ -1,5 +1,6 @@
 package org.jetbrains.kotlinx.library.api.watchdog
 
+import java.io.File
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Project
@@ -36,7 +37,21 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         !kotlinCompilation.isTestCompilation()
 
     override fun apply(target: Project) {
-        val extension = target.extensions.create("apiWatchdog", WatchdogGradleExtension::class.java)
+        // The user-facing bucket is declarable only. Each compilation resolves it with its own
+        // classpath attributes, see [allowedNonTransitiveDependenciesFor].
+        val allowedNonTransitiveDependencies = target.configurations.register(
+            ALLOWED_NON_TRANSITIVE_CONFIGURATION_NAME,
+        ) { configuration ->
+            configuration.isCanBeConsumed = false
+            configuration.isCanBeResolved = false
+            configuration.description = "Dependencies whose types may appear in the public API " +
+                    "although they are not published transitively, see apiWatchdog.allowedNonTransitiveDependencies"
+        }
+        val extension = target.extensions.create(
+            "apiWatchdog",
+            WatchdogGradleExtension::class.java,
+            allowedNonTransitiveDependencies,
+        )
         val collectDiagnostics = target.objects.property(Boolean::class.java).convention(false)
         collectDiagnosticsForExempts = collectDiagnostics
         target.registerBackwardsCompatibilityExemptsTasks(collectDiagnostics)
@@ -158,6 +173,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         val collect = collectDiagnosticsForExempts.map { it && isMain }
         val compileDependencies = configurations.named(kotlinCompilation.compileDependencyConfigurationName)
         val transitiveDependencies = transitiveDependenciesFor(kotlinCompilation, compileDependencies)
+        val allowedNonTransitiveDependencies = allowedNonTransitiveDependenciesFor(kotlinCompilation, compileDependencies)
         val reportFile = layout.buildDirectory.file(
             "reports/api-watchdog/diagnostics/${kotlinCompilation.compileKotlinTaskName}.tsv"
         )
@@ -233,6 +249,13 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 extension.annotationIgnoreRules().get().forEach { rule ->
                     add(SubpluginOption("ignoreWhenAnnotated", rule))
                 }
+                extension.internalApiAnnotations.get().forEach { annotationName ->
+                    require(annotationName.isNotBlank() && annotationName.none { it.isWhitespace() || it == ':' }) {
+                        "An API Watchdog internal API annotation must be a non-blank fully qualified " +
+                                "class name: '$annotationName'"
+                    }
+                    add(SubpluginOption("internalApiAnnotation", annotationName))
+                }
                 add(
                     SubpluginOption(
                         "diagnosticsOutputFile",
@@ -252,10 +275,16 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                         lazy { if (checkDependencyExposure.get()) compileDependencies.get().asPath else "" },
                     ),
                 )
+                // Allowed dependencies travel as transitive paths: the compiler plugin treats
+                // every type found under them as published and needs no option of its own.
                 add(
                     SubpluginOption(
                         "transitiveDependencyPaths",
-                        lazy { if (checkDependencyExposure.get()) transitiveDependencies.get().asPath else "" },
+                        lazy {
+                            if (!checkDependencyExposure.get()) return@lazy ""
+                            val files = transitiveDependencies.get().files + allowedNonTransitiveDependencies.get().files
+                            files.joinToString(File.pathSeparator, transform = File::getPath)
+                        },
                     ),
                 )
             }
@@ -272,30 +301,83 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         kotlinCompilation: KotlinCompilation<*>,
         compileDependencies: Provider<Configuration>,
     ): NamedDomainObjectProvider<Configuration> {
+        val publishedApi = configurations.named(publishedApiElementsName(kotlinCompilation))
+        return registerCompilationClasspathView(
+            kotlinCompilation,
+            compileDependencies,
+            suffix = "TransitiveDependencies",
+            description = "Dependencies exposed transitively by ${kotlinCompilation.target.name} API elements",
+        ) { configuration ->
+            configuration.extendsFrom(publishedApi.get())
+        }
+    }
+
+    /**
+     * Resolves the `apiWatchdogAllowedNonTransitive` bucket with the variant attributes of this
+     * compilation's compile classpath. The resolved files join the transitive paths handed to the
+     * compiler plugin, so the allowance covers the declared dependencies together with everything
+     * they pull in, exactly like Gradle resolves them for the compilation itself.
+     */
+    private fun Project.allowedNonTransitiveDependenciesFor(
+        kotlinCompilation: KotlinCompilation<*>,
+        compileDependencies: Provider<Configuration>,
+    ): NamedDomainObjectProvider<Configuration> {
+        val allowed = configurations.named(ALLOWED_NON_TRANSITIVE_CONFIGURATION_NAME)
+        return registerCompilationClasspathView(
+            kotlinCompilation,
+            compileDependencies,
+            suffix = "AllowedNonTransitiveDependencies",
+            description = "Dependencies allowed in the public API of ${kotlinCompilation.target.name} " +
+                    "although they are not published transitively",
+        ) { configuration ->
+            configuration.extendsFrom(allowed.get())
+        }
+    }
+
+    /**
+     * Registers a resolvable view of some dependency declarations through the lens of this
+     * compilation's compile classpath: the same variant attributes select the same artifacts, and
+     * consistent resolution pins every shared module to the version the compilation compiles
+     * against. Without it a conflict-upgraded version on the compile classpath would resolve to a
+     * different jar here, and the compiler plugin, which matches dependency files by path, would
+     * miss it. The pinning also lets an allowance be declared without a version.
+     */
+    private fun Project.registerCompilationClasspathView(
+        kotlinCompilation: KotlinCompilation<*>,
+        compileDependencies: Provider<Configuration>,
+        suffix: String,
+        description: String,
+        configure: (Configuration) -> Unit,
+    ): NamedDomainObjectProvider<Configuration> {
+        val classifier = kotlinCompilation.target.disambiguationClassifier.orEmpty()
+        val compilationName = (classifier + kotlinCompilation.name.replaceFirstChar(Char::uppercaseChar))
+            .replaceFirstChar(Char::uppercaseChar)
+        return configurations.register("apiWatchdog$compilationName$suffix") { configuration ->
+            configuration.isCanBeConsumed = false
+            configuration.isCanBeResolved = true
+            configuration.description = description
+            configure(configuration)
+            val compileClasspath = compileDependencies.get()
+            configuration.attributes.copyFrom(compileClasspath.attributes)
+            configuration.shouldResolveConsistentlyWith(compileClasspath)
+        }
+    }
+
+    /** The configuration whose dependencies this compilation publishes to consumers. */
+    private fun Project.publishedApiElementsName(kotlinCompilation: KotlinCompilation<*>): String {
         // Android publishes one API-elements configuration per variant, and its compilation name
         // is that variant name. The target-level configuration does not carry variant-specific
         // dependencies such as build-type and flavor `api` declarations. Some non-library Android
         // variants have no publishable API elements, so retain the target configuration as a safe
         // fallback for those.
         val androidApiElementsName = "${kotlinCompilation.name}ApiElements"
-        val publishedApiName = if (
+        return if (
             kotlinCompilation.platformType == KotlinPlatformType.androidJvm &&
             androidApiElementsName in configurations.names
         ) {
             androidApiElementsName
         } else {
             kotlinCompilation.target.apiElementsConfigurationName
-        }
-        val publishedApi = configurations.named(publishedApiName)
-        return configurations.register(
-            "apiWatchdog${kotlinCompilation.disambiguatedName.replaceFirstChar(Char::uppercaseChar)}TransitiveDependencies",
-        ) { configuration ->
-            configuration.isCanBeConsumed = false
-            configuration.isCanBeResolved = true
-            configuration.description =
-                "Dependencies exposed transitively by ${kotlinCompilation.target.name} API elements"
-            configuration.extendsFrom(publishedApi.get())
-            configuration.attributes.copyFrom(compileDependencies.get().attributes)
         }
     }
 
@@ -307,12 +389,15 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         }
     }
 
-    private companion object {
+    internal companion object {
         /** The name of the task that acknowledges existing diagnostics as backwards-compatibility exemptions. */
         private const val UPDATE_EXEMPTS_TASK_NAME = "updateBackwardsCompatibilityExempts"
 
         /** The non-mutating module report task whose data variant can be aggregated. */
         private const val GENERATE_EXEMPTS_REPORT_TASK_NAME = "generateBackwardsCompatibilityExemptsReport"
+
+        /** The declarable bucket behind `apiWatchdog.allowedNonTransitiveDependencies`. */
+        internal const val ALLOWED_NON_TRANSITIVE_CONFIGURATION_NAME = "apiWatchdogAllowedNonTransitive"
 
         /**
          * The suffix every test compilation that isn't simply called `test` carries. Android
