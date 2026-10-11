@@ -5,10 +5,14 @@ import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.attributes.Attribute
 import org.gradle.api.attributes.AttributeContainer
 import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.Usage
+import org.gradle.api.attributes.java.TargetJvmEnvironment
+import org.gradle.api.attributes.java.TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE
+import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -38,19 +42,19 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
 
     override fun apply(target: Project) {
         // The user-facing bucket is declarable only. Each compilation resolves it with its own
-        // classpath attributes, see [allowedNonTransitiveDependenciesFor].
-        val allowedNonTransitiveDependencies = target.configurations.register(
-            ALLOWED_NON_TRANSITIVE_CONFIGURATION_NAME,
+        // classpath attributes, see [exemptNonTransitiveDependenciesFor].
+        val exemptNonTransitiveDependencies = target.configurations.register(
+            EXEMPT_NON_TRANSITIVE_CONFIGURATION_NAME,
         ) { configuration ->
             configuration.isCanBeConsumed = false
             configuration.isCanBeResolved = false
             configuration.description = "Dependencies whose types may appear in the public API " +
-                    "although they are not published transitively, see apiWatchdog.allowedNonTransitiveDependencies"
+                    "although they are not published transitively, see apiWatchdog.exemptNonTransitiveDependencies"
         }
         val extension = target.extensions.create(
             "apiWatchdog",
             WatchdogGradleExtension::class.java,
-            allowedNonTransitiveDependencies,
+            exemptNonTransitiveDependencies,
         )
         val collectDiagnostics = target.objects.property(Boolean::class.java).convention(false)
         collectDiagnosticsForExempts = collectDiagnostics
@@ -125,6 +129,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 "Reports applied and not-applied backwards-compatibility exemptions without changing sources"
             task.compilationNames.convention(emptyList())
             task.projectDirectory.set(layout.projectDirectory)
+            @Suppress("UnstableApiUsage")
             task.projectIdentityPath.set(isolated.buildTreePath)
             task.kotlinVersion.set(kotlinVersion)
             task.fixerArtifact.from(fixerArtifact)
@@ -173,7 +178,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         val collect = collectDiagnosticsForExempts.map { it && isMain }
         val compileDependencies = configurations.named(kotlinCompilation.compileDependencyConfigurationName)
         val transitiveDependencies = transitiveDependenciesFor(kotlinCompilation, compileDependencies)
-        val allowedNonTransitiveDependencies = allowedNonTransitiveDependenciesFor(kotlinCompilation, compileDependencies)
+        val exemptNonTransitiveDependencies = exemptNonTransitiveDependenciesFor(kotlinCompilation, compileDependencies)
         val reportFile = layout.buildDirectory.file(
             "reports/api-watchdog/diagnostics/${kotlinCompilation.compileKotlinTaskName}.tsv"
         )
@@ -228,6 +233,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         // and every collection-dependent value is lazy, so it is computed when the compiler
         // arguments are built. The compiler plugin ignores the blank placeholder values.
         val checkDependencyExposure = extension.publicTypesMustBeTransitiveDependencies.map { it && !collect.get() }
+        val compilesForAndroid = compileDependencies.map { kotlinCompilation.compilesForAndroid(it) }
         return providers.provider {
             buildList {
                 extension.diagnosticSeverities.forEach { (diagnostic, severity) ->
@@ -272,17 +278,22 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 add(
                     SubpluginOption(
                         "compileDependencyPaths",
-                        lazy { if (checkDependencyExposure.get()) compileDependencies.get().asPath else "" },
+                        lazy {
+                            if (!checkDependencyExposure.get()) return@lazy ""
+                            dependencyFiles(compileDependencies.get(), compilesForAndroid.get()).asPath
+                        },
                     ),
                 )
-                // Allowed dependencies travel as transitive paths: the compiler plugin treats
+                // Exempt dependencies travel as transitive paths: the compiler plugin treats
                 // every type found under them as published and needs no option of its own.
                 add(
                     SubpluginOption(
                         "transitiveDependencyPaths",
                         lazy {
                             if (!checkDependencyExposure.get()) return@lazy ""
-                            val files = transitiveDependencies.get().files + allowedNonTransitiveDependencies.get().files
+                            val android = compilesForAndroid.get()
+                            val files = dependencyFiles(transitiveDependencies.get(), android).files +
+                                    dependencyFiles(exemptNonTransitiveDependencies.get(), android).files
                             files.joinToString(File.pathSeparator, transform = File::getPath)
                         },
                     ),
@@ -290,6 +301,34 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             }
         }
     }
+
+    /**
+     * Whether this compilation builds for Android, by the environment its compile classpath
+     * requests. The platform type is not enough: the Android target of AGP 8's
+     * `com.android.kotlin.multiplatform.library` plugin reports `jvm`, while its compile
+     * classpath still asks for Android artifacts and AARs like every other Android compilation.
+     */
+    private fun KotlinCompilation<*>.compilesForAndroid(compileDependencies: Configuration): Boolean =
+        platformType == KotlinPlatformType.androidJvm ||
+                compileDependencies.attributes.getAttribute(TARGET_JVM_ENVIRONMENT_ATTRIBUTE)?.name ==
+                TargetJvmEnvironment.ANDROID
+
+    /**
+     * The files of [configuration] as the compiler sees them. An Android library publishes an AAR
+     * whose classes reach the compiler through AGP's classes-jar artifact transform, and a
+     * project AAR has no artifact at all without that request. Android compilations therefore
+     * resolve every configuration through the same transform, which leaves plain jars untouched,
+     * so the paths match the ones the compiler reports for a type's origin. Elsewhere the
+     * configuration's own artifacts are the compiler's input.
+     */
+    private fun dependencyFiles(configuration: Configuration, android: Boolean): FileCollection =
+        if (android) {
+            configuration.incoming.artifactView { view ->
+                view.attributes.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ANDROID_CLASSES_JAR)
+            }.files
+        } else {
+            configuration
+        }
 
     /**
      * Resolves the dependencies inherited by this target's published API elements with the same
@@ -313,24 +352,24 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
     }
 
     /**
-     * Resolves the `apiWatchdogAllowedNonTransitive` bucket with the variant attributes of this
+     * Resolves the `apiWatchdogExemptNonTransitive` bucket with the variant attributes of this
      * compilation's compile classpath. The resolved files join the transitive paths handed to the
-     * compiler plugin, so the allowance covers the declared dependencies together with everything
+     * compiler plugin, so the exemption covers the declared dependencies together with everything
      * they pull in, exactly like Gradle resolves them for the compilation itself.
      */
-    private fun Project.allowedNonTransitiveDependenciesFor(
+    private fun Project.exemptNonTransitiveDependenciesFor(
         kotlinCompilation: KotlinCompilation<*>,
         compileDependencies: Provider<Configuration>,
     ): NamedDomainObjectProvider<Configuration> {
-        val allowed = configurations.named(ALLOWED_NON_TRANSITIVE_CONFIGURATION_NAME)
+        val exempt = configurations.named(EXEMPT_NON_TRANSITIVE_CONFIGURATION_NAME)
         return registerCompilationClasspathView(
             kotlinCompilation,
             compileDependencies,
-            suffix = "AllowedNonTransitiveDependencies",
-            description = "Dependencies allowed in the public API of ${kotlinCompilation.target.name} " +
+            suffix = "ExemptNonTransitiveDependencies",
+            description = "Dependencies whose types the public API of ${kotlinCompilation.target.name} may expose " +
                     "although they are not published transitively",
         ) { configuration ->
-            configuration.extendsFrom(allowed.get())
+            configuration.extendsFrom(exempt.get())
         }
     }
 
@@ -340,7 +379,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
      * consistent resolution pins every shared module to the version the compilation compiles
      * against. Without it a conflict-upgraded version on the compile classpath would resolve to a
      * different jar here, and the compiler plugin, which matches dependency files by path, would
-     * miss it. The pinning also lets an allowance be declared without a version.
+     * miss it. The pinning also lets an exempt dependency be declared without a version.
      */
     private fun Project.registerCompilationClasspathView(
         kotlinCompilation: KotlinCompilation<*>,
@@ -359,6 +398,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             configure(configuration)
             val compileClasspath = compileDependencies.get()
             configuration.attributes.copyFrom(compileClasspath.attributes)
+            @Suppress("UnstableApiUsage")
             configuration.shouldResolveConsistentlyWith(compileClasspath)
         }
     }
@@ -396,8 +436,11 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         /** The non-mutating module report task whose data variant can be aggregated. */
         private const val GENERATE_EXEMPTS_REPORT_TASK_NAME = "generateBackwardsCompatibilityExemptsReport"
 
-        /** The declarable bucket behind `apiWatchdog.allowedNonTransitiveDependencies`. */
-        internal const val ALLOWED_NON_TRANSITIVE_CONFIGURATION_NAME = "apiWatchdogAllowedNonTransitive"
+        /** AGP's artifact type for the classes jar of an AAR, which its Kotlin compilations consume. */
+        private const val ANDROID_CLASSES_JAR = "android-classes-jar"
+
+        /** The declarable bucket behind `apiWatchdog.exemptNonTransitiveDependencies`. */
+        internal const val EXEMPT_NON_TRANSITIVE_CONFIGURATION_NAME = "apiWatchdogExemptNonTransitive"
 
         /**
          * The suffix every test compilation that isn't simply called `test` carries. Android

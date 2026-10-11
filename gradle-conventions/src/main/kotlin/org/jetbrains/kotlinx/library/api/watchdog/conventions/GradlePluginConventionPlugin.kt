@@ -6,10 +6,31 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.tasks.testing.Test
+import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 
 class GradlePluginConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
+            val generateCheckNames = tasks.register(
+                "generateCheckNames",
+                GenerateCheckNames::class.java,
+            ) {
+                description = "Generates the WatchdogChecks diagnostic name constants from the shared diagnostics.json."
+                diagnostics.set(
+                    @Suppress("UnstableApiUsage")
+                    target.isolated.rootProject.projectDirectory.file("diagnostics.json"),
+                )
+                packageName.set("org.jetbrains.kotlinx.library.api.watchdog")
+                outputDirectory.set(
+                    layout.buildDirectory.dir("generated/sources/checkNames/main/kotlin"),
+                )
+            }
+            extensions.configure(KotlinProjectExtension::class.java) {
+                sourceSets.named("main").configure {
+                    kotlin.srcDir(generateCheckNames)
+                }
+            }
+
             tasks.named("installForFunctionalTest").configure {
                 dependsOn(
                     ":kotlin-library-api-watchdog-compiler-plugin:installForFunctionalTest",
@@ -33,6 +54,7 @@ class GradlePluginConventionPlugin : Plugin<Project> {
     }
 
     private fun androidSdkDirOrNull(project: Project): File? {
+        @Suppress("UnstableApiUsage")
         val localProperties = project.isolated.rootProject.projectDirectory.file("local.properties").asFile
         if (localProperties.exists()) {
             val properties = Properties()

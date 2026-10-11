@@ -78,12 +78,12 @@ exempted in place with the matching `@Intentionally*` annotation, which must exp
 through an `ExemptionReason` and a description. See
 [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions).
 A configurable check is skipped on every declaration carrying a given annotation with
-`apiWatchdog { ignore("STATEFUL_CLASS_WITHOUT_EQUALS", whenAnnotatedWith = listOf("com.example.GeneratedValueMembers")) }`,
+`apiWatchdog { ignore(WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS, whenAnnotatedWith = listOf("com.example.GeneratedValueMembers")) }`,
 see [Annotation ignore rules](https://mr3zee.github.io/Library-API-Watchdog/configuration#annotation-ignore-rules).
 Dependencies the runtime environment supplies, such as the Gradle API for a Gradle plugin, are
-allowed in the public API module-wide by declaring them on the `apiWatchdogAllowedNonTransitive`
+exempted from that check module-wide by declaring them on the `apiWatchdogExemptNonTransitive`
 configuration, see
-[Allowed non-transitive dependencies](https://mr3zee.github.io/Library-API-Watchdog/configuration#allowed-non-transitive-dependencies).
+[Exempt non-transitive dependencies](https://mr3zee.github.io/Library-API-Watchdog/configuration#exempt-non-transitive-dependencies).
 
 ## Adopting on an existing library
 

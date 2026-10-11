@@ -79,6 +79,9 @@ val testAndroidSdkPath: String? = System.getProperty("watchdog.test.androidHome"
  */
 val agpCompatibleGradle: GradleVersion = GradleVersion.version("9.5.1")
 
+/** AGP 8 refuses AndroidX dependencies without this opt-in, which AGP 9 made the default. */
+private val androidGradleProperties: List<String> = listOf("android.useAndroidX=true")
+
 /** Skips the calling test when the environment can't build Android projects. */
 fun assumeAndroidBuildEnvironment() {
     assumeTrue(
@@ -108,68 +111,53 @@ private fun requiredAndroidSdkDir(): String =
  *   version under test is pinned onto the build classpath with an `apply false` plugin line,
  *   overriding the older KGP that AGP embeds by default. Launch builds with the current Gradle.
  *
- * Main compilations are named after their build variant (`debug`, `release`) and test
- * compilations after the variant plus a suffix (`debugUnitTest`, `debugAndroidTest`). Tests must
- * call [assumeAndroidBuildEnvironment] first.
+ * Main compilations are named after their build variant (`debug`, `release`, or `freeDebug` with
+ * a product flavor) and test compilations after the variant plus a suffix (`debugUnitTest`,
+ * `debugAndroidTest`). Tests must call [assumeAndroidBuildEnvironment] first.
  *
  * [kotlinScript] is a `kotlin { ... }` configuration block. It lands at the top level of the
  * build script next to the Kotlin Android plugin, and nested inside `android { }` with built-in
- * Kotlin, which is where AGP 9 hosts it.
+ * Kotlin, which is where AGP 9 hosts it. [extraAndroidScript] is placed inside the root's
+ * `android { }` block, where build types and product flavors are declared, and
+ * [extraBuildScript] at the end of the root build script only.
  */
 open class AndroidLibraryWatchdogProject(
     private val kotlinScript: String = "kotlin { explicitApi() }",
     private val builtInKotlin: Boolean = false,
+    private val extraAndroidScript: String = "",
+    private val extraBuildScript: String = "",
 ) : WatchdogProject() {
-    /** Dependencies of the Android library module. */
+    override val extraGradleProperties: List<String> = androidGradleProperties
+
+    /** Dependencies of the Android library module, rendered by the test kit. */
     protected open fun androidDependencies(): List<Dependency> = emptyList()
 
     /** Plain Kotlin/JVM subprojects by path, built with the default build script. */
     protected open fun jvmSubprojects(): Map<String, List<Source>> = emptyMap()
+
+    /** Dependencies of the [jvmSubprojects], by path. */
+    protected open fun jvmSubprojectDependencies(): Map<String, List<Dependency>> = emptyMap()
+
+    /**
+     * Android library subprojects by path, built with the root's AGP generation and consumed as
+     * AARs. Like the JVM ones they apply the watchdog in explicit API mode, which supplies the
+     * annotations their sources import.
+     */
+    protected open fun androidSubprojects(): Map<String, List<Source>> = emptyMap()
+
+    /** Dependencies of the [androidSubprojects], by path. */
+    protected open fun androidSubprojectDependencies(): Map<String, List<Dependency>> = emptyMap()
 
     final override fun buildGradleProject(): GradleProject =
         newGradleProjectBuilder(GradleProject.DslKind.KOTLIN)
             .withRootProject {
                 sources = this@AndroidLibraryWatchdogProject.sources()
                 withBuildScript {
-                    if (builtInKotlin) {
-                        plugins(
-                            Plugin("com.android.library", requiredTestAgp9Version()),
-                            Plugin("org.jetbrains.kotlin.jvm", kotlinVersion ?: "$TEST_COMPILER_VERSION", apply = false),
-                            pluginUnderTest,
-                        )
-                        withKotlin(
-                            buildString {
-                                appendLine("android {")
-                                appendLine("    namespace = \"test.consumer\"")
-                                appendLine("    compileSdk = 36")
-                                appendLine(kotlinScript.prependIndent("    "))
-                                appendLine("}")
-                            }
-                        )
-                    } else {
-                        plugins(
-                            Plugin("com.android.library", requiredTestAgp8Version()),
-                            Plugin("org.jetbrains.kotlin.android", kotlinVersion ?: "$TEST_COMPILER_VERSION"),
-                            pluginUnderTest,
-                        )
-                        // AGP 8 defaults its Java tasks to 1.8 while Kotlin follows the build
-                        // JDK, so both sides are pinned to keep KGP's JVM target validation quiet.
-                        withKotlin(
-                            """
-                                android {
-                                    namespace = "test.consumer"
-                                    compileSdk = 36
-                                    compileOptions {
-                                        sourceCompatibility = JavaVersion.VERSION_17
-                                        targetCompatibility = JavaVersion.VERSION_17
-                                    }
-                                }
-                                kotlin {
-                                    compilerOptions { jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17 }
-                                }
-                            """.trimIndent() + "\n" + kotlinScript,
-                        )
-                    }
+                    plugins(*androidLibraryPlugins(root = true))
+                    withKotlin(
+                        androidLibraryScript("test.consumer", kotlinScript, extraAndroidScript) +
+                                extraBuildScript.ifBlank { "" }
+                    )
                     val moduleDependencies = androidDependencies()
                     if (moduleDependencies.isNotEmpty()) dependencies(*moduleDependencies.toTypedArray())
                 }
@@ -181,57 +169,128 @@ open class AndroidLibraryWatchdogProject(
                     withSubproject(path) {
                         sources.addAll(projectSources)
                         withBuildScript {
-                            // The root's Kotlin Android plugin ships the whole Kotlin Gradle
-                            // plugin, so `org.jetbrains.kotlin.jvm` is already on the build
-                            // classpath and must be requested without a version here.
+                            // The root's Kotlin plugin ships the whole Kotlin Gradle plugin, so
+                            // `org.jetbrains.kotlin.jvm` is already on the build classpath and
+                            // must be requested without a version here.
                             plugins(Plugin("org.jetbrains.kotlin.jvm"), pluginUnderTest)
-                            withKotlin(buildString { onBuildScript() })
+                            withKotlin("kotlin { explicitApi() }\n")
+                            jvmSubprojectDependencies()[path]?.takeIf { it.isNotEmpty() }?.let {
+                                dependencies(*it.toTypedArray())
+                            }
+                        }
+                    }
+                }
+                androidSubprojects().forEach { (path, projectSources) ->
+                    withSubproject(path) {
+                        sources.addAll(projectSources)
+                        withBuildScript {
+                            plugins(*androidLibraryPlugins(root = false))
+                            withKotlin(androidLibraryScript("test.$path", "kotlin { explicitApi() }", extraAndroidScript = ""))
+                            androidSubprojectDependencies()[path]?.takeIf { it.isNotEmpty() }?.let {
+                                dependencies(*it.toTypedArray())
+                            }
                         }
                     }
                 }
             }
             .write()
+
+    /**
+     * The plugins of an Android library module. Only the root names versions: subprojects find
+     * every plugin on the build classpath the root assembled.
+     */
+    private fun androidLibraryPlugins(root: Boolean): Array<Plugin> = buildList {
+        if (builtInKotlin) {
+            add(Plugin("com.android.library", requiredTestAgp9Version().takeIf { root }))
+            if (root) add(Plugin("org.jetbrains.kotlin.jvm", kotlinVersion ?: "$TEST_COMPILER_VERSION", apply = false))
+        } else {
+            add(Plugin("com.android.library", requiredTestAgp8Version().takeIf { root }))
+            add(Plugin("org.jetbrains.kotlin.android", (kotlinVersion ?: "$TEST_COMPILER_VERSION").takeIf { root }))
+        }
+        add(pluginUnderTest)
+    }.toTypedArray()
+
+    private fun androidLibraryScript(namespace: String, kotlinScript: String, extraAndroidScript: String): String =
+        buildString {
+            appendLine("android {")
+            appendLine("    namespace = \"$namespace\"")
+            appendLine("    compileSdk = 36")
+            if (extraAndroidScript.isNotBlank()) appendLine(extraAndroidScript.prependIndent("    "))
+            if (builtInKotlin) {
+                if (kotlinScript.isNotBlank()) appendLine(kotlinScript.prependIndent("    "))
+                appendLine("}")
+            } else {
+                // AGP 8 defaults its Java tasks to 1.8 while Kotlin follows the build JDK, so
+                // both sides are pinned to keep KGP's JVM target validation quiet.
+                appendLine("    compileOptions {")
+                appendLine("        sourceCompatibility = JavaVersion.VERSION_17")
+                appendLine("        targetCompatibility = JavaVersion.VERSION_17")
+                appendLine("    }")
+                appendLine("}")
+                appendLine("kotlin {")
+                appendLine("    compilerOptions { jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17 }")
+                appendLine("}")
+                if (kotlinScript.isNotBlank()) appendLine(kotlinScript)
+            }
+        }
 }
 
 /**
- * A multiplatform [WatchdogProject] with an Android target provided by AGP's
- * `com.android.kotlin.multiplatform.library` plugin, from AGP 8 or, with [agp9], from AGP 9.
- * The android target names its main compilation `main`, its unit test compilation `hostTest`,
- * and its instrumented test compilation `deviceTest`. Tests must call
- * [assumeAndroidBuildEnvironment] first. AGP 8 builds are launched with [agpCompatibleGradle]
- * and AGP 9 builds with the current Gradle.
+ * The shared shape of the multiplatform Android fixtures: a root module with a `jvm()` target and
+ * an Android target, plus plain Kotlin/JVM subprojects. Dependencies are declared on the
+ * multiplatform source sets, since a multiplatform build script has no top-level
+ * `dependencies { }` block for its compilations.
  */
-open class KmpAndroidWatchdogProject(
-    private val agp9: Boolean = false,
-    explicitApi: Boolean = true,
-    extraBuildScript: String = "",
+abstract class AbstractKmpAndroidWatchdogProject(
+    explicitApi: Boolean,
+    extraBuildScript: String,
 ) : WatchdogProject(
     multiplatform = true,
     explicitApi = explicitApi,
     extraBuildScript = extraBuildScript,
 ) {
-    // AGP 9 renames the multiplatform target block from `androidLibrary` to `android`.
-    override fun multiplatformTargetsBlock(): String = """
-        kotlin {
-            jvm()
-            ${if (agp9) "android" else "androidLibrary"} {
-                namespace = "test.lib"
-                compileSdk = 36
-                minSdk = 24
-                withHostTestBuilder {}
-            }
-        }
-    """.trimIndent() + "\n"
+    override val extraGradleProperties: List<String> = androidGradleProperties
+
+    /** Dependencies of the `commonMain` source set. */
+    protected open fun commonMainDependencies(): List<Dependency> = emptyList()
+
+    /** Dependencies of the `androidMain` source set. */
+    protected open fun androidMainDependencies(): List<Dependency> = emptyList()
+
+    /** Plain Kotlin/JVM subprojects by path, built with the default build script. */
+    protected open fun jvmSubprojects(): Map<String, List<Source>> = emptyMap()
+
+    /** Dependencies of the [jvmSubprojects], by path. */
+    protected open fun jvmSubprojectDependencies(): Map<String, List<Dependency>> = emptyMap()
+
+    /**
+     * [source] for test helpers that describe a fixture from outside an object expression, placed
+     * into [sourceSet] instead of `commonMain` when given.
+     */
+    fun fixtureSource(content: String, name: String, packageName: String, sourceSet: String? = null): Source =
+        source(content, name, packageName).let { if (sourceSet == null) it else it.inSourceSet(sourceSet) }
+
+    /** The Android target declaration inside the `kotlin { }` block. */
+    protected abstract fun androidTargetBlock(): String
+
+    /** Script text after the `kotlin { }` block, such as a legacy `android { }` block. */
+    protected open fun afterKotlinBlock(): String = ""
+
+    /** The AGP plugin providing the Android target. */
+    protected abstract fun androidPlugin(): Plugin
+
+    override fun multiplatformTargetsBlock(): String = buildString {
+        appendLine("kotlin {")
+        appendLine("    jvm()")
+        appendLine(androidTargetBlock().trimEnd().prependIndent("    "))
+        append(sourceSetDependencies("commonMain", commonMainDependencies()))
+        append(sourceSetDependencies("androidMain", androidMainDependencies()))
+        appendLine("}")
+        append(afterKotlinBlock())
+    }
 
     override fun BuildScript.Builder.applyDefaultBuildScript() {
-        plugins(
-            KotlinPlugins.multiplatform(kotlinVersion),
-            Plugin(
-                "com.android.kotlin.multiplatform.library",
-                if (agp9) requiredTestAgp9Version() else requiredTestAgp8Version(),
-            ),
-            pluginUnderTest,
-        )
+        plugins(KotlinPlugins.multiplatform(kotlinVersion), androidPlugin(), pluginUnderTest)
         withKotlin(
             buildString {
                 onBuildScript()
@@ -243,10 +302,120 @@ open class KmpAndroidWatchdogProject(
     override fun buildGradleProject(): GradleProject =
         newGradleProjectBuilder(GradleProject.DslKind.KOTLIN)
             .withRootProject {
-                sources = this@KmpAndroidWatchdogProject.sources()
+                sources = this@AbstractKmpAndroidWatchdogProject.sources()
                 withBuildScript { applyDefaultBuildScript() }
                 withDevKitSettings()
                 withFile("local.properties", "sdk.dir=${requiredAndroidSdkDir()}")
             }
+            .apply {
+                jvmSubprojects().forEach { (path, projectSources) ->
+                    withSubproject(path) {
+                        // The root is multiplatform, so sources default to `commonMain`, which a
+                        // Kotlin/JVM subproject doesn't have.
+                        sources.addAll(projectSources.map { it.inSourceSet("main") })
+                        withBuildScript {
+                            // The root's multiplatform plugin ships the whole Kotlin Gradle
+                            // plugin, so `org.jetbrains.kotlin.jvm` is already on the build
+                            // classpath and must be requested without a version here.
+                            plugins(Plugin("org.jetbrains.kotlin.jvm"), pluginUnderTest)
+                            withKotlin("kotlin { explicitApi() }\n")
+                            jvmSubprojectDependencies()[path]?.takeIf { it.isNotEmpty() }?.let {
+                                dependencies(*it.toTypedArray())
+                            }
+                        }
+                    }
+                }
+            }
             .write()
+
+    private fun sourceSetDependencies(sourceSet: String, dependencies: List<Dependency>): String =
+        if (dependencies.isEmpty()) {
+            ""
+        } else {
+            buildString {
+                appendLine("    sourceSets.getByName(\"$sourceSet\").dependencies {")
+                dependencies.forEach { appendLine("        ${it.renderForSourceSet()}") }
+                appendLine("    }")
+            }
+        }
+
+    /** The test kit renders dependencies only inside a top-level `dependencies` block. */
+    private fun Dependency.renderForSourceSet(): String {
+        val notation = if (identifier.startsWith(":")) {
+            "project(\"$identifier\")"
+        } else {
+            "\"$identifier${version?.let { ":$it" }.orEmpty()}\""
+        }
+        return "$configuration($notation)"
+    }
 }
+
+/**
+ * A multiplatform [WatchdogProject] with an Android target provided by AGP's
+ * `com.android.kotlin.multiplatform.library` plugin, from AGP 8 or, with [agp9], from AGP 9.
+ * The android target names its main compilation `main`, its unit test compilation `hostTest`,
+ * and its instrumented test compilation `deviceTest`, and it has no build variants. Tests must
+ * call [assumeAndroidBuildEnvironment] first. AGP 8 builds are launched with
+ * [agpCompatibleGradle] and AGP 9 builds with the current Gradle.
+ */
+open class KmpAndroidWatchdogProject(
+    private val agp9: Boolean = false,
+    explicitApi: Boolean = true,
+    extraBuildScript: String = "",
+) : AbstractKmpAndroidWatchdogProject(explicitApi, extraBuildScript) {
+    // AGP 9 renames the multiplatform target block from `androidLibrary` to `android`.
+    override fun androidTargetBlock(): String = """
+        ${if (agp9) "android" else "androidLibrary"} {
+            namespace = "test.lib"
+            compileSdk = 36
+            minSdk = 24
+            withHostTestBuilder {}
+        }
+    """.trimIndent()
+
+    override fun androidPlugin(): Plugin = Plugin(
+        "com.android.kotlin.multiplatform.library",
+        if (agp9) requiredTestAgp9Version() else requiredTestAgp8Version(),
+    )
+}
+
+/**
+ * A multiplatform [WatchdogProject] whose Android target is the Kotlin Multiplatform plugin's own
+ * `androidTarget()` on top of `com.android.library`: the setup every multiplatform library used
+ * before AGP's `com.android.kotlin.multiplatform.library` plugin existed, and one AGP 9 no longer
+ * accepts. The target names its compilations after the build variant (`debug`, `release`), its
+ * unit test compilations `debugUnitTest` and `releaseUnitTest`, and its instrumented test
+ * compilation `debugAndroidTest`. Its compile tasks carry the target name, as in
+ * `compileDebugKotlinAndroid`. Tests must call [assumeAndroidBuildEnvironment] first and launch
+ * builds with [agpCompatibleGradle].
+ */
+open class LegacyKmpAndroidWatchdogProject(
+    explicitApi: Boolean = true,
+    extraBuildScript: String = "",
+) : AbstractKmpAndroidWatchdogProject(explicitApi, extraBuildScript) {
+    override fun androidTargetBlock(): String = """
+        androidTarget {
+            compilerOptions { jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17 }
+        }
+    """.trimIndent()
+
+    // AGP 8 defaults its Java tasks to 1.8 while Kotlin follows the build JDK, so both sides are
+    // pinned to keep KGP's JVM target validation quiet, as in AndroidLibraryWatchdogProject.
+    override fun afterKotlinBlock(): String = """
+        android {
+            namespace = "test.lib"
+            compileSdk = 36
+            defaultConfig { minSdk = 24 }
+            compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_17
+                targetCompatibility = JavaVersion.VERSION_17
+            }
+        }
+    """.trimIndent() + "\n"
+
+    override fun androidPlugin(): Plugin = Plugin("com.android.library", requiredTestAgp8Version())
+}
+
+/** The same file in another source set. */
+private fun Source.inSourceSet(sourceSet: String): Source =
+    Source(sourceType, name, path, source, sourceSet, forceLanguage)

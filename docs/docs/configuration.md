@@ -92,8 +92,8 @@ apiWatchdog {
     suggestAbiValidation = true
     // !link[/publicTypesMustBeTransitiveDependencies/] /checks/special/public-type-from-non-transitive-dependency
     publicTypesMustBeTransitiveDependencies = true
-    // !link[/allowedNonTransitiveDependencies/] /configuration#allowed-non-transitive-dependencies
-    allowedNonTransitiveDependencies {
+    // !link[/exemptNonTransitiveDependencies/] /configuration#exempt-non-transitive-dependencies
+    exemptNonTransitiveDependencies {
         extendsFrom(configurations.compileOnly.get())
     }
     // !link[/publicTypeWithInternalApi/] /checks/special/public-type-with-internal-api
@@ -101,7 +101,7 @@ apiWatchdog {
     // !link[/internalApiAnnotations/] /configuration#internal-api-annotations-from-dependencies
     internalApiAnnotations.add("com.example.dependency.InternalDependencyApi")
     // !link[/ignore/] /configuration#annotation-ignore-rules
-    ignore("STATEFUL_CLASS_WITHOUT_EQUALS", whenAnnotatedWith = listOf("com.example.GeneratedValueMembers"))
+    ignore(WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS, whenAnnotatedWith = listOf("com.example.GeneratedValueMembers"))
 
     // !link[/openApiWithoutSubclassOptIn/] /checks/open-api-without-subclass-opt-in
     openApiWithoutSubclassOptIn = WatchdogSeverity.ERROR
@@ -168,12 +168,15 @@ apiWatchdog {
 ## Annotation ignore rules
 
 Use `ignore` when annotations already guarantee the condition a check is looking for. Name the
-check by its diagnostic name and the annotations by their fully qualified class names:
+check by its diagnostic name, a constant of the `WatchdogChecks` object, and the annotations by
+their fully qualified class names:
 
-```kotlin
+```kotlin build.gradle.kts
+import org.jetbrains.kotlinx.library.api.watchdog.WatchdogChecks
+
 apiWatchdog {
     ignore(
-        "STATEFUL_CLASS_WITHOUT_EQUALS",
+        WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS,
         whenAnnotatedWith = listOf(
             "com.example.GeneratedValueMembers",
             "com.example.GeneratedEntityMembers",
@@ -185,7 +188,8 @@ apiWatchdog {
 The diagnostic is ignored only on declarations directly carrying one of those annotations. Repeat
 the call to associate the annotations with several checks. These rules are available for the
 configurable diagnostics in the [Property reference](#property-reference). Always-error safety
-checks can't be ignored by annotation.
+checks can't be ignored by annotation. `WatchdogChecks` lists every diagnostic name as a `const val`,
+so a plain string with the same name is accepted too.
 
 ## Internal API annotations from dependencies
 
@@ -208,44 +212,44 @@ supported signature exposing a type marked with it is reported by
 annotation class is named the way Kotlin source names it, with the outer class joined by a dot:
 `com.example.Markers.Internal`.
 
-## Allowed non-transitive dependencies
+## Exempt non-transitive dependencies
 
 [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md)
 reports every dependency type in a public signature unless consumers receive the dependency
 transitively. When the environment that loads the library supplies a dependency on its own, as a
-Gradle process does for every Gradle plugin, declare it on the `apiWatchdogAllowedNonTransitive`
+Gradle process does for every Gradle plugin, declare it on the `apiWatchdogExemptNonTransitive`
 configuration. The check then accepts its types throughout the module:
 
 ```kotlin build.gradle.kts
 dependencies {
     compileOnly(libs.kotlin.gradle.plugin)
 
-    apiWatchdogAllowedNonTransitive(libs.kotlin.gradle.plugin)
-    apiWatchdogAllowedNonTransitive(project(":host-api"))
+    apiWatchdogExemptNonTransitive(libs.kotlin.gradle.plugin)
+    apiWatchdogExemptNonTransitive(project(":host-api"))
 }
 ```
 
-To avoid naming the dependency twice, record the allowance from the configuration block of the
+To avoid naming the dependency twice, record the exemption from the configuration block of the
 declaration that adds it to the compilation. Inside that block, `this` is the dependency:
 
 ```kotlin build.gradle.kts
-import org.jetbrains.kotlinx.library.api.watchdog.allowExposingNonTransitivelyInApi
+import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency
 
 dependencies {
-    compileOnly(libs.kotlin.gradle.plugin) { allowExposingNonTransitivelyInApi(this) }
+    compileOnly(libs.kotlin.gradle.plugin) { exemptNonTransitiveDependency(this) }
 }
 ```
 
-Any dependency notation works, and the version is optional because the allowance resolves
-consistently with the compile classpath. The allowance covers everything the dependency pulls onto
+Any dependency notation works, and the version is optional because the exemption resolves
+consistently with the compile classpath. The exemption covers everything the dependency pulls onto
 the compile classpath, so a Kotlin Multiplatform library is covered together with its platform
 artifact. The configuration is a marker only: it adds nothing to the compile classpath. The
-`apiWatchdog` extension exposes it as `allowedNonTransitiveDependencies`, which is the place to
-allow a whole configuration at once:
+`apiWatchdog` extension exposes it as `exemptNonTransitiveDependencies`, which is the place to
+exempt a whole configuration at once:
 
 ```kotlin build.gradle.kts
 apiWatchdog {
-    allowedNonTransitiveDependencies {
+    exemptNonTransitiveDependencies {
         extendsFrom(configurations.compileOnly.get())
     }
 }

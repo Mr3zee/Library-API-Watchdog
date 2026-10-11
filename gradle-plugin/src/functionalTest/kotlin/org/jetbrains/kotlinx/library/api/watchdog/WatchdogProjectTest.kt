@@ -4,6 +4,7 @@ import com.autonomousapps.kit.GradleBuilder.build
 import com.autonomousapps.kit.GradleBuilder.buildAndFail
 import com.autonomousapps.kit.GradleProject
 import com.autonomousapps.kit.Source
+import com.autonomousapps.kit.gradle.Dependency
 import com.autonomousapps.kit.gradle.Dependency.Companion.api
 import com.autonomousapps.kit.gradle.Dependency.Companion.compileOnly
 import com.autonomousapps.kit.gradle.Dependency.Companion.implementation
@@ -217,7 +218,7 @@ class WatchdogProjectTest {
             extraBuildScript = """
                 apiWatchdog {
                     ignore(
-                        "STATEFUL_CLASS_WITHOUT_EQUALS",
+                        WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS,
                         whenAnnotatedWith = listOf(
                             "test.GeneratedValueMembers",
                             "test.AlternateGeneratedValueMembers",
@@ -228,6 +229,7 @@ class WatchdogProjectTest {
         ) {
             override fun sources() = listOf(source(annotationIgnoreFile))
         }.gradleProject
+        project.rootDir.resolve("build.gradle.kts").prependImport(WATCHDOG_CHECKS_IMPORT)
 
         val result = buildAndFail(project.rootDir, "build")
         assertFalse(result.hasStatefulDiagnostic("GeneratedState", "an `equals`"))
@@ -754,6 +756,48 @@ class WatchdogProjectTest {
     }
 
     @Test
+    fun legacyMultiplatformAndroidTargetMainSourcesAreChecked() {
+        // The multiplatform plugin's own `androidTarget()` on `com.android.library`, the shape
+        // every multiplatform library had before AGP's multiplatform library plugin. Its main
+        // compilation is named after the variant, so the plugin sees `debug` instead of `main`.
+        assumeAndroidBuildEnvironment()
+        val project = object : LegacyKmpAndroidWatchdogProject() {
+            override fun sources() = listOf(
+                source(cleanMainFile),
+                unexemptedOpenClassSource("androidMain", "AndroidOnlyApi"),
+            )
+        }.gradleProject
+
+        val result = buildAndFail(agpCompatibleGradle, project.rootDir, "compileDebugKotlinAndroid")
+        result.assertDiagnosticReported("e: ", "can be subclassed outside the library without restriction")
+        result.assertDiagnosticReported("e: ", "has no `KDoc`")
+        result.assertDiagnosticReported("e: ", "exposes a nullable `Boolean`")
+    }
+
+    @Test
+    fun legacyMultiplatformAndroidTargetTestSourcesAreNotChecked() {
+        // The legacy android target names its unit test compilation `debugUnitTest` and compiles
+        // the shared test sources along with its own. The raw flag is the strict case here too,
+        // see multiplatformTestSourcesAreNotChecked.
+        assumeAndroidBuildEnvironment()
+        val project = object : LegacyKmpAndroidWatchdogProject(
+            explicitApi = false,
+            extraBuildScript = """
+                kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") } }
+            """.trimIndent(),
+        ) {
+            override fun sources() = listOf(
+                source(cleanMainFile),
+                unexemptedOpenClassSource("commonTest"),
+                unexemptedOpenClassSource("androidUnitTest", "HostTestOnlyHelper"),
+            )
+        }.gradleProject
+
+        val result = build(agpCompatibleGradle, project.rootDir, "compileDebugUnitTestKotlinAndroid")
+        result.assertNoTestSourceDiagnostics()
+    }
+
+    @Test
     fun internalAnnotationMarkerExemptsAcrossModules() {
         // The marker annotation lives in `:lib`, so the consuming root module reads the
         // @InternalAnnotationMarker meta-annotation from the compiled dependency.
@@ -1095,6 +1139,610 @@ class WatchdogProjectTest {
         assertFalse(result.output.contains("not published transitively to consumers"))
     }
 
+    // Android libraries: the dependency collection corner cases of AGP, on both AGP generations.
+
+    @Test
+    fun androidPlatformTypesAreNotDependenciesInAndroidLibraries() = androidPlatformTypesAreNotDependenciesCase(agp9 = false)
+
+    @Test
+    fun androidPlatformTypesAreNotDependenciesInAndroidLibrariesWithBuiltInKotlin() =
+        androidPlatformTypesAreNotDependenciesCase(agp9 = true)
+
+    private fun androidPlatformTypesAreNotDependenciesCase(agp9: Boolean) {
+        // `android.jar` reaches the compiler as the platform's boot classpath, not through a
+        // Gradle configuration, so platform types are neither transitive nor non-transitive.
+        assumeAndroidBuildEnvironment()
+        val project = object : AndroidLibraryWatchdogProject(builtInKotlin = agp9) {
+            override fun sources() = listOf(source(exposesAndroidPlatformTypeFile, "PlatformFacing", "test.consumer"))
+        }.gradleProject
+
+        buildAgp(agp9, project.rootDir, "compileDebugKotlin").assertNoNonTransitiveExposureReported()
+    }
+
+    @Test
+    fun publicTypeFromImplementationAarProjectDependencyIsAnErrorInAndroidLibraries() =
+        publicTypeFromImplementationAarProjectDependencyIsAnErrorCase(agp9 = false)
+
+    @Test
+    fun publicTypeFromImplementationAarProjectDependencyIsAnErrorInAndroidLibrariesWithBuiltInKotlin() =
+        publicTypeFromImplementationAarProjectDependencyIsAnErrorCase(agp9 = true)
+
+    private fun publicTypeFromImplementationAarProjectDependencyIsAnErrorCase(agp9: Boolean) {
+        // An Android library module reaches the compiler as the classes jar extracted from its
+        // AAR by an artifact transform, not as the AAR its API elements publish. The dependency
+        // files handed to the compiler plugin must go through the same transform.
+        assumeAndroidBuildEnvironment()
+        val project = object : AndroidLibraryWatchdogProject(builtInKotlin = agp9) {
+            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+
+            override fun androidDependencies() = listOf(implementation(":model"))
+
+            override fun androidSubprojects() = mapOf(
+                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
+            )
+        }.gradleProject
+
+        buildAgpAndFail(agp9, project.rootDir, "compileDebugKotlin")
+            .assertNonTransitiveExposureReported("test.model.ExternalModel")
+    }
+
+    @Test
+    fun publicTypeFromApiAarProjectDependencyIsAcceptedInAndroidLibraries() =
+        publicTypeFromApiAarProjectDependencyIsAcceptedCase(agp9 = false)
+
+    @Test
+    fun publicTypeFromApiAarProjectDependencyIsAcceptedInAndroidLibrariesWithBuiltInKotlin() =
+        publicTypeFromApiAarProjectDependencyIsAcceptedCase(agp9 = true)
+
+    private fun publicTypeFromApiAarProjectDependencyIsAcceptedCase(agp9: Boolean) {
+        assumeAndroidBuildEnvironment()
+        val project = object : AndroidLibraryWatchdogProject(builtInKotlin = agp9) {
+            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+
+            override fun androidDependencies() = listOf(api(":model"))
+
+            override fun androidSubprojects() = mapOf(
+                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
+            )
+        }.gradleProject
+
+        buildAgp(agp9, project.rootDir, "compileDebugKotlin").assertNoNonTransitiveExposureReported()
+    }
+
+    @Test
+    fun exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInInAndroidLibraries() =
+        exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInCase(agp9 = false)
+
+    @Test
+    fun exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInInAndroidLibrariesWithBuiltInKotlin() =
+        exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInCase(agp9 = true)
+
+    private fun exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInCase(agp9: Boolean) {
+        // The exempt view resolves with the compile classpath's variant attributes, so it picks
+        // the same build-type variant of `:facade` as the compilation and follows its `api`
+        // edge to the `:model` AAR, which is where the exposed type lives.
+        assumeAndroidBuildEnvironment()
+        val project = object : AndroidLibraryWatchdogProject(
+            builtInKotlin = agp9,
+            extraBuildScript = """
+                dependencies {
+                    apiWatchdogExemptNonTransitive(project(":facade"))
+                }
+            """.trimIndent(),
+        ) {
+            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+
+            override fun androidDependencies() = listOf(implementation(":facade"))
+
+            override fun androidSubprojects() = mapOf(
+                "facade" to emptyList(),
+                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
+            )
+
+            override fun androidSubprojectDependencies() = mapOf("facade" to listOf(api(":model")))
+        }.gradleProject
+
+        buildAgp(agp9, project.rootDir, "compileDebugKotlin").assertNoNonTransitiveExposureReported()
+    }
+
+    @Test
+    fun publicTypeFromImplementationExternalAarDependencyIsAnErrorInAndroidLibraries() =
+        publicTypeFromImplementationExternalAarDependencyIsAnErrorCase(agp9 = false)
+
+    @Test
+    fun publicTypeFromImplementationExternalAarDependencyIsAnErrorInAndroidLibrariesWithBuiltInKotlin() =
+        publicTypeFromImplementationExternalAarDependencyIsAnErrorCase(agp9 = true)
+
+    private fun publicTypeFromImplementationExternalAarDependencyIsAnErrorCase(agp9: Boolean) {
+        // A published AAR goes through the same classes-jar transform as a project AAR, but
+        // from the Gradle transforms cache rather than a project's build directory.
+        assumeAndroidBuildEnvironment()
+        val project = object : AndroidLibraryWatchdogProject(builtInKotlin = agp9) {
+            override fun sources() = listOf(source(exposesStartupInitializerFile, "StartupHooks", "test.consumer"))
+
+            override fun androidDependencies() = listOf(implementation(STARTUP_RUNTIME))
+        }.gradleProject
+
+        buildAgpAndFail(agp9, project.rootDir, "compileDebugKotlin")
+            .assertNonTransitiveExposureReported("androidx.startup.Initializer")
+    }
+
+    @Test
+    fun publicTypeFromApiExternalAarDependencyIsAcceptedInAndroidLibraries() =
+        publicTypeFromApiExternalAarDependencyIsAcceptedCase(agp9 = false)
+
+    @Test
+    fun publicTypeFromApiExternalAarDependencyIsAcceptedInAndroidLibrariesWithBuiltInKotlin() =
+        publicTypeFromApiExternalAarDependencyIsAcceptedCase(agp9 = true)
+
+    private fun publicTypeFromApiExternalAarDependencyIsAcceptedCase(agp9: Boolean) {
+        assumeAndroidBuildEnvironment()
+        val project = object : AndroidLibraryWatchdogProject(builtInKotlin = agp9) {
+            override fun sources() = listOf(source(exposesStartupInitializerFile, "StartupHooks", "test.consumer"))
+
+            override fun androidDependencies() = listOf(api(STARTUP_RUNTIME))
+        }.gradleProject
+
+        buildAgp(agp9, project.rootDir, "compileDebugKotlin").assertNoNonTransitiveExposureReported()
+    }
+
+    @Test
+    fun exemptNonTransitiveExternalAarDependencyIsAcceptedInAndroidLibraries() =
+        exemptNonTransitiveExternalAarDependencyIsAcceptedCase(agp9 = false)
+
+    @Test
+    fun exemptNonTransitiveExternalAarDependencyIsAcceptedInAndroidLibrariesWithBuiltInKotlin() =
+        exemptNonTransitiveExternalAarDependencyIsAcceptedCase(agp9 = true)
+
+    private fun exemptNonTransitiveExternalAarDependencyIsAcceptedCase(agp9: Boolean) {
+        // The exemption names the AAR without a version. Consistent resolution supplies the
+        // compile classpath's version, and the exempt view must yield the same classes jar.
+        assumeAndroidBuildEnvironment()
+        val project = object : AndroidLibraryWatchdogProject(
+            builtInKotlin = agp9,
+            extraBuildScript = """
+                dependencies {
+                    apiWatchdogExemptNonTransitive("${STARTUP_RUNTIME.substringBeforeLast(':')}")
+                }
+            """.trimIndent(),
+        ) {
+            override fun sources() = listOf(source(exposesStartupInitializerFile, "StartupHooks", "test.consumer"))
+
+            override fun androidDependencies() = listOf(implementation(STARTUP_RUNTIME))
+        }.gradleProject
+
+        buildAgp(agp9, project.rootDir, "compileDebugKotlin").assertNoNonTransitiveExposureReported()
+    }
+
+    @Test
+    fun multiplatformLibraryIsMatchedThroughItsAndroidVariantInAndroidLibraries() =
+        multiplatformLibraryIsMatchedThroughItsAndroidVariantCase(agp9 = false)
+
+    @Test
+    fun multiplatformLibraryIsMatchedThroughItsAndroidVariantInAndroidLibrariesWithBuiltInKotlin() =
+        multiplatformLibraryIsMatchedThroughItsAndroidVariantCase(agp9 = true)
+
+    private fun multiplatformLibraryIsMatchedThroughItsAndroidVariantCase(agp9: Boolean) {
+        // An Android compilation selects the `-android` AAR variant of a multiplatform library
+        // where a JVM one would take `-jvm`. The transitive and exempt views copy the compile
+        // classpath's attributes, so they must land on that same AAR: first the unexempted
+        // `implementation` dependency is reported, then the version-less exemption covers it.
+        assumeAndroidBuildEnvironment()
+        val unexempted = object : AndroidLibraryWatchdogProject(builtInKotlin = agp9) {
+            override fun sources() = listOf(source(exposesLifecycleTypeFile, "LifecycleHooks", "test.consumer"))
+
+            override fun androidDependencies() = listOf(implementation(LIFECYCLE_RUNTIME))
+        }.gradleProject
+        buildAgpAndFail(agp9, unexempted.rootDir, "compileDebugKotlin")
+            .assertNonTransitiveExposureReported("androidx.lifecycle.LifecycleRegistry")
+
+        val exempted = object : AndroidLibraryWatchdogProject(
+            builtInKotlin = agp9,
+            extraBuildScript = """
+                dependencies {
+                    apiWatchdogExemptNonTransitive("${LIFECYCLE_RUNTIME.substringBeforeLast(':')}")
+                }
+            """.trimIndent(),
+        ) {
+            override fun sources() = listOf(source(exposesLifecycleTypeFile, "LifecycleHooks", "test.consumer"))
+
+            override fun androidDependencies() = listOf(implementation(LIFECYCLE_RUNTIME))
+        }.gradleProject
+        buildAgp(agp9, exempted.rootDir, "compileDebugKotlin").assertNoNonTransitiveExposureReported()
+    }
+
+    @Test
+    fun buildTypeApiDependencyIsTransitiveOnlyForItsVariantInAndroidLibraries() =
+        buildTypeApiDependencyIsTransitiveOnlyForItsVariantCase(agp9 = false)
+
+    @Test
+    fun buildTypeApiDependencyIsTransitiveOnlyForItsVariantInAndroidLibrariesWithBuiltInKotlin() =
+        buildTypeApiDependencyIsTransitiveOnlyForItsVariantCase(agp9 = true)
+
+    private fun buildTypeApiDependencyIsTransitiveOnlyForItsVariantCase(agp9: Boolean) {
+        // `debugApi` feeds `debugApiElements` alone, which is why the plugin reads the API
+        // elements of the variant a compilation is named after. The release variant reaches the
+        // same module only through `releaseImplementation`, so its consumers can't see the type.
+        assumeAndroidBuildEnvironment()
+        val project = object : AndroidLibraryWatchdogProject(
+            builtInKotlin = agp9,
+            extraBuildScript = """
+                dependencies {
+                    "debugApi"(project(":model"))
+                    "releaseImplementation"(project(":model"))
+                }
+            """.trimIndent(),
+        ) {
+            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+
+            override fun jvmSubprojects() = mapOf(
+                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
+            )
+        }.gradleProject
+
+        buildAgp(agp9, project.rootDir, "compileDebugKotlin").assertNoNonTransitiveExposureReported()
+        buildAgpAndFail(agp9, project.rootDir, "compileReleaseKotlin")
+            .assertNonTransitiveExposureReported("test.model.ExternalModel")
+    }
+
+    @Test
+    fun flavorApiDependencyIsTransitiveOnlyForItsFlavorInAndroidLibraries() =
+        flavorApiDependencyIsTransitiveOnlyForItsFlavorCase(agp9 = false)
+
+    @Test
+    fun flavorApiDependencyIsTransitiveOnlyForItsFlavorInAndroidLibrariesWithBuiltInKotlin() =
+        flavorApiDependencyIsTransitiveOnlyForItsFlavorCase(agp9 = true)
+
+    private fun flavorApiDependencyIsTransitiveOnlyForItsFlavorCase(agp9: Boolean) {
+        // With product flavors the compilation is named after the full variant (`freeDebug`),
+        // and so are its API elements, which combine the flavor's and the build type's `api`.
+        assumeAndroidBuildEnvironment()
+        val project = object : AndroidLibraryWatchdogProject(
+            builtInKotlin = agp9,
+            extraAndroidScript = """
+                flavorDimensions += "tier"
+                productFlavors {
+                    create("free") { dimension = "tier" }
+                    create("paid") { dimension = "tier" }
+                }
+            """.trimIndent(),
+            extraBuildScript = """
+                dependencies {
+                    "freeApi"(project(":model"))
+                    "paidImplementation"(project(":model"))
+                }
+            """.trimIndent(),
+        ) {
+            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+
+            override fun jvmSubprojects() = mapOf(
+                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
+            )
+        }.gradleProject
+
+        buildAgp(agp9, project.rootDir, "compileFreeDebugKotlin").assertNoNonTransitiveExposureReported()
+        buildAgpAndFail(agp9, project.rootDir, "compilePaidDebugKotlin")
+            .assertNonTransitiveExposureReported("test.model.ExternalModel")
+    }
+
+    @Test
+    fun compileOnlyDependenciesCanBeExemptedAsAWholeInAndroidLibraries() =
+        compileOnlyDependenciesCanBeExemptedAsAWholeCase(agp9 = false)
+
+    @Test
+    fun compileOnlyDependenciesCanBeExemptedAsAWholeInAndroidLibrariesWithBuiltInKotlin() =
+        compileOnlyDependenciesCanBeExemptedAsAWholeCase(agp9 = true)
+
+    private fun compileOnlyDependenciesCanBeExemptedAsAWholeCase(agp9: Boolean) {
+        // AGP's `compileOnly` is a bucket the variant compile classpaths extend from, so the
+        // exempt view resolves it through the compilation's own variant.
+        assumeAndroidBuildEnvironment()
+        val project = object : AndroidLibraryWatchdogProject(
+            builtInKotlin = agp9,
+            extraBuildScript = """
+                apiWatchdog {
+                    exemptNonTransitiveDependencies {
+                        extendsFrom(configurations.compileOnly.get())
+                    }
+                }
+            """.trimIndent(),
+        ) {
+            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+
+            override fun androidDependencies() = listOf(compileOnly(":model"))
+
+            override fun jvmSubprojects() = mapOf(
+                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
+            )
+        }.gradleProject
+
+        buildAgp(agp9, project.rootDir, "compileDebugKotlin").assertNoNonTransitiveExposureReported()
+    }
+
+    // The Android target of a multiplatform project from `com.android.kotlin.multiplatform.library`.
+
+    @Test
+    fun publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargets() =
+        publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsCase(agp9 = false)
+
+    @Test
+    fun publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsOnAgp9() =
+        publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsCase(agp9 = true)
+
+    private fun publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsCase(agp9: Boolean) {
+        // The multiplatform library plugin has no build variants: the compilation is `main`, so
+        // the plugin falls back from `mainApiElements` to the target's own API elements.
+        assumeAndroidBuildEnvironment()
+        val project = object : KmpAndroidWatchdogProject(agp9 = agp9) {
+            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+
+            override fun commonMainDependencies() = listOf(implementation(":model"))
+
+            override fun jvmSubprojects() = mapOf(
+                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
+            )
+        }.gradleProject
+
+        buildAgpAndFail(agp9, project.rootDir, "compileAndroidMain")
+            .assertNonTransitiveExposureReported("test.model.ExternalModel")
+    }
+
+    @Test
+    fun publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargets() =
+        publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargetsCase(agp9 = false)
+
+    @Test
+    fun publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargetsOnAgp9() =
+        publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargetsCase(agp9 = true)
+
+    private fun publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargetsCase(agp9: Boolean) {
+        assumeAndroidBuildEnvironment()
+        val project = object : KmpAndroidWatchdogProject(agp9 = agp9) {
+            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+
+            override fun commonMainDependencies() = listOf(api(":model"))
+
+            override fun jvmSubprojects() = mapOf(
+                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
+            )
+        }.gradleProject
+
+        buildAgp(agp9, project.rootDir, "compileAndroidMain", "compileKotlinJvm").assertNoNonTransitiveExposureReported()
+    }
+
+    @Test
+    fun androidSourceSetApiDependencyIsAcceptedInMultiplatformAndroidTargets() =
+        androidSourceSetDependenciesCase(agp9 = false, legacy = false)
+
+    @Test
+    fun androidSourceSetApiDependencyIsAcceptedInMultiplatformAndroidTargetsOnAgp9() =
+        androidSourceSetDependenciesCase(agp9 = true, legacy = false)
+
+    @Test
+    fun androidSourceSetApiDependencyIsAcceptedInLegacyMultiplatformAndroidTargets() =
+        androidSourceSetDependenciesCase(agp9 = false, legacy = true)
+
+    private fun androidSourceSetDependenciesCase(agp9: Boolean, legacy: Boolean) {
+        // Dependencies declared on `androidMain` alone reach only the Android target's
+        // configurations, and the exposing declaration lives in `androidMain` too.
+        assumeAndroidBuildEnvironment()
+        val accepted = kmpAndroidProject(
+            agp9,
+            legacy,
+            KmpAndroidSpec(
+                sources = { listOf(fixtureSource(exposesDependencyTypeFile, "Consumer", "test.consumer", "androidMain")) },
+                androidMainDependencies = listOf(api(":model")),
+                jvmSubprojects = modelSubproject,
+            ),
+        )
+        buildAgp(agp9, accepted.rootDir, androidMainCompileTask(legacy)).assertNoNonTransitiveExposureReported()
+
+        val reported = kmpAndroidProject(
+            agp9,
+            legacy,
+            KmpAndroidSpec(
+                sources = { listOf(fixtureSource(exposesDependencyTypeFile, "Consumer", "test.consumer", "androidMain")) },
+                androidMainDependencies = listOf(implementation(":model")),
+                jvmSubprojects = modelSubproject,
+            ),
+        )
+        buildAgpAndFail(agp9, reported.rootDir, androidMainCompileTask(legacy))
+            .assertNonTransitiveExposureReported("test.model.ExternalModel")
+    }
+
+    @Test
+    fun androidPlatformTypesAreNotDependenciesInMultiplatformAndroidTargets() =
+        androidPlatformTypesAreNotDependenciesInMultiplatformCase(agp9 = false, legacy = false)
+
+    @Test
+    fun androidPlatformTypesAreNotDependenciesInMultiplatformAndroidTargetsOnAgp9() =
+        androidPlatformTypesAreNotDependenciesInMultiplatformCase(agp9 = true, legacy = false)
+
+    @Test
+    fun androidPlatformTypesAreNotDependenciesInLegacyMultiplatformAndroidTargets() =
+        androidPlatformTypesAreNotDependenciesInMultiplatformCase(agp9 = false, legacy = true)
+
+    private fun androidPlatformTypesAreNotDependenciesInMultiplatformCase(agp9: Boolean, legacy: Boolean) {
+        assumeAndroidBuildEnvironment()
+        val project = kmpAndroidProject(
+            agp9,
+            legacy,
+            KmpAndroidSpec(
+                sources = { listOf(fixtureSource(exposesAndroidPlatformTypeFile, "PlatformFacing", "test.consumer", "androidMain")) },
+            ),
+        )
+
+        buildAgp(agp9, project.rootDir, androidMainCompileTask(legacy)).assertNoNonTransitiveExposureReported()
+    }
+
+    @Test
+    fun externalAarDependencyIsCheckedAndExemptableInMultiplatformAndroidTargets() =
+        externalAarDependencyInMultiplatformCase(agp9 = false, legacy = false)
+
+    @Test
+    fun externalAarDependencyIsCheckedAndExemptableInMultiplatformAndroidTargetsOnAgp9() =
+        externalAarDependencyInMultiplatformCase(agp9 = true, legacy = false)
+
+    @Test
+    fun externalAarDependencyIsCheckedAndExemptableInLegacyMultiplatformAndroidTargets() =
+        externalAarDependencyInMultiplatformCase(agp9 = false, legacy = true)
+
+    private fun externalAarDependencyInMultiplatformCase(agp9: Boolean, legacy: Boolean) {
+        // The Android target's compile classpath goes through AGP's classes-jar transform like
+        // a plain Android library's, while the exempt bucket is shared with the JVM target.
+        assumeAndroidBuildEnvironment()
+        val spec = KmpAndroidSpec(
+            sources = { listOf(fixtureSource(exposesStartupInitializerFile, "StartupHooks", "test.consumer", "androidMain")) },
+            androidMainDependencies = listOf(implementation(STARTUP_RUNTIME)),
+        )
+
+        val reported = kmpAndroidProject(agp9, legacy, spec)
+        buildAgpAndFail(agp9, reported.rootDir, androidMainCompileTask(legacy))
+            .assertNonTransitiveExposureReported("androidx.startup.Initializer")
+
+        val exempted = kmpAndroidProject(agp9, legacy, spec, exemptScript(STARTUP_RUNTIME))
+        buildAgp(agp9, exempted.rootDir, androidMainCompileTask(legacy)).assertNoNonTransitiveExposureReported()
+    }
+
+    @Test
+    fun multiplatformLibraryIsMatchedThroughItsAndroidVariantInMultiplatformAndroidTargets() =
+        multiplatformLibraryAndroidVariantInMultiplatformCase(agp9 = false, legacy = false)
+
+    @Test
+    fun multiplatformLibraryIsMatchedThroughItsAndroidVariantInMultiplatformAndroidTargetsOnAgp9() =
+        multiplatformLibraryAndroidVariantInMultiplatformCase(agp9 = true, legacy = false)
+
+    @Test
+    fun multiplatformLibraryIsMatchedThroughItsAndroidVariantInLegacyMultiplatformAndroidTargets() =
+        multiplatformLibraryAndroidVariantInMultiplatformCase(agp9 = false, legacy = true)
+
+    private fun multiplatformLibraryAndroidVariantInMultiplatformCase(agp9: Boolean, legacy: Boolean) {
+        // Declared on `commonMain`, the library resolves to its `-android` AAR for the Android
+        // target and to its `-jvm` jar for the JVM target. Both compilations report the
+        // unexempted type, and one version-less exemption covers both variants.
+        assumeAndroidBuildEnvironment()
+        val spec = KmpAndroidSpec(
+            sources = { listOf(fixtureSource(exposesLifecycleTypeFile, "LifecycleHooks", "test.consumer")) },
+            commonMainDependencies = listOf(implementation(LIFECYCLE_RUNTIME)),
+        )
+
+        val reported = kmpAndroidProject(agp9, legacy, spec)
+        val result = buildAgpAndFail(agp9, reported.rootDir, androidMainCompileTask(legacy), "compileKotlinJvm", "--continue")
+        result.assertNonTransitiveExposureReported("androidx.lifecycle.LifecycleRegistry")
+        assertEquals(TaskOutcome.FAILED, result.task(":${androidMainCompileTask(legacy)}")?.outcome, result.output)
+        assertEquals(TaskOutcome.FAILED, result.task(":compileKotlinJvm")?.outcome, result.output)
+
+        val exempted = kmpAndroidProject(agp9, legacy, spec, exemptScript(LIFECYCLE_RUNTIME))
+        buildAgp(agp9, exempted.rootDir, androidMainCompileTask(legacy), "compileKotlinJvm")
+            .assertNoNonTransitiveExposureReported()
+    }
+
+    // The legacy multiplatform `androidTarget()` on `com.android.library`, AGP 8 only.
+
+    @Test
+    fun publicTypeFromImplementationDependencyIsAnErrorInLegacyMultiplatformAndroidTargets() {
+        // The legacy android target publishes through AGP's variant-specific API elements
+        // (`debugApiElements`) like a plain Android library, while its dependencies are
+        // declared on the multiplatform source sets.
+        assumeAndroidBuildEnvironment()
+        val project = object : LegacyKmpAndroidWatchdogProject() {
+            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+
+            override fun commonMainDependencies() = listOf(implementation(":model"))
+
+            override fun jvmSubprojects() = modelSubproject(this)
+        }.gradleProject
+
+        buildAndFail(agpCompatibleGradle, project.rootDir, "compileDebugKotlinAndroid")
+            .assertNonTransitiveExposureReported("test.model.ExternalModel")
+    }
+
+    @Test
+    fun publicTypeFromApiDependencyIsAcceptedInLegacyMultiplatformAndroidTargets() {
+        assumeAndroidBuildEnvironment()
+        val project = object : LegacyKmpAndroidWatchdogProject() {
+            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+
+            override fun commonMainDependencies() = listOf(api(":model"))
+
+            override fun jvmSubprojects() = modelSubproject(this)
+        }.gradleProject
+
+        build(agpCompatibleGradle, project.rootDir, "compileDebugKotlinAndroid").assertNoNonTransitiveExposureReported()
+    }
+
+    @Test
+    fun buildTypeApiDependencyIsTransitiveOnlyForItsVariantInLegacyMultiplatformAndroidTargets() {
+        // The legacy target still has AGP's build-type configurations next to the source-set
+        // ones, so `debugApi` scopes the exposure to the `debug` compilation.
+        assumeAndroidBuildEnvironment()
+        val project = object : LegacyKmpAndroidWatchdogProject(
+            extraBuildScript = """
+                dependencies {
+                    "debugApi"(project(":model"))
+                    "releaseImplementation"(project(":model"))
+                }
+            """.trimIndent(),
+        ) {
+            override fun sources() = listOf(fixtureSource(exposesDependencyTypeFile, "Consumer", "test.consumer", "androidMain"))
+
+            override fun jvmSubprojects() = modelSubproject(this)
+        }.gradleProject
+
+        build(agpCompatibleGradle, project.rootDir, "compileDebugKotlinAndroid").assertNoNonTransitiveExposureReported()
+        buildAndFail(agpCompatibleGradle, project.rootDir, "compileReleaseKotlinAndroid")
+            .assertNonTransitiveExposureReported("test.model.ExternalModel")
+    }
+
+    /** The Android target's main compile task of the multiplatform fixtures. */
+    private fun androidMainCompileTask(legacy: Boolean): String =
+        if (legacy) "compileDebugKotlinAndroid" else "compileAndroidMain"
+
+    /** A `:model` Kotlin/JVM subproject holding [dependencyTypeFile]. */
+    private val modelSubproject: AbstractKmpAndroidWatchdogProject.() -> Map<String, List<Source>> = {
+        mapOf("model" to listOf(fixtureSource(dependencyTypeFile, "ExternalModel", "test.model")))
+    }
+
+    /** Exempts [dependency] by its version-less coordinates. */
+    private fun exemptScript(dependency: String): String = """
+        dependencies {
+            apiWatchdogExemptNonTransitive("${dependency.substringBeforeLast(':')}")
+        }
+    """.trimIndent()
+
+    /** What a multiplatform Android case declares, applied to whichever fixture [kmpAndroidProject] picks. */
+    private class KmpAndroidSpec(
+        val sources: AbstractKmpAndroidWatchdogProject.() -> List<Source>,
+        val commonMainDependencies: List<Dependency> = emptyList(),
+        val androidMainDependencies: List<Dependency> = emptyList(),
+        val jvmSubprojects: AbstractKmpAndroidWatchdogProject.() -> Map<String, List<Source>> = { emptyMap() },
+    )
+
+    /** Builds the multiplatform Android fixture selected by [agp9] and [legacy] from [spec]. */
+    private fun kmpAndroidProject(
+        agp9: Boolean,
+        legacy: Boolean,
+        spec: KmpAndroidSpec,
+        extraBuildScript: String = "",
+    ): GradleProject {
+        val project = if (legacy) {
+            object : LegacyKmpAndroidWatchdogProject(extraBuildScript = extraBuildScript) {
+                override fun sources() = spec.sources(this)
+                override fun commonMainDependencies() = spec.commonMainDependencies
+                override fun androidMainDependencies() = spec.androidMainDependencies
+                override fun jvmSubprojects() = spec.jvmSubprojects(this)
+            }
+        } else {
+            object : KmpAndroidWatchdogProject(agp9 = agp9, extraBuildScript = extraBuildScript) {
+                override fun sources() = spec.sources(this)
+                override fun commonMainDependencies() = spec.commonMainDependencies
+                override fun androidMainDependencies() = spec.androidMainDependencies
+                override fun jvmSubprojects() = spec.jvmSubprojects(this)
+            }
+        }
+        return project.gradleProject
+    }
+
     @Test
     fun publicDependencyExposureCheckIsDisabledByTheModuleSwitch() {
         val project = object : WatchdogProject(
@@ -1120,11 +1768,11 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicTypeFromAllowedNonTransitiveProjectDependencyIsAccepted() {
+    fun publicTypeFromExemptNonTransitiveProjectDependencyIsAccepted() {
         val project = object : WatchdogProject(
             extraBuildScript = """
                 dependencies {
-                    apiWatchdogAllowedNonTransitive(project(":model"))
+                    apiWatchdogExemptNonTransitive(project(":model"))
                 }
             """.trimIndent(),
         ) {
@@ -1144,13 +1792,13 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun allowedNonTransitiveDependencyCoversEverythingItPullsIn() {
-        // The consumer never names `:model`. It reaches it through the allowed `:facade`, the
+    fun exemptNonTransitiveDependencyCoversEverythingItPullsIn() {
+        // The consumer never names `:model`. It reaches it through the exempt `:facade`, the
         // same way a Kotlin Multiplatform dependency reaches its platform artifact.
         val project = object : WatchdogProject(
             extraBuildScript = """
                 dependencies {
-                    apiWatchdogAllowedNonTransitive(project(":facade"))
+                    apiWatchdogExemptNonTransitive(project(":facade"))
                 }
             """.trimIndent(),
         ) {
@@ -1173,11 +1821,11 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun allowedNonTransitiveDependencyLeavesOtherDependenciesChecked() {
+    fun exemptNonTransitiveDependencyLeavesOtherDependenciesChecked() {
         val project = object : WatchdogProject(
             extraBuildScript = """
                 dependencies {
-                    apiWatchdogAllowedNonTransitive(project(":other"))
+                    apiWatchdogExemptNonTransitive(project(":other"))
                 }
             """.trimIndent(),
         ) {
@@ -1204,13 +1852,13 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun allowedNonTransitiveDependenciesExtendFromAWholeConfiguration() {
+    fun exemptNonTransitiveDependenciesExtendFromAWholeConfiguration() {
         // The whole-configuration form is the Gradle plugin case: everything the environment
         // supplies is declared `compileOnly`, and nothing of it is published.
         val project = object : WatchdogProject(
             extraBuildScript = """
                 apiWatchdog {
-                    allowedNonTransitiveDependencies {
+                    exemptNonTransitiveDependencies {
                         extendsFrom(configurations.compileOnly.get())
                     }
                 }
@@ -1232,14 +1880,14 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun allowedNonTransitiveModuleDependencyIsResolvedConsistentlyWithTheCompileClasspath() {
-        // The allowance names the multiplatform module without a version and without its JVM
+    fun exemptNonTransitiveModuleDependencyIsResolvedConsistentlyWithTheCompileClasspath() {
+        // The exemption names the multiplatform module without a version and without its JVM
         // artifact. Consistent resolution supplies the compile classpath's version, and the
         // `available-at` redirect brings the `-jvm` artifact that actually holds the classes.
         val project = object : WatchdogProject(
             extraBuildScript = """
                 dependencies {
-                    apiWatchdogAllowedNonTransitive("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+                    apiWatchdogExemptNonTransitive("org.jetbrains.kotlinx:kotlinx-coroutines-core")
                 }
             """.trimIndent(),
         ) {
@@ -1256,11 +1904,11 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun allowedNonTransitiveDependencyFromAVersionCatalog() {
+    fun exemptNonTransitiveDependencyFromAVersionCatalog() {
         val project = object : WatchdogProject(
             extraBuildScript = """
                 dependencies {
-                    apiWatchdogAllowedNonTransitive(libs.coroutines)
+                    apiWatchdogExemptNonTransitive(libs.coroutines)
                 }
             """.trimIndent(),
         ) {
@@ -1286,15 +1934,15 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun allowExposingNonTransitivelyInApiFromTheDependencyDeclaration() {
-        // The version catalog form adds the dependency through a provider, so the allowance is
+    fun exemptNonTransitiveDependencyFromTheDependencyDeclaration() {
+        // The version catalog form adds the dependency through a provider, so the exemption is
         // recorded only when the compile classpath realizes its dependencies. The plugin resolves
-        // the transitive view, which is consistent with the compile classpath, before the allowed
+        // the transitive view, which is consistent with the compile classpath, before the exempt
         // view, which is what makes this order-independent for users.
         val project = object : WatchdogProject(
             extraBuildScript = """
                 dependencies {
-                    implementation(libs.coroutines) { allowExposingNonTransitivelyInApi(this) }
+                    implementation(libs.coroutines) { exemptNonTransitiveDependency(this) }
                 }
             """.trimIndent(),
         ) {
@@ -1313,21 +1961,21 @@ class WatchdogProjectTest {
                 """.trimIndent(),
             )
         }
-        project.rootDir.resolve("build.gradle.kts").prependImport(ALLOW_EXPOSING_IMPORT)
+        project.rootDir.resolve("build.gradle.kts").prependImport(EXEMPT_IMPORT)
 
         val result = build(project.rootDir, "build")
         assertFalse(result.output.contains("not published transitively to consumers"))
     }
 
     @Test
-    fun allowExposingNonTransitivelyInApiFromAProjectDependencyDeclaration() {
+    fun exemptNonTransitiveDependencyFromAProjectDependencyDeclaration() {
         val project = object : WatchdogProject(
             // The harness appends this script to every project, so keep the self-dependency
             // out of `:model`.
             extraBuildScript = """
                 if (project == rootProject) {
                     dependencies {
-                        implementation(project(":model")) { allowExposingNonTransitivelyInApi(this) }
+                        implementation(project(":model")) { exemptNonTransitiveDependency(this) }
                     }
                 }
             """.trimIndent(),
@@ -1341,15 +1989,15 @@ class WatchdogProjectTest {
                 }
             }
         }.gradleProject
-        project.rootDir.resolve("build.gradle.kts").prependImport(ALLOW_EXPOSING_IMPORT)
-        project.rootDir.resolve("model/build.gradle.kts").prependImport(ALLOW_EXPOSING_IMPORT)
+        project.rootDir.resolve("build.gradle.kts").prependImport(EXEMPT_IMPORT)
+        project.rootDir.resolve("model/build.gradle.kts").prependImport(EXEMPT_IMPORT)
 
         val result = build(project.rootDir, "build")
         assertFalse(result.output.contains("not published transitively to consumers"))
     }
 
     @Test
-    fun publicTypeFromUnallowedModuleDependencyIsAnError() {
+    fun publicTypeFromUnexemptedModuleDependencyIsAnError() {
         val project = object : WatchdogProject() {
             override fun buildGradleProject() = multiModuleProject {
                 root {
@@ -1368,12 +2016,12 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun allowedNonTransitiveDependenciesDoNotJoinTheCompileClasspath() {
+    fun exemptNonTransitiveDependenciesDoNotJoinTheCompileClasspath() {
         // The bucket is a marker. A dependency declared only there is not compiled against.
         val project = object : WatchdogProject(
             extraBuildScript = """
                 dependencies {
-                    apiWatchdogAllowedNonTransitive(project(":model"))
+                    apiWatchdogExemptNonTransitive(project(":model"))
                 }
             """.trimIndent(),
         ) {
@@ -1402,7 +2050,7 @@ class WatchdogProjectTest {
         val result = buildAndFail(project.rootDir, "compileKotlin", "printWatchdogConfigurations", "--continue")
         assertTrue(
             result.output.contains(
-                "WATCHDOG_CONFIGURATIONS=[apiWatchdogMainAllowedNonTransitiveDependencies, " +
+                "WATCHDOG_CONFIGURATIONS=[apiWatchdogMainExemptNonTransitiveDependencies, " +
                         "apiWatchdogMainTransitiveDependencies]"
             ),
             result.output,
@@ -1629,6 +2277,22 @@ class WatchdogProjectTest {
             "Expected a '$severityPrefix' line containing '$message' in build output:\n$output",
         )
     }
+
+    /** Launches [tasks] on the Gradle version the AGP generation selected by [agp9] runs on. */
+    private fun buildAgp(agp9: Boolean, projectDir: File, vararg tasks: String): BuildResult =
+        if (agp9) build(projectDir, *tasks) else build(agpCompatibleGradle, projectDir, *tasks)
+
+    private fun buildAgpAndFail(agp9: Boolean, projectDir: File, vararg tasks: String): BuildResult =
+        if (agp9) buildAndFail(projectDir, *tasks) else buildAndFail(agpCompatibleGradle, projectDir, *tasks)
+
+    private fun BuildResult.assertNonTransitiveExposureReported(type: String) =
+        assertDiagnosticReported(
+            "e: ",
+            "publicly exposes `$type`, but the dependency providing that type is not published transitively",
+        )
+
+    private fun BuildResult.assertNoNonTransitiveExposureReported() =
+        assertFalse(output.contains("not published transitively to consumers"), output)
 
     private fun BuildResult.hasStatefulDiagnostic(className: String, missingMember: String): Boolean =
         output.lineSequence().any { "`$className`" in it && "inherits $missingMember" in it }
@@ -1964,8 +2628,11 @@ private val exemptedDependencyTypeFile = """
 /** A dependency the functional tests resolve from Maven Central as a non-project module. */
 private const val COROUTINES_VERSION = "1.10.2"
 
-private const val ALLOW_EXPOSING_IMPORT =
-    "org.jetbrains.kotlinx.library.api.watchdog.allowExposingNonTransitivelyInApi"
+private const val EXEMPT_IMPORT =
+    "org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency"
+
+/** The generated constants object with every diagnostic name, see `generateCheckNames`. */
+private const val WATCHDOG_CHECKS_IMPORT = "org.jetbrains.kotlinx.library.api.watchdog.WatchdogChecks"
 
 /** Imports must precede the `plugins` block, and the harness appends extra script text after it. */
 private fun File.prependImport(fqName: String) {
@@ -2042,6 +2709,54 @@ private val exposesDependencyTypeFile = """
 
         /** Uses a dependency type as both a receiver and a nested parameter type. */
         public fun ExternalModel.acceptModels(models: ExternalModels): ExternalModel = this
+    }
+""".trimIndent()
+
+/** A dependency from Google's Maven repository published as an AAR. */
+private const val STARTUP_RUNTIME = "androidx.startup:startup-runtime:1.2.0"
+
+/**
+ * A multiplatform AndroidX library whose Android variant is an AAR of its own
+ * (`lifecycle-runtime-android`), next to a plain JVM variant for desktop consumers. Its
+ * `LifecycleRegistry` is compiled into each variant, unlike `Lifecycle` from the plain
+ * `lifecycle-common` jar it depends on.
+ */
+private const val LIFECYCLE_RUNTIME = "androidx.lifecycle:lifecycle-runtime:2.8.7"
+
+@Suppress("RedundantVisibilityModifier")
+@Language("kotlin")
+private val exposesAndroidPlatformTypeFile = """
+    import android.content.Context
+    import android.os.Bundle
+
+    /** A documented API owner whose signatures mention the Android platform. */
+    public class PlatformFacing {
+        /** Names the package of the platform context. */
+        public fun describe(context: Context, extras: Bundle?): String = context.packageName
+    }
+""".trimIndent()
+
+@Suppress("RedundantVisibilityModifier")
+@Language("kotlin")
+private val exposesStartupInitializerFile = """
+    import androidx.startup.Initializer
+
+    /** A documented API owner whose signature mentions a type from an AAR dependency. */
+    public class StartupHooks {
+        /** Returns the initializer the host runs, if any. */
+        public fun initializer(): Initializer<Unit>? = null
+    }
+""".trimIndent()
+
+@Suppress("RedundantVisibilityModifier")
+@Language("kotlin")
+private val exposesLifecycleTypeFile = """
+    import androidx.lifecycle.LifecycleRegistry
+
+    /** A documented API owner whose signature mentions a type compiled into each platform variant. */
+    public class LifecycleHooks {
+        /** Returns the lifecycle registry the host drives, if any. */
+        public fun registry(): LifecycleRegistry? = null
     }
 """.trimIndent()
 

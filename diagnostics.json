@@ -8,6 +8,8 @@
     "    build.gradle.kts). The generator appends a final 'See more: <docsBaseUrl><docs>' section",
     "    to every message, after messageTrailer if present, and escapes ' as '' for messages with",
     "    parameters, which the compiler renders through java.text.MessageFormat.",
+    "  - :kotlin-library-api-watchdog-gradle-plugin generates the public WatchdogChecks object from this file (see",
+    "    GradlePluginConventionPlugin): one const val per diagnostic name for apiWatchdog.ignore calls.",
     "  - docs/plugins/diagnostics.mjs validates the '// !diag[/range/] DIAGNOSTIC_NAME [params]'",
     "    Code Hike annotations in docs samples. The docs Code component renders their underlines,",
     "    fills the message template parameters, and shows the resulting diagnostic tooltips.",

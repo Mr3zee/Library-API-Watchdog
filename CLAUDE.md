@@ -113,13 +113,20 @@ bootstrap/dev repositories configured in `settings.gradle.kts`.
   compilation except test compilations (`isApplicable`), so a raw `-Xexplicit-api` flag spread over all compilations
   can't turn the checks on for unpublished test sources.
   `WatchdogGradleExtension` (`apiWatchdog { ... }`) exposes one severity `Property` per configurable diagnostic and
-  turns them into `diagnosticSeverity` subplugin options. The `apiWatchdogAllowedNonTransitive` configuration
-  (exposed as `apiWatchdog.allowedNonTransitiveDependencies`) is a declarable bucket of dependencies whose types
+  turns them into `diagnosticSeverity` subplugin options. The `generateCheckNames` task of the
+  `library-api-watchdog.gradle-plugin-conventions` plugin generates the public `WatchdogChecks` object, one `const val`
+  per diagnostic name in `diagnostics.json`, which build scripts pass to `apiWatchdog.ignore` and the extension uses as
+  the keys of its severity map. The `apiWatchdogExemptNonTransitive` configuration
+  (exposed as `apiWatchdog.exemptNonTransitiveDependencies`) is a declarable bucket of dependencies whose types
   `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY` accepts. Per compilation the plugin registers a resolvable
-  `apiWatchdog<Compilation>AllowedNonTransitiveDependencies` view of it, next to the
+  `apiWatchdog<Compilation>ExemptNonTransitiveDependencies` view of it, next to the
   `apiWatchdog<Compilation>TransitiveDependencies` view of the API elements. Both copy the compile classpath
-  attributes and resolve consistently with it, so file paths match the compile classpath. The allowed files are
-  appended to the `transitiveDependencyPaths` option, which is why the compiler plugin has no allowance option
+  attributes and resolve consistently with it, so file paths match the compile classpath. Android compilations
+  (recognized by the `android` JVM environment of their compile classpath, because AGP 8's
+  `com.android.kotlin.multiplatform.library` target reports platform type `jvm`) resolve all three through an
+  `android-classes-jar` artifact view: a project AAR has no artifact without it, and the compiler sees the
+  transformed classes jar of an AAR rather than the AAR. The exempt files are
+  appended to the `transitiveDependencyPaths` option, which is why the compiler plugin has no exemption option
   of its own. Scheduling `UpdateBackwardsCompatibilityExemptsTask`
   (untracked) or `GenerateBackwardsCompatibilityExemptsReportTask` in the task graph (checked in
   `gradle.taskGraph.whenReady`, never on task realization, because IDE sync realizes every task) activates an
@@ -141,8 +148,10 @@ bootstrap/dev repositories configured in `settings.gradle.kts`.
 
 `diagnostics.json` in the repository root is the single source of truth for diagnostic texts. Each entry holds the
 `name`, the `title` and `docs` path of its documentation page, the `message` template, and an optional
-`messageTrailer`. Two consumers read it:
+`messageTrailer`. Three consumers read it:
 
+- `:kotlin-library-api-watchdog-gradle-plugin`'s `generateCheckNames` task emits the public `WatchdogChecks` constants
+  object into a generated source dir, so a new diagnostic name becomes a constant without further work.
 - `:kotlin-library-api-watchdog-compiler-plugin`'s `generateDiagnosticMessages` task emits `WatchdogDiagnosticMessages.kt` into a generated
   source dir. It appends a final `See more: <docsBaseUrl><docs>` section to every message, after the trailer, and
   doubles `'` for `java.text.MessageFormat` in parameterized messages.
@@ -171,18 +180,28 @@ Gradle-plugin functional tests build real projects with TestKit against artifact
 publishes into a shared local repo (only the JVM + metadata publications of
 `:kotlin-library-api-watchdog-plugin-annotations`, to avoid building all
 native targets). The Android functional tests skip themselves when no Android SDK is found (see `androidSdkDirOrNull`
-in `gradle-plugin/build.gradle.kts`) and cover four setups: an AGP 8 library with the Kotlin Android plugin, an AGP 9
-library with AGP's built-in Kotlin support (no Kotlin Android plugin, with the Kotlin version under test pinned onto
-the build classpath with `apply false` to override the KGP that AGP embeds), and the KMP android target from
+in `gradle-conventions/.../GradlePluginConventionPlugin.kt`) and cover five setups through the fixtures in
+`WatchdogProject.kt`: an AGP 8 library with the Kotlin Android plugin, an AGP 9 library with AGP's built-in Kotlin
+support (no Kotlin Android plugin, with the Kotlin version under test pinned onto the build classpath with
+`apply false` to override the KGP that AGP embeds), the KMP android target from
 `com.android.kotlin.multiplatform.library` on both AGP generations (its target block is `androidLibrary` on AGP 8 and
-`android` on AGP 9). AGP 8 projects launch with the pinned `agpCompatibleGradle` version because AGP 8 can't run on
-Gradle 9.6+. AGP 9 projects run with the current Gradle.
+`android` on AGP 9), and the legacy KMP `androidTarget()` on `com.android.library`
+(`LegacyKmpAndroidWatchdogProject`, AGP 8 only, since AGP 9 refuses that setup without compatibility properties).
+`AndroidLibraryWatchdogProject` can add JVM and Android library subprojects (consumed as AARs), script inside
+`android { }` for build types and flavors, and root-only script. The multiplatform fixtures take `commonMain` and
+`androidMain` dependencies and JVM subprojects. All Android fixtures set `android.useAndroidX=true`. The
+dependency-collection tests cover platform types from `android.jar`, project and repository AARs, a multiplatform
+AndroidX library resolved through its `-android` AAR variant, build-type and flavor scoped `api`, `compileOnly`
+exemptions, and `androidMain`-only declarations.
+AGP 8 projects launch with the pinned `agpCompatibleGradle` version because AGP 8 can't run on Gradle 9.6+. AGP 9
+projects run with the current Gradle. The dev kit skips every multiplatform fixture on Kotlin versions older than the
+build's own, because KLIBs are not forward compatible.
 
 ### Adding a new diagnostic
 
 Touch all of: the entry in `diagnostics.json` (name, title, docs path, message), the diagnostic factory in
 `WatchdogDiagnostics`, a checker in `fir/`, registration in `WatchdogFirCheckers`, the severity property and name
-mapping in `WatchdogGradleExtension`, the checker list and severity sample in README.md, test data with regenerated
+mapping (keyed by the generated `WatchdogChecks` constant) in `WatchdogGradleExtension`, the checker list and severity sample in README.md, test data with regenerated
 tests, and the severity assertions in `WatchdogProjectTest`. Also map the diagnostic in `:kotlin-library-api-watchdog-exempts-fixer`'s
 `ExemptionRegistry` (to its exemption annotation or an `Unfixable` reason), extend the expected-names set in
 `FixerProtocolTest`, and cover the fix in `UpdateBackwardsCompatibilityExemptsTest`'s specimen file. On the

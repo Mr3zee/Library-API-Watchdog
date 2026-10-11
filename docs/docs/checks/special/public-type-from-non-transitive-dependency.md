@@ -8,7 +8,7 @@ their artifacts are not available transitively to consumers.
 | Diagnostic       | `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`                        |
 | Default severity | Always an error                                                     |
 | Gradle property  | [`publicTypesMustBeTransitiveDependencies`](../../configuration.md) |
-| Allowance        | [`apiWatchdogAllowedNonTransitive`](#allowing-a-dependency)         |
+| Module exemption | [`apiWatchdogExemptNonTransitive`](#exempting-a-dependency)         |
 | Exemption        | [`@IntentionallyNonTransitiveDependency`](../../exemptions.md)      |
 
 Library consumers must be able to resolve every type in the public API and in
@@ -44,11 +44,16 @@ The check covers return, receiver, value and context parameter types, nested typ
 bounds, class supertypes, and public type aliases. It is always reported as an error and can't be
 demoted to a warning.
 
-## Allowing a dependency
+Android libraries are checked per build variant. A dependency declared with `debugApi` or `freeApi`
+is published by that variant alone, so the other variants report its types. AAR dependencies, from
+projects and repositories alike, count like jars, and platform classes from `android.jar` are not
+dependencies at all.
+
+## Exempting a dependency
 
 When the environment that loads the library supplies a dependency on its own, its types are safe
 in the public API even though nothing publishes them. Declare such a dependency on the
-`apiWatchdogAllowedNonTransitive` configuration, and the check accepts its types everywhere in the
+`apiWatchdogExemptNonTransitive` configuration, and the check accepts its types everywhere in the
 module without a per-declaration exemption. Any dependency notation works, including a version
 catalog entry, a project, and `gradleApi()`. The version is optional, the compile classpath's is
 used:
@@ -57,31 +62,31 @@ used:
 dependencies {
     compileOnly("com.example:models:1.0")
 
-    apiWatchdogAllowedNonTransitive("com.example:models")
-    apiWatchdogAllowedNonTransitive(libs.host.api)
-    apiWatchdogAllowedNonTransitive(project(":host-api"))
+    apiWatchdogExemptNonTransitive("com.example:models")
+    apiWatchdogExemptNonTransitive(libs.host.api)
+    apiWatchdogExemptNonTransitive(project(":host-api"))
 }
 ```
 
-The same allowance can be recorded in the configuration block of the declaration itself, so the
+The same exemption can be recorded in the configuration block of the declaration itself, so the
 dependency is named once. Inside that block, `this` is the dependency being declared:
 
 ```kotlin build.gradle.kts
-import org.jetbrains.kotlinx.library.api.watchdog.allowExposingNonTransitivelyInApi
+import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency
 
 dependencies {
-    compileOnly("com.example:models:1.0") { allowExposingNonTransitivelyInApi(this) }
+    compileOnly("com.example:models:1.0") { exemptNonTransitiveDependency(this) }
 }
 ```
 
-The allowance covers the named dependency and everything it pulls onto the compile classpath, so
-a Kotlin Multiplatform library is allowed together with its platform artifact. To allow everything
+The exemption covers the named dependency and everything it pulls onto the compile classpath, so
+a Kotlin Multiplatform library is exempt together with its platform artifact. To exempt everything
 in a configuration, such as every `compileOnly` dependency of a Gradle plugin, extend from it
 through the `apiWatchdog` extension:
 
 ```kotlin build.gradle.kts
 apiWatchdog {
-    allowedNonTransitiveDependencies {
+    exemptNonTransitiveDependencies {
         extendsFrom(configurations.compileOnly.get())
     }
 }
@@ -89,7 +94,7 @@ apiWatchdog {
 
 The configuration is a marker only. It adds nothing to the compile classpath, and the dependency
 is still declared as `implementation` or `compileOnly`. See
-[Allowed non-transitive dependencies](../../configuration.md#allowed-non-transitive-dependencies)
+[Exempt non-transitive dependencies](../../configuration.md#exempt-non-transitive-dependencies)
 in the configuration reference.
 
 If dependency exposure is deliberately managed outside Gradle metadata for the whole module, disable
@@ -120,7 +125,7 @@ compiles against `gradleApi()` or a `compileOnly` dependency, yet it runs inside
 that already provides every Gradle type. An IDE plugin, an annotation processor loaded by the
 compiler, or a servlet container's API work the same way. Name that environment in the
 `description`, since nothing about the declaration shows where the dependency comes from. When
-every use of the dependency is of that kind, [allow the dependency](#allowing-a-dependency) for the
+every use of the dependency is of that kind, [exempt the dependency](#exempting-a-dependency) for the
 module instead of exempting each declaration.
 
 ```kotlin build.gradle.kts
