@@ -523,35 +523,6 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun undocumentedEnumEntriesGetAPlaceholderKdoc() {
-        @Language("kotlin")
-        val text = """
-            package com.example
-
-            /** Modes. */
-            public enum class Mode { FAST }
-
-            /** Levels. */
-            public enum class Level {
-                LOW,
-            }
-        """.trimIndent()
-
-        val result = fix(
-            text,
-            diagnostic("UNDOCUMENTED_PUBLIC_API", text, "FAST"),
-            diagnostic("UNDOCUMENTED_PUBLIC_API", text, "LOW"),
-        )
-
-        val newText = result.newText!!
-        // A mid-line entry is documented inline, one on its own line gets its own KDoc line.
-        assertContains(newText, "public enum class Mode { $PLACEHOLDER_KDOC FAST }")
-        assertContains(newText, "public enum class Level {\n    $PLACEHOLDER_KDOC\n    LOW,\n}")
-        assertEquals(2, result.applied.size)
-        assertEquals(emptyList(), result.skipped)
-    }
-
-    @Test
     fun undocumentedConstructorPropertyGetsAPlaceholderKdoc() {
         @Language("kotlin")
         val text = """

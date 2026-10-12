@@ -470,10 +470,10 @@ private fun PsiElement.resolveDeclarationTarget(): FixTarget? {
 }
 
 /**
- * The declaration whose KDoc the diagnostic misses. Unlike [resolveDeclarationTarget], enum
- * entries are documented like any declaration, and a `val`/`var` primary constructor parameter
- * takes its KDoc the way a declaration does: on a line of its own when the parameter has one.
- * The primary constructor itself is described by the class KDoc and has no KDoc of its own.
+ * The declaration whose KDoc the diagnostic misses. Unlike [resolveDeclarationTarget], a
+ * `val`/`var` primary constructor parameter takes its KDoc the way a declaration does: on a line
+ * of its own when the parameter has one. The primary constructor itself is described by the
+ * class KDoc and has no KDoc of its own.
  */
 private fun PsiElement.resolveDocumentedTarget(): FixTarget? {
     for (candidate in ancestorsWithSelf()) {

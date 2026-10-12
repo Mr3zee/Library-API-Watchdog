@@ -107,6 +107,8 @@ public class Profile(
 - A `companion object` with the default name is not reported. It is a namespace for its members,
   and the members are checked on their own. A named companion (`companion object Factory`) is a
   deliberate type and is reported like any other object.
+- Enum entries are not reported. The KDoc of the enum class describes them, and a name is
+  usually all the documentation a constant needs.
 - Compiler-generated members (data class `copy`/`componentN`, enum `values`/`valueOf`/`entries`)
   have no source of their own and are never reported.
 - A plain `//` or `/* */` comment doesn't count, only a KDoc block (`/** ... */`) satisfies the

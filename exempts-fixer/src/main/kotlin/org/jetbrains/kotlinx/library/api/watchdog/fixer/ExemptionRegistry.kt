@@ -11,10 +11,7 @@ internal enum class TargetStrategy {
     /** The reported declaration itself: class, type alias, function, property, or constructor. */
     REPORTED_DECLARATION,
 
-    /**
-     * The reported declaration as the owner of a KDoc: any of [REPORTED_DECLARATION]'s targets,
-     * plus enum entries, which no annotation targets but a KDoc documents all the same.
-     */
+    /** The reported declaration as the owner of a KDoc: any of [REPORTED_DECLARATION]'s targets. */
     DOCUMENTED_DECLARATION,
 
     /**

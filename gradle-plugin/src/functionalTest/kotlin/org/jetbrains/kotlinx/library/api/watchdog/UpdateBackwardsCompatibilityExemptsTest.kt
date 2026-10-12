@@ -48,7 +48,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
 
         val updateResult = build(project.rootDir, UPDATE_TASK)
         assertEquals(TaskOutcome.SUCCESS, updateResult.task(":$UPDATE_TASK")?.outcome)
-        assertContains(updateResult.output, "backwards-compatibility exemption(s) and 3 placeholder KDoc(s)")
+        assertContains(updateResult.output, "backwards-compatibility exemption(s) and 2 placeholder KDoc(s)")
 
         val fixedText = project.rootDir.mainSource("legacy").readText()
         val reason = "reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY"
@@ -56,7 +56,6 @@ class UpdateBackwardsCompatibilityExemptsTest {
         // Undocumented declarations get a placeholder KDoc instead of an exemption, above any annotations.
         assertContains(fixedText, "$PLACEHOLDER_KDOC\n@IntentionallyOpen($reason)\npublic open class UndocumentedOpenClass {")
         assertContains(fixedText, "    $PLACEHOLDER_KDOC\n    public fun undocumentedMember()")
-        assertContains(fixedText, "public enum class DocumentedEnum { $PLACEHOLDER_KDOC UNDOCUMENTED_ENTRY }")
         assertFalse(fixedText.contains("@IntentionallyUndocumented"))
         assertContains(fixedText, "@IntentionallyOpen($reason)\npublic open class UnprotectedOpenClass")
         // The markerless @SubclassOptInRequired is replaced, not joined, by the exemption.
@@ -447,7 +446,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
 }
 
 /**
- * One specimen of every diagnostic the fixer can resolve automatically. The three undocumented
+ * One specimen of every diagnostic the fixer can resolve automatically. The two undocumented
  * declarations get a placeholder KDoc, every other one is documented.
  */
 @Suppress("RedundantVisibilityModifier", "RedundantSuspendModifier", "MayBeConstant")
@@ -459,9 +458,6 @@ private val fixableFile = """
     public open class UndocumentedOpenClass {
         public fun undocumentedMember() {}
     }
-
-    /** A documented enum with an undocumented entry. */
-    public enum class DocumentedEnum { UNDOCUMENTED_ENTRY }
 
     /** A base class whose subclass opt-in lists no markers and so restricts nothing. */
     @SubclassOptInRequired

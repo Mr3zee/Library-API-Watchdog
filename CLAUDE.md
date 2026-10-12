@@ -99,8 +99,8 @@ bootstrap/dev repositories configured in `settings.gradle.kts`.
   imports). The `REPORTED_ANNOTATION` target strategy replaces the reported annotation instead of adding one, which
   is how a markerless `@SubclassOptInRequired` becomes `@IntentionallyOpen`. `UNDOCUMENTED_PUBLIC_API` is the one
   diagnostic resolved without an annotation: `PlaceholderKdocFix` inserts
-  `/** TODO: Provide kDocs for this declaration */` above the declaration (and its annotations), enum entries and
-  `val` constructor parameters included. The `fixed` protocol line then carries an empty annotation field, which the
+  `/** TODO: Provide kDocs for this declaration */` above the declaration (and its annotations), `val`
+  constructor parameters included. The `fixed` protocol line then carries an empty annotation field, which the
   Gradle tasks report as a placeholder KDoc.
   `ExemptionRegistry` maps each diagnostic to its `Fix` (annotation plus target strategy, or the KDoc placeholder)
   or marks it unfixable.

@@ -15,7 +15,7 @@ public interface <!UNDOCUMENTED_PUBLIC_API!>UndocumentedInterface<!>
 public object <!UNDOCUMENTED_PUBLIC_API!>UndocumentedObject<!>
 
 public enum class <!UNDOCUMENTED_PUBLIC_API!>UndocumentedEnum<!> {
-    <!UNDOCUMENTED_PUBLIC_API!>A<!>,
+    A,
 }
 
 public annotation class <!UNDOCUMENTED_PUBLIC_API!>UndocumentedAnnotation<!>
@@ -228,14 +228,14 @@ public class DocumentedImplementation : DocumentedContract {
     override val undocumentedValue: Int = 0
 }
 
-// Enum entries are part of the public API surface.
+// Enum entries are described by the KDoc of their enum class: no warning on them.
 
 /** Documented enum with entries in every documentation state. */
 public enum class DocumentedEnumWithEntries {
     /** Documented entry. */
     DOCUMENTED_ENTRY,
 
-    <!UNDOCUMENTED_PUBLIC_API!>UNDOCUMENTED_ENTRY<!>,
+    UNDOCUMENTED_ENTRY,
 
     @IntentionallyUndocumented
     ACKNOWLEDGED_ENTRY,

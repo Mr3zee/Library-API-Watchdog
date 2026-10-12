@@ -16,7 +16,6 @@ import org.jetbrains.kotlin.fir.caches.firCachesFactory
 import org.jetbrains.kotlin.fir.caches.getValue
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
-import org.jetbrains.kotlin.fir.declarations.FirEnumEntry
 import org.jetbrains.kotlin.fir.declarations.FirMemberDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
@@ -28,15 +27,15 @@ import org.jetbrains.kotlin.fir.declarations.utils.isCompanion
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
-import org.jetbrains.kotlin.text
 
 /**
- * Reports watched classifiers, type aliases, functions, properties, secondary constructors, and
- * enum entries with no KDoc token. KDoc content is not inspected beyond recognizing class-level
- * `@property` and constructor `@param` tags.
+ * Reports watched classifiers, type aliases, functions, properties, and secondary constructors
+ * with no KDoc token. KDoc content is not inspected beyond recognizing class-level `@property`
+ * and constructor `@param` tags.
  *
- * Overrides, `actual` declarations, primary constructors, companion objects with the default
- * name, declarations visible only through `@PublishedApi`, and exempt declarations are skipped.
+ * Overrides, `actual` declarations, primary constructors, enum entries, companion objects with
+ * the default name, declarations visible only through `@PublishedApi`, and exempt declarations
+ * are skipped.
  */
 internal class UndocumentedApiChecker(
     session: FirSession,
@@ -122,7 +121,8 @@ internal class UndocumentedApiChecker(
      * overrides and `actual`s inherit it, and the primary constructor is described by class KDoc.
      * A `companion object` with the default name is a namespace for its members, which are
      * documented on their own, so it is skipped too. A named companion is a deliberate type
-     * and stays watched.
+     * and stays watched. Enum entries are described by the KDoc of their enum class: a name
+     * is usually all the documentation a constant needs.
      */
     context(context: CheckerContext)
     private fun FirMemberDeclaration.watchedKind(): String? = when {
@@ -139,7 +139,6 @@ internal class UndocumentedApiChecker(
             else -> null
         }
         this is FirTypeAlias -> "type alias"
-        this is FirEnumEntry -> "enum entry"
         this is FirNamedFunction -> if (isOverride) null else "function"
         this is FirProperty -> if (isOverride) null else "property"
         this is FirConstructor -> if (isPrimary) null else "constructor"
@@ -153,7 +152,6 @@ internal class UndocumentedApiChecker(
     private fun FirMemberDeclaration.watchedName(context: CheckerContext): Name? = when (this) {
         is FirRegularClass -> name
         is FirTypeAlias -> name
-        is FirEnumEntry -> name
         is FirNamedFunction -> name
         is FirProperty -> name
         is FirConstructor -> context.containingClassSymbol?.classId?.shortClassName ?: symbol.name
