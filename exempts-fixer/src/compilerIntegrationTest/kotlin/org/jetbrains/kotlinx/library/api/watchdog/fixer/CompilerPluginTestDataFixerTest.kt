@@ -13,15 +13,22 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.jetbrains.kotlin.compiler.plugin.devkit.runners.DevKitTest
 import org.jetbrains.kotlin.compiler.plugin.devkit.services.configurePlugin
+import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.LanguageFeature.*
 import org.jetbrains.kotlin.test.FirParser
 import org.jetbrains.kotlin.test.directives.CodegenTestDirectives
 import org.jetbrains.kotlin.test.directives.FirDiagnosticsDirectives
 import org.jetbrains.kotlin.test.directives.JvmEnvironmentConfigurationDirectives
 import org.jetbrains.kotlin.test.directives.LanguageSettingsDirectives.LANGUAGE
+import org.jetbrains.kotlin.test.directives.model.DirectivesContainer
+import org.jetbrains.kotlin.test.directives.model.SimpleDirectivesContainer
+import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.runners.AbstractFirPhasedDiagnosticTest
+import org.jetbrains.kotlin.test.services.EnvironmentConfigurator
 import org.jetbrains.kotlin.test.services.KotlinTestInfo
+import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlinx.library.api.watchdog.WatchdogComponentRegistrar
+import org.jetbrains.kotlinx.library.api.watchdog.WatchdogConfigurationKeys
 import org.opentest4j.AssertionFailedError
 
 private val PATH_SEPARATOR = File.pathSeparator
@@ -261,9 +268,34 @@ private class FixedOutputDiagnosticRunner : DevKitTest(
             )
         }
     },
-    { configurePlugin(WatchdogComponentRegistrar()) },
+    {
+        configurePlugin(WatchdogComponentRegistrar())
+        useConfigurators(::WatchdogOptionsConfigurator)
+    },
 ) {
     fun run(filePath: String) = runTest(filePath)
+}
+
+/**
+ * The `// INTERNAL_API_ANNOTATIONS:` directive of the compiler plugin's fixtures. It mirrors the
+ * directive in the compiler plugin's test fixtures, which are not on this source set's classpath.
+ */
+private object WatchdogTestDirectives : SimpleDirectivesContainer() {
+    val INTERNAL_API_ANNOTATIONS by stringDirective(
+        description = "Annotation FQ names configured as internal API markers (internalApiAnnotation option)",
+    )
+}
+
+private class WatchdogOptionsConfigurator(testServices: TestServices) : EnvironmentConfigurator(testServices) {
+    override val directiveContainers: List<DirectivesContainer>
+        get() = listOf(WatchdogTestDirectives)
+
+    override fun configureCompilerConfiguration(configuration: CompilerConfiguration, module: TestModule) {
+        val annotations = module.directives[WatchdogTestDirectives.INTERNAL_API_ANNOTATIONS]
+        if (annotations.isNotEmpty()) {
+            configuration.put(WatchdogConfigurationKeys.INTERNAL_API_ANNOTATIONS, annotations.toSet())
+        }
+    }
 }
 
 private data class TestDataSection(

@@ -47,9 +47,8 @@ internal class UndocumentedApiChecker(
         source.getChild(kdocElementTypes, index = 0, depth = 1, reverse = false)
     }
 
-    @Suppress("UNNECESSARY_SAFE_CALL")
     private val classKdocTagsByKdoc = session.firCachesFactory.createCache<KtSourceElement, ClassKdocTags> { kdoc ->
-        kdoc.text?.parseClassKdocTags() ?: ClassKdocTags(emptySet(), emptySet())
+        kdoc.textCompat?.parseClassKdocTags() ?: ClassKdocTags(emptySet(), emptySet())
     }
 
     private companion object {

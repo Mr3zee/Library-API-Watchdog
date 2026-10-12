@@ -508,8 +508,9 @@
         "The {0} `{1}` publicly exposes `{2}`, but the dependency providing that type is not published",
         "transitively to consumers. Declare the dependency with `api` instead of `implementation`.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyNonTransitiveDependency`,",
-        " or add the dependency containing the type to the list of allowed exposed dependencies using `allowExposingNonTransitivelyInApi()` in your build script."
+        "If this API shape is intentional, apply `@IntentionallyNonTransitiveDependency` to the declaration,",
+        "an enclosing class, a parameter, or a type usage, or exempt the dependency that provides the type",
+        "through `apiWatchdog.exemptNonTransitiveDependencies` in the build script."
       ]
     },
     {
