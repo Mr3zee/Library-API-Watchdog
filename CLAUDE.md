@@ -1,213 +1,62 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Skill from https://mr3zee.github.io/code-doc-writer/ must be installed. 
 
-# Text Requirement
-
-Never use '—'.
-Never use semicolons in prose. Start a new sentence instead.
-Always use can't instead of its uncontracted form.
-
-## What this is
-
-A Kotlin K2 compiler plugin (plus Gradle plugin and annotations library) that warns library authors about public API
-declarations that are hard to evolve. The checkers only run in modules compiled with explicit API mode
-(`kotlin { explicitApi() }` / `-Xexplicit-api`, strict or warning). Otherwise they are not registered at all. See
-README.md for the full list of diagnostics and their rationale.
-
-## compiler-plugin-dev-kit
-
-The build resolves the `org.jetbrains.kotlin.compiler.plugin.devkit.*` plugins and runtime artifacts from
-`https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap`. Its settings plugin supplies the Kotlin
-development repositories, aligned plugin coordinates, and functional-test publishing setup. Dev-kit cross-module
-wiring is declared through namespaced properties in `gradle.properties`. The supported Kotlin version range comes
-from `kotlinCliMin` and `kotlinIdeMin` in `gradle/libs.versions.toml`, expanded by the
-`library-api-watchdog.devkit-versions-conventions` plugin (`gradle-conventions/`) and the `pluginDevKit` block of
-`compiler-plugin/build.gradle.kts`.
+A Kotlin K2 compiler plugin, a Gradle plugin, and an annotations library. The checkers warn library authors about
+public API declarations that are hard to evolve. README.md lists the diagnostics. `DOCS_GUIDELINE.md` holds the rules
+for every text a person reads.
 
 ## Commands
 
-There is no plain `test` task in the compiler plugin or the fixer. The dev kit registers one test task per supported
-Kotlin version (`k2320Test`, `k240Test`, `k2410Test`, `k2420_rcTest`, ...). Run `./gradlew :<module>:tasks --all`
-to list the current set. The commands below use `k2410Test` as an example.
+The compiler plugin and the fixer have no plain `test` task. The dev kit registers one test task for each supported
+Kotlin version (`k2320Test`, `k2410Test`, ...). `./gradlew :<module>:tasks --all` lists the current set.
 
 ```bash
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:k2410Test          # diagnostics tests against Kotlin 2.4.10
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:generateTests      # regenerate JUnit classes from test data
-./gradlew :kotlin-library-api-watchdog-exempts-fixer:k2410Test            # fixer unit tests (PSI insertion, protocol) plus the compiler-plugin integration test
-./gradlew :kotlin-library-api-watchdog-gradle-plugin:functionalTest       # Gradle TestKit integration tests against every supported Kotlin version
+./gradlew :kotlin-library-api-watchdog-exempts-fixer:k2410Test            # fixer tests plus the compiler-plugin integration test
+./gradlew :kotlin-library-api-watchdog-gradle-plugin:functionalTest       # Gradle TestKit tests against every supported Kotlin version
 ./gradlew :kotlin-library-api-watchdog-gradle-plugin:k2410FunctionalTest  # the same against one Kotlin version
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:k2410Test --tests "*JvmDiagnosticTestGenerated*"   # filter generated tests
-./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmark          # JMH time/allocation benchmarks (manual, see compiler-plugin/src/benchmark/README.md)
-./gradlew :kotlin-library-api-watchdog-compiler-plugin:profile            # JFR profile of one benchmark subject (manual, see compiler-plugin/src/benchmark/README.md)
-./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkCorpusAudit   # verify the corpus triggers every benchmark-eligible checker
+./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkCorpusAudit   # check that the corpus triggers every benchmark-eligible checker
 ```
 
-Each test-data file becomes one test method in the generated classes, so a single scenario can be run with a `--tests`
-method filter. The `compilerIntegrationTest` source set of the fixer (`CompilerPluginTestDataFixerTest`) runs the
-fixer over the compiler plugin's diagnostics test data and re-compiles the result, and every versioned fixer test task
-includes it. Test results land in `build/test-results/<taskName>/` of the module.
+Each test-data file is one test method in the generated classes. After you add, remove, or rename a file in
+`compiler-plugin/src/test/data/diagnostics/`, run `generateTests` again. Test results are in
+`build/test-results/<taskName>/` of the module.
 
-## Architecture
+## Constraints the code doesn't show
 
-Five modules under the Maven group `org.jetbrains.kotlinx`. The Gradle plugin id is
-`org.jetbrains.kotlin.library.api-watchdog`. All plugin infrastructure classes
-extend dev-kit base classes (`DevKitCompilerPluginRegistrar`, `DevKitCommandLineProcessor`, `DevKitSupportPlugin`, ...).
-`PluginInfo` is generated by the build. The Kotlin version (see `gradle/libs.versions.toml`) comes from the kotlinlang
-bootstrap/dev repositories configured in `settings.gradle.kts`.
+- `diagnostics.json` is the single source of truth for diagnostic texts. The build generates `WatchdogDiagnosticMessages`
+  (compiler plugin) and `WatchdogChecks` (Gradle plugin) from it. The docs build fails on a diagnostic name or range
+  that the compiler doesn't report.
+- `WatchdogDiagnosticsRecorder` must not reference `com.intellij` types in bytecode, because the jar runs both in the
+  CLI and in the relocated `kotlin-compiler-embeddable` classpath.
+- The fixer uses K2 PSI entry points only, with relocated `org.jetbrains.kotlin.com.intellij` imports. Its
+  dependencies are compile-only. The Gradle task gives it the `kotlin-compiler-embeddable` of the project's Kotlin
+  version at runtime.
+- The Gradle plugin checks the task graph in `gradle.taskGraph.whenReady`, never on task realization, because IDE
+  sync realizes every task.
+- Android compilations resolve dependencies through an `android-classes-jar` artifact view. Without it a project AAR
+  has no artifact. The plugin recognizes them by the `android` JVM environment of the compile classpath, because the
+  `com.android.kotlin.multiplatform.library` target of AGP 8 reports platform type `jvm`.
+- `:kotlin-library-api-watchdog-report-aggregation` is a separate artifact so a root project that applies it doesn't
+  put the KGP-dependent support plugin on every project's plugin classpath.
+- The Android functional tests skip themselves without an Android SDK. AGP 8 fixtures run with the pinned
+  `agpCompatibleGradle`, because AGP 8 can't run on Gradle 9.6 or later. The dev kit skips every multiplatform fixture
+  on Kotlin versions older than the build's own, because KLIBs aren't forward compatible.
 
-- `:kotlin-library-api-watchdog-compiler-plugin` - FIR frontend checkers only, no IR/codegen.
-    - Entry points: `WatchdogCompilerPluginRegistrar` and `WatchdogCommandLineProcessor` (single repeatable option
-      `diagnosticSeverity=<DIAGNOSTIC_NAME>:error|warning|none`, where `none` disables the check).
-    - `fir/WatchdogFirCheckers` registers the checkers, and only when explicit API mode is enabled.
-    - `fir/WatchdogDiagnostics` - the message text of every diagnostic comes from the generated
-      `WatchdogDiagnosticMessages` object, which the `generateDiagnosticMessages` task builds out of the shared
-      `diagnostics.json` (see [Shared diagnostics registry](#shared-diagnostics-registry)). `WatchdogErrorMessages`
-      only resolves each factory's name against it. A diagnostic factory bakes its severity in at construction, so each
-      configurable
-      diagnostic is a `ConfigurableWatchdogDiagnostic` holding an error+warning factory pair under one name. Checkers
-      pick the factory at report time via `WatchdogDiagnosticSeverities` (default: everything is an error). A
-      diagnostic configured to `WatchdogSeverity.NONE` resolves to no factory, and `WatchdogFirCheckers` skips
-      registering a checker whose diagnostics are all disabled, so a disabled check performs no work.
-      `EXEMPTION_WITHOUT_EXPLANATION` and `PUBLIC_TYPE_WITH_INTERNAL_API` are deliberately not
-      severity-configurable - they are always errors. `PUBLIC_TYPE_WITH_INTERNAL_API` has a
-      dedicated Boolean whole-check switch.
-    - `fir/WatchdogCheckerUtils.isWatchedPublicApi()` is the shared gate for the published source or binary surface:
-      real source, public/protected effective visibility (or `@PublishedApi`), and not under an annotation whose class
-      carries `@InternalAnnotationMarker` or whose FQ name was passed through the repeatable `internalApiAnnotation`
-      option (`apiWatchdog { internalApiAnnotations }` in Gradle). The configured names travel as the
-      `fir/ConfiguredInternalApiAnnotations` FIR session component, registered only when non-empty. In diagnostics
-      tests the `// INTERNAL_API_ANNOTATIONS: a.B c.D` directive (`testFixtures/.../services/WatchdogTestDirectives.kt`)
-      stands in for the option. Source-API and Java-ergonomics checks use
-      `isWatchedPublicSourceApi()`, which excludes declarations visible only through `@PublishedApi`.
-      `WatchdogClassIds` holds the annotation ClassIds, including the
-      `exemptionAnnotations` set on which `ExemptionExplanationChecker` enforces explanations.
-    - The `diagnosticsOutputFile=<path>` option makes `fir/WatchdogDiagnosticsRecorder` append every reported
-      diagnostic (name, file path, element offsets) as a TSV line: `WatchdogFirCheckers` wraps each checker in a
-      `RecordingDeclarationChecker` whose delegating reporter records before forwarding. The recorder must not
-      reference `com.intellij` types in bytecode - the jar runs both in the CLI and the relocated
-      `kotlin-compiler-embeddable` worlds.
-- `:kotlin-library-api-watchdog-plugin-annotations` - Kotlin Multiplatform library with the user-facing `@Intentionally*` exemption annotations,
-  `@InternalAnnotationMarker`, and `ExemptionReason`. Added automatically as a dependency by the Gradle plugin.
-- `:kotlin-library-api-watchdog-exempts-fixer` - a standalone command-line tool (main class `ExemptsFixerMain`) behind the
-  `updateBackwardsCompatibilityExempts` task. It merges and deduplicates the diagnostics reports written by regular
-  KGP compilation tasks while task-scoped collection disables `EXEMPTION_WITHOUT_EXPLANATION`,
-  `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`, and `PUBLIC_TYPE_WITH_INTERNAL_API`, then inserts the matching
-  `@Intentionally*` annotation with the
-  `FOR_BACKWARDS_COMPATIBILITY` reason for each recorded diagnostic via text edits computed on
-  Kotlin PSI (`kotlin-compiler-embeddable`, K2 entry points only, relocated `org.jetbrains.kotlin.com.intellij`
-  imports). The `REPORTED_ANNOTATION` target strategy replaces the reported annotation instead of adding one, which
-  is how a markerless `@SubclassOptInRequired` becomes `@IntentionallyOpen`. `UNDOCUMENTED_PUBLIC_API` is the one
-  diagnostic resolved without an annotation: `PlaceholderKdocFix` inserts
-  `/** TODO: Provide kDocs for this declaration */` above the declaration (and its annotations), `val`
-  constructor parameters included. The `fixed` protocol line then carries an empty annotation field, which the
-  Gradle tasks report as a placeholder KDoc.
-  `ExemptionRegistry` maps each diagnostic to its `Fix` (annotation plus target strategy, or the KDoc placeholder)
-  or marks it unfixable.
-  `ExemptionScanner` also finds every Watchdog `@Intentionally*` annotation already present in main sources,
-  regardless of its reason. The fixer has a dry-run mode used by report generation, so it can return applicable and
-  unfixable diagnostics without changing source files. Request/response travel as `key=value` files
-  (`FixerProtocol`). Compile-only deps. At runtime the Gradle task supplies `kotlin-compiler-embeddable` of the
-  project's Kotlin version.
-- `:kotlin-library-api-watchdog-gradle-plugin` - `WatchdogSupportPlugin` applies the compiler plugin and the annotations dependency to every
-  compilation except test compilations (`isApplicable`), so a raw `-Xexplicit-api` flag spread over all compilations
-  can't turn the checks on for unpublished test sources.
-  `WatchdogGradleExtension` (`apiWatchdog { ... }`) exposes one severity `Property` per configurable diagnostic and
-  turns them into `diagnosticSeverity` subplugin options. The `generateCheckNames` task of the
-  `library-api-watchdog.gradle-plugin-conventions` plugin generates the public `WatchdogChecks` object, one `const val`
-  per diagnostic name in `diagnostics.json`, which build scripts pass to `apiWatchdog.ignore` and the extension uses as
-  the keys of its severity map. The `apiWatchdogExemptNonTransitive` configuration
-  (exposed as `apiWatchdog.exemptNonTransitiveDependencies`) is a declarable bucket of dependencies whose types
-  `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY` accepts. Per compilation the plugin registers a resolvable
-  `apiWatchdog<Compilation>ExemptNonTransitiveDependencies` view of it, next to the
-  `apiWatchdog<Compilation>TransitiveDependencies` view of the API elements. Both copy the compile classpath
-  attributes and resolve consistently with it, so file paths match the compile classpath. Android compilations
-  (recognized by the `android` JVM environment of their compile classpath, because AGP 8's
-  `com.android.kotlin.multiplatform.library` target reports platform type `jvm`) resolve all three through an
-  `android-classes-jar` artifact view: a project AAR has no artifact without it, and the compiler sees the
-  transformed classes jar of an AAR rather than the AAR. The exempt files are
-  appended to the `transitiveDependencyPaths` option, which is why the compiler plugin has no exemption option
-  of its own. Scheduling `UpdateBackwardsCompatibilityExemptsTask`
-  (untracked) or `GenerateBackwardsCompatibilityExemptsReportTask` in the task graph (checked in
-  `gradle.taskGraph.whenReady`, never on task realization, because IDE sync realizes every task) activates an
-  internal collection property that
-  injects a unique `diagnosticsOutputFile` into every main KGP compilation across all targets, forces explicit API
-  warning mode, and demotes enabled configurable watchdog diagnostics to warnings for the adoption run. Each task
-  depends on those compilations and launches the PSI-only
-  `:kotlin-library-api-watchdog-exempts-fixer` once over all reports. Only the update task writes sources. The report
-  task writes module HTML and data reports, and its data output is exposed as a consumable Gradle variant. There is no
-  public collection flag. Running either task, directly or through the aggregation variant, activates it.
-- `:kotlin-library-api-watchdog-report-aggregation` - standalone Gradle plugin and shared report renderer. The
-  `org.jetbrains.kotlin.library.api-watchdog-report-aggregation` plugin resolves explicitly declared
-  `backwardsCompatibilityExemptsReports` project dependencies and combines their variants through
-  `aggregateBackwardsCompatibilityExemptsReport`. It stays in a separate artifact so applying it at the root does
-  not put the KGP-dependent compiler support plugin on every project's plugin classpath, and dependency-driven
-  resolution keeps it compatible with Gradle project isolation.
+## Adding a new diagnostic
 
-### Shared diagnostics registry
-
-`diagnostics.json` in the repository root is the single source of truth for diagnostic texts. Each entry holds the
-`name`, the `title` and `docs` path of its documentation page, the `message` template, and an optional
-`messageTrailer`. Three consumers read it:
-
-- `:kotlin-library-api-watchdog-gradle-plugin`'s `generateCheckNames` task emits the public `WatchdogChecks` constants
-  object into a generated source dir, so a new diagnostic name becomes a constant without further work.
-- `:kotlin-library-api-watchdog-compiler-plugin`'s `generateDiagnosticMessages` task emits `WatchdogDiagnosticMessages.kt` into a generated
-  source dir. It appends a final `See more: <docsBaseUrl><docs>` section to every message, after the trailer, and
-  doubles `'` for `java.text.MessageFormat` in parameterized messages.
-- The documentation website: `docs/plugins/remark-code-samples.mjs` validates the
-  `// !diag[/range/] DIAGNOSTIC_NAME ["parameter"]` Code Hike annotations in Kotlin samples, and
-  `docs/src/components/Code.tsx` renders the exact compiler-reported ranges as diagnostic underlines and tooltips.
-  The docs build fails on an unknown name or a range that matches no code.
-
-### Documentation website
-
-`docs/` is a Docusaurus project (pages in `docs/docs/`, sidebar order in `docs/sidebars.ts`), built together with the
-Dokka API reference by `.github/workflows/docs.yml`. Pages use Docusaurus-native relative links and `{#id}` explicit
-heading ids. Code samples render through Code Hike. The rules and the check page template live in `docs/authoring.md`.
-`npm run build` in `docs/` fails on broken links, anchors, and unknown diagnostic names.
-
-### Diagnostics tests
-
-Kotlin-compiler-style data-driven tests. Each `compiler-plugin/src/test/data/diagnostics/*.kt` file carries directive
-comments (`// RUN_PIPELINE_TILL: FRONTEND`, `// EXPLICIT_API_MODE: WARNING`, `// DIAGNOSTICS: -NAME` to mute unrelated
-diagnostics) and inline expected diagnostics as `<!NAME!>...<!>` markers, with a matching `.fir.txt` FIR dump alongside.
-`GenerateTests.kt` (in the `generateTests` source set) generates two JUnit classes per data set - light-tree (`AbstractJvmDiagnosticTest`)
-and PSI (`AbstractPsiJvmDiagnosticTest`) runners. After adding, removing, or renaming a test data file, rerun
-`:kotlin-library-api-watchdog-compiler-plugin:generateTests`.
-
-Gradle-plugin functional tests build real projects with TestKit against artifacts that `installForFunctionalTest`
-publishes into a shared local repo (only the JVM + metadata publications of
-`:kotlin-library-api-watchdog-plugin-annotations`, to avoid building all
-native targets). The Android functional tests skip themselves when no Android SDK is found (see `androidSdkDirOrNull`
-in `gradle-conventions/.../GradlePluginConventionPlugin.kt`) and cover five setups through the fixtures in
-`WatchdogProject.kt`: an AGP 8 library with the Kotlin Android plugin, an AGP 9 library with AGP's built-in Kotlin
-support (no Kotlin Android plugin, with the Kotlin version under test pinned onto the build classpath with
-`apply false` to override the KGP that AGP embeds), the KMP android target from
-`com.android.kotlin.multiplatform.library` on both AGP generations (its target block is `androidLibrary` on AGP 8 and
-`android` on AGP 9), and the legacy KMP `androidTarget()` on `com.android.library`
-(`LegacyKmpAndroidWatchdogProject`, AGP 8 only, since AGP 9 refuses that setup without compatibility properties).
-`AndroidLibraryWatchdogProject` can add JVM and Android library subprojects (consumed as AARs), script inside
-`android { }` for build types and flavors, and root-only script. The multiplatform fixtures take `commonMain` and
-`androidMain` dependencies and JVM subprojects. All Android fixtures set `android.useAndroidX=true`. The
-dependency-collection tests cover platform types from `android.jar`, project and repository AARs, a multiplatform
-AndroidX library resolved through its `-android` AAR variant, build-type and flavor scoped `api`, `compileOnly`
-exemptions, and `androidMain`-only declarations.
-AGP 8 projects launch with the pinned `agpCompatibleGradle` version because AGP 8 can't run on Gradle 9.6+. AGP 9
-projects run with the current Gradle. The dev kit skips every multiplatform fixture on Kotlin versions older than the
-build's own, because KLIBs are not forward compatible.
-
-### Adding a new diagnostic
-
-Touch all of: the entry in `diagnostics.json` (name, title, docs path, message), the diagnostic factory in
-`WatchdogDiagnostics`, a checker in `fir/`, registration in `WatchdogFirCheckers`, the severity property and name
-mapping (keyed by the generated `WatchdogChecks` constant) in `WatchdogGradleExtension`, the checker list and severity sample in README.md, test data with regenerated
-tests, and the severity assertions in `WatchdogProjectTest`. Also map the diagnostic in `:kotlin-library-api-watchdog-exempts-fixer`'s
-`ExemptionRegistry` (to its exemption annotation or an `Unfixable` reason), extend the expected-names set in
-`FixerProtocolTest`, and cover the fix in `UpdateBackwardsCompatibilityExemptsTest`'s specimen file. On the
-documentation side, add the check page at the `docs` path from `diagnostics.json`, list it in `docs/sidebars.ts`,
-`docs/authoring.md`'s page map, and the check list in `docs/docs/overview.md`. In the benchmarks
-(`compiler-plugin/src/benchmark/`), add warning-capable checkers as a `CheckerSubject`, add the
-checker name to the `@Param` lists of both benchmark classes, and add a triggering shape to a
-`BenchmarkCorpus` template, then run `benchmarkCorpusAudit`. Exclude always-error diagnostics
-from per-checker modes and triggering corpus shapes.
+1. The entry in `diagnostics.json`.
+2. The factory in `WatchdogDiagnostics`, a checker in `fir/`, and its registration in `WatchdogFirCheckers`.
+3. The severity property and name mapping in `WatchdogGradleExtension`, and the assertions in `WatchdogProjectTest`.
+4. The checker list and the severity sample in README.md.
+5. Test data and the regenerated tests.
+6. The fixer: `ExemptionRegistry`, the expected-names set in `FixerProtocolTest`, and the specimen file of
+   `UpdateBackwardsCompatibilityExemptsTest`.
+7. The docs: the check page at the `docs` path from `diagnostics.json`, `docs/sidebars.ts`, the page map in
+   `docs/authoring.md`, and the check list in `docs/docs/overview.md`.
+8. The benchmarks in `compiler-plugin/src/benchmark/`, only when the checker can report a warning: a
+   `CheckerSubject`, the `@Param` lists of both benchmark classes, and a triggering shape in `BenchmarkCorpus`. Then
+   run `benchmarkCorpusAudit`.
