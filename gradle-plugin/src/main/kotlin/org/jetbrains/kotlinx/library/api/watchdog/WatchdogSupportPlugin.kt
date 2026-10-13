@@ -26,6 +26,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitSupportPlugin
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.HasConfigurableKotlinCompilerOptions
@@ -147,53 +148,41 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             },
         )
 
-        tasks.register(
+        fun <T : ApiWatchdogReportTask> registerReportTask(
+            name: String,
+            type: Class<T>,
+            description: String,
+        ): TaskProvider<T> = tasks.register(name, type) { task ->
+            task.group = "api watchdog"
+            task.onlyIf(DISABLED_TASK_REASON) { enabled.get() }
+            task.description = description
+            task.compilationNames.convention(emptyList())
+            task.projectDirectory.set(layout.projectDirectory)
+            @Suppress("UnstableApiUsage")
+            task.projectIdentityPath.set(isolated.buildTreePath)
+            task.projectDirectoryFromRoot.set(projectDirectoryFromRoot)
+            task.diagnosticSeverities.set(diagnosticSeverities)
+            task.kotlinVersion.set(kotlinVersion)
+            task.fixerArtifact.from(fixerArtifact)
+            task.fixerClasspath.from(fixerClasspath)
+            task.reports.html.convention(extension.reports.html)
+            task.reports.htmlFile.convention(extension.reports.htmlFile)
+            task.reports.sarif.convention(extension.reports.sarif)
+            task.reports.sarifFile.convention(extension.reports.sarifFile)
+            task.reportDataFile.convention(layout.buildDirectory.file(REPORT_DATA_FILE))
+        }
+        registerReportTask(
             EXEMPT_EXISTING_API_TASK_NAME,
             ExemptExistingApiTask::class.java,
-        ) { task ->
-            task.group = "api watchdog"
-            task.onlyIf(DISABLED_TASK_REASON) { enabled.get() }
-            task.description = "Adds the FOR_BACKWARDS_COMPATIBILITY exemption to every declaration with a watchdog " +
-                    "diagnostic in the main Kotlin sources and writes the API Watchdog reports"
-            task.compilationNames.convention(emptyList())
-            task.projectDirectory.set(layout.projectDirectory)
-            @Suppress("UnstableApiUsage")
-            task.projectIdentityPath.set(isolated.buildTreePath)
-            task.projectDirectoryFromRoot.set(projectDirectoryFromRoot)
-            task.diagnosticSeverities.set(diagnosticSeverities)
-            task.kotlinVersion.set(kotlinVersion)
-            task.fixerArtifact.from(fixerArtifact)
-            task.fixerClasspath.from(fixerClasspath)
-            task.reports.html.convention(extension.reports.html)
-            task.reports.htmlFile.convention(extension.reports.htmlFile)
-            task.reports.sarif.convention(extension.reports.sarif)
-            task.reports.sarifFile.convention(extension.reports.sarifFile)
-            task.reportDataFile.convention(layout.buildDirectory.file(REPORT_DATA_FILE))
-        }
-        val reportTask = tasks.register(
+            "Adds the FOR_BACKWARDS_COMPATIBILITY exemption to every declaration with a watchdog " +
+                    "diagnostic in the main Kotlin sources and writes the API Watchdog reports",
+        )
+        val reportTask = registerReportTask(
             GENERATE_REPORT_TASK_NAME,
             GenerateApiWatchdogReportTask::class.java,
-        ) { task ->
-            task.group = "api watchdog"
-            task.onlyIf(DISABLED_TASK_REASON) { enabled.get() }
-            task.description =
-                "Writes the API Watchdog reports: the applied exemptions and the diagnostics without one. " +
-                        "Changes no source"
-            task.compilationNames.convention(emptyList())
-            task.projectDirectory.set(layout.projectDirectory)
-            @Suppress("UnstableApiUsage")
-            task.projectIdentityPath.set(isolated.buildTreePath)
-            task.projectDirectoryFromRoot.set(projectDirectoryFromRoot)
-            task.diagnosticSeverities.set(diagnosticSeverities)
-            task.kotlinVersion.set(kotlinVersion)
-            task.fixerArtifact.from(fixerArtifact)
-            task.fixerClasspath.from(fixerClasspath)
-            task.reports.html.convention(extension.reports.html)
-            task.reports.htmlFile.convention(extension.reports.htmlFile)
-            task.reports.sarif.convention(extension.reports.sarif)
-            task.reports.sarifFile.convention(extension.reports.sarifFile)
-            task.reportDataFile.convention(layout.buildDirectory.file(REPORT_DATA_FILE))
-        }
+            "Writes the API Watchdog reports: the applied exemptions and the diagnostics without one. " +
+                    "Changes no source",
+        )
         // IDE sync and the `tasks` report realize every task, so task realization can't be the
         // signal.
         val exemptsTaskPaths = listOf(EXEMPT_EXISTING_API_TASK_NAME, GENERATE_REPORT_TASK_NAME)
@@ -242,19 +231,17 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 GENERATE_REPORT_TASK_NAME,
                 GenerateApiWatchdogReportTask::class.java,
             )
-            exemptTask.configure { task ->
-                task.compilationNames.add(kotlinCompilation.compileKotlinTaskName)
-                task.sourceFiles.from(kotlinCompilation.allKotlinSourceSets.map { it.kotlin })
-                task.diagnosticReports.from(reportFile)
-                task.dependsOn(kotlinCompilation.compileTaskProvider)
+            fun ApiWatchdogReportTask.addCompilation() {
+                compilationNames.add(kotlinCompilation.compileKotlinTaskName)
+                sourceFiles.from(kotlinCompilation.allKotlinSourceSets.map { it.kotlin })
+                diagnosticReports.from(reportFile)
+                dependsOn(kotlinCompilation.compileTaskProvider)
             }
+            exemptTask.configure { task -> task.addCompilation() }
             reportTask.configure { task ->
                 // Both tasks write the report files. The order lets one build run both.
                 task.mustRunAfter(exemptTask)
-                task.compilationNames.add(kotlinCompilation.compileKotlinTaskName)
-                task.sourceFiles.from(kotlinCompilation.allKotlinSourceSets.map { it.kotlin })
-                task.diagnosticReports.from(reportFile)
-                task.dependsOn(kotlinCompilation.compileTaskProvider)
+                task.addCompilation()
             }
 
             kotlinCompilation.compileTaskProvider.configure { task ->

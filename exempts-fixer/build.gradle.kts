@@ -1,6 +1,7 @@
 plugins {
     id("org.jetbrains.kotlin.compiler.plugin.devkit.compiler-library")
     id("library-api-watchdog.devkit-versions-conventions")
+    id("library-api-watchdog.exempts-fixer-conventions")
     id("library-api-watchdog.space-publishing-conventions")
 }
 

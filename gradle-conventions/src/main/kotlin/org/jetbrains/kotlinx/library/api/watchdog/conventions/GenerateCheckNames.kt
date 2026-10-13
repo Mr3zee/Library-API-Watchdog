@@ -20,6 +20,10 @@ abstract class GenerateCheckNames : DefaultTask() {
     @get:Input
     abstract val packageName: Property<String>
 
+    /** `true` generates an `internal` object without the Gradle usage sample. Default `false`. */
+    @get:Input
+    abstract val internalVisibility: Property<Boolean>
+
     @get:OutputDirectory
     abstract val outputDirectory: DirectoryProperty
 
@@ -37,41 +41,46 @@ abstract class GenerateCheckNames : DefaultTask() {
             .resolve(packageName.replace('.', '/'))
             .resolve("WatchdogChecks.kt")
         outputFile.parentFile.mkdirs()
-        outputFile.writeText(buildString { appendFile(entries, docsBaseUrl, packageName) })
+        val internal = internalVisibility.getOrElse(false)
+        outputFile.writeText(buildString { appendFile(entries, docsBaseUrl, packageName, internal) })
     }
 
     private fun StringBuilder.appendFile(
         entries: List<Map<String, Any>>,
         docsBaseUrl: String,
         packageName: String,
+        internal: Boolean,
     ) {
+        val visibility = if (internal) "internal" else "public"
         appendLine("// Generated from diagnostics.json. Do not edit.")
         appendLine()
         appendLine("package $packageName")
         appendLine()
         appendLine("/**")
         appendLine(" * The diagnostic names of the watchdog checks, generated from the shared `diagnostics.json`.")
-        appendLine(" * Pass them to [WatchdogGradleExtension.ignore] instead of spelling a name out:")
-        appendLine(" *")
-        appendLine(" * ```kotlin")
-        appendLine(" * import org.jetbrains.kotlinx.library.api.watchdog.WatchdogChecks")
-        appendLine(" *")
-        appendLine(" * apiWatchdog {")
-        appendLine(" *     ignore(WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS, whenAnnotatedWith = listOf(\"com.example.GeneratedValueMembers\"))")
-        appendLine(" * }")
-        appendLine(" * ```")
-        appendLine(" *")
-        appendLine(" * Every check is listed, including the always-error checks that accept no ignore rules.")
-        appendLine(" * [WatchdogGradleExtension.ignore] rejects those by name.")
+        if (!internal) {
+            appendLine(" * Pass them to [WatchdogGradleExtension.ignore] instead of spelling a name out:")
+            appendLine(" *")
+            appendLine(" * ```kotlin")
+            appendLine(" * import org.jetbrains.kotlinx.library.api.watchdog.WatchdogChecks")
+            appendLine(" *")
+            appendLine(" * apiWatchdog {")
+            appendLine(" *     ignore(WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS, whenAnnotatedWith = listOf(\"com.example.GeneratedValueMembers\"))")
+            appendLine(" * }")
+            appendLine(" * ```")
+            appendLine(" *")
+            appendLine(" * Every check is listed, including the always-error checks that accept no ignore rules.")
+            appendLine(" * [WatchdogGradleExtension.ignore] rejects those by name.")
+        }
         appendLine(" */")
-        appendLine("public object WatchdogChecks {")
+        appendLine("$visibility object WatchdogChecks {")
         for ((index, entry) in entries.withIndex()) {
             val name = entry["name"] as String
             val title = entry["title"] as String
             val docsUrl = docsBaseUrl + (entry["docs"] as String)
             if (index > 0) appendLine()
             appendLine("    /** [$title]($docsUrl) */")
-            appendLine("    public const val $name: String = \"$name\"")
+            appendLine("    $visibility const val $name: String = \"$name\"")
         }
         appendLine("}")
     }
