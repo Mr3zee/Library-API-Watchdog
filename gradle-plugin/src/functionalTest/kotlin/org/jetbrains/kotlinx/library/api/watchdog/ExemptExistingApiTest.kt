@@ -19,13 +19,13 @@ import org.jetbrains.kotlinx.library.api.watchdog.Severity.NONE
 import org.jetbrains.kotlinx.library.api.watchdog.Severity.WARNING
 import org.junit.Test
 
-class UpdateBackwardsCompatibilityExemptsTest {
+class ExemptExistingApiTest {
     @Test
-    fun updateTaskReusesTheConfigurationCache() {
+    fun exemptTaskReusesTheConfigurationCache() {
         val project = jvmProject {
             source("/** An existing open API. */\npublic open class ExistingApi", "existingApi")
         }
-        val arguments = arrayOf(UPDATE_TASK, "--configuration-cache", "--configuration-cache-problems=fail")
+        val arguments = arrayOf(EXEMPT_TASK, "--configuration-cache", "--configuration-cache-problems=fail")
 
         project.build(*arguments).assertOutputHas("Configuration cache entry stored.")
 
@@ -41,8 +41,8 @@ class UpdateBackwardsCompatibilityExemptsTest {
             source(fixableFile, "legacy")
         }
 
-        val updateResult = project.build(UPDATE_TASK)
-        updateResult.assertTaskOutcome(":$UPDATE_TASK", SUCCESS)
+        val updateResult = project.build(EXEMPT_TASK)
+        updateResult.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
         updateResult.assertOutputHas("backwards-compatibility exemption(s) and 2 placeholder KDoc(s)")
 
         val fixedText = project.mainSource("legacy").readText()
@@ -78,6 +78,14 @@ class UpdateBackwardsCompatibilityExemptsTest {
         assertContains(fixedText, "@IntentionallyKotlinOnlyApi($reason)\npublic suspend fun refreshState()")
         assertContains(fixedText, "@IntentionallyWithoutJvmOverloads($reason)\npublic fun openPort")
 
+        // The report lists the exemptions the task has just applied.
+        val report = project.report().readText()
+        assertContains(report, "Applied annotations")
+        assertContains(report, "@IntentionallyDataClass (1)")
+        assertContains(report, "@IntentionallyOpen (3)")
+        assertContains(report, "legacy.kt:")
+        assertContains(report, "Every recorded diagnostic was acknowledged automatically.")
+
         project.build("build").assertNoWatchdogDiagnostics()
     }
 
@@ -88,10 +96,10 @@ class UpdateBackwardsCompatibilityExemptsTest {
             source(fixableFile, "legacy")
         }
 
-        project.build(UPDATE_TASK)
+        project.build(EXEMPT_TASK)
         val fixedOnce = project.mainSource("legacy").readText()
 
-        project.build(UPDATE_TASK).assertOutputHas("No watchdog diagnostics to exempt.")
+        project.build(EXEMPT_TASK).assertOutputHas("No watchdog diagnostics to exempt.")
         assertEquals(fixedOnce, project.mainSource("legacy").readText())
     }
 
@@ -122,7 +130,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
         project.build(REPORT_TASK).assertTaskOutcome(":$REPORT_TASK", SUCCESS)
 
         assertEquals(original, sourceFile.readText())
-        val report = project.exemptsReport().readText()
+        val report = project.report().readText()
         assertContains(report, "Applied annotations")
         assertContains(report, "@IntentionallyOpen (1)")
         assertContains(report, "@IntentionallyUndocumented (1)")
@@ -141,10 +149,10 @@ class UpdateBackwardsCompatibilityExemptsTest {
         project.build(REPORT_TASK).assertTaskOutcome(":$REPORT_TASK", SUCCESS)
 
         assertEquals(original, sourceFile.readText())
-        val report = project.exemptsReport().readText()
+        val report = project.report().readText()
         assertContains(report, "Not applied")
         assertContains(report, "@IntentionallyOpen (1)")
-        assertContains(report, "updateBackwardsCompatibilityExempts can apply it.")
+        assertContains(report, "exemptExistingApi can apply it.")
     }
 
     @Test
@@ -156,10 +164,10 @@ class UpdateBackwardsCompatibilityExemptsTest {
         project.build(REPORT_TASK).assertTaskOutcome(":$REPORT_TASK", SUCCESS)
 
         assertEquals(original, sourceFile.readText())
-        val report = project.exemptsReport().readText()
+        val report = project.report().readText()
         assertContains(report, "No automatic annotation (1)")
         assertContains(report, "UNDOCUMENTED_PUBLIC_API")
-        assertContains(report, "updateBackwardsCompatibilityExempts can add a placeholder KDoc.")
+        assertContains(report, "exemptExistingApi can add a placeholder KDoc.")
     }
 
     @Test
@@ -169,7 +177,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
             source("public open class UndocumentedOpen", "legacy")
         }
 
-        project.build(UPDATE_TASK)
+        project.build(EXEMPT_TASK)
 
         val fixedText = project.mainSource("legacy").readText()
         assertFalse(fixedText.contains("@IntentionallyUndocumented"))
@@ -184,7 +192,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
             source("/** A warning-only class. */\npublic open class WarningOnly", "warningOnly")
         }
 
-        project.build(UPDATE_TASK)
+        project.build(EXEMPT_TASK)
 
         assertContains(
             project.mainSource("warningOnly").readText(),
@@ -200,7 +208,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
             source("/** An open class. */\npublic open class Open", "open")
         }
 
-        project.build(UPDATE_TASK)
+        project.build(EXEMPT_TASK)
 
         assertContains(
             project.mainSource("open").readText(),
@@ -214,7 +222,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
             source("/** A bare open class. */\npublic open class Bare", "bare", defaultImports = false)
         }
 
-        project.build(UPDATE_TASK)
+        project.build(EXEMPT_TASK)
 
         val fixedText = project.mainSource("bare").readText()
         assertContains(fixedText, "import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason")
@@ -229,12 +237,12 @@ class UpdateBackwardsCompatibilityExemptsTest {
         val project = jvmProject { source(unfixableFile, "manual") }
 
         project.build(REPORT_TASK).assertTaskOutcome(":$REPORT_TASK", SUCCESS)
-        val report = project.exemptsReport().readText()
+        val report = project.report().readText()
         assertContains(report, "Not applied")
         assertContains(report, "No automatic annotation")
         assertContains(report, "DSL_MARKER_NOOP_TYPE_POSITION")
 
-        val result = project.build(UPDATE_TASK)
+        val result = project.build(EXEMPT_TASK)
 
         result.assertOutputHas("needs manual attention")
         result.assertOutputHas("DSL_MARKER_NOOP_TYPE_POSITION")
@@ -247,10 +255,10 @@ class UpdateBackwardsCompatibilityExemptsTest {
         }
         val original = project.mainSource("broken").readText()
 
-        val result = project.buildAndFail(UPDATE_TASK)
+        val result = project.buildAndFail(EXEMPT_TASK)
 
         result.assertOutputHas("thisCallDoesNotResolve")
-        result.assertTaskOutcome(":$UPDATE_TASK", null)
+        result.assertTaskOutcome(":$EXEMPT_TASK", null)
         assertEquals(original, project.mainSource("broken").readText())
     }
 
@@ -264,9 +272,9 @@ class UpdateBackwardsCompatibilityExemptsTest {
         val sourceFile = project.file("src/main/kotlin/test/consumer/alwaysErrors.kt")
         val original = sourceFile.readText()
 
-        val updateResult = project.build(UPDATE_TASK)
+        val updateResult = project.build(EXEMPT_TASK)
 
-        updateResult.assertTaskOutcome(":$UPDATE_TASK", SUCCESS)
+        updateResult.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
         updateResult.assertOutputHas("No watchdog diagnostics to exempt.")
         assertEquals(original, sourceFile.readText())
 
@@ -283,9 +291,9 @@ class UpdateBackwardsCompatibilityExemptsTest {
             source("/** A JS class. */\npublic open class JsOnly", "jsOnly")
         }
 
-        val result = project.build(UPDATE_TASK)
+        val result = project.build(EXEMPT_TASK)
 
-        result.assertTaskOutcome(":$UPDATE_TASK", SUCCESS)
+        result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
         result.assertTaskOutcome(":compileKotlinJs", SUCCESS)
         assertContains(
             project.file("src/commonMain/kotlin/test/jsOnly.kt").readText(),
@@ -300,9 +308,9 @@ class UpdateBackwardsCompatibilityExemptsTest {
             source("/** A native class. */\npublic open class NativeOnly", "nativeOnly")
         }
 
-        val result = project.build(UPDATE_TASK)
+        val result = project.build(EXEMPT_TASK)
 
-        result.assertTaskOutcome(":$UPDATE_TASK", SUCCESS)
+        result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
         result.assertTaskOutcome(":${native.compileTaskName}", SUCCESS)
         assertContains(
             project.file("src/commonMain/kotlin/test/nativeOnly.kt").readText(),
@@ -314,7 +322,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
     fun multiplatformJvmCompilationCoversCommonSources() {
         val project = kmpProject { source(multiplatformFile, "shared") }
 
-        project.build(UPDATE_TASK).assertTaskOutcome(":$UPDATE_TASK", SUCCESS)
+        project.build(EXEMPT_TASK).assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
 
         assertContains(
             project.file("src/commonMain/kotlin/test/shared.kt").readText(),
@@ -327,12 +335,12 @@ class UpdateBackwardsCompatibilityExemptsTest {
     private fun WatchdogBuild.mainSource(fileNameWithoutExtension: String): File =
         file("src/main/kotlin/test/$fileNameWithoutExtension.kt")
 
-    private fun WatchdogBuild.exemptsReport(): File =
-        file("build/reports/api-watchdog/backwards-compatibility-exempts.html")
+    private fun WatchdogBuild.report(): File =
+        file("build/reports/api-watchdog/report.html")
 
     private companion object {
-        const val UPDATE_TASK = "updateBackwardsCompatibilityExempts"
-        const val REPORT_TASK = "generateBackwardsCompatibilityExemptsReport"
+        const val EXEMPT_TASK = "exemptExistingApi"
+        const val REPORT_TASK = "generateApiWatchdogReport"
         const val PLACEHOLDER_KDOC = "/** TODO: Provide kDocs for this declaration */"
         const val CONTEXT_PARAMETERS_BUILD_SCRIPT = """kotlin { compilerOptions.freeCompilerArgs.add("-Xcontext-parameters") }"""
     }

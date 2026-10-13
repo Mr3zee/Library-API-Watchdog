@@ -10,15 +10,15 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 
-/** Combines the report variants declared in `backwardsCompatibilityExemptsReports`. */
+/** Combines the report variants declared in `apiWatchdogReports`. */
 @CacheableTask
-public abstract class AggregateBackwardsCompatibilityExemptsReportTask : DefaultTask() {
+public abstract class AggregateApiWatchdogReportsTask : DefaultTask() {
     /** The module reports to combine. */
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.NONE)
     public abstract val reportDataFiles: ConfigurableFileCollection
 
-    /** The aggregate HTML report. Default: `build/reports/api-watchdog/backwards-compatibility-exempts-aggregate.html`. */
+    /** The aggregate HTML report. Default: `build/reports/api-watchdog/aggregate-report.html`. */
     @get:OutputFile
     public abstract val reportFile: RegularFileProperty
 
@@ -26,10 +26,10 @@ public abstract class AggregateBackwardsCompatibilityExemptsReportTask : Default
     public fun generateReport() {
         val reports = reportDataFiles.files
             .sortedBy { it.absolutePath }
-            .map(BackwardsCompatibilityExemptsReportData::read)
+            .map(ApiWatchdogReportData::read)
             .distinctBy { it.projectPath }
-        BackwardsCompatibilityExemptsHtmlReport.write(reports, reportFile.get().asFile, aggregate = true)
-        logger.lifecycle("Aggregate backwards-compatibility exemptions report: ${reportFile.get().asFile}")
+        ApiWatchdogHtmlReport.write(reports, reportFile.get().asFile, aggregate = true)
+        logger.lifecycle("Aggregate API Watchdog report: ${reportFile.get().asFile}")
     }
 }
 

@@ -7,6 +7,7 @@ const sidebars: SidebarsConfig = {
     'overview',
     'configuration',
     'existing-libs',
+    'report',
     'exemptions',
     'abi-validation-suggestion',
     {

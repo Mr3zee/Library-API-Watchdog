@@ -1,6 +1,5 @@
 package org.jetbrains.kotlinx.library.api.watchdog
 
-import java.io.File
 import javax.inject.Inject
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
@@ -20,11 +19,11 @@ import org.gradle.api.tasks.UntrackedTask
 import org.gradle.process.ExecOperations
 
 /**
- * The `generateBackwardsCompatibilityExemptsReport` task. It reports the applied and the missing
- * backwards-compatibility exemptions of the project and changes no source.
+ * The `generateApiWatchdogReport` task. It writes the API Watchdog report of the project: the
+ * applied `@Intentionally*` annotations and the diagnostics without one. It changes no source.
  */
 @UntrackedTask(because = "Reads the diagnostic reports that the Kotlin compile tasks write")
-public abstract class GenerateBackwardsCompatibilityExemptsReportTask : DefaultTask() {
+public abstract class GenerateApiWatchdogReportTask : DefaultTask() {
     /** The names of the main Kotlin compile tasks. */
     @get:Input
     public abstract val compilationNames: ListProperty<String>
@@ -72,10 +71,10 @@ public abstract class GenerateBackwardsCompatibilityExemptsReportTask : DefaultT
     @TaskAction
     public fun generateReport() {
         val response = if (compilationNames.get().isEmpty()) {
-            logger.warn("No main Kotlin compilation found, so the exemptions report is empty.")
+            logger.warn("No main Kotlin compilation found, so the API Watchdog report is empty.")
             emptyMap()
         } else {
-            BackwardsCompatibilityExemptsFixerRunner.run(
+            ExemptionFixerRunner.run(
                 temporaryDirectory = temporaryDir,
                 diagnosticReports = diagnosticReports.files,
                 sourceFiles = sourceFiles.files,
@@ -86,44 +85,14 @@ public abstract class GenerateBackwardsCompatibilityExemptsReportTask : DefaultT
                 updateSources = false,
             )
         }
-
-        val applied = response["exemption"].orEmpty().map { value ->
-            val (annotation, line, path) = value.split('\t', limit = 3)
-            AppliedExemptionReportEntry(annotation, "${relativize(path)}:$line")
-        }
-        val applicable = response["fixed"].orEmpty().map { value ->
-            val (diagnostic, annotation, line, path) = value.split('\t', limit = 4)
-            // An empty annotation field marks a placeholder KDoc.
-            NotAppliedExemptionReportEntry(
-                annotation = annotation.ifEmpty { null },
-                diagnostic = diagnostic,
-                location = "${relativize(path)}:$line",
-                reason = if (annotation.isEmpty()) {
-                    "updateBackwardsCompatibilityExempts can add a placeholder KDoc."
-                } else {
-                    "updateBackwardsCompatibilityExempts can apply it."
-                },
-            )
-        }
-        val skipped = response["skipped"].orEmpty().map { value ->
-            val (diagnostic, annotation, line, path, reason) = value.split('\t', limit = 5)
-            NotAppliedExemptionReportEntry(
-                annotation = annotation.ifEmpty { null },
-                diagnostic = diagnostic,
-                location = "${relativize(path)}:$line",
-                reason = reason.unescapeFixerNewlines(),
-            )
-        }
-        val report = BackwardsCompatibilityExemptsProjectReport(
+        ProjectReportWriter.write(
+            response = response,
+            sourcesUpdated = false,
             projectPath = projectIdentityPath.get(),
-            applied = applied,
-            notApplied = applicable + skipped,
+            projectDirectory = projectDirectory.get().asFile,
+            reportFile = reportFile.get().asFile,
+            reportDataFile = reportDataFile.get().asFile,
+            logger = logger,
         )
-        BackwardsCompatibilityExemptsReportData.write(report, reportDataFile.get().asFile)
-        BackwardsCompatibilityExemptsHtmlReport.write(listOf(report), reportFile.get().asFile, aggregate = false)
-        logger.lifecycle("Backwards-compatibility exemptions report: ${reportFile.get().asFile}")
     }
-
-    private fun relativize(path: String): String =
-        File(path).relativeToOrSelf(projectDirectory.get().asFile).path
 }

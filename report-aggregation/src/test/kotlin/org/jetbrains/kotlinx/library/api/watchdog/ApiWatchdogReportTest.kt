@@ -6,10 +6,10 @@ import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
-class BackwardsCompatibilityExemptsReportTest {
+class ApiWatchdogReportTest {
     @Test
     fun reportDataRoundTripsEscapedFields() {
-        val report = BackwardsCompatibilityExemptsProjectReport(
+        val report = ApiWatchdogProjectReport(
             projectPath = ":library",
             applied = listOf(AppliedExemptionReportEntry("IntentionallyOpen", "src/Api.kt:4")),
             notApplied = listOf(
@@ -23,8 +23,8 @@ class BackwardsCompatibilityExemptsReportTest {
         )
         val file = Files.createTempFile("exempts-report", ".data").toFile()
         try {
-            BackwardsCompatibilityExemptsReportData.write(report, file)
-            assertEquals(report, BackwardsCompatibilityExemptsReportData.read(file))
+            ApiWatchdogReportData.write(report, file)
+            assertEquals(report, ApiWatchdogReportData.read(file))
         } finally {
             file.toPath().deleteIfExists()
         }
@@ -32,7 +32,7 @@ class BackwardsCompatibilityExemptsReportTest {
 
     @Test
     fun htmlEscapesProjectAndEntryText() {
-        val report = BackwardsCompatibilityExemptsProjectReport(
+        val report = ApiWatchdogProjectReport(
             projectPath = ":library<script>",
             applied = emptyList(),
             notApplied = listOf(
@@ -46,7 +46,7 @@ class BackwardsCompatibilityExemptsReportTest {
         )
         val file = Files.createTempFile("exempts-report", ".html").toFile()
         try {
-            BackwardsCompatibilityExemptsHtmlReport.write(listOf(report), file, aggregate = true)
+            ApiWatchdogHtmlReport.write(listOf(report), file, aggregate = true)
             val html = file.readText()
             assertContains(html, ":library&lt;script&gt;")
             assertContains(html, "A&amp;B")

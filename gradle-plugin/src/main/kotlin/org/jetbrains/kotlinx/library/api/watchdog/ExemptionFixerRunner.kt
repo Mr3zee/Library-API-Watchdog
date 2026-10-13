@@ -10,7 +10,7 @@ import org.jetbrains.kotlin.compiler.plugin.devkit.VersionResolution
 import org.jetbrains.kotlin.tooling.core.KotlinToolingVersion
 import java.nio.file.Path
 
-internal object BackwardsCompatibilityExemptsFixerRunner {
+internal object ExemptionFixerRunner {
     fun run(
         temporaryDirectory: File,
         diagnosticReports: Collection<File>,

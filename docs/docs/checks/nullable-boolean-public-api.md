@@ -90,9 +90,9 @@ public fun connectionState(): ConnectionState = ConnectionState.UNKNOWN
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Holder(
-    // !diag[/Boolean[?]/] NULLABLE_BOOLEAN_PUBLIC_API ["$property","checked"]
     // !hide-focused
     /** Whether the control is selected, or null before it is initialized. */
+    // !diag[/Boolean[?]/] NULLABLE_BOOLEAN_PUBLIC_API ["$property","checked"]
     public val checked: Boolean?,
 )
 ```

@@ -55,9 +55,9 @@ collection crosses the API boundary, it is unclear which mutations are safe. See
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Holder(
-    // !diag[/MutableList<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["$property","items","MutableList","$returnTypeFix"]
     // !hide-focused
     /** Live collection of scheduled values. */
+    // !diag[/MutableList<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["$property","items","MutableList","$returnTypeFix"]
     public val items: MutableList<Int>,
 )
 ```

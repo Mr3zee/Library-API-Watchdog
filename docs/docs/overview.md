@@ -149,5 +149,6 @@ consumers. The whole group can be disabled with `javaInterop { enabled = false }
 
 - [Configuration](./configuration.md)
 - [Adding the plugin to existing libraries](./existing-libs.md)
+- [The API Watchdog report](./report.md)
 - [Exemptions and internal API](./exemptions.md)
 - [API reference](https://mr3zee.github.io/Library-API-Watchdog/api/)

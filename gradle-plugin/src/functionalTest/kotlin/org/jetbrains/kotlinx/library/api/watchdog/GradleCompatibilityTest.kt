@@ -36,8 +36,8 @@ class GradleCompatibilityTest {
             buildScript(
                 """
                     dependencies {
-                        backwardsCompatibilityExemptsReports(project(":openApi"))
-                        backwardsCompatibilityExemptsReports(project(":dataApi"))
+                        apiWatchdogReports(project(":openApi"))
+                        apiWatchdogReports(project(":dataApi"))
                     }
                 """
             )
@@ -51,15 +51,15 @@ class GradleCompatibilityTest {
         val originalOpenApi = openApiSource.readText()
         val originalDataApi = dataApiSource.readText()
 
-        val result = project.build("aggregateBackwardsCompatibilityExemptsReport", *PROJECT_ISOLATION)
+        val result = project.build("aggregateApiWatchdogReports", *PROJECT_ISOLATION)
 
-        result.assertTaskOutcome(":openApi:generateBackwardsCompatibilityExemptsReport", SUCCESS)
-        result.assertTaskOutcome(":dataApi:generateBackwardsCompatibilityExemptsReport", SUCCESS)
-        result.assertTaskOutcome(":openApi:updateBackwardsCompatibilityExempts", null)
-        result.assertTaskOutcome(":dataApi:updateBackwardsCompatibilityExempts", null)
+        result.assertTaskOutcome(":openApi:generateApiWatchdogReport", SUCCESS)
+        result.assertTaskOutcome(":dataApi:generateApiWatchdogReport", SUCCESS)
+        result.assertTaskOutcome(":openApi:exemptExistingApi", null)
+        result.assertTaskOutcome(":dataApi:exemptExistingApi", null)
         assertEquals(originalOpenApi, openApiSource.readText())
         assertEquals(originalDataApi, dataApiSource.readText())
-        val report = project.file("build/reports/api-watchdog/backwards-compatibility-exempts-aggregate.html")
+        val report = project.file("build/reports/api-watchdog/aggregate-report.html")
         assertTrue(report.isFile, result.output)
         val html = report.readText()
         assertContains(html, "Aggregate report for 2 project(s)")
@@ -79,7 +79,7 @@ class GradleCompatibilityTest {
                 """
                     kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=strict") } }
                     tasks.named("compileKotlin").configure { println("$compileMarker") }
-                    tasks.named("updateBackwardsCompatibilityExempts").configure {
+                    tasks.named("exemptExistingApi").configure {
                         println("$updateMarker")
                     }
                 """

@@ -85,9 +85,9 @@ public fun dimensions(): Dimensions = Dimensions(0, 0, 0)
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Anchor(
-    // !diag[/Pair<Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["$property","position","Pair","$pairComponents"]
     // !hide-focused
     /** Horizontal and vertical anchor coordinates. */
+    // !diag[/Pair<Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["$property","position","Pair","$pairComponents"]
     public val position: Pair<Int, Int>,
 )
 ```

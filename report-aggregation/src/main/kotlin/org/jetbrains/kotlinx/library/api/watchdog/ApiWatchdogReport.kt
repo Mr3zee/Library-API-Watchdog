@@ -2,12 +2,12 @@ package org.jetbrains.kotlinx.library.api.watchdog
 
 import java.io.File
 
-public const val EXEMPTS_REPORT_USAGE: String =
-    "library-api-watchdog-backwards-compatibility-exempts-report"
-public const val EXEMPTS_REPORT_ELEMENTS_CONFIGURATION: String =
-    "backwardsCompatibilityExemptsReportElements"
-public const val EXEMPTS_REPORT_DEPENDENCIES_CONFIGURATION: String =
-    "backwardsCompatibilityExemptsReports"
+public const val API_WATCHDOG_REPORT_USAGE: String =
+    "library-api-watchdog-report"
+public const val API_WATCHDOG_REPORT_ELEMENTS_CONFIGURATION: String =
+    "apiWatchdogReportElements"
+public const val API_WATCHDOG_REPORTS_CONFIGURATION: String =
+    "apiWatchdogReports"
 
 public data class AppliedExemptionReportEntry(
     public val annotation: String,
@@ -21,17 +21,17 @@ public data class NotAppliedExemptionReportEntry(
     public val reason: String,
 )
 
-public data class BackwardsCompatibilityExemptsProjectReport(
+public data class ApiWatchdogProjectReport(
     public val projectPath: String,
     public val applied: List<AppliedExemptionReportEntry>,
     public val notApplied: List<NotAppliedExemptionReportEntry>,
 )
 
 /** The file format of a module report. */
-public object BackwardsCompatibilityExemptsReportData {
+public object ApiWatchdogReportData {
     private const val VERSION = "1"
 
-    public fun write(report: BackwardsCompatibilityExemptsProjectReport, file: File) {
+    public fun write(report: ApiWatchdogProjectReport, file: File) {
         file.parentFile.mkdirs()
         file.writeText(buildString {
             appendLine("version\t$VERSION")
@@ -53,7 +53,7 @@ public object BackwardsCompatibilityExemptsReportData {
         })
     }
 
-    public fun read(file: File): BackwardsCompatibilityExemptsProjectReport {
+    public fun read(file: File): ApiWatchdogProjectReport {
         var projectPath: String? = null
         val applied = mutableListOf<AppliedExemptionReportEntry>()
         val notApplied = mutableListOf<NotAppliedExemptionReportEntry>()
@@ -61,7 +61,7 @@ public object BackwardsCompatibilityExemptsReportData {
             val fields = line.split('\t').map { it.unescapeField() }
             when (fields.first()) {
                 "version" -> require(fields == listOf("version", VERSION)) {
-                    "Unsupported backwards-compatibility exempts report version in $file"
+                    "Unsupported API Watchdog report version in $file"
                 }
                 "project" -> {
                     require(fields.size == 2) { "Malformed project entry in $file:${index + 1}" }
@@ -80,10 +80,10 @@ public object BackwardsCompatibilityExemptsReportData {
                         fields[4],
                     )
                 }
-                else -> error("Unknown backwards-compatibility exempts report entry in $file:${index + 1}")
+                else -> error("Unknown API Watchdog report entry in $file:${index + 1}")
             }
         }
-        return BackwardsCompatibilityExemptsProjectReport(
+        return ApiWatchdogProjectReport(
             projectPath = requireNotNull(projectPath) { "No project entry in $file" },
             applied = applied,
             notApplied = notApplied,
@@ -126,9 +126,9 @@ public object BackwardsCompatibilityExemptsReportData {
     }
 }
 
-public object BackwardsCompatibilityExemptsHtmlReport {
+public object ApiWatchdogHtmlReport {
     public fun write(
-        reports: List<BackwardsCompatibilityExemptsProjectReport>,
+        reports: List<ApiWatchdogProjectReport>,
         output: File,
         aggregate: Boolean,
     ) {
@@ -140,7 +140,7 @@ public object BackwardsCompatibilityExemptsHtmlReport {
             appendLine("<!doctype html>")
             appendLine("<html lang=\"en\"><head><meta charset=\"utf-8\">")
             appendLine("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">")
-            appendLine("<title>Backwards-compatibility exemptions report</title>")
+            appendLine("<title>API Watchdog report</title>")
             appendLine("""
                 <style>
                 :root{color-scheme:light dark;font-family:system-ui,sans-serif}body{max-width:1100px;margin:0 auto;padding:2rem}
@@ -151,7 +151,7 @@ public object BackwardsCompatibilityExemptsHtmlReport {
                 </style>
             """.trimIndent())
             appendLine("</head><body>")
-            appendLine("<h1>Backwards-compatibility exemptions</h1>")
+            appendLine("<h1>API Watchdog report</h1>")
             val scope = if (aggregate) {
                 "Aggregate report for ${sortedReports.size} project(s)"
             } else {

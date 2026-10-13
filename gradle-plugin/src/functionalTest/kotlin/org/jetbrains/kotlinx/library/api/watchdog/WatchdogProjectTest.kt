@@ -43,12 +43,14 @@ class WatchdogProjectTest {
     @Test
     fun failsWithErrorsOnUnacknowledgedApiByDefault() {
         val project = jvmProject {
+            buildScript(REPORT_ALL_WARNINGS_FLAG)
             source(unacknowledgedFile)
             source(internalApiExposureFile, "internalApiExposure")
         }
 
         val result = project.buildAndFail("build")
-        result.assertErrors(*singleModuleDiagnostics.toTypedArray())
+        result.assertErrors(*(singleModuleDiagnostics - UNDOCUMENTED_PUBLIC_API).toTypedArray())
+        result.assertWarnings(UNDOCUMENTED_PUBLIC_API)
         result.assertError("Poko (https://github.com/drewhamilton/Poko)")
         result.assertError(
             "Poko (https://mr3zee.github.io/Library-API-Watchdog/checks/" +
@@ -84,16 +86,18 @@ class WatchdogProjectTest {
 
     @Test
     fun severityIsConfiguredPerDiagnostic() {
-        // The compiler omits warnings when the compilation fails, so the flag forces them.
         val project = jvmProject {
-            buildScript("""kotlin { compilerOptions { freeCompilerArgs.add("-Xreport-all-warnings") } }""")
-            apiWatchdog { severity(WARNING, UNDOCUMENTED_PUBLIC_API) }
+            buildScript(REPORT_ALL_WARNINGS_FLAG)
+            apiWatchdog {
+                severity(WARNING, OPEN_API_WITHOUT_SUBCLASS_OPT_IN)
+                severity(ERROR, UNDOCUMENTED_PUBLIC_API)
+            }
             source(unacknowledgedFile)
         }
 
         val result = project.buildAndFail("build")
-        result.assertErrors(OPEN_API_WITHOUT_SUBCLASS_OPT_IN, EXHAUSTIVE_PUBLIC_API)
-        result.assertWarnings(UNDOCUMENTED_PUBLIC_API)
+        result.assertErrors(UNDOCUMENTED_PUBLIC_API, EXHAUSTIVE_PUBLIC_API)
+        result.assertWarnings(OPEN_API_WITHOUT_SUBCLASS_OPT_IN)
     }
 
     @Test
@@ -109,7 +113,7 @@ class WatchdogProjectTest {
         }
 
         val result = project.buildAndFail("build")
-        result.assertErrors(UNDOCUMENTED_PUBLIC_API)
+        result.assertErrors(OPEN_API_WITHOUT_SUBCLASS_OPT_IN)
         result.assertNotReported(*Diagnostic.entries.filter { it.javaInterop }.toTypedArray())
     }
 
@@ -448,7 +452,7 @@ class WatchdogProjectTest {
         }
 
         project.buildAndFail(target.mainCompileTask)
-            .assertErrors(OPEN_API_WITHOUT_SUBCLASS_OPT_IN, UNDOCUMENTED_PUBLIC_API, NULLABLE_BOOLEAN_PUBLIC_API)
+            .assertErrors(OPEN_API_WITHOUT_SUBCLASS_OPT_IN, NULLABLE_BOOLEAN_PUBLIC_API)
     }
 
     @Test
@@ -480,8 +484,8 @@ class WatchdogProjectTest {
             subproject("lib") { source(markerLibraryFile, "markers", "test.lib") }
         }
 
-        val result = project.buildAndFail("build")
-        result.assertError("`WatchedClass` has no `KDoc`")
+        val result = project.build("build")
+        result.assertWarning("`WatchedClass` has no `KDoc`")
         result.assertOutputLacks("InternalOpenClass")
         result.assertOutputLacks("memberOfInternal")
         result.assertOutputLacks("InternalEnum")
@@ -493,6 +497,7 @@ class WatchdogProjectTest {
     @Test
     fun configuredInternalApiAnnotationsExemptLikeTheMarker() {
         val project = jvmProject {
+            buildScript(REPORT_ALL_WARNINGS_FLAG)
             apiWatchdog { internalApiAnnotations("test.lib.ThirdPartyInternalApi") }
             source(
                 configuredInternalApiConsumerFile,
@@ -504,7 +509,7 @@ class WatchdogProjectTest {
         }
 
         val result = project.buildAndFail("build")
-        result.assertError("`WatchedClass` has no `KDoc`")
+        result.assertWarning("`WatchedClass` has no `KDoc`")
         result.assertError(
             "publicly exposes `test.lib.ThirdPartyInternalType`, but that type is marked as internal API " +
                     "with `@ThirdPartyInternalApi`",
@@ -1362,6 +1367,10 @@ class WatchdogProjectTest {
 }
 
 private const val EXPLICIT_API_FLAG = """kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") } }"""
+
+/** The compiler omits warnings when the compilation fails. This flag reports them. */
+private const val REPORT_ALL_WARNINGS_FLAG =
+    """kotlin { compilerOptions { freeCompilerArgs.add("-Xreport-all-warnings") } }"""
 
 private const val JVM_AND_JS_TARGETS = "jvm()\njs { nodejs() }"
 

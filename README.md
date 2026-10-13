@@ -89,19 +89,38 @@ exempted from that check module-wide in their declaration with
 
 A library that has already shipped can't change the shape of its public API without breaking
 users, so the watchdog's first run typically floods it with diagnostics that are not actionable
-anymore. The Gradle plugin registers an `updateBackwardsCompatibilityExempts` task that
-acknowledges all of them in one sweep:
+anymore. The Gradle plugin registers an `exemptExistingApi` task that acknowledges all of them in
+one sweep:
 
 ```bash
-./gradlew updateBackwardsCompatibilityExempts
+./gradlew exemptExistingApi
 ```
 
-The separate, non-mutating `generateBackwardsCompatibilityExemptsReport` task writes a grouped
-HTML report to `build/reports/api-watchdog/backwards-compatibility-exempts.html`, including
-every applied Watchdog `@Intentionally*` annotation and diagnostics that have not been acknowledged.
-Multi-project builds can use the dependency-driven report aggregation plugin.
-
 See the [existing-library guide](https://mr3zee.github.io/Library-API-Watchdog/existing-libs) for details.
+
+## Reports
+
+`exemptExistingApi` and the non-mutating `generateApiWatchdogReport` task write an HTML report to
+`build/reports/api-watchdog/report.html`. It lists every applied Watchdog `@Intentionally*`
+annotation and the diagnostics without one. A multi-project build combines the
+module reports with the report aggregation plugin:
+
+```kotlin
+plugins {
+    kotlin("library.api-watchdog-report-aggregation") version "0.1.0"
+}
+
+dependencies {
+    apiWatchdogReports(project(":library-core"))
+    apiWatchdogReports(project(":library-client"))
+}
+```
+
+```bash
+./gradlew aggregateApiWatchdogReports
+```
+
+See [The API Watchdog report](https://mr3zee.github.io/Library-API-Watchdog/report) for details.
 
 ## Checks
 
@@ -236,7 +255,7 @@ Modules:
 - [`:kotlin-library-api-watchdog-exempts-fixer`](exempts-fixer/src) - reads compiler diagnostic reports and applies
   backwards-compatibility exemption annotations to Kotlin sources.
 - [`:kotlin-library-api-watchdog-gradle-plugin`](gradle-plugin/src) - applies the compiler plugin and annotations
-  dependency, and registers the exemption update and module report tasks (plugin id
+  dependency, and registers the `exemptExistingApi` and `generateApiWatchdogReport` tasks (plugin id
   `org.jetbrains.kotlin.library.api-watchdog`).
 - [`:kotlin-library-api-watchdog-report-aggregation`](report-aggregation/src) - aggregates exemption reports from
   multiple projects (plugin id `org.jetbrains.kotlin.library.api-watchdog-report-aggregation`).

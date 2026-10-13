@@ -34,9 +34,14 @@ private val patterns: Map<Diagnostic, Regex> = Diagnostic.entries.associateWith 
     Regex(diagnostic.template.split(PLACEHOLDER).joinToString(".*?") { Regex.escape(it) })
 }
 
-/** The output lines that report [diagnostic], one for each source location. */
+/**
+ * The output lines that report [diagnostic], one for each source location. The compilation
+ * exception repeats the first error without a severity prefix, so that line doesn't count.
+ */
 fun BuildResult.reports(diagnostic: Diagnostic): List<String> =
-    output.lineSequence().filter { diagnostic.pattern.containsMatchIn(it) }.toList()
+    output.lineSequence()
+        .filter { (it.hasSeverity("e: ") || it.hasSeverity("w: ")) && diagnostic.pattern.containsMatchIn(it) }
+        .toList()
 
 fun BuildResult.assertErrors(vararg diagnostics: Diagnostic) {
     diagnostics.forEach { assertReported("e: ", it) }

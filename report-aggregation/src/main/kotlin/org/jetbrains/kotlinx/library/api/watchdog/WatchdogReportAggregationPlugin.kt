@@ -6,31 +6,30 @@ import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.Usage
 
 /**
- * Combines the backwards-compatibility exemption reports of the projects in the
- * `backwardsCompatibilityExemptsReports` configuration into one HTML report. Apply it to the
- * root project of a multi-project build.
+ * Combines the API Watchdog reports of the projects in the `apiWatchdogReports` configuration
+ * into one HTML report. Apply it to the root project of a multi-project build.
  */
 public class WatchdogReportAggregationPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         val reportDependencies = target.configurations.register(
-            EXEMPTS_REPORT_DEPENDENCIES_CONFIGURATION,
+            API_WATCHDOG_REPORTS_CONFIGURATION,
         ) { configuration ->
             configuration.isCanBeConsumed = false
             configuration.isCanBeResolved = false
             configuration.description =
-                "Projects whose backwards-compatibility exemptions reports are aggregated"
+                "The projects whose API Watchdog reports are aggregated"
         }
         val reportFiles = target.configurations.register(
-            "backwardsCompatibilityExemptsReportFiles",
+            "apiWatchdogReportFiles",
         ) { configuration ->
             configuration.isCanBeConsumed = false
             configuration.isCanBeResolved = true
             configuration.description =
-                "Resolved backwards-compatibility exemptions module reports"
+                "The resolved API Watchdog reports of the declared projects"
             configuration.extendsFrom(reportDependencies.get())
             configuration.attributes.attribute(
                 Usage.USAGE_ATTRIBUTE,
-                target.objects.named(Usage::class.java, EXEMPTS_REPORT_USAGE),
+                target.objects.named(Usage::class.java, API_WATCHDOG_REPORT_USAGE),
             )
             configuration.attributes.attribute(
                 Category.CATEGORY_ATTRIBUTE,
@@ -40,15 +39,15 @@ public class WatchdogReportAggregationPlugin : Plugin<Project> {
 
         target.tasks.register(
             AGGREGATE_REPORT_TASK_NAME,
-            AggregateBackwardsCompatibilityExemptsReportTask::class.java,
+            AggregateApiWatchdogReportsTask::class.java,
         ) { task ->
             task.group = "api watchdog"
             task.description =
-                "Aggregates backwards-compatibility exemption reports from declared projects"
+                "Combines the API Watchdog reports of the declared projects into one HTML report"
             task.reportDataFiles.from(reportFiles)
             task.reportFile.convention(
                 target.layout.buildDirectory.file(
-                    "reports/api-watchdog/backwards-compatibility-exempts-aggregate.html"
+                    "reports/api-watchdog/aggregate-report.html"
                 )
             )
         }
@@ -56,7 +55,7 @@ public class WatchdogReportAggregationPlugin : Plugin<Project> {
 
     private companion object {
         private const val AGGREGATE_REPORT_TASK_NAME =
-            "aggregateBackwardsCompatibilityExemptsReport"
+            "aggregateApiWatchdogReports"
     }
 }
 

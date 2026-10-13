@@ -33,7 +33,7 @@ object WatchdogConfigurationKeys {
         CompilerConfigurationKey.create("watchdog public type with internal API enabled")
 
     val UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS: CompilerConfigurationKey<Boolean> =
-        CompilerConfigurationKey.create("watchdog updating backwards-compatibility exempts")
+        CompilerConfigurationKey.create("watchdog exempting existing API")
 
     /** The compile classpath and the subset that consumers get. Only the Gradle plugin has them. */
     val COMPILE_DEPENDENCY_PATHS: CompilerConfigurationKey<Set<String>> =
@@ -55,7 +55,7 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             IGNORE_WHEN_ANNOTATED_OPTION,
             INTERNAL_API_ANNOTATION_OPTION,
             PUBLIC_TYPE_WITH_INTERNAL_API_OPTION,
-            UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS_OPTION,
+            EXEMPTING_EXISTING_API_OPTION,
             DIAGNOSTICS_OUTPUT_FILE_OPTION,
             COMPILE_DEPENDENCY_PATHS_OPTION,
             TRANSITIVE_DEPENDENCY_PATHS_OPTION,
@@ -98,7 +98,7 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             description = "Append every reported watchdog diagnostic to the given file as a " +
                     "tab-separated line: diagnostic name, source file path, start offset, " +
                     "end offset. Meant for tooling. The Gradle plugin's " +
-                    "updateBackwardsCompatibilityExempts task consumes it.",
+                    "exemptExistingApi and generateApiWatchdogReport tasks consume it.",
             required = false,
             // The blank placeholder of the Gradle plugin can meet a path from other tooling.
             allowMultipleOccurrences = true,
@@ -112,10 +112,10 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             allowMultipleOccurrences = false,
         )
 
-        val UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS_OPTION: CliOption = CliOption(
-            optionName = "updatingBackwardsCompatibilityExempts",
+        val EXEMPTING_EXISTING_API_OPTION: CliOption = CliOption(
+            optionName = "exemptingExistingApi",
             valueDescription = "<true|false>",
-            description = "Enable task-scoped collection for updateBackwardsCompatibilityExempts.",
+            description = "Enable the task-scoped collection mode of exemptExistingApi.",
             required = false,
             allowMultipleOccurrences = false,
         )
@@ -173,7 +173,7 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
                     parseBoolean(option.optionName, value),
                 )
             }
-            UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS_OPTION.optionName -> {
+            EXEMPTING_EXISTING_API_OPTION.optionName -> {
                 configuration.put(
                     WatchdogConfigurationKeys.UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS,
                     parseBoolean(option.optionName, value),

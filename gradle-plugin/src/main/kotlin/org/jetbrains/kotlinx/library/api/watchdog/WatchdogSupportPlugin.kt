@@ -59,7 +59,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         )
         val collectDiagnostics = target.objects.property(Boolean::class.java).convention(false)
         collectDiagnosticsForExempts = collectDiagnostics
-        target.registerBackwardsCompatibilityExemptsTasks(collectDiagnostics)
+        target.registerExemptionTasks(collectDiagnostics)
         target.afterEvaluate { project ->
             if (!project.explicitApiWarningSuppressed() && !project.hasExplicitApiMode()) {
                 project.logger.warn(missingExplicitApiWarning(project.path))
@@ -72,7 +72,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         }
     }
 
-    private fun Project.registerBackwardsCompatibilityExemptsTasks(
+    private fun Project.registerExemptionTasks(
         collectDiagnostics: Property<Boolean>,
     ) {
         val dependencyHandler = dependencies
@@ -104,25 +104,12 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         )
 
         tasks.register(
-            UPDATE_EXEMPTS_TASK_NAME,
-            UpdateBackwardsCompatibilityExemptsTask::class.java,
+            EXEMPT_EXISTING_API_TASK_NAME,
+            ExemptExistingApiTask::class.java,
         ) { task ->
             task.group = "api watchdog"
-            task.description = "Exempts every watchdog diagnostic in the main Kotlin sources " +
-                    "with the matching @Intentionally* annotation and the FOR_BACKWARDS_COMPATIBILITY reason"
-            task.compilationNames.convention(emptyList())
-            task.projectDirectory.set(layout.projectDirectory)
-            task.kotlinVersion.set(kotlinVersion)
-            task.fixerArtifact.from(fixerArtifact)
-            task.fixerClasspath.from(fixerClasspath)
-        }
-        val reportTask = tasks.register(
-            GENERATE_EXEMPTS_REPORT_TASK_NAME,
-            GenerateBackwardsCompatibilityExemptsReportTask::class.java,
-        ) { task ->
-            task.group = "api watchdog"
-            task.description =
-                "Reports the applied and the missing backwards-compatibility exemptions without a source change"
+            task.description = "Adds the FOR_BACKWARDS_COMPATIBILITY exemption to every declaration with a watchdog " +
+                    "diagnostic in the main Kotlin sources and writes the API Watchdog report"
             task.compilationNames.convention(emptyList())
             task.projectDirectory.set(layout.projectDirectory)
             @Suppress("UnstableApiUsage")
@@ -130,28 +117,42 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             task.kotlinVersion.set(kotlinVersion)
             task.fixerArtifact.from(fixerArtifact)
             task.fixerClasspath.from(fixerClasspath)
-            task.reportFile.convention(
-                layout.buildDirectory.file("reports/api-watchdog/backwards-compatibility-exempts.html")
-            )
-            task.reportDataFile.convention(
-                layout.buildDirectory.file("reports/api-watchdog/backwards-compatibility-exempts.data")
-            )
+            task.reportFile.convention(layout.buildDirectory.file(REPORT_FILE))
+            task.reportDataFile.convention(layout.buildDirectory.file(REPORT_DATA_FILE))
+        }
+        val reportTask = tasks.register(
+            GENERATE_REPORT_TASK_NAME,
+            GenerateApiWatchdogReportTask::class.java,
+        ) { task ->
+            task.group = "api watchdog"
+            task.description =
+                "Writes the API Watchdog report: the applied exemptions and the diagnostics without one. " +
+                        "Changes no source"
+            task.compilationNames.convention(emptyList())
+            task.projectDirectory.set(layout.projectDirectory)
+            @Suppress("UnstableApiUsage")
+            task.projectIdentityPath.set(isolated.buildTreePath)
+            task.kotlinVersion.set(kotlinVersion)
+            task.fixerArtifact.from(fixerArtifact)
+            task.fixerClasspath.from(fixerClasspath)
+            task.reportFile.convention(layout.buildDirectory.file(REPORT_FILE))
+            task.reportDataFile.convention(layout.buildDirectory.file(REPORT_DATA_FILE))
         }
         // IDE sync and the `tasks` report realize every task, so task realization can't be the
         // signal.
-        val exemptsTaskPaths = listOf(UPDATE_EXEMPTS_TASK_NAME, GENERATE_EXEMPTS_REPORT_TASK_NAME)
+        val exemptsTaskPaths = listOf(EXEMPT_EXISTING_API_TASK_NAME, GENERATE_REPORT_TASK_NAME)
             .map { if (path == ":") ":$it" else "$path:$it" }
         gradle.taskGraph.whenReady { graph ->
             collectDiagnostics.set(exemptsTaskPaths.any(graph::hasTask))
         }
-        configurations.register(EXEMPTS_REPORT_ELEMENTS_CONFIGURATION) { configuration ->
+        configurations.register(API_WATCHDOG_REPORT_ELEMENTS_CONFIGURATION) { configuration ->
             configuration.isCanBeConsumed = true
             configuration.isCanBeResolved = false
             configuration.description =
-                "The backwards-compatibility exemptions report for this project"
+                "The API Watchdog report of this project"
             configuration.attributes.attribute(
                 Usage.USAGE_ATTRIBUTE,
-                objects.named(Usage::class.java, EXEMPTS_REPORT_USAGE),
+                objects.named(Usage::class.java, API_WATCHDOG_REPORT_USAGE),
             )
             configuration.attributes.attribute(
                 Category.CATEGORY_ATTRIBUTE,
@@ -177,20 +178,23 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         )
 
         if (isMain) {
-            val updateTask = tasks.named(
-                UPDATE_EXEMPTS_TASK_NAME,
-                UpdateBackwardsCompatibilityExemptsTask::class.java,
+            val exemptTask = tasks.named(
+                EXEMPT_EXISTING_API_TASK_NAME,
+                ExemptExistingApiTask::class.java,
             )
             val reportTask = tasks.named(
-                GENERATE_EXEMPTS_REPORT_TASK_NAME,
-                GenerateBackwardsCompatibilityExemptsReportTask::class.java,
+                GENERATE_REPORT_TASK_NAME,
+                GenerateApiWatchdogReportTask::class.java,
             )
-            updateTask.configure { task ->
+            exemptTask.configure { task ->
                 task.compilationNames.add(kotlinCompilation.compileKotlinTaskName)
+                task.sourceFiles.from(kotlinCompilation.allKotlinSourceSets.map { it.kotlin })
                 task.diagnosticReports.from(reportFile)
                 task.dependsOn(kotlinCompilation.compileTaskProvider)
             }
             reportTask.configure { task ->
+                // Both tasks write the report files. The order lets one build run both.
+                task.mustRunAfter(exemptTask)
                 task.compilationNames.add(kotlinCompilation.compileKotlinTaskName)
                 task.sourceFiles.from(kotlinCompilation.allKotlinSourceSets.map { it.kotlin })
                 task.diagnosticReports.from(reportFile)
@@ -259,7 +263,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                         lazy { if (collect.get()) reportFile.get().asFile.path else "" },
                     ),
                 )
-                add(SubpluginOption("updatingBackwardsCompatibilityExempts", lazy { collect.get().toString() }))
+                add(SubpluginOption("exemptingExistingApi", lazy { collect.get().toString() }))
                 add(
                     SubpluginOption(
                         "publicTypeWithInternalApi",
@@ -463,8 +467,10 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
     }
 
     internal companion object {
-        private const val UPDATE_EXEMPTS_TASK_NAME = "updateBackwardsCompatibilityExempts"
-        private const val GENERATE_EXEMPTS_REPORT_TASK_NAME = "generateBackwardsCompatibilityExemptsReport"
+        private const val EXEMPT_EXISTING_API_TASK_NAME = "exemptExistingApi"
+        private const val GENERATE_REPORT_TASK_NAME = "generateApiWatchdogReport"
+        private const val REPORT_FILE = "reports/api-watchdog/report.html"
+        private const val REPORT_DATA_FILE = "reports/api-watchdog/report.data"
         private const val ANDROID_CLASSES_JAR = "android-classes-jar"
         internal const val EXEMPT_NON_TRANSITIVE_CONFIGURATION_NAME = "apiWatchdogExemptNonTransitive"
 

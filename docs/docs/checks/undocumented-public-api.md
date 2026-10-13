@@ -125,7 +125,7 @@ If this is intended, apply `@IntentionallyUndocumented` to the declaration.
 // shouldn't be documented 🤷
 ```
 
-The [`updateBackwardsCompatibilityExempts`](../existing-libs.md) task never applies this
+The [`exemptExistingApi`](../existing-libs.md) task never applies this
 annotation. Documentation can be added without breaking anyone, so the task inserts the
 placeholder KDoc `TODO: Provide kDocs for this declaration` instead, for the author to replace.
 

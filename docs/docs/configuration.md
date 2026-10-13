@@ -70,11 +70,11 @@ changing severity project-wide.
 When added to an exiting library, chances are that the whole codebase will turn red,
 and most of the declarations reported can't be changed easily without breaking users.
 
-Use `updateBackwardsCompatibilityExempts` task to mark existing APIs with `@Intentionally*`
+Use the `exemptExistingApi` task to mark existing APIs with `@Intentionally*`
 annotations and `ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`:
 
 ```bash
-./gradlew updateBackwardsCompatibilityExempts
+./gradlew exemptExistingApi
 ```
 
 See [Adding the plugin to existing libraries](./existing-libs.md) for more details.
@@ -274,7 +274,7 @@ Each check's severity is a `WatchdogSeverity`:
 enabled. Their Gradle properties are `Boolean` whole-check switches rather than severities. See
 [Exemptions and internal API](./exemptions.md). 
 
-The [`updateBackwardsCompatibilityExempts` task](./existing-libs.md) temporarily disables all three
+The [`exemptExistingApi` task](./existing-libs.md) temporarily disables all three
 while collecting diagnostics it can acknowledge automatically.
 
 ## Property reference

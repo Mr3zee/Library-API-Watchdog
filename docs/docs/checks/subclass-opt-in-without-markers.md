@@ -85,7 +85,7 @@ To exempt this check for binary compatibility reasons, replace the `@SubclassOpt
 public abstract class Connector
 ```
 
-[`updateBackwardsCompatibilityExempts`](../existing-libs.md) performs exactly this replacement: it
+[`exemptExistingApi`](../existing-libs.md) performs exactly this replacement: it
 drops the markerless `@SubclassOptInRequired` and puts `@IntentionallyOpen` in its place.
 
 ## Configuration

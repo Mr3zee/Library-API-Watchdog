@@ -29,7 +29,7 @@ gradlePlugin {
             id = "org.jetbrains.kotlin.library.api-watchdog-report-aggregation"
             displayName = "Library API Watchdog report aggregation"
             description =
-                "Aggregates backwards-compatibility exemption reports from library modules"
+                "Aggregates the API Watchdog reports of library modules"
             implementationClass =
                 "org.jetbrains.kotlinx.library.api.watchdog.WatchdogReportAggregationPlugin"
         }

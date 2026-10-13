@@ -1,6 +1,6 @@
-public abstract class org/jetbrains/kotlinx/library/api/watchdog/GenerateBackwardsCompatibilityExemptsReportTask : org/gradle/api/DefaultTask {
+public abstract class org/jetbrains/kotlinx/library/api/watchdog/ExemptExistingApiTask : org/gradle/api/DefaultTask {
 	public fun <init> ()V
-	public final fun generateReport ()V
+	public final fun exemptExistingApi ()V
 	public abstract fun getCompilationNames ()Lorg/gradle/api/provider/ListProperty;
 	public abstract fun getDiagnosticReports ()Lorg/gradle/api/file/ConfigurableFileCollection;
 	protected abstract fun getExecOperations ()Lorg/gradle/process/ExecOperations;
@@ -14,8 +14,9 @@ public abstract class org/jetbrains/kotlinx/library/api/watchdog/GenerateBackwar
 	public abstract fun getSourceFiles ()Lorg/gradle/api/file/ConfigurableFileCollection;
 }
 
-public abstract class org/jetbrains/kotlinx/library/api/watchdog/UpdateBackwardsCompatibilityExemptsTask : org/gradle/api/DefaultTask {
+public abstract class org/jetbrains/kotlinx/library/api/watchdog/GenerateApiWatchdogReportTask : org/gradle/api/DefaultTask {
 	public fun <init> ()V
+	public final fun generateReport ()V
 	public abstract fun getCompilationNames ()Lorg/gradle/api/provider/ListProperty;
 	public abstract fun getDiagnosticReports ()Lorg/gradle/api/file/ConfigurableFileCollection;
 	protected abstract fun getExecOperations ()Lorg/gradle/process/ExecOperations;
@@ -23,7 +24,10 @@ public abstract class org/jetbrains/kotlinx/library/api/watchdog/UpdateBackwards
 	public abstract fun getFixerClasspath ()Lorg/gradle/api/file/ConfigurableFileCollection;
 	public abstract fun getKotlinVersion ()Lorg/gradle/api/provider/Property;
 	public abstract fun getProjectDirectory ()Lorg/gradle/api/file/DirectoryProperty;
-	public final fun updateExempts ()V
+	public abstract fun getProjectIdentityPath ()Lorg/gradle/api/provider/Property;
+	public abstract fun getReportDataFile ()Lorg/gradle/api/file/RegularFileProperty;
+	public abstract fun getReportFile ()Lorg/gradle/api/file/RegularFileProperty;
+	public abstract fun getSourceFiles ()Lorg/gradle/api/file/ConfigurableFileCollection;
 }
 
 public final class org/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks {

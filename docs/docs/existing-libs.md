@@ -2,11 +2,11 @@
 
 A library that has already shipped most probably can't change the shape of its public API without breaking
 users, so the Watchdog's first run typically floods it with diagnostics that are not actionable.
-`updateBackwardsCompatibilityExempts` acknowledges all of them at once by applying respectful
+`exemptExistingApi` acknowledges all of them at once by applying respectful
 `@Intentionally*` annotation:
 
 ```bash
-./gradlew updateBackwardsCompatibilityExempts
+./gradlew exemptExistingApi
 ```
 
 The task depends on every regular main Kotlin compilation exposed by KGP. Each JVM, JS, Native,
@@ -24,39 +24,11 @@ placeholder KDoc instead of an exemption:
 public class Config
 ```
 
-## Generate a report
+## The report
 
-```bash
-./gradlew generateBackwardsCompatibilityExemptsReport
-```
-
-This separate task writes `build/reports/api-watchdog/backwards-compatibility-exempts.html`.
-The report groups every applied Watchdog `@Intentionally*` annotation, regardless of its reason.
-Diagnostics that have not been acknowledged are grouped separately by the
-annotation they need, or under **No automatic annotation** when no such annotation exists.
-
-### Aggregate a multi-project build
-
-Apply the report aggregation plugin in the root project and declare the modules to include:
-
-```kotlin build.gradle.kts
-plugins {
-    kotlin("library.api-watchdog-report-aggregation") version "{{libraryApiWatchdogVersion}}"
-}
-
-dependencies {
-    backwardsCompatibilityExemptsReports(project(":library-core"))
-    backwardsCompatibilityExemptsReports(project(":library-client"))
-}
-```
-
-Then run:
-
-```bash
-./gradlew aggregateBackwardsCompatibilityExemptsReport
-```
-
-The aggregate task writes `build/reports/api-watchdog/backwards-compatibility-exempts-aggregate.html`.
+The task also writes the [API Watchdog report](./report.md) to
+`build/reports/api-watchdog/report.html`. It lists the applied annotations and the diagnostics that
+need manual attention. `generateApiWatchdogReport` writes the same report without a source change.
 
 ## Details worth knowing
 
@@ -67,8 +39,8 @@ The aggregate task writes `build/reports/api-watchdog/backwards-compatibility-ex
 - **Run it on a clean working tree and review the diff.** The task edits sources in place. 
   Review the diff, commit, and let the checks guard only the API added afterwards. 
   New code deserves a thought-through decision instead - fix the shape or pick the exemption reason by hand.
-- **Collection mode is task-scoped.** `updateBackwardsCompatibilityExempts` and
-  `generateBackwardsCompatibilityExemptsReport` make
+- **Collection mode is task-scoped.** `exemptExistingApi` and
+  `generateApiWatchdogReport` make
   regular main compilations write reports, force explicit API warning mode, and temporarily
   demote every enabled configurable watchdog diagnostic to a warning so the fixer can run.
   Ordinary compilation tasks are unchanged when neither task is in the task graph.

@@ -24,7 +24,7 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
             ?.let { WatchdogDiagnosticsRecorder(File(it)) }
         val publicTypeWithInternalApiEnabled =
             configuration[WatchdogConfigurationKeys.PUBLIC_TYPE_WITH_INTERNAL_API_ENABLED, true]
-        val updatingBackwardsCompatibilityExempts =
+        val exemptingExistingApi =
             configuration[WatchdogConfigurationKeys.UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS, false]
         val dependencyExposure = configuration[WatchdogConfigurationKeys.COMPILE_DEPENDENCY_PATHS]
             ?.let { compileDependencies ->
@@ -44,7 +44,7 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
                 recorder = recorder,
                 dependencyExposure = dependencyExposure,
                 publicTypeWithInternalApiEnabled = publicTypeWithInternalApiEnabled,
-                updatingBackwardsCompatibilityExempts = updatingBackwardsCompatibilityExempts,
+                exemptingExistingApi = exemptingExistingApi,
             ),
         )
     }

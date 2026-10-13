@@ -31,7 +31,7 @@ class WatchdogFirCheckers internal constructor(
     recorder: WatchdogDiagnosticsRecorder? = null,
     dependencyExposure: DependencyExposureCheckConfiguration? = null,
     publicTypeWithInternalApiEnabled: Boolean = true,
-    updatingBackwardsCompatibilityExempts: Boolean = false,
+    exemptingExistingApi: Boolean = false,
 ) : FirAdditionalCheckersExtension(session) {
     private val enabled =
         session.languageVersionSettings.getFlag(AnalysisFlags.explicitApiMode) != ExplicitApiMode.DISABLED
@@ -68,7 +68,7 @@ class WatchdogFirCheckers internal constructor(
             UndocumentedApiChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API),
             ExemptionExplanationChecker.declarationChecker
-                .takeIf { enabled && !updatingBackwardsCompatibilityExempts },
+                .takeIf { enabled && !exemptingExistingApi },
             MutableCollectionChecker(session, severities)
                 .unlessDisabled(WatchdogDiagnostics.MUTABLE_COLLECTION_PUBLIC_API),
             PairOrTripleChecker(severities)
@@ -76,9 +76,9 @@ class WatchdogFirCheckers internal constructor(
             NullableBooleanChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.NULLABLE_BOOLEAN_PUBLIC_API),
             InternalApiTypeExposureChecker()
-                .takeIf { enabled && publicTypeWithInternalApiEnabled && !updatingBackwardsCompatibilityExempts },
+                .takeIf { enabled && publicTypeWithInternalApiEnabled && !exemptingExistingApi },
             dependencyExposure?.let { NonTransitiveDependencyChecker(session, it) }
-                ?.takeIf { enabled && !updatingBackwardsCompatibilityExempts },
+                ?.takeIf { enabled && !exemptingExistingApi },
         ).excludingConfiguredAnnotations().recorded()
 
         override val functionCheckers: Set<FirFunctionChecker> = setOfNotNull(
@@ -125,7 +125,7 @@ class WatchdogFirCheckers internal constructor(
     override val typeCheckers: TypeCheckers = object : TypeCheckers() {
         override val resolvedTypeRefCheckers: Set<FirResolvedTypeRefChecker> = setOfNotNull(
             ExemptionExplanationChecker.typeChecker
-                .takeIf { enabled && !updatingBackwardsCompatibilityExempts },
+                .takeIf { enabled && !exemptingExistingApi },
         ).let { checkers ->
             if (recorder == null) checkers else checkers.mapTo(mutableSetOf()) {
                 RecordingTypeChecker(it, recorder)
