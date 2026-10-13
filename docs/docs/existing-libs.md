@@ -26,9 +26,9 @@ public class Config
 
 ## The report
 
-The task also writes the [API Watchdog report](./report.md) to
-`build/reports/api-watchdog/report.html`. It lists the applied annotations and the diagnostics that
-need manual attention. `generateApiWatchdogReport` writes the same report without a source change.
+The task also writes the [API Watchdog report](./report.md) to `build/reports/api-watchdog/`, as
+an HTML page and a SARIF file. It lists the applied annotations and the diagnostics that need manual
+attention. `generateApiWatchdogReport` writes the same report without a source change.
 
 ## Details worth knowing
 

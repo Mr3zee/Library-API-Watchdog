@@ -9,17 +9,26 @@ internal object ProjectReportWriter {
      * @param response the fixer response
      * @param sourcesUpdated whether the fixer rewrote the sources. Then the `exemption` entries
      *   hold the applied annotations, so the `fixed` entries aren't listed as not applied.
+     * @param severities the configured severity of each diagnostic. A diagnostic that isn't
+     *   listed is an error.
+     * @param htmlFile the HTML report, or null when the format is off
+     * @param sarifFile the SARIF report, or null when the format is off
      */
     fun write(
         response: Map<String, List<String>>,
         sourcesUpdated: Boolean,
+        severities: Map<String, WatchdogSeverity>,
         projectPath: String,
         projectDirectory: File,
-        reportFile: File,
+        projectDirectoryFromRoot: String,
+        htmlFile: File?,
+        sarifFile: File?,
         reportDataFile: File,
         logger: Logger,
     ) {
         fun relativize(path: String): String = File(path).relativeToOrSelf(projectDirectory).path
+        fun severityOf(diagnostic: String): String =
+            (severities[diagnostic] ?: WatchdogSeverity.ERROR).name.lowercase()
 
         val applied = response["exemption"].orEmpty().map { value ->
             val (annotation, line, path) = value.split('\t', limit = 3)
@@ -40,6 +49,7 @@ internal object ProjectReportWriter {
                     } else {
                         "exemptExistingApi can apply it."
                     },
+                    severity = severityOf(diagnostic),
                 )
             }
         }
@@ -50,15 +60,23 @@ internal object ProjectReportWriter {
                 diagnostic = diagnostic,
                 location = "${relativize(path)}:$line",
                 reason = reason.unescapeFixerNewlines(),
+                severity = severityOf(diagnostic),
             )
         }
         val report = ApiWatchdogProjectReport(
             projectPath = projectPath,
+            projectDirectory = projectDirectoryFromRoot,
             applied = applied,
             notApplied = applicable + skipped,
         )
         ApiWatchdogReportData.write(report, reportDataFile)
-        ApiWatchdogHtmlReport.write(listOf(report), reportFile, aggregate = false)
-        logger.lifecycle("API Watchdog report: $reportFile")
+        if (htmlFile != null) {
+            ApiWatchdogHtmlReport.write(listOf(report), htmlFile, aggregate = false)
+            logger.lifecycle("API Watchdog report: $htmlFile")
+        }
+        if (sarifFile != null) {
+            ApiWatchdogSarifReport.write(listOf(report), sarifFile)
+            logger.lifecycle("API Watchdog SARIF report: $sarifFile")
+        }
     }
 }

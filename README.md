@@ -100,10 +100,25 @@ See the [existing-library guide](https://mr3zee.github.io/Library-API-Watchdog/e
 
 ## Reports
 
-`exemptExistingApi` and the non-mutating `generateApiWatchdogReport` task write an HTML report to
-`build/reports/api-watchdog/report.html`. It lists every applied Watchdog `@Intentionally*`
-annotation and the diagnostics without one. A multi-project build combines the
-module reports with the report aggregation plugin:
+`exemptExistingApi` and the non-mutating `generateApiWatchdogReport` task write the report to
+`build/reports/api-watchdog/` in two formats:
+
+- `report.html` lists every applied Watchdog `@Intentionally*` annotation and the diagnostics
+  without one.
+- `report.sarif` lists the diagnostics without an annotation for a code scanning service, in
+  [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html).
+
+Configure with the `reports` block:
+
+```kotlin
+apiWatchdog {
+    reports {
+        html = false
+    }
+}
+```
+
+A multi-project build combines the module reports with the report aggregation plugin:
 
 ```kotlin
 plugins {

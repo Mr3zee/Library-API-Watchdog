@@ -15,8 +15,8 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.provider.SetProperty
 
 /**
- * The `apiWatchdog` block: the severity of each configurable diagnostic. Default is
- * [WatchdogSeverity.ERROR] unless the property says otherwise.
+ * The `apiWatchdog` block: the [enabled] switch and the severity of each configurable diagnostic.
+ * Default severity is [WatchdogSeverity.ERROR] unless the property says otherwise.
  *
  * ```kotlin
  * apiWatchdog {
@@ -56,6 +56,19 @@ public open class WatchdogGradleExtension @Inject constructor(
 ) {
     private val annotationIgnoreRules: ListProperty<String> =
         objectFactory.listProperty(String::class.java).convention(emptyList())
+
+    /**
+     * Whether the watchdog runs.
+     *
+     * ```kotlin
+     * apiWatchdog {
+     *     enabled = true
+     * }
+     * ```
+     *
+     * Default is `true`.
+     */
+    public val enabled: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(true)
 
     /** Severity of `OPEN_API_WITHOUT_SUBCLASS_OPT_IN`: unrestricted external subclassing. */
     public val openApiWithoutSubclassOptIn: Property<WatchdogSeverity> = objectFactory.severityProperty()
@@ -156,6 +169,17 @@ public open class WatchdogGradleExtension @Inject constructor(
     /** Configures [javaInterop]. */
     public fun javaInterop(action: Action<WatchdogJavaInteropExtension>) {
         action.execute(javaInterop)
+    }
+
+    /**
+     * The formats of the report that `generateApiWatchdogReport` and `exemptExistingApi` write,
+     * see [WatchdogReports]. Both formats are on by default.
+     */
+    public val reports: WatchdogReports = objectFactory.newInstance(WatchdogReports::class.java)
+
+    /** Configures [reports]. */
+    public fun reports(action: Action<WatchdogReports>) {
+        action.execute(reports)
     }
 
     /**

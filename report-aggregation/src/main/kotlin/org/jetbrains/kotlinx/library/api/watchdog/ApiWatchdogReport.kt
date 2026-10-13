@@ -9,33 +9,51 @@ public const val API_WATCHDOG_REPORT_ELEMENTS_CONFIGURATION: String =
 public const val API_WATCHDOG_REPORTS_CONFIGURATION: String =
     "apiWatchdogReports"
 
+/** An `@Intentionally*` annotation in the sources. [location] is `path:line`, relative to the project directory. */
 public data class AppliedExemptionReportEntry(
     public val annotation: String,
     public val location: String,
 )
 
+/**
+ * A diagnostic without an exemption.
+ *
+ * @property annotation the annotation that exempts the declaration, or null when none exists
+ * @property location `path:line`, relative to the project directory
+ * @property reason why the annotation isn't applied
+ * @property severity the configured severity of the diagnostic: `error` or `warning`
+ */
 public data class NotAppliedExemptionReportEntry(
     public val annotation: String?,
     public val diagnostic: String,
     public val location: String,
     public val reason: String,
+    public val severity: String,
 )
 
+/**
+ * The report of one project.
+ *
+ * @property projectDirectory the project directory relative to the root directory of the build,
+ *   with `/` separators. Empty for the root project.
+ */
 public data class ApiWatchdogProjectReport(
     public val projectPath: String,
+    public val projectDirectory: String,
     public val applied: List<AppliedExemptionReportEntry>,
     public val notApplied: List<NotAppliedExemptionReportEntry>,
 )
 
 /** The file format of a module report. */
 public object ApiWatchdogReportData {
-    private const val VERSION = "1"
+    private const val VERSION = "2"
 
     public fun write(report: ApiWatchdogProjectReport, file: File) {
         file.parentFile.mkdirs()
         file.writeText(buildString {
             appendLine("version\t$VERSION")
             appendLine("project\t${report.projectPath.escapeField()}")
+            appendLine("directory\t${report.projectDirectory.escapeField()}")
             report.applied.forEach { entry ->
                 appendLine("applied\t${entry.annotation.escapeField()}\t${entry.location.escapeField()}")
             }
@@ -47,6 +65,7 @@ public object ApiWatchdogReportData {
                         entry.diagnostic,
                         entry.location,
                         entry.reason,
+                        entry.severity,
                     ).joinToString("\t") { it.escapeField() }
                 )
             }
@@ -55,6 +74,7 @@ public object ApiWatchdogReportData {
 
     public fun read(file: File): ApiWatchdogProjectReport {
         var projectPath: String? = null
+        var projectDirectory: String? = null
         val applied = mutableListOf<AppliedExemptionReportEntry>()
         val notApplied = mutableListOf<NotAppliedExemptionReportEntry>()
         file.readLines().filter(String::isNotBlank).forEachIndexed { index, line ->
@@ -67,17 +87,22 @@ public object ApiWatchdogReportData {
                     require(fields.size == 2) { "Malformed project entry in $file:${index + 1}" }
                     projectPath = fields[1]
                 }
+                "directory" -> {
+                    require(fields.size == 2) { "Malformed directory entry in $file:${index + 1}" }
+                    projectDirectory = fields[1]
+                }
                 "applied" -> {
                     require(fields.size == 3) { "Malformed applied entry in $file:${index + 1}" }
                     applied += AppliedExemptionReportEntry(fields[1], fields[2])
                 }
                 "notApplied" -> {
-                    require(fields.size == 5) { "Malformed not-applied entry in $file:${index + 1}" }
+                    require(fields.size == 6) { "Malformed not-applied entry in $file:${index + 1}" }
                     notApplied += NotAppliedExemptionReportEntry(
-                        fields[1].ifEmpty { null },
-                        fields[2],
-                        fields[3],
-                        fields[4],
+                        annotation = fields[1].ifEmpty { null },
+                        diagnostic = fields[2],
+                        location = fields[3],
+                        reason = fields[4],
+                        severity = fields[5],
                     )
                 }
                 else -> error("Unknown API Watchdog report entry in $file:${index + 1}")
@@ -85,6 +110,7 @@ public object ApiWatchdogReportData {
         }
         return ApiWatchdogProjectReport(
             projectPath = requireNotNull(projectPath) { "No project entry in $file" },
+            projectDirectory = requireNotNull(projectDirectory) { "No directory entry in $file" },
             applied = applied,
             notApplied = notApplied,
         )

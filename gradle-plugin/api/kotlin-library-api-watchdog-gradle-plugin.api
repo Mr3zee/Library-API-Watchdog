@@ -3,15 +3,18 @@ public abstract class org/jetbrains/kotlinx/library/api/watchdog/ExemptExistingA
 	public final fun exemptExistingApi ()V
 	public abstract fun getCompilationNames ()Lorg/gradle/api/provider/ListProperty;
 	public abstract fun getDiagnosticReports ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getDiagnosticSeverities ()Lorg/gradle/api/provider/MapProperty;
 	protected abstract fun getExecOperations ()Lorg/gradle/process/ExecOperations;
 	public abstract fun getFixerArtifact ()Lorg/gradle/api/file/ConfigurableFileCollection;
 	public abstract fun getFixerClasspath ()Lorg/gradle/api/file/ConfigurableFileCollection;
 	public abstract fun getKotlinVersion ()Lorg/gradle/api/provider/Property;
 	public abstract fun getProjectDirectory ()Lorg/gradle/api/file/DirectoryProperty;
+	public abstract fun getProjectDirectoryFromRoot ()Lorg/gradle/api/provider/Property;
 	public abstract fun getProjectIdentityPath ()Lorg/gradle/api/provider/Property;
 	public abstract fun getReportDataFile ()Lorg/gradle/api/file/RegularFileProperty;
-	public abstract fun getReportFile ()Lorg/gradle/api/file/RegularFileProperty;
+	public final fun getReports ()Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogReports;
 	public abstract fun getSourceFiles ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public final fun reports (Lorg/gradle/api/Action;)V
 }
 
 public abstract class org/jetbrains/kotlinx/library/api/watchdog/GenerateApiWatchdogReportTask : org/gradle/api/DefaultTask {
@@ -19,15 +22,18 @@ public abstract class org/jetbrains/kotlinx/library/api/watchdog/GenerateApiWatc
 	public final fun generateReport ()V
 	public abstract fun getCompilationNames ()Lorg/gradle/api/provider/ListProperty;
 	public abstract fun getDiagnosticReports ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getDiagnosticSeverities ()Lorg/gradle/api/provider/MapProperty;
 	protected abstract fun getExecOperations ()Lorg/gradle/process/ExecOperations;
 	public abstract fun getFixerArtifact ()Lorg/gradle/api/file/ConfigurableFileCollection;
 	public abstract fun getFixerClasspath ()Lorg/gradle/api/file/ConfigurableFileCollection;
 	public abstract fun getKotlinVersion ()Lorg/gradle/api/provider/Property;
 	public abstract fun getProjectDirectory ()Lorg/gradle/api/file/DirectoryProperty;
+	public abstract fun getProjectDirectoryFromRoot ()Lorg/gradle/api/provider/Property;
 	public abstract fun getProjectIdentityPath ()Lorg/gradle/api/provider/Property;
 	public abstract fun getReportDataFile ()Lorg/gradle/api/file/RegularFileProperty;
-	public abstract fun getReportFile ()Lorg/gradle/api/file/RegularFileProperty;
+	public final fun getReports ()Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogReports;
 	public abstract fun getSourceFiles ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public final fun reports (Lorg/gradle/api/Action;)V
 }
 
 public final class org/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks {
@@ -69,6 +75,7 @@ public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension 
 	public final fun getDslMarkerNoopTarget ()Lorg/gradle/api/provider/Property;
 	public final fun getDslMarkerNoopTypePosition ()Lorg/gradle/api/provider/Property;
 	public final fun getDslMarkerWithoutExplicitTargets ()Lorg/gradle/api/provider/Property;
+	public final fun getEnabled ()Lorg/gradle/api/provider/Property;
 	public final fun getExemptNonTransitiveDependencies ()Lorg/gradle/api/NamedDomainObjectProvider;
 	public final fun getExhaustivePublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun getFunctionTypeAliasPublicApi ()Lorg/gradle/api/provider/Property;
@@ -82,6 +89,7 @@ public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension 
 	public final fun getPairOrTriplePublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun getPublicTypeWithInternalApi ()Lorg/gradle/api/provider/Property;
 	public final fun getPublicTypesMustBeTransitiveDependencies ()Lorg/gradle/api/provider/Property;
+	public final fun getReports ()Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogReports;
 	public final fun getRequiredParameterAfterOptional ()Lorg/gradle/api/provider/Property;
 	public final fun getStatefulClassWithoutEquals ()Lorg/gradle/api/provider/Property;
 	public final fun getStatefulClassWithoutHashCode ()Lorg/gradle/api/provider/Property;
@@ -91,6 +99,7 @@ public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension 
 	public final fun getUndocumentedPublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun ignore (Ljava/lang/String;Ljava/util/List;)V
 	public final fun javaInterop (Lorg/gradle/api/Action;)V
+	public final fun reports (Lorg/gradle/api/Action;)V
 }
 
 public final class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtensionKt {

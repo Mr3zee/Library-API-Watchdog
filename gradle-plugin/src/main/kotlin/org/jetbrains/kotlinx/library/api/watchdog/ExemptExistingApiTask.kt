@@ -2,15 +2,18 @@ package org.jetbrains.kotlinx.library.api.watchdog
 
 import java.io.File
 import javax.inject.Inject
+import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.UntrackedTask
@@ -56,13 +59,29 @@ public abstract class ExemptExistingApiTask : DefaultTask() {
     @get:Input
     public abstract val projectIdentityPath: Property<String>
 
-    /** The HTML report. */
-    @get:OutputFile
-    public abstract val reportFile: RegularFileProperty
+    /**
+     * The project directory relative to the root directory of the build, with `/` separators.
+     * The SARIF report prefixes it to every source path.
+     */
+    @get:Input
+    public abstract val projectDirectoryFromRoot: Property<String>
+
+    /** The configured severity of each diagnostic. The SARIF report uses it as the result level. */
+    @get:Input
+    public abstract val diagnosticSeverities: MapProperty<String, WatchdogSeverity>
+
+    /** The report formats. Default: the `reports` block of the `apiWatchdog` extension. */
+    @get:Nested
+    public val reports: WatchdogReports = project.objects.newInstance(WatchdogReports::class.java)
 
     /** The report data that the aggregation plugin reads. */
     @get:OutputFile
     public abstract val reportDataFile: RegularFileProperty
+
+    /** Configures [reports]. */
+    public fun reports(action: Action<WatchdogReports>) {
+        action.execute(reports)
+    }
 
     @get:Inject
     protected abstract val execOperations: ExecOperations
@@ -122,9 +141,12 @@ public abstract class ExemptExistingApiTask : DefaultTask() {
         ProjectReportWriter.write(
             response = response,
             sourcesUpdated = true,
+            severities = diagnosticSeverities.get(),
             projectPath = projectIdentityPath.get(),
             projectDirectory = projectDirectory.get().asFile,
-            reportFile = reportFile.get().asFile,
+            projectDirectoryFromRoot = projectDirectoryFromRoot.get(),
+            htmlFile = reports.htmlOutput.orNull?.asFile,
+            sarifFile = reports.sarifOutput.orNull?.asFile,
             reportDataFile = reportDataFile.get().asFile,
             logger = logger,
         )

@@ -1,6 +1,7 @@
 @file:OptIn(ExperimentalAbiValidation::class)
 
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
+import org.jetbrains.kotlinx.library.api.watchdog.conventions.GenerateCheckDescriptions
 
 plugins {
     kotlin("jvm")
@@ -10,9 +11,22 @@ plugins {
     id("library-api-watchdog.space-publishing-conventions")
 }
 
+val generateCheckDescriptions = tasks.register<GenerateCheckDescriptions>("generateCheckDescriptions") {
+    description = "Generates the WatchdogCheckDescriptions table of the SARIF report from the shared diagnostics.json."
+    @Suppress("UnstableApiUsage")
+    diagnostics.set(isolated.rootProject.projectDirectory.file("diagnostics.json"))
+    packageName.set("org.jetbrains.kotlinx.library.api.watchdog")
+    toolVersion.set(project.version.toString())
+    outputDirectory.set(layout.buildDirectory.dir("generated/sources/checkDescriptions/main/kotlin"))
+}
+
 kotlin {
     explicitApi()
     abiValidation()
+
+    sourceSets.main {
+        kotlin.srcDir(generateCheckDescriptions)
+    }
 }
 
 dependencies {

@@ -1,11 +1,11 @@
 package org.jetbrains.kotlinx.library.api.watchdog
 
+import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
@@ -18,9 +18,14 @@ public abstract class AggregateApiWatchdogReportsTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.NONE)
     public abstract val reportDataFiles: ConfigurableFileCollection
 
-    /** The aggregate HTML report. Default: `build/reports/api-watchdog/aggregate-report.html`. */
-    @get:OutputFile
-    public abstract val reportFile: RegularFileProperty
+    /** The aggregate reports. Default: `build/reports/api-watchdog/aggregate-report.html` and `.sarif`. */
+    @get:Nested
+    public val reports: WatchdogReports = project.objects.newInstance(WatchdogReports::class.java)
+
+    /** Configures [reports]. */
+    public fun reports(action: Action<WatchdogReports>) {
+        action.execute(reports)
+    }
 
     @TaskAction
     public fun generateReport() {
@@ -28,8 +33,14 @@ public abstract class AggregateApiWatchdogReportsTask : DefaultTask() {
             .sortedBy { it.absolutePath }
             .map(ApiWatchdogReportData::read)
             .distinctBy { it.projectPath }
-        ApiWatchdogHtmlReport.write(reports, reportFile.get().asFile, aggregate = true)
-        logger.lifecycle("Aggregate API Watchdog report: ${reportFile.get().asFile}")
+        this.reports.htmlOutput.orNull?.asFile?.let { file ->
+            ApiWatchdogHtmlReport.write(reports, file, aggregate = true)
+            logger.lifecycle("Aggregate API Watchdog report: $file")
+        }
+        this.reports.sarifOutput.orNull?.asFile?.let { file ->
+            ApiWatchdogSarifReport.write(reports, file)
+            logger.lifecycle("Aggregate API Watchdog SARIF report: $file")
+        }
     }
 }
 

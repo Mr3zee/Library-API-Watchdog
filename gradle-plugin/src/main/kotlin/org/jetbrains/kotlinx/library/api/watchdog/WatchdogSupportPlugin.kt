@@ -29,19 +29,26 @@ import org.gradle.api.provider.Provider
 import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitSupportPlugin
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.HasConfigurableKotlinCompilerOptions
+import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+import org.jetbrains.kotlin.gradle.plugin.KotlinTargetsContainer
 import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 
 @Suppress("unused") // Loaded by reflection.
 public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO) {
     private lateinit var collectDiagnosticsForExempts: Property<Boolean>
+    private lateinit var enabled: Property<Boolean>
 
-    /** A raw `-Xexplicit-api` flag turns explicit API mode on in test compilations too. */
+    /**
+     * KGP asks after `afterEvaluate`, so `apiWatchdog.enabled` is final here. A raw
+     * `-Xexplicit-api` flag turns explicit API mode on in test compilations too.
+     */
     override fun isApplicable(kotlinCompilation: KotlinCompilation<*>): Boolean =
-        !kotlinCompilation.isTestCompilation()
+        enabled.get() && !kotlinCompilation.isTestCompilation()
 
     override fun apply(target: Project) {
         val exemptNonTransitiveDependencies = target.configurations.register(
@@ -57,10 +64,19 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             WatchdogGradleExtension::class.java,
             exemptNonTransitiveDependencies,
         )
+        enabled = extension.enabled
+        extension.reports.html.convention(true)
+        extension.reports.htmlFile.convention(target.layout.buildDirectory.file(REPORT_FILE))
+        extension.reports.sarif.convention(true)
+        extension.reports.sarifFile.convention(target.layout.buildDirectory.file(SARIF_REPORT_FILE))
         val collectDiagnostics = target.objects.property(Boolean::class.java).convention(false)
         collectDiagnosticsForExempts = collectDiagnostics
-        target.registerExemptionTasks(collectDiagnostics)
+        target.registerExemptionTasks(extension, collectDiagnostics)
         target.afterEvaluate { project ->
+            if (!extension.enabled.get()) {
+                project.addExemptionAnnotationsWithoutChecks()
+                return@afterEvaluate
+            }
             if (!project.explicitApiWarningSuppressed() && !project.hasExplicitApiMode()) {
                 project.logger.warn(missingExplicitApiWarning(project.path))
             }
@@ -72,11 +88,39 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         }
     }
 
+    /**
+     * KGP adds the annotations library only through [applyToCompilation], and a disabled watchdog
+     * never gets there. Sources that carry `@Intentionally*` annotations still have to compile.
+     */
+    private fun Project.addExemptionAnnotationsWithoutChecks() {
+        val kotlin = extensions.findByName("kotlin")
+        val compilations = when (kotlin) {
+            is KotlinJvmExtension -> kotlin.target.compilations
+            is KotlinAndroidExtension -> kotlin.target.compilations
+            is KotlinTargetsContainer -> kotlin.targets.flatMap { it.compilations }
+            else -> return
+        }
+        compilations.filterNot { it.isTestCompilation() }.forEach { compilation ->
+            compilation.defaultSourceSet.dependencies {
+                info.companionLibraryCoordinates.forEach(::implementation)
+            }
+        }
+    }
+
     private fun Project.registerExemptionTasks(
+        extension: WatchdogGradleExtension,
         collectDiagnostics: Property<Boolean>,
     ) {
+        val enabled = extension.enabled
         val dependencyHandler = dependencies
         val kotlinVersion = provider { kotlinPluginVersion() }
+        @Suppress("UnstableApiUsage")
+        val rootDirectory = isolated.rootProject.projectDirectory.asFile
+        val projectDirectoryFromRoot = layout.projectDirectory.asFile
+            .relativeToOrSelf(rootDirectory).invariantSeparatorsPath
+        val diagnosticSeverities = extension.diagnosticSeverities.entries.fold(
+            objects.mapProperty(String::class.java, WatchdogSeverity::class.java),
+        ) { map, (diagnostic, severity) -> map.apply { put(diagnostic, severity) } }
         val fixerDependency = dependencyHandler.create(
             "${info.artifact.groupId}:$FIXER_ARTIFACT_ID:${info.artifact.version}",
         )
@@ -108,16 +152,22 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             ExemptExistingApiTask::class.java,
         ) { task ->
             task.group = "api watchdog"
+            task.onlyIf(DISABLED_TASK_REASON) { enabled.get() }
             task.description = "Adds the FOR_BACKWARDS_COMPATIBILITY exemption to every declaration with a watchdog " +
-                    "diagnostic in the main Kotlin sources and writes the API Watchdog report"
+                    "diagnostic in the main Kotlin sources and writes the API Watchdog reports"
             task.compilationNames.convention(emptyList())
             task.projectDirectory.set(layout.projectDirectory)
             @Suppress("UnstableApiUsage")
             task.projectIdentityPath.set(isolated.buildTreePath)
+            task.projectDirectoryFromRoot.set(projectDirectoryFromRoot)
+            task.diagnosticSeverities.set(diagnosticSeverities)
             task.kotlinVersion.set(kotlinVersion)
             task.fixerArtifact.from(fixerArtifact)
             task.fixerClasspath.from(fixerClasspath)
-            task.reportFile.convention(layout.buildDirectory.file(REPORT_FILE))
+            task.reports.html.convention(extension.reports.html)
+            task.reports.htmlFile.convention(extension.reports.htmlFile)
+            task.reports.sarif.convention(extension.reports.sarif)
+            task.reports.sarifFile.convention(extension.reports.sarifFile)
             task.reportDataFile.convention(layout.buildDirectory.file(REPORT_DATA_FILE))
         }
         val reportTask = tasks.register(
@@ -125,17 +175,23 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             GenerateApiWatchdogReportTask::class.java,
         ) { task ->
             task.group = "api watchdog"
+            task.onlyIf(DISABLED_TASK_REASON) { enabled.get() }
             task.description =
-                "Writes the API Watchdog report: the applied exemptions and the diagnostics without one. " +
+                "Writes the API Watchdog reports: the applied exemptions and the diagnostics without one. " +
                         "Changes no source"
             task.compilationNames.convention(emptyList())
             task.projectDirectory.set(layout.projectDirectory)
             @Suppress("UnstableApiUsage")
             task.projectIdentityPath.set(isolated.buildTreePath)
+            task.projectDirectoryFromRoot.set(projectDirectoryFromRoot)
+            task.diagnosticSeverities.set(diagnosticSeverities)
             task.kotlinVersion.set(kotlinVersion)
             task.fixerArtifact.from(fixerArtifact)
             task.fixerClasspath.from(fixerClasspath)
-            task.reportFile.convention(layout.buildDirectory.file(REPORT_FILE))
+            task.reports.html.convention(extension.reports.html)
+            task.reports.htmlFile.convention(extension.reports.htmlFile)
+            task.reports.sarif.convention(extension.reports.sarif)
+            task.reports.sarifFile.convention(extension.reports.sarifFile)
             task.reportDataFile.convention(layout.buildDirectory.file(REPORT_DATA_FILE))
         }
         // IDE sync and the `tasks` report realize every task, so task realization can't be the
@@ -470,6 +526,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         private const val EXEMPT_EXISTING_API_TASK_NAME = "exemptExistingApi"
         private const val GENERATE_REPORT_TASK_NAME = "generateApiWatchdogReport"
         private const val REPORT_FILE = "reports/api-watchdog/report.html"
+        private const val SARIF_REPORT_FILE = "reports/api-watchdog/report.sarif"
         private const val REPORT_DATA_FILE = "reports/api-watchdog/report.data"
         private const val ANDROID_CLASSES_JAR = "android-classes-jar"
         internal const val EXEMPT_NON_TRANSITIVE_CONFIGURATION_NAME = "apiWatchdogExemptNonTransitive"
@@ -488,6 +545,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
 
         /** The Kotlin Gradle plugin registers these tasks only when its ABI validation is active. */
         private val ABI_VALIDATION_TASK_NAMES = listOf("checkKotlinAbi", "checkLegacyAbi")
+
+        private const val DISABLED_TASK_REASON = "apiWatchdog.enabled is true"
 
         /** An undocumented Gradle property. Set it to `true` when the explicit API detection misjudges a project. */
         private const val SUPPRESS_EXPLICIT_API_WARNING_PROPERTY =

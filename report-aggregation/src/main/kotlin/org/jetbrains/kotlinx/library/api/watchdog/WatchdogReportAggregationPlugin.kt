@@ -7,7 +7,8 @@ import org.gradle.api.attributes.Usage
 
 /**
  * Combines the API Watchdog reports of the projects in the `apiWatchdogReports` configuration
- * into one HTML report. Apply it to the root project of a multi-project build.
+ * into one HTML report and one SARIF report. Apply it to the root project of a multi-project
+ * build. The `reports` block of the `aggregateApiWatchdogReports` task selects the formats.
  */
 public class WatchdogReportAggregationPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -43,19 +44,20 @@ public class WatchdogReportAggregationPlugin : Plugin<Project> {
         ) { task ->
             task.group = "api watchdog"
             task.description =
-                "Combines the API Watchdog reports of the declared projects into one HTML report"
+                "Combines the API Watchdog reports of the declared projects into one HTML and one SARIF report"
             task.reportDataFiles.from(reportFiles)
-            task.reportFile.convention(
-                target.layout.buildDirectory.file(
-                    "reports/api-watchdog/aggregate-report.html"
-                )
-            )
+            task.reports.html.convention(true)
+            task.reports.htmlFile.convention(target.layout.buildDirectory.file(AGGREGATE_HTML_REPORT))
+            task.reports.sarif.convention(true)
+            task.reports.sarifFile.convention(target.layout.buildDirectory.file(AGGREGATE_SARIF_REPORT))
         }
     }
 
     private companion object {
         private const val AGGREGATE_REPORT_TASK_NAME =
             "aggregateApiWatchdogReports"
+        private const val AGGREGATE_HTML_REPORT = "reports/api-watchdog/aggregate-report.html"
+        private const val AGGREGATE_SARIF_REPORT = "reports/api-watchdog/aggregate-report.sarif"
     }
 }
 

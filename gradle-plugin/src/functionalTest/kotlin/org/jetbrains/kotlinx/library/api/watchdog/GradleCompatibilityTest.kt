@@ -39,6 +39,9 @@ class GradleCompatibilityTest {
                         apiWatchdogReports(project(":openApi"))
                         apiWatchdogReports(project(":dataApi"))
                     }
+                    tasks.aggregateApiWatchdogReports {
+                        reports { sarifFile = layout.buildDirectory.file("scan/aggregate.sarif") }
+                    }
                 """
             )
             subproject("openApi") { source("/** An open API. */\npublic open class OpenApi", "OpenApi") }
@@ -67,6 +70,10 @@ class GradleCompatibilityTest {
         assertContains(html, ":dataApi")
         assertContains(html, "@IntentionallyOpen")
         assertContains(html, "@IntentionallyDataClass")
+        val sarif = project.file("build/scan/aggregate.sarif").readText()
+        assertContains(sarif, "\"uri\": \"openApi/src/main/kotlin/test/OpenApi.kt\"")
+        assertContains(sarif, "\"uri\": \"dataApi/src/main/kotlin/test/DataApi.kt\"")
+        assertContains(sarif, "\"ruleId\": \"DATA_CLASS_PUBLIC_API\"")
     }
 
     @Test

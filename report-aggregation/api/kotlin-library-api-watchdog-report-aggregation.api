@@ -2,7 +2,8 @@ public abstract class org/jetbrains/kotlinx/library/api/watchdog/AggregateApiWat
 	public fun <init> ()V
 	public final fun generateReport ()V
 	public abstract fun getReportDataFiles ()Lorg/gradle/api/file/ConfigurableFileCollection;
-	public abstract fun getReportFile ()Lorg/gradle/api/file/RegularFileProperty;
+	public final fun getReports ()Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogReports;
+	public final fun reports (Lorg/gradle/api/Action;)V
 }
 
 public final class org/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogHtmlReport {
@@ -11,15 +12,17 @@ public final class org/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogHtmlRep
 }
 
 public final class org/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogProjectReport {
-	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/util/List;
+	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/util/List;
-	public final fun copy (Ljava/lang/String;Ljava/util/List;Ljava/util/List;)Lorg/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogProjectReport;
-	public static synthetic fun copy$default (Lorg/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogProjectReport;Ljava/lang/String;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lorg/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogProjectReport;
+	public final fun component4 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;)Lorg/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogProjectReport;
+	public static synthetic fun copy$default (Lorg/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogProjectReport;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lorg/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogProjectReport;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getApplied ()Ljava/util/List;
 	public final fun getNotApplied ()Ljava/util/List;
+	public final fun getProjectDirectory ()Ljava/lang/String;
 	public final fun getProjectPath ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -37,6 +40,11 @@ public final class org/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogReportK
 	public static final field API_WATCHDOG_REPORT_USAGE Ljava/lang/String;
 }
 
+public final class org/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogSarifReport {
+	public static final field INSTANCE Lorg/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogSarifReport;
+	public final fun write (Ljava/util/List;Ljava/io/File;)V
+}
+
 public final class org/jetbrains/kotlinx/library/api/watchdog/AppliedExemptionReportEntry {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
@@ -51,18 +59,20 @@ public final class org/jetbrains/kotlinx/library/api/watchdog/AppliedExemptionRe
 }
 
 public final class org/jetbrains/kotlinx/library/api/watchdog/NotAppliedExemptionReportEntry {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
 	public final fun component4 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/jetbrains/kotlinx/library/api/watchdog/NotAppliedExemptionReportEntry;
-	public static synthetic fun copy$default (Lorg/jetbrains/kotlinx/library/api/watchdog/NotAppliedExemptionReportEntry;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lorg/jetbrains/kotlinx/library/api/watchdog/NotAppliedExemptionReportEntry;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/jetbrains/kotlinx/library/api/watchdog/NotAppliedExemptionReportEntry;
+	public static synthetic fun copy$default (Lorg/jetbrains/kotlinx/library/api/watchdog/NotAppliedExemptionReportEntry;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lorg/jetbrains/kotlinx/library/api/watchdog/NotAppliedExemptionReportEntry;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAnnotation ()Ljava/lang/String;
 	public final fun getDiagnostic ()Ljava/lang/String;
 	public final fun getLocation ()Ljava/lang/String;
 	public final fun getReason ()Ljava/lang/String;
+	public final fun getSeverity ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -71,5 +81,15 @@ public final class org/jetbrains/kotlinx/library/api/watchdog/WatchdogReportAggr
 	public fun <init> ()V
 	public synthetic fun apply (Ljava/lang/Object;)V
 	public fun apply (Lorg/gradle/api/Project;)V
+}
+
+public abstract class org/jetbrains/kotlinx/library/api/watchdog/WatchdogReports {
+	public fun <init> (Lorg/gradle/api/model/ObjectFactory;)V
+	public abstract fun getHtml ()Lorg/gradle/api/provider/Property;
+	public abstract fun getHtmlFile ()Lorg/gradle/api/file/RegularFileProperty;
+	public final fun getHtmlOutput ()Lorg/gradle/api/provider/Provider;
+	public abstract fun getSarif ()Lorg/gradle/api/provider/Property;
+	public abstract fun getSarifFile ()Lorg/gradle/api/file/RegularFileProperty;
+	public final fun getSarifOutput ()Lorg/gradle/api/provider/Provider;
 }
 

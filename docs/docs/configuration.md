@@ -88,6 +88,8 @@ See the list of configurable properties:
 
 ```kotlin build.gradle.kts
 apiWatchdog {
+    // !link[/enabled/] /configuration#disabling-the-watchdog
+    enabled = true
     // !link[/suggestAbiValidation/] /abi-validation-suggestion
     suggestAbiValidation = true
     // !link[/publicTypesMustBeTransitiveDependencies/] /checks/special/public-type-from-non-transitive-dependency
@@ -102,6 +104,11 @@ apiWatchdog {
     internalApiAnnotations.add("com.example.dependency.InternalDependencyApi")
     // !link[/ignore/] /configuration#annotation-ignore-rules
     ignore(WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS, whenAnnotatedWith = listOf("com.example.GeneratedValueMembers"))
+    // !link[/reports/] /report#selecting-the-formats
+    reports {
+        html = true
+        sarif = true
+    }
 
     // !link[/openApiWithoutSubclassOptIn/] /checks/open-api-without-subclass-opt-in
     openApiWithoutSubclassOptIn = WatchdogSeverity.ERROR
@@ -162,6 +169,16 @@ apiWatchdog {
         // !link[/defaultParametersWithoutJvmOverloads/] /checks/java-interop/default-parameters-without-jvm-overloads
         defaultParametersWithoutJvmOverloads = WatchdogSeverity.ERROR
     }
+}
+```
+
+## Disabling the watchdog
+
+`enabled = false` turns the whole plugin off for the project:
+
+```kotlin build.gradle.kts
+apiWatchdog {
+    enabled = true // default
 }
 ```
 

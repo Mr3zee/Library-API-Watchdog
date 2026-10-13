@@ -11,6 +11,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome.FAILED
+import org.gradle.testkit.runner.TaskOutcome.SKIPPED
 import org.intellij.lang.annotations.Language
 import org.jetbrains.kotlin.compiler.plugin.devkit.test.TEST_COMPILER_VERSION
 import org.jetbrains.kotlinx.library.api.watchdog.AgpVersion.AGP8
@@ -212,6 +213,53 @@ class WatchdogProjectTest {
         }
 
         project.build("build").assertNoWatchdogDiagnostics()
+    }
+
+    @Test
+    fun disabledWatchdogAddsNoCompilerPluginAndSkipsItsTasks() {
+        val project = jvmProject {
+            explicitApi = false
+            apiWatchdog { enabled = false }
+            source(unacknowledgedFile)
+            source(
+                acknowledgedFile,
+                "acknowledged",
+                fileAnnotation = "@file:IntentionallyDefaultFacadeName(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)",
+            )
+            buildScript(
+                """
+                    tasks.compileKotlin {
+                        doLast { println("PLUGIN_CLASSPATH=" + pluginClasspath.files.joinToString { it.name }) }
+                    }
+                """
+            )
+        }
+
+        val result = project.build("build", "exemptExistingApi", "generateApiWatchdogReport")
+        result.assertNoWatchdogDiagnostics()
+        result.assertOutputHas("PLUGIN_CLASSPATH=")
+        result.assertOutputLacks("watchdog-compiler-plugin")
+        result.assertOutputLacks("doesn't enable explicit API mode")
+        result.assertOutputLacks("but no binary compatibility validation is enabled")
+        result.assertTaskOutcome(":exemptExistingApi", SKIPPED)
+        result.assertTaskOutcome(":generateApiWatchdogReport", SKIPPED)
+    }
+
+    @Test
+    fun disabledWatchdogKeepsExemptionAnnotationsInMultiplatformProject() {
+        val project = kmpProject {
+            apiWatchdog { enabled = false }
+            source(unacknowledgedFile)
+            source(
+                acknowledgedFile,
+                "acknowledged",
+                fileAnnotation = "@file:IntentionallyDefaultFacadeName(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)",
+            )
+        }
+
+        val result = project.build("build", "generateApiWatchdogReport")
+        result.assertNoWatchdogDiagnostics()
+        result.assertTaskOutcome(":generateApiWatchdogReport", SKIPPED)
     }
 
     @Test

@@ -5,6 +5,8 @@ class ApiWatchdogBlock internal constructor() {
     private val lines = mutableListOf<String>()
     private val javaInterop = JavaInteropBlock()
 
+    var enabled: Boolean? = null
+
     var suggestAbiValidation: Boolean? = null
 
     var publicTypeWithInternalApi: Boolean? = null
@@ -43,6 +45,17 @@ class ApiWatchdogBlock internal constructor() {
         javaInterop.block()
     }
 
+    /** The `reports { }` block. A file is a path relative to the build directory. */
+    fun reports(block: ReportsBlock.() -> Unit) {
+        val reports = ReportsBlock().apply(block)
+        lines += "reports {"
+        reports.html?.let { lines += "    html = $it" }
+        reports.htmlFile?.let { lines += "    htmlFile = layout.buildDirectory.file(\"$it\")" }
+        reports.sarif?.let { lines += "    sarif = $it" }
+        reports.sarifFile?.let { lines += "    sarifFile = layout.buildDirectory.file(\"$it\")" }
+        lines += "}"
+    }
+
     /** Script text written as is. */
     fun raw(script: String) {
         lines += script.trimIndent().lines()
@@ -50,6 +63,7 @@ class ApiWatchdogBlock internal constructor() {
 
     internal fun render(): String = buildString {
         appendLine("apiWatchdog {")
+        enabled?.let { appendLine("    enabled = $it") }
         suggestAbiValidation?.let { appendLine("    suggestAbiValidation = $it") }
         publicTypeWithInternalApi?.let { appendLine("    publicTypeWithInternalApi = $it") }
         publicTypesMustBeTransitiveDependencies?.let {
@@ -63,6 +77,13 @@ class ApiWatchdogBlock internal constructor() {
             appendLine("    }")
         }
         append("}")
+    }
+
+    class ReportsBlock internal constructor() {
+        var html: Boolean? = null
+        var htmlFile: String? = null
+        var sarif: Boolean? = null
+        var sarifFile: String? = null
     }
 
     class JavaInteropBlock internal constructor() {

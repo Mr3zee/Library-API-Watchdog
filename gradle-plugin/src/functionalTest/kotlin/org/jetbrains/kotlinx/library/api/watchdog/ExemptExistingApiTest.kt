@@ -171,6 +171,56 @@ class ExemptExistingApiTest {
     }
 
     @Test
+    fun sarifReportListsTheDiagnosticsWithRootRelativeLocations() {
+        val project = jvmProject {
+            subproject("lib") {
+                apiWatchdog { severity(WARNING, UNDOCUMENTED_PUBLIC_API) }
+                source("public open class LegacyApi", "legacyApi")
+            }
+        }
+
+        project.build(":lib:$REPORT_TASK").assertTaskOutcome(":lib:$REPORT_TASK", SUCCESS)
+
+        val sarif = project.file("lib/build/reports/api-watchdog/report.sarif").readText()
+        assertContains(sarif, "\"version\": \"2.1.0\"")
+        assertContains(sarif, "\"id\": \"OPEN_API_WITHOUT_SUBCLASS_OPT_IN\"")
+        assertContains(sarif, "\"helpUri\": \"${OPEN_API_WITHOUT_SUBCLASS_OPT_IN.docsUrl}\"")
+        assertContains(sarif, "\"ruleId\": \"UNDOCUMENTED_PUBLIC_API\"")
+        assertContains(sarif, "\"level\": \"error\"")
+        assertContains(sarif, "\"level\": \"warning\"")
+        assertContains(sarif, "\"uri\": \"lib/src/main/kotlin/test/legacyApi.kt\"")
+        assertContains(sarif, "\"startLine\": ")
+        assertContains(sarif, "Open API without subclass opt-in. Exemption: @IntentionallyOpen. exemptExistingApi can apply it.")
+    }
+
+    @Test
+    fun reportsBlockSelectsTheFormatsAndTheFiles() {
+        val project = jvmProject {
+            apiWatchdog { reports { html = false; sarifFile = "scan/watchdog.sarif" } }
+            source("/** A legacy open API. */\npublic open class LegacyApi", "legacyApi")
+        }
+
+        val result = project.build(REPORT_TASK)
+
+        result.assertTaskOutcome(":$REPORT_TASK", SUCCESS)
+        assertFalse(project.report().exists(), "HTML report is off")
+        assertFalse(project.file("build/reports/api-watchdog/report.sarif").exists(), "SARIF report moved")
+        assertContains(project.file("build/scan/watchdog.sarif").readText(), "OPEN_API_WITHOUT_SUBCLASS_OPT_IN")
+        result.assertOutputLacks("API Watchdog report: ")
+        result.assertOutputHas("API Watchdog SARIF report: ")
+
+        val sarifOff = jvmProject {
+            apiWatchdog { reports { sarif = false } }
+            source("/** A legacy open API. */\npublic open class LegacyApi", "legacyApi")
+        }
+
+        sarifOff.build(EXEMPT_TASK).assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+
+        assertFalse(sarifOff.file("build/reports/api-watchdog/report.sarif").exists(), "SARIF report is off")
+        assertContains(sarifOff.report().readText(), "@IntentionallyOpen (1)")
+    }
+
+    @Test
     fun disabledDiagnosticsAreNotExempted() {
         val project = jvmProject {
             apiWatchdog { severity(NONE, UNDOCUMENTED_PUBLIC_API) }
