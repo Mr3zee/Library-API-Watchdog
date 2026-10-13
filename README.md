@@ -81,8 +81,8 @@ A configurable check is skipped on every declaration carrying a given annotation
 `apiWatchdog { ignore(WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS, whenAnnotatedWith = listOf("com.example.GeneratedValueMembers")) }`,
 see [Annotation ignore rules](https://mr3zee.github.io/Library-API-Watchdog/configuration#annotation-ignore-rules).
 Dependencies the runtime environment supplies, such as the Gradle API for a Gradle plugin, are
-exempted from that check module-wide by declaring them on the `apiWatchdogExemptNonTransitive`
-configuration, see
+exempted from that check module-wide in their declaration with
+`compileOnly(libs.host.api) { exemptNonTransitiveDependency(this) }`, see
 [Exempt non-transitive dependencies](https://mr3zee.github.io/Library-API-Watchdog/configuration#exempt-non-transitive-dependencies).
 
 ## Adopting on an existing library

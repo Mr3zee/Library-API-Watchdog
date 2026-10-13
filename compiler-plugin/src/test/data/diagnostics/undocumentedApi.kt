@@ -113,8 +113,8 @@ public class WithUndocumentedMembers {
     public val <!UNDOCUMENTED_PUBLIC_API!>undocumentedProperty<!>: Int = 0
 }
 
-// Members documented by tags in the class KDoc stay clean: `@property` covers properties (both
-// constructor and body ones), `@constructor` and `@param` cover the primary constructor.
+// The class KDoc doesn't document the properties, and its `@property` and `@param` tags don't
+// count. Only the primary constructor takes its documentation from the class KDoc.
 
 /**
  * Documented.
@@ -126,35 +126,9 @@ public class WithUndocumentedMembers {
  */
 public class DocumentedThroughClassKDocTags(
     input: Int,
-    public val fromConstructor: Int,
+    public val <!UNDOCUMENTED_PUBLIC_API!>fromConstructor<!>: Int,
 ) {
-    public val fromBody: Int = input
-}
-
-// Backticks in KDoc subjects cover Kotlin identifiers that need escaping in source.
-
-/**
- * Documented.
- *
- * @param `class` Documented via the class KDoc.
- * @property `when` Documented via the class KDoc.
- */
-public class EscapedKDocSubjects(
-    public val `class`: Int,
-) {
-    public val `when`: Int = `class`
-}
-
-// A class KDoc covers a property only through a matching `@property` tag. The KDoc's mere
-// presence doesn't document the properties.
-
-/**
- * Documented, but the tags cover only one of the two properties.
- *
- * @property covered Documented via the class KDoc.
- */
-public class ClassKDocNotCoveringAllProperties(public val covered: Int) {
-    public val <!UNDOCUMENTED_PUBLIC_API!>uncovered<!>: Int = 0
+    public val <!UNDOCUMENTED_PUBLIC_API!>fromBody<!>: Int = input
 }
 
 // A constructor property can also carry its own KDoc on the parameter.
@@ -244,12 +218,11 @@ public enum class DocumentedEnumWithEntries {
 // Compiler-generated members (data class copy/componentN, enum values/valueOf/entries) have no
 // source of their own: no warning.
 
-/**
- * Documented.
- *
- * @property value Documented via the class KDoc.
- */
-public data class DocumentedDataClass(public val value: Int)
+/** Documented. */
+public data class DocumentedDataClass(
+    /** Documented. */
+    public val value: Int,
+)
 
 // Not visible outside the library: no warning.
 

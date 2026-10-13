@@ -475,19 +475,17 @@ private val fixableFile = """
     /** An unacknowledged function type alias. */
     public typealias UnacknowledgedCallback = (Int) -> Unit
 
-    /**
-     * An unacknowledged data class.
-     *
-     * @param x the only coordinate.
-     */
-    public data class UnmarkedData(val x: Int)
+    /** An unacknowledged data class. */
+    public data class UnmarkedData(
+        /** The only coordinate. */
+        val x: Int,
+    )
 
-    /**
-     * A stateful session relying on the opaque default toString.
-     *
-     * @param id the session identifier.
-     */
-    public class UnrenderedSession(public val id: Int)
+    /** A stateful session relying on the opaque default toString. */
+    public class UnrenderedSession(
+        /** The session identifier. */
+        public val id: Int,
+    )
 
     /** A function handing out the library's mutable state. */
     public fun leakState(): MutableList<String> = mutableListOf()
@@ -527,13 +525,12 @@ private val fixableFile = """
     @DslMarker
     public annotation class TargetlessDsl
 
-    /**
-     * A user handle compiled to its underlying type.
-     *
-     * @param raw the raw handle value.
-     */
+    /** A user handle compiled to its underlying type. */
     @JvmInline
-    public value class UserHandle(public val raw: String)
+    public value class UserHandle(
+        /** The raw handle value. */
+        public val raw: String,
+    )
 
     /** A lookup whose JVM name is mangled by the value class parameter. */
     public fun findUser(handle: UserHandle) {}
@@ -611,10 +608,9 @@ private val dependencyTypeFile = """
 @Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val multiplatformFile = """
-    /**
-     * A shared data holder.
-     *
-     * @param x the only coordinate.
-     */
-    public data class SharedData(val x: Int)
+    /** A shared data holder. */
+    public data class SharedData(
+        /** The only coordinate. */
+        val x: Int,
+    )
 """.trimIndent()

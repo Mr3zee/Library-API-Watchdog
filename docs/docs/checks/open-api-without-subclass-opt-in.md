@@ -18,7 +18,7 @@ or a non-sealed interface in the public API.
 ```kotlin
 // !hide-focused
 /** Base type for components hosted by an application. */
-// !diag[/Component/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["class","Component","$classFix"]
+// !diag[/Component/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["$class","Component","$classFix"]
 public open class Component
 ```
 
@@ -35,7 +35,7 @@ Unrestricted open API is one of the classic ways a
 ```kotlin
 // !hide-focused
 /** Base type for UI elements rendered by an application. */
-// !diag[/Widget/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["class","Widget","$classFix"]
+// !diag[/Widget/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["$class","Widget","$classFix"]
 public open class Widget
 ```
 
@@ -52,7 +52,7 @@ public open class Widget internal constructor()
 ```kotlin
 // !hide-focused
 /** Extension point invoked during application startup. */
-// !diag[/Plugin/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["interface","Plugin","$interfaceFix"]
+// !diag[/Plugin/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["$interface","Plugin","$interfaceFix"]
 public interface Plugin {
     // !hide-focused
     /** Initializes the plugin for the current application. */

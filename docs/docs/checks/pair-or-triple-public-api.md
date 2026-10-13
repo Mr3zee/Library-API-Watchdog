@@ -22,7 +22,7 @@ parameter bounds in the public API, including their type arguments (like
 
 // !hide-focused
 /** Returns an unnamed location. */
-// !diag[/Pair<Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","locate","Pair","$pairComponents"]
+// !diag[/Pair<Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["$function","locate","Pair","$pairComponents"]
 public fun locate(): Pair<Int, Int> = 0 to 0
 ```
 
@@ -44,7 +44,7 @@ optional property with a default value. See the
 
 // !hide-focused
 /** Returns unnamed dimensions. */
-// !diag[/Triple<Int, Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","dimensions","Triple","$tripleComponents"]
+// !diag[/Triple<Int, Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["$function","dimensions","Triple","$tripleComponents"]
 public fun dimensions(): Triple<Int, Int, Int> = Triple(0, 0, 0)
 ```
 
@@ -54,20 +54,20 @@ public fun dimensions(): Triple<Int, Int, Int> = Triple(0, 0, 0)
 // !hide-focused
 @file:JvmName("Geometry")
 
-// !hide-focused(1:7)
-/**
- * Extents of a three-dimensional object.
- *
- * @property width horizontal extent in pixels.
- * @property height vertical extent in pixels.
- * @property depth front-to-back extent in pixels.
- */
+// !hide-focused
+/** Extents of a three-dimensional object. */
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Dimensions(
+    // !hide-focused
+    /** Horizontal extent in pixels. */
     public val width: Int,
+    // !hide-focused
+    /** Vertical extent in pixels. */
     public val height: Int,
+    // !hide-focused
+    /** Front-to-back extent in pixels. */
     public val depth: Int,
 )
 
@@ -79,47 +79,46 @@ public fun dimensions(): Dimensions = Dimensions(0, 0, 0)
 ### Don't {#dont-2}
 
 ```kotlin
-// !hide-focused(1:5)
-/**
- * Attaches content to an unnamed coordinate pair.
- *
- * @property position horizontal and vertical anchor coordinates.
- */
+// !hide-focused
+/** Attaches content to an unnamed coordinate pair. */
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
-// !diag[/Pair<Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["property","position","Pair","$pairComponents"]
-public class Anchor(public val position: Pair<Int, Int>)
+public class Anchor(
+    // !diag[/Pair<Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["$property","position","Pair","$pairComponents"]
+    // !hide-focused
+    /** Horizontal and vertical anchor coordinates. */
+    public val position: Pair<Int, Int>,
+)
 ```
 
 ### Do {#do-2}
 
 ```kotlin
-// !hide-focused(1:6)
-/**
- * A position in Cartesian coordinate space.
- *
- * @property x distance from the vertical axis.
- * @property y distance from the horizontal axis.
- */
+// !hide-focused
+/** A position in Cartesian coordinate space. */
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Point(
+    // !hide-focused
+    /** Distance from the vertical axis. */
     public val x: Int,
+    // !hide-focused
+    /** Distance from the horizontal axis. */
     public val y: Int,
 )
 
-// !hide-focused(1:5)
-/**
- * Attaches content to a point in Cartesian space.
- *
- * @property position point at which the content is anchored.
- */
+// !hide-focused
+/** Attaches content to a point in Cartesian space. */
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
-public class Anchor(public val position: Point)
+public class Anchor(
+    // !hide-focused
+    /** Point at which the content is anchored. */
+    public val position: Point,
+)
 ```
 
 ### Don't {#dont-3}
@@ -130,7 +129,7 @@ public class Anchor(public val position: Point)
 
 // !hide-focused
 /** Returns unnamed edges. */
-// !diag[/List<Pair<Int, Int>>/] PAIR_OR_TRIPLE_PUBLIC_API ["function","edges","Pair","$pairComponents"]
+// !diag[/List<Pair<Int, Int>>/] PAIR_OR_TRIPLE_PUBLIC_API ["$function","edges","Pair","$pairComponents"]
 public fun edges(): List<Pair<Int, Int>> = emptyList()
 ```
 
@@ -140,18 +139,15 @@ public fun edges(): List<Pair<Int, Int>> = emptyList()
 // !hide-focused
 @file:JvmName("Geometry")
 
-// !hide-focused(1:6)
-/**
- * A position in Cartesian coordinate space.
- *
- * @property x distance from the vertical axis.
- * @property y distance from the horizontal axis.
- */
-// !hide-focused(1:6)
+// !hide-focused
+/** A position in Cartesian coordinate space. */
+// !hide-focused(1:8)
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Point(
+  /** Distance from the vertical axis. */
   public val x: Int,
+  /** Distance from the horizontal axis. */
   public val y: Int,
 )
 

@@ -1,0 +1,596 @@
+FILE: inlineFunctionShapes.kt
+    package foo.bar
+
+    @R|kotlin/PublishedApi|() internal final fun impl(x: R|kotlin/Int|): R|kotlin/Int| {
+        ^impl R|<local>/x|
+    }
+    @R|kotlin/PublishedApi|() internal final fun impl2(a: R|kotlin/Int|, b: R|kotlin/Int|): R|kotlin/Int| {
+        ^impl2 R|<local>/a|
+    }
+    @R|kotlin/PublishedApi|() internal final fun ready(): R|kotlin/Boolean| {
+        ^ready Boolean(true)
+    }
+    @R|kotlin/PublishedApi|() internal final fun refreshNoop(): R|kotlin/Unit| {
+    }
+    @R|kotlin/PublishedApi|() internal final fun transactImpl(work: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+        R|<local>/work|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()
+    }
+    @R|kotlin/PublishedApi|() internal final fun consume(value: R|kotlin/Any?|): R|kotlin/Unit| {
+    }
+    @R|kotlin/PublishedApi|() internal final var storedLimit: R|kotlin/Int| = Int(0)
+        internal get(): R|kotlin/Int|
+        internal set(value: R|kotlin/Int|): R|kotlin/Unit|
+    @R|kotlin/PublishedApi|() internal final val storedArray: R|kotlin/IntArray| = R|kotlin/IntArray.IntArray|(Int(1))
+        internal get(): R|kotlin/IntArray|
+    @R|kotlin/PublishedApi|() internal final suspend fun awaitImpl(): R|kotlin/Int| {
+        ^awaitImpl Int(1)
+    }
+    public final inline fun <R> once(block: R|() -> R|): R|R| {
+        ^once R|<local>/block|.R|SubstitutionOverride<kotlin/Function0.invoke: R|R|>|()
+    }
+    public final class Vec : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Vec| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final operator fun plus(other: R|foo/bar/Vec|): R|foo/bar/Vec| {
+            ^plus this@R|foo/bar/Vec|
+        }
+
+        public final operator fun get(index: R|kotlin/Int|): R|kotlin/Int| {
+            ^get R|<local>/index|
+        }
+
+        public final operator fun invoke(): R|kotlin/Int| {
+            ^invoke Int(0)
+        }
+
+        public final operator fun not(): R|foo/bar/Vec| {
+            ^not this@R|foo/bar/Vec|
+        }
+
+    }
+    public final enum class Color : R|kotlin/Enum<foo/bar/Color>| {
+        private constructor(): R|foo/bar/Color| {
+            super<R|kotlin/Enum<foo/bar/Color>|>()
+        }
+
+        public final static enum entry RED: R|foo/bar/Color|
+        public final static fun values(): R|kotlin/Array<foo/bar/Color>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/Color| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/Color>|
+            public static get(): R|kotlin/enums/EnumEntries<foo/bar/Color>|
+
+    }
+    public final object Registry : R|kotlin/Any| {
+        private constructor(): R|foo/bar/Registry| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|kotlin/PublishedApi|() internal final fun lookup(color: R|foo/bar/Color|, name: R|kotlin/String|): R|kotlin/Int| {
+            ^lookup Int(0)
+        }
+
+    }
+    public final inline fun plusByName(x: R|kotlin/Int|): R|kotlin/Int| {
+        ^plusByName R|<local>/x|.R|kotlin/Int.plus|(Int(1))
+    }
+    public final inline fun plusBySyntax(x: R|kotlin/Int|): R|kotlin/Int| {
+        ^plusBySyntax R|<local>/x|.R|kotlin/Int.plus|(Int(1))
+    }
+    public final inline fun incByName(x: R|kotlin/Int|): R|kotlin/Int| {
+        ^incByName R|<local>/x|.R|kotlin/Int.inc|()
+    }
+    public final inline fun negateByName(x: R|kotlin/Int|): R|kotlin/Int| {
+        ^negateByName R|<local>/x|.R|kotlin/Int.unaryMinus|()
+    }
+    public final inline fun negateBySyntax(x: R|kotlin/Int|): R|kotlin/Int| {
+        ^negateBySyntax R|<local>/x|.R|kotlin/Int.unaryMinus|()
+    }
+    public final inline fun notByName(b: R|kotlin/Boolean|): R|kotlin/Boolean| {
+        ^notByName R|<local>/b|.R|kotlin/Boolean.not|()
+    }
+    public final inline fun notBySyntax(b: R|kotlin/Boolean|): R|kotlin/Boolean| {
+        ^notBySyntax R|<local>/b|.R|kotlin/Boolean.not|()
+    }
+    public final inline fun charByName(s: R|kotlin/String|): R|kotlin/Char| {
+        ^charByName R|<local>/s|.R|kotlin/String.get|(Int(0))
+    }
+    public final inline fun charBySyntax(s: R|kotlin/String|): R|kotlin/Char| {
+        ^charBySyntax R|<local>/s|.R|kotlin/String.get|(Int(0))
+    }
+    public final inline fun shifted(x: R|kotlin/Int|): R|kotlin/Int| {
+        ^shifted R|<local>/x|.R|kotlin/Int.shl|(Int(1))
+    }
+    public final inline fun compared(x: R|kotlin/Int|): R|kotlin/Int| {
+        ^compared R|<local>/x|.R|kotlin/Int.compareTo|(Int(1))
+    }
+    public final inline fun lessThan(a: R|kotlin/Int|, b: R|kotlin/Int|): R|kotlin/Boolean| {
+        ^lessThan CMP(<, R|<local>/a|.R|kotlin/Int.compareTo|(R|<local>/b|))
+    }
+    public final inline fun equalBySyntax(a: R|kotlin/Int|, b: R|kotlin/Int|): R|kotlin/Boolean| {
+        ^equalBySyntax ==(R|<local>/a|, R|<local>/b|)
+    }
+    public final inline fun equalByName(a: R|kotlin/Int|, b: R|kotlin/Int|): R|kotlin/Boolean| {
+        ^equalByName R|<local>/a|.R|kotlin/Int.equals|(R|<local>/b|)
+    }
+    public final inline fun both(a: R|kotlin/Boolean|, b: R|kotlin/Boolean|): R|kotlin/Boolean| {
+        ^both R|<local>/a| && R|<local>/b|
+    }
+    public final inline fun concatenated(x: R|kotlin/Int|): R|kotlin/Unit| {
+        ^concatenated R|foo/bar/consume|(R|<local>/x|.R|kotlin/Int.toString|().R|kotlin/String.plus|(String()))
+    }
+    public final inline fun incrementedText(x: R|kotlin/Int|): R|kotlin/Unit| {
+        ^incrementedText R|foo/bar/consume|(R|<local>/x|.R|kotlin/Int.inc|().R|kotlin/Int.toString|())
+    }
+    public final inline fun storeFirstBySyntax(): R|kotlin/Unit| {
+        R|foo/bar/storedArray|.R|kotlin/IntArray.set|(Int(0), Int(1))
+        Unit
+    }
+    public final inline fun storeFirstByName(): R|kotlin/Unit| {
+        ^storeFirstByName R|foo/bar/storedArray|.R|kotlin/IntArray.set|(Int(0), Int(1))
+    }
+    public final inline fun addToLimit(): R|kotlin/Unit| {
+        R|foo/bar/storedLimit| = R|foo/bar/storedLimit|.R|kotlin/Int.plus|(Int(1))
+    }
+    public final inline fun incrementLimit(): R|kotlin/Unit| {
+         {
+            lval <unary>: R|kotlin/Int| = R|foo/bar/storedLimit|
+            R|foo/bar/storedLimit| = R|<local>/<unary>|.R|kotlin/Int.inc|()
+            R|<local>/<unary>|
+        }
+
+    }
+    public final inline fun addBySyntax(a: R|foo/bar/Vec|, b: R|foo/bar/Vec|): R|foo/bar/Vec| {
+        ^addBySyntax R|<local>/a|.R|foo/bar/Vec.plus|(R|<local>/b|)
+    }
+    public final inline fun addByName(a: R|foo/bar/Vec|, b: R|foo/bar/Vec|): R|foo/bar/Vec| {
+        ^addByName R|<local>/a|.R|foo/bar/Vec.plus|(R|<local>/b|)
+    }
+    public final inline fun indexed(v: R|foo/bar/Vec|): R|kotlin/Int| {
+        ^indexed R|<local>/v|.R|foo/bar/Vec.get|(Int(0))
+    }
+    public final inline fun invoked(v: R|foo/bar/Vec|): R|kotlin/Int| {
+        ^invoked R|<local>/v|.R|foo/bar/Vec.invoke|()
+    }
+    public final inline fun negated(v: R|foo/bar/Vec|): R|foo/bar/Vec| {
+        ^negated R|<local>/v|.R|foo/bar/Vec.not|()
+    }
+    public final inline fun paired(a: R|kotlin/Int|, b: R|kotlin/Int|): R|kotlin/Pair<kotlin/Int, kotlin/Int>| {
+        ^paired R|<local>/a|.R|kotlin/to|<R|kotlin/Int|, R|kotlin/Int|>(R|<local>/b|)
+    }
+    public final inline fun pairedByName(a: R|kotlin/Int|, b: R|kotlin/Int|): R|kotlin/Pair<kotlin/Int, kotlin/Int>| {
+        ^pairedByName R|<local>/a|.R|kotlin/to|<R|kotlin/Int|, R|kotlin/Int|>(R|<local>/b|)
+    }
+    public final inline fun ranged(a: R|kotlin/Int|, b: R|kotlin/Int|): R|kotlin/ranges/IntRange| {
+        ^ranged R|<local>/a|.R|kotlin/ranges/until|(R|<local>/b|)
+    }
+    public final inline fun widened(x: R|kotlin/Int|): R|kotlin/Long| {
+        ^widened R|<local>/x|.R|kotlin/Int.toLong|()
+    }
+    public final inline fun printed(message: R|kotlin/String|): R|kotlin/Unit| {
+        ^printed R|kotlin/io/println|(R|<local>/message|)
+    }
+    public final inline fun parsed(s: R|kotlin/String|): R|kotlin/Int| {
+        ^parsed R|<local>/s|.R|kotlin/text/toInt|()
+    }
+    public final inline fun unsigned(x: R|kotlin/Int|): R|kotlin/UInt| {
+        ^unsigned R|<local>/x|.R|kotlin/toUInt|()
+    }
+    public final inline fun newList(): R|kotlin/collections/MutableList<kotlin/Int>| {
+        ^newList R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+    }
+    public final inline fun newArray(): R|kotlin/Array<kotlin/Int>| {
+        ^newArray R|kotlin/arrayOf|<R|kotlin/Int|>(vararg(Int(1)))
+    }
+    public final inline fun failed(message: R|kotlin/String|): R|kotlin/Nothing| {
+        ^failed R|kotlin/error|(R|<local>/message|)
+    }
+    public final inline fun required(x: R|kotlin/Int?|): R|kotlin/Int| {
+        ^required R|kotlin/requireNotNull|<R|kotlin/Int|>(R|<local>/x|)
+    }
+    public final inline fun classOf(x: R|kotlin/Any|): R|java/lang/Class<out kotlin/Any>| {
+        ^classOf R|<local>/x|.R|kotlin/jvm/javaClass|<R|kotlin/Any|>
+    }
+    public final inline fun unfinished(): R|kotlin/Unit| {
+        ^unfinished R|kotlin/TODO|()
+    }
+    public final inline fun ran(work: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+        ^ran R|kotlin/run|<R|kotlin/Unit|>(R|<local>/work|)
+    }
+    public final inline fun identity(): R|kotlin/Int| {
+        ^identity R|foo/bar/impl|(Int(1)).R|kotlin/let|<R|kotlin/Int|, R|kotlin/Int|>(<L> = let@fun <anonymous>(it: R|kotlin/Int|): R|kotlin/Int| <inline=Inline, kind=EXACTLY_ONCE>  {
+            ^ R|<local>/it|
+        }
+        )
+    }
+    public final inline fun locked(): R|kotlin/Any| {
+        ^locked R|kotlin/synchronized|<R|kotlin/Unit|>(Q|foo/bar/Registry|, <L> = synchronized@fun <anonymous>(): R|kotlin/Unit| <inline=Inline, kind=EXACTLY_ONCE>  {
+            ^@synchronized Unit
+        }
+        )
+    }
+    public final inline fun <reified T> instances(list: R|kotlin/collections/List<kotlin/Any>|): R|kotlin/collections/List<T>| {
+        ^instances R|<local>/list|.R|kotlin/collections/filterIsInstance|<R|T|>()
+    }
+    public final inline fun thrown(message: R|kotlin/String|): R|kotlin/Nothing| {
+        ^thrown throw R|java/lang/IllegalStateException.IllegalStateException|(R|<local>/message|)
+    }
+    public final inline fun bareReturn(): R|kotlin/Unit| {
+        ^bareReturn Unit
+    }
+    public final inline fun unitValue(): R|kotlin/Unit| {
+        ^unitValue Q|kotlin/Unit|
+    }
+    public final inline fun labeledReturn(): R|kotlin/Unit| {
+        ^labeledReturn R|foo/bar/transactImpl|(<L> = transactImpl@fun <anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+            ^@transactImpl Unit
+        }
+        )
+    }
+    public final inline fun emptyLambda(): R|() -> kotlin/Unit| {
+        ^emptyLambda fun <anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+            ^ Unit
+        }
+
+    }
+    public final inline fun thinLambda(): R|() -> kotlin/Int| {
+        ^thinLambda fun <anonymous>(): R|kotlin/Int| <inline=NoInline>  {
+            ^ R|foo/bar/impl|(Int(1))
+        }
+
+    }
+    public final inline fun unitLambda(): R|kotlin/Unit| {
+        ^unitLambda R|foo/bar/transactImpl|(<L> = transactImpl@fun <anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+            R|foo/bar/impl|(Int(1))
+        }
+        )
+    }
+    public final inline fun expressionFunction(): R|kotlin/Unit| {
+        ^expressionFunction R|foo/bar/transactImpl|(fun <anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+            ^@transactImpl R|foo/bar/refreshNoop|()
+        }
+        )
+    }
+    public final inline fun blockFunction(): R|kotlin/Unit| {
+        ^blockFunction R|foo/bar/transactImpl|(fun <anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+            R|foo/bar/refreshNoop|()
+        }
+        )
+    }
+    public final inline fun destructured(): R|(kotlin/Pair<kotlin/Int, kotlin/Int>) -> kotlin/Int| {
+        ^destructured fun <anonymous>(<destruct>: R|kotlin/Pair<kotlin/Int, kotlin/Int>|): R|kotlin/Int| <inline=NoInline>  {
+            lval a: R|kotlin/Int| = R|<local>/<destruct>|.R|SubstitutionOverride<kotlin/Pair.component1: R|kotlin/Int|>|()
+            lval b: R|kotlin/Int| = R|<local>/<destruct>|.R|SubstitutionOverride<kotlin/Pair.component2: R|kotlin/Int|>|()
+            ^  {
+                R|foo/bar/impl2|(R|<local>/a|, R|<local>/b|)
+            }
+
+        }
+
+    }
+    public final inline fun branchingDefault(x: R|kotlin/Int| = when () {
+        R|foo/bar/ready|() ->  {
+            Int(1)
+        }
+        else ->  {
+            Int(0)
+        }
+    }
+    ): R|kotlin/Int| {
+        ^branchingDefault R|foo/bar/impl|(R|<local>/x|)
+    }
+    public final inline fun branchingLambdaDefault(noinline block: R|() -> kotlin/Unit| = fun <anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+        when () {
+            R|foo/bar/ready|() ->  {
+                R|foo/bar/refreshNoop|()
+            }
+        }
+
+    }
+    ): R|kotlin/Unit| {
+        ^branchingLambdaDefault R|foo/bar/transactImpl|(R|<local>/block|)
+    }
+    public final inline fun computedDefault(x: R|kotlin/Int| = Int(1).R|kotlin/Int.plus|(Int(1))): R|kotlin/Int| {
+        ^computedDefault R|foo/bar/impl|(R|<local>/x|)
+    }
+    public final inline fun delegatingDefault(x: R|kotlin/Int| = R|foo/bar/impl|(Int(1))): R|kotlin/Int| {
+        ^delegatingDefault R|foo/bar/impl|(R|<local>/x|)
+    }
+    public final inline fun emptyLambdaDefault(noinline block: R|() -> kotlin/Unit| = fun <anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+        ^ Unit
+    }
+    ): R|kotlin/Unit| {
+        ^emptyLambdaDefault R|foo/bar/transactImpl|(R|<local>/block|)
+    }
+    public final inline fun onceReference(): R|(() -> kotlin/Int) -> kotlin/Int| {
+        ^onceReference ::R|foo/bar/once<kotlin/Int>|
+    }
+    public final val onceAction: R|(() -> kotlin/Int) -> kotlin/Int|
+        public inline get(): R|(() -> kotlin/Int) -> kotlin/Int| {
+            ^ ::R|foo/bar/once<kotlin/Int>|
+        }
+    public final inline fun refreshReference(): R|() -> kotlin/Unit| {
+        ^refreshReference ::R|foo/bar/refreshNoop|
+    }
+    public final inline fun readyReference(): R|kotlin/reflect/KFunction0<kotlin/Boolean>| {
+        ^readyReference ::R|foo/bar/ready|
+    }
+    public final inline fun classReference(x: R|kotlin/Int|): R|kotlin/reflect/KClass<out kotlin/Int>| {
+        ^classReference <getClass>(R|<local>/x|)
+    }
+    public final inline fun <reified T : R|kotlin/Any|> javaClassOf(): R|java/lang/Class<T>| {
+        ^javaClassOf <getClass>(R|T|).R|kotlin/jvm/java|<R|T|>
+    }
+    public final inline fun <reified T> isInstance(value: R|kotlin/Any?|): R|kotlin/Boolean| {
+        ^isInstance (R|<local>/value| is R|T|)
+    }
+    public final inline fun <reified T> cast(value: R|kotlin/Any?|): R|T| {
+        ^cast (R|<local>/value| as R|T|)
+    }
+    public final inline fun <reified T> safeCast(value: R|kotlin/Any?|): R|T?| {
+        ^safeCast (R|<local>/value| as? R|T|)
+    }
+    public final class Host : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Host| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final inline fun thinMember(): R|kotlin/Int| {
+            ^thinMember R|foo/bar/impl|(Int(1))
+        }
+
+        public final inline fun branchingMember(): R|kotlin/Int| {
+            ^branchingMember when () {
+                R|foo/bar/ready|() ->  {
+                    Int(1)
+                }
+                else ->  {
+                    Int(0)
+                }
+            }
+
+        }
+
+        public final val thinProperty: R|kotlin/Int|
+            public inline get(): R|kotlin/Int| {
+                ^ R|foo/bar/impl|(Int(2))
+            }
+
+        public final val computedProperty: R|kotlin/Int|
+            public inline get(): R|kotlin/Int| {
+                ^ Int(1).R|kotlin/Int.plus|(Int(1))
+            }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/Host.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final inline fun computedCompanion(): R|kotlin/Int| {
+                ^computedCompanion Int(1).R|kotlin/Int.plus|(Int(1))
+            }
+
+            public final val computedCompanionProperty: R|kotlin/Int|
+                public inline get(): R|kotlin/Int| {
+                    ^ Int(2).R|kotlin/Int.plus|(Int(2))
+                }
+
+        }
+
+        public final object Nested : R|kotlin/Any| {
+            private constructor(): R|foo/bar/Host.Nested| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final inline fun computedNested(): R|kotlin/Int| {
+                ^computedNested Int(3).R|kotlin/Int.plus|(Int(3))
+            }
+
+        }
+
+        public final inner class Inner : R|kotlin/Any| {
+            public foo/bar/Host.constructor(): R|foo/bar/Host.Inner| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final inline fun computedInner(): R|kotlin/Int| {
+                ^computedInner Int(6).R|kotlin/Int.plus|(Int(6))
+            }
+
+        }
+
+    }
+    public final object Singleton : R|kotlin/Any| {
+        private constructor(): R|foo/bar/Singleton| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final inline fun computedObject(): R|kotlin/Int| {
+            ^computedObject Int(4).R|kotlin/Int.plus|(Int(4))
+        }
+
+    }
+    public abstract interface Contract : R|kotlin/Any| {
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/Contract.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final inline fun computedInterfaceCompanion(): R|kotlin/Int| {
+                ^computedInterfaceCompanion Int(5).R|kotlin/Int.plus|(Int(5))
+            }
+
+        }
+
+    }
+    @R|kotlin/jvm/JvmInline|() public final value class Boxed : R|kotlin/Any| {
+        public constructor(value: R|kotlin/Int|): R|foo/bar/Boxed| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val value: R|kotlin/Int| = R|<local>/value|
+            public get(): R|kotlin/Int|
+
+        public final inline fun computedValueMember(): R|kotlin/Int| {
+            ^computedValueMember this@R|foo/bar/Boxed|.R|foo/bar/Boxed.value|.R|kotlin/Int.plus|(Int(1))
+        }
+
+        public final inline fun thinValueMember(): R|kotlin/Int| {
+            ^thinValueMember R|foo/bar/impl|(this@R|foo/bar/Boxed|.R|foo/bar/Boxed.value|)
+        }
+
+    }
+    public final inline fun R|foo/bar/Host|.thinExtension(): R|kotlin/Int| {
+        ^thinExtension R|foo/bar/impl|(Int(1))
+    }
+    public final inline fun R|foo/bar/Host|.relayingExtension(): R|kotlin/Int| {
+        ^relayingExtension this@R|foo/bar/relayingExtension|.R|foo/bar/Host.thinMember|()
+    }
+    public final val R|foo/bar/Host|.relayedProperty: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ this@R|foo/bar/relayedProperty|.R|foo/bar/Host.thinMember|()
+        }
+    public final val R|foo/bar/Host|.relayedBranching: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ this@R|foo/bar/relayedBranching|.R|foo/bar/Host.branchingMember|()
+        }
+    public final inline suspend fun awaited(): R|kotlin/Int| {
+        ^awaited R|foo/bar/awaitImpl|()
+    }
+    public final inline suspend fun awaitedBlock(block: R|suspend () -> kotlin/Int|): R|kotlin/Int| {
+        ^awaitedBlock R|<local>/block|.R|SubstitutionOverride<kotlin/coroutines/SuspendFunction0.invoke: R|kotlin/Int|>|()
+    }
+    public final inline suspend fun awaitedPlusOne(): R|kotlin/Int| {
+        ^awaitedPlusOne R|foo/bar/awaitImpl|().R|kotlin/Int.plus|(Int(1))
+    }
+    public final inline fun deeplyNested(crossinline work: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+        ^deeplyNested R|foo/bar/transactImpl|(<L> = transactImpl@fun <anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+            R|foo/bar/transactImpl|(<L> = transactImpl@fun <anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+                R|foo/bar/transactImpl|(<L> = transactImpl@fun <anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+                    R|<local>/work|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()
+                }
+                )
+            }
+            )
+        }
+        )
+    }
+    public final inline fun namedLambda(crossinline work: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+        ^namedLambda R|foo/bar/transactImpl|(transactImpl@fun <anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+            R|<local>/work|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()
+        }
+        )
+    }
+    public final inline fun forwarded(noinline work: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+        ^forwarded R|foo/bar/transactImpl|(R|<local>/work|)
+    }
+    public final inline fun invokedByName(work: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+        ^invokedByName R|<local>/work|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()
+    }
+    public final inline fun castReceiver(x: R|kotlin/Any|): R|kotlin/Int| {
+        ^castReceiver (R|<local>/x| as R|kotlin/String|).R|kotlin/String.length|
+    }
+    public final inline fun qualifiedArguments(): R|kotlin/Int| {
+        ^qualifiedArguments Q|foo/bar/Registry|.R|foo/bar/Registry.lookup|(Q|foo/bar/Color|.R|foo/bar/Color.RED|, Q|foo/bar/Color|.R|foo/bar/Color.RED|.R|SubstitutionOverride<foo/bar/Color.name: R|kotlin/String|>|)
+    }
+    public final inline fun chained(): R|kotlin/Int| {
+        ^chained R|foo/bar/impl|(Int(1)).R|kotlin/Int.toString|().R|kotlin/String.length|
+    }
+    public final inline fun nestedCalls(): R|kotlin/Int| {
+        ^nestedCalls R|foo/bar/impl|(R|foo/bar/impl|(R|foo/bar/impl|(Int(1))))
+    }
+    public final inline fun constant(): R|kotlin/Int| {
+        ^constant Q|kotlin/Int|.R|kotlin/Int.Companion.MAX_VALUE|
+    }
+    public final inline fun qualifier(): R|kotlin/Any| {
+        ^qualifier Q|foo/bar/Registry|
+    }
+    public final inline fun trailingSemicolon(): R|kotlin/Unit| {
+        R|foo/bar/impl|(Int(1))
+    }
+    public final inline fun branchingNestedLambda(crossinline work: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+        ^branchingNestedLambda R|foo/bar/transactImpl|(<L> = transactImpl@fun <anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+            R|foo/bar/transactImpl|(<L> = transactImpl@fun <anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+                when () {
+                    R|foo/bar/ready|() ->  {
+                        R|<local>/work|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()
+                    }
+                }
+
+            }
+            )
+        }
+        )
+    }
+    public final inline fun computedReceiver(): R|kotlin/Int| {
+        ^computedReceiver IntegerLiteral(1).R|kotlin/Int.plus|(IntegerLiteral(1))::R|kotlin/Int.toString|.R|kotlin/Any.hashCode|()
+    }
+    public final inline fun computedArgument(): R|kotlin/Int| {
+        ^computedArgument R|foo/bar/impl|(Int(1).R|kotlin/Int.plus|(Int(1)))
+    }
+    public final inline fun objectArgument(): R|kotlin/Unit| {
+        ^objectArgument R|foo/bar/consume|(object : R|kotlin/Any| {
+            private constructor(): R|foo/bar/<anonymous>| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+        )
+    }
+    public final var plusByNameSetter: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ R|foo/bar/storedLimit|
+        }
+        public inline set(value: R|kotlin/Int|): R|kotlin/Unit| {
+            R|foo/bar/storedLimit| = R|<local>/value|.R|kotlin/Int.plus|(Int(1))
+        }
+    public final val firstBySyntax: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ R|foo/bar/storedArray|.R|kotlin/IntArray.get|(Int(0))
+        }
+    public final val firstByName: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ R|foo/bar/storedArray|.R|kotlin/IntArray.get|(Int(0))
+        }
+    public final val referenceHash: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ ::R|foo/bar/ready|.R|kotlin/Any.hashCode|()
+        }
+    public final var thinInlineGetter: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ R|foo/bar/storedLimit|
+        }
+        public set(value: R|kotlin/Int|): R|kotlin/Unit| {
+            R|foo/bar/storedLimit| = when () {
+                CMP(<, R|<local>/value|.R|kotlin/Int.compareTo|(Int(0))) ->  {
+                    Int(0)
+                }
+                else ->  {
+                    R|<local>/value|
+                }
+            }
+
+        }
+    public final val thinAccessorMarkedInline: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ R|foo/bar/impl|(Int(1))
+        }
+    public final var expressionSetter: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ R|foo/bar/impl|(Int(1))
+        }
+        public inline set(value: R|kotlin/Int|): R|kotlin/Unit| {
+            ^ R|foo/bar/consume|(R|<local>/value|)
+        }
+    public final var bareReturnSetter: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ R|foo/bar/impl|(Int(1))
+        }
+        public inline set(value: R|kotlin/Int|): R|kotlin/Unit| {
+            ^ Unit
+        }

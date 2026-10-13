@@ -38,11 +38,15 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
             .resolve(packageName.replace('.', '/'))
             .resolve("WatchdogDiagnosticMessages.kt")
         outputFile.parentFile.mkdirs()
-        outputFile.writeText(buildString { appendFile(entries, docsBaseUrl, packageName) })
+        @Suppress("UNCHECKED_CAST")
+        val sharedParameterValues = root["sharedParameterValues"] as Map<String, List<*>>? ?: emptyMap()
+
+        outputFile.writeText(buildString { appendFile(entries, sharedParameterValues, docsBaseUrl, packageName) })
     }
 
     private fun StringBuilder.appendFile(
         entries: List<Map<String, Any>>,
+        sharedParameterValues: Map<String, List<*>>,
         docsBaseUrl: String,
         packageName: String,
     ) {
@@ -68,9 +72,14 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
         appendLine()
         appendParameterValues(entries)
         appendLine()
-        appendLine("    /** Resolves a named diagnostic parameter value and fills its own placeholders. */")
+        appendSharedParameterValues(sharedParameterValues)
+        appendLine()
+        appendLine("    /**")
+        appendLine("     * Resolves a named parameter value of [diagnostic], or a shared one, and fills its own")
+        appendLine("     * placeholders.")
+        appendLine("     */")
         appendLine("    fun parameterValueFor(diagnostic: String, value: String, vararg parameters: String): String {")
-        appendLine("        val template = parameterValues[diagnostic]?.get(value)")
+        appendLine("        val template = parameterValues[diagnostic]?.get(value) ?: sharedParameterValues[value]")
         appendLine("            ?: error(\"No parameter value '\$value' for diagnostic '\$diagnostic' in diagnostics.json\")")
         appendLine("        return parameters.foldIndexed(template) { index, result, parameter ->")
         appendLine("            result.replace(\"{\$index}\", parameter)")
@@ -86,26 +95,33 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
             @Suppress("UNCHECKED_CAST")
             val values = entry["parameterValues"] as Map<String, List<*>>? ?: continue
             appendLine("        \"${entry["name"]}\" to mapOf(")
-            for ((name, lines) in values) {
-                appendLine("            \"$name\" to")
-                val chunks = lines.joinTextLines().plainLinks().wrap()
-                for ((index, chunk) in chunks.withIndex()) {
-                    val tail = if (index == chunks.lastIndex) "," else " +"
-                    appendLine("                \"${chunk.escaped()}\"$tail")
-                }
-            }
+            for ((name, lines) in values) appendParameterValue(name, lines, indent = "            ")
             appendLine("        ),")
         }
+        appendLine("    )")
+    }
+
+    private fun StringBuilder.appendParameterValue(name: String, lines: List<*>, indent: String) {
+        appendLine("$indent\"$name\" to")
+        val chunks = lines.joinTextLines().plainLinks().wrap()
+        for ((index, chunk) in chunks.withIndex()) {
+            val tail = if (index == chunks.lastIndex) "," else " +"
+            appendLine("$indent    \"${chunk.escaped()}\"$tail")
+        }
+    }
+
+    private fun StringBuilder.appendSharedParameterValues(values: Map<String, List<*>>) {
+        appendLine("    /** Named values every diagnostic can use as a parameter. */")
+        appendLine("    private val sharedParameterValues: Map<String, String> = mapOf(")
+        for ((name, lines) in values) appendParameterValue(name, lines, indent = "        ")
         appendLine("    )")
     }
 
     private fun StringBuilder.appendEntry(entry: Map<String, Any>, docsBaseUrl: String) {
         val name = entry["name"] as String
         val docsUrl = docsBaseUrl + (entry["docs"] as String)
-        val trailer = entry["messageTrailer"] as String?
         val message = buildString {
             append((entry["message"] as List<*>).joinTextLines())
-            if (trailer != null) append(' ').append(trailer)
             append("\n\nSee more: ").append(docsUrl)
         }.plainLinks()
         val template = if (PARAMETER.containsMatchIn(message)) message.replace("'", "''") else message
@@ -119,9 +135,25 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
         }
     }
 
-    /** Joins source-wrapped lines while keeping empty lines as paragraph separators. */
-    private fun List<*>.joinTextLines(): String =
-        joinToString("\n") { it as String }.replace(SOFT_LINE_BREAK, " ")
+    /**
+     * Joins source-wrapped lines with a space. An empty line is a paragraph break, and a code
+     * line, which starts with four spaces, keeps the line breaks around it.
+     */
+    private fun List<*>.joinTextLines(): String {
+        val lines = map { it as String }
+        return buildString {
+            for ((index, line) in lines.withIndex()) {
+                if (index > 0) {
+                    val previous = lines[index - 1]
+                    val hardBreak = line.isEmpty() || previous.isEmpty() || line.isCodeLine() || previous.isCodeLine()
+                    append(if (hardBreak) '\n' else ' ')
+                }
+                append(line)
+            }
+        }
+    }
+
+    private fun String.isCodeLine(): Boolean = startsWith("    ")
 
     /** Rewrites Markdown links, which only the docs render natively, into `text (url)`. */
     private fun String.plainLinks(): String =
@@ -147,8 +179,7 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
 
     private companion object {
         val PARAMETER = Regex("\\{\\d+}")
-        val MARKDOWN_LINK = Regex("\\[([^\\]]+)]\\(([^)]+)\\)")
-        val SOFT_LINE_BREAK = Regex("(?<!\\n)\\n(?!\\n)")
+        val MARKDOWN_LINK = Regex("\\[([^]]+)]\\(([^)]+)\\)")
         const val MAX_CHUNK_LENGTH = 88
     }
 }

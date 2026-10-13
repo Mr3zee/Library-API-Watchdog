@@ -1,6 +1,7 @@
 # CLAUDE.md
 
-Skill from https://mr3zee.github.io/code-doc-writer/ must be installed. 
+Skill from https://mr3zee.github.io/code-doc-writer/ must be installed 
+and used as `/code-doc-writer:code-doc-writer` in every session.
 
 A Kotlin K2 compiler plugin, a Gradle plugin, and an annotations library. The checkers warn library authors about
 public API declarations that are hard to evolve. README.md lists the diagnostics. `DOCS_GUIDELINE.md` holds the rules

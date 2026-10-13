@@ -218,7 +218,7 @@ internal class MangledJvmNameChecker(
         reporter.reportOn(
             source = declaration.source,
             factory = factory,
-            a = kind,
+            a = WatchdogDiagnosticMessages.parameterValueFor(factory.name, kind),
             b = name,
             c = valueClass,
             d = fix,

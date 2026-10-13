@@ -23,7 +23,7 @@ optional one - defaulted or `vararg` - in a function or constructor in the publi
 /** Sends a request to [host]. */
 // !hide-focused
 @JvmOverloads
-// !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","request","function"]
+// !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","request","$function"]
 public fun request(retries: Int = 3, host: String) { }
 ```
 
@@ -39,9 +39,9 @@ All required parameters behind the first optional one are reported, not just the
 @JvmOverloads
 public fun configure(
     timeout: Long = 0L,
-    // !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","configure","function"]
+    // !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","configure","$function"]
     host: String,
-    // !diag[/port/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["port","configure","function"]
+    // !diag[/port/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["port","configure","$function"]
     port: Int,
 ) { }
 ```
@@ -63,7 +63,7 @@ See the Kotlin library authors' guide on
 /** Connects to [host]. */
 // !hide-focused
 @JvmOverloads
-// !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","connect","function"]
+// !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","connect","$function"]
 public fun connect(retries: Int = 3, host: String) { }
 ```
 
@@ -90,7 +90,7 @@ public fun connect(host: String, retries: Int = 3) { }
 public class Server
     // !hide-focused
     @JvmOverloads
-    // !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","Server","constructor"]
+    // !diag[/host/] REQUIRED_PARAMETER_AFTER_OPTIONAL ["host","Server","$constructor"]
     constructor(port: Int = 80, host: String)
 ```
 

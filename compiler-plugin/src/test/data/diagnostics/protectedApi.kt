@@ -8,13 +8,12 @@ import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
 import org.jetbrains.kotlinx.library.api.watchdog.InternalAnnotationMarker
 
-/**
- * A value class used to exercise JVM name mangling.
- *
- * @property value wrapped identifier.
- */
+/** A value class used to exercise JVM name mangling. */
 @JvmInline
-public value class UserId(public val value: String)
+public value class UserId(
+    /** The wrapped identifier. */
+    public val value: String,
+)
 
 /** Marks declarations that have no supported API contract. */
 @InternalAnnotationMarker
@@ -46,19 +45,15 @@ public open class ProtectedApi {
     /** A protected alias that erases to a function type. */
     protected typealias <!FUNCTION_TYPE_ALIAS_PUBLIC_API!>Callback<!> = () -> Unit
 
-    /**
-     * A protected data class.
-     *
-     * @property x coordinate.
-     */
-    protected data class <!DATA_CLASS_PUBLIC_API!>Point<!>(public val x: Int)
+    /** A protected data class. */
+    protected data class <!DATA_CLASS_PUBLIC_API!>Point<!>(
+        /** The coordinate. */
+        public val x: Int,
+    )
 
-    /**
-     * A protected stateful class.
-     *
-     * @property value stored state.
-     */
+    /** A protected stateful class. */
     protected class <!STATEFUL_CLASS_WITHOUT_EQUALS, STATEFUL_CLASS_WITHOUT_HASH_CODE, STATEFUL_CLASS_WITHOUT_TO_STRING!>Stateful<!>(
+        /** The stored state. */
         public val value: Int,
     )
 

@@ -547,23 +547,17 @@ class WatchdogProjectTest {
                         import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyInlinedLogic
                         import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEqualsHashCodeOrToString
 
-                        /**
-                         * A platform data holder.
-                         *
-                         * @property value its value.
-                         */
+                        /** A platform data holder. */
                         @IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)
                         public expect class Model(value: Int) {
+                            /** Its value. */
                             public val value: Int
                         }
 
-                        /**
-                         * A platform state holder.
-                         *
-                         * @property value its value.
-                         */
+                        /** A platform state holder. */
                         @IntentionallyWithoutEqualsHashCodeOrToString(reason = ExemptionReason.API_DESIGN)
                         public expect class Stateful(value: Int) {
+                            /** Its value. */
                             public val value: Int
                         }
 
@@ -897,6 +891,12 @@ class WatchdogProjectTest {
             "e: ",
             "publicly exposes `test.model.ExternalModel`, but the dependency with that type " +
                     "isn't published transitively",
+        )
+        assertTrue(
+            result.output.contains(
+                "        implementation(project(\":model\")) {\n            exemptNonTransitiveDependency(this)\n        }"
+            ),
+            result.output,
         )
         result.assertDiagnosticReported("e: ", "The type alias `ExternalModels` publicly exposes")
         result.assertDiagnosticReported("e: ", "The supertype of `Consumer` publicly exposes")
@@ -2013,6 +2013,14 @@ class WatchdogProjectTest {
             "publicly exposes `kotlinx.coroutines.Job`, but the dependency with that type " +
                     "isn't published transitively",
         )
+        // The type is in the platform artifact, but the snippet names the declared dependency.
+        assertTrue(
+            result.output.contains(
+                "        implementation(\"org.jetbrains.kotlinx:kotlinx-coroutines-core:$COROUTINES_VERSION\") {\n" +
+                        "            exemptNonTransitiveDependency(this)\n        }"
+            ),
+            result.output,
+        )
     }
 
     @Test
@@ -2345,19 +2353,17 @@ private val unacknowledgedFile = """
     /** An unacknowledged function type alias. */
     public typealias UnacknowledgedCallback = (Int) -> Unit
 
-    /**
-     * An unacknowledged data class.
-     *
-     * @param x the only coordinate.
-     */
-    public data class UnmarkedData(val x: Int)
+    /** An unacknowledged data class. */
+    public data class UnmarkedData(
+        /** The only coordinate. */
+        val x: Int,
+    )
 
-    /**
-     * A stateful session relying on the opaque default toString.
-     *
-     * @param id the session identifier.
-     */
-    public class UnrenderedSession(public val id: Int)
+    /** A stateful session relying on the opaque default toString. */
+    public class UnrenderedSession(
+        /** The session identifier. */
+        public val id: Int,
+    )
 
     /** A function handing out the library's mutable state. */
     public fun leakState(): MutableList<String> = mutableListOf()
@@ -2401,13 +2407,12 @@ private val unacknowledgedFile = """
     /** A parameter type carrying a DSL marker that restricts nothing. */
     public fun processTag(tag: @ScopedDsl UnprotectedOpenClass) { }
 
-    /**
-     * A user handle compiled to its underlying type.
-     *
-     * @param raw the raw handle value.
-     */
+    /** A user handle compiled to its underlying type. */
     @JvmInline
-    public value class UserHandle(public val raw: String)
+    public value class UserHandle(
+        /** The raw handle value. */
+        public val raw: String,
+    )
 
     /** A lookup whose JVM name is mangled by the value class parameter. */
     public fun findUser(handle: UserHandle) {}
@@ -2803,23 +2808,21 @@ private val acknowledgedFile = """
     @IntentionallyFunctionTypeAlias(reason = ExemptionReason.API_DESIGN)
     public typealias DeliberateCallback = (Int) -> Unit
 
-    /**
-     * A deliberately stable data holder.
-     *
-     * @param x the only coordinate.
-     */
+    /** A deliberately stable data holder. */
     @IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)
-    public data class DeliberateData(val x: Int)
+    public data class DeliberateData(
+        /** The only coordinate. */
+        val x: Int,
+    )
 
-    /**
-     * A deliberately opaque credentials holder.
-     *
-     * @param token the secret that must not leak into logs.
-     */
+    /** A deliberately opaque credentials holder. */
     @IntentionallyWithoutEquals(reason = ExemptionReason.API_DESIGN)
     @IntentionallyWithoutHashCode(reason = ExemptionReason.API_DESIGN)
-    @IntentionallyWithoutToString(reason = ExemptionReason.API_DESIGN, description = "The token must not leak into logs.")
-    public class OpaqueCredentials(public val token: String)
+    @IntentionallyWithoutToString(description = "The token must not leak into logs.", reason = ExemptionReason.API_DESIGN)
+    public class OpaqueCredentials(
+        /** The secret that must not leak into logs. */
+        public val token: String,
+    )
 
     /** A deliberately shared mutable buffer. */
     @IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)
@@ -2837,7 +2840,7 @@ private val acknowledgedFile = """
     public fun setEnabled(enabled: Boolean) {}
 
     /** A deliberately three-state query result. */
-    @IntentionallyNullableBoolean(reason = ExemptionReason.EXTERNAL_CONTRACT, description = "Mirrors the wire format's optional flag.")
+    @IntentionallyNullableBoolean(description = "Mirrors the wire format's optional flag.", reason = ExemptionReason.EXTERNAL_CONTRACT)
     public fun consentState(): Boolean? = null
 
     /** A legacy signature keeping its required parameter behind an optional one. */
@@ -2846,7 +2849,7 @@ private val acknowledgedFile = """
     public fun legacyRetry(retries: Int = 3, host: String) {}
 
     /** A deliberately Kotlin-only refresher left visible to Java. */
-    @IntentionallyKotlinOnlyApi(reason = ExemptionReason.IGNORE_JAVA_INTEROP, description = "Coroutine-first API. Java is served by a blocking facade.")
+    @IntentionallyKotlinOnlyApi(description = "Coroutine-first API. Java is served by a blocking facade.", reason = ExemptionReason.IGNORE_JAVA_INTEROP)
     public suspend fun refreshAccounts(): Int = 0
 
     /** A holder whose companion deliberately serves Java callers through the instance. */
@@ -2874,13 +2877,12 @@ private val acknowledgedFile = """
     @Suppress("NOTHING_TO_INLINE")
     public inline fun cubed(value: Int): Int = value * value * value
 
-    /**
-     * An account handle compiled to its underlying type.
-     *
-     * @param raw the raw handle value.
-     */
+    /** An account handle compiled to its underlying type. */
     @JvmInline
-    public value class AccountHandle(public val raw: String)
+    public value class AccountHandle(
+        /** The raw handle value. */
+        public val raw: String,
+    )
 
     /** A deliberately Kotlin-only lookup. */
     @IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN)

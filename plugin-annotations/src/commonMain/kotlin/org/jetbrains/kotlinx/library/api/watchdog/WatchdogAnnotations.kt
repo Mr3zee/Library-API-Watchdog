@@ -50,8 +50,8 @@ public enum class ExemptionReason {
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyOpen(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -66,8 +66,8 @@ public annotation class IntentionallyOpen(
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyExhaustive(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -86,8 +86,8 @@ public annotation class IntentionallyExhaustive(
 )
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyUndocumented(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -100,8 +100,8 @@ public annotation class IntentionallyUndocumented(
 @Target(AnnotationTarget.TYPEALIAS)
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyFunctionTypeAlias(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -116,8 +116,8 @@ public annotation class IntentionallyFunctionTypeAlias(
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyDataClass(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -132,8 +132,8 @@ public annotation class IntentionallyDataClass(
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyWithoutEquals(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -148,8 +148,8 @@ public annotation class IntentionallyWithoutEquals(
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyWithoutHashCode(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -164,8 +164,8 @@ public annotation class IntentionallyWithoutHashCode(
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyWithoutToString(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -181,8 +181,8 @@ public annotation class IntentionallyWithoutToString(
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyWithoutEqualsHashCodeOrToString(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -204,8 +204,8 @@ public annotation class IntentionallyWithoutEqualsHashCodeOrToString(
 )
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyMutableCollection(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -225,8 +225,8 @@ public annotation class IntentionallyMutableCollection(
 )
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyPairOrTriple(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -245,8 +245,8 @@ public annotation class IntentionallyPairOrTriple(
 )
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyBooleanParameter(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -266,8 +266,8 @@ public annotation class IntentionallyBooleanParameter(
 )
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyNullableBoolean(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -280,8 +280,8 @@ public annotation class IntentionallyNullableBoolean(
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CONSTRUCTOR)
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyRequiredParameterAfterOptional(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -294,8 +294,8 @@ public annotation class IntentionallyRequiredParameterAfterOptional(
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CONSTRUCTOR)
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyInconsistentParameterOrder(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -311,8 +311,8 @@ public annotation class IntentionallyInconsistentParameterOrder(
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyInlinedLogic(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -335,8 +335,8 @@ public annotation class IntentionallyInlinedLogic(
 )
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyMangledJvmName(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -353,8 +353,8 @@ public annotation class IntentionallyMangledJvmName(
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyKotlinOnlyApi(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -373,8 +373,8 @@ public annotation class IntentionallyKotlinOnlyApi(
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyNonStaticCompanionApi(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -389,8 +389,8 @@ public annotation class IntentionallyNonStaticCompanionApi(
 @Target(AnnotationTarget.FILE)
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyDefaultFacadeName(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -405,8 +405,8 @@ public annotation class IntentionallyDefaultFacadeName(
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CONSTRUCTOR)
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyWithoutJvmOverloads(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**
@@ -418,8 +418,14 @@ public annotation class IntentionallyWithoutJvmOverloads(
  * Gradle plugin is the common case: it compiles against `gradleApi()` and runs inside Gradle.
  * Name the environment in [description].
  *
- * **Suggested alternative** is to mark the whole dependency as exempted from this check in the build configuration,
- * see [Exempting a dependency](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency#exempting-a-dependency).
+ * To exempt every type of the dependency, mark its declaration in the build script instead
+ * ([Exempting a dependency](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency#exempting-a-dependency)):
+ *
+ * ```kotlin
+ * implementation("com.example:models") {
+ *     exemptNonTransitiveDependency(this)
+ * }
+ * ```
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
  *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
@@ -436,8 +442,8 @@ public annotation class IntentionallyWithoutJvmOverloads(
 )
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyNonTransitiveDependency(
-    val reason: ExemptionReason = ExemptionReason.OTHER,
     val description: String = "",
+    val reason: ExemptionReason = ExemptionReason.OTHER,
 )
 
 /**

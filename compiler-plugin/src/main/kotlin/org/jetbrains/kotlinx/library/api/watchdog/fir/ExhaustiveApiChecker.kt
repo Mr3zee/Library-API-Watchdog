@@ -36,17 +36,16 @@ internal class ExhaustiveApiChecker(
             return
         }
 
-        val fix = WatchdogDiagnosticMessages.parameterValueFor(
-            diagnostic = WatchdogDiagnostics.EXHAUSTIVE_PUBLIC_API.name,
-            value = if (declaration.classKind == ClassKind.ENUM_CLASS) "enumFix" else "sealedFix",
-        )
+        val isEnum = declaration.classKind == ClassKind.ENUM_CLASS
+        val diagnostic = WatchdogDiagnostics.EXHAUSTIVE_PUBLIC_API.name
+        val kind = declaration.kindParameterValue ?: return
         reporter.reportOn(
             source = declaration.source,
             factory = factory,
-            a = declaration.classKind,
+            a = WatchdogDiagnosticMessages.parameterValueFor(diagnostic, kind),
             b = declaration.name,
-            c = declaration.classKind,
-            d = fix,
+            c = WatchdogDiagnosticMessages.parameterValueFor(diagnostic, if (isEnum) "entry" else "subtype"),
+            d = WatchdogDiagnosticMessages.parameterValueFor(diagnostic, if (isEnum) "enumFix" else "sealedFix"),
         )
     }
 }

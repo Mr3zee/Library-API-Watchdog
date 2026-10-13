@@ -15,7 +15,7 @@ Each declaration in the public API that a user can reference is reported when it
 Only the presence of a KDoc is checked, not its content:
 
 ```kotlin
-// !diag[/Store/] UNDOCUMENTED_PUBLIC_API ["class","Store","$declarationDocumentation"]
+// !diag[/Store/] UNDOCUMENTED_PUBLIC_API ["$class","Store"]
 public class Store
 ```
 
@@ -33,9 +33,9 @@ supported. Writing the contract down helps your library avoid these issues. See 
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
-// !diag[/Cache/] UNDOCUMENTED_PUBLIC_API ["class","Cache","$declarationDocumentation"]
+// !diag[/Cache/] UNDOCUMENTED_PUBLIC_API ["$class","Cache"]
 public class Cache {
-    // !diag[/get/] UNDOCUMENTED_PUBLIC_API ["function","get","$declarationDocumentation"]
+    // !diag[/get/] UNDOCUMENTED_PUBLIC_API ["$function","get"]
     public fun get(key: String): String? = store[key]
     // !hide-focused(1:3)
 
@@ -72,31 +72,28 @@ public class Cache {
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Profile(
-    // !diag[/name/] UNDOCUMENTED_PUBLIC_API ["property","name","$constructorPropertyDocumentation"]
+    // !diag[/name/] UNDOCUMENTED_PUBLIC_API ["$property","name"]
     public val name: String,
-    // !diag[/age/] UNDOCUMENTED_PUBLIC_API ["property","age","$constructorPropertyDocumentation"]
+    // !diag[/age/] UNDOCUMENTED_PUBLIC_API ["$property","age"]
     public val age: Int,
 )
 ```
 
-A class KDoc alone doesn't document its constructor properties. Each one still needs a matching
-`@property` tag (or `@param` for a `val`/`var` declared in the primary constructor).
-
+TODO: This is a bit of a bad advice
+A class KDoc doesn't document the properties of the class. An `@property` or `@param` tag in
+the class KDoc doesn't count. Each property needs a KDoc of its own.
 
 ### Do {#do-2}
 
 ```kotlin
-/**
- * Profile information displayed for a user.
- *
- * @property name the user's display name.
- * @property age the user's age in years.
- */
+/** Profile information displayed for a user. */
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Profile(
+    /** The user's display name. */
     public val name: String,
+    /** The user's age in years. */
     public val age: Int,
 )
 ```
@@ -113,6 +110,7 @@ public class Profile(
   have no source of their own and are never reported.
 - A plain `//` or `/* */` comment doesn't count, only a KDoc block (`/** ... */`) satisfies the
   check.
+- The primary constructor is not reported. The class KDoc describes it.
 - `@PublishedApi internal` declarations, including declarations inside a `@PublishedApi internal`
   class, are not reported because library users can't write source code against them and there is
   no usage contract to document. Other checks still watch their binary shape.

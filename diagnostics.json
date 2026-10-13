@@ -4,7 +4,7 @@
     "",
     "Generated from this file:",
     "  - WatchdogDiagnosticMessages in :kotlin-library-api-watchdog-compiler-plugin (build.gradle.kts).",
-    "    The generator adds 'See more: <docsBaseUrl><docs>' after every message and its messageTrailer.",
+    "    The generator adds 'See more: <docsBaseUrl><docs>' after every message.",
     "    The compiler formats a message with parameters with java.text.MessageFormat, so the",
     "    generator escapes ' as ''.",
     "  - WatchdogChecks in :kotlin-library-api-watchdog-gradle-plugin (GradlePluginConventionPlugin):",
@@ -17,11 +17,16 @@
     "  title: the H1 of the check page. Shown in the docs tooltip.",
     "  docs: the check page path under docsBaseUrl, without an extension.",
     "  message: the message template. Consumers join adjacent lines with a space and keep an empty",
-    "    line as a paragraph break. Docs render it as Markdown.",
-    "  messageTrailer: an optional sentence after the message, before the documentation link.",
-    "  parameterValues: named values for long or reusable parameters, in the format of message.",
-    "    A value can have {0}, {1}, ... placeholders. Checkers resolve a value through generated",
-    "    code. Docs annotations reference it as $name or $name(value).",
+    "    line as a paragraph break. A line that starts with four spaces is a code line: consumers",
+    "    keep the line breaks around it. Docs render it as Markdown.",
+    "  parameterValues: named values for parameters that are wording, not a name from the code:",
+    "    declaration kinds, fixes, hints. In the format of message. A value can have {0}, {1}, ...",
+    "    placeholders. Checkers resolve a value through generated code. Docs annotations reference",
+    "    it as $name or $name(value). A literal parameter in a docs annotation can't contain a",
+    "    space or equal a listed value, so every wording parameter goes through this table.",
+    "",
+    "sharedParameterValues: parameter values every diagnostic can use, in the format of",
+    "  parameterValues. A diagnostic's own parameterValues win on a name clash.",
     "",
     "Text rules:",
     "  - Enclose every code reference in backticks.",
@@ -30,6 +35,50 @@
     "  - Write a link as [text](url). The generator rewrites it to 'text (url)' for compiler output."
   ],
   "docsBaseUrl": "https://mr3zee.github.io/Library-API-Watchdog/",
+  "sharedParameterValues": {
+    "class": [
+      "class"
+    ],
+    "interface": [
+      "interface"
+    ],
+    "object": [
+      "object"
+    ],
+    "enumClass": [
+      "enum class"
+    ],
+    "annotationClass": [
+      "annotation class"
+    ],
+    "typeAlias": [
+      "type alias"
+    ],
+    "function": [
+      "function"
+    ],
+    "property": [
+      "property"
+    ],
+    "constructor": [
+      "constructor"
+    ],
+    "parameter": [
+      "parameter"
+    ],
+    "typeParameter": [
+      "type parameter"
+    ],
+    "functionReceiver": [
+      "function receiver"
+    ],
+    "propertyReceiver": [
+      "property receiver"
+    ],
+    "supertypeOf": [
+      "supertype of"
+    ]
+  },
   "diagnostics": [
     {
       "name": "OPEN_API_WITHOUT_SUBCLASS_OPT_IN",
@@ -63,6 +112,12 @@
       "title": "Exhaustive public API",
       "docs": "checks/exhaustive-public-api",
       "parameterValues": {
+        "entry": [
+          "an entry"
+        ],
+        "subtype": [
+          "a subtype"
+        ],
         "enumFix": [
           "Replace the enum with a regular class and named instances."
         ],
@@ -81,21 +136,8 @@
       "name": "UNDOCUMENTED_PUBLIC_API",
       "title": "Undocumented public API",
       "docs": "checks/undocumented-public-api",
-      "parameterValues": {
-        "declarationDocumentation": [
-          "Document the behavior users can rely on."
-        ],
-        "memberPropertyDocumentation": [
-          "Document the behavior users can rely on in a `KDoc` on the property or in an `@property` tag",
-          "of the class `KDoc`."
-        ],
-        "constructorPropertyDocumentation": [
-          "Document the behavior users can rely on in a `KDoc` on the property or in an `@property` or",
-          "`@param` tag of the class `KDoc`."
-        ]
-      },
       "message": [
-        "The public {0} `{1}` has no `KDoc`. {2}",
+        "The public {0} `{1}` has no `KDoc`. Document the behavior users can rely on.",
         "",
         "If this is intended, apply `@IntentionallyUndocumented` to the declaration."
       ]
@@ -296,6 +338,17 @@
       "name": "INLINE_FUNCTION_WITH_LOGIC",
       "title": "Inline functions with logic",
       "docs": "checks/inline-function-with-logic",
+      "parameterValues": {
+        "inlineFunction": [
+          "inline function"
+        ],
+        "inlineGetter": [
+          "inline getter"
+        ],
+        "inlineSetter": [
+          "inline setter"
+        ]
+      },
       "message": [
         "The {0} `{1}` contains logic beyond a single thin delegating statement, and the compiler copies an",
         "`inline` body into every user binary. Move the logic into a function without `inline`",
@@ -416,6 +469,15 @@
           "Mark the property with `@JvmStatic` to add static accessors on `{0}`. To change one accessor,",
           "use `@get:JvmStatic` or `@set:JvmStatic`, or hide it with `@get:JvmSynthetic` or",
           "`@set:JvmSynthetic`."
+        ],
+        "getter": [
+          "getter"
+        ],
+        "setter": [
+          "setter"
+        ],
+        "getterAndSetter": [
+          "getter and setter"
         ]
       },
       "message": [
@@ -430,9 +492,20 @@
       "name": "TOP_LEVEL_API_WITHOUT_JVM_NAME",
       "title": "Top-level API without JvmName",
       "docs": "checks/java-interop/top-level-api-without-jvm-name",
+      "parameterValues": {
+        "functions": [
+          "functions"
+        ],
+        "properties": [
+          "properties"
+        ],
+        "functionsAndProperties": [
+          "functions and properties"
+        ]
+      },
       "message": [
-        "The facade class `{0}` holds this file's {1}. Its name comes from the file name, so a file rename",
-        "breaks Java callers. Set the facade name with `@file:JvmName`.",
+        "The facade class `{0}` holds this file's Java-visible top-level {1}. Its name comes from the file",
+        "name, so a file rename breaks Java callers. Set the facade name with `@file:JvmName`.",
         "",
         "If this is intended, apply `@file:IntentionallyDefaultFacadeName` to the file."
       ]
@@ -463,12 +536,25 @@
       "docs": "checks/special/public-type-from-non-transitive-dependency",
       "message": [
         "The {0} `{1}` publicly exposes `{2}`, but the dependency with that type isn't published transitively",
-        "to consumers. Declare the dependency with `api` instead of `implementation`.",
+        "to consumers. Declare the dependency with `api` instead. If the environment that loads the library",
+        "supplies the dependency, add the exemption to its declaration:",
+        "",
+        "{3}",
         "",
         "If this is intended, apply `@IntentionallyNonTransitiveDependency` to the declaration, an enclosing",
-        "class, a parameter, or a type usage. To exempt the whole dependency, mark it as exempted",
-        "in the build configuration."
-      ]
+        "class, a parameter, or a type usage."
+      ],
+      "parameterValues": {
+        "exemptDeclaration": [
+          "    import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency",
+          "",
+          "    dependencies {",
+          "        {0}({1}) {",
+          "            exemptNonTransitiveDependency(this)",
+          "        }",
+          "    }"
+        ]
+      }
     },
     {
       "name": "EXEMPTION_WITHOUT_EXPLANATION",
@@ -510,6 +596,20 @@
       "name": "DSL_MARKER_NOOP_TYPE_POSITION",
       "title": "DSL markers on no-op type positions",
       "docs": "checks/special/dsl-marker-noop-type-position",
+      "parameterValues": {
+        "parameterType": [
+          "parameter type"
+        ],
+        "propertyType": [
+          "property type"
+        ],
+        "variableType": [
+          "variable type"
+        ],
+        "returnType": [
+          "return type"
+        ]
+      },
       "message": [
         "The DSL marker `{0}` has no effect on this {1}. Scope control reacts only to a marker on the type",
         "of an implicit value: a receiver, a context parameter, or a function type with one. Move the",

@@ -79,7 +79,7 @@ class WatchdogFirCheckers internal constructor(
         // These checkers watch every declaration kind, not just classes. MutableCollectionChecker
         // is one of them because it also inspects class-level type parameter bounds.
         override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> = setOfNotNull(
-            UndocumentedApiChecker(session, severities)
+            UndocumentedApiChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API),
             // Not user-configurable. Skipped only by the adoption task.
             ExemptionExplanationChecker.declarationChecker

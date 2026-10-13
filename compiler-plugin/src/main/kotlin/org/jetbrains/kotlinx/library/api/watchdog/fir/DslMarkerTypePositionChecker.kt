@@ -50,10 +50,10 @@ internal class DslMarkerTypePositionChecker(
             is FirValueParameter -> {
                 // A context parameter is an implicit value, so a marker on its type is effective.
                 if (declaration.valueParameterKind != FirValueParameterKind.Regular) return
-                "parameter type"
+                "parameterType"
             }
-            is FirProperty -> if (declaration.isLocal) "variable type" else "property type"
-            is FirFunction -> "return type"
+            is FirProperty -> if (declaration.isLocal) "variableType" else "propertyType"
+            is FirFunction -> "returnType"
             else -> return
         }
         val typeRef = declaration.returnTypeRef
@@ -82,7 +82,7 @@ internal class DslMarkerTypePositionChecker(
                 source = annotation.source,
                 factory = factory,
                 a = markerName,
-                b = position,
+                b = WatchdogDiagnosticMessages.parameterValueFor(factory.name, position),
             )
         }
     }

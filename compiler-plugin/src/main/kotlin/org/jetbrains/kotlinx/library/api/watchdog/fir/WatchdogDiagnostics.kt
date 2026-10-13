@@ -3,7 +3,6 @@ package org.jetbrains.kotlinx.library.api.watchdog.fir
 import com.intellij.psi.PsiElement
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
-import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.diagnostics.AbstractKtDiagnosticFactory
 import org.jetbrains.kotlin.diagnostics.AbstractSourceElementPositioningStrategy
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactory0
@@ -20,11 +19,9 @@ import org.jetbrains.kotlin.diagnostics.error2
 import org.jetbrains.kotlin.diagnostics.error3
 import org.jetbrains.kotlin.diagnostics.error4
 import org.jetbrains.kotlin.diagnostics.rendering.BaseDiagnosticRendererFactory
-import org.jetbrains.kotlin.diagnostics.rendering.CommonRenderers.CLASS_KIND
 import org.jetbrains.kotlin.diagnostics.rendering.CommonRenderers.NAME
 import org.jetbrains.kotlin.diagnostics.rendering.CommonRenderers.STRING
 import org.jetbrains.kotlin.diagnostics.rendering.DiagnosticParameterRenderer
-import org.jetbrains.kotlin.diagnostics.rendering.Renderer
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
 import org.jetbrains.kotlin.psi.KtClassOrObject
@@ -87,17 +84,17 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     val allDiagnostics: List<ConfigurableWatchdogDiagnostic<*>>
         field = mutableListOf()
 
-    /** Parameters: class kind, declaration name, context-specific fix. */
-    val OPEN_API_WITHOUT_SUBCLASS_OPT_IN by configurable3<KtDeclaration, ClassKind, Name, String>(NAME_IDENTIFIER)
+    /** Parameters: class kind in words, declaration name, context-specific fix. */
+    val OPEN_API_WITHOUT_SUBCLASS_OPT_IN by configurable3<KtDeclaration, String, Name, String>(NAME_IDENTIFIER)
 
     /** Parameter: the annotated type's name. */
     val SUBCLASS_OPT_IN_WITHOUT_MARKERS by configurable1<KtAnnotationEntry, Name>()
 
-    /** Parameters: class kind, declaration name, member wording kind, context-specific fix. */
-    val EXHAUSTIVE_PUBLIC_API by configurable4<KtClassOrObject, ClassKind, Name, ClassKind, String>(NAME_IDENTIFIER)
+    /** Parameters: class kind in words, declaration name, what users can't add in words, context-specific fix. */
+    val EXHAUSTIVE_PUBLIC_API by configurable4<KtClassOrObject, String, Name, String, String>(NAME_IDENTIFIER)
 
-    /** Parameters: declaration kind in words, declaration name, context-specific documentation guidance. */
-    val UNDOCUMENTED_PUBLIC_API by configurable3<KtDeclaration, String, Name, String>(NAME_IDENTIFIER)
+    /** Parameters: declaration kind in words, declaration name. */
+    val UNDOCUMENTED_PUBLIC_API by configurable2<KtDeclaration, String, Name>(NAME_IDENTIFIER)
 
     /** Parameter: the alias name. */
     val FUNCTION_TYPE_ALIAS_PUBLIC_API by configurable1<KtTypeAlias, Name>(NAME_IDENTIFIER)
@@ -168,7 +165,7 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
      * Parameters: declaration kind, declaration name, exposed type's fully qualified name.
      * Gradle may disable the check, but whenever it runs this diagnostic is always an error.
      */
-    val PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY by error3<KtElement, String, Name, String>()
+    val PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY by error4<KtElement, String, Name, String, String>()
 
     /**
      * Parameters: declaration kind, declaration name, internal type FQ name, annotation name.
@@ -239,14 +236,10 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
  * website always speak about a check in the same words.
  */
 private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
-    private val MEMBER_KIND = Renderer { classKind: ClassKind ->
-        if (classKind == ClassKind.ENUM_CLASS) "an entry" else "a subtype"
-    }
-
     override val MAP by KtDiagnosticFactoryToRendererMap("LibsApiWatchdog") { map ->
         map.put(
             diagnostic = WatchdogDiagnostics.OPEN_API_WITHOUT_SUBCLASS_OPT_IN,
-            rendererA = CLASS_KIND,
+            rendererA = STRING,
             rendererB = NAME,
             rendererC = STRING,
         )
@@ -256,16 +249,15 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         )
         map.put(
             diagnostic = WatchdogDiagnostics.EXHAUSTIVE_PUBLIC_API,
-            rendererA = CLASS_KIND,
+            rendererA = STRING,
             rendererB = NAME,
-            rendererC = MEMBER_KIND,
+            rendererC = STRING,
             rendererD = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API,
             rendererA = STRING,
             rendererB = NAME,
-            rendererC = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.FUNCTION_TYPE_ALIAS_PUBLIC_API,
@@ -345,6 +337,7 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             rendererA = STRING,
             rendererB = NAME,
             rendererC = STRING,
+            rendererD = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API,

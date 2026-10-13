@@ -34,7 +34,7 @@ internal class NullableBooleanChecker(
         reporter.reportOn(
             source = source,
             factory = factory,
-            a = kind,
+            a = WatchdogDiagnosticMessages.parameterValueFor(factory.name, kind),
             b = name,
         )
     }

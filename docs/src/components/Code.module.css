@@ -327,6 +327,16 @@
   margin-top: 0.45rem;
 }
 
+/* A code line in a message can hold an arbitrarily long dependency name, so it wraps. */
+.diagnosticMessage pre {
+  margin: 0.45rem 0;
+  padding: 0.6rem 0.75rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
 .diagnosticMessage a {
   color: var(--ifm-link-color);
 }
@@ -350,6 +360,10 @@
 .diagnosticLink:focus-visible {
   color: var(--ifm-link-hover-color);
   text-decoration: var(--ifm-link-hover-decoration);
+}
+
+.tooltip:has(pre) {
+  max-width: min(760px, calc(100vw - 24px));
 }
 
 .tooltipArrow {

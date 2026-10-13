@@ -8,7 +8,7 @@ their artifacts are not available transitively to consumers.
 | Diagnostic       | `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`                        |
 | Default severity | Always an error                                                     |
 | Gradle property  | [`publicTypesMustBeTransitiveDependencies`](../../configuration.md) |
-| Module exemption | [`apiWatchdogExemptNonTransitive`](#exempting-a-dependency)         |
+| Module exemption | [`exemptNonTransitiveDependency(this)`](#exempting-a-dependency)    |
 | Exemption        | [`@IntentionallyNonTransitiveDependency`](../../exemptions.md)      |
 
 Library consumers must be able to resolve every type in the public API and in
@@ -28,7 +28,7 @@ dependencies {
 
 // !hide-focused
 /** Loads the current external model. */
-// !diag[/ExternalModel/] PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY ["function","loadModel","com.example.models.ExternalModel"]
+// !diag[/ExternalModel/] PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY ["$function","loadModel","com.example.models.ExternalModel","$exemptDeclaration(implementation, \"com.example:models:1.0\")"]
 public fun loadModel(): ExternalModel = TODO()
 ```
 
@@ -52,11 +52,23 @@ dependencies at all.
 ## Exempting a dependency
 
 When the environment that loads the library supplies a dependency on its own, its types are safe
-in the public API even though nothing publishes them. Declare such a dependency on the
-`apiWatchdogExemptNonTransitive` configuration, and the check accepts its types everywhere in the
-module without a per-declaration exemption. Any dependency notation works, including a version
-catalog entry, a project, and `gradleApi()`. The version is optional, the compile classpath's is
-used:
+in the public API even though nothing publishes them. Exempt such a dependency in the
+configuration block of its declaration, and the check accepts its types everywhere in the module
+without a per-declaration exemption. Inside that block, `this` is the dependency being declared:
+
+```kotlin build.gradle.kts
+import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency
+
+dependencies {
+    compileOnly("com.example:models:1.0") { exemptNonTransitiveDependency(this) }
+}
+```
+
+The diagnostic prints this snippet for the declaration that pulls the type in.
+
+A dependency can also be declared on the `apiWatchdogExemptNonTransitive` configuration, apart
+from its own declaration. Any dependency notation works, including a version catalog entry, a
+project, and `gradleApi()`. The version is optional, the compile classpath's is used:
 
 ```kotlin build.gradle.kts
 dependencies {
@@ -65,17 +77,6 @@ dependencies {
     apiWatchdogExemptNonTransitive("com.example:models")
     apiWatchdogExemptNonTransitive(libs.host.api)
     apiWatchdogExemptNonTransitive(project(":host-api"))
-}
-```
-
-The same exemption can be recorded in the configuration block of the declaration itself, so the
-dependency is named once. Inside that block, `this` is the dependency being declared:
-
-```kotlin build.gradle.kts
-import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency
-
-dependencies {
-    compileOnly("com.example:models:1.0") { exemptNonTransitiveDependency(this) }
 }
 ```
 
@@ -117,17 +118,17 @@ apiWatchdog {
 
 <!-- diagnostic-exemption: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY -->
 If this is intended, apply `@IntentionallyNonTransitiveDependency` to the declaration, an
-enclosing class, a parameter, or a type usage. To exempt the whole dependency, list it in
-`apiWatchdog.exemptNonTransitiveDependencies` in the build script.
+enclosing class, a parameter, or a type usage.
 
-Use the exemption when the environment that loads the library supplies the dependency on its own,
-so publishing it transitively is not needed or not possible. A Gradle plugin is the common case: it
+Use an exemption when the environment that loads the library supplies the dependency on its own,
+so publishing it transitively isn't needed or not possible. A Gradle plugin is the common case: it
 compiles against `gradleApi()` or a `compileOnly` dependency, yet it runs inside a Gradle process
 that already provides every Gradle type. An IDE plugin, an annotation processor loaded by the
-compiler, or a servlet container's API work the same way. Name that environment in the
-`description`, since nothing about the declaration shows where the dependency comes from. When
-every use of the dependency is of that kind, [exempt the dependency](#exempting-a-dependency) for the
-module instead of exempting each declaration.
+compiler, or a servlet container's API work the same way. Prefer to
+[exempt the dependency](#exempting-a-dependency) in its declaration, which accepts every use of
+its types. Use the annotation when only some declarations must expose the dependency. Name the
+environment in the `description`, because nothing about the declaration shows where the
+dependency comes from.
 
 ```kotlin build.gradle.kts
 dependencies {
@@ -142,8 +143,8 @@ dependencies {
 // !hide-focused
 /** Loads the current external model. */
 @IntentionallyNonTransitiveDependency(
-    reason = ExemptionReason.INTEROP,
     description = "The host application ships com.example:models on its classpath.",
+    reason = ExemptionReason.INTEROP,
 )
 public fun loadModel(): ExternalModel = TODO()
 ```
@@ -155,8 +156,8 @@ whose members all mention the environment's types needs a single acknowledgement
 // !hide-focused
 /** Loads and stores models through the host application. */
 @IntentionallyNonTransitiveDependency(
-    reason = ExemptionReason.INTEROP,
     description = "The host application ships com.example:models on its classpath.",
+    reason = ExemptionReason.INTEROP,
 )
 public class ModelLoader {
     /** Loads the current model. */

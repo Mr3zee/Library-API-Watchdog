@@ -1,7 +1,6 @@
 package org.jetbrains.kotlinx.library.api.watchdog.fir
 
 import java.nio.file.Path
-import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.diagnostics.DiagnosticContext
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
@@ -23,6 +22,3 @@ internal expect fun delegatingDiagnosticReporter(
 internal expect val ConeTypeParameterType.typeParameterSymbol: FirTypeParameterSymbol
 
 internal expect fun SourceElement.klibPathCompat(): Path?
-
-/** Source text of the element. The compiler moved it from an extension to a member in 2.5. */
-internal expect val KtSourceElement.textCompat: CharSequence?

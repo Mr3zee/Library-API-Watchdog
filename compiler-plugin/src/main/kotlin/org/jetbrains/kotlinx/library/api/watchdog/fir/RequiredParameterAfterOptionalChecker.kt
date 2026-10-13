@@ -70,7 +70,10 @@ internal class RequiredParameterAfterOptionalChecker(
                 factory = factory,
                 a = parameter.name,
                 b = callableName,
-                c = if (declaration is FirConstructor) "constructor" else "function",
+                c = WatchdogDiagnosticMessages.parameterValueFor(
+                    factory.name,
+                    if (declaration is FirConstructor) "constructor" else "function",
+                ),
             )
         }
     }

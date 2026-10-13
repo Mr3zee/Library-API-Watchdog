@@ -23,10 +23,10 @@ test('validates diagnostic annotations in every documentation code sample', () =
 test('accepts several diagnostics on shared and distinct inline ranges', () => {
   assert.doesNotThrow(() =>
     transform(`// !diag[/Config/] DATA_CLASS_PUBLIC_API ["Config"]
-// !diag[/Config/] UNDOCUMENTED_PUBLIC_API ["class","Config","$declarationDocumentation"]
+// !diag[/Config/] UNDOCUMENTED_PUBLIC_API ["$class","Config","$declarationDocumentation"]
 public data class Config(
-    // !diag[/tags/] UNDOCUMENTED_PUBLIC_API ["property","tags","$constructorPropertyDocumentation"]
-    // !diag[/MutableList<String>/] MUTABLE_COLLECTION_PUBLIC_API ["property","tags","MutableList","$returnTypeFix"]
+    // !diag[/tags/] UNDOCUMENTED_PUBLIC_API ["$property","tags","$constructorPropertyDocumentation"]
+    // !diag[/MutableList<String>/] MUTABLE_COLLECTION_PUBLIC_API ["$property","tags","MutableList","$returnTypeFix"]
     public val tags: MutableList<String>
 )`),
   );
@@ -88,6 +88,35 @@ test('rejects the wrong named diagnostic parameter argument count', () => {
           'public fun onEach(action: (Int) -> Unit) {}',
       ),
     /expects 1 arguments, got 0/,
+  );
+});
+
+test('accepts a shared diagnostic parameter value', () => {
+  assert.doesNotThrow(() =>
+    transform(`// !diag[/Status/] EXHAUSTIVE_PUBLIC_API ["$enumClass","Status","$entry","$enumFix"]
+public enum class Status { ACTIVE }`),
+  );
+});
+
+test('rejects a literal parameter that equals a listed value', () => {
+  assert.throws(
+    () =>
+      transform(
+        '// !diag[/Status/] EXHAUSTIVE_PUBLIC_API ["enum class","Status","$entry","$enumFix"]\n' +
+          'public enum class Status { ACTIVE }',
+      ),
+    /Literal parameter 'enum class' for EXHAUSTIVE_PUBLIC_API .* write it as '\$enumClass'/,
+  );
+});
+
+test('rejects literal wording as a parameter', () => {
+  assert.throws(
+    () =>
+      transform(
+        '// !diag[/ping/] TOP_LEVEL_API_WITHOUT_JVM_NAME ["HealthKt","top-level functions"]\n' +
+          'public fun ping(): Int = 0',
+      ),
+    /Literal parameter 'top-level functions' for TOP_LEVEL_API_WITHOUT_JVM_NAME .* is wording, not a name/,
   );
 });
 

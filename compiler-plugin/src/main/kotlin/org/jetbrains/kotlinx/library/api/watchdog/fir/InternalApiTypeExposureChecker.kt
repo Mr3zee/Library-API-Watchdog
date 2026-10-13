@@ -58,10 +58,11 @@ internal class InternalApiTypeExposureChecker : PublicSignatureTypeChecker<Inter
         name: Name,
         violation: InternalApiExposure,
     ) {
+        val factory = WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API
         reporter.reportOn(
             source = source,
-            factory = WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API,
-            a = kind,
+            factory = factory,
+            a = WatchdogDiagnosticMessages.parameterValueFor(factory.name, kind),
             b = name,
             c = violation.type.asSingleFqName().asString(),
             d = violation.annotation.shortClassName,

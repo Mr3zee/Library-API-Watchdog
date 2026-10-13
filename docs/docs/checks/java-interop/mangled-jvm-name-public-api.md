@@ -22,18 +22,18 @@ value class is its return type, which mangles members but not top-level callable
 // !hide-focused
 @file:JvmName("Accounts")
 
-// !hide-focused(1:5)
-/**
- * Stable identifier assigned to a user.
- *
- * @property raw identifier as stored by the user service.
- */
+// !hide-focused
+/** Stable identifier assigned to a user. */
 @JvmInline
-public value class UserId(public val raw: String)
+public value class UserId(
+    // !hide-focused
+    /** Identifier as stored by the user service. */
+    public val raw: String,
+)
 
 // !hide-focused
 /** Finds the account identified by [id]. */
-// !diag[/take/] MANGLED_JVM_NAME_PUBLIC_API ["function","take","UserId","$functionFix"]
+// !diag[/take/] MANGLED_JVM_NAME_PUBLIC_API ["$function","take","UserId","$functionFix"]
 public fun take(id: UserId) { }
 ```
 
@@ -57,7 +57,7 @@ Kotlin guide on
 // Compiles to take-<hash>(...): an illegal Java identifier.
 // !hide-focused
 /** Queues a refresh for the account identified by [id]. */
-// !diag[/take/] MANGLED_JVM_NAME_PUBLIC_API ["function","take","UserId","$functionFix"]
+// !diag[/take/] MANGLED_JVM_NAME_PUBLIC_API ["$function","take","UserId","$functionFix"]
 public fun take(id: UserId) { }
 ```
 
@@ -78,35 +78,31 @@ public fun take(id: UserId) { }
 ```kotlin
 // The public constructor is replaced by
 // a private one and a synthetic marker-parameter overload.
-// !hide-focused(1:5)
-/**
- * Wallet associated with a user account.
- *
- * @property id identifier of the account that owns the wallet.
- */
+// !hide-focused
+/** Wallet associated with a user account. */
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
-// !diag[/[(]public val id: UserId[)]/] MANGLED_JVM_NAME_PUBLIC_API ["constructor","Wallet","UserId","$constructorFix"]
-// !diag[/id/] MANGLED_JVM_NAME_PUBLIC_API ["property","id","UserId","$propertyGetterFix"]
-public class Wallet(public val id: UserId)
+// !diag[/[(].*[)]/] MANGLED_JVM_NAME_PUBLIC_API ["$constructor","Wallet","UserId","$constructorFix"]
+// !diag[/id/] MANGLED_JVM_NAME_PUBLIC_API ["$property","id","UserId","$propertyGetterFix"]
+public class Wallet(/** Identifier of the account that owns the wallet. */ public val id: UserId)
 ```
 
 ### Do {#do-2}
 
 ```kotlin
-// !hide-focused(1:5)
-/**
- * Wallet associated with a user account.
- *
- * @property id identifier of the account that owns the wallet.
- */
+// !hide-focused
+/** Wallet associated with a user account. */
 @OptIn(ExperimentalStdlibApi::class)
 @JvmExposeBoxed
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
-public class Wallet(public val id: UserId)
+public class Wallet(
+    // !hide-focused
+    /** Identifier of the account that owns the wallet. */
+    public val id: UserId,
+)
 ```
 
 `@JvmExposeBoxed` generates Java-callable boxed variants alongside the mangled ones. It is the
@@ -122,7 +118,7 @@ only fix for constructors, since the compiler doesn't accept `@JvmName` on them.
 public class Ledger {
     // !hide-focused
     /** The identifier of the current account. */
-    // !diag[/current/] MANGLED_JVM_NAME_PUBLIC_API ["function","current","UserId","$functionFix"]
+    // !diag[/current/] MANGLED_JVM_NAME_PUBLIC_API ["$function","current","UserId","$functionFix"]
     public fun current(): UserId = UserId("x")
 }
 ```

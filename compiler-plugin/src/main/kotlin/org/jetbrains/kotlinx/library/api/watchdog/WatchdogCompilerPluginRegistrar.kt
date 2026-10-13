@@ -32,6 +32,8 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
                     compileDependencies = compileDependencies,
                     transitiveDependencies =
                         configuration[WatchdogConfigurationKeys.TRANSITIVE_DEPENDENCY_PATHS, emptySet()],
+                    dependencyDeclarations =
+                        configuration[WatchdogConfigurationKeys.DEPENDENCY_DECLARATIONS, emptyMap()],
                 )
             }
         FirExtensionRegistrarAdapter.registerExtension(

@@ -59,14 +59,14 @@ internal class MutableCollectionChecker(
             diagnostic = WatchdogDiagnostics.MUTABLE_COLLECTION_PUBLIC_API.name,
             value = when (kind) {
                 "parameter" -> "parameterFix"
-                "type parameter" -> "typeParameterFix"
+                "typeParameter" -> "typeParameterFix"
                 else -> "returnTypeFix"
             },
         )
         reporter.reportOn(
             source = source,
             factory = factory,
-            a = kind,
+            a = WatchdogDiagnosticMessages.parameterValueFor(factory.name, kind),
             b = name,
             c = violation,
             d = fix,

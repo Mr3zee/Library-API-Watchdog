@@ -2,6 +2,7 @@ package org.jetbrains.kotlinx.library.api.watchdog.fir
 
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.KtRealSourceElementKind
+import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.fir.SessionHolder
@@ -45,6 +46,22 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.JvmStandardClassIds
 import org.jetbrains.kotlin.name.Name
+
+/**
+ * The `sharedParameterValues` name in diagnostics.json of the kind word for this class, or null
+ * for a kind no watchdog message names.
+ */
+internal val FirRegularClass.kindParameterValue: String?
+    // Comparisons instead of a `when` over the enum: an exhaustive `when` compiles to an
+    // `ordinal()` switch, and AnimalSniffer rejects that call against the compiler API baseline.
+    get() = when {
+        classKind == ClassKind.CLASS -> "class"
+        classKind == ClassKind.INTERFACE -> "interface"
+        classKind == ClassKind.OBJECT -> "object"
+        classKind == ClassKind.ENUM_CLASS -> "enumClass"
+        classKind == ClassKind.ANNOTATION_CLASS -> "annotationClass"
+        else -> null
+    }
 
 internal object WatchdogClassIds {
     private val annotationsPackage = FqName("org.jetbrains.kotlinx.library.api.watchdog")

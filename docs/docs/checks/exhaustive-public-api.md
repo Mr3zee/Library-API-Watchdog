@@ -17,7 +17,7 @@ The check reports every `enum class`, `sealed class`, and `sealed interface` in 
 ```kotlin
 // !hide-focused
 /** Whether the service can accept requests. */
-// !diag[/Status/] EXHAUSTIVE_PUBLIC_API ["enum class","Status","an entry","$enumFix"]
+// !diag[/Status/] EXHAUSTIVE_PUBLIC_API ["$enumClass","Status","$entry","$enumFix"]
 public enum class Status {
     // !hide-focused
     /** The service is ready to accept requests. */
@@ -45,7 +45,7 @@ library author did not think of as breaking. See the
 ```kotlin
 // !hide-focused
 /** Severity assigned to a log record. */
-// !diag[/LogLevel/] EXHAUSTIVE_PUBLIC_API ["enum class","LogLevel","an entry","$enumFix"]
+// !diag[/LogLevel/] EXHAUSTIVE_PUBLIC_API ["$enumClass","LogLevel","$entry","$enumFix"]
 public enum class LogLevel {
     // !hide-focused
     /** Fine-grained information used to diagnose behavior. */
@@ -98,7 +98,7 @@ public class LogLevel {
 ```kotlin
 // !hide-focused
 /** A change in the service lifecycle. */
-// !diag[/Event/] EXHAUSTIVE_PUBLIC_API ["interface","Event","a subtype","$sealedFix"]
+// !diag[/Event/] EXHAUSTIVE_PUBLIC_API ["$interface","Event","$subtype","$sealedFix"]
 public sealed interface Event {
     // !hide-focused
     /** Emitted after the service becomes ready. */

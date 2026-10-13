@@ -51,7 +51,7 @@ public annotation class UnexplainedMarker
 <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyOpen(reason = ExemptionReason.OTHER)<!>
 public open class ExplicitOtherWithoutDescription
 
-<!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyOpen(ExemptionReason.OTHER, "")<!>
+<!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyOpen("", ExemptionReason.OTHER)<!>
 public open class PositionalEmptyDescription
 
 // A whitespace-only description explains nothing either: should warn.
@@ -64,7 +64,7 @@ public open class BlankDescription
 @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public open class ReasonExplainedExemption
 
-@IntentionallyOpen(ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)
+@IntentionallyOpen("", ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)
 public open class PositionalReasonExemption
 
 // A non-empty description explains the exemption even with the OTHER reason: no warning.
@@ -72,7 +72,10 @@ public open class PositionalReasonExemption
 @IntentionallyOpen(description = "extension point for custom transports")
 public open class DescriptionExplainedExemption
 
-@IntentionallyOpen(reason = ExemptionReason.OTHER, description = "kept open for mocking")
+@IntentionallyOpen("kept open for custom transports")
+public open class PositionalDescriptionExemption
+
+@IntentionallyOpen(description = "kept open for mocking", reason = ExemptionReason.OTHER)
 public open class OtherWithDescriptionExemption
 
 // INTEROP and EXTERNAL_CONTRACT only categorize the exemption - which constraint applies is
@@ -84,10 +87,10 @@ public open class InteropWithoutDescription
 <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyExhaustive(reason = ExemptionReason.EXTERNAL_CONTRACT)<!>
 public enum class ExternalContractWithoutDescription { ENTRY }
 
-@IntentionallyOpen(reason = ExemptionReason.INTEROP, description = "Spring AOP subclasses this.")
+@IntentionallyOpen(description = "Spring AOP subclasses this.", reason = ExemptionReason.INTEROP)
 public open class InteropWithDescription
 
-@IntentionallyExhaustive(reason = ExemptionReason.EXTERNAL_CONTRACT, description = "Mirrors ISO 4217.")
+@IntentionallyExhaustive(description = "Mirrors ISO 4217.", reason = ExemptionReason.EXTERNAL_CONTRACT)
 public enum class ExternalContractWithDescription { ENTRY }
 
 // IGNORE_JAVA_INTEROP categorizes the same way: why this particular declaration gets to ignore
@@ -96,7 +99,7 @@ public enum class ExternalContractWithDescription { ENTRY }
 <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyKotlinOnlyApi(reason = ExemptionReason.IGNORE_JAVA_INTEROP)<!>
 public suspend fun ignoredInteropWithoutDescription(): Int = 0
 
-@IntentionallyKotlinOnlyApi(reason = ExemptionReason.IGNORE_JAVA_INTEROP, description = "Coroutine-first API. Java gets the blocking facade.")
+@IntentionallyKotlinOnlyApi(description = "Coroutine-first API. Java gets the blocking facade.", reason = ExemptionReason.IGNORE_JAVA_INTEROP)
 public suspend fun ignoredInteropWithDescription(): Int = 0
 
 // Exemptions on properties from constructor parameters are validated once, on the property.

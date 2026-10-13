@@ -8,6 +8,7 @@ import org.jetbrains.kotlin.compiler.plugin.CliOptionProcessingException
 import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitCLP
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
+import org.jetbrains.kotlinx.library.api.watchdog.fir.DependencyDeclaration
 import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnostics
 import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogSeverity
 
@@ -56,6 +57,13 @@ object WatchdogConfigurationKeys {
 
     val TRANSITIVE_DEPENDENCY_PATHS: CompilerConfigurationKey<Set<String>> =
         CompilerConfigurationKey.create("watchdog transitive dependency paths")
+
+    /**
+     * The build script declaration that puts each compile dependency path on the classpath. The
+     * diagnostic shows it in the exemption snippet. Paths without an entry get a placeholder.
+     */
+    internal val DEPENDENCY_DECLARATIONS: CompilerConfigurationKey<Map<String, DependencyDeclaration>> =
+        CompilerConfigurationKey.create("watchdog dependency declarations")
 }
 
 @Suppress("unused") // Instantiated reflectively by the dev-kit entry point.
@@ -70,6 +78,7 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             DIAGNOSTICS_OUTPUT_FILE_OPTION,
             COMPILE_DEPENDENCY_PATHS_OPTION,
             TRANSITIVE_DEPENDENCY_PATHS_OPTION,
+            DEPENDENCY_DECLARATIONS_OPTION,
         )
 
     companion object {
@@ -140,6 +149,18 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             description = "Dependency paths exposed transitively to consumers.",
         )
 
+        val DEPENDENCY_DECLARATIONS_OPTION: CliOption = CliOption(
+            optionName = "dependencyDeclarations",
+            valueDescription = "<path>\\t<configuration>\\t<notation>\\t<path>\\t<configuration>\\t<notation>...",
+            description = "Tab-separated triples of a compile dependency path, the configuration " +
+                    "that declares it, such as implementation, and the dependency notation as " +
+                    "written, such as \"com.example:models:1.0\". " +
+                    "PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY shows the declaration in its " +
+                    "exemption snippet.",
+            required = false,
+            allowMultipleOccurrences = false,
+        )
+
         private fun dependencyPathsOption(optionName: String, description: String): CliOption = CliOption(
             optionName = optionName,
             valueDescription = "<paths separated by the platform path separator>",
@@ -186,12 +207,29 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             TRANSITIVE_DEPENDENCY_PATHS_OPTION.optionName -> {
                 configuration.put(WatchdogConfigurationKeys.TRANSITIVE_DEPENDENCY_PATHS, parsePaths(value))
             }
+            DEPENDENCY_DECLARATIONS_OPTION.optionName -> {
+                configuration.put(WatchdogConfigurationKeys.DEPENDENCY_DECLARATIONS, parseDeclarations(value))
+            }
             else -> error("Unexpected config option: '${option.optionName}'")
         }
     }
 
     private fun parsePaths(value: String): Set<String> =
         value.split(File.pathSeparatorChar).filterTo(linkedSetOf(), String::isNotEmpty)
+
+    private fun parseDeclarations(value: String): Map<String, DependencyDeclaration> {
+        if (value.isEmpty()) return emptyMap()
+        val fields = value.split('\t')
+        if (fields.size % 3 != 0) {
+            throw CliOptionProcessingException(
+                "Invalid value for watchdog option '${DEPENDENCY_DECLARATIONS_OPTION.optionName}': " +
+                        "expected tab-separated path, configuration, and notation triples.",
+            )
+        }
+        return fields.chunked(3).associate { (path, configuration, notation) ->
+            path to DependencyDeclaration(configuration, notation)
+        }
+    }
 
     private fun parseBoolean(optionName: String, value: String): Boolean = when (value.lowercase()) {
         "true" -> true

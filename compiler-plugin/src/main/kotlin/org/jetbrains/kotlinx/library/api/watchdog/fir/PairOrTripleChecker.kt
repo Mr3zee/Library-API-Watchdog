@@ -33,7 +33,7 @@ internal class PairOrTripleChecker(
         reporter.reportOn(
             source = source,
             factory = factory,
-            a = kind,
+            a = WatchdogDiagnosticMessages.parameterValueFor(factory.name, kind),
             b = name,
             c = violation,
             d = components,

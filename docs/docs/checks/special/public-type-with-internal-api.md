@@ -31,7 +31,7 @@ public class InternalModel
 
 // !hide-focused
 /** Loads the current model. */
-// !diag[/InternalModel/] PUBLIC_TYPE_WITH_INTERNAL_API ["function","loadModel","InternalModel","InternalLibApi"]
+// !diag[/InternalModel/] PUBLIC_TYPE_WITH_INTERNAL_API ["$function","loadModel","InternalModel","InternalLibApi"]
 public fun loadModel(): InternalModel = InternalModel()
 ```
 

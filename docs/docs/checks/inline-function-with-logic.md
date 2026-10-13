@@ -15,7 +15,9 @@ body does more than a thin delegation.
 Inline functions and property accessors in the public API, and `@PublishedApi internal` ones, are
 reported unless their body is a thin wrapper. A thin wrapper contains at most one statement,
 besides an optional contract, and uses only the
-[permitted operations](#permitted-thin-wrapper-operations).
+[permitted operations](#permitted-thin-wrapper-operations). The compiler also copies the default
+value of each parameter into the call sites that omit the argument, so a default value must use
+only the permitted operations too.
 
 ```kotlin
 // !hide-focused
@@ -28,7 +30,7 @@ internal fun decodeValue(payload: String, type: KClass<*>): Any = payload
 /** Decodes [payload] as [T]. */
 @Suppress("UNCHECKED_CAST")
 @JvmSynthetic
-// !diag[/decodePayload/] INLINE_FUNCTION_WITH_LOGIC ["inline function","decodePayload"]
+// !diag[/decodePayload/] INLINE_FUNCTION_WITH_LOGIC ["$inlineFunction","decodePayload"]
 public inline fun <reified T : Any> decodePayload(payload: String): T {
     require(payload.isNotBlank())
     return decodeValue(payload, T::class) as T
@@ -69,7 +71,7 @@ internal fun serviceByType(type: KClass<*>): Any? = TODO()
 /** Returns the registered service of type [T]. */
 @Suppress("UNCHECKED_CAST")
 @JvmSynthetic
-// !diag[/resolveService/] INLINE_FUNCTION_WITH_LOGIC ["inline function","resolveService"]
+// !diag[/resolveService/] INLINE_FUNCTION_WITH_LOGIC ["$inlineFunction","resolveService"]
 public inline fun <reified T : Any> resolveService(): T {
     val service = serviceByType(T::class)
     return checkNotNull(service) as T
@@ -106,9 +108,19 @@ wrapper that calls it.
 
 ## Permitted thin-wrapper operations
 
-Control flow, operators, string templates, local declarations, object expressions, null-safe calls,
-Elvis expressions, `!!`, multiple statements, and calls to inline declarations are not permitted.
-They put library-authored behavior into the caller binary.
+These constructs are not permitted, because they put library-authored behavior into the caller
+binary:
+
+- Control flow, `throw`, string templates, local declarations, object expressions, null-safe
+  calls, Elvis expressions, `!!`, and multiple statements.
+- Operators of built-in types, such as `Int`, `Boolean`, `String`, and arrays, in any syntax.
+  `x + 1`, `x.plus(1)`, `!flag`, `a == b`, and `array[0]` all compile to instructions in the
+  caller binary.
+- Calls to and references to inline functions and inline properties of your library. The
+  compiler copies their bodies through the wrapper.
+
+The standard library is stable, so a call to a standard library function, inline or not, is a
+regular call. `println(message)`, `text.toInt()`, and `value.let { it }` are permitted.
 
 Instead, thin wrappers are permitted. A thin wrapper has at most one statement: 
 an expression body, a single explicit `return`, or an empty body. 
@@ -219,7 +231,7 @@ public inline val flushAction: () -> Unit
     get() = ::flushImpl
 ```
 
-### Reified class references and casts 
+### Reified class references, type checks, and casts 
 
 ```kotlin
 // !hide-focused
@@ -234,6 +246,16 @@ internal fun decodeImpl(payload: String, type: KClass<*>): Any = TODO()
 @JvmSynthetic
 public inline fun <reified T : Any> decode(payload: String): T =
     decodeImpl(payload, T::class) as T
+```
+
+```kotlin
+// !hide-focused
+@file:JvmName("Decoding")
+
+// !hide-focused(1:2)
+/** Whether [value] is a [T]. */
+@JvmSynthetic
+public inline fun <reified T : Any> holds(value: Any?): Boolean = value is T
 ```
 
 ### Direct invocation of the wrapper's own function parameter
@@ -332,7 +354,7 @@ internal fun addCallbackImpl(key: String, provider: () -> Unit) { /* ... */ }
 // !hide-focused(1:2)
 /** Add an application callback with an access to the Context */
 @JvmSynthetic
-// !diag[/addCallback/] INLINE_FUNCTION_WITH_LOGIC ["inline function","addCallback"]
+// !diag[/addCallback/] INLINE_FUNCTION_WITH_LOGIC ["$inlineFunction","addCallback"]
 public inline fun addCallback(
     key: String,
     crossinline callback: Context.() -> Unit,
@@ -346,6 +368,28 @@ public inline fun addCallback(
 
 The lambda passed to `addCallbackImpl` contains two statements. Kotlin copies both into every
 caller, so the check reports `addCallback`. Put the logging in a regular function instead.
+
+### User-defined operators and infix functions
+
+A user-defined operator or infix function is a regular call. Only operators of built-in types are
+instructions in the caller binary.
+
+```kotlin
+// !hide-focused
+@file:JvmName("Vectors")
+
+// !hide-focused(1:4)
+/** A two-dimensional vector. */
+@IntentionallyWithoutEqualsHashCodeOrToString(reason = ExemptionReason.API_DESIGN)
+public class Vector {
+    /** Adds [other] to this vector. */
+    public operator fun plus(other: Vector): Vector = this
+}
+
+// !hide-focused
+/** Returns the sum of [a] and [b]. */
+public inline fun sum(a: Vector, b: Vector): Vector = a + b
+```
 
 ## Lambda parameters and suspend callers
 
@@ -364,14 +408,14 @@ Take this example of a builder API:
 // !hide-focused
 @file:JvmName("QueryParameters")
 
-// !hide-focused(1:6)
-/**
- * Immutable query parameters of a request.
- *
- * @property values query values grouped by parameter name.
- */
+// !hide-focused(1:2)
+/** Immutable query parameters of a request. */
 @Poko
-public class Parameters(public val values: Map<String, List<String>>)
+public class Parameters(
+    // !hide-focused
+    /** Query values grouped by parameter name. */
+    public val values: Map<String, List<String>>,
+)
 
 // !hide-focused(1:2)
 /** Mutable collector of query parameters. */
@@ -395,7 +439,6 @@ public class ParametersBuilder {
 // !hide-focused(1:2)
 /** Builds a [Parameters] instance with the given [builder] function. */
 @JvmSynthetic
-// !diag[/buildParameters/] INLINE_FUNCTION_WITH_LOGIC ["inline function","buildParameters"]
 public inline fun buildParameters(
     builder: ParametersBuilder.() -> Unit,
 ): Parameters = ParametersBuilder().apply(builder).build()
@@ -411,10 +454,13 @@ private suspend fun authorizedQuery(): Parameters = buildParameters {
 }
 ```
 
-There is no thin rewrite of `buildParameters` that still runs `builder` directly in the caller.
-Passing `builder` to a regular helper function requires `noinline`. Calling it from another lambda
-requires `crossinline`. In both cases, `authorizedQuery` can no longer call `fetchToken` from
-`builder`. Such a builder is a deliberate trade-off:
+`apply` is a standard library function and `builder` is caller code, so `buildParameters` is a
+thin wrapper. The lambda still runs in place, so `authorizedQuery` can call `fetchToken` from it.
+
+When the wrapper needs control flow around the in-place call, for example a `try`/`finally` block,
+there is no thin rewrite. Passing the lambda to a regular helper function requires `noinline`.
+Calling it from another lambda requires `crossinline`. In both cases, callers can no longer call
+suspend functions inside the lambda. Such a wrapper is a trade-off:
 
 - Keep it inline and apply [`@IntentionallyInlinedLogic`](#exemption) when callers rely on suspend
   calls or non-local returns inside the lambda. Keep the exempted body minimal: every operation in

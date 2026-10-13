@@ -65,7 +65,10 @@ internal class JvmOverloadsChecker(
         reporter.reportOn(
             source = declaration.source,
             factory = factory,
-            a = if (declaration is FirConstructor) "constructor" else "function",
+            a = WatchdogDiagnosticMessages.parameterValueFor(
+                factory.name,
+                if (declaration is FirConstructor) "constructor" else "function",
+            ),
             b = name,
         )
     }

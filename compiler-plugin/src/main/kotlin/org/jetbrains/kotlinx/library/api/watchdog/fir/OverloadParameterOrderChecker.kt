@@ -167,7 +167,10 @@ internal class OverloadParameterOrderChecker(
                         a = firstName,
                         b = secondName,
                         c = callableName,
-                        d = if (declaration is FirConstructor) "constructor" else "function",
+                        d = WatchdogDiagnosticMessages.parameterValueFor(
+                            factory.name,
+                            if (declaration is FirConstructor) "constructor" else "function",
+                        ),
                     )
                     return true
                 }

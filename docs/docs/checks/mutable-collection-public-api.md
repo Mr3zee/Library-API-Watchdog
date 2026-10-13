@@ -30,12 +30,12 @@ Flags declarations in the public API that expose a mutable collection type (any 
 
 // !hide-focused
 /** Returns a caller-owned list of pending job names. */
-// !diag[/MutableList<String>/] MUTABLE_COLLECTION_PUBLIC_API ["function","produce","MutableList","$returnTypeFix"]
+// !diag[/MutableList<String>/] MUTABLE_COLLECTION_PUBLIC_API ["$function","produce","MutableList","$returnTypeFix"]
 public fun produce(): MutableList<String> = mutableListOf()
 
 // !hide-focused
 /** Returns batches that callers may edit in place. */
-// !diag[/List<MutableList<Int>>/] MUTABLE_COLLECTION_PUBLIC_API ["function","nested","MutableList","$returnTypeFix"]
+// !diag[/List<MutableList<Int>>/] MUTABLE_COLLECTION_PUBLIC_API ["$function","nested","MutableList","$returnTypeFix"]
 public fun nested(): List<MutableList<Int>> = emptyList()
 ```
 
@@ -49,32 +49,32 @@ collection crosses the API boundary, it is unclear which mutations are safe. See
 ### Don't
 
 ```kotlin
-// !hide-focused(1:5)
-/**
- * Exposes the values scheduled for processing.
- *
- * @property items live collection of scheduled values.
- */
+// !hide-focused
+/** Exposes the values scheduled for processing. */
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
-// !diag[/MutableList<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["property","items","MutableList","$returnTypeFix"]
-public class Holder(public val items: MutableList<Int>)
+public class Holder(
+    // !diag[/MutableList<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["$property","items","MutableList","$returnTypeFix"]
+    // !hide-focused
+    /** Live collection of scheduled values. */
+    public val items: MutableList<Int>,
+)
 ```
 
 ### Do
 
 ```kotlin
-// !hide-focused(1:5)
-/**
- * Captures the values scheduled at construction time.
- *
- * @property items immutable snapshot of the scheduled values.
- */
+// !hide-focused
+/** Captures the values scheduled at construction time. */
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
-public class Holder(public val items: List<Int>)
+public class Holder(
+    // !hide-focused
+    /** Immutable snapshot of the scheduled values. */
+    public val items: List<Int>,
+)
 ```
 
 ### Don't {#dont-2}
@@ -85,7 +85,7 @@ public class Holder(public val items: List<Int>)
 
 // !hide-focused
 /** Removes all scheduled item IDs from [items]. */
-// !diag[/MutableSet<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["parameter","items","MutableSet","$parameterFix"]
+// !diag[/MutableSet<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["$parameter","items","MutableSet","$parameterFix"]
 public fun consume(items: MutableSet<Int>) { 
     items.add(1)
 }
@@ -118,7 +118,7 @@ public fun consume(items: Set<Int>) {
   public fun MutableList<Int>.snapshot(): List<Int> = toList()
 
   // Builder lambda receiver: reported.
-  // !diag[/MutableList<Int>\.\(\) -> Unit/] MUTABLE_COLLECTION_PUBLIC_API ["parameter","block","MutableList","$parameterFix"]
+  // !diag[/MutableList<Int>\.\(\) -> Unit/] MUTABLE_COLLECTION_PUBLIC_API ["$parameter","block","MutableList","$parameterFix"]
   public fun build(block: MutableList<Int>.() -> Unit): List<Int> =
       mutableListOf<Int>().apply(block).toList()
   ```
@@ -139,16 +139,14 @@ Use the exemption when sharing the mutable collection is a deliberate part of th
 // !hide-focused
 @file:JvmName("Collections")
 
-// !hide-focused(1:5)
-/**
- * Exposes the values scheduled for processing as a deliberately shared collection.
- *
- * @property items live collection of scheduled values.
- */
+// !hide-focused
+/** Exposes the values scheduled for processing as a deliberately shared collection. */
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Holder(
+    // !hide-focused
+    /** Live collection of scheduled values. */
     @IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)
     public val items: MutableList<Int>,
 )

@@ -22,7 +22,7 @@ carries no `@JvmOverloads`.
 
 // !hide-focused
 /** Opens a socket to [host]. */
-// !diag[/openSocket/] DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS ["function","openSocket"]
+// !diag[/openSocket/] DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS ["$function","openSocket"]
 public fun openSocket(
     host: String,
     port: Int = 80,
@@ -45,7 +45,7 @@ for how `@JvmOverloads` compiles the reduced overloads Java needs.
 
 // !hide-focused
 /** Connects to [host]. */
-// !diag[/connect/] DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS ["function","connect"]
+// !diag[/connect/] DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS ["$function","connect"]
 public fun connect(
     host: String,
     port: Int = 80,
@@ -74,7 +74,7 @@ public fun connect(
 ```kotlin
 // !hide-focused
 /** A connection to [host]. */
-// !diag[/Connection/] DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS ["constructor","Connection"]
+// !diag[/Connection/] DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS ["$constructor","Connection"]
 public class Connection(
     host: String,
     port: Int = 80,
@@ -127,9 +127,9 @@ public class ConnectionConfig
 // !hide-focused
 /** Connects to [host] and applies [options]. */
 @IntentionallyWithoutJvmOverloads(
-    reason = ExemptionReason.IGNORE_JAVA_INTEROP,
     description = "Kotlin-only function. " +
             "Java callers are expected to use the builder instead.",
+    reason = ExemptionReason.IGNORE_JAVA_INTEROP,
 )
 // !hide-focused
 @IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)

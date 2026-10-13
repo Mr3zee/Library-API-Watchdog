@@ -371,6 +371,7 @@ function remapFocusedAnnotation(
 }
 
 const byName = new Map(registry.diagnostics.map((diagnostic) => [diagnostic.name, diagnostic]));
+const sharedParameterValues: Record<string, readonly string[]> = registry.sharedParameterValues;
 const CopyTextContext = createContext('');
 
 const copyButton: AnnotationHandler = {name: 'copy-button', Pre: CopyablePre};
@@ -531,7 +532,7 @@ function resolveParameter(
     'parameterValues' in diagnostic
       ? (diagnostic.parameterValues as Record<string, readonly string[]>)
       : undefined;
-  const template = values?.[reference[1]];
+  const template = values?.[reference[1]] ?? sharedParameterValues[reference[1]];
   if (!template) return parameter;
 
   const arguments_ = reference[2] === undefined ? [] : reference[2].split(',').map((it) => it.trim());
@@ -542,12 +543,21 @@ function formatMessage(template: string, parameters: string[]): string {
   return template.replace(/\{(\d+)\}/g, (_, index: string) => parameters[Number(index)]);
 }
 
-/** Joins source-wrapped lines while keeping empty lines as paragraph separators. */
+/**
+ * Joins source-wrapped lines with a space. An empty line is a paragraph break, and a code line,
+ * which starts with four spaces, keeps the line breaks around it.
+ */
 function joinTextLines(lines: readonly string[]): string {
   return lines.reduce((message, line, index) => {
     if (index === 0) return line;
-    return `${message}${line === '' || lines[index - 1] === '' ? '\n' : ' '}${line}`;
+    const previous = lines[index - 1];
+    const hardBreak = line === '' || previous === '' || isCodeLine(line) || isCodeLine(previous);
+    return `${message}${hardBreak ? '\n' : ' '}${line}`;
   }, '');
+}
+
+function isCodeLine(line: string): boolean {
+  return line.startsWith('    ');
 }
 
 function parseReport(query: string): DiagnosticReport {

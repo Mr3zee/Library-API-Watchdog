@@ -15,15 +15,17 @@ constructor property list as part of the compiled API.
 Any `data class` in the public API or declared as `@PublishedApi internal`.
 
 ```kotlin
-// !hide-focused(1:6)
-/**
- * A position in Cartesian coordinate space.
- *
- * @property x distance from the vertical axis.
- * @property y distance from the horizontal axis.
- */
+// !hide-focused
+/** A position in Cartesian coordinate space. */
 // !diag[/Point/] DATA_CLASS_PUBLIC_API ["Point"]
-public data class Point(public val x: Int, public val y: Int)
+public data class Point(
+    // !hide-focused
+    /** Distance from the vertical axis. */
+    public val x: Int,
+    // !hide-focused
+    /** Distance from the horizontal axis. */
+    public val y: Int,
+)
 ```
 
 ## Rationale
@@ -45,15 +47,17 @@ The three surfaces come as a package that can't be split. A tool like
 In user code, the following public API becomes available:
 
 ```kotlin
-// !hide-focused(1:6)
-/**
- * A crop region in pixels.
- *
- * @property width horizontal extent of the region.
- * @property height vertical extent of the region.
- */
+// !hide-focused
+/** A crop region in pixels. */
 // !diag[/Region/] DATA_CLASS_PUBLIC_API ["Region"]
-public data class Region(public val width: Int, public val height: Int)
+public data class Region(
+    // !hide-focused
+    /** Horizontal extent of the region. */
+    public val width: Int,
+    // !hide-focused
+    /** Vertical extent of the region. */
+    public val height: Int,
+)
 
 private fun clientCode() {
     val region = Region(1920, 1080)
@@ -70,14 +74,14 @@ The generated members also carry behavior a regular class never acquires silentl
 - A state declared in the class body is excluded from all the generated members:
 
   ```kotlin
-  // !hide-focused(1:5)
-  /**
-   * A session token.
-   *
-   * @property value the raw token value.
-   */
+  // !hide-focused
+  /** A session token. */
   // !diag[/Session/] DATA_CLASS_PUBLIC_API ["Session"]
-  public data class Session(public val value: String) {
+  public data class Session(
+      // !hide-focused
+      /** The raw token value. */
+      public val value: String,
+  ) {
       // !hide-focused
       /** Milliseconds since epoch at which the session was created. */
       public val createdAt: Long = System.currentTimeMillis()
@@ -94,18 +98,18 @@ linking after `offsetX` is appended means replaying the previous shape in the cl
 secondary constructor with the old parameter list and a `copy` overload with the old signature.
 
 ```kotlin
-// !hide-focused(1:7)
-/**
- * A crop region in pixels.
- *
- * @property width horizontal extent of the region.
- * @property height vertical extent of the region.
- * @property offsetX horizontal start of the region.
- */
+// !hide-focused
+/** A crop region in pixels. */
 // !diag[/Region/] DATA_CLASS_PUBLIC_API ["Region"]
 public data class Region(
+    // !hide-focused
+    /** Horizontal extent of the region. */
     public val width: Int,
+    // !hide-focused
+    /** Vertical extent of the region. */
     public val height: Int,
+    // !hide-focused
+    /** Horizontal start of the region. */
     public val offsetX: Int,
 ) {
     // !hide-focused
@@ -131,31 +135,32 @@ From the Kotlin library authors' guide on
 ### Don't
 
 ```kotlin
-// !hide-focused(1:6)
-/**
- * A position in Cartesian coordinate space.
- *
- * @property x distance from the vertical axis.
- * @property y distance from the horizontal axis.
- */
+// !hide-focused
+/** A position in Cartesian coordinate space. */
 // !diag[/Coordinates/] DATA_CLASS_PUBLIC_API ["Coordinates"]
-public data class Coordinates(public val x: Int, public val y: Int)
+public data class Coordinates(
+    // !hide-focused
+    /** Distance from the vertical axis. */
+    public val x: Int,
+    // !hide-focused
+    /** Distance from the horizontal axis. */
+    public val y: Int,
+)
 ```
 
 ### Do
 
 ```kotlin
-// !hide-focused(1:6)
-/**
- * A position in Cartesian coordinate space.
- *
- * @property x distance from the vertical axis.
- * @property y distance from the horizontal axis.
- */
+// !hide-focused
+/** A position in Cartesian coordinate space. */
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Coordinates(
+    // !hide-focused
+    /** Distance from the vertical axis. */
     public val x: Int,
+    // !hide-focused
+    /** Distance from the horizontal axis. */
     public val y: Int,
 )
 ```
@@ -188,15 +193,17 @@ Use the exemption when the data class is deliberate, stable part of the contract
 `copy` and positional destructuring being intended API rather than incidental compiler output.
 
 ```kotlin
-// !hide-focused(1:6)
-/**
- * A stable position in Cartesian coordinate space used by the wire format.
- *
- * @property x distance from the vertical axis.
- * @property y distance from the horizontal axis.
- */
+// !hide-focused
+/** A stable position in Cartesian coordinate space used by the wire format. */
 @IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)
-public data class Coordinates(public val x: Int, public val y: Int)
+public data class Coordinates(
+    // !hide-focused
+    /** Distance from the vertical axis. */
+    public val x: Int,
+    // !hide-focused
+    /** Distance from the horizontal axis. */
+    public val y: Int,
+)
 ```
 
 For an already-published data class, removing `data` is itself a source- and binary-incompatible

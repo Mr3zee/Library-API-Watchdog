@@ -20,7 +20,7 @@ parameter types, and type parameter bounds in the public API that mention `Boole
 
 // !hide-focused
 /** Returns whether the service is ready, or null before the first health check. */
-// !diag[/Boolean[?]/] NULLABLE_BOOLEAN_PUBLIC_API ["function","probe"]
+// !diag[/Boolean[?]/] NULLABLE_BOOLEAN_PUBLIC_API ["$function","probe"]
 public fun probe(): Boolean? = null
 ```
 
@@ -44,7 +44,7 @@ learned from documentation. See the Kotlin library authors' guide on
 //
 // !hide-focused
 /** Returns the connection state. */
-// !diag[/Boolean[?]/] NULLABLE_BOOLEAN_PUBLIC_API ["function","connectionState"]
+// !diag[/Boolean[?]/] NULLABLE_BOOLEAN_PUBLIC_API ["$function","connectionState"]
 public fun connectionState(): Boolean? = null
 ```
 
@@ -84,17 +84,17 @@ public fun connectionState(): ConnectionState = ConnectionState.UNKNOWN
 ### Don't {#dont-2}
 
 ```kotlin
-// !hide-focused(1:5)
-/**
- * Stores the selection state of a control.
- *
- * @property checked whether the control is selected, or null before it is initialized.
- */
+// !hide-focused
+/** Stores the selection state of a control. */
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
-// !diag[/Boolean[?]/] NULLABLE_BOOLEAN_PUBLIC_API ["property","checked"]
-public class Holder(public val checked: Boolean?)
+public class Holder(
+    // !diag[/Boolean[?]/] NULLABLE_BOOLEAN_PUBLIC_API ["$property","checked"]
+    // !hide-focused
+    /** Whether the control is selected, or null before it is initialized. */
+    public val checked: Boolean?,
+)
 ```
 
 ### Do {#do-2}
@@ -120,16 +120,16 @@ public enum class CheckState {
     UNKNOWN,
 }
 
-// !hide-focused(1:5)
-/**
- * Stores the selection state of a control.
- *
- * @property checked current selection state.
- */
+// !hide-focused
+/** Stores the selection state of a control. */
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
-public class Holder(public val checked: CheckState)
+public class Holder(
+    // !hide-focused
+    /** Current selection state. */
+    public val checked: CheckState,
+)
 ```
 
 

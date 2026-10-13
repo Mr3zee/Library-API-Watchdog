@@ -46,12 +46,11 @@ public class PublicOuterWithPublishedMembers {
 
 // A published secondary constructor needs no KDoc either.
 
-/**
- * Documented.
- *
- * @property value Documented via the class KDoc.
- */
-public class WithPublishedConstructor private constructor(public val value: Int) {
+/** Documented. */
+public class WithPublishedConstructor private constructor(
+    /** Documented. */
+    public val value: Int,
+) {
     @PublishedApi internal constructor() : this(0)
 }
 

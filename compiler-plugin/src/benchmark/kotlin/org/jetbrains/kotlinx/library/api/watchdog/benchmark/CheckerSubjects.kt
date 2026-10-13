@@ -97,7 +97,7 @@ internal object CheckerSubjects {
 
         // Basic declaration checkers.
         CheckerSubject("UndocumentedApiChecker", listOf("UNDOCUMENTED_PUBLIC_API")) { environment ->
-            ofBasic(UndocumentedApiChecker(environment.session, severities))
+            ofBasic(UndocumentedApiChecker(severities))
         },
         CheckerSubject("ExemptionExplanationChecker", emptyList()) {
             IsolatedCheckers(

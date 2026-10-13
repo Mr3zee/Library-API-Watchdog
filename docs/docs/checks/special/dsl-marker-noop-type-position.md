@@ -35,7 +35,7 @@ public class Branch
 
 // !hide-focused
 /** Appends [branch] to the current tree. */
-// !diag[/@BranchDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["BranchDsl","parameter type"]
+// !diag[/@BranchDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["BranchDsl","$parameterType"]
 public fun append(branch: @BranchDsl Branch) { }
 ```
 
@@ -56,7 +56,7 @@ wrong scope's functions. See the Kotlin guide on [scope control for DSL markers]
 /** Applies [block] while constructing a tree tag. */
 // !hide-focused
 @JvmSynthetic
-// !diag[/@TreeDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["TreeDsl","return type"]
+// !diag[/@TreeDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["TreeDsl","$returnType"]
 public fun configure(block: Tag.() -> Unit): @TreeDsl String = ""
 ```
 
@@ -85,7 +85,7 @@ public fun configure(block: Tag.() -> Unit): String = ""
 
 // !hide-focused
 /** Adds [tag] to the current tree. */
-// !diag[/@TreeDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["TreeDsl","parameter type"]
+// !diag[/@TreeDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["TreeDsl","$parameterType"]
 public fun process(tag: @TreeDsl Tag) { }
 ```
 

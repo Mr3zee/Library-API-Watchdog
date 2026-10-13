@@ -9,7 +9,9 @@
 //
 //     are validated here, then Code Hike drops the comment and gives the selected range to the
 //     tooltip handler. A name-shaped legacy comment is rejected so diagnostics can't silently
-//     fall back to highlighting a whole line.
+//     fall back to highlighting a whole line. A parameter is either a name from the sample or a
+//     `$name` reference to a value in diagnostics.json. Wording written as a literal is rejected,
+//     so the docs can't drift from what the compiler prints.
 import {visit} from 'unist-util-visit';
 import {diagnostics} from './diagnostics.mjs';
 
@@ -97,7 +99,10 @@ function validateReport(query, file) {
 }
 
 function validateParameterReference(parameter, diagnostic, file) {
-  if (!parameter.startsWith('$')) return;
+  if (!parameter.startsWith('$')) {
+    validateLiteralParameter(parameter, diagnostic, file);
+    return;
+  }
 
   const reference = parameter.match(PARAMETER_REFERENCE);
   if (!reference) {
@@ -121,6 +126,22 @@ function validateParameterReference(parameter, diagnostic, file) {
     throw new Error(
       `Parameter reference '$${name}' for ${diagnostic.name} in ${file.path} expects ` +
         `${expectedCount} arguments, got ${arguments_.length}.`,
+    );
+  }
+}
+
+function validateLiteralParameter(parameter, diagnostic, file) {
+  const listed = Object.entries(diagnostic.parameterValues).find(([, value]) => value === parameter);
+  if (listed !== undefined) {
+    throw new Error(
+      `Literal parameter '${parameter}' for ${diagnostic.name} in ${file.path} is a listed value: ` +
+        `write it as '$${listed[0]}'.`,
+    );
+  }
+  if (/\s/.test(parameter)) {
+    throw new Error(
+      `Literal parameter '${parameter}' for ${diagnostic.name} in ${file.path} is wording, not a name: ` +
+        'add it to parameterValues in diagnostics.json and reference it as $name.',
     );
   }
 }

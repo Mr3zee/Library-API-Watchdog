@@ -44,20 +44,17 @@ non-public declarations, because leaving any exemption unexplained defeats the p
 A well-explained exemption:
 
 ```kotlin
-// !hide-focused(1:6)
-/**
- * Legacy RPC configuration.
- *
- * @property host network host serving RPC requests.
- * @property port TCP port exposed by [host].
- */
+// !hide-focused
+/** Legacy RPC configuration. */
 @IntentionallyDataClass(
-    reason = ExemptionReason.INTEROP,
     description = "Serialized as-is by the legacy RPC layer, " +
             "which reflects on componentN.",
+    reason = ExemptionReason.INTEROP,
 )
 public data class LegacyConfig(
+    /** The network host that serves RPC requests. */
     public val host: String,
+    /** The TCP port exposed by [host]. */
     public val port: Int,
 )
 ```

@@ -5,6 +5,16 @@ import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.ModuleDependency
+import org.gradle.api.artifacts.ProjectDependency
+import org.gradle.api.artifacts.component.ComponentIdentifier
+import org.gradle.api.artifacts.component.ComponentSelector
+import org.gradle.api.artifacts.component.ModuleComponentSelector
+import org.gradle.api.artifacts.component.ProjectComponentSelector
+import org.gradle.api.artifacts.ArtifactCollection
+import org.gradle.api.artifacts.result.ResolvedComponentResult
+import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.attributes.Attribute
 import org.gradle.api.attributes.AttributeContainer
@@ -298,8 +308,80 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                         },
                     ),
                 )
+                add(
+                    SubpluginOption(
+                        "dependencyDeclarations",
+                        lazy {
+                            if (!checkDependencyExposure.get()) return@lazy ""
+                            dependencyDeclarations(compileDependencies.get(), compilesForAndroid.get())
+                        },
+                    ),
+                )
             }
         }
+    }
+
+    /**
+     * For each artifact of [configuration], the build script declaration that pulls it in, as
+     * tab-separated `path`, `configuration`, `notation` triples. The declaration is the nearest
+     * declared dependency on the resolution path to the artifact's component, with the
+     * configuration it is declared on: `compileOnly` and `"com.example:models:1.0"`, or
+     * `implementation` and `project(":model")`. The diagnostic shows it in its exemption snippet,
+     * so the user can paste the exemption into the declaration that exists.
+     */
+    private fun dependencyDeclarations(configuration: Configuration, android: Boolean): String {
+        val declarations = HashMap<ComponentIdentifier, String>()
+        val queue = ArrayDeque<Pair<ResolvedComponentResult, String>>()
+        for (dependency in configuration.incoming.resolutionResult.root.dependencies) {
+            if (dependency !is ResolvedDependencyResult) continue
+            val declaration = declarationOf(dependency.requested, configuration) ?: continue
+            queue.add(dependency.selected to declaration)
+        }
+        // Breadth-first from all declared dependencies together: a component that two declarations
+        // reach gets the nearest one, and a declared component gets its own.
+        while (queue.isNotEmpty()) {
+            val (component, declaration) = queue.removeFirst()
+            if (declarations.putIfAbsent(component.id, declaration) != null) continue
+            for (dependency in component.dependencies) {
+                if (dependency is ResolvedDependencyResult) queue.add(dependency.selected to declaration)
+            }
+        }
+        return dependencyArtifacts(configuration, android).artifacts.asSequence()
+            .mapNotNull { artifact ->
+                declarations[artifact.id.componentIdentifier]?.let { "${artifact.file.path}\t$it" }
+            }
+            .joinToString("\t")
+    }
+
+    /**
+     * The declaration of [requested] as a tab-separated configuration and notation. Null for a
+     * file dependency or any other selector that is neither a module nor a project. The
+     * configuration in the hierarchy of [configuration] that declares it gives the name:
+     * `compileOnly`, `commonMainImplementation`. When none declares it, the name is
+     * `implementation`.
+     */
+    private fun declarationOf(requested: ComponentSelector, configuration: Configuration): String? {
+        val notation: String
+        val isDeclaredIn: (Dependency) -> Boolean
+        when (requested) {
+            is ProjectComponentSelector -> {
+                notation = "project(\"${requested.projectPath}\")"
+                isDeclaredIn = { it is ProjectDependency && it.path == requested.projectPath }
+            }
+            is ModuleComponentSelector -> {
+                val version = requested.version.takeIf(String::isNotBlank)?.let { ":$it" }.orEmpty()
+                notation = "\"${requested.group}:${requested.module}$version\""
+                isDeclaredIn = {
+                    it is ModuleDependency && it.group == requested.group && it.name == requested.module
+                }
+            }
+            else -> return null
+        }
+        val declaringConfiguration = configuration.hierarchy
+            .firstOrNull { it.dependencies.any(isDeclaredIn) }
+            ?.name
+            ?: "implementation"
+        return "$declaringConfiguration\t$notation"
     }
 
     /**
@@ -322,12 +404,16 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
      * configuration's own artifacts are the compiler's input.
      */
     private fun dependencyFiles(configuration: Configuration, android: Boolean): FileCollection =
+        if (android) dependencyArtifacts(configuration, android).artifactFiles else configuration
+
+    /** The artifacts behind [dependencyFiles], with the component each one comes from. */
+    private fun dependencyArtifacts(configuration: Configuration, android: Boolean): ArtifactCollection =
         if (android) {
             configuration.incoming.artifactView { view ->
                 view.attributes.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ANDROID_CLASSES_JAR)
-            }.files
+            }.artifacts
         } else {
-            configuration
+            configuration.incoming.artifacts
         }
 
     /**

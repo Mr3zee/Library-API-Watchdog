@@ -155,13 +155,12 @@ class DocsExamplesTest {
             @RequiresOptIn
             public annotation class InternalMyLibrarySubclassApi
 
-            /**
-             * An identifier supplied to isolated documentation snippets.
-             *
-             * @param raw the underlying value.
-             */
+            /** An identifier supplied to isolated documentation snippets. */
             @JvmInline
-            public value class UserId(public val raw: String)
+            public value class UserId(
+                /** The underlying value. */
+                public val raw: String,
+            )
 
             /** A connection supplied to isolated documentation snippets. */
             public class Connection

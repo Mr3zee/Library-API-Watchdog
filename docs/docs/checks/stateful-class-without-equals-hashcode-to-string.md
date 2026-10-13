@@ -32,16 +32,16 @@ The checks flag a regular class in the public API that has at least one property
 in a backing field and that doesn't declare or inherit the corresponding implementation:
 
 ```kotlin
-// !hide-focused(1:5)
-/**
- * Describes a remote service endpoint.
- *
- * @property host network host serving requests.
- */
+// !hide-focused
+/** Describes a remote service endpoint. */
 // !diag[/Endpoint/] STATEFUL_CLASS_WITHOUT_EQUALS ["Endpoint","$generationHint","$ideaGenerateShortcut"]
 // !diag[/Endpoint/] STATEFUL_CLASS_WITHOUT_HASH_CODE ["Endpoint","$generationHint","$ideaGenerateShortcut"]
 // !diag[/Endpoint/] STATEFUL_CLASS_WITHOUT_TO_STRING ["Endpoint","$generationHint","$ideaGenerateShortcut"]
-public class Endpoint(public val host: String)
+public class Endpoint(
+    // !hide-focused
+    /** Network host serving requests. */
+    public val host: String,
+)
 ```
 
 Each member is checked independently. A class that implements `toString` but not `equals` and
@@ -66,42 +66,42 @@ See the Kotlin library authors' guidelines on
 ### Don't
 
 ```kotlin
-// !hide-focused(1:5)
-/**
- * Describes a connection to a remote service.
- *
- * @property host network host serving requests.
- */
+// !hide-focused
+/** Describes a connection to a remote service. */
 // !diag[/Connection/] STATEFUL_CLASS_WITHOUT_EQUALS ["Connection","$generationHint","$ideaGenerateShortcut"]
 // !diag[/Connection/] STATEFUL_CLASS_WITHOUT_HASH_CODE ["Connection","$generationHint","$ideaGenerateShortcut"]
 // !diag[/Connection/] STATEFUL_CLASS_WITHOUT_TO_STRING ["Connection","$generationHint","$ideaGenerateShortcut"]
-public class Connection(public val host: String)
+public class Connection(
+    // !hide-focused
+    /** Network host serving requests. */
+    public val host: String,
+)
 ```
 
 ### Do
 
 ```kotlin
-// !hide-focused(1:5)
-/**
- * Describes a connection to a remote service.
- *
- * @property host network host serving requests.
- */
+// !hide-focused
+/** Describes a connection to a remote service. */
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
-public class Connection(public val host: String)
+public class Connection(
+    // !hide-focused
+    /** Network host serving requests. */
+    public val host: String,
+)
 ```
 
 ### Or Do {#do-2}
 
 ```kotlin
-// !hide-focused(1:5)
-/**
- * Describes a connection to a remote service.
- *
- * @property host network host serving requests.
- */
-public class Connection(public val host: String) {
+// !hide-focused
+/** Describes a connection to a remote service. */
+public class Connection(
+    // !hide-focused
+    /** Network host serving requests. */
+    public val host: String,
+) {
     public override fun equals(other: Any?): Boolean =
         this === other || (other is Connection && host == other.host)
 
@@ -140,14 +140,14 @@ Apply the individual exemption to acknowledge one behavior, or the combined exem
 acknowledge all three inherited implementations:
 
 ```kotlin
-// !hide-focused(1:5)
-/**
- * Describes a live connection to a remote service.
- *
- * @property host network host serving requests.
- */
+// !hide-focused
+/** Describes a live connection to a remote service. */
 @IntentionallyWithoutEqualsHashCodeOrToString(reason = ExemptionReason.API_DESIGN)
-public class Connection(public val host: String)
+public class Connection(
+    // !hide-focused
+    /** Network host serving requests. */
+    public val host: String,
+)
 ```
 
 Choose the individual exemptions when only some behaviors are intentional. For example, a class can

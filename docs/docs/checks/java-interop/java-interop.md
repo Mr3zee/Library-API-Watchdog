@@ -51,9 +51,9 @@ public class ConfigWatcher {
     // !hide-focused
     /** Invokes [listener] on every configuration change. */
     @IntentionallyKotlinOnlyApi(
-        reason = ExemptionReason.IGNORE_JAVA_INTEROP,
         description = "Java callers can pass a lambda that returns Unit.INSTANCE. " +
                 "Forking the API into a fun interface overload is not worth it.",
+        reason = ExemptionReason.IGNORE_JAVA_INTEROP,
     )
     public fun onChange(listener: (String) -> Unit) { }
 }

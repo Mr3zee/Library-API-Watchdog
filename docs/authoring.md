@@ -79,7 +79,9 @@ If this is intended, apply `@IntentionallyExample` to the function or constructo
   `compiler-plugin/src/test/data/diagnostics`.
 - Take diagnostic arguments from the checker's `reportOn` call and list them in message-placeholder
   order. The diagnostic name, argument count, and range are validated against `diagnostics.json`.
-- Put shared long argument values in the diagnostic's `parameterValues` entry in `diagnostics.json`.
-  Reference them as `$name` or `$name(arguments)` so docs and compiler messages use the same value.
+- A literal argument is a name from the sample. Every wording argument, such as a declaration
+  kind or a fix, is a `$name` or `$name(arguments)` reference to the diagnostic's `parameterValues`
+  or to the shared `sharedParameterValues` in `diagnostics.json`, so docs and compiler messages use
+  the same value. The build rejects a literal that contains a space or equals a listed value.
 - The full source behind a Full/Focused sample must compile and pass the complete audit. Focused
   output may omit declarations or annotations used only to satisfy unrelated checks.

@@ -131,7 +131,10 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
     protected open fun findVarargViolation(parameterType: ConeKotlinType): Violation? =
         parameterType.findViolation()
 
-    /** Reports a violation found in signature part [kind] named [name]. */
+    /**
+     * Reports a violation found in the signature part named [name]. [kind] is the
+     * `sharedParameterValues` name of the part's kind word in diagnostics.json.
+     */
     context(context: CheckerContext, reporter: DiagnosticReporter)
     protected abstract fun report(
         source: KtSourceElement?,
@@ -154,7 +157,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
         checkTypeParameters(declaration.typeParameters)
         if (checkExtensionReceivers) {
             declaration.receiverParameter?.typeRef?.let {
-                checkType(it, "property receiver", declaration.name, declaration.source)
+                checkType(it, "propertyReceiver", declaration.name, declaration.source)
             }
         }
         declaration.contextParameters.forEach { checkParameter(it) }
@@ -168,7 +171,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
         checkTypeParameters(declaration.typeParameters)
         if (checkExtensionReceivers) {
             declaration.receiverParameter?.typeRef?.let {
-                checkType(it, "function receiver", declaration.name, declaration.source)
+                checkType(it, "functionReceiver", declaration.name, declaration.source)
             }
         }
         checkType(declaration.returnTypeRef, "function", declaration.name, declaration.source)
@@ -209,7 +212,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
         checkTypeParameters(declaration.typeParameters)
         if (checkClassSupertypes) {
             declaration.superTypeRefs.forEach {
-                checkType(it, "supertype of", declaration.name, declaration.source)
+                checkType(it, "supertypeOf", declaration.name, declaration.source)
             }
         }
         if (checkClassContextParameters) {
@@ -222,7 +225,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
         if (!shouldCheck(declaration)) return
 
         checkTypeParameters(declaration.typeParameters)
-        checkType(declaration.expandedTypeRef, "type alias", declaration.name, declaration.source)
+        checkType(declaration.expandedTypeRef, "typeAlias", declaration.name, declaration.source)
     }
 
     context(context: CheckerContext)
@@ -263,7 +266,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
             if (isDeclarationExempt(typeParameter)) continue
 
             for (bound in typeParameter.bounds) {
-                checkType(bound, "type parameter", typeParameter.name, typeParameter.source)
+                checkType(bound, "typeParameter", typeParameter.name, typeParameter.source)
             }
         }
     }
