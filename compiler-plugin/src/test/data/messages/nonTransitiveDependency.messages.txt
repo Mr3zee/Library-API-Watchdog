@@ -1,0 +1,134 @@
+/exposure.kt:47:28: error: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
+    The property `leakedProperty` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library supplies the dependency, add the exemption to its declaration:
+
+        import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency
+
+        dependencies {
+            implementation("com.example:models:1.0") {
+                exemptNonTransitiveDependency(this)
+            }
+        }
+
+    If this is intended, apply `@IntentionallyNonTransitiveDependency` to the declaration, an enclosing class, a parameter, or a type usage.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency
+
+/exposure.kt:49:12: error: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
+    The property receiver `leakedReceiver` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library supplies the dependency, add the exemption to its declaration:
+
+        import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency
+
+        dependencies {
+            implementation("com.example:models:1.0") {
+                exemptNonTransitiveDependency(this)
+            }
+        }
+
+    If this is intended, apply `@IntentionallyNonTransitiveDependency` to the declaration, an enclosing class, a parameter, or a type usage.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency
+
+/exposure.kt:52:28: error: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
+    The function `leakedReturn` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library supplies the dependency, add the exemption to its declaration:
+
+        import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency
+
+        dependencies {
+            implementation("com.example:models:1.0") {
+                exemptNonTransitiveDependency(this)
+            }
+        }
+
+    If this is intended, apply `@IntentionallyNonTransitiveDependency` to the declaration, an enclosing class, a parameter, or a type usage.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency
+
+/exposure.kt:54:12: error: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
+    The function receiver `leakedFunctionReceiver` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library supplies the dependency, add the exemption to its declaration:
+
+        import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency
+
+        dependencies {
+            implementation("com.example:models:1.0") {
+                exemptNonTransitiveDependency(this)
+            }
+        }
+
+    If this is intended, apply `@IntentionallyNonTransitiveDependency` to the declaration, an enclosing class, a parameter, or a type usage.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency
+
+/exposure.kt:56:35: error: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
+    The parameter `value` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library supplies the dependency, add the exemption to its declaration:
+
+        import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency
+
+        dependencies {
+            implementation("com.example:models:1.0") {
+                exemptNonTransitiveDependency(this)
+            }
+        }
+
+    If this is intended, apply `@IntentionallyNonTransitiveDependency` to the declaration, an enclosing class, a parameter, or a type usage.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency
+
+/exposure.kt:58:32: error: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
+    The supertype of `LeakedSupertype` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library supplies the dependency, add the exemption to its declaration:
+
+        import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency
+
+        dependencies {
+            implementation("com.example:models:1.0") {
+                exemptNonTransitiveDependency(this)
+            }
+        }
+
+    If this is intended, apply `@IntentionallyNonTransitiveDependency` to the declaration, an enclosing class, a parameter, or a type usage.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency
+
+/exposure.kt:60:35: error: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
+    The type parameter `T` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library supplies the dependency, add the exemption to its declaration:
+
+        import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency
+
+        dependencies {
+            implementation("com.example:models:1.0") {
+                exemptNonTransitiveDependency(this)
+            }
+        }
+
+    If this is intended, apply `@IntentionallyNonTransitiveDependency` to the declaration, an enclosing class, a parameter, or a type usage.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency
+
+/exposure.kt:62:36: error: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
+    The type alias `LeakedTypeAlias` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library supplies the dependency, add the exemption to its declaration:
+
+        import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency
+
+        dependencies {
+            implementation("com.example:models:1.0") {
+                exemptNonTransitiveDependency(this)
+            }
+        }
+
+    If this is intended, apply `@IntentionallyNonTransitiveDependency` to the declaration, an enclosing class, a parameter, or a type usage.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency
+
+/exposure.kt:64:35: error: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
+    The parameter `tool` publicly exposes `com.example.tools.Tool`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library supplies the dependency, add the exemption to its declaration:
+
+        import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency
+
+        dependencies {
+            implementation("<the dependency of tools>") {
+                exemptNonTransitiveDependency(this)
+            }
+        }
+
+    If this is intended, apply `@IntentionallyNonTransitiveDependency` to the declaration, an enclosing class, a parameter, or a type usage.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency

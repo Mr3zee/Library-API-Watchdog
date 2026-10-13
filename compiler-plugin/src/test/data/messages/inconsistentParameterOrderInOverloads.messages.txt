@@ -1,0 +1,27 @@
+/inconsistentParameterOrderInOverloads.kt:9:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    The parameters `x` and `y` of `draw` appear in the opposite relative order in another overload. Use the same relative order in every overload.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloads.kt:11:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    The parameters `y` and `x` of `draw` appear in the opposite relative order in another overload. Use the same relative order in every overload.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloads.kt:13:14: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    The parameters `width` and `height` of `Rect` appear in the opposite relative order in another overload. Use the same relative order in every overload.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the constructor.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloads.kt:14:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    The parameters `height` and `width` of `Rect` appear in the opposite relative order in another overload. Use the same relative order in every overload.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the constructor.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads

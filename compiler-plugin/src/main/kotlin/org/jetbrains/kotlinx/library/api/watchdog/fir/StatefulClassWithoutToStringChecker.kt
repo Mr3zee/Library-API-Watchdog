@@ -139,7 +139,7 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
 }
 
 /** The shortcut for Code | Generate in IntelliJ IDEA on the compiler's host OS. */
-private fun ideaGenerateShortcut(
+internal fun ideaGenerateShortcut(
     diagnostic: String,
     osName: String = System.getProperty("os.name").orEmpty(),
 ): String = WatchdogDiagnosticMessages.parameterValueFor(

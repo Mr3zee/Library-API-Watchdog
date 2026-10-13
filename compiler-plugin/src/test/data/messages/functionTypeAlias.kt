@@ -1,0 +1,7 @@
+// RUN_PIPELINE_TILL: FRONTEND
+// EXPLICIT_API_MODE: WARNING
+// DIAGNOSTICS: -UNDOCUMENTED_PUBLIC_API
+
+package foo.bar
+
+public typealias <!FUNCTION_TYPE_ALIAS_PUBLIC_API!>Callback<!> = (Int) -> Unit

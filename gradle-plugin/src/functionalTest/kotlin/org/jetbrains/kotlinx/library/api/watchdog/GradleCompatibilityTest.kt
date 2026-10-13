@@ -1,126 +1,65 @@
 package org.jetbrains.kotlinx.library.api.watchdog
 
-import com.autonomousapps.kit.GradleBuilder.build
-import com.autonomousapps.kit.GradleBuilder.buildAndFail
-import com.autonomousapps.kit.GradleProject
 import com.autonomousapps.kit.gradle.Plugin
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import org.gradle.testkit.runner.TaskOutcome
+import org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import org.jetbrains.kotlin.compiler.plugin.devkit.test.pluginUnderTestVersion
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.OPEN_API_WITHOUT_SUBCLASS_OPT_IN
 import org.junit.Test
 
 class GradleCompatibilityTest {
     @Test
     fun configurationCacheIsReused() {
-        val project = WatchdogProject().gradleProject
+        val project = jvmProject()
         val arguments = arrayOf("help", "--configuration-cache", "--configuration-cache-problems=fail")
 
-        val first = build(project.rootDir, *arguments)
-        assertContains(first.output, "Configuration cache entry stored.")
-
-        val second = build(project.rootDir, *arguments)
-        assertContains(second.output, "Configuration cache entry reused.")
+        project.build(*arguments).assertOutputHas("Configuration cache entry stored.")
+        project.build(*arguments).assertOutputHas("Configuration cache entry reused.")
     }
 
     @Test
     fun worksInAnIsolatedSubproject() {
-        val project = object : WatchdogProject() {
-            override fun buildGradleProject(): GradleProject =
-                newGradleProjectBuilder(GradleProject.DslKind.KOTLIN)
-                    .withRootProject {
-                        withDevKitSettings()
-                    }
-                    .withSubproject("lib") {
-                        sources.add(
-                            source(
-                                "/** A stable public type. */\npublic class StableApi",
-                                "StableApi",
-                            ),
-                        )
-                        withBuildScript { applyDefaultBuildScript() }
-                    }
-                    .write()
-        }.gradleProject
+        val project = jvmProject {
+            plugins()
+            subproject("lib") { source("/** A stable public type. */\npublic class StableApi", "StableApi") }
+        }
 
-        val result = build(
-            project.rootDir,
-            ":lib:compileKotlin",
-            "-Dorg.gradle.unsafe.isolated-projects=true",
-            "--configuration-cache-problems=fail",
-        )
-
-        assertContains(result.output, "BUILD SUCCESSFUL")
+        project.build(":lib:compileKotlin", *PROJECT_ISOLATION).assertOutputHas("BUILD SUCCESSFUL")
     }
 
     @Test
     fun aggregatesDeclaredProjectReportsWithProjectIsolation() {
-        val project = object : WatchdogProject() {
-            override fun buildGradleProject(): GradleProject =
-                newGradleProjectBuilder(GradleProject.DslKind.KOTLIN)
-                    .withRootProject {
-                        withDevKitSettings()
-                        withBuildScript {
-                            plugins(
-                                Plugin(
-                                    "org.jetbrains.kotlin.library.api-watchdog-report-aggregation",
-                                    pluginUnderTestVersion,
-                                ),
-                            )
-                            withKotlin(
-                                """
-                                    dependencies {
-                                        backwardsCompatibilityExemptsReports(project(":openApi"))
-                                        backwardsCompatibilityExemptsReports(project(":dataApi"))
-                                    }
-                                """.trimIndent()
-                            )
-                        }
+        val project = jvmProject {
+            plugins(Plugin("org.jetbrains.kotlin.library.api-watchdog-report-aggregation", pluginUnderTestVersion))
+            buildScript(
+                """
+                    dependencies {
+                        backwardsCompatibilityExemptsReports(project(":openApi"))
+                        backwardsCompatibilityExemptsReports(project(":dataApi"))
                     }
-                    .withSubproject("openApi") {
-                        sources.add(source("/** An open API. */\npublic open class OpenApi", "OpenApi"))
-                        withBuildScript { applyDefaultBuildScript() }
-                    }
-                    .withSubproject("dataApi") {
-                        sources.add(
-                            source(
-                                "/** A data API. */\npublic data class DataApi(public val value: Int)",
-                                "DataApi",
-                            ),
-                        )
-                        withBuildScript { applyDefaultBuildScript() }
-                    }
-                    .write()
-        }.gradleProject
-        val openApiSource = project.rootDir.resolve("openApi/src/main/kotlin/test/OpenApi.kt")
-        val dataApiSource = project.rootDir.resolve("dataApi/src/main/kotlin/test/DataApi.kt")
+                """
+            )
+            subproject("openApi") { source("/** An open API. */\npublic open class OpenApi", "OpenApi") }
+            subproject("dataApi") {
+                source("/** A data API. */\npublic data class DataApi(public val value: Int)", "DataApi")
+            }
+        }
+        val openApiSource = project.file("openApi/src/main/kotlin/test/OpenApi.kt")
+        val dataApiSource = project.file("dataApi/src/main/kotlin/test/DataApi.kt")
         val originalOpenApi = openApiSource.readText()
         val originalDataApi = dataApiSource.readText()
 
-        val result = build(
-            project.rootDir,
-            "aggregateBackwardsCompatibilityExemptsReport",
-            "-Dorg.gradle.unsafe.isolated-projects=true",
-            "--configuration-cache-problems=fail",
-        )
+        val result = project.build("aggregateBackwardsCompatibilityExemptsReport", *PROJECT_ISOLATION)
 
-        assertEquals(
-            TaskOutcome.SUCCESS,
-            result.task(":openApi:generateBackwardsCompatibilityExemptsReport")?.outcome,
-        )
-        assertEquals(
-            TaskOutcome.SUCCESS,
-            result.task(":dataApi:generateBackwardsCompatibilityExemptsReport")?.outcome,
-        )
-        assertEquals(null, result.task(":openApi:updateBackwardsCompatibilityExempts"))
-        assertEquals(null, result.task(":dataApi:updateBackwardsCompatibilityExempts"))
+        result.assertTaskOutcome(":openApi:generateBackwardsCompatibilityExemptsReport", SUCCESS)
+        result.assertTaskOutcome(":dataApi:generateBackwardsCompatibilityExemptsReport", SUCCESS)
+        result.assertTaskOutcome(":openApi:updateBackwardsCompatibilityExempts", null)
+        result.assertTaskOutcome(":dataApi:updateBackwardsCompatibilityExempts", null)
         assertEquals(originalOpenApi, openApiSource.readText())
         assertEquals(originalDataApi, dataApiSource.readText())
-        val report = project.rootDir.resolve(
-            "build/reports/api-watchdog/backwards-compatibility-exempts-aggregate.html"
-        )
+        val report = project.file("build/reports/api-watchdog/backwards-compatibility-exempts-aggregate.html")
         assertTrue(report.isFile, result.output)
         val html = report.readText()
         assertContains(html, "Aggregate report for 2 project(s)")
@@ -134,36 +73,38 @@ class GradleCompatibilityTest {
     fun helpDoesNotRealizePluginOrCompilationTasks() {
         val compileMarker = "REALIZED_WATCHDOG_COMPILE_TASK"
         val updateMarker = "REALIZED_WATCHDOG_UPDATE_TASK"
-        val project = WatchdogProject(
-            explicitApi = false,
-            extraBuildScript = """
-                kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=strict") } }
-                tasks.named("compileKotlin").configure { println("$compileMarker") }
-                tasks.named("updateBackwardsCompatibilityExempts").configure {
-                    println("$updateMarker")
-                }
-            """.trimIndent(),
-        ).gradleProject
+        val project = jvmProject {
+            explicitApi = false
+            buildScript(
+                """
+                    kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=strict") } }
+                    tasks.named("compileKotlin").configure { println("$compileMarker") }
+                    tasks.named("updateBackwardsCompatibilityExempts").configure {
+                        println("$updateMarker")
+                    }
+                """
+            )
+        }
 
-        val result = build(project.rootDir, "help")
+        val result = project.build("help")
 
-        assertFalse(result.output.contains(compileMarker), result.output)
-        assertFalse(result.output.contains(updateMarker), result.output)
+        result.assertOutputLacks(compileMarker)
+        result.assertOutputLacks(updateMarker)
     }
 
     @Test
     fun realizingEveryTaskKeepsConfiguredSeverities() {
         // IDE sync and `tasks.all { }` realize the exemption tasks without scheduling them, which
         // must not switch regular compilations into the all-warnings collection mode.
-        val project = object : WatchdogProject(extraBuildScript = "tasks.all { }") {
-            override fun sources() = listOf(
-                source("/** An open API. */\npublic open class OpenApi", "OpenApi"),
-            )
-        }.gradleProject
+        val project = jvmProject {
+            buildScript("tasks.all { }")
+            source("/** An open API. */\npublic open class OpenApi", "OpenApi")
+        }
 
-        val result = buildAndFail(project.rootDir, "compileKotlin")
+        project.buildAndFail("compileKotlin").assertErrors(OPEN_API_WITHOUT_SUBCLASS_OPT_IN)
+    }
 
-        assertContains(result.output, "e: ")
-        assertContains(result.output, "can be subclassed outside the library")
+    private companion object {
+        val PROJECT_ISOLATION = arrayOf("-Dorg.gradle.unsafe.isolated-projects=true", "--configuration-cache-problems=fail")
     }
 }

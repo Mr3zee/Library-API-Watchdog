@@ -1,0 +1,20 @@
+/statefulClass.kt:9:14: error: STATEFUL_CLASS_WITHOUT_HASH_CODE
+    The class `Connection` has a property with a backing field but neither declares nor inherits a `hashCode` implementation. Hash-based collections use object identity. Override `equals` and `hashCode` together. Use Poko (https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string#poko) to generate `equals`, `hashCode`, and `toString` together. In IntelliJ IDEA, press `Alt+Insert` or choose `Code | Generate`.
+
+    If this is intended, apply `@IntentionallyWithoutHashCode` or `@IntentionallyWithoutEqualsHashCodeOrToString` to the class.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string
+
+/statefulClass.kt:9:14: error: STATEFUL_CLASS_WITHOUT_TO_STRING
+    The class `Connection` has a property with a backing field but neither declares nor inherits a `toString` implementation. Instances print as a class name and a hash code. Override `toString` to print the state. Use Poko (https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string#poko) to generate `equals`, `hashCode`, and `toString` together. In IntelliJ IDEA, press `Alt+Insert` or choose `Code | Generate`.
+
+    If this is intended, apply `@IntentionallyWithoutToString` or `@IntentionallyWithoutEqualsHashCodeOrToString` to the class.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string
+
+/statefulClass.kt:9:14: error: STATEFUL_CLASS_WITHOUT_EQUALS
+    The class `Connection` has a property with a backing field but neither declares nor inherits an `equals` implementation. Comparisons use object identity. Override `equals` and `hashCode` together. Use Poko (https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string#poko) to generate `equals`, `hashCode`, and `toString` together. In IntelliJ IDEA, press `Alt+Insert` or choose `Code | Generate`.
+
+    If this is intended, apply `@IntentionallyWithoutEquals` or `@IntentionallyWithoutEqualsHashCodeOrToString` to the class.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string

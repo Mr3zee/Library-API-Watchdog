@@ -31,6 +31,7 @@ class CompilerPluginConventionPlugin : Plugin<Project> {
                     kotlin.srcDir("src/testFixtures/kotlin")
                 }
                 sourceSets.named("commonTest").configure {
+                    kotlin.srcDir("src/test/kotlin")
                     resources.srcDir("src/test/data")
                 }
             }

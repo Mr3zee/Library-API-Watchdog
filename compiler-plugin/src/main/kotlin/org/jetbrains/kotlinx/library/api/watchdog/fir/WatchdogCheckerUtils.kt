@@ -46,6 +46,7 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.JvmStandardClassIds
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.name.SpecialNames
 
 /**
  * The `sharedParameterValues` name in diagnostics.json of the kind word for this class, or null
@@ -62,6 +63,12 @@ internal val FirRegularClass.kindParameterValue: String?
         classKind == ClassKind.ANNOTATION_CLASS -> "annotationClass"
         else -> null
     }
+
+/** The parameter name as written in the source: `_` for an unnamed context parameter. */
+internal val FirValueParameter.sourceName: Name
+    get() = if (name == SpecialNames.UNDERSCORE_FOR_UNUSED_VAR) UNDERSCORE else name
+
+private val UNDERSCORE = Name.identifier("_")
 
 internal object WatchdogClassIds {
     private val annotationsPackage = FqName("org.jetbrains.kotlinx.library.api.watchdog")

@@ -1,0 +1,41 @@
+/nullableBoolean.kt:9:21: error: NULLABLE_BOOLEAN_PUBLIC_API
+    The function `probe` exposes a nullable `Boolean`, which has three states but names only two. Replace it with an `enum class` that names all three states, or remove the third state.
+
+    If this is intended, apply `@IntentionallyNullableBoolean` to the declaration, parameter, or type usage.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/nullable-boolean-public-api
+
+/nullableBoolean.kt:11:25: error: NULLABLE_BOOLEAN_PUBLIC_API
+    The property `lastOutcome` exposes a nullable `Boolean`, which has three states but names only two. Replace it with an `enum class` that names all three states, or remove the third state.
+
+    If this is intended, apply `@IntentionallyNullableBoolean` to the declaration, parameter, or type usage.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/nullable-boolean-public-api
+
+/nullableBoolean.kt:13:27: error: NULLABLE_BOOLEAN_PUBLIC_API
+    The parameter `flag` exposes a nullable `Boolean`, which has three states but names only two. Replace it with an `enum class` that names all three states, or remove the third state.
+
+    If this is intended, apply `@IntentionallyNullableBoolean` to the declaration, parameter, or type usage.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/nullable-boolean-public-api
+
+/nullableBoolean.kt:16:12: error: NULLABLE_BOOLEAN_PUBLIC_API
+    The parameter `_` exposes a nullable `Boolean`, which has three states but names only two. Replace it with an `enum class` that names all three states, or remove the third state.
+
+    If this is intended, apply `@IntentionallyNullableBoolean` to the declaration, parameter, or type usage.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/nullable-boolean-public-api
+
+/nullableBoolean.kt:19:41: error: NULLABLE_BOOLEAN_PUBLIC_API
+    The property `checked` exposes a nullable `Boolean`, which has three states but names only two. Replace it with an `enum class` that names all three states, or remove the third state.
+
+    If this is intended, apply `@IntentionallyNullableBoolean` to the declaration, parameter, or type usage.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/nullable-boolean-public-api
+
+/nullableBoolean.kt:21:22: error: NULLABLE_BOOLEAN_PUBLIC_API
+    The type parameter `T` exposes a nullable `Boolean`, which has three states but names only two. Replace it with an `enum class` that names all three states, or remove the third state.
+
+    If this is intended, apply `@IntentionallyNullableBoolean` to the declaration, parameter, or type usage.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/nullable-boolean-public-api

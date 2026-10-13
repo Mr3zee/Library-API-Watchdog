@@ -25,9 +25,26 @@ class GradlePluginConventionPlugin : Plugin<Project> {
                     layout.buildDirectory.dir("generated/sources/checkNames/main/kotlin"),
                 )
             }
+            val generateFunctionalTestDiagnostics = tasks.register(
+                "generateFunctionalTestDiagnostics",
+                GenerateFunctionalTestDiagnostics::class.java,
+            ) {
+                description = "Generates the Diagnostic enum of the functional tests from the shared diagnostics.json."
+                diagnostics.set(
+                    @Suppress("UnstableApiUsage")
+                    target.isolated.rootProject.projectDirectory.file("diagnostics.json"),
+                )
+                packageName.set("org.jetbrains.kotlinx.library.api.watchdog")
+                outputDirectory.set(
+                    layout.buildDirectory.dir("generated/sources/functionalTestDiagnostics/functionalTest/kotlin"),
+                )
+            }
             extensions.configure(KotlinProjectExtension::class.java) {
                 sourceSets.named("main").configure {
                     kotlin.srcDir(generateCheckNames)
+                }
+                sourceSets.named("functionalTest").configure {
+                    kotlin.srcDir(generateFunctionalTestDiagnostics)
                 }
             }
 

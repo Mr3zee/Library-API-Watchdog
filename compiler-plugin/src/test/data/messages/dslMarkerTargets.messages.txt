@@ -1,0 +1,83 @@
+/dslMarkerTargets.kt:18:5: error: DSL_MARKER_NOOP_TARGET
+    The DSL marker `TreeDsl` declares the `TYPE_PARAMETER` annotation target, but a DSL marker has an effect only on `CLASS`, `ANNOTATION_CLASS`, `TYPE`, and `TYPEALIAS`. Remove `TYPE_PARAMETER` from `@Target`.
+
+    If this is intended, apply `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target
+
+/dslMarkerTargets.kt:19:5: error: DSL_MARKER_NOOP_TARGET
+    The DSL marker `TreeDsl` declares the `PROPERTY` annotation target, but a DSL marker has an effect only on `CLASS`, `ANNOTATION_CLASS`, `TYPE`, and `TYPEALIAS`. Remove `PROPERTY` from `@Target`.
+
+    If this is intended, apply `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target
+
+/dslMarkerTargets.kt:20:5: error: DSL_MARKER_NOOP_TARGET
+    The DSL marker `TreeDsl` declares the `FIELD` annotation target, but a DSL marker has an effect only on `CLASS`, `ANNOTATION_CLASS`, `TYPE`, and `TYPEALIAS`. Remove `FIELD` from `@Target`.
+
+    If this is intended, apply `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target
+
+/dslMarkerTargets.kt:21:5: error: DSL_MARKER_NOOP_TARGET
+    The DSL marker `TreeDsl` declares the `LOCAL_VARIABLE` annotation target, but a DSL marker has an effect only on `CLASS`, `ANNOTATION_CLASS`, `TYPE`, and `TYPEALIAS`. Remove `LOCAL_VARIABLE` from `@Target`.
+
+    If this is intended, apply `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target
+
+/dslMarkerTargets.kt:22:5: error: DSL_MARKER_NOOP_TARGET
+    The DSL marker `TreeDsl` declares the `VALUE_PARAMETER` annotation target, but a DSL marker has an effect only on `CLASS`, `ANNOTATION_CLASS`, `TYPE`, and `TYPEALIAS`. Remove `VALUE_PARAMETER` from `@Target`.
+
+    If this is intended, apply `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target
+
+/dslMarkerTargets.kt:23:5: error: DSL_MARKER_NOOP_TARGET
+    The DSL marker `TreeDsl` declares the `CONSTRUCTOR` annotation target, but a DSL marker has an effect only on `CLASS`, `ANNOTATION_CLASS`, `TYPE`, and `TYPEALIAS`. Remove `CONSTRUCTOR` from `@Target`.
+
+    If this is intended, apply `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target
+
+/dslMarkerTargets.kt:24:5: error: DSL_MARKER_NOOP_TARGET
+    The DSL marker `TreeDsl` declares the `FUNCTION` annotation target, but a DSL marker has an effect only on `CLASS`, `ANNOTATION_CLASS`, `TYPE`, and `TYPEALIAS`. Remove `FUNCTION` from `@Target`.
+
+    If this is intended, apply `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target
+
+/dslMarkerTargets.kt:25:5: error: DSL_MARKER_NOOP_TARGET
+    The DSL marker `TreeDsl` declares the `PROPERTY_GETTER` annotation target, but a DSL marker has an effect only on `CLASS`, `ANNOTATION_CLASS`, `TYPE`, and `TYPEALIAS`. Remove `PROPERTY_GETTER` from `@Target`.
+
+    If this is intended, apply `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target
+
+/dslMarkerTargets.kt:26:5: error: DSL_MARKER_NOOP_TARGET
+    The DSL marker `TreeDsl` declares the `PROPERTY_SETTER` annotation target, but a DSL marker has an effect only on `CLASS`, `ANNOTATION_CLASS`, `TYPE`, and `TYPEALIAS`. Remove `PROPERTY_SETTER` from `@Target`.
+
+    If this is intended, apply `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target
+
+/dslMarkerTargets.kt:27:5: error: DSL_MARKER_NOOP_TARGET
+    The DSL marker `TreeDsl` declares the `FILE` annotation target, but a DSL marker has an effect only on `CLASS`, `ANNOTATION_CLASS`, `TYPE`, and `TYPEALIAS`. Remove `FILE` from `@Target`.
+
+    If this is intended, apply `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target
+
+/dslMarkerTargets.kt:28:5: error: DSL_MARKER_NOOP_TARGET
+    The DSL marker `TreeDsl` declares the `EXPRESSION` annotation target, but a DSL marker has an effect only on `CLASS`, `ANNOTATION_CLASS`, `TYPE`, and `TYPEALIAS`. Remove `EXPRESSION` from `@Target`.
+
+    If this is intended, apply `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target
+
+/dslMarkerTargets.kt:33:25: error: DSL_MARKER_WITHOUT_EXPLICIT_TARGETS
+    The DSL marker `DefaultTargetsDsl` declares no `@Target`. The default targets lack `TYPE` and `TYPEALIAS` and include targets a DSL marker has no effect on. Declare `@Target(AnnotationTarget.CLASS, AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPEALIAS)` or a subset of it.
+
+    If this is intended, apply `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-without-explicit-targets

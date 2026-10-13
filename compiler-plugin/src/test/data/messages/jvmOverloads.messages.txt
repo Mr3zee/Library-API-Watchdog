@@ -1,0 +1,13 @@
+/jvmOverloads.kt:9:12: error: DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS
+    The function `connect` declares default parameter values, but Java callers have to pass every argument. Mark the function with `@JvmOverloads`.
+
+    If this is intended, apply `@IntentionallyWithoutJvmOverloads` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/default-parameters-without-jvm-overloads
+
+/jvmOverloads.kt:11:24: error: DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS
+    The constructor `Connection` declares default parameter values, but Java callers have to pass every argument. Mark the constructor with `@JvmOverloads`.
+
+    If this is intended, apply `@IntentionallyWithoutJvmOverloads` to the constructor.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/default-parameters-without-jvm-overloads

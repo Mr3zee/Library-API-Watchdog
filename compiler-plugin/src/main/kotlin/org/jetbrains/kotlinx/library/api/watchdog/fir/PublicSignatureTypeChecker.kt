@@ -249,7 +249,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
             report(
                 source = parameter.returnTypeRef.source ?: parameter.source,
                 kind = "parameter",
-                name = parameter.name,
+                name = parameter.sourceName,
                 violation = violation,
             )
         }

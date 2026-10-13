@@ -527,7 +527,8 @@
       "docs": "checks/special/public-type-with-internal-api",
       "message": [
         "The {0} `{1}` publicly exposes `{2}`, but that type is marked as internal API with `@{3}`. Remove",
-        "the internal type from the public signature, or mark the {0} with an internal API annotation too."
+        "the internal type from the public signature, or mark the exposing declaration with an internal API",
+        "annotation too."
       ]
     },
     {

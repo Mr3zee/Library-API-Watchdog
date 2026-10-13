@@ -1,0 +1,20 @@
+/inlineFunction.kt:12:19: error: INLINE_FUNCTION_WITH_LOGIC
+    The inline function `doubled` contains logic beyond a single thin delegating statement, and the compiler copies an `inline` body into every user binary. Move the logic into a function without `inline` (`@PublishedApi internal` keeps it out of the public API) and delegate to it.
+
+    If this is intended, apply `@IntentionallyInlinedLogic` to the declaration.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inline-function-with-logic
+
+/inlineFunction.kt:14:19: error: INLINE_FUNCTION_WITH_LOGIC
+    The inline getter `threshold` contains logic beyond a single thin delegating statement, and the compiler copies an `inline` body into every user binary. Move the logic into a function without `inline` (`@PublishedApi internal` keeps it out of the public API) and delegate to it.
+
+    If this is intended, apply `@IntentionallyInlinedLogic` to the declaration.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inline-function-with-logic
+
+/inlineFunction.kt:17:19: error: INLINE_FUNCTION_WITH_LOGIC
+    The inline setter `clampedLimit` contains logic beyond a single thin delegating statement, and the compiler copies an `inline` body into every user binary. Move the logic into a function without `inline` (`@PublishedApi internal` keeps it out of the public API) and delegate to it.
+
+    If this is intended, apply `@IntentionallyInlinedLogic` to the declaration.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inline-function-with-logic

@@ -1,0 +1,20 @@
+/exhaustiveApi.kt:9:19: error: EXHAUSTIVE_PUBLIC_API
+    Users can match the enum class `Status` exhaustively, so adding an entry later breaks their `when` expressions. Replace the enum with a regular class and named instances.
+
+    If this is intended, apply `@IntentionallyExhaustive` to the enum class.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/exhaustive-public-api
+
+/exhaustiveApi.kt:13:21: error: EXHAUSTIVE_PUBLIC_API
+    Users can match the class `Shape` exhaustively, so adding a subtype later breaks their `when` expressions. Replace the sealed hierarchy with an open class or interface marked with `@SubclassOptInRequired`.
+
+    If this is intended, apply `@IntentionallyExhaustive` to the class.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/exhaustive-public-api
+
+/exhaustiveApi.kt:17:25: error: EXHAUSTIVE_PUBLIC_API
+    Users can match the interface `Event` exhaustively, so adding a subtype later breaks their `when` expressions. Replace the sealed hierarchy with an open class or interface marked with `@SubclassOptInRequired`.
+
+    If this is intended, apply `@IntentionallyExhaustive` to the interface.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/exhaustive-public-api

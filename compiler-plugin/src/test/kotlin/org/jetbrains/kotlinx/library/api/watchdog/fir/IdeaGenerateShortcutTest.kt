@@ -1,0 +1,24 @@
+package org.jetbrains.kotlinx.library.api.watchdog.fir
+
+import kotlin.test.Test
+import kotlin.test.assertEquals
+
+/**
+ * The message dumps replace the macOS shortcut, so this test covers the `ideaGenerateShortcutMac`
+ * parameter value instead.
+ */
+class IdeaGenerateShortcutTest {
+    private val diagnostic = WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_EQUALS.name
+
+    @Test
+    fun macShortcut() {
+        assertEquals("⌘N", ideaGenerateShortcut(diagnostic, osName = "Mac OS X"))
+    }
+
+    @Test
+    fun otherShortcut() {
+        assertEquals("Alt+Insert", ideaGenerateShortcut(diagnostic, osName = "Linux"))
+        assertEquals("Alt+Insert", ideaGenerateShortcut(diagnostic, osName = "Windows 11"))
+        assertEquals("Alt+Insert", ideaGenerateShortcut(diagnostic, osName = ""))
+    }
+}

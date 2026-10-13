@@ -1,0 +1,62 @@
+/undocumentedApi.kt:9:14: error: UNDOCUMENTED_PUBLIC_API
+    The public class `Undocumented` has no `KDoc`. Document the behavior users can rely on.
+
+    If this is intended, apply `@IntentionallyUndocumented` to the declaration.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api
+
+/undocumentedApi.kt:11:18: error: UNDOCUMENTED_PUBLIC_API
+    The public interface `Contract` has no `KDoc`. Document the behavior users can rely on.
+
+    If this is intended, apply `@IntentionallyUndocumented` to the declaration.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api
+
+/undocumentedApi.kt:13:15: error: UNDOCUMENTED_PUBLIC_API
+    The public object `Registry` has no `KDoc`. Document the behavior users can rely on.
+
+    If this is intended, apply `@IntentionallyUndocumented` to the declaration.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api
+
+/undocumentedApi.kt:15:19: error: UNDOCUMENTED_PUBLIC_API
+    The public enum class `Status` has no `KDoc`. Document the behavior users can rely on.
+
+    If this is intended, apply `@IntentionallyUndocumented` to the declaration.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api
+
+/undocumentedApi.kt:19:25: error: UNDOCUMENTED_PUBLIC_API
+    The public annotation class `Marker` has no `KDoc`. Document the behavior users can rely on.
+
+    If this is intended, apply `@IntentionallyUndocumented` to the declaration.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api
+
+/undocumentedApi.kt:21:18: error: UNDOCUMENTED_PUBLIC_API
+    The public type alias `Label` has no `KDoc`. Document the behavior users can rely on.
+
+    If this is intended, apply `@IntentionallyUndocumented` to the declaration.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api
+
+/undocumentedApi.kt:23:12: error: UNDOCUMENTED_PUBLIC_API
+    The public function `start` has no `KDoc`. Document the behavior users can rely on.
+
+    If this is intended, apply `@IntentionallyUndocumented` to the declaration.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api
+
+/undocumentedApi.kt:25:12: error: UNDOCUMENTED_PUBLIC_API
+    The public property `retries` has no `KDoc`. Document the behavior users can rely on.
+
+    If this is intended, apply `@IntentionallyUndocumented` to the declaration.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api
+
+/undocumentedApi.kt:29:5: error: UNDOCUMENTED_PUBLIC_API
+    The public constructor `Server` has no `KDoc`. Document the behavior users can rely on.
+
+    If this is intended, apply `@IntentionallyUndocumented` to the declaration.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api

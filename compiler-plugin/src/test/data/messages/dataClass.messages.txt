@@ -1,0 +1,6 @@
+/dataClass.kt:7:19: error: DATA_CLASS_PUBLIC_API
+    The `data class` `Coordinates` exposes its constructor property list through `copy`, `componentN`, and the constructor, so adding, removing, or reordering a property breaks users. Declare a regular class, and implement `equals`, `hashCode`, and `toString` or generate them with Poko (https://github.com/drewhamilton/Poko).
+
+    If this is intended, apply `@IntentionallyDataClass` to the class.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/data-class-public-api

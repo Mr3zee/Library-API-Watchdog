@@ -159,15 +159,17 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
     private fun String.plainLinks(): String =
         replace(MARKDOWN_LINK) { "${it.groupValues[1]} (${it.groupValues[2]})" }
 
+    /** Splits the text at spaces into chunks of at most [MAX_CHUNK_LENGTH]. A code line's indent at the start stays. */
     private fun String.wrap(): List<String> {
         val chunks = mutableListOf<String>()
-        val chunk = StringBuilder()
-        for (word in splitToSequence(' ')) {
-            if (chunk.isNotEmpty() && chunk.length + word.length > MAX_CHUNK_LENGTH) {
+        val leadingSpaces = takeWhile { it == ' ' }
+        val chunk = StringBuilder(leadingSpaces)
+        for ((index, word) in substring(leadingSpaces.length).split(' ').withIndex()) {
+            if (index > 0 && chunk.length + word.length > MAX_CHUNK_LENGTH) {
                 chunks += chunk.toString()
                 chunk.clear()
             }
-            if (chunk.isNotEmpty()) chunk.append(' ')
+            if (index > 0 && chunk.isNotEmpty()) chunk.append(' ')
             chunk.append(word)
         }
         chunks += chunk.toString()

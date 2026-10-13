@@ -1,0 +1,62 @@
+/mangledJvmName.kt:12:12: error: MANGLED_JVM_NAME_PUBLIC_API
+    The function `take` has the `value class` `UserId` in its signature. The compiler mangles the JVM method name, so Java can't call it. Rename it with `@JvmName`, or add a boxed variant with `@JvmExposeBoxed`.
+
+    If this is intended, apply `@IntentionallyMangledJvmName` to the declaration or an enclosing class.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api
+
+/mangledJvmName.kt:15:20: error: MANGLED_JVM_NAME_PUBLIC_API
+    The constructor `Wallet` has the `value class` `UserId` in its signature. The compiler hides the constructor behind a synthetic one, so Java can't call it. Add a boxed constructor with `@JvmExposeBoxed`.
+
+    If this is intended, apply `@IntentionallyMangledJvmName` to the declaration or an enclosing class.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api
+
+/mangledJvmName.kt:15:32: error: MANGLED_JVM_NAME_PUBLIC_API
+    The property `id` has the `value class` `UserId` in its signature. The compiler mangles the JVM name of the getter, so Java can't call it. Rename it with `@get:JvmName`, or add a boxed variant with `@JvmExposeBoxed`.
+
+    If this is intended, apply `@IntentionallyMangledJvmName` to the declaration or an enclosing class.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api
+
+/mangledJvmName.kt:18:16: error: MANGLED_JVM_NAME_PUBLIC_API
+    The property `editor` has the `value class` `UserId` in its signature. The compiler mangles the JVM names of both accessors, so Java can't call them. Rename them with `@get:JvmName` and `@set:JvmName`, or add boxed variants with `@JvmExposeBoxed`.
+
+    If this is intended, apply `@IntentionallyMangledJvmName` to the declaration or an enclosing class.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api
+
+/mangledJvmName.kt:21:16: error: MANGLED_JVM_NAME_PUBLIC_API
+    The property `owner` has the `value class` `UserId` in its signature. The compiler mangles the JVM name of the setter, so Java can't call it. Rename it with `@set:JvmName`, or add a boxed variant with `@JvmExposeBoxed`.
+
+    If this is intended, apply `@IntentionallyMangledJvmName` to the declaration or an enclosing class.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api
+
+/mangledJvmName.kt:25:21: error: MANGLED_JVM_NAME_PUBLIC_API
+    The function `handle` has the `value class` `UserId` in its signature. The compiler mangles the JVM method name, so Java can't call it. An open or abstract function supports neither `@JvmName` nor `@JvmExposeBoxed`, so remove the value class from the signature if Java needs access.
+
+    If this is intended, apply `@IntentionallyMangledJvmName` to the declaration or an enclosing class.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api
+
+/mangledJvmName.kt:27:21: error: MANGLED_JVM_NAME_PUBLIC_API
+    The property `owner` has the `value class` `UserId` in its signature. The compiler mangles the JVM name of the getter, so Java can't call it. An open or abstract property supports neither `@get:JvmName` nor `@JvmExposeBoxed`, so remove the value class from the signature if Java needs access.
+
+    If this is intended, apply `@IntentionallyMangledJvmName` to the declaration or an enclosing class.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api
+
+/mangledJvmName.kt:29:21: error: MANGLED_JVM_NAME_PUBLIC_API
+    The property `editor` has the `value class` `UserId` in its signature. The compiler mangles the JVM names of both accessors, so Java can't call them. An open or abstract property supports neither accessor `@JvmName` nor `@JvmExposeBoxed`, so remove the value class from the signature if Java needs access.
+
+    If this is intended, apply `@IntentionallyMangledJvmName` to the declaration or an enclosing class.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api
+
+/mangledJvmName.kt:32:21: error: MANGLED_JVM_NAME_PUBLIC_API
+    The property `setterOnly` has the `value class` `UserId` in its signature. The compiler mangles the JVM name of the setter, so Java can't call it. An open or abstract property supports neither `@set:JvmName` nor `@JvmExposeBoxed`, so remove the value class from the signature if Java needs access.
+
+    If this is intended, apply `@IntentionallyMangledJvmName` to the declaration or an enclosing class.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api

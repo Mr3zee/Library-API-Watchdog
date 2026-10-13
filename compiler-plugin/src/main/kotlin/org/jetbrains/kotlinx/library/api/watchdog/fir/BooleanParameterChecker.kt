@@ -68,7 +68,7 @@ internal class BooleanParameterChecker(
             source = parameter.source ?: declaration.source,
             factory = factory,
             a = declaration.name,
-            b = parameter.name,
+            b = parameter.sourceName,
         )
     }
 

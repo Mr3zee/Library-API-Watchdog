@@ -1,10 +1,7 @@
+@file:Suppress("RedundantVisibilityModifier")
+
 package org.jetbrains.kotlinx.library.api.watchdog
 
-import com.autonomousapps.kit.GradleBuilder.build
-import com.autonomousapps.kit.GradleBuilder.buildAndFail
-import com.autonomousapps.kit.GradleProject
-import com.autonomousapps.kit.Source
-import com.autonomousapps.kit.gradle.Dependency
 import com.autonomousapps.kit.gradle.Dependency.Companion.api
 import com.autonomousapps.kit.gradle.Dependency.Companion.compileOnly
 import com.autonomousapps.kit.gradle.Dependency.Companion.implementation
@@ -12,62 +9,64 @@ import com.autonomousapps.kit.gradle.Plugin
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import java.io.File
 import org.gradle.testkit.runner.BuildResult
-import org.gradle.testkit.runner.TaskOutcome
+import org.gradle.testkit.runner.TaskOutcome.FAILED
 import org.intellij.lang.annotations.Language
 import org.jetbrains.kotlin.compiler.plugin.devkit.test.TEST_COMPILER_VERSION
+import org.jetbrains.kotlinx.library.api.watchdog.AgpVersion.AGP8
+import org.jetbrains.kotlinx.library.api.watchdog.AgpVersion.AGP9
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.BOOLEAN_PARAMETER_PUBLIC_API
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.COMPANION_API_WITHOUT_JVM_STATIC
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.EXEMPTION_WITHOUT_EXPLANATION
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.EXHAUSTIVE_PUBLIC_API
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.MUTABLE_COLLECTION_PUBLIC_API
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.NULLABLE_BOOLEAN_PUBLIC_API
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.OPEN_API_WITHOUT_SUBCLASS_OPT_IN
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PAIR_OR_TRIPLE_PUBLIC_API
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PUBLIC_TYPE_WITH_INTERNAL_API
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.STATEFUL_CLASS_WITHOUT_EQUALS
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.STATEFUL_CLASS_WITHOUT_HASH_CODE
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.STATEFUL_CLASS_WITHOUT_TO_STRING
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.UNDOCUMENTED_PUBLIC_API
+import org.jetbrains.kotlinx.library.api.watchdog.KmpAndroidTarget.LEGACY
+import org.jetbrains.kotlinx.library.api.watchdog.KmpAndroidTarget.LIBRARY_AGP8
+import org.jetbrains.kotlinx.library.api.watchdog.KmpAndroidTarget.LIBRARY_AGP9
+import org.jetbrains.kotlinx.library.api.watchdog.Severity.ERROR
+import org.jetbrains.kotlinx.library.api.watchdog.Severity.NONE
+import org.jetbrains.kotlinx.library.api.watchdog.Severity.WARNING
 import org.junit.Test
 
 class WatchdogProjectTest {
     @Test
     fun failsWithErrorsOnUnacknowledgedApiByDefault() {
-        val project = object : WatchdogProject() {
-            override fun sources() = listOf(
-                source(unacknowledgedFile),
-                source(internalApiExposureFile, "internalApiExposure"),
-            )
-        }.gradleProject
+        val project = jvmProject {
+            source(unacknowledgedFile)
+            source(internalApiExposureFile, "internalApiExposure")
+        }
 
-        val result = buildAndFail(project.rootDir, "build")
-        result.assertDiagnosticReported("e: ", "can be subclassed outside the library")
-        result.assertDiagnosticReported("e: ", "exhaustively, so adding")
-        result.assertDiagnosticReported("e: ", "has no `KDoc`")
-        result.assertDiagnosticReported("e: ", "abbreviates a function type")
-        result.assertDiagnosticReported("e: ", "exposes its constructor property list")
-        result.assertDiagnosticReported("e: ", "Poko (https://github.com/drewhamilton/Poko)")
-        result.assertDiagnosticReported("e: ", "neither declares nor inherits an `equals`")
-        result.assertDiagnosticReported("e: ", "neither declares nor inherits a `hashCode`")
-        result.assertDiagnosticReported("e: ", "neither declares nor inherits a `toString`")
-        result.assertDiagnosticReported(
-            "e: ",
+        val result = project.buildAndFail("build")
+        result.assertErrors(*singleModuleDiagnostics.toTypedArray())
+        // The filled-in parameter values.
+        result.assertError("Poko (https://github.com/drewhamilton/Poko)")
+        result.assertError(
             "Poko (https://mr3zee.github.io/Library-API-Watchdog/checks/" +
                     "stateful-class-without-equals-hashcode-to-string#poko)",
         )
-        result.assertDiagnosticReported("e: ", "press `${ideaGenerateShortcut()}`")
-        result.assertDiagnosticReported("e: ", "exposes the mutable collection type")
-        result.assertDiagnosticReported("e: ", "exposes the tuple type")
-        result.assertDiagnosticReported("e: ", "takes the `Boolean` parameter")
-        result.assertDiagnosticReported("e: ", "exposes a nullable `Boolean`")
-        result.assertDiagnosticReported("e: ", "is required but declared after an optional parameter")
-        result.assertDiagnosticReported("e: ", "appear in the opposite relative order in another overload")
-        result.assertDiagnosticReported("e: ", "contains logic beyond a single thin delegating statement")
-        result.assertDiagnosticReported("e: ", "mangles the JVM method name")
-        result.assertDiagnosticReported("e: ", "Hide it from Java with `@JvmSynthetic`")
-        result.assertDiagnosticReported("e: ", "compiles to an instance method of the nested `Companion` class")
-        result.assertDiagnosticReported("e: ", "has its getter on the nested companion class")
-        result.assertDiagnosticReported("e: ", "Java-visible top-level functions")
-        result.assertDiagnosticReported("e: ", "declares default parameter values")
-        result.assertDiagnosticReported("e: ", "declares the `FUNCTION` annotation target")
-        result.assertDiagnosticReported("e: ", "declares no `@Target`")
-        result.assertDiagnosticReported("e: ", "has no effect on this parameter type")
-        result.assertDiagnosticReported(
-            "e: ",
+        result.assertError("press `${ideaGenerateShortcut()}`")
+        result.assertError("mangles the JVM method name")
+        result.assertError("compiles to an instance method of the nested `Companion` class")
+        result.assertError("has its getter on the nested companion class")
+        result.assertError("Java-visible top-level functions")
+        result.assertError("declares the `FUNCTION` annotation target")
+        result.assertError("has no effect on this parameter type")
+        result.assertError(
             "parameter `first` publicly exposes `test.InternalModel`, but that type is marked " +
                     "as internal API with `@InternalLibApi`",
         )
-        result.assertDiagnosticReported(
-            "e: ",
+        result.assertError(
             "parameter `second` publicly exposes `test.OtherInternalModel`, but that type is " +
                     "marked as internal API with `@OtherInternalApi`",
         )
@@ -75,163 +74,92 @@ class WatchdogProjectTest {
 
     @Test
     fun demotedDiagnosticsAreReportedAsWarnings() {
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                apiWatchdog {
-                    openApiWithoutSubclassOptIn = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    exhaustivePublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    undocumentedPublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    functionTypeAliasPublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    dataClassPublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    statefulClassWithoutEquals = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    statefulClassWithoutHashCode = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    statefulClassWithoutToString = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    mutableCollectionPublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    pairOrTriplePublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    booleanParameterPublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    nullableBooleanPublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    requiredParameterAfterOptional = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    inconsistentParameterOrderInOverloads = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    inlineFunctionWithLogic = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    dslMarkerNoopTarget = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    dslMarkerWithoutExplicitTargets = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    dslMarkerNoopTypePosition = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    javaInterop {
-                        mangledJvmNamePublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                        kotlinOnlyApiWithoutJvmSynthetic = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                        companionApiWithoutJvmStatic = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                        companionPropertyWithoutStaticAccess = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                        topLevelApiWithoutJvmName = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                        defaultParametersWithoutJvmOverloads = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    }
-                }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(source(unacknowledgedFile))
-        }.gradleProject
+        val project = jvmProject {
+            apiWatchdog { severityOfEveryCheck(WARNING) }
+            source(unacknowledgedFile)
+        }
 
-        val result = build(project.rootDir, "build")
-        result.assertDiagnosticReported("w: ", "can be subclassed outside the library")
-        result.assertDiagnosticReported("w: ", "exhaustively, so adding")
-        result.assertDiagnosticReported("w: ", "has no `KDoc`")
-        result.assertDiagnosticReported("w: ", "abbreviates a function type")
-        result.assertDiagnosticReported("w: ", "exposes its constructor property list")
-        result.assertDiagnosticReported("w: ", "neither declares nor inherits an `equals`")
-        result.assertDiagnosticReported("w: ", "neither declares nor inherits a `hashCode`")
-        result.assertDiagnosticReported("w: ", "neither declares nor inherits a `toString`")
-        result.assertDiagnosticReported("w: ", "exposes the mutable collection type")
-        result.assertDiagnosticReported("w: ", "exposes the tuple type")
-        result.assertDiagnosticReported("w: ", "takes the `Boolean` parameter")
-        result.assertDiagnosticReported("w: ", "exposes a nullable `Boolean`")
-        result.assertDiagnosticReported("w: ", "is required but declared after an optional parameter")
-        result.assertDiagnosticReported("w: ", "appear in the opposite relative order in another overload")
-        result.assertDiagnosticReported("w: ", "contains logic beyond a single thin delegating statement")
-        result.assertDiagnosticReported("w: ", "mangles the JVM method name")
-        result.assertDiagnosticReported("w: ", "Hide it from Java with `@JvmSynthetic`")
-        result.assertDiagnosticReported("w: ", "compiles to an instance method of the nested `Companion` class")
-        result.assertDiagnosticReported("w: ", "has its getter on the nested companion class")
-        result.assertDiagnosticReported("w: ", "Java-visible top-level functions")
-        result.assertDiagnosticReported("w: ", "declares default parameter values")
-        result.assertDiagnosticReported("w: ", "declares the `FUNCTION` annotation target")
-        result.assertDiagnosticReported("w: ", "declares no `@Target`")
-        result.assertDiagnosticReported("w: ", "has no effect on this parameter type")
+        val result = project.build("build")
+        result.assertWarnings(*configurableDiagnostics.toTypedArray())
     }
 
     @Test
     fun severityIsConfiguredPerDiagnostic() {
         // The compiler swallows regular warnings when a compilation fails with errors, so warning
         // reporting is forced to observe the demoted diagnostic next to the remaining errors.
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                kotlin { compilerOptions { freeCompilerArgs.add("-Xreport-all-warnings") } }
-                apiWatchdog {
-                    undocumentedPublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(source(unacknowledgedFile))
-        }.gradleProject
+        val project = jvmProject {
+            buildScript("""kotlin { compilerOptions { freeCompilerArgs.add("-Xreport-all-warnings") } }""")
+            apiWatchdog { severity(WARNING, UNDOCUMENTED_PUBLIC_API) }
+            source(unacknowledgedFile)
+        }
 
-        val result = buildAndFail(project.rootDir, "build")
-        result.assertDiagnosticReported("e: ", "can be subclassed outside the library")
-        result.assertDiagnosticReported("e: ", "exhaustively, so adding")
-        result.assertDiagnosticReported("w: ", "has no `KDoc`")
+        val result = project.buildAndFail("build")
+        result.assertErrors(OPEN_API_WITHOUT_SUBCLASS_OPT_IN, EXHAUSTIVE_PUBLIC_API)
+        result.assertWarnings(UNDOCUMENTED_PUBLIC_API)
     }
 
     @Test
     fun disabledJavaInteropGroupSilencesAllItsDiagnostics() {
         // The off-switch silences every Java-interop diagnostic at once and wins over the
         // individual severities inside the group.
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                apiWatchdog {
-                    javaInterop {
-                        enabled = false
-                        companionApiWithoutJvmStatic = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.ERROR
-                    }
+        val project = jvmProject {
+            apiWatchdog {
+                javaInterop {
+                    enabled = false
+                    severity(ERROR, COMPANION_API_WITHOUT_JVM_STATIC)
                 }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(source(unacknowledgedFile))
-        }.gradleProject
+            }
+            source(unacknowledgedFile)
+        }
 
-        val result = buildAndFail(project.rootDir, "build")
+        val result = project.buildAndFail("build")
         // The non-interop diagnostics still fail the build...
-        result.assertDiagnosticReported("e: ", "has no `KDoc`")
+        result.assertErrors(UNDOCUMENTED_PUBLIC_API)
         // ...while the whole group is off, the explicitly set severity included.
-        assertFalse(result.output.contains("has the `value class`"))
-        assertFalse(result.output.contains("Hide it from Java with `@JvmSynthetic`"))
-        assertFalse(result.output.contains("The `companion object`"))
-        assertFalse(result.output.contains("The facade class"))
-        assertFalse(result.output.contains("declares default parameter values"))
+        result.assertNotReported(*Diagnostic.entries.filter { it.javaInterop }.toTypedArray())
     }
 
     @Test
     fun disabledDiagnosticsAreNotReported() {
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                apiWatchdog {
-                    undocumentedPublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.NONE
-                    statefulClassWithoutEquals = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.NONE
-                    statefulClassWithoutHashCode = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.NONE
-                    statefulClassWithoutToString = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.NONE
-                }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(source(unacknowledgedFile))
-        }.gradleProject
+        val project = jvmProject {
+            apiWatchdog {
+                severity(
+                    NONE,
+                    UNDOCUMENTED_PUBLIC_API,
+                    STATEFUL_CLASS_WITHOUT_EQUALS,
+                    STATEFUL_CLASS_WITHOUT_HASH_CODE,
+                    STATEFUL_CLASS_WITHOUT_TO_STRING,
+                )
+            }
+            source(unacknowledgedFile)
+        }
 
-        val result = buildAndFail(project.rootDir, "build")
+        val result = project.buildAndFail("build")
         // The remaining diagnostics still fail the build...
-        result.assertDiagnosticReported("e: ", "can be subclassed outside the library")
-        result.assertDiagnosticReported("e: ", "exhaustively, so adding")
+        result.assertErrors(OPEN_API_WITHOUT_SUBCLASS_OPT_IN, EXHAUSTIVE_PUBLIC_API)
         // ...while the disabled ones are not reported at all.
-        assertFalse(result.output.contains("has no `KDoc`"))
-        assertFalse(result.output.contains("neither declares nor inherits an `equals`"))
-        assertFalse(result.output.contains("neither declares nor inherits a `hashCode`"))
-        assertFalse(result.output.contains("neither declares nor inherits a `toString`"))
+        result.assertNotReported(
+            UNDOCUMENTED_PUBLIC_API,
+            STATEFUL_CLASS_WITHOUT_EQUALS,
+            STATEFUL_CLASS_WITHOUT_HASH_CODE,
+            STATEFUL_CLASS_WITHOUT_TO_STRING,
+        )
     }
 
     @Test
     fun configuredAnnotationsCanIgnoreOneCheck() {
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                apiWatchdog {
-                    ignore(
-                        WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS,
-                        whenAnnotatedWith = listOf(
-                            "test.GeneratedValueMembers",
-                            "test.AlternateGeneratedValueMembers",
-                        ),
-                    )
-                }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(source(annotationIgnoreFile))
-        }.gradleProject
-        project.rootDir.resolve("build.gradle.kts").prependImport(WATCHDOG_CHECKS_IMPORT)
+        val project = jvmProject {
+            apiWatchdog {
+                ignore(
+                    STATEFUL_CLASS_WITHOUT_EQUALS,
+                    "test.GeneratedValueMembers",
+                    "test.AlternateGeneratedValueMembers",
+                )
+            }
+            source(annotationIgnoreFile)
+        }
 
-        val result = buildAndFail(project.rootDir, "build")
+        val result = project.buildAndFail("build")
         assertFalse(result.hasStatefulDiagnostic("GeneratedState", "an `equals`"))
         assertFalse(result.hasStatefulDiagnostic("AlternateGeneratedState", "an `equals`"))
         assertTrue(result.hasStatefulDiagnostic("GeneratedState", "a `hashCode`"))
@@ -244,350 +172,239 @@ class WatchdogProjectTest {
         // The checker that honors this type-use exemption is disabled, so the remaining error
         // proves EXEMPTION_WITHOUT_EXPLANATION is enforced independently and ignores severity
         // configuration: the extension deliberately offers no property for it.
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                apiWatchdog {
-                    mutableCollectionPublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.NONE
-                }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(source(unexplainedExemptionFile))
-        }.gradleProject
+        val project = jvmProject {
+            apiWatchdog { severity(NONE, MUTABLE_COLLECTION_PUBLIC_API) }
+            source(unexplainedExemptionFile)
+        }
 
-        val result = buildAndFail(project.rootDir, "build")
-        result.assertDiagnosticReported("e: ", "exemption doesn't explain why it is applied")
+        project.buildAndFail("build").assertErrors(EXEMPTION_WITHOUT_EXPLANATION)
     }
 
     @Test
     fun internalApiExposureIsAlwaysAnError() {
-        val project = object : WatchdogProject() {
-            override fun sources() = listOf(source(internalApiExposureFile, "internalApiExposure"))
-        }.gradleProject
+        val project = jvmProject { source(internalApiExposureFile, "internalApiExposure") }
 
-        val result = buildAndFail(project.rootDir, "build")
-        result.assertDiagnosticReported("e: ", "marked as internal API with `@InternalLibApi`")
+        project.buildAndFail("build").assertError("marked as internal API with `@InternalLibApi`")
     }
 
     @Test
     fun internalApiExposureCheckCanOnlyBeDisabledAsAWhole() {
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                apiWatchdog {
-                    publicTypeWithInternalApi = false
-                }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(source(internalApiExposureFile, "internalApiExposure"))
-        }.gradleProject
+        val project = jvmProject {
+            apiWatchdog { publicTypeWithInternalApi = false }
+            source(internalApiExposureFile, "internalApiExposure")
+        }
 
-        val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("marked as internal API"))
+        project.build("build").assertNotReported(PUBLIC_TYPE_WITH_INTERNAL_API)
     }
 
     @Test
     fun acknowledgedApiCompilesWithoutDiagnostics() {
-        // The source() helper always leads with the package statement, so the file-level facade
-        // exemption is prepended by assembling the source file by hand.
-        val project = object : WatchdogProject() {
-            override fun sources() = listOf(
-                Source.kotlin(
-                    buildString {
-                        appendLine("@file:IntentionallyDefaultFacadeName(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)")
-                        appendLine()
-                        appendLine("package test")
-                        defaultImports.forEach { appendLine("import $it") }
-                        appendLine()
-                        appendLine(acknowledgedFile)
-                    }
-                ).withPath("test", "acknowledged").build()
+        val project = jvmProject {
+            source(
+                acknowledgedFile,
+                "acknowledged",
+                fileAnnotation = "@file:IntentionallyDefaultFacadeName(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)",
             )
-        }.gradleProject
+        }
 
-        val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("can be subclassed outside the library"))
-        assertFalse(result.output.contains("exhaustively, so adding"))
-        assertFalse(result.output.contains("has no `KDoc`"))
-        assertFalse(result.output.contains("abbreviates a function type"))
-        assertFalse(result.output.contains("exposes its constructor property list"))
-        assertFalse(result.output.contains("neither declares nor inherits an `equals`"))
-        assertFalse(result.output.contains("neither declares nor inherits a `hashCode`"))
-        assertFalse(result.output.contains("neither declares nor inherits a `toString`"))
-        assertFalse(result.output.contains("exposes the mutable collection type"))
-        assertFalse(result.output.contains("exposes the tuple type"))
-        assertFalse(result.output.contains("takes the `Boolean` parameter"))
-        assertFalse(result.output.contains("exposes a nullable `Boolean`"))
-        assertFalse(result.output.contains("is required but declared after an optional parameter"))
-        assertFalse(result.output.contains("appear in the opposite relative order in another overload"))
-        assertFalse(result.output.contains("contains logic beyond a single thin delegating statement"))
-        assertFalse(result.output.contains("has the `value class`"))
-        assertFalse(result.output.contains("Hide it from Java with `@JvmSynthetic`"))
-        assertFalse(result.output.contains("The `companion object`"))
-        assertFalse(result.output.contains("The facade class"))
-        assertFalse(result.output.contains("declares default parameter values"))
-        assertFalse(result.output.contains("DSL marker"))
+        project.build("build").assertNoWatchdogDiagnostics()
     }
 
     @Test
     fun silentWithoutExplicitApiMode() {
-        val project = object : WatchdogProject(explicitApi = false) {
-            override fun sources() = listOf(source(unacknowledgedFile))
-        }.gradleProject
+        val project = jvmProject {
+            explicitApi = false
+            source(unacknowledgedFile)
+        }
 
-        val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("can be subclassed outside the library"))
-        assertFalse(result.output.contains("exhaustively, so adding"))
-        assertFalse(result.output.contains("has no `KDoc`"))
-        assertFalse(result.output.contains("abbreviates a function type"))
-        assertFalse(result.output.contains("exposes its constructor property list"))
-        assertFalse(result.output.contains("neither declares nor inherits an `equals`"))
-        assertFalse(result.output.contains("neither declares nor inherits a `hashCode`"))
-        assertFalse(result.output.contains("neither declares nor inherits a `toString`"))
-        assertFalse(result.output.contains("exposes the mutable collection type"))
-        assertFalse(result.output.contains("exposes the tuple type"))
-        assertFalse(result.output.contains("takes the `Boolean` parameter"))
-        assertFalse(result.output.contains("exposes a nullable `Boolean`"))
-        assertFalse(result.output.contains("is required but declared after an optional parameter"))
-        assertFalse(result.output.contains("appear in the opposite relative order in another overload"))
-        assertFalse(result.output.contains("contains logic beyond a single thin delegating statement"))
-        assertFalse(result.output.contains("has the `value class`"))
-        assertFalse(result.output.contains("Hide it from Java with `@JvmSynthetic`"))
-        assertFalse(result.output.contains("The `companion object`"))
-        assertFalse(result.output.contains("The facade class"))
-        assertFalse(result.output.contains("declares default parameter values"))
-        assertFalse(result.output.contains("DSL marker"))
+        project.build("build").assertNoWatchdogDiagnostics()
     }
 
     @Test
     fun testSourcesAreNotChecked() {
         // Test sources are not published, so they carry no API contract to watch. The same
         // declaration in main sources fails the build, see failsWithErrorsOnUnacknowledgedApiByDefault.
-        val project = object : WatchdogProject() {
-            override fun sources() = listOf(source(cleanMainFile), testOnlySource())
-        }.gradleProject
+        val project = jvmProject {
+            source(cleanMainFile)
+            testOnlySource()
+        }
 
-        val result = build(project.rootDir, "compileTestKotlin")
-        result.assertNoTestSourceDiagnostics()
+        project.build("compileTestKotlin").assertNoTestSourceDiagnostics()
     }
 
     @Test
     fun testSourcesAreNotCheckedWhenExplicitApiModeIsForcedOnEveryCompilation() {
         // A raw compiler flag reaches test compilations too, unlike `kotlin { explicitApi() }`,
         // which the Kotlin Gradle plugin deliberately keeps off for them.
-        val project = object : WatchdogProject(
-            explicitApi = false,
-            extraBuildScript = """
-                kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") } }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(source(cleanMainFile), testOnlySource())
-        }.gradleProject
+        val project = jvmProject {
+            explicitApi = false
+            buildScript(EXPLICIT_API_FLAG)
+            source(cleanMainFile)
+            testOnlySource()
+        }
 
-        val result = build(project.rootDir, "compileTestKotlin")
-        result.assertNoTestSourceDiagnostics()
+        project.build("compileTestKotlin").assertNoTestSourceDiagnostics()
     }
 
     @Test
     fun multiplatformTestSourcesAreNotChecked() {
         // Every multiplatform target compiles the shared `commonTest` source set along with its
         // own, so the exclusion has to hold for both. The raw flag is the strict case here too.
-        val project = object : WatchdogProject(
-            multiplatform = true,
-            explicitApi = false,
-            extraBuildScript = """
-                kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") } }
-            """.trimIndent(),
-        ) {
-            override fun multiplatformTargetsBlock(): String = "kotlin {\n  jvm()\n}\n"
+        val project = kmpProject {
+            explicitApi = false
+            buildScript(EXPLICIT_API_FLAG)
+            source(cleanMainFile)
+            testOnlySource("commonTest")
+            testOnlySource("jvmTest", "PlatformTestOnlyHelper")
+        }
 
-            override fun sources() = listOf(
-                source(cleanMainFile),
-                testOnlySource("commonTest"),
-                testOnlySource("jvmTest", "PlatformTestOnlyHelper"),
-            )
-        }.gradleProject
-
-        val result = build(project.rootDir, "compileTestKotlinJvm")
-        result.assertNoTestSourceDiagnostics()
+        project.build("compileTestKotlinJvm").assertNoTestSourceDiagnostics()
     }
 
     @Test
     fun expectOwnsContractChecksAndExemptions() {
-        val project = object : WatchdogProject(multiplatform = true) {
-            override fun multiplatformTargetsBlock(): String = "kotlin { jvm() }"
+        val project = kmpProject {
+            kotlinFile(
+                "CommonApi",
+                text = """
+                    package test
 
-            override fun sources() = listOf(
-                Source.kotlin(
-                    """
-                        package test
+                    import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+                    import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyBooleanParameter
+                    import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyNullableBoolean
+                    import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyPairOrTriple
 
-                        import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
-                        import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyBooleanParameter
-                        import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyNullableBoolean
-                        import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyPairOrTriple
+                    /** The shared contract owns its source-shape exemptions. */
+                    @IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)
+                    @IntentionallyNullableBoolean(reason = ExemptionReason.API_DESIGN)
+                    @IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN)
+                    public expect fun shared(flag: Boolean): Pair<String, Boolean?>
 
-                        /** The shared contract owns its source-shape exemptions. */
-                        @IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)
-                        @IntentionallyNullableBoolean(reason = ExemptionReason.API_DESIGN)
-                        @IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN)
-                        public expect fun shared(flag: Boolean): Pair<String, Boolean?>
-
-                        /** An unexempt shared contract is reported from common source. */
-                        public expect fun reported(flag: Boolean): Pair<String, Boolean?>
-                    """.trimIndent(),
-                ).withSourceSet("commonMain").withPath("test", "CommonApi").build(),
-                Source.kotlin(
-                    """
-                        @file:org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName(
-                            reason = org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason.API_DESIGN,
-                        )
-
-                        package test
-
-                        public actual fun shared(flag: Boolean): Pair<String, Boolean?> =
-                            flag.toString() to flag
-
-                        public actual fun reported(flag: Boolean): Pair<String, Boolean?> =
-                            flag.toString() to flag
-
-                        /** Platform-only declarations remain part of the checked source API. */
-                        public fun platformOnly(flag: Boolean): Int = if (flag) 1 else 0
-                    """.trimIndent(),
-                ).withSourceSet("jvmMain").withPath("test", "JvmApi").build(),
+                    /** An unexempt shared contract is reported from common source. */
+                    public expect fun reported(flag: Boolean): Pair<String, Boolean?>
+                """,
             )
-        }.gradleProject
+            kotlinFile(
+                "JvmApi",
+                "jvmMain",
+                """
+                    $DEFAULT_FACADE_NAME_FILE_ANNOTATION
 
-        val result = buildAndFail(project.rootDir, "compileKotlinJvm")
-        val booleanReports = result.output.lineSequence()
-            .filter { ".kt:" in it && "takes the `Boolean` parameter" in it }
-            .toList()
-        val nullableBooleanReports = result.output.lineSequence()
-            .filter { ".kt:" in it && "exposes a nullable `Boolean`" in it }
-            .toList()
-        val tupleReports = result.output.lineSequence()
-            .filter { ".kt:" in it && "exposes the tuple type" in it }
-            .toList()
-        assertEquals(2, booleanReports.size, result.output)
-        assertEquals(1, booleanReports.count { "CommonApi.kt" in it }, result.output)
-        assertEquals(1, booleanReports.count { "JvmApi.kt" in it }, result.output)
-        assertEquals(1, nullableBooleanReports.size, result.output)
-        assertTrue(nullableBooleanReports.single().contains("CommonApi.kt"), result.output)
-        assertEquals(1, tupleReports.size, result.output)
-        assertTrue(tupleReports.single().contains("CommonApi.kt"), result.output)
+                    package test
+
+                    public actual fun shared(flag: Boolean): Pair<String, Boolean?> =
+                        flag.toString() to flag
+
+                    public actual fun reported(flag: Boolean): Pair<String, Boolean?> =
+                        flag.toString() to flag
+
+                    /** Platform-only declarations remain part of the checked source API. */
+                    public fun platformOnly(flag: Boolean): Int = if (flag) 1 else 0
+                """,
+            )
+        }
+
+        val result = project.buildAndFail("compileKotlinJvm")
+        result.assertReportedIn(BOOLEAN_PARAMETER_PUBLIC_API, "CommonApi.kt", "JvmApi.kt")
+        result.assertReportedIn(NULLABLE_BOOLEAN_PUBLIC_API, "CommonApi.kt")
+        result.assertReportedIn(PAIR_OR_TRIPLE_PUBLIC_API, "CommonApi.kt")
     }
 
     @Test
     fun jvmChecksReportActualOnceUsingExpectSignature() {
-        val project = object : WatchdogProject(
-            multiplatform = true,
-            extraBuildScript = """
-                apiWatchdog {
-                    javaInterop {
-                        kotlinOnlyApiWithoutJvmSynthetic = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                        defaultParametersWithoutJvmOverloads = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    }
-                }
-            """.trimIndent(),
-        ) {
-            override fun multiplatformTargetsBlock(): String = "kotlin { jvm() }"
+        val project = kmpProject {
+            apiWatchdog {
+                severity(WARNING, KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC, DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS)
+            }
+            kotlinFile(
+                "CommonApi",
+                text = """
+                    package test
 
-            override fun sources() = listOf(
-                Source.kotlin(
-                    """
-                        package test
+                    /** A Kotlin-only shared contract. */
+                    public expect suspend fun suspended(): Int
 
-                        /** A Kotlin-only shared contract. */
-                        public expect suspend fun suspended(): Int
-
-                        /** A shared contract with a default argument. */
-                        public expect fun defaulted(value: Int = 1): Int
-                    """.trimIndent(),
-                ).withSourceSet("commonMain").withPath("test", "CommonApi").build(),
-                Source.kotlin(
-                    """
-                        @file:org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName(
-                            reason = org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason.API_DESIGN,
-                        )
-
-                        package test
-
-                        public actual suspend fun suspended(): Int = 1
-
-                        public actual fun defaulted(value: Int): Int = value
-                    """.trimIndent(),
-                ).withSourceSet("jvmMain").withPath("test", "JvmApi").build(),
+                    /** A shared contract with a default argument. */
+                    public expect fun defaulted(value: Int = 1): Int
+                """,
             )
-        }.gradleProject
+            kotlinFile(
+                "JvmApi",
+                "jvmMain",
+                """
+                    $DEFAULT_FACADE_NAME_FILE_ANNOTATION
 
-        val result = build(project.rootDir, "compileKotlinJvm")
-        val kotlinOnlyReports = result.output.lineSequence()
-            .filter { "Hide it from Java with `@JvmSynthetic`" in it }
-            .toList()
-        val defaultReports = result.output.lineSequence()
-            .filter { "declares default parameter values" in it }
-            .toList()
-        assertEquals(1, kotlinOnlyReports.size, result.output)
-        assertEquals(1, defaultReports.size, result.output)
-        assertTrue(kotlinOnlyReports.single().contains("JvmApi.kt"), result.output)
-        assertTrue(defaultReports.single().contains("JvmApi.kt"), result.output)
-        assertFalse(result.output.contains("CommonApiKt"), result.output)
+                    package test
+
+                    public actual suspend fun suspended(): Int = 1
+
+                    public actual fun defaulted(value: Int): Int = value
+                """,
+            )
+        }
+
+        val result = project.build("compileKotlinJvm")
+        result.assertReportedIn(KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC, "JvmApi.kt")
+        result.assertReportedIn(DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS, "JvmApi.kt")
+        result.assertOutputLacks("CommonApiKt")
     }
 
     @Test
     fun implementationChecksHonorExpectExemptions() {
-        val project = object : WatchdogProject(multiplatform = true) {
-            override fun multiplatformTargetsBlock(): String = "kotlin { jvm() }"
+        val project = kmpProject {
+            kotlinFile(
+                "CommonApi",
+                text = """
+                    package test
 
-            override fun sources() = listOf(
-                Source.kotlin(
-                    """
-                        package test
+                    import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+                    import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDataClass
+                    import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyInlinedLogic
+                    import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEqualsHashCodeOrToString
 
-                        import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
-                        import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDataClass
-                        import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyInlinedLogic
-                        import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEqualsHashCodeOrToString
+                    /** A platform data holder. */
+                    @IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)
+                    public expect class Model(value: Int) {
+                        /** Its value. */
+                        public val value: Int
+                    }
 
-                        /** A platform data holder. */
-                        @IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)
-                        public expect class Model(value: Int) {
-                            /** Its value. */
-                            public val value: Int
-                        }
+                    /** A platform state holder. */
+                    @IntentionallyWithoutEqualsHashCodeOrToString(reason = ExemptionReason.API_DESIGN)
+                    public expect class Stateful(value: Int) {
+                        /** Its value. */
+                        public val value: Int
+                    }
 
-                        /** A platform state holder. */
-                        @IntentionallyWithoutEqualsHashCodeOrToString(reason = ExemptionReason.API_DESIGN)
-                        public expect class Stateful(value: Int) {
-                            /** Its value. */
-                            public val value: Int
-                        }
-
-                        /** Platform logic deliberately inlined into callers. */
-                        @IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)
-                        public expect inline fun increment(value: Int): Int
-                    """.trimIndent(),
-                ).withSourceSet("commonMain").withPath("test", "CommonApi").build(),
-                Source.kotlin(
-                    """
-                        @file:org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName(
-                            reason = org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason.API_DESIGN,
-                        )
-
-                        package test
-
-                        public actual data class Model public actual constructor(public actual val value: Int)
-
-                        public actual class Stateful public actual constructor(public actual val value: Int)
-
-                        public actual inline fun increment(value: Int): Int = value + 1
-                    """.trimIndent(),
-                ).withSourceSet("jvmMain").withPath("test", "JvmApi").build(),
+                    /** Platform logic deliberately inlined into callers. */
+                    @IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)
+                    public expect inline fun increment(value: Int): Int
+                """,
             )
-        }.gradleProject
+            kotlinFile(
+                "JvmApi",
+                "jvmMain",
+                """
+                    $DEFAULT_FACADE_NAME_FILE_ANNOTATION
 
-        val result = build(project.rootDir, "compileKotlinJvm")
-        assertFalse(result.output.contains("exposes its constructor property list"), result.output)
-        assertFalse(result.output.contains("neither declares nor inherits"), result.output)
-        assertFalse(result.output.contains("contains logic beyond"), result.output)
+                    package test
+
+                    public actual data class Model public actual constructor(public actual val value: Int)
+
+                    public actual class Stateful public actual constructor(public actual val value: Int)
+
+                    public actual inline fun increment(value: Int): Int = value + 1
+                """,
+            )
+        }
+
+        project.build("compileKotlinJvm").assertNotReported(
+            Diagnostic.DATA_CLASS_PUBLIC_API,
+            STATEFUL_CLASS_WITHOUT_EQUALS,
+            STATEFUL_CLASS_WITHOUT_HASH_CODE,
+            STATEFUL_CLASS_WITHOUT_TO_STRING,
+            Diagnostic.INLINE_FUNCTION_WITH_LOGIC,
+        )
     }
 
     @Test
@@ -597,227 +414,114 @@ class WatchdogProjectTest {
         // Android target of a multiplatform project uses `hostTest` and `deviceTest`, and custom
         // compilations follow the same shape. A locally declared one stands in for all of them
         // without needing an Android SDK. The SDK-gated Android tests below build the real names.
-        val project = object : WatchdogProject(
-            explicitApi = false,
-            extraBuildScript = """
-                kotlin {
-                    compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") }
-                    target.compilations.create("integrationTest") {
-                        associateWith(target.compilations.getByName("main"))
+        val project = jvmProject {
+            explicitApi = false
+            buildScript(
+                """
+                    kotlin {
+                        compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") }
+                        target.compilations.create("integrationTest") {
+                            associateWith(target.compilations.getByName("main"))
+                        }
                     }
-                }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(source(cleanMainFile), unexemptedOpenClassSource("integrationTest"))
-        }.gradleProject
+                """
+            )
+            source(cleanMainFile)
+            unexemptedOpenClassSource("integrationTest")
+        }
 
-        val result = build(project.rootDir, "compileIntegrationTestKotlin")
-        result.assertNoTestSourceDiagnostics()
+        project.build("compileIntegrationTestKotlin").assertNoTestSourceDiagnostics()
     }
 
     @Test
-    fun androidTestSourceCompilationsAreNotChecked() {
+    fun androidTestSourceCompilationsAreNotChecked() = androidTestSourceCompilationsCase(AGP8)
+
+    @Test
+    fun androidTestSourceCompilationsAreNotCheckedWithBuiltInKotlin() = androidTestSourceCompilationsCase(AGP9)
+
+    private fun androidTestSourceCompilationsCase(agp: AgpVersion) {
         // The real Android names for the stand-in above: unit tests compile as `debugUnitTest`
         // and instrumented tests as `debugAndroidTest`. The raw flag reaches both because
         // project-level compiler options apply to every compilation, so only the plugin's own
         // exclusion keeps them silent. publicTypeFromImplementationDependencyIsAnErrorInAndroidLibraries
         // proves the main compilations of the same project shape are checked.
-        assumeAndroidBuildEnvironment()
-        val project = object : AndroidLibraryWatchdogProject(
-            kotlinScript = """kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") } }""",
-        ) {
-            override fun sources() = listOf(
-                source(cleanMainFile),
-                unexemptedOpenClassSource("test"),
-                unexemptedOpenClassSource("androidTest", "DeviceTestOnlyHelper"),
-            )
-        }.gradleProject
+        val project = androidLibrary(agp) {
+            explicitApi = false
+            kotlin("""compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") }""")
+            source(cleanMainFile)
+            unexemptedOpenClassSource("test")
+            unexemptedOpenClassSource("androidTest", "DeviceTestOnlyHelper")
+        }
 
-        val result = build(
-            agpCompatibleGradle,
-            project.rootDir,
-            "compileDebugUnitTestKotlin",
-            "compileDebugAndroidTestKotlin",
-        )
-        result.assertNoTestSourceDiagnostics()
+        project.build("compileDebugUnitTestKotlin", "compileDebugAndroidTestKotlin").assertNoTestSourceDiagnostics()
     }
 
     @Test
-    fun androidTestSourceCompilationsAreNotCheckedWithBuiltInKotlin() {
-        // The same test compilation names under AGP 9, where AGP's built-in Kotlin support
-        // drives the compiler plugin integration instead of the Kotlin Android plugin.
-        // publicTypeFromImplementationDependencyIsAnErrorInAndroidLibrariesWithBuiltInKotlin
-        // proves the main compilations of the same project shape are checked.
-        assumeAndroidBuildEnvironment()
-        val project = object : AndroidLibraryWatchdogProject(
-            kotlinScript = """kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") } }""",
-            builtInKotlin = true,
-        ) {
-            override fun sources() = listOf(
-                source(cleanMainFile),
-                unexemptedOpenClassSource("test"),
-                unexemptedOpenClassSource("androidTest", "DeviceTestOnlyHelper"),
-            )
-        }.gradleProject
+    fun multiplatformAndroidTargetMainSourcesAreChecked() = multiplatformAndroidTargetMainSourcesCase(LIBRARY_AGP8)
 
-        val result = build(
-            project.rootDir,
-            "compileDebugUnitTestKotlin",
-            "compileDebugAndroidTestKotlin",
-        )
-        result.assertNoTestSourceDiagnostics()
+    @Test
+    fun multiplatformAndroidTargetMainSourcesAreCheckedOnAgp9() = multiplatformAndroidTargetMainSourcesCase(LIBRARY_AGP9)
+
+    @Test
+    fun legacyMultiplatformAndroidTargetMainSourcesAreChecked() = multiplatformAndroidTargetMainSourcesCase(LEGACY)
+
+    private fun multiplatformAndroidTargetMainSourcesCase(target: KmpAndroidTarget) {
+        // The control for the test-source cases below: the Android target's main compilation of
+        // the same project shape reports its diagnostics. The legacy target names it after the
+        // variant, so the plugin sees `debug` instead of `main`.
+        val project = kmpAndroidProject(target) {
+            source(cleanMainFile)
+            unexemptedOpenClassSource("androidMain", "AndroidOnlyApi")
+        }
+
+        project.buildAndFail(target.mainCompileTask)
+            .assertErrors(OPEN_API_WITHOUT_SUBCLASS_OPT_IN, UNDOCUMENTED_PUBLIC_API, NULLABLE_BOOLEAN_PUBLIC_API)
     }
 
     @Test
-    fun multiplatformAndroidTargetMainSourcesAreChecked() {
-        // The control for multiplatformAndroidTargetTestSourcesAreNotChecked: the android
-        // target's `main` compilation of the same project shape reports its diagnostics.
-        assumeAndroidBuildEnvironment()
-        val project = object : KmpAndroidWatchdogProject() {
-            override fun sources() = listOf(
-                source(cleanMainFile),
-                unexemptedOpenClassSource("androidMain", "AndroidOnlyApi"),
-            )
-        }.gradleProject
-
-        val result = buildAndFail(agpCompatibleGradle, project.rootDir, "compileAndroidMain")
-        result.assertDiagnosticReported("e: ", "can be subclassed outside the library")
-        result.assertDiagnosticReported("e: ", "has no `KDoc`")
-        result.assertDiagnosticReported("e: ", "exposes a nullable `Boolean`")
-    }
+    fun multiplatformAndroidTargetTestSourcesAreNotChecked() = multiplatformAndroidTargetTestSourcesCase(LIBRARY_AGP8)
 
     @Test
-    fun multiplatformAndroidTargetTestSourcesAreNotChecked() {
-        // The android target of a multiplatform project names its unit test compilation
-        // `hostTest` and compiles the shared test sources along with its own. The raw flag is
-        // the strict case here too, see multiplatformTestSourcesAreNotChecked.
-        assumeAndroidBuildEnvironment()
-        val project = object : KmpAndroidWatchdogProject(
-            explicitApi = false,
-            extraBuildScript = """
-                kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") } }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(
-                source(cleanMainFile),
-                unexemptedOpenClassSource("commonTest"),
-                unexemptedOpenClassSource("androidHostTest", "HostTestOnlyHelper"),
-            )
-        }.gradleProject
-
-        val result = build(agpCompatibleGradle, project.rootDir, "compileAndroidHostTest")
-        result.assertNoTestSourceDiagnostics()
-    }
+    fun multiplatformAndroidTargetTestSourcesAreNotCheckedOnAgp9() = multiplatformAndroidTargetTestSourcesCase(LIBRARY_AGP9)
 
     @Test
-    fun multiplatformAndroidTargetMainSourcesAreCheckedOnAgp9() {
-        // The control for multiplatformAndroidTargetTestSourcesAreNotCheckedOnAgp9, on AGP 9's
-        // `android` target block.
-        assumeAndroidBuildEnvironment()
-        val project = object : KmpAndroidWatchdogProject(agp9 = true) {
-            override fun sources() = listOf(
-                source(cleanMainFile),
-                unexemptedOpenClassSource("androidMain", "AndroidOnlyApi"),
-            )
-        }.gradleProject
+    fun legacyMultiplatformAndroidTargetTestSourcesAreNotChecked() = multiplatformAndroidTargetTestSourcesCase(LEGACY)
 
-        val result = buildAndFail(project.rootDir, "compileAndroidMain")
-        result.assertDiagnosticReported("e: ", "can be subclassed outside the library")
-        result.assertDiagnosticReported("e: ", "has no `KDoc`")
-        result.assertDiagnosticReported("e: ", "exposes a nullable `Boolean`")
-    }
+    private fun multiplatformAndroidTargetTestSourcesCase(target: KmpAndroidTarget) {
+        // The Android target names its unit test compilation `hostTest`, or `debugUnitTest` for
+        // the legacy target, and compiles the shared test sources along with its own. The raw
+        // flag is the strict case here too, see multiplatformTestSourcesAreNotChecked.
+        val project = kmpAndroidProject(target) {
+            explicitApi = false
+            buildScript(EXPLICIT_API_FLAG)
+            source(cleanMainFile)
+            unexemptedOpenClassSource("commonTest")
+            unexemptedOpenClassSource(target.hostTestSourceSet, "HostTestOnlyHelper")
+        }
 
-    @Test
-    fun multiplatformAndroidTargetTestSourcesAreNotCheckedOnAgp9() {
-        // The `hostTest` exclusion holds on AGP 9's multiplatform android target too.
-        assumeAndroidBuildEnvironment()
-        val project = object : KmpAndroidWatchdogProject(
-            agp9 = true,
-            explicitApi = false,
-            extraBuildScript = """
-                kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") } }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(
-                source(cleanMainFile),
-                unexemptedOpenClassSource("commonTest"),
-                unexemptedOpenClassSource("androidHostTest", "HostTestOnlyHelper"),
-            )
-        }.gradleProject
-
-        val result = build(project.rootDir, "compileAndroidHostTest")
-        result.assertNoTestSourceDiagnostics()
-    }
-
-    @Test
-    fun legacyMultiplatformAndroidTargetMainSourcesAreChecked() {
-        // The multiplatform plugin's own `androidTarget()` on `com.android.library`, the shape
-        // every multiplatform library had before AGP's multiplatform library plugin. Its main
-        // compilation is named after the variant, so the plugin sees `debug` instead of `main`.
-        assumeAndroidBuildEnvironment()
-        val project = object : LegacyKmpAndroidWatchdogProject() {
-            override fun sources() = listOf(
-                source(cleanMainFile),
-                unexemptedOpenClassSource("androidMain", "AndroidOnlyApi"),
-            )
-        }.gradleProject
-
-        val result = buildAndFail(agpCompatibleGradle, project.rootDir, "compileDebugKotlinAndroid")
-        result.assertDiagnosticReported("e: ", "can be subclassed outside the library")
-        result.assertDiagnosticReported("e: ", "has no `KDoc`")
-        result.assertDiagnosticReported("e: ", "exposes a nullable `Boolean`")
-    }
-
-    @Test
-    fun legacyMultiplatformAndroidTargetTestSourcesAreNotChecked() {
-        // The legacy android target names its unit test compilation `debugUnitTest` and compiles
-        // the shared test sources along with its own. The raw flag is the strict case here too,
-        // see multiplatformTestSourcesAreNotChecked.
-        assumeAndroidBuildEnvironment()
-        val project = object : LegacyKmpAndroidWatchdogProject(
-            explicitApi = false,
-            extraBuildScript = """
-                kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") } }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(
-                source(cleanMainFile),
-                unexemptedOpenClassSource("commonTest"),
-                unexemptedOpenClassSource("androidUnitTest", "HostTestOnlyHelper"),
-            )
-        }.gradleProject
-
-        val result = build(agpCompatibleGradle, project.rootDir, "compileDebugUnitTestKotlinAndroid")
-        result.assertNoTestSourceDiagnostics()
+        project.build(target.hostTestCompileTask).assertNoTestSourceDiagnostics()
     }
 
     @Test
     fun internalAnnotationMarkerExemptsAcrossModules() {
         // The marker annotation lives in `:lib`, so the consuming root module reads the
         // @InternalAnnotationMarker meta-annotation from the compiled dependency.
-        val project = object : WatchdogProject() {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(markerConsumerFile, "consumer", "test", true, "test.lib.InternalLibApi"))
-                    dependencies(implementation(":lib"))
-                }
-                subproject("lib") {
-                    sources(source(markerLibraryFile, "markers", "test.lib"))
-                }
-            }
-        }.gradleProject
+        val project = jvmProject {
+            source(markerConsumerFile, "consumer", imports = listOf("test.lib.InternalLibApi"))
+            dependencies(implementation(":lib"))
+            subproject("lib") { source(markerLibraryFile, "markers", "test.lib") }
+        }
 
-        val result = buildAndFail(project.rootDir, "build")
+        val result = project.buildAndFail("build")
         // The unmarked control declaration proves the checks ran in the consuming module...
-        result.assertDiagnosticReported("e: ", "`WatchedClass` has no `KDoc`")
+        result.assertError("`WatchedClass` has no `KDoc`")
         // ...while declarations marked with the dependency's marker annotation are exempt.
-        assertFalse(result.output.contains("InternalOpenClass"))
-        assertFalse(result.output.contains("memberOfInternal"))
-        assertFalse(result.output.contains("InternalEnum"))
-        assertFalse(result.output.contains("INTERNAL_ENTRY"))
-        assertFalse(result.output.contains("internalFunction"))
-        assertFalse(result.output.contains("can be subclassed outside the library"))
-        assertFalse(result.output.contains("exhaustively, so adding"))
+        result.assertOutputLacks("InternalOpenClass")
+        result.assertOutputLacks("memberOfInternal")
+        result.assertOutputLacks("InternalEnum")
+        result.assertOutputLacks("INTERNAL_ENTRY")
+        result.assertOutputLacks("internalFunction")
+        result.assertNotReported(OPEN_API_WITHOUT_SUBCLASS_OPT_IN, EXHAUSTIVE_PUBLIC_API)
     }
 
     @Test
@@ -825,140 +529,89 @@ class WatchdogProjectTest {
         // The annotation lives in `:lib` and carries no @InternalAnnotationMarker, standing in
         // for the internal-API annotation of a dependency the consuming module can't annotate.
         // Naming it in `internalApiAnnotations` makes it a marker for the consuming module.
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                apiWatchdog {
-                    internalApiAnnotations.add("test.lib.ThirdPartyInternalApi")
-                }
-            """.trimIndent(),
-        ) {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(
-                        source(
-                            configuredInternalApiConsumerFile,
-                            "consumer",
-                            "test",
-                            true,
-                            "test.lib.ThirdPartyInternalApi",
-                            "test.lib.ThirdPartyInternalType",
-                        ),
-                    )
-                    dependencies(implementation(":lib"))
-                }
-                subproject("lib") {
-                    sources(source(configuredInternalApiLibraryFile, "markers", "test.lib"))
-                }
-            }
-        }.gradleProject
+        val project = jvmProject {
+            apiWatchdog { internalApiAnnotations("test.lib.ThirdPartyInternalApi") }
+            source(
+                configuredInternalApiConsumerFile,
+                "consumer",
+                imports = listOf("test.lib.ThirdPartyInternalApi", "test.lib.ThirdPartyInternalType"),
+            )
+            dependencies(implementation(":lib"))
+            subproject("lib") { source(configuredInternalApiLibraryFile, "markers", "test.lib") }
+        }
 
-        val result = buildAndFail(project.rootDir, "build")
+        val result = project.buildAndFail("build")
         // The unmarked control declaration proves the checks ran in the consuming module...
-        result.assertDiagnosticReported("e: ", "`WatchedClass` has no `KDoc`")
+        result.assertError("`WatchedClass` has no `KDoc`")
         // ...a supported signature exposing the dependency's internal type is reported, naming
         // the configured annotation...
-        result.assertDiagnosticReported(
-            "e: ",
+        result.assertError(
             "publicly exposes `test.lib.ThirdPartyInternalType`, but that type is marked as internal API " +
                     "with `@ThirdPartyInternalApi`",
         )
         // ...while declarations carrying the configured annotation are exempt.
-        assertFalse(result.output.contains("InternalOpenClass"))
-        assertFalse(result.output.contains("memberOfInternal"))
-        assertFalse(result.output.contains("InternalEnum"))
-        assertFalse(result.output.contains("INTERNAL_ENTRY"))
-        assertFalse(result.output.contains("internalFunction"))
-        assertFalse(result.output.contains("can be subclassed outside the library"))
-        assertFalse(result.output.contains("exhaustively, so adding"))
+        result.assertOutputLacks("InternalOpenClass")
+        result.assertOutputLacks("memberOfInternal")
+        result.assertOutputLacks("InternalEnum")
+        result.assertOutputLacks("INTERNAL_ENTRY")
+        result.assertOutputLacks("internalFunction")
+        result.assertNotReported(OPEN_API_WITHOUT_SUBCLASS_OPT_IN, EXHAUSTIVE_PUBLIC_API)
     }
 
     @Test
     fun publicTypeFromImplementationDependencyIsAnError() {
-        val project = object : WatchdogProject() {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
-                    dependencies(implementation(":model"))
-                }
-                subproject("model") {
-                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
-                }
-            }
-        }.gradleProject
+        val project = jvmProject {
+            consumerSource()
+            dependencies(implementation(":model"))
+            modelSubproject()
+        }
 
-        val result = buildAndFail(project.rootDir, "build")
-        result.assertDiagnosticReported(
-            "e: ",
-            "publicly exposes `test.model.ExternalModel`, but the dependency with that type " +
-                    "isn't published transitively",
+        val result = project.buildAndFail("build")
+        result.assertNonTransitiveExposureReported("test.model.ExternalModel")
+        result.assertOutputHas(
+            "        implementation(project(\":model\")) {\n            exemptNonTransitiveDependency(this)\n        }"
         )
-        assertTrue(
-            result.output.contains(
-                "        implementation(project(\":model\")) {\n            exemptNonTransitiveDependency(this)\n        }"
-            ),
-            result.output,
-        )
-        result.assertDiagnosticReported("e: ", "The type alias `ExternalModels` publicly exposes")
-        result.assertDiagnosticReported("e: ", "The supertype of `Consumer` publicly exposes")
-        result.assertDiagnosticReported("e: ", "The function receiver `acceptModels` publicly exposes")
-        result.assertDiagnosticReported("e: ", "The parameter `models` publicly exposes")
-        result.assertDiagnosticReported("e: ", "The function `protectedModel` publicly exposes")
+        result.assertError("The type alias `ExternalModels` publicly exposes")
+        result.assertError("The supertype of `Consumer` publicly exposes")
+        result.assertError("The function receiver `acceptModels` publicly exposes")
+        result.assertError("The parameter `models` publicly exposes")
+        result.assertError("The function `protectedModel` publicly exposes")
     }
 
     @Test
     fun publicTypeFromApiDependencyIsAccepted() {
-        val project = object : WatchdogProject() {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
-                    dependencies(api(":model"))
-                }
-                subproject("model") {
-                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
-                }
-            }
-        }.gradleProject
+        val project = jvmProject {
+            consumerSource()
+            dependencies(api(":model"))
+            modelSubproject()
+        }
 
-        val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("published transitively to consumers"))
+        project.build("build").assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun publicTypeFromImplementationDependencyIsAcceptedWhenIntentionallyExempted() {
-        val project = object : WatchdogProject() {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(exemptedDependencyTypeFile, "Consumer", "test.consumer"))
-                    dependencies(implementation(":model"))
-                }
-                subproject("model") {
-                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
-                }
-            }
-        }.gradleProject
+        val project = jvmProject {
+            source(exemptedDependencyTypeFile, "Consumer", "test.consumer")
+            dependencies(implementation(":model"))
+            modelSubproject()
+        }
 
-        val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("published transitively to consumers"))
+        project.build("build").assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun nonTransitiveDependencyExemptionOnAClassCoversOnlyThatClass() {
-        val project = object : WatchdogProject() {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(partiallyExemptedDependencyTypeFile, "Api", "test.consumer"))
-                    dependencies(implementation(":model"))
-                }
-                subproject("model") {
-                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
-                }
-            }
-        }.gradleProject
+        val project = jvmProject {
+            source(partiallyExemptedDependencyTypeFile, "Api", "test.consumer")
+            dependencies(implementation(":model"))
+            modelSubproject()
+        }
 
-        val result = buildAndFail(project.rootDir, "build")
-        result.assertDiagnosticReported("e: ", "The function `unexemptedModel` publicly exposes")
-        assertFalse(result.output.contains("The function `exemptedModel` publicly exposes"))
-        assertFalse(result.output.contains("The supertype of `ExemptedApi` publicly exposes"))
+        val result = project.buildAndFail("build")
+        result.assertError("The function `unexemptedModel` publicly exposes")
+        result.assertOutputLacks("The function `exemptedModel` publicly exposes")
+        result.assertOutputLacks("The supertype of `ExemptedApi` publicly exposes")
     }
 
     @Test
@@ -966,917 +619,570 @@ class WatchdogProjectTest {
         // The JVM target consumes the dependency as a jar or classes directory while the JS
         // target consumes it as a klib, so both artifact classification paths are exercised.
         // `--continue` lets the second compilation run after the first one fails.
-        val project = object : WatchdogProject(multiplatform = true) {
-            override fun multiplatformTargetsBlock(): String = "kotlin {\n  jvm()\n  js { nodejs() }\n}\n"
+        val project = kmpProject(JVM_AND_JS_TARGETS) {
+            consumerSource()
+            dependencies(implementation(":model"))
+            modelSubproject()
+        }
 
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
-                    dependencies(implementation(":model"))
-                }
-                subproject("model") {
-                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
-                }
-            }
-        }.gradleProject
-
-        val result = buildAndFail(project.rootDir, "compileKotlinJvm", "compileKotlinJs", "--continue")
-        assertEquals(TaskOutcome.FAILED, result.task(":compileKotlinJvm")?.outcome)
-        assertEquals(TaskOutcome.FAILED, result.task(":compileKotlinJs")?.outcome)
-        result.assertDiagnosticReported(
-            "e: ",
-            "publicly exposes `test.model.ExternalModel`, but the dependency with that type " +
-                    "isn't published transitively",
-        )
+        val result = project.buildAndFail("compileKotlinJvm", "compileKotlinJs", "--continue")
+        result.assertTaskOutcome(":compileKotlinJvm", FAILED)
+        result.assertTaskOutcome(":compileKotlinJs", FAILED)
+        result.assertNonTransitiveExposureReported("test.model.ExternalModel")
     }
 
     @Test
     fun publicTypeFromApiDependencyIsAcceptedInMultiplatformProjects() {
         // The api dependency lands in `commonMainApi`, so every target's API elements inherit it.
-        val project = object : WatchdogProject(multiplatform = true) {
-            override fun multiplatformTargetsBlock(): String = "kotlin {\n  jvm()\n  js { nodejs() }\n}\n"
+        val project = kmpProject(JVM_AND_JS_TARGETS) {
+            consumerSource()
+            dependencies(api(":model"))
+            modelSubproject()
+        }
 
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
-                    dependencies(api(":model"))
-                }
-                subproject("model") {
-                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
-                }
-            }
-        }.gradleProject
-
-        val result = build(project.rootDir, "compileKotlinJvm", "compileKotlinJs")
-        assertFalse(result.output.contains("published transitively to consumers"))
+        project.build("compileKotlinJvm", "compileKotlinJs").assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun publicJavaTypeFromImplementationDependencyIsAnError() {
-        val project = object : WatchdogProject() {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(exposesJavaDependencyTypeFile, "JavaConsumer", "test.consumer"))
-                    dependencies(implementation(":javaModel"))
-                }
-                subproject("javaModel") {
-                    sources(
-                        Source.java(javaDependencyTypeFile)
-                            .withPath("test/model", "ExternalJavaModel")
-                            .build(),
-                    )
-                }
-            }
-        }.gradleProject
+        val project = jvmProject {
+            source(exposesJavaDependencyTypeFile, "JavaConsumer", "test.consumer")
+            dependencies(implementation(":javaModel"))
+            subproject("javaModel") { javaFile("ExternalJavaModel", javaDependencyTypeFile) }
+        }
 
-        val result = buildAndFail(project.rootDir, "build")
-        result.assertDiagnosticReported(
-            "e: ",
-            "publicly exposes `test.model.ExternalJavaModel`, but the dependency with that type " +
-                    "isn't published transitively",
-        )
+        project.buildAndFail("build").assertNonTransitiveExposureReported("test.model.ExternalJavaModel")
     }
 
     @Test
     fun publicJavaTypeFromApiDependencyIsAccepted() {
-        val project = object : WatchdogProject() {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(exposesJavaDependencyTypeFile, "JavaConsumer", "test.consumer"))
-                    dependencies(api(":javaModel"))
-                }
-                subproject("javaModel") {
-                    sources(
-                        Source.java(javaDependencyTypeFile)
-                            .withPath("test/model", "ExternalJavaModel")
-                            .build(),
-                    )
-                }
-            }
-        }.gradleProject
+        val project = jvmProject {
+            source(exposesJavaDependencyTypeFile, "JavaConsumer", "test.consumer")
+            dependencies(api(":javaModel"))
+            subproject("javaModel") { javaFile("ExternalJavaModel", javaDependencyTypeFile) }
+        }
 
-        val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("published transitively to consumers"))
-    }
-
-    @Test
-    fun publicTypeFromImplementationDependencyIsAnErrorInAndroidLibraries() {
-        // Android resolves the transitive dependencies against the variant-specific API elements
-        // configuration (`debugApiElements`), the branch the plugin reserves for androidJvm.
-        assumeAndroidBuildEnvironment()
-        val project = object : AndroidLibraryWatchdogProject() {
-            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
-
-            override fun androidDependencies() = listOf(implementation(":model"))
-
-            override fun jvmSubprojects() = mapOf(
-                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
-            )
-        }.gradleProject
-
-        val result = buildAndFail(agpCompatibleGradle, project.rootDir, "compileDebugKotlin")
-        result.assertDiagnosticReported(
-            "e: ",
-            "publicly exposes `test.model.ExternalModel`, but the dependency with that type " +
-                    "isn't published transitively",
-        )
-    }
-
-    @Test
-    fun publicTypeFromApiDependencyIsAcceptedInAndroidLibraries() {
-        assumeAndroidBuildEnvironment()
-        val project = object : AndroidLibraryWatchdogProject() {
-            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
-
-            override fun androidDependencies() = listOf(api(":model"))
-
-            override fun jvmSubprojects() = mapOf(
-                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
-            )
-        }.gradleProject
-
-        val result = build(agpCompatibleGradle, project.rootDir, "compileDebugKotlin")
-        assertFalse(result.output.contains("published transitively to consumers"))
-    }
-
-    @Test
-    fun publicTypeFromImplementationDependencyIsAnErrorInAndroidLibrariesWithBuiltInKotlin() {
-        // The AGP 9 counterpart of the test above: built-in Kotlin support applies the compiler
-        // plugin and supplies the same variant-specific dependency configurations.
-        assumeAndroidBuildEnvironment()
-        val project = object : AndroidLibraryWatchdogProject(builtInKotlin = true) {
-            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
-
-            override fun androidDependencies() = listOf(implementation(":model"))
-
-            override fun jvmSubprojects() = mapOf(
-                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
-            )
-        }.gradleProject
-
-        val result = buildAndFail(project.rootDir, "compileDebugKotlin")
-        result.assertDiagnosticReported(
-            "e: ",
-            "publicly exposes `test.model.ExternalModel`, but the dependency with that type " +
-                    "isn't published transitively",
-        )
-    }
-
-    @Test
-    fun publicTypeFromApiDependencyIsAcceptedInAndroidLibrariesWithBuiltInKotlin() {
-        assumeAndroidBuildEnvironment()
-        val project = object : AndroidLibraryWatchdogProject(builtInKotlin = true) {
-            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
-
-            override fun androidDependencies() = listOf(api(":model"))
-
-            override fun jvmSubprojects() = mapOf(
-                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
-            )
-        }.gradleProject
-
-        val result = build(project.rootDir, "compileDebugKotlin")
-        assertFalse(result.output.contains("published transitively to consumers"))
+        project.build("build").assertNoNonTransitiveExposureReported()
     }
 
     // Android libraries: the dependency collection corner cases of AGP, on both AGP generations.
 
     @Test
-    fun androidPlatformTypesAreNotDependenciesInAndroidLibraries() = androidPlatformTypesAreNotDependenciesCase(agp9 = false)
+    fun publicTypeFromImplementationDependencyIsAnErrorInAndroidLibraries() =
+        publicTypeFromImplementationDependencyIsAnErrorInAndroidLibrariesCase(AGP8)
+
+    @Test
+    fun publicTypeFromImplementationDependencyIsAnErrorInAndroidLibrariesWithBuiltInKotlin() =
+        publicTypeFromImplementationDependencyIsAnErrorInAndroidLibrariesCase(AGP9)
+
+    private fun publicTypeFromImplementationDependencyIsAnErrorInAndroidLibrariesCase(agp: AgpVersion) {
+        // Android resolves the transitive dependencies against the variant-specific API elements
+        // configuration (`debugApiElements`), the branch the plugin reserves for androidJvm. With
+        // AGP 9 the built-in Kotlin support applies the compiler plugin and supplies the same
+        // variant-specific dependency configurations.
+        val project = androidLibrary(agp) {
+            consumerSource()
+            dependencies(implementation(":model"))
+            modelSubproject(jvm = true)
+        }
+
+        project.buildAndFail("compileDebugKotlin").assertNonTransitiveExposureReported("test.model.ExternalModel")
+    }
+
+    @Test
+    fun publicTypeFromApiDependencyIsAcceptedInAndroidLibraries() =
+        publicTypeFromApiDependencyIsAcceptedInAndroidLibrariesCase(AGP8)
+
+    @Test
+    fun publicTypeFromApiDependencyIsAcceptedInAndroidLibrariesWithBuiltInKotlin() =
+        publicTypeFromApiDependencyIsAcceptedInAndroidLibrariesCase(AGP9)
+
+    private fun publicTypeFromApiDependencyIsAcceptedInAndroidLibrariesCase(agp: AgpVersion) {
+        val project = androidLibrary(agp) {
+            consumerSource()
+            dependencies(api(":model"))
+            modelSubproject(jvm = true)
+        }
+
+        project.build("compileDebugKotlin").assertNoNonTransitiveExposureReported()
+    }
+
+    @Test
+    fun androidPlatformTypesAreNotDependenciesInAndroidLibraries() = androidPlatformTypesAreNotDependenciesCase(AGP8)
 
     @Test
     fun androidPlatformTypesAreNotDependenciesInAndroidLibrariesWithBuiltInKotlin() =
-        androidPlatformTypesAreNotDependenciesCase(agp9 = true)
+        androidPlatformTypesAreNotDependenciesCase(AGP9)
 
-    private fun androidPlatformTypesAreNotDependenciesCase(agp9: Boolean) {
+    private fun androidPlatformTypesAreNotDependenciesCase(agp: AgpVersion) {
         // `android.jar` reaches the compiler as the platform's boot classpath, not through a
         // Gradle configuration, so platform types are neither transitive nor non-transitive.
-        assumeAndroidBuildEnvironment()
-        val project = object : AndroidLibraryWatchdogProject(builtInKotlin = agp9) {
-            override fun sources() = listOf(source(exposesAndroidPlatformTypeFile, "PlatformFacing", "test.consumer"))
-        }.gradleProject
+        val project = androidLibrary(agp) {
+            source(exposesAndroidPlatformTypeFile, "PlatformFacing", "test.consumer")
+        }
 
-        buildAgp(agp9, project.rootDir, "compileDebugKotlin").assertNoNonTransitiveExposureReported()
+        project.build("compileDebugKotlin").assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun publicTypeFromImplementationAarProjectDependencyIsAnErrorInAndroidLibraries() =
-        publicTypeFromImplementationAarProjectDependencyIsAnErrorCase(agp9 = false)
+        publicTypeFromImplementationAarProjectDependencyIsAnErrorCase(AGP8)
 
     @Test
     fun publicTypeFromImplementationAarProjectDependencyIsAnErrorInAndroidLibrariesWithBuiltInKotlin() =
-        publicTypeFromImplementationAarProjectDependencyIsAnErrorCase(agp9 = true)
+        publicTypeFromImplementationAarProjectDependencyIsAnErrorCase(AGP9)
 
-    private fun publicTypeFromImplementationAarProjectDependencyIsAnErrorCase(agp9: Boolean) {
+    private fun publicTypeFromImplementationAarProjectDependencyIsAnErrorCase(agp: AgpVersion) {
         // An Android library module reaches the compiler as the classes jar extracted from its
         // AAR by an artifact transform, not as the AAR its API elements publish. The dependency
         // files handed to the compiler plugin must go through the same transform.
-        assumeAndroidBuildEnvironment()
-        val project = object : AndroidLibraryWatchdogProject(builtInKotlin = agp9) {
-            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+        val project = androidLibrary(agp) {
+            consumerSource()
+            dependencies(implementation(":model"))
+            modelSubproject()
+        }
 
-            override fun androidDependencies() = listOf(implementation(":model"))
-
-            override fun androidSubprojects() = mapOf(
-                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
-            )
-        }.gradleProject
-
-        buildAgpAndFail(agp9, project.rootDir, "compileDebugKotlin")
-            .assertNonTransitiveExposureReported("test.model.ExternalModel")
+        project.buildAndFail("compileDebugKotlin").assertNonTransitiveExposureReported("test.model.ExternalModel")
     }
 
     @Test
     fun publicTypeFromApiAarProjectDependencyIsAcceptedInAndroidLibraries() =
-        publicTypeFromApiAarProjectDependencyIsAcceptedCase(agp9 = false)
+        publicTypeFromApiAarProjectDependencyIsAcceptedCase(AGP8)
 
     @Test
     fun publicTypeFromApiAarProjectDependencyIsAcceptedInAndroidLibrariesWithBuiltInKotlin() =
-        publicTypeFromApiAarProjectDependencyIsAcceptedCase(agp9 = true)
+        publicTypeFromApiAarProjectDependencyIsAcceptedCase(AGP9)
 
-    private fun publicTypeFromApiAarProjectDependencyIsAcceptedCase(agp9: Boolean) {
-        assumeAndroidBuildEnvironment()
-        val project = object : AndroidLibraryWatchdogProject(builtInKotlin = agp9) {
-            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+    private fun publicTypeFromApiAarProjectDependencyIsAcceptedCase(agp: AgpVersion) {
+        val project = androidLibrary(agp) {
+            consumerSource()
+            dependencies(api(":model"))
+            modelSubproject()
+        }
 
-            override fun androidDependencies() = listOf(api(":model"))
-
-            override fun androidSubprojects() = mapOf(
-                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
-            )
-        }.gradleProject
-
-        buildAgp(agp9, project.rootDir, "compileDebugKotlin").assertNoNonTransitiveExposureReported()
+        project.build("compileDebugKotlin").assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInInAndroidLibraries() =
-        exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInCase(agp9 = false)
+        exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInCase(AGP8)
 
     @Test
     fun exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInInAndroidLibrariesWithBuiltInKotlin() =
-        exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInCase(agp9 = true)
+        exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInCase(AGP9)
 
-    private fun exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInCase(agp9: Boolean) {
+    private fun exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInCase(agp: AgpVersion) {
         // The exempt view resolves with the compile classpath's variant attributes, so it picks
         // the same build-type variant of `:facade` as the compilation and follows its `api`
         // edge to the `:model` AAR, which is where the exposed type lives.
-        assumeAndroidBuildEnvironment()
-        val project = object : AndroidLibraryWatchdogProject(
-            builtInKotlin = agp9,
-            extraBuildScript = """
-                dependencies {
-                    apiWatchdogExemptNonTransitive(project(":facade"))
-                }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+        val project = androidLibrary(agp) {
+            buildScript(exemptScript("project(\":facade\")"))
+            consumerSource()
+            dependencies(implementation(":facade"))
+            subproject("facade") { dependencies(api(":model")) }
+            modelSubproject()
+        }
 
-            override fun androidDependencies() = listOf(implementation(":facade"))
-
-            override fun androidSubprojects() = mapOf(
-                "facade" to emptyList(),
-                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
-            )
-
-            override fun androidSubprojectDependencies() = mapOf("facade" to listOf(api(":model")))
-        }.gradleProject
-
-        buildAgp(agp9, project.rootDir, "compileDebugKotlin").assertNoNonTransitiveExposureReported()
+        project.build("compileDebugKotlin").assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun publicTypeFromImplementationExternalAarDependencyIsAnErrorInAndroidLibraries() =
-        publicTypeFromImplementationExternalAarDependencyIsAnErrorCase(agp9 = false)
+        publicTypeFromImplementationExternalAarDependencyIsAnErrorCase(AGP8)
 
     @Test
     fun publicTypeFromImplementationExternalAarDependencyIsAnErrorInAndroidLibrariesWithBuiltInKotlin() =
-        publicTypeFromImplementationExternalAarDependencyIsAnErrorCase(agp9 = true)
+        publicTypeFromImplementationExternalAarDependencyIsAnErrorCase(AGP9)
 
-    private fun publicTypeFromImplementationExternalAarDependencyIsAnErrorCase(agp9: Boolean) {
+    private fun publicTypeFromImplementationExternalAarDependencyIsAnErrorCase(agp: AgpVersion) {
         // A published AAR goes through the same classes-jar transform as a project AAR, but
         // from the Gradle transforms cache rather than a project's build directory.
-        assumeAndroidBuildEnvironment()
-        val project = object : AndroidLibraryWatchdogProject(builtInKotlin = agp9) {
-            override fun sources() = listOf(source(exposesStartupInitializerFile, "StartupHooks", "test.consumer"))
+        val project = androidLibrary(agp) {
+            source(exposesStartupInitializerFile, "StartupHooks", "test.consumer")
+            dependencies(implementation(STARTUP_RUNTIME))
+        }
 
-            override fun androidDependencies() = listOf(implementation(STARTUP_RUNTIME))
-        }.gradleProject
-
-        buildAgpAndFail(agp9, project.rootDir, "compileDebugKotlin")
-            .assertNonTransitiveExposureReported("androidx.startup.Initializer")
+        project.buildAndFail("compileDebugKotlin").assertNonTransitiveExposureReported("androidx.startup.Initializer")
     }
 
     @Test
     fun publicTypeFromApiExternalAarDependencyIsAcceptedInAndroidLibraries() =
-        publicTypeFromApiExternalAarDependencyIsAcceptedCase(agp9 = false)
+        publicTypeFromApiExternalAarDependencyIsAcceptedCase(AGP8)
 
     @Test
     fun publicTypeFromApiExternalAarDependencyIsAcceptedInAndroidLibrariesWithBuiltInKotlin() =
-        publicTypeFromApiExternalAarDependencyIsAcceptedCase(agp9 = true)
+        publicTypeFromApiExternalAarDependencyIsAcceptedCase(AGP9)
 
-    private fun publicTypeFromApiExternalAarDependencyIsAcceptedCase(agp9: Boolean) {
-        assumeAndroidBuildEnvironment()
-        val project = object : AndroidLibraryWatchdogProject(builtInKotlin = agp9) {
-            override fun sources() = listOf(source(exposesStartupInitializerFile, "StartupHooks", "test.consumer"))
+    private fun publicTypeFromApiExternalAarDependencyIsAcceptedCase(agp: AgpVersion) {
+        val project = androidLibrary(agp) {
+            source(exposesStartupInitializerFile, "StartupHooks", "test.consumer")
+            dependencies(api(STARTUP_RUNTIME))
+        }
 
-            override fun androidDependencies() = listOf(api(STARTUP_RUNTIME))
-        }.gradleProject
-
-        buildAgp(agp9, project.rootDir, "compileDebugKotlin").assertNoNonTransitiveExposureReported()
+        project.build("compileDebugKotlin").assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun exemptNonTransitiveExternalAarDependencyIsAcceptedInAndroidLibraries() =
-        exemptNonTransitiveExternalAarDependencyIsAcceptedCase(agp9 = false)
+        exemptNonTransitiveExternalAarDependencyIsAcceptedCase(AGP8)
 
     @Test
     fun exemptNonTransitiveExternalAarDependencyIsAcceptedInAndroidLibrariesWithBuiltInKotlin() =
-        exemptNonTransitiveExternalAarDependencyIsAcceptedCase(agp9 = true)
+        exemptNonTransitiveExternalAarDependencyIsAcceptedCase(AGP9)
 
-    private fun exemptNonTransitiveExternalAarDependencyIsAcceptedCase(agp9: Boolean) {
+    private fun exemptNonTransitiveExternalAarDependencyIsAcceptedCase(agp: AgpVersion) {
         // The exemption names the AAR without a version. Consistent resolution supplies the
         // compile classpath's version, and the exempt view must yield the same classes jar.
-        assumeAndroidBuildEnvironment()
-        val project = object : AndroidLibraryWatchdogProject(
-            builtInKotlin = agp9,
-            extraBuildScript = """
-                dependencies {
-                    apiWatchdogExemptNonTransitive("${STARTUP_RUNTIME.substringBeforeLast(':')}")
-                }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(source(exposesStartupInitializerFile, "StartupHooks", "test.consumer"))
+        val project = androidLibrary(agp) {
+            buildScript(exemptScript(STARTUP_RUNTIME))
+            source(exposesStartupInitializerFile, "StartupHooks", "test.consumer")
+            dependencies(implementation(STARTUP_RUNTIME))
+        }
 
-            override fun androidDependencies() = listOf(implementation(STARTUP_RUNTIME))
-        }.gradleProject
-
-        buildAgp(agp9, project.rootDir, "compileDebugKotlin").assertNoNonTransitiveExposureReported()
+        project.build("compileDebugKotlin").assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun multiplatformLibraryIsMatchedThroughItsAndroidVariantInAndroidLibraries() =
-        multiplatformLibraryIsMatchedThroughItsAndroidVariantCase(agp9 = false)
+        multiplatformLibraryIsMatchedThroughItsAndroidVariantCase(AGP8)
 
     @Test
     fun multiplatformLibraryIsMatchedThroughItsAndroidVariantInAndroidLibrariesWithBuiltInKotlin() =
-        multiplatformLibraryIsMatchedThroughItsAndroidVariantCase(agp9 = true)
+        multiplatformLibraryIsMatchedThroughItsAndroidVariantCase(AGP9)
 
-    private fun multiplatformLibraryIsMatchedThroughItsAndroidVariantCase(agp9: Boolean) {
+    private fun multiplatformLibraryIsMatchedThroughItsAndroidVariantCase(agp: AgpVersion) {
         // An Android compilation selects the `-android` AAR variant of a multiplatform library
         // where a JVM one would take `-jvm`. The transitive and exempt views copy the compile
         // classpath's attributes, so they must land on that same AAR: first the unexempted
         // `implementation` dependency is reported, then the version-less exemption covers it.
-        assumeAndroidBuildEnvironment()
-        val unexempted = object : AndroidLibraryWatchdogProject(builtInKotlin = agp9) {
-            override fun sources() = listOf(source(exposesLifecycleTypeFile, "LifecycleHooks", "test.consumer"))
+        val lifecycleHooks: AndroidLibrarySpec.() -> Unit = {
+            source(exposesLifecycleTypeFile, "LifecycleHooks", "test.consumer")
+            dependencies(implementation(LIFECYCLE_RUNTIME))
+        }
 
-            override fun androidDependencies() = listOf(implementation(LIFECYCLE_RUNTIME))
-        }.gradleProject
-        buildAgpAndFail(agp9, unexempted.rootDir, "compileDebugKotlin")
+        androidLibrary(agp, lifecycleHooks)
+            .buildAndFail("compileDebugKotlin")
             .assertNonTransitiveExposureReported("androidx.lifecycle.LifecycleRegistry")
 
-        val exempted = object : AndroidLibraryWatchdogProject(
-            builtInKotlin = agp9,
-            extraBuildScript = """
-                dependencies {
-                    apiWatchdogExemptNonTransitive("${LIFECYCLE_RUNTIME.substringBeforeLast(':')}")
-                }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(source(exposesLifecycleTypeFile, "LifecycleHooks", "test.consumer"))
-
-            override fun androidDependencies() = listOf(implementation(LIFECYCLE_RUNTIME))
-        }.gradleProject
-        buildAgp(agp9, exempted.rootDir, "compileDebugKotlin").assertNoNonTransitiveExposureReported()
+        androidLibrary(agp) { lifecycleHooks(); buildScript(exemptScript(LIFECYCLE_RUNTIME)) }
+            .build("compileDebugKotlin")
+            .assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun buildTypeApiDependencyIsTransitiveOnlyForItsVariantInAndroidLibraries() =
-        buildTypeApiDependencyIsTransitiveOnlyForItsVariantCase(agp9 = false)
+        buildTypeApiDependencyIsTransitiveOnlyForItsVariantCase(AGP8)
 
     @Test
     fun buildTypeApiDependencyIsTransitiveOnlyForItsVariantInAndroidLibrariesWithBuiltInKotlin() =
-        buildTypeApiDependencyIsTransitiveOnlyForItsVariantCase(agp9 = true)
+        buildTypeApiDependencyIsTransitiveOnlyForItsVariantCase(AGP9)
 
-    private fun buildTypeApiDependencyIsTransitiveOnlyForItsVariantCase(agp9: Boolean) {
+    private fun buildTypeApiDependencyIsTransitiveOnlyForItsVariantCase(agp: AgpVersion) {
         // `debugApi` feeds `debugApiElements` alone, which is why the plugin reads the API
         // elements of the variant a compilation is named after. The release variant reaches the
         // same module only through `releaseImplementation`, so its consumers can't see the type.
-        assumeAndroidBuildEnvironment()
-        val project = object : AndroidLibraryWatchdogProject(
-            builtInKotlin = agp9,
-            extraBuildScript = """
-                dependencies {
-                    "debugApi"(project(":model"))
-                    "releaseImplementation"(project(":model"))
-                }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+        val project = androidLibrary(agp) {
+            consumerSource()
+            dependencies("debug", api(":model"))
+            dependencies("release", implementation(":model"))
+            modelSubproject(jvm = true)
+        }
 
-            override fun jvmSubprojects() = mapOf(
-                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
-            )
-        }.gradleProject
-
-        buildAgp(agp9, project.rootDir, "compileDebugKotlin").assertNoNonTransitiveExposureReported()
-        buildAgpAndFail(agp9, project.rootDir, "compileReleaseKotlin")
-            .assertNonTransitiveExposureReported("test.model.ExternalModel")
+        project.build("compileDebugKotlin").assertNoNonTransitiveExposureReported()
+        project.buildAndFail("compileReleaseKotlin").assertNonTransitiveExposureReported("test.model.ExternalModel")
     }
 
     @Test
     fun flavorApiDependencyIsTransitiveOnlyForItsFlavorInAndroidLibraries() =
-        flavorApiDependencyIsTransitiveOnlyForItsFlavorCase(agp9 = false)
+        flavorApiDependencyIsTransitiveOnlyForItsFlavorCase(AGP8)
 
     @Test
     fun flavorApiDependencyIsTransitiveOnlyForItsFlavorInAndroidLibrariesWithBuiltInKotlin() =
-        flavorApiDependencyIsTransitiveOnlyForItsFlavorCase(agp9 = true)
+        flavorApiDependencyIsTransitiveOnlyForItsFlavorCase(AGP9)
 
-    private fun flavorApiDependencyIsTransitiveOnlyForItsFlavorCase(agp9: Boolean) {
+    private fun flavorApiDependencyIsTransitiveOnlyForItsFlavorCase(agp: AgpVersion) {
         // With product flavors the compilation is named after the full variant (`freeDebug`),
         // and so are its API elements, which combine the flavor's and the build type's `api`.
-        assumeAndroidBuildEnvironment()
-        val project = object : AndroidLibraryWatchdogProject(
-            builtInKotlin = agp9,
-            extraAndroidScript = """
-                flavorDimensions += "tier"
-                productFlavors {
-                    create("free") { dimension = "tier" }
-                    create("paid") { dimension = "tier" }
-                }
-            """.trimIndent(),
-            extraBuildScript = """
-                dependencies {
-                    "freeApi"(project(":model"))
-                    "paidImplementation"(project(":model"))
-                }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
-
-            override fun jvmSubprojects() = mapOf(
-                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
+        val project = androidLibrary(agp) {
+            android(
+                """
+                    flavorDimensions += "tier"
+                    productFlavors {
+                        create("free") { dimension = "tier" }
+                        create("paid") { dimension = "tier" }
+                    }
+                """
             )
-        }.gradleProject
+            consumerSource()
+            dependencies("free", api(":model"))
+            dependencies("paid", implementation(":model"))
+            modelSubproject(jvm = true)
+        }
 
-        buildAgp(agp9, project.rootDir, "compileFreeDebugKotlin").assertNoNonTransitiveExposureReported()
-        buildAgpAndFail(agp9, project.rootDir, "compilePaidDebugKotlin")
-            .assertNonTransitiveExposureReported("test.model.ExternalModel")
+        project.build("compileFreeDebugKotlin").assertNoNonTransitiveExposureReported()
+        project.buildAndFail("compilePaidDebugKotlin").assertNonTransitiveExposureReported("test.model.ExternalModel")
     }
 
     @Test
     fun compileOnlyDependenciesCanBeExemptedAsAWholeInAndroidLibraries() =
-        compileOnlyDependenciesCanBeExemptedAsAWholeCase(agp9 = false)
+        compileOnlyDependenciesCanBeExemptedAsAWholeCase(AGP8)
 
     @Test
     fun compileOnlyDependenciesCanBeExemptedAsAWholeInAndroidLibrariesWithBuiltInKotlin() =
-        compileOnlyDependenciesCanBeExemptedAsAWholeCase(agp9 = true)
+        compileOnlyDependenciesCanBeExemptedAsAWholeCase(AGP9)
 
-    private fun compileOnlyDependenciesCanBeExemptedAsAWholeCase(agp9: Boolean) {
+    private fun compileOnlyDependenciesCanBeExemptedAsAWholeCase(agp: AgpVersion) {
         // AGP's `compileOnly` is a bucket the variant compile classpaths extend from, so the
         // exempt view resolves it through the compilation's own variant.
-        assumeAndroidBuildEnvironment()
-        val project = object : AndroidLibraryWatchdogProject(
-            builtInKotlin = agp9,
-            extraBuildScript = """
-                apiWatchdog {
-                    exemptNonTransitiveDependencies {
-                        extendsFrom(configurations.compileOnly.get())
-                    }
-                }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+        val project = androidLibrary(agp) {
+            apiWatchdog { exemptNonTransitiveDependencies("extendsFrom(configurations.compileOnly.get())") }
+            consumerSource()
+            dependencies(compileOnly(":model"))
+            modelSubproject(jvm = true)
+        }
 
-            override fun androidDependencies() = listOf(compileOnly(":model"))
-
-            override fun jvmSubprojects() = mapOf(
-                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
-            )
-        }.gradleProject
-
-        buildAgp(agp9, project.rootDir, "compileDebugKotlin").assertNoNonTransitiveExposureReported()
+        project.build("compileDebugKotlin").assertNoNonTransitiveExposureReported()
     }
 
-    // The Android target of a multiplatform project from `com.android.kotlin.multiplatform.library`.
+    // The Android target of a multiplatform project.
 
     @Test
     fun publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargets() =
-        publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsCase(agp9 = false)
+        publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsCase(LIBRARY_AGP8)
 
     @Test
     fun publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsOnAgp9() =
-        publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsCase(agp9 = true)
+        publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsCase(LIBRARY_AGP9)
 
-    private fun publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsCase(agp9: Boolean) {
+    @Test
+    fun publicTypeFromImplementationDependencyIsAnErrorInLegacyMultiplatformAndroidTargets() =
+        publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsCase(LEGACY)
+
+    private fun publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsCase(target: KmpAndroidTarget) {
         // The multiplatform library plugin has no build variants: the compilation is `main`, so
-        // the plugin falls back from `mainApiElements` to the target's own API elements.
-        assumeAndroidBuildEnvironment()
-        val project = object : KmpAndroidWatchdogProject(agp9 = agp9) {
-            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+        // the plugin falls back from `mainApiElements` to the target's own API elements. The
+        // legacy target publishes through AGP's variant-specific API elements
+        // (`debugApiElements`) like a plain Android library, while its dependencies are declared
+        // on the multiplatform source sets.
+        val project = kmpAndroidProject(target) {
+            consumerSource()
+            dependencies(implementation(":model"))
+            modelSubproject()
+        }
 
-            override fun commonMainDependencies() = listOf(implementation(":model"))
-
-            override fun jvmSubprojects() = mapOf(
-                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
-            )
-        }.gradleProject
-
-        buildAgpAndFail(agp9, project.rootDir, "compileAndroidMain")
-            .assertNonTransitiveExposureReported("test.model.ExternalModel")
+        project.buildAndFail(target.mainCompileTask).assertNonTransitiveExposureReported("test.model.ExternalModel")
     }
 
     @Test
     fun publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargets() =
-        publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargetsCase(agp9 = false)
+        publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargetsCase(LIBRARY_AGP8)
 
     @Test
     fun publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargetsOnAgp9() =
-        publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargetsCase(agp9 = true)
+        publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargetsCase(LIBRARY_AGP9)
 
-    private fun publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargetsCase(agp9: Boolean) {
-        assumeAndroidBuildEnvironment()
-        val project = object : KmpAndroidWatchdogProject(agp9 = agp9) {
-            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
+    @Test
+    fun publicTypeFromApiDependencyIsAcceptedInLegacyMultiplatformAndroidTargets() =
+        publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargetsCase(LEGACY)
 
-            override fun commonMainDependencies() = listOf(api(":model"))
+    private fun publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargetsCase(target: KmpAndroidTarget) {
+        val project = kmpAndroidProject(target) {
+            consumerSource()
+            dependencies(api(":model"))
+            modelSubproject()
+        }
 
-            override fun jvmSubprojects() = mapOf(
-                "model" to listOf(source(dependencyTypeFile, "ExternalModel", "test.model")),
-            )
-        }.gradleProject
-
-        buildAgp(agp9, project.rootDir, "compileAndroidMain", "compileKotlinJvm").assertNoNonTransitiveExposureReported()
+        project.build(target.mainCompileTask, "compileKotlinJvm").assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun androidSourceSetApiDependencyIsAcceptedInMultiplatformAndroidTargets() =
-        androidSourceSetDependenciesCase(agp9 = false, legacy = false)
+        androidSourceSetDependenciesCase(LIBRARY_AGP8)
 
     @Test
     fun androidSourceSetApiDependencyIsAcceptedInMultiplatformAndroidTargetsOnAgp9() =
-        androidSourceSetDependenciesCase(agp9 = true, legacy = false)
+        androidSourceSetDependenciesCase(LIBRARY_AGP9)
 
     @Test
     fun androidSourceSetApiDependencyIsAcceptedInLegacyMultiplatformAndroidTargets() =
-        androidSourceSetDependenciesCase(agp9 = false, legacy = true)
+        androidSourceSetDependenciesCase(LEGACY)
 
-    private fun androidSourceSetDependenciesCase(agp9: Boolean, legacy: Boolean) {
+    private fun androidSourceSetDependenciesCase(target: KmpAndroidTarget) {
         // Dependencies declared on `androidMain` alone reach only the Android target's
         // configurations, and the exposing declaration lives in `androidMain` too.
-        assumeAndroidBuildEnvironment()
-        val accepted = kmpAndroidProject(
-            agp9,
-            legacy,
-            KmpAndroidSpec(
-                sources = { listOf(fixtureSource(exposesDependencyTypeFile, "Consumer", "test.consumer", "androidMain")) },
-                androidMainDependencies = listOf(api(":model")),
-                jvmSubprojects = modelSubproject,
-            ),
-        )
-        buildAgp(agp9, accepted.rootDir, androidMainCompileTask(legacy)).assertNoNonTransitiveExposureReported()
+        kmpAndroidProject(target) {
+            consumerSource("androidMain")
+            dependencies("androidMain", api(":model"))
+            modelSubproject()
+        }.build(target.mainCompileTask).assertNoNonTransitiveExposureReported()
 
-        val reported = kmpAndroidProject(
-            agp9,
-            legacy,
-            KmpAndroidSpec(
-                sources = { listOf(fixtureSource(exposesDependencyTypeFile, "Consumer", "test.consumer", "androidMain")) },
-                androidMainDependencies = listOf(implementation(":model")),
-                jvmSubprojects = modelSubproject,
-            ),
-        )
-        buildAgpAndFail(agp9, reported.rootDir, androidMainCompileTask(legacy))
-            .assertNonTransitiveExposureReported("test.model.ExternalModel")
+        kmpAndroidProject(target) {
+            consumerSource("androidMain")
+            dependencies("androidMain", implementation(":model"))
+            modelSubproject()
+        }.buildAndFail(target.mainCompileTask).assertNonTransitiveExposureReported("test.model.ExternalModel")
     }
 
     @Test
     fun androidPlatformTypesAreNotDependenciesInMultiplatformAndroidTargets() =
-        androidPlatformTypesAreNotDependenciesInMultiplatformCase(agp9 = false, legacy = false)
+        androidPlatformTypesAreNotDependenciesInMultiplatformCase(LIBRARY_AGP8)
 
     @Test
     fun androidPlatformTypesAreNotDependenciesInMultiplatformAndroidTargetsOnAgp9() =
-        androidPlatformTypesAreNotDependenciesInMultiplatformCase(agp9 = true, legacy = false)
+        androidPlatformTypesAreNotDependenciesInMultiplatformCase(LIBRARY_AGP9)
 
     @Test
     fun androidPlatformTypesAreNotDependenciesInLegacyMultiplatformAndroidTargets() =
-        androidPlatformTypesAreNotDependenciesInMultiplatformCase(agp9 = false, legacy = true)
+        androidPlatformTypesAreNotDependenciesInMultiplatformCase(LEGACY)
 
-    private fun androidPlatformTypesAreNotDependenciesInMultiplatformCase(agp9: Boolean, legacy: Boolean) {
-        assumeAndroidBuildEnvironment()
-        val project = kmpAndroidProject(
-            agp9,
-            legacy,
-            KmpAndroidSpec(
-                sources = { listOf(fixtureSource(exposesAndroidPlatformTypeFile, "PlatformFacing", "test.consumer", "androidMain")) },
-            ),
-        )
+    private fun androidPlatformTypesAreNotDependenciesInMultiplatformCase(target: KmpAndroidTarget) {
+        val project = kmpAndroidProject(target) {
+            source(exposesAndroidPlatformTypeFile, "PlatformFacing", "test.consumer", "androidMain")
+        }
 
-        buildAgp(agp9, project.rootDir, androidMainCompileTask(legacy)).assertNoNonTransitiveExposureReported()
+        project.build(target.mainCompileTask).assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun externalAarDependencyIsCheckedAndExemptableInMultiplatformAndroidTargets() =
-        externalAarDependencyInMultiplatformCase(agp9 = false, legacy = false)
+        externalAarDependencyInMultiplatformCase(LIBRARY_AGP8)
 
     @Test
     fun externalAarDependencyIsCheckedAndExemptableInMultiplatformAndroidTargetsOnAgp9() =
-        externalAarDependencyInMultiplatformCase(agp9 = true, legacy = false)
+        externalAarDependencyInMultiplatformCase(LIBRARY_AGP9)
 
     @Test
     fun externalAarDependencyIsCheckedAndExemptableInLegacyMultiplatformAndroidTargets() =
-        externalAarDependencyInMultiplatformCase(agp9 = false, legacy = true)
+        externalAarDependencyInMultiplatformCase(LEGACY)
 
-    private fun externalAarDependencyInMultiplatformCase(agp9: Boolean, legacy: Boolean) {
+    private fun externalAarDependencyInMultiplatformCase(target: KmpAndroidTarget) {
         // The Android target's compile classpath goes through AGP's classes-jar transform like
         // a plain Android library's, while the exempt bucket is shared with the JVM target.
-        assumeAndroidBuildEnvironment()
-        val spec = KmpAndroidSpec(
-            sources = { listOf(fixtureSource(exposesStartupInitializerFile, "StartupHooks", "test.consumer", "androidMain")) },
-            androidMainDependencies = listOf(implementation(STARTUP_RUNTIME)),
-        )
+        val startupHooks: ProjectSpec.() -> Unit = {
+            source(exposesStartupInitializerFile, "StartupHooks", "test.consumer", "androidMain")
+            dependencies("androidMain", implementation(STARTUP_RUNTIME))
+        }
 
-        val reported = kmpAndroidProject(agp9, legacy, spec)
-        buildAgpAndFail(agp9, reported.rootDir, androidMainCompileTask(legacy))
+        kmpAndroidProject(target, startupHooks)
+            .buildAndFail(target.mainCompileTask)
             .assertNonTransitiveExposureReported("androidx.startup.Initializer")
 
-        val exempted = kmpAndroidProject(agp9, legacy, spec, exemptScript(STARTUP_RUNTIME))
-        buildAgp(agp9, exempted.rootDir, androidMainCompileTask(legacy)).assertNoNonTransitiveExposureReported()
+        kmpAndroidProject(target) { startupHooks(); buildScript(exemptScript(STARTUP_RUNTIME)) }
+            .build(target.mainCompileTask)
+            .assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun multiplatformLibraryIsMatchedThroughItsAndroidVariantInMultiplatformAndroidTargets() =
-        multiplatformLibraryAndroidVariantInMultiplatformCase(agp9 = false, legacy = false)
+        multiplatformLibraryAndroidVariantInMultiplatformCase(LIBRARY_AGP8)
 
     @Test
     fun multiplatformLibraryIsMatchedThroughItsAndroidVariantInMultiplatformAndroidTargetsOnAgp9() =
-        multiplatformLibraryAndroidVariantInMultiplatformCase(agp9 = true, legacy = false)
+        multiplatformLibraryAndroidVariantInMultiplatformCase(LIBRARY_AGP9)
 
     @Test
     fun multiplatformLibraryIsMatchedThroughItsAndroidVariantInLegacyMultiplatformAndroidTargets() =
-        multiplatformLibraryAndroidVariantInMultiplatformCase(agp9 = false, legacy = true)
+        multiplatformLibraryAndroidVariantInMultiplatformCase(LEGACY)
 
-    private fun multiplatformLibraryAndroidVariantInMultiplatformCase(agp9: Boolean, legacy: Boolean) {
+    private fun multiplatformLibraryAndroidVariantInMultiplatformCase(target: KmpAndroidTarget) {
         // Declared on `commonMain`, the library resolves to its `-android` AAR for the Android
         // target and to its `-jvm` jar for the JVM target. Both compilations report the
         // unexempted type, and one version-less exemption covers both variants.
-        assumeAndroidBuildEnvironment()
-        val spec = KmpAndroidSpec(
-            sources = { listOf(fixtureSource(exposesLifecycleTypeFile, "LifecycleHooks", "test.consumer")) },
-            commonMainDependencies = listOf(implementation(LIFECYCLE_RUNTIME)),
-        )
+        val lifecycleHooks: ProjectSpec.() -> Unit = {
+            source(exposesLifecycleTypeFile, "LifecycleHooks", "test.consumer")
+            dependencies(implementation(LIFECYCLE_RUNTIME))
+        }
 
-        val reported = kmpAndroidProject(agp9, legacy, spec)
-        val result = buildAgpAndFail(agp9, reported.rootDir, androidMainCompileTask(legacy), "compileKotlinJvm", "--continue")
+        val result = kmpAndroidProject(target, lifecycleHooks)
+            .buildAndFail(target.mainCompileTask, "compileKotlinJvm", "--continue")
         result.assertNonTransitiveExposureReported("androidx.lifecycle.LifecycleRegistry")
-        assertEquals(TaskOutcome.FAILED, result.task(":${androidMainCompileTask(legacy)}")?.outcome, result.output)
-        assertEquals(TaskOutcome.FAILED, result.task(":compileKotlinJvm")?.outcome, result.output)
+        result.assertTaskOutcome(":${target.mainCompileTask}", FAILED)
+        result.assertTaskOutcome(":compileKotlinJvm", FAILED)
 
-        val exempted = kmpAndroidProject(agp9, legacy, spec, exemptScript(LIFECYCLE_RUNTIME))
-        buildAgp(agp9, exempted.rootDir, androidMainCompileTask(legacy), "compileKotlinJvm")
+        kmpAndroidProject(target) { lifecycleHooks(); buildScript(exemptScript(LIFECYCLE_RUNTIME)) }
+            .build(target.mainCompileTask, "compileKotlinJvm")
             .assertNoNonTransitiveExposureReported()
-    }
-
-    // The legacy multiplatform `androidTarget()` on `com.android.library`, AGP 8 only.
-
-    @Test
-    fun publicTypeFromImplementationDependencyIsAnErrorInLegacyMultiplatformAndroidTargets() {
-        // The legacy android target publishes through AGP's variant-specific API elements
-        // (`debugApiElements`) like a plain Android library, while its dependencies are
-        // declared on the multiplatform source sets.
-        assumeAndroidBuildEnvironment()
-        val project = object : LegacyKmpAndroidWatchdogProject() {
-            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
-
-            override fun commonMainDependencies() = listOf(implementation(":model"))
-
-            override fun jvmSubprojects() = modelSubproject(this)
-        }.gradleProject
-
-        buildAndFail(agpCompatibleGradle, project.rootDir, "compileDebugKotlinAndroid")
-            .assertNonTransitiveExposureReported("test.model.ExternalModel")
-    }
-
-    @Test
-    fun publicTypeFromApiDependencyIsAcceptedInLegacyMultiplatformAndroidTargets() {
-        assumeAndroidBuildEnvironment()
-        val project = object : LegacyKmpAndroidWatchdogProject() {
-            override fun sources() = listOf(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
-
-            override fun commonMainDependencies() = listOf(api(":model"))
-
-            override fun jvmSubprojects() = modelSubproject(this)
-        }.gradleProject
-
-        build(agpCompatibleGradle, project.rootDir, "compileDebugKotlinAndroid").assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun buildTypeApiDependencyIsTransitiveOnlyForItsVariantInLegacyMultiplatformAndroidTargets() {
         // The legacy target still has AGP's build-type configurations next to the source-set
         // ones, so `debugApi` scopes the exposure to the `debug` compilation.
-        assumeAndroidBuildEnvironment()
-        val project = object : LegacyKmpAndroidWatchdogProject(
-            extraBuildScript = """
-                dependencies {
-                    "debugApi"(project(":model"))
-                    "releaseImplementation"(project(":model"))
-                }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(fixtureSource(exposesDependencyTypeFile, "Consumer", "test.consumer", "androidMain"))
-
-            override fun jvmSubprojects() = modelSubproject(this)
-        }.gradleProject
-
-        build(agpCompatibleGradle, project.rootDir, "compileDebugKotlinAndroid").assertNoNonTransitiveExposureReported()
-        buildAndFail(agpCompatibleGradle, project.rootDir, "compileReleaseKotlinAndroid")
-            .assertNonTransitiveExposureReported("test.model.ExternalModel")
-    }
-
-    /** The Android target's main compile task of the multiplatform fixtures. */
-    private fun androidMainCompileTask(legacy: Boolean): String =
-        if (legacy) "compileDebugKotlinAndroid" else "compileAndroidMain"
-
-    /** A `:model` Kotlin/JVM subproject holding [dependencyTypeFile]. */
-    private val modelSubproject: AbstractKmpAndroidWatchdogProject.() -> Map<String, List<Source>> = {
-        mapOf("model" to listOf(fixtureSource(dependencyTypeFile, "ExternalModel", "test.model")))
-    }
-
-    /** Exempts [dependency] by its version-less coordinates. */
-    private fun exemptScript(dependency: String): String = """
-        dependencies {
-            apiWatchdogExemptNonTransitive("${dependency.substringBeforeLast(':')}")
+        val project = kmpAndroidProject(LEGACY) {
+            consumerSource("androidMain")
+            dependencies("debug", api(":model"))
+            dependencies("release", implementation(":model"))
+            modelSubproject()
         }
-    """.trimIndent()
 
-    /** What a multiplatform Android case declares, applied to whichever fixture [kmpAndroidProject] picks. */
-    private class KmpAndroidSpec(
-        val sources: AbstractKmpAndroidWatchdogProject.() -> List<Source>,
-        val commonMainDependencies: List<Dependency> = emptyList(),
-        val androidMainDependencies: List<Dependency> = emptyList(),
-        val jvmSubprojects: AbstractKmpAndroidWatchdogProject.() -> Map<String, List<Source>> = { emptyMap() },
-    )
-
-    /** Builds the multiplatform Android fixture selected by [agp9] and [legacy] from [spec]. */
-    private fun kmpAndroidProject(
-        agp9: Boolean,
-        legacy: Boolean,
-        spec: KmpAndroidSpec,
-        extraBuildScript: String = "",
-    ): GradleProject {
-        val project = if (legacy) {
-            object : LegacyKmpAndroidWatchdogProject(extraBuildScript = extraBuildScript) {
-                override fun sources() = spec.sources(this)
-                override fun commonMainDependencies() = spec.commonMainDependencies
-                override fun androidMainDependencies() = spec.androidMainDependencies
-                override fun jvmSubprojects() = spec.jvmSubprojects(this)
-            }
-        } else {
-            object : KmpAndroidWatchdogProject(agp9 = agp9, extraBuildScript = extraBuildScript) {
-                override fun sources() = spec.sources(this)
-                override fun commonMainDependencies() = spec.commonMainDependencies
-                override fun androidMainDependencies() = spec.androidMainDependencies
-                override fun jvmSubprojects() = spec.jvmSubprojects(this)
-            }
-        }
-        return project.gradleProject
+        project.build("compileDebugKotlinAndroid").assertNoNonTransitiveExposureReported()
+        project.buildAndFail("compileReleaseKotlinAndroid").assertNonTransitiveExposureReported("test.model.ExternalModel")
     }
 
     @Test
     fun publicDependencyExposureCheckIsDisabledByTheModuleSwitch() {
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                apiWatchdog {
-                    publicTypesMustBeTransitiveDependencies = false
-                }
-            """.trimIndent(),
-        ) {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
-                    dependencies(implementation(":model"))
-                }
-                subproject("model") {
-                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
-                }
-            }
-        }.gradleProject
+        val project = jvmProject {
+            apiWatchdog { publicTypesMustBeTransitiveDependencies = false }
+            consumerSource()
+            dependencies(implementation(":model"))
+            modelSubproject()
+        }
 
-        val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("published transitively to consumers"))
+        project.build("build").assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun publicTypeFromExemptNonTransitiveProjectDependencyIsAccepted() {
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                dependencies {
-                    apiWatchdogExemptNonTransitive(project(":model"))
-                }
-            """.trimIndent(),
-        ) {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
-                    dependencies(implementation(":model"))
-                }
-                subproject("model") {
-                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
-                }
-            }
-        }.gradleProject
+        val project = jvmProject {
+            buildScript(exemptScript("project(\":model\")"))
+            consumerSource()
+            dependencies(implementation(":model"))
+            modelSubproject()
+        }
 
-        val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("published transitively to consumers"))
+        project.build("build").assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun exemptNonTransitiveDependencyCoversEverythingItPullsIn() {
         // The consumer never names `:model`. It reaches it through the exempt `:facade`, the
         // same way a Kotlin Multiplatform dependency reaches its platform artifact.
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                dependencies {
-                    apiWatchdogExemptNonTransitive(project(":facade"))
-                }
-            """.trimIndent(),
-        ) {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
-                    dependencies(implementation(":facade"))
-                }
-                subproject("facade") {
-                    dependencies(api(":model"))
-                }
-                subproject("model") {
-                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
-                }
-            }
-        }.gradleProject
+        val project = jvmProject {
+            buildScript(exemptScript("project(\":facade\")"))
+            consumerSource()
+            dependencies(implementation(":facade"))
+            subproject("facade") { dependencies(api(":model")) }
+            modelSubproject()
+        }
 
-        val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("published transitively to consumers"))
+        project.build("build").assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun exemptNonTransitiveDependencyLeavesOtherDependenciesChecked() {
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                dependencies {
-                    apiWatchdogExemptNonTransitive(project(":other"))
-                }
-            """.trimIndent(),
-        ) {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
-                    dependencies(implementation(":model"), implementation(":other"))
-                }
-                subproject("model") {
-                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
-                }
-                subproject("other") {
-                    sources(source(dependencyTypeFile, "OtherModel", "test.other"))
-                }
-            }
-        }.gradleProject
+        val project = jvmProject {
+            buildScript(exemptScript("project(\":other\")"))
+            consumerSource()
+            dependencies(implementation(":model"), implementation(":other"))
+            modelSubproject()
+            subproject("other") { source(dependencyTypeFile, "OtherModel", "test.other") }
+        }
 
-        val result = buildAndFail(project.rootDir, "build")
-        result.assertDiagnosticReported(
-            "e: ",
-            "publicly exposes `test.model.ExternalModel`, but the dependency with that type " +
-                    "isn't published transitively",
-        )
+        project.buildAndFail("build").assertNonTransitiveExposureReported("test.model.ExternalModel")
     }
 
     @Test
     fun exemptNonTransitiveDependenciesExtendFromAWholeConfiguration() {
         // The whole-configuration form is the Gradle plugin case: everything the environment
         // supplies is declared `compileOnly`, and nothing of it is published.
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                apiWatchdog {
-                    exemptNonTransitiveDependencies {
-                        extendsFrom(configurations.compileOnly.get())
-                    }
-                }
-            """.trimIndent(),
-        ) {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
-                    dependencies(compileOnly(":model"))
-                }
-                subproject("model") {
-                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
-                }
-            }
-        }.gradleProject
+        val project = jvmProject {
+            apiWatchdog { exemptNonTransitiveDependencies("extendsFrom(configurations.compileOnly.get())") }
+            consumerSource()
+            dependencies(compileOnly(":model"))
+            modelSubproject()
+        }
 
-        val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("published transitively to consumers"))
+        project.build("build").assertNoNonTransitiveExposureReported()
     }
 
     @Test
@@ -1884,53 +1190,25 @@ class WatchdogProjectTest {
         // The exemption names the multiplatform module without a version and without its JVM
         // artifact. Consistent resolution supplies the compile classpath's version, and the
         // `available-at` redirect brings the `-jvm` artifact that actually holds the classes.
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                dependencies {
-                    apiWatchdogExemptNonTransitive("org.jetbrains.kotlinx:kotlinx-coroutines-core")
-                }
-            """.trimIndent(),
-        ) {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(exposesCoroutinesTypeFile, "Jobs", "test.consumer"))
-                    dependencies(implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$COROUTINES_VERSION"))
-                }
-            }
-        }.gradleProject
+        val project = jvmProject {
+            buildScript(exemptScript(COROUTINES))
+            source(exposesCoroutinesTypeFile, "Jobs", "test.consumer")
+            dependencies(implementation(COROUTINES))
+        }
 
-        val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("published transitively to consumers"))
+        project.build("build").assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun exemptNonTransitiveDependencyFromAVersionCatalog() {
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                dependencies {
-                    apiWatchdogExemptNonTransitive(libs.coroutines)
-                }
-            """.trimIndent(),
-        ) {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(exposesCoroutinesTypeFile, "Jobs", "test.consumer"))
-                    dependencies(implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$COROUTINES_VERSION"))
-                }
-            }
-        }.gradleProject
-        project.rootDir.resolve("gradle/libs.versions.toml").apply {
-            parentFile.mkdirs()
-            writeText(
-                """
-                    [libraries]
-                    coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "$COROUTINES_VERSION" }
-                """.trimIndent(),
-            )
+        val project = jvmProject {
+            buildScript("dependencies { apiWatchdogExemptNonTransitive(libs.coroutines) }")
+            versionCatalog(COROUTINES_CATALOG)
+            source(exposesCoroutinesTypeFile, "Jobs", "test.consumer")
+            dependencies(implementation(COROUTINES))
         }
 
-        val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("published transitively to consumers"))
+        project.build("build").assertNoNonTransitiveExposureReported()
     }
 
     @Test
@@ -1939,318 +1217,213 @@ class WatchdogProjectTest {
         // recorded only when the compile classpath realizes its dependencies. The plugin resolves
         // the transitive view, which is consistent with the compile classpath, before the exempt
         // view, which is what makes this order-independent for users.
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                dependencies {
-                    implementation(libs.coroutines) { exemptNonTransitiveDependency(this) }
-                }
-            """.trimIndent(),
-        ) {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(exposesCoroutinesTypeFile, "Jobs", "test.consumer"))
-                }
-            }
-        }.gradleProject
-        project.rootDir.resolve("gradle/libs.versions.toml").apply {
-            parentFile.mkdirs()
-            writeText(
-                """
-                    [libraries]
-                    coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "$COROUTINES_VERSION" }
-                """.trimIndent(),
-            )
+        val project = jvmProject {
+            imports(EXEMPT_IMPORT)
+            buildScript("dependencies { implementation(libs.coroutines) { exemptNonTransitiveDependency(this) } }")
+            versionCatalog(COROUTINES_CATALOG)
+            source(exposesCoroutinesTypeFile, "Jobs", "test.consumer")
         }
-        project.rootDir.resolve("build.gradle.kts").prependImport(EXEMPT_IMPORT)
 
-        val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("published transitively to consumers"))
+        project.build("build").assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun exemptNonTransitiveDependencyFromAProjectDependencyDeclaration() {
-        val project = object : WatchdogProject(
-            // The harness appends this script to every project, so keep the self-dependency
-            // out of `:model`.
-            extraBuildScript = """
-                if (project == rootProject) {
-                    dependencies {
-                        implementation(project(":model")) { exemptNonTransitiveDependency(this) }
-                    }
-                }
-            """.trimIndent(),
-        ) {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
-                }
-                subproject("model") {
-                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
-                }
-            }
-        }.gradleProject
-        project.rootDir.resolve("build.gradle.kts").prependImport(EXEMPT_IMPORT)
-        project.rootDir.resolve("model/build.gradle.kts").prependImport(EXEMPT_IMPORT)
+        val project = jvmProject {
+            imports(EXEMPT_IMPORT)
+            buildScript("dependencies { implementation(project(\":model\")) { exemptNonTransitiveDependency(this) } }")
+            consumerSource()
+            modelSubproject()
+        }
 
-        val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("published transitively to consumers"))
+        project.build("build").assertNoNonTransitiveExposureReported()
     }
 
     @Test
     fun publicTypeFromUnexemptedModuleDependencyIsAnError() {
-        val project = object : WatchdogProject() {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(exposesCoroutinesTypeFile, "Jobs", "test.consumer"))
-                    dependencies(implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$COROUTINES_VERSION"))
-                }
-            }
-        }.gradleProject
+        val project = jvmProject {
+            source(exposesCoroutinesTypeFile, "Jobs", "test.consumer")
+            dependencies(implementation(COROUTINES))
+        }
 
-        val result = buildAndFail(project.rootDir, "build")
-        result.assertDiagnosticReported(
-            "e: ",
-            "publicly exposes `kotlinx.coroutines.Job`, but the dependency with that type " +
-                    "isn't published transitively",
-        )
+        val result = project.buildAndFail("build")
+        result.assertNonTransitiveExposureReported("kotlinx.coroutines.Job")
         // The type is in the platform artifact, but the snippet names the declared dependency.
-        assertTrue(
-            result.output.contains(
-                "        implementation(\"org.jetbrains.kotlinx:kotlinx-coroutines-core:$COROUTINES_VERSION\") {\n" +
-                        "            exemptNonTransitiveDependency(this)\n        }"
-            ),
-            result.output,
+        result.assertOutputHas(
+            "        implementation(\"$COROUTINES\") {\n            exemptNonTransitiveDependency(this)\n        }"
         )
     }
 
     @Test
     fun exemptNonTransitiveDependenciesDoNotJoinTheCompileClasspath() {
         // The bucket is a marker. A dependency declared only there is not compiled against.
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                dependencies {
-                    apiWatchdogExemptNonTransitive(project(":model"))
-                }
-            """.trimIndent(),
-        ) {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(exposesDependencyTypeFile, "Consumer", "test.consumer"))
-                }
-                subproject("model") {
-                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
-                }
-            }
-        }.gradleProject
+        val project = jvmProject {
+            buildScript(exemptScript("project(\":model\")"))
+            consumerSource()
+            modelSubproject()
+        }
 
-        val result = buildAndFail(project.rootDir, "build")
-        assertTrue(result.output.contains("Unresolved reference"), result.output)
+        project.buildAndFail("build").assertOutputHas("Unresolved reference")
     }
 
     @Test
     fun transitiveDependencyConfigurationsAreNamedAfterTheCompilation() {
         // The JVM plugin's target has no disambiguation classifier, which KGP's own
         // `disambiguatedName` renders as a literal "null".
-        val project = object : WatchdogProject(extraBuildScript = printWatchdogConfigurationsTask) {
-            override fun sources() = listOf(source(unacknowledgedFile))
-        }.gradleProject
+        val project = jvmProject {
+            buildScript(printWatchdogConfigurationsTask)
+            source(unacknowledgedFile)
+        }
 
-        val result = buildAndFail(project.rootDir, "compileKotlin", "printWatchdogConfigurations", "--continue")
-        assertTrue(
-            result.output.contains(
-                "WATCHDOG_CONFIGURATIONS=[apiWatchdogMainExemptNonTransitiveDependencies, " +
-                        "apiWatchdogMainTransitiveDependencies]"
-            ),
-            result.output,
+        val result = project.buildAndFail("compileKotlin", "printWatchdogConfigurations", "--continue")
+        result.assertOutputHas(
+            "WATCHDOG_CONFIGURATIONS=[apiWatchdogMainExemptNonTransitiveDependencies, " +
+                    "apiWatchdogMainTransitiveDependencies]"
         )
     }
 
     @Test
     fun transitiveDependencyConfigurationsAreNamedAfterTheTargetInMultiplatformProjects() {
-        val project = object : WatchdogProject(
-            multiplatform = true,
-            extraBuildScript = printWatchdogConfigurationsTask,
-        ) {
-            override fun multiplatformTargetsBlock(): String = "kotlin {\n  jvm()\n}\n"
+        val project = kmpProject {
+            buildScript(printWatchdogConfigurationsTask)
+            source(unacknowledgedFile)
+        }
 
-            override fun sources() = listOf(source(unacknowledgedFile))
-        }.gradleProject
-
-        val result = buildAndFail(project.rootDir, "compileKotlinJvm", "printWatchdogConfigurations", "--continue")
-        assertTrue(result.output.contains("apiWatchdogJvmMainTransitiveDependencies"))
-        assertFalse(result.output.contains("apiWatchdogNull"))
+        val result = project.buildAndFail("compileKotlinJvm", "printWatchdogConfigurations", "--continue")
+        result.assertOutputHas("apiWatchdogJvmMainTransitiveDependencies")
+        result.assertOutputLacks("apiWatchdogNull")
     }
 
     @Test
     fun warnsWhenExplicitApiModeIsNotEnabled() {
         // The warning is logged during configuration, so `help` is enough to observe it.
-        val project = WatchdogProject(explicitApi = false).gradleProject
+        val project = jvmProject { explicitApi = false }
 
-        val result = build(project.rootDir, "help")
-        assertTrue(result.output.contains("doesn't enable explicit API mode"))
-        assertTrue(result.output.contains("explicitApi()"))
+        val result = project.build("help")
+        result.assertOutputHas("doesn't enable explicit API mode")
+        result.assertOutputHas("explicitApi()")
     }
 
     @Test
     fun explicitApiWarningIsSilentWhenExplicitApiModeIsEnabled() {
-        val project = WatchdogProject().gradleProject
-
-        val result = build(project.rootDir, "help")
-        assertFalse(result.output.contains("doesn't enable explicit API mode"))
+        jvmProject().build("help").assertOutputLacks("doesn't enable explicit API mode")
     }
 
     @Test
     fun explicitApiWarningSeesTheRawCompilerFlag() {
         // The flag lands in the effective free compiler arguments of the compile tasks, which is
         // where the check looks when the DSL setting is absent.
-        val project = WatchdogProject(
-            explicitApi = false,
-            extraBuildScript = """
-                kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=strict") } }
-            """.trimIndent(),
-        ).gradleProject
+        val project = jvmProject {
+            explicitApi = false
+            buildScript("""kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=strict") } }""")
+        }
 
-        val result = build(project.rootDir, "help")
-        assertFalse(result.output.contains("doesn't enable explicit API mode"))
+        project.build("help").assertOutputLacks("doesn't enable explicit API mode")
     }
 
     @Test
     fun explicitApiWarningCanBeSuppressedWithAGradleProperty() {
-        val project = WatchdogProject(explicitApi = false).gradleProject
+        val project = jvmProject { explicitApi = false }
 
-        val result = build(
-            project.rootDir,
-            "help",
-            "-Porg.jetbrains.kotlin.library.api-watchdog.suppressExplicitApiWarning=true",
-        )
-        assertFalse(result.output.contains("doesn't enable explicit API mode"))
+        project.build("help", "-Porg.jetbrains.kotlin.library.api-watchdog.suppressExplicitApiWarning=true")
+            .assertOutputLacks("doesn't enable explicit API mode")
     }
 
     @Test
     fun suggestsAbiValidationWhenItIsNotEnabled() {
         // The suggestion is logged during configuration, so `help` is enough to observe it.
-        val project = WatchdogProject().gradleProject
+        val result = jvmProject().build("help")
 
-        val result = build(project.rootDir, "help")
-        val testCompilerVersion = TEST_COMPILER_VERSION
-        val legacyDsl = testCompilerVersion.major <= 2 && testCompilerVersion.minor < 4
-        assertTrue(result.output.contains("but no binary compatibility validation is enabled"))
+        result.assertOutputHas("but no binary compatibility validation is enabled")
         assertEquals(
-            legacyDsl,
+            legacyAbiValidationDsl,
             result.output.contains("abiValidation {"),
             "The warning should display the ABI validation setup for the tested KGP version",
         )
         assertEquals(
-            !legacyDsl,
+            !legacyAbiValidationDsl,
             result.output.contains("abiValidation()"),
             "The warning should display the ABI validation setup for the tested KGP version",
         )
-        assertTrue(result.output.contains("https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html"))
-        assertTrue(result.output.contains("https://github.com/Kotlin/binary-compatibility-validator"))
-        assertTrue(result.output.contains("suggestAbiValidation = false"))
+        result.assertOutputHas("https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html")
+        result.assertOutputHas("https://github.com/Kotlin/binary-compatibility-validator")
+        result.assertOutputHas("suggestAbiValidation = false")
     }
 
     @Test
     fun abiValidationSuggestionCanBeDisabled() {
-        val project = WatchdogProject(
-            extraBuildScript = """
-                apiWatchdog {
-                    suggestAbiValidation = false
-                }
-            """.trimIndent(),
-        ).gradleProject
+        val project = jvmProject {
+            apiWatchdog { suggestAbiValidation = false }
+        }
 
-        val result = build(project.rootDir, "help")
-        assertFalse(result.output.contains("but no binary compatibility validation is enabled"))
+        project.build("help").assertOutputLacks("but no binary compatibility validation is enabled")
     }
 
     @Test
     fun abiValidationSuggestionIsSilentWhenBuiltInAbiValidationIsEnabled() {
-        val testCompilerVersion = TEST_COMPILER_VERSION
-        val abiValidationCall = if (testCompilerVersion.major <= 2 && testCompilerVersion.minor < 4) {
-            "abiValidation { enabled.set(true) }"
-        } else {
-            "abiValidation()"
+        val abiValidationCall = if (legacyAbiValidationDsl) "abiValidation { enabled.set(true) }" else "abiValidation()"
+        val project = jvmProject {
+            buildScript(
+                """
+                    kotlin {
+                        @OptIn(org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation::class)
+                        $abiValidationCall
+                    }
+                """
+            )
         }
-        val project = WatchdogProject(
-            extraBuildScript = """
-                kotlin {
-                    @OptIn(org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation::class)
-                    $abiValidationCall
-                }
-            """.trimIndent(),
-        ).gradleProject
 
-        val result = build(project.rootDir, "help")
-        assertFalse(result.output.contains("but no binary compatibility validation is enabled"))
+        project.build("help").assertOutputLacks("but no binary compatibility validation is enabled")
     }
 
     @Test
     fun abiValidationSuggestionIsSilentWhenStandaloneValidatorIsApplied() {
         // A buildSrc stand-in registers the real Binary Compatibility Validator plugin id, so the
         // check sees the plugin as applied without the test fetching the actual artifact.
-        val project = object : WatchdogProject(
-            extraBuildScript = """apply(plugin = "org.jetbrains.kotlinx.binary-compatibility-validator")""",
-        ) {
-            override fun buildGradleProject(): GradleProject =
-                newGradleProjectBuilder(GradleProject.DslKind.KOTLIN)
-                    .withRootProject {
-                        withBuildScript { applyDefaultBuildScript() }
-                        withDevKitSettings()
-                    }
-                    .withBuildSrc {
-                        withBuildScript {
-                            plugins(Plugin("java-gradle-plugin"))
-                            withKotlin(
-                                """
-                                    gradlePlugin {
-                                        plugins {
-                                            create("fakeBcv") {
-                                                id = "org.jetbrains.kotlinx.binary-compatibility-validator"
-                                                implementationClass = "test.FakeBcvPlugin"
-                                            }
-                                        }
-                                    }
-                                """.trimIndent()
-                            )
+        val project = jvmProject {
+            buildScript("""apply(plugin = "org.jetbrains.kotlinx.binary-compatibility-validator")""")
+            buildSrc {
+                plugins(Plugin.javaGradle)
+                buildScript(
+                    """
+                        gradlePlugin {
+                            plugins {
+                                create("fakeBcv") {
+                                    id = "org.jetbrains.kotlinx.binary-compatibility-validator"
+                                    implementationClass = "test.FakeBcvPlugin"
+                                }
+                            }
                         }
-                        sources.add(
-                            Source.java(
-                                """
-                                    package test;
+                    """
+                )
+                javaFile(
+                    "FakeBcvPlugin",
+                    """
+                        package test;
 
-                                    import org.gradle.api.Plugin;
-                                    import org.gradle.api.Project;
-                                    import org.jspecify.annotations.NonNull;
+                        import org.gradle.api.Plugin;
+                        import org.gradle.api.Project;
+                        import org.jspecify.annotations.NonNull;
 
-                                    public class FakeBcvPlugin implements Plugin<Project> {
-                                        @Override
-                                        public void apply(@NonNull Project project) {}
-                                    }
-                                """.trimIndent()
-                            ).withPath("test", "FakeBcvPlugin").build()
-                        )
-                    }
-                    .write()
-        }.gradleProject
+                        public class FakeBcvPlugin implements Plugin<Project> {
+                            @Override
+                            public void apply(@NonNull Project project) {}
+                        }
+                    """,
+                )
+            }
+        }
 
-        val result = build(project.rootDir, "help")
-        assertFalse(result.output.contains("but no binary compatibility validation is enabled"))
+        project.build("help").assertOutputLacks("but no binary compatibility validation is enabled")
     }
 
     /**
-     * The test source set counterpart of [source], carrying the unwatched declarations.
+     * The test source set counterpart of [ModuleSpec.source], carrying the unwatched declarations.
      * [className] keeps the file names apart when several test source sets take part in one build.
      */
-    private fun testOnlySource(sourceSet: String = "test", className: String = "TestOnlyHelper"): Source =
-        Source.kotlin(
-            buildString {
-                appendLine("package test")
-                appendLine("import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen")
-                appendLine()
-                appendLine(testOnlyFile(className))
-            }
-        ).withSourceSet(sourceSet).withPath("test", className).build()
+    private fun ModuleSpec.testOnlySource(sourceSet: String = "test", className: String = "TestOnlyHelper") {
+        source(testOnlyFile(className), className, sourceSet = sourceSet)
+    }
 
     /**
      * [testOnlySource] without the exemption annotation, placeable into any source set. The plugin
@@ -2258,74 +1431,80 @@ class WatchdogProjectTest {
      * doesn't depend on whether a test compilation inherits that dependency from the main one it
      * is associated with.
      */
-    private fun unexemptedOpenClassSource(sourceSet: String, className: String = "TestOnlyHelper"): Source =
-        Source.kotlin(
-            buildString {
-                appendLine("package test")
-                appendLine()
-                appendLine(unexemptedTestOnlyFile(className))
-            }
-        ).withSourceSet(sourceSet).withPath("test", className).build()
+    private fun ModuleSpec.unexemptedOpenClassSource(sourceSet: String, className: String = "TestOnlyHelper") {
+        source(unexemptedTestOnlyFile(className), className, sourceSet = sourceSet, defaultImports = false)
+    }
 
     /** Asserts nothing in [testOnlyFile] was reported by any checker. */
     private fun BuildResult.assertNoTestSourceDiagnostics() {
-        assertFalse(output.contains("can be subclassed outside the library"))
-        assertFalse(output.contains("has no `KDoc`"))
-        assertFalse(output.contains("exposes a nullable `Boolean`"))
-        assertFalse(output.contains("exemption doesn't explain why it is applied"))
-        assertFalse(output.contains("TestOnlyHelper"))
+        assertNotReported(
+            OPEN_API_WITHOUT_SUBCLASS_OPT_IN,
+            UNDOCUMENTED_PUBLIC_API,
+            NULLABLE_BOOLEAN_PUBLIC_API,
+            EXEMPTION_WITHOUT_EXPLANATION,
+        )
+        assertOutputLacks("TestOnlyHelper")
     }
 
-    /** Asserts the message was reported with the given compiler severity prefix (`e: ` or `w: `). */
-    private fun BuildResult.assertDiagnosticReported(severityPrefix: String, message: String) {
-        assertTrue(
-            output.lineSequence().any {
-                (it.startsWith(severityPrefix) || " $severityPrefix" in it) && message in it
-            },
-            "Expected a '$severityPrefix' line containing '$message' in build output:\n$output",
-        )
+    private fun BuildResult.assertNonTransitiveExposureReported(type: String) {
+        assertError("publicly exposes `$type`, but the dependency with that type isn't published transitively")
     }
 
-    /** Launches [tasks] on the Gradle version the AGP generation selected by [agp9] runs on. */
-    private fun buildAgp(agp9: Boolean, projectDir: File, vararg tasks: String): BuildResult =
-        if (agp9) build(projectDir, *tasks) else build(agpCompatibleGradle, projectDir, *tasks)
-
-    private fun buildAgpAndFail(agp9: Boolean, projectDir: File, vararg tasks: String): BuildResult =
-        if (agp9) buildAndFail(projectDir, *tasks) else buildAndFail(agpCompatibleGradle, projectDir, *tasks)
-
-    private fun BuildResult.assertNonTransitiveExposureReported(type: String) =
-        assertDiagnosticReported(
-            "e: ",
-            "publicly exposes `$type`, but the dependency with that type isn't published transitively",
-        )
-
-    private fun BuildResult.assertNoNonTransitiveExposureReported() =
-        assertFalse(output.contains("published transitively to consumers"), output)
+    private fun BuildResult.assertNoNonTransitiveExposureReported() {
+        assertNotReported(PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY)
+    }
 
     private fun BuildResult.hasStatefulDiagnostic(className: String, missingMember: String): Boolean =
         output.lineSequence().any { "`$className`" in it && "inherits $missingMember" in it }
 
+    /** Exempts [dependency] by its version-less coordinates, or a `project(...)` notation as is. */
+    private fun exemptScript(dependency: String): String {
+        val notation = if (dependency.startsWith("project(")) dependency else "\"${dependency.substringBeforeLast(':')}\""
+        return "dependencies { apiWatchdogExemptNonTransitive($notation) }"
+    }
+
     private fun ideaGenerateShortcut(): String =
         if (System.getProperty("os.name").startsWith("Mac", ignoreCase = true)) "⌘N" else "Alt+Insert"
+
+    /** KGP before 2.4 configures ABI validation through a block instead of a call. */
+    private val legacyAbiValidationDsl: Boolean
+        get() = TEST_COMPILER_VERSION.major <= 2 && TEST_COMPILER_VERSION.minor < 4
 }
 
-/** A main-source declaration no checker has anything to say about. */
-@Suppress("RedundantVisibilityModifier")
-@Language("kotlin")
-private val cleanMainFile = """
-    /** A documented, final, closed declaration. */
-    public class Settled {
-        /** Returns the only supported mode. */
-        public fun mode(): Int = 0
-    }
-""".trimIndent()
+private const val EXPLICIT_API_FLAG = """kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") } }"""
+
+private const val JVM_AND_JS_TARGETS = "jvm()\njs { nodejs() }"
+
+private const val DEFAULT_FACADE_NAME_FILE_ANNOTATION =
+    "@file:org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName(" +
+            "reason = org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason.API_DESIGN)"
+
+private const val EXEMPT_IMPORT = "org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency"
+
+/** A dependency the functional tests resolve from Maven Central as a non-project module. */
+private const val COROUTINES = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
+
+private const val COROUTINES_CATALOG = """
+    [libraries]
+    coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.10.2" }
+"""
+
+/** A dependency from Google's Maven repository published as an AAR. */
+private const val STARTUP_RUNTIME = "androidx.startup:startup-runtime:1.2.0"
+
+/**
+ * A multiplatform AndroidX library whose Android variant is an AAR of its own
+ * (`lifecycle-runtime-android`), next to a plain JVM variant for desktop consumers. Its
+ * `LifecycleRegistry` is compiled into each variant, unlike `Lifecycle` from the plain
+ * `lifecycle-common` jar it depends on.
+ */
+private const val LIFECYCLE_RUNTIME = "androidx.lifecycle:lifecycle-runtime:2.8.7"
 
 /**
  * A test-source declaration several checkers would report if they ran on test sources. The bare
  * exemption also covers the one diagnostic no configuration can demote,
  * `EXEMPTION_WITHOUT_EXPLANATION`, and proves the annotations stay resolvable from test sources.
  */
-@Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private fun testOnlyFile(className: String) = """
     @IntentionallyOpen
@@ -2335,7 +1514,6 @@ private fun testOnlyFile(className: String) = """
 """.trimIndent()
 
 /** [testOnlyFile] stripped of the exemption, so that it needs nothing on the compile classpath. */
-@Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private fun unexemptedTestOnlyFile(className: String) = """
     public open class $className {
@@ -2343,10 +1521,19 @@ private fun unexemptedTestOnlyFile(className: String) = """
     }
 """.trimIndent()
 
-@Suppress("RedundantVisibilityModifier", "RedundantSuspendModifier", "MayBeConstant")
+/** The diagnostics [unacknowledgedFile] and [internalApiExposureFile] report together. */
+private val singleModuleDiagnostics: List<Diagnostic> =
+    Diagnostic.entries - setOf(PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY, EXEMPTION_WITHOUT_EXPLANATION)
+
+/** One specimen of every configurable diagnostic. */
+@Suppress("RedundantSuspendModifier", "MayBeConstant")
 @Language("kotlin")
 private val unacknowledgedFile = """
     public open class UnprotectedOpenClass
+
+    /** A base class whose subclass opt-in lists no markers and so restricts nothing. */
+    @SubclassOptInRequired
+    public open class UnmarkedOptIn
 
     public enum class UnmarkedEnum { A, B }
 
@@ -2436,14 +1623,12 @@ private val unacknowledgedFile = """
     public fun openPort(host: String, port: Int = 8080) {}
 """.trimIndent()
 
-@Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val unexplainedExemptionFile = """
     /** Returns a deliberately mutable result. */
     public fun unexplainedExemption(): @IntentionallyMutableCollection MutableList<Int> = mutableListOf()
 """.trimIndent()
 
-@Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val annotationIgnoreFile = """
     /** Marks classes whose value members are generated. */
@@ -2468,7 +1653,6 @@ private val annotationIgnoreFile = """
     public class RegularState(public val value: Int)
 """.trimIndent()
 
-@Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val markerLibraryFile = """
     /** Flags declarations that are public for technical reasons but are not supported API. */
@@ -2481,7 +1665,6 @@ private val markerLibraryFile = """
     public annotation class InternalLibApi
 """.trimIndent()
 
-@Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val markerConsumerFile = """
     @InternalLibApi
@@ -2498,7 +1681,6 @@ private val markerConsumerFile = """
     public class WatchedClass
 """.trimIndent()
 
-@Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val configuredInternalApiLibraryFile = """
     /** The dependency's own internal-API annotation. It knows nothing about the watchdog. */
@@ -2514,7 +1696,6 @@ private val configuredInternalApiLibraryFile = """
     public class ThirdPartyInternalType
 """.trimIndent()
 
-@Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val configuredInternalApiConsumerFile = """
     @ThirdPartyInternalApi
@@ -2537,7 +1718,6 @@ private val configuredInternalApiConsumerFile = """
     public class WatchedClass
 """.trimIndent()
 
-@Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val internalApiExposureFile = """
     /** Marks declarations that are public only for technical reasons. */
@@ -2566,18 +1746,6 @@ private val internalApiExposureFile = """
     }
 """.trimIndent()
 
-@Suppress("RedundantVisibilityModifier")
-@Language("kotlin")
-private val dependencyTypeFile = """
-    /** A model supplied by another module. */
-    public class ExternalModel
-
-    /** A contract supplied by another module. */
-    @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
-    public interface ExternalContract
-""".trimIndent()
-
-@Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val exemptedDependencyTypeFile = """
     import test.model.ExternalContract
@@ -2630,33 +1798,6 @@ private val exemptedDependencyTypeFile = """
     }
 """.trimIndent()
 
-/** A dependency the functional tests resolve from Maven Central as a non-project module. */
-private const val COROUTINES_VERSION = "1.10.2"
-
-private const val EXEMPT_IMPORT =
-    "org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency"
-
-/** The generated constants object with every diagnostic name, see `generateCheckNames`. */
-private const val WATCHDOG_CHECKS_IMPORT = "org.jetbrains.kotlinx.library.api.watchdog.WatchdogChecks"
-
-/** Imports must precede the `plugins` block, and the harness appends extra script text after it. */
-private fun File.prependImport(fqName: String) {
-    writeText("import $fqName\n" + readText())
-}
-
-@Suppress("RedundantVisibilityModifier")
-@Language("kotlin")
-private val exposesCoroutinesTypeFile = """
-    import kotlinx.coroutines.Job
-
-    /** Jobs the host application manages. */
-    public object Jobs {
-        /** Hands out a job the host application manages. */
-        public fun hostJob(): Job = Job()
-    }
-""".trimIndent()
-
-@Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val partiallyExemptedDependencyTypeFile = """
     import test.model.ExternalContract
@@ -2679,11 +1820,22 @@ private val partiallyExemptedDependencyTypeFile = """
     }
 """.trimIndent()
 
+@Language("kotlin")
+private val exposesCoroutinesTypeFile = """
+    import kotlinx.coroutines.Job
+
+    /** Jobs the host application manages. */
+    public object Jobs {
+        /** Hands out a job the host application manages. */
+        public fun hostJob(): Job = Job()
+    }
+""".trimIndent()
+
 /**
  * A task listing the watchdog's transitive-dependency configurations. They are registered when
  * KGP hands each compilation to the plugin, so the task runs after the compile tasks.
  */
-@Language("kotlin")
+@Language("kts")
 private val printWatchdogConfigurationsTask = """
     tasks.register("printWatchdogConfigurations") {
         mustRunAfter(tasks.matching { it.name.startsWith("compileKotlin") })
@@ -2694,41 +1846,6 @@ private val printWatchdogConfigurationsTask = """
     }
 """.trimIndent()
 
-@Suppress("RedundantVisibilityModifier")
-@Language("kotlin")
-private val exposesDependencyTypeFile = """
-    import test.model.ExternalContract
-    import test.model.ExternalModel
-
-    /** A public alias whose nested type argument comes from a dependency. */
-    public typealias ExternalModels = List<ExternalModel>
-
-    /** A documented and otherwise settled API owner. */
-    @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
-    public open class Consumer : ExternalContract {
-        /** Returns a model whose class must be available to consumers. */
-        public fun model(): ExternalModel = ExternalModel()
-
-        /** Returns a dependency type from protected API. */
-        protected fun protectedModel(): ExternalModel = ExternalModel()
-
-        /** Uses a dependency type as both a receiver and a nested parameter type. */
-        public fun ExternalModel.acceptModels(models: ExternalModels): ExternalModel = this
-    }
-""".trimIndent()
-
-/** A dependency from Google's Maven repository published as an AAR. */
-private const val STARTUP_RUNTIME = "androidx.startup:startup-runtime:1.2.0"
-
-/**
- * A multiplatform AndroidX library whose Android variant is an AAR of its own
- * (`lifecycle-runtime-android`), next to a plain JVM variant for desktop consumers. Its
- * `LifecycleRegistry` is compiled into each variant, unlike `Lifecycle` from the plain
- * `lifecycle-common` jar it depends on.
- */
-private const val LIFECYCLE_RUNTIME = "androidx.lifecycle:lifecycle-runtime:2.8.7"
-
-@Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val exposesAndroidPlatformTypeFile = """
     import android.content.Context
@@ -2741,7 +1858,6 @@ private val exposesAndroidPlatformTypeFile = """
     }
 """.trimIndent()
 
-@Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val exposesStartupInitializerFile = """
     import androidx.startup.Initializer
@@ -2753,7 +1869,6 @@ private val exposesStartupInitializerFile = """
     }
 """.trimIndent()
 
-@Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val exposesLifecycleTypeFile = """
     import androidx.lifecycle.LifecycleRegistry
@@ -2772,7 +1887,6 @@ private val javaDependencyTypeFile = """
     public final class ExternalJavaModel {}
 """.trimIndent()
 
-@Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val exposesJavaDependencyTypeFile = """
     import test.model.ExternalJavaModel
@@ -2784,7 +1898,8 @@ private val exposesJavaDependencyTypeFile = """
     }
 """.trimIndent()
 
-@Suppress("RedundantVisibilityModifier", "RedundantSuspendModifier", "MayBeConstant")
+/** One acknowledged specimen of every diagnostic in [unacknowledgedFile]. */
+@Suppress("RedundantSuspendModifier", "MayBeConstant")
 @Language("kotlin")
 private val acknowledgedFile = """
     /** A deliberately open class. */

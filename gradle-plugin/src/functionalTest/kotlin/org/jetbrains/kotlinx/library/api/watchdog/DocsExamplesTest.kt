@@ -2,13 +2,12 @@
 
 package org.jetbrains.kotlinx.library.api.watchdog
 
-import com.autonomousapps.kit.GradleBuilder.buildAndFail
 import com.autonomousapps.kit.Source
 import com.autonomousapps.kit.gradle.Dependency.Companion.implementation
 import java.io.File
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.jetbrains.kotlinx.library.api.watchdog.Severity.WARNING
 import org.junit.Test
 
 /** Compiles every public-API sample in the docs against all watchdog checks at once. */
@@ -16,32 +15,50 @@ class DocsExamplesTest {
     @Test
     fun examplesReportExactlyTheirAnnotatedDiagnostics() {
         val samples = documentationSamples()
-        val project = object : WatchdogProject(extraBuildScript = auditBuildScript) {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(supportSource(), *samples.map(DocumentationSample::source).toTypedArray())
-                    dependencies(implementation(":exampleModels"))
-                }
-                subproject("exampleModels") {
-                    sources(externalModelSource())
-                }
+        val project = jvmProject {
+            apiWatchdog {
+                suggestAbiValidation = false
+                severityOfEveryCheck(WARNING)
             }
-        }.gradleProject
+            buildScript(
+                """
+                    kotlin {
+                        compilerOptions.freeCompilerArgs.addAll(
+                            "-P",
+                            "plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticsOutputFile=" +
+                                layout.projectDirectory.file("$REPORT_FILE").asFile.absolutePath,
+                        )
+                    }
+                """
+            )
+            kotlinFile("DocsSupport", text = supportFile)
+            sources(*samples.map(DocumentationSample::source).toTypedArray())
+            dependencies(implementation(":exampleModels"))
+            subproject("exampleModels") {
+                kotlinFile(
+                    "ExternalModel",
+                    text = """
+                        package com.example.models
+
+                        /** A model supplied by an external dependency. */
+                        public class ExternalModel
+                    """,
+                )
+            }
+        }
 
         // Some docs demonstrate always-error diagnostics, so the compilation as a whole is
         // expected to fail. Their report entries are still checked against the annotations below.
-        val result = buildAndFail(project.rootDir, "compileKotlin", "--stacktrace")
-        assertFalse(result.output.contains("Unresolved reference"), result.output)
-        assertFalse(result.output.contains("Syntax error"), result.output)
+        val result = project.buildAndFail("compileKotlin", "--stacktrace")
+        result.assertOutputLacks("Unresolved reference")
+        result.assertOutputLacks("Syntax error")
         val unexpectedCompilerErrors = result.output.lineSequence()
             .filter { it.startsWith("e: ") }
-            .filterNot { "exemption doesn't explain why it is applied" in it }
-            .filterNot { "published transitively to consumers" in it }
-            .filterNot { "marked as internal API" in it }
+            .filterNot { line -> alwaysErrorDiagnostics.any { it.pattern.containsMatchIn(line) } }
             .toList()
         assertEquals(emptyList(), unexpectedCompilerErrors, unexpectedCompilerErrors.joinToString("\n"))
 
-        val report = project.rootDir.resolve(REPORT_FILE)
+        val report = project.file(REPORT_FILE)
         assertTrue(report.isFile, "The compiler produced no docs diagnostics report:\n${result.output}")
         val pokoSamples = samples.filter { "@Poko" in it.code }.mapTo(mutableSetOf(), DocumentationSample::name)
         val actualBySample = report.readLines()
@@ -125,71 +142,6 @@ class DocsExamplesTest {
     private fun findRepositoryRoot(): File = generateSequence(File(System.getProperty("user.dir"))) { it.parentFile }
         .first { it.resolve("docs/docs").isDirectory && it.resolve("settings.gradle.kts").isFile }
 
-    private fun supportSource(): Source = Source.kotlin(
-        """
-            @file:org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName(
-                reason = org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason.API_DESIGN,
-            )
-
-            package docs.support
-
-            import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
-            import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyInlinedLogic
-            import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
-
-            /** Stand-in for the Poko compiler-plugin annotation used by documentation samples. */
-            @Target(AnnotationTarget.CLASS)
-            @Retention(AnnotationRetention.SOURCE)
-            public annotation class Poko
-
-            /** A DSL marker supplied to isolated documentation snippets. */
-            @DslMarker
-            @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPEALIAS)
-            public annotation class TreeDsl
-
-            /** A receiver supplied to isolated documentation snippets. */
-            @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
-            public open class Tag
-
-            /** An opt-in marker supplied to isolated documentation snippets. */
-            @RequiresOptIn
-            public annotation class InternalMyLibrarySubclassApi
-
-            /** An identifier supplied to isolated documentation snippets. */
-            @JvmInline
-            public value class UserId(
-                /** The underlying value. */
-                public val raw: String,
-            )
-
-            /** A connection supplied to isolated documentation snippets. */
-            public class Connection
-
-            /** Returns stand-in data for isolated documentation snippets. */
-            public fun fetchLatest(): String = ""
-
-            /** Returns a stand-in array size for isolated documentation snippets. */
-            public fun calculateArraysSizeImpl(): Int = 0
-
-            /** Executes [block] for isolated documentation snippets. */
-            @IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)
-            public inline fun <T> withCache(block: () -> T): T = block()
-
-            /** Stand-in reflection members for isolated documentation snippets. */
-            public val kotlin.reflect.KClass<*>.memberFunctions: List<Unit>
-                get() = emptyList()
-        """.trimIndent(),
-    ).withPath("docs/support", "DocsSupport").build()
-
-    private fun externalModelSource(): Source = Source.kotlin(
-        """
-            package com.example.models
-
-            /** A model supplied by an external dependency. */
-            public class ExternalModel
-        """.trimIndent(),
-    ).withPath("com/example/models", "ExternalModel").build()
-
     private data class CodeBlock(val line: Int, val code: String)
 
     private data class DocumentationSample(
@@ -251,45 +203,60 @@ class DocsExamplesTest {
             "STATEFUL_CLASS_WITHOUT_HASH_CODE",
             "STATEFUL_CLASS_WITHOUT_TO_STRING",
         )
-
-        val auditBuildScript = """
-            kotlin {
-                compilerOptions.freeCompilerArgs.addAll(
-                    "-P",
-                    "plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticsOutputFile=" +
-                        layout.projectDirectory.file("$REPORT_FILE").asFile.absolutePath,
-                )
-            }
-            apiWatchdog {
-                suggestAbiValidation = false
-                openApiWithoutSubclassOptIn = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                subclassOptInWithoutMarkers = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                exhaustivePublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                undocumentedPublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                functionTypeAliasPublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                dataClassPublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                statefulClassWithoutEquals = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                statefulClassWithoutHashCode = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                statefulClassWithoutToString = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                mutableCollectionPublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                pairOrTriplePublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                booleanParameterPublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                nullableBooleanPublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                requiredParameterAfterOptional = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                inconsistentParameterOrderInOverloads = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                inlineFunctionWithLogic = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                dslMarkerNoopTarget = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                dslMarkerWithoutExplicitTargets = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                dslMarkerNoopTypePosition = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                javaInterop {
-                    mangledJvmNamePublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    kotlinOnlyApiWithoutJvmSynthetic = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    companionApiWithoutJvmStatic = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    companionPropertyWithoutStaticAccess = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    topLevelApiWithoutJvmName = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                    defaultParametersWithoutJvmOverloads = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                }
-            }
-        """.trimIndent()
     }
 }
+
+/** The declarations isolated documentation snippets refer to. */
+private val supportFile = """
+    @file:org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName(
+        reason = org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason.API_DESIGN,
+    )
+
+    package docs.support
+
+    import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+    import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyInlinedLogic
+    import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
+
+    /** Stand-in for the Poko compiler-plugin annotation used by documentation samples. */
+    @Target(AnnotationTarget.CLASS)
+    @Retention(AnnotationRetention.SOURCE)
+    public annotation class Poko
+
+    /** A DSL marker supplied to isolated documentation snippets. */
+    @DslMarker
+    @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPEALIAS)
+    public annotation class TreeDsl
+
+    /** A receiver supplied to isolated documentation snippets. */
+    @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
+    public open class Tag
+
+    /** An opt-in marker supplied to isolated documentation snippets. */
+    @RequiresOptIn
+    public annotation class InternalMyLibrarySubclassApi
+
+    /** An identifier supplied to isolated documentation snippets. */
+    @JvmInline
+    public value class UserId(
+        /** The underlying value. */
+        public val raw: String,
+    )
+
+    /** A connection supplied to isolated documentation snippets. */
+    public class Connection
+
+    /** Returns stand-in data for isolated documentation snippets. */
+    public fun fetchLatest(): String = ""
+
+    /** Returns a stand-in array size for isolated documentation snippets. */
+    public fun calculateArraysSizeImpl(): Int = 0
+
+    /** Executes [block] for isolated documentation snippets. */
+    @IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)
+    public inline fun <T> withCache(block: () -> T): T = block()
+
+    /** Stand-in reflection members for isolated documentation snippets. */
+    public val kotlin.reflect.KClass<*>.memberFunctions: List<Unit>
+        get() = emptyList()
+""".trimIndent()

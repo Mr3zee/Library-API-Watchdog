@@ -1,0 +1,11 @@
+// RUN_PIPELINE_TILL: FRONTEND
+// EXPLICIT_API_MODE: WARNING
+// DIAGNOSTICS: -UNDOCUMENTED_PUBLIC_API -TOP_LEVEL_API_WITHOUT_JVM_NAME
+
+package foo.bar
+
+// Message parameters: the callable kind and its name.
+
+public fun <!DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS!>connect<!>(host: String, port: Int = 80) {}
+
+public class Connection<!DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS!>(host: String, port: Int = 80)<!>

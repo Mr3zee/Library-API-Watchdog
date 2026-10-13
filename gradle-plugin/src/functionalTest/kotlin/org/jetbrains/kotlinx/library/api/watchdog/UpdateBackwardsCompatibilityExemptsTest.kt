@@ -2,57 +2,53 @@
 
 package org.jetbrains.kotlinx.library.api.watchdog
 
-import com.autonomousapps.kit.GradleBuilder.build
-import com.autonomousapps.kit.GradleBuilder.buildAndFail
 import com.autonomousapps.kit.gradle.Dependency.Companion.implementation
 import java.io.File
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
-import org.gradle.testkit.runner.BuildResult
-import org.gradle.testkit.runner.TaskOutcome
+import org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import org.intellij.lang.annotations.Language
 import org.jetbrains.kotlin.compiler.plugin.devkit.test.KmpTarget
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.EXEMPTION_WITHOUT_EXPLANATION
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.OPEN_API_WITHOUT_SUBCLASS_OPT_IN
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PUBLIC_TYPE_WITH_INTERNAL_API
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.UNDOCUMENTED_PUBLIC_API
+import org.jetbrains.kotlinx.library.api.watchdog.Severity.NONE
+import org.jetbrains.kotlinx.library.api.watchdog.Severity.WARNING
 import org.junit.Test
 
 class UpdateBackwardsCompatibilityExemptsTest {
     @Test
     fun updateTaskReusesTheConfigurationCache() {
-        val project = object : WatchdogProject() {
-            override fun sources() = listOf(
-                source("/** An existing open API. */\npublic open class ExistingApi", "existingApi"),
-            )
-        }.gradleProject
-        val arguments = arrayOf(
-            UPDATE_TASK,
-            "--configuration-cache",
-            "--configuration-cache-problems=fail",
-        )
+        val project = jvmProject {
+            source("/** An existing open API. */\npublic open class ExistingApi", "existingApi")
+        }
+        val arguments = arrayOf(UPDATE_TASK, "--configuration-cache", "--configuration-cache-problems=fail")
 
-        val first = build(project.rootDir, *arguments)
-        assertContains(first.output, "Configuration cache entry stored.")
+        project.build(*arguments).assertOutputHas("Configuration cache entry stored.")
 
-        val second = build(project.rootDir, *arguments)
-        assertContains(second.output, "Configuration cache entry reused.")
-        assertContains(second.output, "No watchdog diagnostics to exempt.")
+        val second = project.build(*arguments)
+        second.assertOutputHas("Configuration cache entry reused.")
+        second.assertOutputHas("No watchdog diagnostics to exempt.")
     }
 
     @Test
     fun fixesEveryFixableDiagnosticAndTheBuildPasses() {
-        val project = object : WatchdogProject(
-            extraBuildScript = CONTEXT_PARAMETERS_BUILD_SCRIPT,
-        ) {
-            override fun sources() = listOf(source(fixableFile, "legacy"))
-        }.gradleProject
+        val project = jvmProject {
+            buildScript(CONTEXT_PARAMETERS_BUILD_SCRIPT)
+            source(fixableFile, "legacy")
+        }
 
-        val updateResult = build(project.rootDir, UPDATE_TASK)
-        assertEquals(TaskOutcome.SUCCESS, updateResult.task(":$UPDATE_TASK")?.outcome)
-        assertContains(updateResult.output, "backwards-compatibility exemption(s) and 2 placeholder KDoc(s)")
+        val updateResult = project.build(UPDATE_TASK)
+        updateResult.assertTaskOutcome(":$UPDATE_TASK", SUCCESS)
+        updateResult.assertOutputHas("backwards-compatibility exemption(s) and 2 placeholder KDoc(s)")
 
-        val fixedText = project.rootDir.mainSource("legacy").readText()
+        val fixedText = project.mainSource("legacy").readText()
         val reason = "reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY"
-        assertTrue(fixedText.startsWith("@file:IntentionallyDefaultFacadeName($reason)"))
+        assertContains(fixedText, "@file:IntentionallyDefaultFacadeName($reason)")
+        assertEquals(0, fixedText.indexOf("@file:IntentionallyDefaultFacadeName"))
         // Undocumented declarations get a placeholder KDoc instead of an exemption, above any annotations.
         assertContains(fixedText, "$PLACEHOLDER_KDOC\n@IntentionallyOpen($reason)\npublic open class UndocumentedOpenClass {")
         assertContains(fixedText, "    $PLACEHOLDER_KDOC\n    public fun undocumentedMember()")
@@ -74,7 +70,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
         assertContains(fixedText, "@IntentionallyBooleanParameter($reason)\npublic fun toggleWork(enabled: Boolean)")
         assertContains(fixedText, "@IntentionallyBooleanParameter($reason)\ncontext(enabled: Boolean)\npublic fun toggleContextWork()")
         assertContains(fixedText, "@IntentionallyNullableBoolean($reason)\npublic fun lastKnownState()")
-        assertContains(fixedText, "@IntentionallyRequiredParameterAfterOptional($reason)\n@IntentionallyWithoutJvmOverloads($reason)\npublic fun retryWork",)
+        assertContains(fixedText, "@IntentionallyRequiredParameterAfterOptional($reason)\n@IntentionallyWithoutJvmOverloads($reason)\npublic fun retryWork")
         assertContains(fixedText, "@IntentionallyInconsistentParameterOrder($reason)\npublic fun drawShape(y: Int, x: Int, scale: Double)")
         assertContains(fixedText, "@IntentionallyInlinedLogic($reason)\n@Suppress(\"NOTHING_TO_INLINE\")\npublic inline fun squared")
         assertContains(fixedText, "@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility\n@DslMarker\n@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)\npublic annotation class NoopTargetDsl")
@@ -86,57 +82,51 @@ class UpdateBackwardsCompatibilityExemptsTest {
         assertContains(fixedText, "@IntentionallyWithoutJvmOverloads($reason)\npublic fun openPort")
 
         // The proof of the fixes: the same strict build that would have failed now passes.
-        val buildResult = build(project.rootDir, "build")
-        buildResult.assertNoWatchdogDiagnostics()
+        project.build("build").assertNoWatchdogDiagnostics()
     }
 
     @Test
     fun secondRunFindsNothingLeftToExempt() {
-        val project = object : WatchdogProject(
-            extraBuildScript = CONTEXT_PARAMETERS_BUILD_SCRIPT,
-        ) {
-            override fun sources() = listOf(source(fixableFile, "legacy"))
-        }.gradleProject
+        val project = jvmProject {
+            buildScript(CONTEXT_PARAMETERS_BUILD_SCRIPT)
+            source(fixableFile, "legacy")
+        }
 
-        build(project.rootDir, UPDATE_TASK)
-        val fixedOnce = project.rootDir.mainSource("legacy").readText()
+        project.build(UPDATE_TASK)
+        val fixedOnce = project.mainSource("legacy").readText()
 
-        val secondRun = build(project.rootDir, UPDATE_TASK)
-        assertContains(secondRun.output, "No watchdog diagnostics to exempt.")
-        assertEquals(fixedOnce, project.rootDir.mainSource("legacy").readText())
+        project.build(UPDATE_TASK).assertOutputHas("No watchdog diagnostics to exempt.")
+        assertEquals(fixedOnce, project.mainSource("legacy").readText())
     }
 
     @Test
     fun reportIncludesExemptionsThatAlreadyExisted() {
-        val project = object : WatchdogProject() {
-            override fun sources() = listOf(
-                source(
-                    """
-                        /** An existing deliberately open API. */
-                        @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
-                        public open class ExistingApi
+        val project = jvmProject {
+            source(
+                """
+                    /** An existing deliberately open API. */
+                    @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
+                    public open class ExistingApi
 
-                        @IntentionallyUndocumented(reason = ExemptionReason.API_DESIGN)
-                        public fun undocumentedApi(): Unit = Unit
+                    @IntentionallyUndocumented(reason = ExemptionReason.API_DESIGN)
+                    public fun undocumentedApi(): Unit = Unit
 
-                        /** An intentionally opaque identity object. */
-                        @org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEqualsHashCodeOrToString(
-                            reason = ExemptionReason.API_DESIGN,
-                        )
-                        public class OpaqueApi(public val value: Int)
-                    """.trimIndent(),
-                    "existingApi",
-                ),
+                    /** An intentionally opaque identity object. */
+                    @org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEqualsHashCodeOrToString(
+                        reason = ExemptionReason.API_DESIGN,
+                    )
+                    public class OpaqueApi(public val value: Int)
+                """,
+                "existingApi",
             )
-        }.gradleProject
-        val sourceFile = project.rootDir.mainSource("existingApi")
+        }
+        val sourceFile = project.mainSource("existingApi")
         val original = sourceFile.readText()
 
-        val result = build(project.rootDir, REPORT_TASK)
+        project.build(REPORT_TASK).assertTaskOutcome(":$REPORT_TASK", SUCCESS)
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":$REPORT_TASK")?.outcome)
         assertEquals(original, sourceFile.readText())
-        val report = project.rootDir.exemptsReport().readText()
+        val report = project.exemptsReport().readText()
         assertContains(report, "Applied annotations")
         assertContains(report, "@IntentionallyOpen (1)")
         assertContains(report, "@IntentionallyUndocumented (1)")
@@ -146,19 +136,16 @@ class UpdateBackwardsCompatibilityExemptsTest {
 
     @Test
     fun reportShowsApplicableAnnotationsWithoutUpdatingSources() {
-        val project = object : WatchdogProject() {
-            override fun sources() = listOf(
-                source("/** A legacy open API. */\npublic open class LegacyApi", "legacyApi"),
-            )
-        }.gradleProject
-        val sourceFile = project.rootDir.mainSource("legacyApi")
+        val project = jvmProject {
+            source("/** A legacy open API. */\npublic open class LegacyApi", "legacyApi")
+        }
+        val sourceFile = project.mainSource("legacyApi")
         val original = sourceFile.readText()
 
-        val result = build(project.rootDir, REPORT_TASK)
+        project.build(REPORT_TASK).assertTaskOutcome(":$REPORT_TASK", SUCCESS)
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":$REPORT_TASK")?.outcome)
         assertEquals(original, sourceFile.readText())
-        val report = project.rootDir.exemptsReport().readText()
+        val report = project.exemptsReport().readText()
         assertContains(report, "Not applied")
         assertContains(report, "@IntentionallyOpen (1)")
         assertContains(report, "Can be applied by updateBackwardsCompatibilityExempts.")
@@ -166,17 +153,14 @@ class UpdateBackwardsCompatibilityExemptsTest {
 
     @Test
     fun reportShowsThePlaceholderKdocWithoutUpdatingSources() {
-        val project = object : WatchdogProject() {
-            override fun sources() = listOf(source("public class Undocumented", "undocumented"))
-        }.gradleProject
-        val sourceFile = project.rootDir.mainSource("undocumented")
+        val project = jvmProject { source("public class Undocumented", "undocumented") }
+        val sourceFile = project.mainSource("undocumented")
         val original = sourceFile.readText()
 
-        val result = build(project.rootDir, REPORT_TASK)
+        project.build(REPORT_TASK).assertTaskOutcome(":$REPORT_TASK", SUCCESS)
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":$REPORT_TASK")?.outcome)
         assertEquals(original, sourceFile.readText())
-        val report = project.rootDir.exemptsReport().readText()
+        val report = project.exemptsReport().readText()
         assertContains(report, "No automatic annotation (1)")
         assertContains(report, "UNDOCUMENTED_PUBLIC_API")
         assertContains(report, "A placeholder KDoc can be added by updateBackwardsCompatibilityExempts.")
@@ -184,19 +168,14 @@ class UpdateBackwardsCompatibilityExemptsTest {
 
     @Test
     fun disabledDiagnosticsAreNotExempted() {
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                apiWatchdog {
-                    undocumentedPublicApi = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.NONE
-                }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(source("public open class UndocumentedOpen", "legacy"))
-        }.gradleProject
+        val project = jvmProject {
+            apiWatchdog { severity(NONE, UNDOCUMENTED_PUBLIC_API) }
+            source("public open class UndocumentedOpen", "legacy")
+        }
 
-        build(project.rootDir, UPDATE_TASK)
+        project.build(UPDATE_TASK)
 
-        val fixedText = project.rootDir.mainSource("legacy").readText()
+        val fixedText = project.mainSource("legacy").readText()
         assertFalse(fixedText.contains("@IntentionallyUndocumented"))
         assertFalse(fixedText.contains(PLACEHOLDER_KDOC))
         // The other diagnostics are still exempted.
@@ -205,20 +184,15 @@ class UpdateBackwardsCompatibilityExemptsTest {
 
     @Test
     fun demotedWarningsAreExemptedAllTheSame() {
-        val project = object : WatchdogProject(
-            extraBuildScript = """
-                apiWatchdog {
-                    openApiWithoutSubclassOptIn = org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity.WARNING
-                }
-            """.trimIndent(),
-        ) {
-            override fun sources() = listOf(source("/** A warning-only class. */\npublic open class WarningOnly", "warningOnly"))
-        }.gradleProject
+        val project = jvmProject {
+            apiWatchdog { severity(WARNING, OPEN_API_WITHOUT_SUBCLASS_OPT_IN) }
+            source("/** A warning-only class. */\npublic open class WarningOnly", "warningOnly")
+        }
 
-        build(project.rootDir, UPDATE_TASK)
+        project.build(UPDATE_TASK)
 
         assertContains(
-            project.rootDir.mainSource("warningOnly").readText(),
+            project.mainSource("warningOnly").readText(),
             "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic open class WarningOnly",
         )
     }
@@ -227,221 +201,148 @@ class UpdateBackwardsCompatibilityExemptsTest {
     fun worksWithoutExplicitApiMode() {
         // The task forces -Xexplicit-api=warning for its analysis, so a library that has not
         // adopted explicit API mode yet can still prepare its exemptions ahead of time.
-        val project = object : WatchdogProject(
-            explicitApi = false,
-        ) {
-            override fun sources() = listOf(source("/** An open class. */\npublic open class Open", "open"))
-        }.gradleProject
+        val project = jvmProject {
+            explicitApi = false
+            source("/** An open class. */\npublic open class Open", "open")
+        }
 
-        build(project.rootDir, UPDATE_TASK)
+        project.build(UPDATE_TASK)
 
         assertContains(
-            project.rootDir.mainSource("open").readText(),
+            project.mainSource("open").readText(),
             "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic open class Open",
         )
     }
 
     @Test
     fun missingImportsAreAdded() {
-        val project = object : WatchdogProject() {
-            override fun sources() = listOf(
-                source(
-                    "/** A bare open class. */\npublic open class Bare",
-                    "bare",
-                    includeDefaultImports = false,
-                )
-            )
-        }.gradleProject
+        val project = jvmProject {
+            source("/** A bare open class. */\npublic open class Bare", "bare", defaultImports = false)
+        }
 
-        build(project.rootDir, UPDATE_TASK)
+        project.build(UPDATE_TASK)
 
-        val fixedText = project.rootDir.mainSource("bare").readText()
+        val fixedText = project.mainSource("bare").readText()
         assertContains(fixedText, "import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason")
         assertContains(fixedText, "import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen")
         assertContains(fixedText, "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)")
 
-        val buildResult = build(project.rootDir, "build")
-        buildResult.assertNoWatchdogDiagnostics()
+        project.build("build").assertNoWatchdogDiagnostics()
     }
 
     @Test
     fun unfixableDiagnosticsAreReportedForManualAttention() {
-        val project = object : WatchdogProject() {
-            override fun sources() = listOf(source(unfixableFile, "manual"))
-        }.gradleProject
+        val project = jvmProject { source(unfixableFile, "manual") }
 
-        val reportResult = build(project.rootDir, REPORT_TASK)
-        val report = project.rootDir.exemptsReport().readText()
+        project.build(REPORT_TASK).assertTaskOutcome(":$REPORT_TASK", SUCCESS)
+        val report = project.exemptsReport().readText()
         assertContains(report, "Not applied")
         assertContains(report, "No automatic annotation")
         assertContains(report, "DSL_MARKER_NOOP_TYPE_POSITION")
 
-        val result = build(project.rootDir, UPDATE_TASK)
+        val result = project.build(UPDATE_TASK)
 
-        assertContains(result.output, "needs manual attention")
-        assertContains(result.output, "DSL_MARKER_NOOP_TYPE_POSITION")
-        assertEquals(TaskOutcome.SUCCESS, reportResult.task(":$REPORT_TASK")?.outcome)
+        result.assertOutputHas("needs manual attention")
+        result.assertOutputHas("DSL_MARKER_NOOP_TYPE_POSITION")
     }
 
     @Test
     fun brokenCompilationFailsBeforeTheFixerAndDoesNotTouchSources() {
-        val brokenSource = "internal fun broken() { thisCallDoesNotResolve() }"
-        val project = object : WatchdogProject() {
-            override fun sources() = listOf(source(brokenSource, "broken"))
-        }.gradleProject
-        val original = project.rootDir.mainSource("broken").readText()
+        val project = jvmProject {
+            source("internal fun broken() { thisCallDoesNotResolve() }", "broken")
+        }
+        val original = project.mainSource("broken").readText()
 
-        val result = buildAndFail(project.rootDir, UPDATE_TASK)
+        val result = project.buildAndFail(UPDATE_TASK)
 
-        assertContains(result.output, "thisCallDoesNotResolve")
-        assertEquals(null, result.task(":$UPDATE_TASK")?.outcome)
-        assertEquals(original, project.rootDir.mainSource("broken").readText())
+        result.assertOutputHas("thisCallDoesNotResolve")
+        result.assertTaskOutcome(":$UPDATE_TASK", null)
+        assertEquals(original, project.mainSource("broken").readText())
     }
 
     @Test
     fun unfixableAlwaysErrorDiagnosticsAreDisabledOnlyDuringTheUpdate() {
-        val project = object : WatchdogProject() {
-            override fun buildGradleProject() = multiModuleProject {
-                root {
-                    sources(source(alwaysErrorDiagnosticsFile, "alwaysErrors", "test.consumer"))
-                    dependencies(implementation(":model"))
-                }
-                subproject("model") {
-                    sources(source(dependencyTypeFile, "ExternalModel", "test.model"))
-                }
-            }
-        }.gradleProject
-        val sourceFile = project.rootDir.resolve("src/main/kotlin/test/consumer/alwaysErrors.kt")
+        val project = jvmProject {
+            source(alwaysErrorDiagnosticsFile, "alwaysErrors", "test.consumer")
+            dependencies(implementation(":model"))
+            modelSubproject()
+        }
+        val sourceFile = project.file("src/main/kotlin/test/consumer/alwaysErrors.kt")
         val original = sourceFile.readText()
 
-        val updateResult = build(project.rootDir, UPDATE_TASK)
+        val updateResult = project.build(UPDATE_TASK)
 
-        assertEquals(TaskOutcome.SUCCESS, updateResult.task(":$UPDATE_TASK")?.outcome)
-        assertContains(updateResult.output, "No watchdog diagnostics to exempt.")
+        updateResult.assertTaskOutcome(":$UPDATE_TASK", SUCCESS)
+        updateResult.assertOutputHas("No watchdog diagnostics to exempt.")
         assertEquals(original, sourceFile.readText())
 
         // The suppression is task-scoped: an ordinary compilation still enforces all three.
-        val compileResult = buildAndFail(project.rootDir, "compileKotlin")
-        assertContains(compileResult.output, "exemption doesn't explain why it is applied")
-        assertContains(compileResult.output, "type is marked as internal API")
-        assertContains(compileResult.output, "published transitively to consumers")
+        project.buildAndFail("compileKotlin").assertErrors(
+            EXEMPTION_WITHOUT_EXPLANATION,
+            PUBLIC_TYPE_WITH_INTERNAL_API,
+            PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY,
+        )
     }
 
     @Test
     fun jsOnlyProjectIsFixedThroughItsRegularCompilation() {
-        val project = object : WatchdogProject(
-            multiplatform = true,
-        ) {
-            override fun multiplatformTargetsBlock(): String = "kotlin {\n  js { nodejs() }\n}\n"
-            override fun sources() = listOf(source("/** A JS class. */\npublic open class JsOnly", "jsOnly"))
-        }.gradleProject
+        val project = kmpProject("js { nodejs() }") {
+            source("/** A JS class. */\npublic open class JsOnly", "jsOnly")
+        }
 
-        val result = build(project.rootDir, UPDATE_TASK)
+        val result = project.build(UPDATE_TASK)
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":$UPDATE_TASK")?.outcome)
-        assertEquals(TaskOutcome.SUCCESS, result.task(":compileKotlinJs")?.outcome)
+        result.assertTaskOutcome(":$UPDATE_TASK", SUCCESS)
+        result.assertTaskOutcome(":compileKotlinJs", SUCCESS)
         assertContains(
-            project.rootDir.resolve("src/commonMain/kotlin/test/jsOnly.kt").readText(),
-            "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
-                    "public open class JsOnly",
+            project.file("src/commonMain/kotlin/test/jsOnly.kt").readText(),
+            "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic open class JsOnly",
         )
     }
 
     @Test
     fun nativeOnlyProjectIsFixedThroughItsRegularCompilation() {
         val native = KmpTarget.NATIVE_HOST
-        val project = object : WatchdogProject(
-            multiplatform = true,
-        ) {
-            override fun multiplatformTargetsBlock(): String =
-                "kotlin {\n  ${native.gradleTargetName}()\n}\n"
+        val project = kmpProject("${native.gradleTargetName}()") {
+            source("/** A native class. */\npublic open class NativeOnly", "nativeOnly")
+        }
 
-            override fun sources() = listOf(source("/** A native class. */\npublic open class NativeOnly", "nativeOnly"))
-        }.gradleProject
+        val result = project.build(UPDATE_TASK)
 
-        val result = build(project.rootDir, UPDATE_TASK)
-
-        assertEquals(TaskOutcome.SUCCESS, result.task(":$UPDATE_TASK")?.outcome)
-        assertEquals(TaskOutcome.SUCCESS, result.task(":${native.compileTaskName}")?.outcome)
+        result.assertTaskOutcome(":$UPDATE_TASK", SUCCESS)
+        result.assertTaskOutcome(":${native.compileTaskName}", SUCCESS)
         assertContains(
-            project.rootDir.resolve("src/commonMain/kotlin/test/nativeOnly.kt").readText(),
-            "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
-                    "public open class NativeOnly",
+            project.file("src/commonMain/kotlin/test/nativeOnly.kt").readText(),
+            "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic open class NativeOnly",
         )
     }
 
     @Test
     fun multiplatformJvmCompilationCoversCommonSources() {
-        val project = object : WatchdogProject(
-            multiplatform = true,
-        ) {
-            override fun multiplatformTargetsBlock(): String = "kotlin {\n  jvm()\n}\n"
-            override fun sources() = listOf(source(multiplatformFile, "shared"))
-        }.gradleProject
+        val project = kmpProject { source(multiplatformFile, "shared") }
 
-        val result = build(project.rootDir, UPDATE_TASK)
-        assertEquals(TaskOutcome.SUCCESS, result.task(":$UPDATE_TASK")?.outcome)
+        project.build(UPDATE_TASK).assertTaskOutcome(":$UPDATE_TASK", SUCCESS)
 
-        val fixedText = project.rootDir.resolve("src/commonMain/kotlin/test/shared.kt").readText()
         assertContains(
-            fixedText,
+            project.file("src/commonMain/kotlin/test/shared.kt").readText(),
             "@IntentionallyDataClass(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic data class SharedData",
         )
 
         // The JVM compilation of the fixed sources passes with the watchdog active.
-        val compileResult = build(project.rootDir, "compileKotlinJvm")
-        compileResult.assertNoWatchdogDiagnostics()
+        project.build("compileKotlinJvm").assertNoWatchdogDiagnostics()
     }
 
-    private fun File.mainSource(fileNameWithoutExtension: String): File =
-        resolve("src/main/kotlin/test/$fileNameWithoutExtension.kt")
+    private fun WatchdogBuild.mainSource(fileNameWithoutExtension: String): File =
+        file("src/main/kotlin/test/$fileNameWithoutExtension.kt")
 
-    private fun File.exemptsReport(): File =
-        resolve("build/reports/api-watchdog/backwards-compatibility-exempts.html")
-
-    private fun BuildResult.assertNoWatchdogDiagnostics() {
-        WATCHDOG_MESSAGES.forEach { message ->
-            assertFalse(output.contains(message), "Expected no '$message' diagnostic in:\n$output")
-        }
-    }
+    private fun WatchdogBuild.exemptsReport(): File =
+        file("build/reports/api-watchdog/backwards-compatibility-exempts.html")
 
     private companion object {
         const val UPDATE_TASK = "updateBackwardsCompatibilityExempts"
         const val REPORT_TASK = "generateBackwardsCompatibilityExemptsReport"
         const val PLACEHOLDER_KDOC = "/** TODO: Provide kDocs for this declaration */"
-
-        val CONTEXT_PARAMETERS_BUILD_SCRIPT = """
-            kotlin {
-                compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")
-            }
-        """.trimIndent()
-
-        val WATCHDOG_MESSAGES = listOf(
-            "can be subclassed outside the library",
-            "exhaustively, so adding",
-            "has no `KDoc`",
-            "abbreviates a function type",
-            "exposes its constructor property list",
-            "neither declares nor inherits an `equals`",
-            "neither declares nor inherits a `hashCode`",
-            "neither declares nor inherits a `toString`",
-            "exposes the mutable collection type",
-            "exposes the tuple type",
-            "takes the `Boolean` parameter",
-            "exposes a nullable `Boolean`",
-            "is required but declared after an optional parameter",
-            "appear in the opposite relative order in another overload",
-            "contains logic beyond a single thin delegating statement",
-            "has the `value class`",
-            "Hide it from Java with `@JvmSynthetic`",
-            "The `companion object`",
-            "The facade class",
-            "declares default parameter values",
-            "allows the `FUNCTION` annotation target",
-            "declares no annotation targets",
-            "exemption doesn't explain why it is applied",
-            "type is marked as internal API",
-        )
+        const val CONTEXT_PARAMETERS_BUILD_SCRIPT = """kotlin { compilerOptions.freeCompilerArgs.add("-Xcontext-parameters") }"""
     }
 }
 
@@ -449,7 +350,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
  * One specimen of every diagnostic the fixer can resolve automatically. The two undocumented
  * declarations get a placeholder KDoc, every other one is documented.
  */
-@Suppress("RedundantVisibilityModifier", "RedundantSuspendModifier", "MayBeConstant")
+@Suppress("RedundantSuspendModifier", "MayBeConstant")
 @Language("kotlin")
 private val fixableFile = """
     /** A deliberately unrestricted base class. */
@@ -555,7 +456,6 @@ private val fixableFile = """
 """.trimIndent()
 
 /** The diagnostics no annotation can acknowledge: they stay for a human to resolve. */
-@Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val unfixableFile = """
     /** A DSL marker with tidy targets, misapplied to an inert type position below. */
@@ -568,7 +468,6 @@ private val unfixableFile = """
 """.trimIndent()
 
 /** Always-error diagnostics that the adoption task can't acknowledge and therefore skips. */
-@Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val alwaysErrorDiagnosticsFile = """
     import test.model.ExternalModel
@@ -598,14 +497,6 @@ private val alwaysErrorDiagnosticsFile = """
     }
 """.trimIndent()
 
-@Suppress("RedundantVisibilityModifier")
-@Language("kotlin")
-private val dependencyTypeFile = """
-    /** A model supplied by another module. */
-    public class ExternalModel
-""".trimIndent()
-
-@Suppress("RedundantVisibilityModifier")
 @Language("kotlin")
 private val multiplatformFile = """
     /** A shared data holder. */

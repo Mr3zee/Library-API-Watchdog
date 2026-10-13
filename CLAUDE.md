@@ -23,14 +23,22 @@ Kotlin version (`k2320Test`, `k2410Test`, ...). `./gradlew :<module>:tasks --all
 ```
 
 Each test-data file is one test method in the generated classes. After you add, remove, or rename a file in
-`compiler-plugin/src/test/data/diagnostics/`, run `generateTests` again. Test results are in
-`build/test-results/<taskName>/` of the module.
+`compiler-plugin/src/test/data/diagnostics/` or `compiler-plugin/src/test/data/messages/`, run `generateTests`
+again. Test results are in `build/test-results/<taskName>/` of the module.
+
+The `messages/` test data checks the rendered text of every diagnostic. Each `.kt` file has the inline
+markers plus a `.messages.txt` dump of the full messages (`JvmDiagnosticMessagesTestGenerated`). A missing
+dump is generated on the first run. The dump replaces the macOS shortcut `⌘N` with `Alt+Insert`.
+Hand-written tests in `compiler-plugin/src/test/kotlin` run in every `k*Test` task.
 
 ## Constraints the code doesn't show
 
 - `diagnostics.json` is the single source of truth for diagnostic texts. The build generates `WatchdogDiagnosticMessages`
-  (compiler plugin) and `WatchdogChecks` (Gradle plugin) from it. The docs build fails on a diagnostic name or range
-  that the compiler doesn't report.
+  (compiler plugin), `WatchdogChecks` (Gradle plugin), and the `Diagnostic` enum of the Gradle plugin's functional
+  tests from it. The docs build fails on a diagnostic name or range that the compiler doesn't report.
+- The Gradle functional tests describe a build with the DSL in `WatchdogProject.kt` (`jvmProject`, `kmpProject`,
+  `androidLibrary`, `kmpAndroidProject`) and check output with the `BuildResult` assertions in `BuildAssertions.kt`,
+  which match the first paragraph of each message. A new always-error diagnostic goes into `alwaysErrorDiagnostics`.
 - `WatchdogDiagnosticsRecorder` must not reference `com.intellij` types in bytecode, because the jar runs both in the
   CLI and in the relocated `kotlin-compiler-embeddable` classpath.
 - The fixer uses K2 PSI entry points only, with relocated `org.jetbrains.kotlin.com.intellij` imports. Its
@@ -51,9 +59,11 @@ Each test-data file is one test method in the generated classes. After you add, 
 
 1. The entry in `diagnostics.json`.
 2. The factory in `WatchdogDiagnostics`, a checker in `fir/`, and its registration in `WatchdogFirCheckers`.
-3. The severity property and name mapping in `WatchdogGradleExtension`, and the assertions in `WatchdogProjectTest`.
+3. The severity property and name mapping in `WatchdogGradleExtension`, and a specimen in the `unacknowledgedFile`
+   of `WatchdogProjectTest`.
 4. The checker list and the severity sample in README.md.
-5. Test data and the regenerated tests.
+5. Test data in `diagnostics/`, a `messages/` file that triggers every `parameterValues` variant, and the
+   regenerated tests.
 6. The fixer: `ExemptionRegistry`, the expected-names set in `FixerProtocolTest`, and the specimen file of
    `UpdateBackwardsCompatibilityExemptsTest`.
 7. The docs: the check page at the `docs` path from `diagnostics.json`, `docs/sidebars.ts`, the page map in
