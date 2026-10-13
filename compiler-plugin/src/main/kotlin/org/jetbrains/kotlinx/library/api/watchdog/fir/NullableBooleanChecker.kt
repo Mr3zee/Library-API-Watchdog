@@ -11,16 +11,10 @@ import org.jetbrains.kotlin.fir.types.lowerBoundIfFlexible
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
 
-/**
- * Reports nullable Booleans found by the [ExposedTypeChecker] signature sweep. Flexible types are
- * inspected through their lower bound so source nullability is preserved. Constructors are included.
- * A `vararg` needs no special handling because its nullable element type is visited as a type
- * argument.
- */
 internal class NullableBooleanChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : ExposedTypeChecker(WatchdogClassIds.IntentionallyNullableBoolean) {
-    /** Nullability lives on the upper bound, so the lower one is what Kotlin sources declare. */
+    /** The upper bound of a flexible type is nullable, so the lower bound is what the source declares. */
     override fun ConeKotlinType.declaredBound(): ConeKotlinType = lowerBoundIfFlexible()
 
     context(context: CheckerContext)

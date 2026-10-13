@@ -7,8 +7,6 @@ package foo.bar
 import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyKotlinOnlyApi
 
-// Kotlin-only shapes visible to Java sources: should warn.
-
 public suspend fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>fetch<!>(key: String): String = key
 
 public inline fun <reified T> <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>instantiate<!>(): T? = null
@@ -21,21 +19,16 @@ public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>configure<!>(block: Config.(
 
 public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>onEach<!>(action: (Int) -> Unit) {}
 
-// Nullability doesn't matter: the parameter is still a Kotlin function type.
 public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>onEachOrNot<!>(action: ((Int) -> Unit)?) {}
 
-// A type alias doesn't change what Java sees: the expansion is a Unit-returning function type.
 public typealias Callback = (Int) -> Unit
 
 public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>onEvent<!>(callback: Callback) {}
 
-// A vararg's array is compiler-generated. Callers still pass Kotlin function values one by one.
 public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>onEvents<!>(vararg callbacks: (Int) -> Unit) {}
 
 public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>raceAll<!>(vararg work: suspend () -> Int) {}
 
-// Context parameters become ordinary JVM parameters. Their Kotlin-only function types are just
-// as awkward for Java callers even though Kotlin callers obtain the values implicitly.
 context(action: (Int) -> Unit)
 public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>onEachContextually<!>() {}
 
@@ -45,18 +38,16 @@ public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>raceContextually<!>() {}
 context(block: Config.() -> Int)
 public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>configureContextually<!>() {}
 
-// Function types Java can invoke naturally remain accepted in vararg position too.
 public fun transformAll(vararg mappers: (Int) -> Int) {}
 
 context(mapper: (Int) -> Int)
 public fun transformContextually(): Int = mapper(0)
 
-// An open (non-abstract) member still has a body Java sees: should warn.
 public open class Loader {
     public open suspend fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>load<!>(key: String): String = key
 }
 
-// Java-usable shapes: no warning.
+// A function type that returns `Unit` is Kotlin-only. One that returns a value is Java-usable.
 
 public fun transform(mapper: (Int) -> Int): Int = mapper(0)
 
@@ -68,12 +59,11 @@ public fun listen(listener: Listener) {}
 
 public inline fun <T> pass(value: T): T = value
 
-// @JvmSynthetic already hides the Kotlin-only shape: no warning.
 @JvmSynthetic
 public suspend fun hiddenFetch(key: String): String = key
 
-// Abstract and interface members can't be hidden without breaking implementations, and an
-// override repeats the shape reported on the base declaration: no warning.
+// `@JvmSynthetic` can't hide an abstract or interface member without a change to its
+// implementations. An override isn't reported.
 
 public interface Resolver {
     public suspend fun resolve(key: String): String
@@ -89,12 +79,12 @@ public abstract class BaseResolver {
     public abstract suspend fun resolveBase(key: String): String
 }
 
-// Constructors can't carry @JvmSynthetic: no warning.
+// A constructor can't carry `@JvmSynthetic`.
 public class Watcher(onChange: () -> Unit)
 
-// A non-suspend signature mangled by a value class is already invisible to Java sources and
-// reported by MANGLED_JVM_NAME_PUBLIC_API (muted here). Suspend functions remain owned by this
-// check even when their signature is also mangled. Everything inside a value class is skipped.
+// A non-suspend signature mangled by a value class is reported by MANGLED_JVM_NAME_PUBLIC_API
+// instead. A suspend function is reported here even when mangled. The check skips the members
+// of a value class.
 
 @JvmInline
 public value class UserId(public val raw: String)
@@ -106,20 +96,15 @@ public value class Wrapped(public val raw: String) {
     public suspend fun refresh(): String = raw
 }
 
-// Acknowledged declarations: no warning.
-
 @IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)
 public suspend fun acknowledgedFetch(key: String): String = key
 
-// A class-level exemption covers every function inside.
 @IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)
 public class KotlinOnlyService {
     public suspend fun refresh(key: String): String = key
 
     public fun onEachInside(action: (Int) -> Unit) {}
 }
-
-// Not visible outside the library: no warning.
 
 @PublishedApi
 internal suspend fun publishedFetch(key: String): String = key

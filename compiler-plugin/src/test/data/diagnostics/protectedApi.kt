@@ -109,7 +109,6 @@ public open class ProtectedApi {
     }
 }
 
-// A written public modifier inside an internal container is not effective public API.
 internal class InternalContainer {
     public data class HiddenData(public val value: Int)
 

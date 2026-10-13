@@ -17,13 +17,7 @@ import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.expressions.unwrapAndFlattenArgument
 import org.jetbrains.kotlin.name.StandardClassIds
 
-/**
- * Reports `@DslMarker` annotation classes with no declared targets or with targets other than
- * `CLASS`, `ANNOTATION_CLASS`, `TYPE`, and `TYPEALIAS`. All marker visibilities are checked.
- *
- * The backwards-compatibility exemption applies to the annotation class and covers both
- * diagnostics.
- */
+/** Checks every visibility, because a marker on a private annotation class has no effect either. */
 internal class DslMarkerTargetsChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirClassChecker(MppCheckerKind.Common) {
@@ -82,10 +76,7 @@ internal class DslMarkerTargetsChecker(
         }
     }
 
-    /**
-     * The targets on which scope control reacts to a marker. `ANNOTATION_CLASS` counts because
-     * it is a classifier declaration.
-     */
+    /** `ANNOTATION_CLASS` counts because it is a classifier declaration. */
     private fun KotlinTarget.isEffectiveDslMarkerTarget(): Boolean =
         this == KotlinTarget.CLASS ||
                 this == KotlinTarget.ANNOTATION_CLASS ||

@@ -1,37 +1,37 @@
-/openApi.kt:9:19: error: OPEN_API_WITHOUT_SUBCLASS_OPT_IN
+/openApi.kt:7:19: error: OPEN_API_WITHOUT_SUBCLASS_OPT_IN
     The class `OpenClass` can be subclassed outside the library. Apply `@SubclassOptInRequired`, or make every constructor `internal` or `private`.
 
     If this is intended, apply `@IntentionallyOpen` to the class.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in
 
-/openApi.kt:11:23: error: OPEN_API_WITHOUT_SUBCLASS_OPT_IN
+/openApi.kt:9:23: error: OPEN_API_WITHOUT_SUBCLASS_OPT_IN
     The class `AbstractClass` can be subclassed outside the library. Apply `@SubclassOptInRequired`, or make every constructor `internal` or `private`.
 
     If this is intended, apply `@IntentionallyOpen` to the class.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in
 
-/openApi.kt:13:18: error: OPEN_API_WITHOUT_SUBCLASS_OPT_IN
+/openApi.kt:11:18: error: OPEN_API_WITHOUT_SUBCLASS_OPT_IN
     The interface `Interface` can be subclassed outside the library. Apply `@SubclassOptInRequired`.
 
     If this is intended, apply `@IntentionallyOpen` to the interface.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in
 
-/openApi.kt:15:22: error: OPEN_API_WITHOUT_SUBCLASS_OPT_IN
+/openApi.kt:13:22: error: OPEN_API_WITHOUT_SUBCLASS_OPT_IN
     The interface `FunInterface` can be subclassed outside the library. Apply `@SubclassOptInRequired`.
 
     If this is intended, apply `@IntentionallyOpen` to the interface.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in
 
-/openApi.kt:19:1: error: SUBCLASS_OPT_IN_WITHOUT_MARKERS
+/openApi.kt:17:1: error: SUBCLASS_OPT_IN_WITHOUT_MARKERS
     `@SubclassOptInRequired` on `MarkerlessClass` lists no marker classes, so any external class can subclass it. Pass at least one opt-in marker class or remove the annotation.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/subclass-opt-in-without-markers
 
-/openApi.kt:22:1: error: SUBCLASS_OPT_IN_WITHOUT_MARKERS
+/openApi.kt:20:1: error: SUBCLASS_OPT_IN_WITHOUT_MARKERS
     `@SubclassOptInRequired` on `MarkerlessInterface` lists no marker classes, so any external class can subclass it. Pass at least one opt-in marker class or remove the annotation.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/subclass-opt-in-without-markers

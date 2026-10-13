@@ -3,10 +3,7 @@ package org.jetbrains.kotlinx.library.api.watchdog.fir
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/**
- * The message dumps replace the macOS shortcut, so this test covers the `ideaGenerateShortcutMac`
- * parameter value instead.
- */
+/** The message dumps replace the macOS shortcut, so this test covers it. */
 class IdeaGenerateShortcutTest {
     private val diagnostic = WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_EQUALS.name
 

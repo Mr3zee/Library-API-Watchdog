@@ -8,8 +8,6 @@ import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyExhaustive
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
 
-// Message parameters: the exemption annotation and each generic reason.
-
 <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyOpen<!>
 public open class BareExemption
 

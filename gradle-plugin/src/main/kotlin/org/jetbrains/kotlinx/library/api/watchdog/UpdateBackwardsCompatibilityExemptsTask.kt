@@ -15,43 +15,34 @@ import org.gradle.api.tasks.UntrackedTask
 import org.gradle.process.ExecOperations
 
 /**
- * Rewrites the module's Kotlin sources so that every recorded watchdog diagnostic is
- * acknowledged with the matching `@Intentionally*` exemption annotation carrying
- * `reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`.
- *
- * The task is meant for adopting the watchdog on an existing library: the already-shipped API
- * can't change shape without breaking users, so its diagnostics are acknowledged wholesale
- * and the checks keep guarding only the API added afterwards. New code should get a deliberate
- * decision instead: fix the shape, or pick the honest reason by hand.
- *
- * When this task is selected, every main Kotlin compilation writes a report through the regular
- * KGP compile task. This task depends on those compilations, hands all reports to one standalone
- * PSI fixer process, and never invokes a Kotlin compiler itself. Exact duplicates from common
- * sources compiled for several targets are removed by the fixer.
+ * The `updateBackwardsCompatibilityExempts` task. It adds the matching `@Intentionally*`
+ * annotation with `reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY` to every declaration
+ * with a watchdog diagnostic in the main Kotlin sources. Use it when you adopt the watchdog on a
+ * library with a released API.
  */
-@UntrackedTask(because = "Rewrites the Kotlin sources it analyzes, so it must always run")
+@UntrackedTask(because = "Rewrites the Kotlin sources it analyzes")
 public abstract class UpdateBackwardsCompatibilityExemptsTask : DefaultTask() {
-    /** The main Kotlin compile task names KGP exposed to the compiler support plugin. */
+    /** The names of the main Kotlin compile tasks. */
     @get:Input
     public abstract val compilationNames: ListProperty<String>
 
-    /** Reports written by the regular Kotlin compilation tasks. Missing reports are empty. */
+    /** The diagnostic reports of the Kotlin compile tasks. A missing report is empty. */
     @get:Internal
     public abstract val diagnosticReports: ConfigurableFileCollection
 
-    /** The dev-kit multi-version artifact containing the standalone fixer tool. */
+    /** The multi-version artifact of the fixer. */
     @get:Classpath
     public abstract val fixerArtifact: ConfigurableFileCollection
 
-    /** kotlin-compiler and its runtime dependencies used for PSI parsing. */
+    /** The Kotlin compiler and its runtime dependencies. */
     @get:Classpath
     public abstract val fixerClasspath: ConfigurableFileCollection
 
-    /** The consuming project's Kotlin version, used to select the matching fixer overlay. */
+    /** The Kotlin version of the project. It selects the fixer overlay. */
     @get:Input
     public abstract val kotlinVersion: Property<String>
 
-    /** The directory console output relativizes source paths against. */
+    /** The directory that source paths in the console output are relative to. */
     @get:Internal
     public abstract val projectDirectory: DirectoryProperty
 
@@ -61,7 +52,7 @@ public abstract class UpdateBackwardsCompatibilityExemptsTask : DefaultTask() {
     @TaskAction
     public fun updateExempts() {
         if (compilationNames.get().isEmpty()) {
-            logger.warn("No main Kotlin compilation found. There are no watchdog diagnostics to exempt.")
+            logger.warn("No main Kotlin compilation found, so there are no watchdog diagnostics to exempt.")
             return
         }
 
@@ -80,7 +71,7 @@ public abstract class UpdateBackwardsCompatibilityExemptsTask : DefaultTask() {
         var kdocCount = 0
         response["fixed"].orEmpty().forEach { value ->
             val (diagnostic, annotation, line, path) = value.split('\t', limit = 4)
-            // An empty annotation field means the fix is a placeholder KDoc, not an annotation.
+            // An empty annotation field marks a placeholder KDoc.
             if (annotation.isEmpty()) {
                 kdocCount++
                 logger.lifecycle("A placeholder KDoc documents $diagnostic at ${relativize(path)}:$line")

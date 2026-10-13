@@ -19,10 +19,8 @@ import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.types.functionTypeKind
 
 /**
- * Reports each required parameter after the first defaulted or `vararg` parameter in a watched
- * function or constructor. A final required function-type or `fun interface` parameter is skipped
- * to preserve trailing-lambda shapes. Only value parameters participate because context parameters
- * are not arguments in the call's ordered argument list. Overrides are skipped.
+ * A last required parameter that accepts a trailing lambda isn't reported. Context parameters
+ * aren't checked, because the call site doesn't pass them.
  */
 internal class RequiredParameterAfterOptionalChecker(
     private val severities: WatchdogDiagnosticSeverities,
@@ -78,12 +76,7 @@ internal class RequiredParameterAfterOptionalChecker(
         }
     }
 
-    /**
-     * Whether a lambda literal can be passed for this parameter in trailing position: its
-     * (fully expanded) type is a function type - suspend and nullable variants included, but not
-     * the `KFunction` reflection kinds, which no lambda literal satisfies - or a `fun interface`,
-     * where SAM conversion keeps the same call syntax.
-     */
+    /** No lambda literal satisfies a `KFunction` reflection type. */
     context(context: CheckerContext)
     private fun FirValueParameter.acceptsTrailingLambda(): Boolean {
         val type = returnTypeRef.coneType.let {

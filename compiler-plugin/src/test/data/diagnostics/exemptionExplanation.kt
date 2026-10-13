@@ -16,9 +16,6 @@ import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyUndocumented
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEqualsHashCodeOrToString
 import org.jetbrains.kotlinx.library.api.watchdog.InternalAnnotationMarker
 
-// A bare exemption defaults to reason = OTHER with an empty description, which explains
-// nothing: should warn.
-
 <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyOpen<!>
 public open class BareOpenExemption
 
@@ -40,13 +37,10 @@ public class BareCombinedStatefulExemption(public val x: Int)
 <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyNonTransitiveDependency<!>
 public class BareNonTransitiveDependencyExemption
 
-// @InternalAnnotationMarker needs no explanation: the marked annotation class documents the
-// internal API surface itself.
+// `@InternalAnnotationMarker` isn't an exemption.
 
 @InternalAnnotationMarker
 public annotation class UnexplainedMarker
-
-// Spelling the unexplained default out changes nothing: should warn.
 
 <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyOpen(reason = ExemptionReason.OTHER)<!>
 public open class ExplicitOtherWithoutDescription
@@ -54,20 +48,16 @@ public open class ExplicitOtherWithoutDescription
 <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyOpen("", ExemptionReason.OTHER)<!>
 public open class PositionalEmptyDescription
 
-// A whitespace-only description explains nothing either: should warn.
-
 <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyOpen(description = "   ")<!>
 public open class BlankDescription
 
-// A specific reason explains the exemption by itself: no warning.
+// Only API_DESIGN and FOR_BACKWARDS_COMPATIBILITY explain an exemption without a description.
 
 @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public open class ReasonExplainedExemption
 
 @IntentionallyOpen("", ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)
 public open class PositionalReasonExemption
-
-// A non-empty description explains the exemption even with the OTHER reason: no warning.
 
 @IntentionallyOpen(description = "extension point for custom transports")
 public open class DescriptionExplainedExemption
@@ -77,9 +67,6 @@ public open class PositionalDescriptionExemption
 
 @IntentionallyOpen(description = "kept open for mocking", reason = ExemptionReason.OTHER)
 public open class OtherWithDescriptionExemption
-
-// INTEROP and EXTERNAL_CONTRACT only categorize the exemption - which constraint applies is
-// not obvious from the entry alone - so they still require a description.
 
 <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyOpen(reason = ExemptionReason.INTEROP)<!>
 public open class InteropWithoutDescription
@@ -93,16 +80,13 @@ public open class InteropWithDescription
 @IntentionallyExhaustive(description = "Mirrors ISO 4217.", reason = ExemptionReason.EXTERNAL_CONTRACT)
 public enum class ExternalContractWithDescription { ENTRY }
 
-// IGNORE_JAVA_INTEROP categorizes the same way: why this particular declaration gets to ignore
-// Java callers is not obvious from the entry alone, so it still requires a description.
-
 <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyKotlinOnlyApi(reason = ExemptionReason.IGNORE_JAVA_INTEROP)<!>
 public suspend fun ignoredInteropWithoutDescription(): Int = 0
 
 @IntentionallyKotlinOnlyApi(description = "Coroutine-first API. Java gets the blocking facade.", reason = ExemptionReason.IGNORE_JAVA_INTEROP)
 public suspend fun ignoredInteropWithDescription(): Int = 0
 
-// Exemptions on properties from constructor parameters are validated once, on the property.
+// A constructor property is reported once.
 
 /** Documented holder. */
 public class Holder(
@@ -110,8 +94,7 @@ public class Holder(
     @IntentionallyUndocumented(reason = ExemptionReason.API_DESIGN) public val explained: Int,
 )
 
-// Exemptions on type parameters and type usages must explain themselves too. A dedicated type
-// checker validates the type-use form, including outside watched public API.
+// Every annotation use is checked, in non-public declarations and internal API too.
 
 public fun <<!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyMutableCollection<!> T : MutableList<Int>> bareBound(source: T): List<Int> = source.toList()
 
@@ -125,9 +108,6 @@ public fun localBareTypeUse(): Unit {
     val items: <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyMutableCollection<!> MutableList<Int> = mutableListOf()
     items.clear()
 }
-
-// The check validates the annotation call itself, so it also fires on declarations that are
-// not watched public API: non-public declarations and internal API subtrees.
 
 <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyOpen<!>
 internal open class InternalBareExemption

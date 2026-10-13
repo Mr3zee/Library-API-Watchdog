@@ -2,8 +2,6 @@
 // EXPLICIT_API_MODE: WARNING
 // DIAGNOSTICS: -UNDOCUMENTED_PUBLIC_API
 
-// Message parameters: the facade class name and the callable kinds the file holds.
-
 // FILE: functions.kt
 package foo.bar
 

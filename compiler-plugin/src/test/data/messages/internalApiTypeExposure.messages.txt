@@ -1,39 +1,39 @@
-/exposure.kt:28:28: error: PUBLIC_TYPE_WITH_INTERNAL_API
+/exposure.kt:25:28: error: PUBLIC_TYPE_WITH_INTERNAL_API
     The property `leakedProperty` publicly exposes `lib.api.InternalType`, but that type is marked as internal API with `@InternalLibApi`. Remove the internal type from the public signature, or mark the exposing declaration with an internal API annotation too.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api
 
-/exposure.kt:30:12: error: PUBLIC_TYPE_WITH_INTERNAL_API
+/exposure.kt:27:12: error: PUBLIC_TYPE_WITH_INTERNAL_API
     The property receiver `leakedReceiver` publicly exposes `lib.api.InternalType`, but that type is marked as internal API with `@InternalLibApi`. Remove the internal type from the public signature, or mark the exposing declaration with an internal API annotation too.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api
 
-/exposure.kt:33:28: error: PUBLIC_TYPE_WITH_INTERNAL_API
+/exposure.kt:30:28: error: PUBLIC_TYPE_WITH_INTERNAL_API
     The function `leakedReturn` publicly exposes `lib.api.InternalType`, but that type is marked as internal API with `@InternalLibApi`. Remove the internal type from the public signature, or mark the exposing declaration with an internal API annotation too.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api
 
-/exposure.kt:35:12: error: PUBLIC_TYPE_WITH_INTERNAL_API
+/exposure.kt:32:12: error: PUBLIC_TYPE_WITH_INTERNAL_API
     The function receiver `leakedFunctionReceiver` publicly exposes `lib.api.InternalType`, but that type is marked as internal API with `@InternalLibApi`. Remove the internal type from the public signature, or mark the exposing declaration with an internal API annotation too.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api
 
-/exposure.kt:37:35: error: PUBLIC_TYPE_WITH_INTERNAL_API
+/exposure.kt:34:35: error: PUBLIC_TYPE_WITH_INTERNAL_API
     The parameter `value` publicly exposes `lib.api.InternalType`, but that type is marked as internal API with `@InternalLibApi`. Remove the internal type from the public signature, or mark the exposing declaration with an internal API annotation too.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api
 
-/exposure.kt:39:32: error: PUBLIC_TYPE_WITH_INTERNAL_API
+/exposure.kt:36:32: error: PUBLIC_TYPE_WITH_INTERNAL_API
     The supertype of `LeakedSupertype` publicly exposes `lib.api.InternalType`, but that type is marked as internal API with `@InternalLibApi`. Remove the internal type from the public signature, or mark the exposing declaration with an internal API annotation too.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api
 
-/exposure.kt:41:35: error: PUBLIC_TYPE_WITH_INTERNAL_API
+/exposure.kt:38:35: error: PUBLIC_TYPE_WITH_INTERNAL_API
     The type parameter `T` publicly exposes `lib.api.InternalType`, but that type is marked as internal API with `@InternalLibApi`. Remove the internal type from the public signature, or mark the exposing declaration with an internal API annotation too.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api
 
-/exposure.kt:43:36: error: PUBLIC_TYPE_WITH_INTERNAL_API
+/exposure.kt:40:36: error: PUBLIC_TYPE_WITH_INTERNAL_API
     The type alias `LeakedTypeAlias` publicly exposes `lib.api.InternalType`, but that type is marked as internal API with `@InternalLibApi`. Remove the internal type from the public signature, or mark the exposing declaration with an internal API annotation too.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api

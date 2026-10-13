@@ -49,18 +49,15 @@ class UpdateBackwardsCompatibilityExemptsTest {
         val reason = "reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY"
         assertContains(fixedText, "@file:IntentionallyDefaultFacadeName($reason)")
         assertEquals(0, fixedText.indexOf("@file:IntentionallyDefaultFacadeName"))
-        // Undocumented declarations get a placeholder KDoc instead of an exemption, above any annotations.
         assertContains(fixedText, "$PLACEHOLDER_KDOC\n@IntentionallyOpen($reason)\npublic open class UndocumentedOpenClass {")
         assertContains(fixedText, "    $PLACEHOLDER_KDOC\n    public fun undocumentedMember()")
         assertFalse(fixedText.contains("@IntentionallyUndocumented"))
         assertContains(fixedText, "@IntentionallyOpen($reason)\npublic open class UnprotectedOpenClass")
-        // The markerless @SubclassOptInRequired is replaced, not joined, by the exemption.
         assertContains(fixedText, "@IntentionallyOpen($reason)\npublic open class UnmarkedOptIn")
         assertFalse(fixedText.contains("@SubclassOptInRequired"))
         assertContains(fixedText, "@IntentionallyExhaustive($reason)\npublic enum class UnmarkedEnum")
         assertContains(fixedText, "@IntentionallyFunctionTypeAlias($reason)\npublic typealias UnacknowledgedCallback")
         assertContains(fixedText, "@IntentionallyDataClass($reason)\npublic data class UnmarkedData")
-        // A class missing all three of equals, hashCode, and toString gets the one combined annotation.
         assertContains(fixedText, "@IntentionallyWithoutEqualsHashCodeOrToString($reason)\npublic class UnrenderedSession")
         assertFalse(fixedText.contains("@IntentionallyWithoutEquals("))
         assertFalse(fixedText.contains("@IntentionallyWithoutHashCode("))
@@ -81,7 +78,6 @@ class UpdateBackwardsCompatibilityExemptsTest {
         assertContains(fixedText, "@IntentionallyKotlinOnlyApi($reason)\npublic suspend fun refreshState()")
         assertContains(fixedText, "@IntentionallyWithoutJvmOverloads($reason)\npublic fun openPort")
 
-        // The proof of the fixes: the same strict build that would have failed now passes.
         project.build("build").assertNoWatchdogDiagnostics()
     }
 
@@ -148,7 +144,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
         val report = project.exemptsReport().readText()
         assertContains(report, "Not applied")
         assertContains(report, "@IntentionallyOpen (1)")
-        assertContains(report, "Can be applied by updateBackwardsCompatibilityExempts.")
+        assertContains(report, "updateBackwardsCompatibilityExempts can apply it.")
     }
 
     @Test
@@ -163,7 +159,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
         val report = project.exemptsReport().readText()
         assertContains(report, "No automatic annotation (1)")
         assertContains(report, "UNDOCUMENTED_PUBLIC_API")
-        assertContains(report, "A placeholder KDoc can be added by updateBackwardsCompatibilityExempts.")
+        assertContains(report, "updateBackwardsCompatibilityExempts can add a placeholder KDoc.")
     }
 
     @Test
@@ -178,7 +174,6 @@ class UpdateBackwardsCompatibilityExemptsTest {
         val fixedText = project.mainSource("legacy").readText()
         assertFalse(fixedText.contains("@IntentionallyUndocumented"))
         assertFalse(fixedText.contains(PLACEHOLDER_KDOC))
-        // The other diagnostics are still exempted.
         assertContains(fixedText, "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)")
     }
 
@@ -199,8 +194,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
 
     @Test
     fun worksWithoutExplicitApiMode() {
-        // The task forces -Xexplicit-api=warning for its analysis, so a library that has not
-        // adopted explicit API mode yet can still prepare its exemptions ahead of time.
+        // The task adds `-Xexplicit-api=warning` itself.
         val project = jvmProject {
             explicitApi = false
             source("/** An open class. */\npublic open class Open", "open")
@@ -276,7 +270,6 @@ class UpdateBackwardsCompatibilityExemptsTest {
         updateResult.assertOutputHas("No watchdog diagnostics to exempt.")
         assertEquals(original, sourceFile.readText())
 
-        // The suppression is task-scoped: an ordinary compilation still enforces all three.
         project.buildAndFail("compileKotlin").assertErrors(
             EXEMPTION_WITHOUT_EXPLANATION,
             PUBLIC_TYPE_WITH_INTERNAL_API,
@@ -328,7 +321,6 @@ class UpdateBackwardsCompatibilityExemptsTest {
             "@IntentionallyDataClass(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic data class SharedData",
         )
 
-        // The JVM compilation of the fixed sources passes with the watchdog active.
         project.build("compileKotlinJvm").assertNoWatchdogDiagnostics()
     }
 
@@ -346,10 +338,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
     }
 }
 
-/**
- * One specimen of every diagnostic the fixer can resolve automatically. The two undocumented
- * declarations get a placeholder KDoc, every other one is documented.
- */
+/** One specimen of every diagnostic that the fixer resolves. Two declarations are undocumented. */
 @Suppress("RedundantSuspendModifier", "MayBeConstant")
 @Language("kotlin")
 private val fixableFile = """
@@ -455,7 +444,7 @@ private val fixableFile = """
     public fun openPort(host: String, port: Int = 8080) {}
 """.trimIndent()
 
-/** The diagnostics no annotation can acknowledge: they stay for a human to resolve. */
+/** The diagnostics without an exemption annotation. */
 @Language("kotlin")
 private val unfixableFile = """
     /** A DSL marker with tidy targets, misapplied to an inert type position below. */
@@ -467,7 +456,7 @@ private val unfixableFile = """
     public fun processTag(tag: @ScopedDsl String) { }
 """.trimIndent()
 
-/** Always-error diagnostics that the adoption task can't acknowledge and therefore skips. */
+/** The always-error diagnostics, which the task skips. */
 @Language("kotlin")
 private val alwaysErrorDiagnosticsFile = """
     import test.model.ExternalModel

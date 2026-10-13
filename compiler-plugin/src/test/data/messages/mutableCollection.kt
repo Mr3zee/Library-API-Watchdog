@@ -4,9 +4,6 @@
 
 package foo.bar
 
-// Message parameters: the declaration kind, its name, the mutable type, and the fix for a
-// return type, a parameter, or a type parameter bound.
-
 public fun produce(): <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<String><!> = mutableListOf()
 
 public val registry: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableMap<String, Int><!> = mutableMapOf()

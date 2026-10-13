@@ -20,11 +20,6 @@ import org.jetbrains.kotlin.fir.expressions.FirAnnotation
 import org.jetbrains.kotlin.fir.expressions.unwrapAndFlattenArgument
 import org.jetbrains.kotlin.name.Name
 
-/**
- * Reports watched open or abstract classes and interfaces without
- * [kotlin.SubclassOptInRequired] or an exemption. Classes with no public or protected constructor
- * are skipped. A separate diagnostic reports `@SubclassOptInRequired` calls with no marker classes.
- */
 internal class OpenApiChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirClassChecker(MppCheckerKind.Common) {
@@ -40,8 +35,7 @@ internal class OpenApiChecker(
 
         val session = context.session
 
-        // A subclass has to delegate to some superclass constructor, so a class whose
-        // constructors are all internal or private can't be subclassed outside the library.
+        // A class without a public or protected constructor has no subclass outside the library.
         val constructors = if (declaration.classKind == ClassKind.CLASS) {
             declaration.constructors(session)
         } else emptyList()
@@ -54,7 +48,7 @@ internal class OpenApiChecker(
                             constructors.any {
                                 it.visibility == Visibilities.Public || it.visibility == Visibilities.Protected
                             }
-                // Sealed interfaces are reported by ExhaustiveApiChecker instead.
+                // ExhaustiveApiChecker reports a sealed interface.
                 declaration.classKind == ClassKind.INTERFACE ->
                     declaration.modality != Modality.SEALED
 
@@ -125,7 +119,7 @@ internal class OpenApiChecker(
 
     private val markerClassParameter = Name.identifier("markerClass")
 
-    /** `markerClass` is a vararg, so `@SubclassOptInRequired` compiles with no markers at all. */
+    /** `markerClass` is a vararg, so `@SubclassOptInRequired()` compiles. */
     private fun FirAnnotation.hasMarkerClasses(): Boolean =
         findArgumentByName(markerClassParameter, returnFirstWhenNotFound = false)
             ?.unwrapAndFlattenArgument(flattenArrays = true)

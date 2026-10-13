@@ -6,10 +6,10 @@ import java.nio.file.StandardCopyOption
 import org.gradle.api.GradleException
 import org.gradle.api.file.FileCollection
 import org.gradle.process.ExecOperations
-import org.jetbrains.kotlin.compiler.plugin.devkit.KotlinToolingVersion
 import org.jetbrains.kotlin.compiler.plugin.devkit.VersionResolution
+import org.jetbrains.kotlin.tooling.core.KotlinToolingVersion
+import java.nio.file.Path
 
-/** Runs the compiler-version-specific fixer process without exposing its protocol to Gradle tasks. */
 internal object BackwardsCompatibilityExemptsFixerRunner {
     fun run(
         temporaryDirectory: File,
@@ -65,8 +65,8 @@ internal object BackwardsCompatibilityExemptsFixerRunner {
     private fun parseResponse(responseFile: File, exitValue: Int): Map<String, List<String>> {
         if (!responseFile.isFile) {
             throw GradleException(
-                "The exempts fixer produced no response (exit code $exitValue). " +
-                        "See the process output above."
+                "The exempts fixer wrote no response (exit code $exitValue). " +
+                        "The process output above has the cause."
             )
         }
         return responseFile.readLines()
@@ -74,7 +74,6 @@ internal object BackwardsCompatibilityExemptsFixerRunner {
             .groupBy(keySelector = { it.substringBefore('=') }, valueTransform = { it.substringAfter('=') })
     }
 
-    /** Materializes the compiler-library overlay compatible with the consuming Kotlin version. */
     private fun unpackFixer(
         artifact: File,
         kotlinVersion: String,
@@ -87,7 +86,7 @@ internal object BackwardsCompatibilityExemptsFixerRunner {
         var selectedVersion: KotlinToolingVersion? = null
         val opened = VersionResolution.run {
             artifact.toPath().openDirectory { root ->
-                selectedVersion = mutableListOf<java.nio.file.Path>().addOverlayAndDependencies(
+                selectedVersion = mutableListOf<Path>().addOverlayAndDependencies(
                     FIXER_MULTI_RELEASE_ID,
                     root,
                     currentVersion,
@@ -113,7 +112,7 @@ internal object BackwardsCompatibilityExemptsFixerRunner {
         }
         if (!opened || selectedVersion == null) {
             throw GradleException(
-                "The exempts fixer has no compiler-API overlay compatible with Kotlin $kotlinVersion",
+                "The exempts fixer has no overlay for Kotlin $kotlinVersion",
             )
         }
         return outputDirectory

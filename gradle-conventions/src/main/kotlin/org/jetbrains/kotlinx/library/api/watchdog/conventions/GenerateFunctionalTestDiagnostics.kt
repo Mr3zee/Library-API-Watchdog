@@ -12,11 +12,6 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 
-/**
- * Generates the `Diagnostic` enum of the Gradle plugin's functional tests: one entry per
- * diagnostic in the shared `diagnostics.json`, with the first paragraph of its message as the
- * template the tests match build output against.
- */
 abstract class GenerateFunctionalTestDiagnostics : DefaultTask() {
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)
@@ -82,11 +77,10 @@ abstract class GenerateFunctionalTestDiagnostics : DefaultTask() {
         appendLine("}")
     }
 
-    /** The message text up to the first paragraph break, adjacent lines joined with a space. */
     private fun List<*>.firstParagraph(): String =
         map { it as String }.takeWhile { it.isNotEmpty() }.joinToString(" ")
 
-    /** Rewrites Markdown links the way the compiler's message generator does, into `text (url)`. */
+    /** The same rewrite as in [GenerateDiagnosticMessages]. */
     private fun String.plainLinks(): String =
         replace(MARKDOWN_LINK) { "${it.groupValues[1]} (${it.groupValues[2]})" }
 

@@ -20,7 +20,6 @@ class ExemptionFixerTest {
         parser.close()
     }
 
-    /** Builds a diagnostic whose recorded range covers [snippet] inside [text]. */
     private fun diagnostic(name: String, text: String, snippet: String): RecordedDiagnostic {
         val start = text.indexOf(snippet)
         require(start >= 0) { "Snippet not found: $snippet" }
@@ -178,7 +177,6 @@ class ExemptionFixerTest {
 
         val result = fix(text, diagnostic("TOP_LEVEL_API_WITHOUT_JVM_NAME", text, "public fun topLevel(): Int = 0"))
 
-        // File annotations resolve against the file's imports even though they precede them.
         assertEquals(
             """
                 @file:IntentionallyDefaultFacadeName(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)
@@ -237,7 +235,6 @@ class ExemptionFixerTest {
 
         val newText = result.newText!!
         assertEquals(1, Regex.escape("import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen").toRegex().findAll(newText).count())
-        // The placeholder KDoc takes the spot a real KDoc would have: above the annotations.
         assertContains(
             newText,
             "$PLACEHOLDER_KDOC\n" +
@@ -336,7 +333,6 @@ class ExemptionFixerTest {
 
         val newText = result.newText!!
         assertEquals(1, "@IntentionallyMutableCollection".toRegex(RegexOption.LITERAL).findAll(newText).count())
-        // Both diagnostics are still reported as fixed by the one annotation.
         assertEquals(1, result.applied.size)
     }
 
@@ -464,7 +460,6 @@ class ExemptionFixerTest {
             diagnostic("UNDOCUMENTED_PUBLIC_API", text, "undocumented()"),
         )
 
-        // No annotation is involved, so no import is added either.
         assertEquals(
             """
                 package com.example
@@ -548,7 +543,6 @@ class ExemptionFixerTest {
 
         val newText = result.newText!!
         assertContains(newText, "public class Session($PLACEHOLDER_KDOC public val id: Int)")
-        // A parameter on its own line is documented like any declaration, above its annotations.
         assertContains(
             newText,
             "    public val name: String,\n" +
@@ -593,8 +587,6 @@ class ExemptionFixerTest {
 
         val result = fix(text, diagnostic("SUBCLASS_OPT_IN_WITHOUT_MARKERS", text, "@SubclassOptInRequired"))
 
-        // The markerless annotation restricts nothing, so the exemption takes its place instead
-        // of joining it: the class is open to everyone either way, now on purpose.
         assertEquals(
             """
                 package com.example
@@ -646,7 +638,6 @@ class ExemptionFixerTest {
 
         val result = fix(text, diagnostic("SUBCLASS_OPT_IN_WITHOUT_MARKERS", text, "SubclassOptInRequired"))
 
-        // Entries of an `@[...]` list carry no `@` of their own.
         assertContains(
             result.newText!!,
             "@[IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY) Suppress(\"unused\")]",
@@ -670,8 +661,6 @@ class ExemptionFixerTest {
 
         val result = fix(text, diagnostic("SUBCLASS_OPT_IN_WITHOUT_MARKERS", text, "@SubclassOptInRequired"))
 
-        // A second @IntentionallyOpen would not even compile, so the pointless annotation just
-        // goes, taking its line with it.
         assertEquals(
             """
                 package com.example
@@ -735,8 +724,6 @@ class ExemptionFixerTest {
             diagnostic("STATEFUL_CLASS_WITHOUT_TO_STRING", text, "public abstract class Session(public val id: Int)"),
         )
 
-        // The class-level exemption is inserted where the replaced annotation starts, and lands
-        // in front of it rather than inside it.
         assertContains(
             result.newText!!,
             "@IntentionallyWithoutEqualsHashCodeOrToString(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\n" +
@@ -777,7 +764,6 @@ class ExemptionFixerTest {
         assertContains(newText, "import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEqualsHashCodeOrToString")
         assertFalse(newText.contains("import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEquals\n"))
 
-        // Every diagnostic is reported as fixed, all by the one combined annotation.
         assertEquals(
             setOf("STATEFUL_CLASS_WITHOUT_EQUALS", "STATEFUL_CLASS_WITHOUT_HASH_CODE", "STATEFUL_CLASS_WITHOUT_TO_STRING"),
             result.applied.map { it.diagnostic }.toSet(),
@@ -786,7 +772,7 @@ class ExemptionFixerTest {
             setOf("IntentionallyWithoutEqualsHashCodeOrToString"),
             result.applied.map { it.annotation }.toSet(),
         )
-        // The two new imports and the annotation line push the declaration from line 4 to line 8.
+        // Two imports and the annotation line move the declaration from line 4 to line 8.
         assertEquals(setOf(8), result.applied.map { it.line }.toSet())
     }
 
@@ -961,8 +947,7 @@ class ExemptionFixerTest {
             }
         """.trimIndent()
 
-        // OPEN_API_WITHOUT_SUBCLASS_OPT_IN reports once per accessible constructor when the
-        // class has no public primary constructor. Both resolve to the one class annotation.
+        // The checker reports once per accessible constructor.
         val result = fix(
             text,
             diagnostic("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", text, "public constructor(x: Int)"),
@@ -992,8 +977,6 @@ class ExemptionFixerTest {
 
         val result = fix(text, diagnostic("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", text, "public open class Service"))
 
-        // The other wildcard could contribute the same short names, so explicit imports (which
-        // win over wildcards) keep the inserted references unambiguous.
         val newText = result.newText!!
         assertContains(newText, "import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason\n")
         assertContains(newText, "import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen\n")
@@ -1002,14 +985,11 @@ class ExemptionFixerTest {
 
     @Test
     fun bareCarriageReturnsDoNotSkewOffsets() {
-        // An even number of bare \r matters: it would expose a miscount of \r\n pairs (there are
-        // none here) through the inserted-newline choice, which must stay \n.
+        // With an even number of bare `\r`, a miscount of `\r\n` pairs would change the inserted newline.
         val text = "package com.example\r/** Doc. */\rpublic open class Service"
 
         val result = fix(text, diagnostic("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", text, "public open class Service"))
 
-        // The bare \r line breaks stay exactly as they were, and the annotation still lands
-        // directly in front of the declaration: the offsets are not skewed by the \r characters.
         assertContains(
             result.newText!!,
             "import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen" +
@@ -1025,8 +1005,6 @@ class ExemptionFixerTest {
 
         val result = fix(text, diagnostic("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", text, "public open class Service"))
 
-        // CRLF dominates, so the inserted lines use it, while the existing bare-LF line keeps
-        // its ending: nothing but the insertions changes.
         val newText = result.newText!!
         assertEquals(
             "package com.example\r\n" +

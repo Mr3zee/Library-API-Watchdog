@@ -7,8 +7,7 @@ package foo.bar
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyExhaustive
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
 
-// A @PublishedApi declaration is internal in sources but part of the published binary API.
-// Source-API checks ignore it because the declaration stays unreferenceable by name.
+// `@PublishedApi` doesn't make a declaration callable in source, so source-API checks skip it.
 
 @PublishedApi
 internal class PublishedClass
@@ -22,9 +21,6 @@ internal val publishedProperty: Int = 0
 /** Documenting a published declaration anyway is fine. */
 @PublishedApi
 internal class DocumentedPublishedClass
-
-// The typical shape: published members inside a public class, backing a public inline function.
-// The members need no KDoc, the public class and its inline function do.
 
 /** Documented. */
 public class PublicOuterWithPublishedMembers {
@@ -44,8 +40,6 @@ public class PublicOuterWithPublishedMembers {
     }
 }
 
-// A published secondary constructor needs no KDoc either.
-
 /** Documented. */
 public class WithPublishedConstructor private constructor(
     /** Documented. */
@@ -54,17 +48,12 @@ public class WithPublishedConstructor private constructor(
     @PublishedApi internal constructor() : this(0)
 }
 
-// Members of a published class are published with it, and stay internal in sources with it: no
-// KDoc required anywhere inside.
-
 @PublishedApi
 internal class PublishedOuter {
     fun undocumentedMember() {}
 
     private fun privateMember() {}
 }
-
-// Published classes can't be subclassed by external Kotlin source.
 
 @PublishedApi
 internal open class PublishedOpenClass
@@ -77,8 +66,6 @@ internal open class AcknowledgedPublishedOpenClass
 @PublishedApi
 internal open class PublishedOpenClassWithEmptyOptIn
 
-// Published enums can't be matched by external Kotlin source.
-
 @PublishedApi
 internal enum class PublishedEnum {
     ENTRY,
@@ -89,8 +76,6 @@ internal enum class PublishedEnum {
 internal enum class AcknowledgedPublishedEnum {
     ENTRY,
 }
-
-// Without @PublishedApi the same internal shapes stay unwatched.
 
 internal class PlainInternalClass
 

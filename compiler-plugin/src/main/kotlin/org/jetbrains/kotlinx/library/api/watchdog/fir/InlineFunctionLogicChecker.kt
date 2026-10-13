@@ -44,21 +44,14 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
 
 /**
- * Reports watched inline functions and inline property accessors whose body or parameter default
- * values are not a thin delegation. Besides an optional contract, a thin body has one statement
- * composed only of value reads or writes, type checks and casts, callable or class references,
- * lambda literals with thin bodies, direct calls to caller-provided function values, and calls to
- * declarations that don't copy a body of this library into the user. These constructs are logic:
+ * Reports an inline function or accessor whose body or parameter default is logic. A thin body
+ * has at most one statement after an optional contract, and that statement is plain. Logic is:
  *
- * - A call to or a reference to an inline declaration of this library. The standard library is
- *   stable, so its inline declarations count as regular calls.
- * - An operator or infix member of a built-in type, in any call syntax. `x + 1` and `x.plus(1)`
- *   both compile to an arithmetic instruction.
- * - Every other FIR construct, for example control flow, equality, string templates, local
- *   declarations, and object literals.
- *
- * `@PublishedApi internal` inline declarations are included. Bodiless functions and non-inline
- * accessors are skipped. An exemption on a property covers both accessors.
+ * - A call or a reference to an inline declaration of this library. The standard library is
+ *   stable, so its inline declarations are plain.
+ * - An operator or infix member of a built-in type, in any call syntax. It compiles to an
+ *   instruction.
+ * - Every construct that [isPlain] doesn't list.
  */
 internal class InlineFunctionLogicChecker(
     private val severities: WatchdogDiagnosticSeverities,
@@ -94,11 +87,6 @@ internal class InlineFunctionLogicChecker(
         )
     }
 
-    /**
-     * An accessor is inlined when it carries the `inline` modifier itself or inherits it from the
-     * property. Default accessors have no body and are skipped, and non-inline accessors keep
-     * their body in the library binary.
-     */
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun checkProperty(declaration: FirProperty) {
         if (declaration.isExpectedDeclaration() ||
@@ -138,11 +126,7 @@ internal class InlineFunctionLogicChecker(
     private fun FirCallableDeclaration.isExempt(): Boolean =
         hasAnnotationOnActualOrExpect(WatchdogClassIds.IntentionallyInlinedLogic)
 
-    /**
-     * An empty body freezes nothing. Otherwise the single statement must be a plain delegation. A
-     * contract declared in the old statement syntax stays in the body as a [FirContractCallBlock]
-     * and doesn't count.
-     */
+    /** A contract in the old statement syntax stays in the body as a [FirContractCallBlock]. */
     private fun FirBlock.isThinWrapper(): Boolean {
         var statement: FirStatement? = null
         for (candidate in statements) {
@@ -155,7 +139,6 @@ internal class InlineFunctionLogicChecker(
         return ((singleStatement as? FirReturnExpression)?.result ?: singleStatement).isPlain()
     }
 
-    /** Whether the statement only reads or writes values and delegates. Unlisted constructs are logic. */
     private fun FirStatement.isPlain(): Boolean = when (this) {
         is FirSmartCastExpression -> originalExpression.isPlain()
         is FirWrappedArgumentExpression -> expression.isPlain()
@@ -166,11 +149,7 @@ internal class InlineFunctionLogicChecker(
         is FirResolvedQualifier -> true
         is FirResolvedReifiedParameterReference -> true
         is FirGetClassCall -> argument.isPlain()
-        // Calling a function value executes caller code or code reached through a runtime value.
-        // For the wrapper's own functional parameter, direct invocation also preserves Kotlin's
-        // in-place lambda behavior: at a suspend call site, the inlined lambda can inherit the
-        // caller's suspend context. The call resolves to the function value's non-inline `invoke`
-        // operator.
+        // A call to a function value resolves to its non-inline `invoke`, so it is a plain call.
         is FirImplicitInvokeCall -> isPlainCall()
         is FirFunctionCall -> isPlainCall()
         // `a < b` is `a.compareTo(b)` and follows the rules of that call.
@@ -182,7 +161,6 @@ internal class InlineFunctionLogicChecker(
         is FirPropertyAccessExpression ->
             !calleeReference.toResolvedCallableSymbol().copiesLibraryBody(write = false) &&
                     explicitReceiver?.isPlain() != false
-        // Writing a property delegates to its setter just like reading delegates to the getter.
         is FirVariableAssignment ->
             (lValue as? FirPropertyAccessExpression)?.let { target ->
                 !target.calleeReference.toResolvedCallableSymbol().copiesLibraryBody(write = true) &&
@@ -193,10 +171,6 @@ internal class InlineFunctionLogicChecker(
         else -> false
     }
 
-    /**
-     * A call delegates when the callee is neither a built-in operation nor an inline declaration
-     * of this library, and its receiver and arguments are plain. Constructors are never inline.
-     */
     private fun FirFunctionCall.isPlainCall(): Boolean {
         val callee = calleeReference.toResolvedCallableSymbol()
         return !callee.isBuiltinOperation() &&
@@ -205,11 +179,7 @@ internal class InlineFunctionLogicChecker(
                 arguments.all { it.isPlain() }
     }
 
-    /**
-     * Whether a use of the declaration copies an inline body of this library into the user. The
-     * standard library is stable, so its inline bodies don't count. An inline property copies the
-     * accessor that the access uses.
-     */
+    /** Whether a use of the declaration copies an inline body of this library into the user. */
     private fun FirCallableSymbol<*>?.copiesLibraryBody(write: Boolean): Boolean {
         if (this == null || callableId?.packageName?.startsWith(STANDARD_LIBRARY_ROOT) == true) return false
         if (isInline) return true
@@ -218,11 +188,6 @@ internal class InlineFunctionLogicChecker(
         return accessor?.isInline == true
     }
 
-    /**
-     * An operator or infix member of a built-in type compiles to an instruction in the user
-     * binary, in operator syntax and in explicit call syntax alike. A user-defined operator is a
-     * regular call.
-     */
     private fun FirCallableSymbol<*>?.isBuiltinOperation(): Boolean {
         val function = this as? FirNamedFunctionSymbol ?: return false
         return (function.isOperator || function.isInfix) && function.callableId.classId in BUILTIN_OPERAND_TYPES

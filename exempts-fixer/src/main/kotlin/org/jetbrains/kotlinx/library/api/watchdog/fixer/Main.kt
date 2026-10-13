@@ -7,10 +7,8 @@ import java.nio.file.Paths
 import kotlin.system.exitProcess
 
 /**
- * Entry point of the backwards-compatibility exempts fixer. The single argument is the path of a
- * [FixerRequest] file. The results are written to the response file named in the request, so the
- * launching Gradle task never parses process output. A non-zero exit code means the fixer itself
- * broke, not that the analyzed project has diagnostics.
+ * The argument is the path of a [FixerRequest] file. A non-zero exit code means that the fixer
+ * failed, not that the project has diagnostics.
  */
 fun main(args: Array<String>) {
     val request = FixerRequest.parse(Paths.get(args.singleOrNull() ?: error("Usage: <request file>")))

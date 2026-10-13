@@ -1,8 +1,7 @@
 // RUN_PIPELINE_TILL: FRONTEND
 // EXPLICIT_API_MODE: WARNING
 
-// The internal API marker annotation is declared in another module than the declarations it
-// exempts: the meta-annotation must be resolved through the dependency's symbols.
+// The meta-annotation is resolved through the symbols of a dependency.
 
 // MODULE: lib
 // FILE: markers.kt
@@ -25,8 +24,6 @@ package consumer
 
 import lib.api.InternalLibApi
 
-// Declarations marked with the dependency's marker are exempt from the public API checks.
-
 @InternalLibApi
 public open class InternalOpenClass {
     public fun memberOfInternal() {}
@@ -42,8 +39,6 @@ public fun internalFunction() {}
 
 @InternalLibApi
 public val internalProperty: Int = 0
-
-// Unmarked declarations in the consuming module are still watched.
 
 public class <!UNDOCUMENTED_PUBLIC_API!>WatchedClass<!>
 

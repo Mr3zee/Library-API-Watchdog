@@ -13,55 +13,36 @@ import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnostics
 import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogSeverity
 
 object WatchdogConfigurationKeys {
-    /**
-     * Severity overrides keyed by diagnostic name. Diagnostics not listed here are errors, and
-     * [WatchdogSeverity.NONE] disables a diagnostic entirely.
-     */
+    /** Severity overrides keyed by diagnostic name. An unlisted diagnostic is an error. */
     val DIAGNOSTIC_SEVERITIES: CompilerConfigurationKey<Map<String, WatchdogSeverity>> =
         CompilerConfigurationKey.create("watchdog diagnostic severities")
 
-    /** Annotation FQ names that ignore a configurable diagnostic on an annotated declaration. */
+    /** Annotation FQ names, each with the diagnostics it disables on the annotated declaration. */
     val ANNOTATION_IGNORE_RULES: CompilerConfigurationKey<Map<String, Set<String>>> =
         CompilerConfigurationKey.create("watchdog annotation ignore rules")
 
-    /**
-     * Fully qualified names of annotation classes that mark internal API in addition to the
-     * classes carrying `@InternalAnnotationMarker`. Meant for annotations the library can't
-     * annotate itself.
-     */
+    /** FQ names of annotation classes that mark internal API without `@InternalAnnotationMarker`. */
     val INTERNAL_API_ANNOTATIONS: CompilerConfigurationKey<Set<String>> =
         CompilerConfigurationKey.create("watchdog internal API annotations")
 
-    /**
-     * Path of the file every reported watchdog diagnostic is appended to as a tab-separated
-     * line. See [org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnosticsRecorder].
-     */
+    /** @see org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnosticsRecorder */
     val DIAGNOSTICS_OUTPUT_FILE: CompilerConfigurationKey<String> =
         CompilerConfigurationKey.create("watchdog diagnostics output file")
 
-    /** Whether the always-error internal API type exposure check is enabled. */
     val PUBLIC_TYPE_WITH_INTERNAL_API_ENABLED: CompilerConfigurationKey<Boolean> =
         CompilerConfigurationKey.create("watchdog public type with internal API enabled")
 
-    /** Whether diagnostics are being collected for the backwards-compatibility exemptions task. */
     val UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS: CompilerConfigurationKey<Boolean> =
         CompilerConfigurationKey.create("watchdog updating backwards-compatibility exempts")
 
-    /**
-     * The compilation classpath and the subset published transitively to consumers. These are
-     * supplied only by the Gradle plugin: without the build model the compiler can't tell an
-     * `api` dependency from an `implementation` dependency.
-     */
+    /** The compile classpath and the subset that consumers get. Only the Gradle plugin has them. */
     val COMPILE_DEPENDENCY_PATHS: CompilerConfigurationKey<Set<String>> =
         CompilerConfigurationKey.create("watchdog compile dependency paths")
 
     val TRANSITIVE_DEPENDENCY_PATHS: CompilerConfigurationKey<Set<String>> =
         CompilerConfigurationKey.create("watchdog transitive dependency paths")
 
-    /**
-     * The build script declaration that puts each compile dependency path on the classpath. The
-     * diagnostic shows it in the exemption snippet. Paths without an entry get a placeholder.
-     */
+    /** The build script declaration of each compile dependency path, for the exemption snippet. */
     internal val DEPENDENCY_DECLARATIONS: CompilerConfigurationKey<Map<String, DependencyDeclaration>> =
         CompilerConfigurationKey.create("watchdog dependency declarations")
 }
@@ -119,7 +100,7 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
                     "end offset. Meant for tooling. The Gradle plugin's " +
                     "updateBackwardsCompatibilityExempts task consumes it.",
             required = false,
-            // The Gradle plugin's blank placeholder can meet a path passed by other tooling.
+            // The blank placeholder of the Gradle plugin can meet a path from other tooling.
             allowMultipleOccurrences = true,
         )
 
@@ -181,7 +162,7 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
                 processInternalApiAnnotation(value, configuration)
             }
             DIAGNOSTICS_OUTPUT_FILE_OPTION.optionName -> {
-                // The Gradle plugin always passes this option and leaves it blank outside collection.
+                // The Gradle plugin passes a blank value outside collection.
                 if (value.isNotBlank()) {
                     configuration.put(WatchdogConfigurationKeys.DIAGNOSTICS_OUTPUT_FILE, value)
                 }
@@ -199,7 +180,7 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
                 )
             }
             COMPILE_DEPENDENCY_PATHS_OPTION.optionName -> {
-                // A blank value is the Gradle plugin's placeholder for a disabled exposure check.
+                // The Gradle plugin passes a blank value for a disabled exposure check.
                 if (value.isNotBlank()) {
                     configuration.put(WatchdogConfigurationKeys.COMPILE_DEPENDENCY_PATHS, parsePaths(value))
                 }

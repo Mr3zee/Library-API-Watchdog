@@ -4,19 +4,12 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 /**
- * Deterministic generator of a synthetic library-style source corpus for the watchdog
- * benchmarks. The same file count always produces byte-identical sources, so results are
- * comparable across runs and modes.
- *
- * The corpus is written in the explicit API style and rotates through ten file templates, each
- * exercising a different group of checkers. Most declarations are clean. Every template carries
- * a small fixed set of intended diagnostics so that report construction is also measured. The
- * templates reference the watchdog exemption annotations, so the annotations library must be on
- * the compilation classpath.
+ * Generates the benchmark corpus. The same file count gives byte-identical sources. Each template
+ * triggers a fixed set of diagnostics, so the benchmark measures report construction too. The templates use
+ * the exemption annotations, so the annotations library must be on the compile classpath.
  */
 internal object BenchmarkCorpus {
 
-    /** Writes the support file plus [fileCount] template files under [root]. */
     fun generate(root: Path, fileCount: Int): List<Path> {
         require(fileCount >= 1) { "fileCount must be positive, got $fileCount" }
         val files = ArrayList<Path>(fileCount + 1)
@@ -68,10 +61,6 @@ internal object BenchmarkCorpus {
         appendLine()
     }
 
-    /**
-     * Shared declarations referenced by the templates: an opt-in marker for
-     * `@SubclassOptInRequired` and a DSL marker with explicit targets.
-     */
     private fun supportFile(): String = """
         package watchdog.bench.support
 
@@ -89,9 +78,8 @@ internal object BenchmarkCorpus {
     """.trimIndent()
 
     /**
-     * Model classes. Intended diagnostics: DATA_CLASS_PUBLIC_API, STATEFUL_CLASS_WITHOUT_EQUALS,
-     * STATEFUL_CLASS_WITHOUT_HASH_CODE, STATEFUL_CLASS_WITHOUT_TO_STRING,
-     * UNDOCUMENTED_PUBLIC_API.
+     * Triggers DATA_CLASS_PUBLIC_API, STATEFUL_CLASS_WITHOUT_EQUALS, STATEFUL_CLASS_WITHOUT_HASH_CODE,
+     * STATEFUL_CLASS_WITHOUT_TO_STRING, and UNDOCUMENTED_PUBLIC_API.
      */
     private fun modelsFile(i: Int): String = header(i, null) + """
         /** Identifier of bench entities. */
@@ -122,10 +110,7 @@ internal object BenchmarkCorpus {
         public data class Extent$i(val width: Int, val height: Int)
     """.trimIndent() + "\n"
 
-    /**
-     * Service hierarchy. Intended diagnostics: OPEN_API_WITHOUT_SUBCLASS_OPT_IN on the abstract
-     * stage class, SUBCLASS_OPT_IN_WITHOUT_MARKERS on the markerless observer.
-     */
+    /** Triggers OPEN_API_WITHOUT_SUBCLASS_OPT_IN and SUBCLASS_OPT_IN_WITHOUT_MARKERS. */
     private fun servicesFile(i: Int): String = header(i, null) + """
         /** Contract for key resolvers. External implementations must opt in. */
         @SubclassOptInRequired(BenchExperimental::class)
@@ -161,11 +146,7 @@ internal object BenchmarkCorpus {
         }
     """.trimIndent() + "\n"
 
-    /**
-     * Builder DSL. Intended diagnostics: DSL_MARKER_WITHOUT_EXPLICIT_TARGETS on the local
-     * marker, DSL_MARKER_NOOP_TARGET on the function target, DSL_MARKER_NOOP_TYPE_POSITION on
-     * the annotated return type.
-     */
+    /** Triggers DSL_MARKER_WITHOUT_EXPLICIT_TARGETS, DSL_MARKER_NOOP_TARGET, and DSL_MARKER_NOOP_TYPE_POSITION. */
     private fun dslFile(i: Int): String = header(i, "RoutesDsl") + """
         /** Legacy DSL marker kept without explicit targets. */
         @DslMarker
@@ -206,9 +187,9 @@ internal object BenchmarkCorpus {
     """.trimIndent() + "\n"
 
     /**
-     * Top-level functions. Intended diagnostics: TOP_LEVEL_API_WITHOUT_JVM_NAME (no file
-     * annotation on purpose), DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS, BOOLEAN_PARAMETER_PUBLIC_API,
-     * REQUIRED_PARAMETER_AFTER_OPTIONAL, KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC.
+     * Triggers TOP_LEVEL_API_WITHOUT_JVM_NAME, DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS,
+     * BOOLEAN_PARAMETER_PUBLIC_API, REQUIRED_PARAMETER_AFTER_OPTIONAL, and
+     * KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC.
      */
     private fun functionsFile(i: Int): String = header(i, null) + """
         /** Rendering modes of formatted labels. */
@@ -257,10 +238,7 @@ internal object BenchmarkCorpus {
         public fun emit$i(target: String, level: Int): Int = target.length + level
     """.trimIndent() + "\n"
 
-    /**
-     * Collection-shaped API. Intended diagnostics: MUTABLE_COLLECTION_PUBLIC_API,
-     * PAIR_OR_TRIPLE_PUBLIC_API, NULLABLE_BOOLEAN_PUBLIC_API.
-     */
+    /** Triggers MUTABLE_COLLECTION_PUBLIC_API, PAIR_OR_TRIPLE_PUBLIC_API, and NULLABLE_BOOLEAN_PUBLIC_API. */
     private fun collectionsFile(i: Int): String = header(i, "Collections") + """
         /** Names of the built-in entries. */
         public fun entries$i(): List<String> = listOf("alpha", "beta")
@@ -282,10 +260,7 @@ internal object BenchmarkCorpus {
         public fun lookup$i(): Map<String, Int> = mapOf("alpha" to 1, "beta" to 2)
     """.trimIndent() + "\n"
 
-    /**
-     * Companion-object API. Intended diagnostics: COMPANION_API_WITHOUT_JVM_STATIC,
-     * COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS.
-     */
+    /** Triggers COMPANION_API_WITHOUT_JVM_STATIC and COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS. */
     private fun companionFile(i: Int): String = header(i, null) + """
         /** Registry with factory-only construction. */
         public class Registry$i private constructor() {
@@ -317,9 +292,7 @@ internal object BenchmarkCorpus {
         }
     """.trimIndent() + "\n"
 
-    /**
-     * Sealed hierarchy and enum. Intended diagnostics: EXHAUSTIVE_PUBLIC_API on the enum.
-     */
+    /** Triggers EXHAUSTIVE_PUBLIC_API. */
     private fun sealedFile(i: Int): String = header(i, null) + """
         /** Shape of one report cell. The closed set of cases is part of the contract. */
         @IntentionallyExhaustive(reason = ExemptionReason.API_DESIGN)
@@ -352,10 +325,7 @@ internal object BenchmarkCorpus {
         }
     """.trimIndent() + "\n"
 
-    /**
-     * Inline functions and value classes. Intended diagnostics: MANGLED_JVM_NAME_PUBLIC_API,
-     * INLINE_FUNCTION_WITH_LOGIC.
-     */
+    /** Triggers MANGLED_JVM_NAME_PUBLIC_API and INLINE_FUNCTION_WITH_LOGIC. */
     private fun inlineValueFile(i: Int): String = header(i, "Durations") + """
         /** Millisecond duration wrapper. */
         @JvmInline
@@ -384,9 +354,7 @@ internal object BenchmarkCorpus {
         public inline fun once$i(block: () -> Int): Int = block()
     """.trimIndent() + "\n"
 
-    /**
-     * Type aliases. Intended diagnostics: FUNCTION_TYPE_ALIAS_PUBLIC_API.
-     */
+    /** Triggers FUNCTION_TYPE_ALIAS_PUBLIC_API. */
     private fun typeAliasFile(i: Int): String = header(i, null) + """
         /** Callback invoked once per produced value. */
         public typealias Handler$i = (String) -> Unit
@@ -406,9 +374,7 @@ internal object BenchmarkCorpus {
         }
     """.trimIndent() + "\n"
 
-    /**
-     * Overload order. Intended diagnostic: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS.
-     */
+    /** Triggers INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS. */
     private fun interopFile(i: Int): String = header(i, "Interop") + """
         /** Renders a report line. */
         public fun render$i(name: String, width: Int): String = name + ":" + width

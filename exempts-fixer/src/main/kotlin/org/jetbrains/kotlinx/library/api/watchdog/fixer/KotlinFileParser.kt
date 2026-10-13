@@ -10,13 +10,6 @@ import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtPsiFactory
 
-/**
- * A minimal standalone Kotlin PSI parsing environment: the same application and project
- * environments the K2 CLI pipeline builds on, with just the Kotlin file type and parser
- * definition registered on top. Parsing is all the fixer needs - the semantic analysis already
- * happened in the compilation that recorded the diagnostics, so the recorded offsets locate the
- * target declarations syntactically.
- */
 internal class KotlinFileParser : AutoCloseable {
     private val disposable = Disposer.newDisposable("watchdog-exempts-fixer")
     private val psiFactory: KtPsiFactory
@@ -33,7 +26,7 @@ internal class KotlinFileParser : AutoCloseable {
         psiFactory = KtPsiFactory(projectEnvironment.project, markGenerated = false)
     }
 
-    /** Parses [text], which must use `\n` line endings. PSI rejects anything else. */
+    /** [text] must use `\n` line endings. PSI rejects other line endings. */
     fun parse(fileName: String, text: String): KtFile = psiFactory.createFile(fileName, text)
 
     override fun close() {

@@ -10,7 +10,7 @@ import org.jetbrains.kotlin.fir.declarations.FirClass
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.utils.isData
 
-/** `data object`s are skipped because they have no constructor-property API. */
+/** A `data object` isn't reported, because it has no constructor properties. */
 internal class DataClassChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirClassChecker(MppCheckerKind.Common) {

@@ -12,7 +12,6 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 
-/** Generates Kotlin diagnostic message templates from the shared documentation registry. */
 abstract class GenerateDiagnosticMessages : DefaultTask() {
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)
@@ -135,10 +134,7 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
         }
     }
 
-    /**
-     * Joins source-wrapped lines with a space. An empty line is a paragraph break, and a code
-     * line, which starts with four spaces, keeps the line breaks around it.
-     */
+    /** The line rules are in the `$comment` of `diagnostics.json`. */
     private fun List<*>.joinTextLines(): String {
         val lines = map { it as String }
         return buildString {
@@ -155,11 +151,9 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
 
     private fun String.isCodeLine(): Boolean = startsWith("    ")
 
-    /** Rewrites Markdown links, which only the docs render natively, into `text (url)`. */
     private fun String.plainLinks(): String =
         replace(MARKDOWN_LINK) { "${it.groupValues[1]} (${it.groupValues[2]})" }
 
-    /** Splits the text at spaces into chunks of at most [MAX_CHUNK_LENGTH]. A code line's indent at the start stays. */
     private fun String.wrap(): List<String> {
         val chunks = mutableListOf<String>()
         val leadingSpaces = takeWhile { it == ' ' }

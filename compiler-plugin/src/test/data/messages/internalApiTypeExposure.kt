@@ -2,9 +2,6 @@
 // EXPLICIT_API_MODE: WARNING
 // DIAGNOSTICS: -UNDOCUMENTED_PUBLIC_API -TOP_LEVEL_API_WITHOUT_JVM_NAME -STATEFUL_CLASS_WITHOUT_EQUALS -STATEFUL_CLASS_WITHOUT_HASH_CODE -STATEFUL_CLASS_WITHOUT_TO_STRING
 
-// Message parameters: every signature position kind, the declaration name, the internal type,
-// and the marker annotation.
-
 // MODULE: lib
 // FILE: internalTypes.kt
 package lib.api

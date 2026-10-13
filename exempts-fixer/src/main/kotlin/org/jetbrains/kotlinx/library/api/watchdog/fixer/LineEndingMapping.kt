@@ -1,26 +1,19 @@
 package org.jetbrains.kotlinx.library.api.watchdog.fixer
 
 /**
- * Maps between a file's original text and its `\n`-normalized form. PSI only parses normalized
- * text, and the compiler records offsets against the original bytes, so the fixer resolves
- * targets on [normalizedText] and then maps each insertion offset back with [toRawOffset],
- * applying the insertions to the untouched original. That way the fix never rewrites existing
- * line endings, whichever mix of `\r\n`, `\n`, and stray `\r` the file carries. Only the inserted
- * text itself uses [newline], the file's dominant separator.
+ * PSI parses only `\n` text, and the compiler records offsets on the original text. The fixer
+ * resolves targets on [normalizedText] and maps each insertion offset back with [toRawOffset],
+ * so the existing line endings stay. Inserted text uses [newline], the dominant separator.
  */
 internal class LineEndingMapping private constructor(
     val normalizedText: String,
-    /** Original-text offset of each normalized-text offset. `null` when the text needed no work. */
+    /** Null when the text has no `\r`. */
     private val rawOffsets: IntArray?,
     val newline: String,
 ) {
-    /**
-     * The normalized offset of the original-text offset [rawOffset]: the position of the same
-     * character, or of the character that replaced it (the `\n` of a dropped `\r\n` pair).
-     */
+    /** For a dropped `\r\n` pair, the offset of the `\n` that replaced it. */
     fun toNormalizedOffset(rawOffset: Int): Int {
         val offsets = rawOffsets ?: return rawOffset
-        // Lower bound: the first normalized offset whose original offset is not before rawOffset.
         var low = 0
         var high = offsets.size - 1
         while (low < high) {
@@ -50,9 +43,7 @@ internal class LineEndingMapping private constructor(
             while (rawIndex < text.length) {
                 val char = text[rawIndex]
                 if (char == '\r' && rawIndex + 1 < text.length && text[rawIndex + 1] == '\n') {
-                    // The pair collapses into one `\n` mapped to the pair's START, so an
-                    // insertion in front of the normalized `\n` lands in front of the whole
-                    // pair instead of splitting it.
+                    // The pair maps to one `\n` at the start of the pair, so an insertion can't split it.
                     rawOffsets[normalized.length] = rawIndex
                     normalized.append('\n')
                     rawIndex += 2

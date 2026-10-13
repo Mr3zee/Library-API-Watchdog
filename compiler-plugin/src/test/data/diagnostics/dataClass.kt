@@ -6,32 +6,23 @@ package foo.bar
 
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDataClass
 
-// Unacknowledged data classes: should warn.
-
 public data class <!DATA_CLASS_PUBLIC_API!>Coordinates<!>(val x: Int, val y: Int)
 
 public class Container {
     public data class <!DATA_CLASS_PUBLIC_API!>Nested<!>(val value: Int)
 }
 
-// @PublishedApi declarations belong to the published binary API.
+// `@PublishedApi` makes an internal declaration binary API.
 @PublishedApi
 internal data class <!DATA_CLASS_PUBLIC_API!>PublishedPoint<!>(val x: Int)
-
-// Deliberate data classes: no warning.
 
 @IntentionallyDataClass
 public data class MarkedData(val x: Int)
 
-// Not data classes: no warning.
-
 public class RegularClass(public val x: Int)
 
-// A data object generates none of the hazardous members: no constructor properties,
-// no copy, no componentN.
+// A data object has no constructor properties, `copy`, or `componentN`.
 public data object DataObject
-
-// Not visible outside the library: no warning.
 
 internal data class InternalData(val x: Int)
 

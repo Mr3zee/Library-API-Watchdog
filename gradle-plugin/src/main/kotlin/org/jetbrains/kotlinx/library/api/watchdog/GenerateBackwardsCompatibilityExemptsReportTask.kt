@@ -19,47 +19,50 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.UntrackedTask
 import org.gradle.process.ExecOperations
 
-/** Generates a report without modifying any Kotlin source file. */
-@UntrackedTask(because = "Consumes diagnostic side files written by Kotlin compilation tasks")
+/**
+ * The `generateBackwardsCompatibilityExemptsReport` task. It reports the applied and the missing
+ * backwards-compatibility exemptions of the project and changes no source.
+ */
+@UntrackedTask(because = "Reads the diagnostic reports that the Kotlin compile tasks write")
 public abstract class GenerateBackwardsCompatibilityExemptsReportTask : DefaultTask() {
-    /** The main Kotlin compile task names KGP exposed to the compiler support plugin. */
+    /** The names of the main Kotlin compile tasks. */
     @get:Input
     public abstract val compilationNames: ListProperty<String>
 
-    /** Reports written by the regular Kotlin compilation tasks. */
+    /** The diagnostic reports of the Kotlin compile tasks. */
     @get:Internal
     public abstract val diagnosticReports: ConfigurableFileCollection
 
-    /** Main Kotlin sources, including files whose exemptions suppress every diagnostic. */
+    /** The main Kotlin sources. */
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     public abstract val sourceFiles: ConfigurableFileCollection
 
-    /** The dev-kit multi-version artifact containing the standalone analysis tool. */
+    /** The multi-version artifact of the fixer. */
     @get:Classpath
     public abstract val fixerArtifact: ConfigurableFileCollection
 
-    /** kotlin-compiler and its runtime dependencies used for PSI parsing. */
+    /** The Kotlin compiler and its runtime dependencies. */
     @get:Classpath
     public abstract val fixerClasspath: ConfigurableFileCollection
 
-    /** The consuming project's Kotlin version, used to select the matching fixer overlay. */
+    /** The Kotlin version of the project. It selects the fixer overlay. */
     @get:Input
     public abstract val kotlinVersion: Property<String>
 
-    /** The directory report locations are relativized against. */
+    /** The directory that source paths in the report are relative to. */
     @get:Internal
     public abstract val projectDirectory: DirectoryProperty
 
-    /** The isolated Gradle project path displayed in module and aggregate reports. */
+    /** The project path shown in the report. */
     @get:Input
     public abstract val projectIdentityPath: Property<String>
 
-    /** The standalone, human-readable report for this Gradle project. */
+    /** The HTML report. */
     @get:OutputFile
     public abstract val reportFile: RegularFileProperty
 
-    /** The module report variant consumed by the aggregation plugin. */
+    /** The report data that the aggregation plugin reads. */
     @get:OutputFile
     public abstract val reportDataFile: RegularFileProperty
 
@@ -69,7 +72,7 @@ public abstract class GenerateBackwardsCompatibilityExemptsReportTask : DefaultT
     @TaskAction
     public fun generateReport() {
         val response = if (compilationNames.get().isEmpty()) {
-            logger.warn("No main Kotlin compilation found. The exemptions report will be empty.")
+            logger.warn("No main Kotlin compilation found, so the exemptions report is empty.")
             emptyMap()
         } else {
             BackwardsCompatibilityExemptsFixerRunner.run(
@@ -90,15 +93,15 @@ public abstract class GenerateBackwardsCompatibilityExemptsReportTask : DefaultT
         }
         val applicable = response["fixed"].orEmpty().map { value ->
             val (diagnostic, annotation, line, path) = value.split('\t', limit = 4)
-            // An empty annotation field means the fix is a placeholder KDoc, not an annotation.
+            // An empty annotation field marks a placeholder KDoc.
             NotAppliedExemptionReportEntry(
                 annotation = annotation.ifEmpty { null },
                 diagnostic = diagnostic,
                 location = "${relativize(path)}:$line",
                 reason = if (annotation.isEmpty()) {
-                    "A placeholder KDoc can be added by updateBackwardsCompatibilityExempts."
+                    "updateBackwardsCompatibilityExempts can add a placeholder KDoc."
                 } else {
-                    "Can be applied by updateBackwardsCompatibilityExempts."
+                    "updateBackwardsCompatibilityExempts can apply it."
                 },
             )
         }

@@ -4,9 +4,6 @@
 
 package foo.bar
 
-// Message parameters: the outer class, the member name, the companion class name, and for a
-// property the instance accessors (getter, setter, or both) with the matching fix.
-
 public class Registry {
     public companion object {
         public fun <!COMPANION_API_WITHOUT_JVM_STATIC!>create<!>(): Registry = Registry()

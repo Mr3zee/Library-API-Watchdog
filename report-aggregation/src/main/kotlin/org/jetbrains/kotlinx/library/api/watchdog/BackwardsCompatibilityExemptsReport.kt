@@ -27,7 +27,7 @@ public data class BackwardsCompatibilityExemptsProjectReport(
     public val notApplied: List<NotAppliedExemptionReportEntry>,
 )
 
-/** A small, versioned interchange format published as a Gradle report variant. */
+/** The file format of a module report. */
 public object BackwardsCompatibilityExemptsReportData {
     private const val VERSION = "1"
 

@@ -5,11 +5,7 @@ import org.jetbrains.kotlin.test.builders.configureFirHandlersStep
 import org.jetbrains.kotlin.test.directives.FirDiagnosticsDirectives.DISABLE_FIR_DUMP_HANDLER
 import org.jetbrains.kotlinx.library.api.watchdog.handlers.WatchdogDiagnosticMessagesHandler
 
-/**
- * Checks the rendered message of every watchdog diagnostic against the `.messages.txt` dump next
- * to the test data, in addition to the inline `<!DIAGNOSTIC!>` markers. The FIR dump is off: the
- * messages don't depend on the FIR tree.
- */
+/** Checks the markers and the `.messages.txt` dump. The FIR dump is off. */
 open class AbstractJvmDiagnosticMessagesTest : DevKitJvmDiagnosticTest({
     configureWatchdogDiagnosticTest()
     defaultDirectives {

@@ -4,9 +4,7 @@ package org.jetbrains.kotlinx.library.api.watchdog
 
 import org.intellij.lang.annotations.Language
 
-// Source snippets and modules several test classes share.
-
-/** A main-source declaration no checker has anything to say about. */
+/** A declaration that no check reports. */
 @Language("kotlin")
 val cleanMainFile = """
     /** A documented, final, closed declaration. */
@@ -16,7 +14,7 @@ val cleanMainFile = """
     }
 """.trimIndent()
 
-/** The types a `:model` module supplies to the tests of the dependency checks. */
+/** The types of the `:model` module in the tests of the dependency checks. */
 @Language("kotlin")
 val dependencyTypeFile = """
     /** A model supplied by another module. */
@@ -27,7 +25,7 @@ val dependencyTypeFile = """
     public interface ExternalContract
 """.trimIndent()
 
-/** Public signatures that mention the types of [dependencyTypeFile] in every supported position. */
+/** Public signatures with the types of [dependencyTypeFile] in every checked position. */
 @Language("kotlin")
 val exposesDependencyTypeFile = """
     import test.model.ExternalContract
@@ -50,13 +48,13 @@ val exposesDependencyTypeFile = """
     }
 """.trimIndent()
 
-/** A `:model` subproject holding [dependencyTypeFile], of the root's kind or a plain Kotlin/JVM one. */
+/** A `:model` subproject with [dependencyTypeFile]. */
 fun ProjectSpec.modelSubproject(jvm: Boolean = false) {
     val block: ModuleSpec.() -> Unit = { source(dependencyTypeFile, "ExternalModel", "test.model") }
     if (jvm) jvmSubproject("model", block) else subproject("model", block)
 }
 
-/** [exposesDependencyTypeFile] as the `Consumer` file of the `test.consumer` package. */
+/** [exposesDependencyTypeFile] in the `test.consumer` package. */
 fun ModuleSpec.consumerSource(sourceSet: String = this.sourceSet) {
     source(exposesDependencyTypeFile, "Consumer", "test.consumer", sourceSet)
 }

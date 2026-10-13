@@ -36,17 +36,8 @@ import org.openjdk.jmh.annotations.Warmup
 import org.openjdk.jmh.infra.Blackhole
 
 /**
- * Isolated cost of a single watchdog checker over the fully resolved FIR of the synthetic
- * corpus.
- *
- * The setup compiles the corpus to resolved FIR once, without the watchdog. Each operation then
- * sweeps the whole corpus with the compiler's own checker-running collector visitor, wired to
- * exactly one checker (the `none` value runs the traversal with zero checkers and is the
- * baseline to subtract). Time is the per-sweep average. The GC profiler's `gc.alloc.rate.norm`
- * is bytes allocated per sweep.
- *
- * Compared to the whole-compilation benchmark this excludes plugin loading, message rendering,
- * and the backend, so it measures the checker logic itself with far less noise.
+ * One pass over the resolved FIR of the corpus with one checker for each operation. The `none`
+ * value runs the pass with no checker and is the baseline to subtract.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)

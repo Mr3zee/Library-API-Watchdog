@@ -22,13 +22,6 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.util.OperatorNameConventions
 
-/**
- * Reports watched regular classes with a backing-field property when their resolved member scope
- * still selects the `kotlin.Any` implementation of `equals`, `hashCode`, or `toString`. Each
- * missing member has its own diagnostic and exemption.
- *
- * Data and value classes, enums, interfaces, annotation classes, and objects are skipped.
- */
 internal class StatefulClassWithoutGeneratedMembersChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirClassChecker(MppCheckerKind.Common) {
@@ -44,7 +37,6 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
             return
         }
 
-        // A delegated property stores its value in the delegate, not in a backing field.
         var stateful = false
         declaration.symbol.processAllDeclarations(context.session) { member ->
             if (member is FirPropertySymbol && member.hasBackingField && !member.hasDelegate) {
@@ -80,7 +72,6 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
         )
     }
 
-    /** Reports one missing generated member, including the compiler host's IntelliJ IDEA shortcut. */
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun FirRegularClass.reportIfMissing(
         diagnostic: ConfigurableWatchdogDiagnostic<KtDiagnosticFactory3<Name, String, String>>,
@@ -106,11 +97,7 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
         )
     }
 
-    /**
-     * Whether the class declares or inherits [member]. The scope resolves the name to the most
-     * specific override. Only `kotlin.Any` itself provides the identity/opaque defaults these
-     * diagnostics exist to flag.
-     */
+    /** Whether the class declares or inherits [member] from a class other than `kotlin.Any`. */
     context(context: CheckerContext)
     private fun FirRegularClass.provides(member: GeneratedMember): Boolean {
         var provided = false
@@ -138,7 +125,7 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
     }
 }
 
-/** The shortcut for Code | Generate in IntelliJ IDEA on the compiler's host OS. */
+/** The shortcut of Code | Generate in IntelliJ IDEA on the host OS of the compiler. */
 internal fun ideaGenerateShortcut(
     diagnostic: String,
     osName: String = System.getProperty("os.name").orEmpty(),

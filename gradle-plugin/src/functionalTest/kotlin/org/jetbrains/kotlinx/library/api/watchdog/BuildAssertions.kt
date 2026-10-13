@@ -7,28 +7,24 @@ import kotlin.test.assertTrue
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 
-/** A value of the `WatchdogSeverity` enum of the Gradle plugin. */
+/** `WatchdogSeverity` of the Gradle plugin. */
 enum class Severity { ERROR, WARNING, NONE }
 
-/**
- * The diagnostics that are always errors. The Gradle extension offers them no severity
- * property, only a switch for the two dependency checks.
- */
+/** The diagnostics without a severity property in the Gradle extension. */
 val alwaysErrorDiagnostics: Set<Diagnostic> = setOf(
     Diagnostic.PUBLIC_TYPE_WITH_INTERNAL_API,
     Diagnostic.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY,
     Diagnostic.EXEMPTION_WITHOUT_EXPLANATION,
 )
 
-/** The diagnostics with a severity property in the Gradle extension. */
 val configurableDiagnostics: List<Diagnostic> = Diagnostic.entries - alwaysErrorDiagnostics
 
-/** The severity property of the Gradle extension: the diagnostic name in camel case. */
+/** The severity property of the Gradle extension. */
 val Diagnostic.property: String
     get() = name.lowercase(Locale.US).split('_').joinToString("") { it.replaceFirstChar(Char::titlecase) }
         .replaceFirstChar(Char::lowercase)
 
-/** Matches a line of build output that reports the diagnostic, whatever the placeholders hold. */
+/** Matches an output line that reports the diagnostic with any placeholder values. */
 val Diagnostic.pattern: Regex
     get() = patterns.getValue(this)
 
@@ -38,59 +34,53 @@ private val patterns: Map<Diagnostic, Regex> = Diagnostic.entries.associateWith 
     Regex(diagnostic.template.split(PLACEHOLDER).joinToString(".*?") { Regex.escape(it) })
 }
 
-/** The output lines reporting [diagnostic], one per source location. */
+/** The output lines that report [diagnostic], one for each source location. */
 fun BuildResult.reports(diagnostic: Diagnostic): List<String> =
     output.lineSequence().filter { diagnostic.pattern.containsMatchIn(it) }.toList()
 
-/** Asserts each diagnostic is reported as a compiler error. */
 fun BuildResult.assertErrors(vararg diagnostics: Diagnostic) {
     diagnostics.forEach { assertReported("e: ", it) }
 }
 
-/** Asserts each diagnostic is reported as a compiler warning. */
 fun BuildResult.assertWarnings(vararg diagnostics: Diagnostic) {
     diagnostics.forEach { assertReported("w: ", it) }
 }
 
-/** Asserts none of the diagnostics is reported. */
 fun BuildResult.assertNotReported(vararg diagnostics: Diagnostic) {
     for (diagnostic in diagnostics) {
         assertEquals(emptyList(), reports(diagnostic), "Expected no $diagnostic in build output:\n$output")
     }
 }
 
-/** Asserts no watchdog diagnostic at all is reported. */
 fun BuildResult.assertNoWatchdogDiagnostics() {
     assertNotReported(*Diagnostic.entries.toTypedArray())
 }
 
-/** Asserts [diagnostic] is reported once in each of [files] and nowhere else. */
+/** Asserts that the output reports [diagnostic] once in each of [files] and nowhere else. */
 fun BuildResult.assertReportedIn(diagnostic: Diagnostic, vararg files: String) {
     val reported = reports(diagnostic).map { line -> SOURCE_FILE.find(line)?.value ?: line }
     assertEquals(files.sorted(), reported.sorted(), "Unexpected locations of $diagnostic in build output:\n$output")
 }
 
-/** Asserts a compiler error line contains [text]. */
+/** Asserts that a compiler error line has [text]. */
 fun BuildResult.assertError(text: String) {
     assertSeverityLine("e: ", text)
 }
 
-/** Asserts a compiler warning line contains [text]. */
+/** Asserts that a compiler warning line has [text]. */
 fun BuildResult.assertWarning(text: String) {
     assertSeverityLine("w: ", text)
 }
 
-/** Asserts the build output contains [text]. */
 fun BuildResult.assertOutputHas(text: String) {
     assertTrue(output.contains(text), "Expected '$text' in build output:\n$output")
 }
 
-/** Asserts the build output doesn't contain [text]. */
 fun BuildResult.assertOutputLacks(text: String) {
     assertFalse(output.contains(text), "Expected no '$text' in build output:\n$output")
 }
 
-/** Asserts the task at [path] ended with [outcome], or wasn't in the task graph when null. */
+/** A null [outcome] asserts that the task wasn't in the task graph. */
 fun BuildResult.assertTaskOutcome(path: String, outcome: TaskOutcome?) {
     assertEquals(outcome, task(path)?.outcome, "Unexpected outcome of $path:\n$output")
 }
@@ -105,7 +95,7 @@ private fun BuildResult.assertReported(severityPrefix: String, diagnostic: Diagn
 private fun BuildResult.assertSeverityLine(severityPrefix: String, text: String) {
     assertTrue(
         output.lineSequence().any { it.hasSeverity(severityPrefix) && text in it },
-        "Expected a '$severityPrefix' line containing '$text' in build output:\n$output",
+        "Expected a '$severityPrefix' line with '$text' in build output:\n$output",
     )
 }
 

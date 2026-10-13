@@ -24,16 +24,6 @@ import org.jetbrains.kotlin.fir.types.type
 import org.jetbrains.kotlin.fir.types.varargElementType
 import org.jetbrains.kotlin.name.JvmStandardClassIds
 
-/**
- * Reports watched functions that are `suspend`, have a reified type parameter, or take a suspend,
- * extension, or `Unit`-returning function type as a context or value parameter.
- * Legacy context receivers count too because they also become parameters in the JVM method.
- *
- * Abstract and interface members, overrides, constructors, value-class members, non-suspend
- * value-class-mangled signatures, and Java-hidden declarations are skipped. A class-level
- * exemption covers its functions. [WatchdogFirCheckers] registers this checker only for JVM
- * compilations.
- */
 internal class KotlinOnlyApiChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirFunctionChecker(MppCheckerKind.Common) {
@@ -58,14 +48,11 @@ internal class KotlinOnlyApiChecker(
             return
         }
 
-        // MangledJvmNameChecker owns mangled functions except for suspend functions, which it
-        // deliberately delegates back here because their suspend shape is the primary Java issue.
+        // MangledJvmNameChecker reports a mangled function, unless it is suspend.
         if (!declaration.isSuspend && declaration.mangledValueClassInSignature() != null) {
             return
         }
 
-        // The exemption is honored on the function itself and on any enclosing class, where it
-        // acknowledges every function inside as deliberately Kotlin-only.
         if (declaration.hasAnnotationOnActualOrExpect(WatchdogClassIds.IntentionallyKotlinOnlyApi) ||
             context.containingDeclarations.any {
                 it is FirClassSymbol<*> &&
@@ -85,7 +72,7 @@ internal class KotlinOnlyApiChecker(
         )
     }
 
-    /** What makes the function's shape Kotlin-only, in words, or null for a Java-usable shape. */
+    /** The Kotlin-only part of the shape, in words, or null. */
     context(context: CheckerContext)
     private fun FirNamedFunction.kotlinOnlyShape(): String? {
         if (isSuspend) {

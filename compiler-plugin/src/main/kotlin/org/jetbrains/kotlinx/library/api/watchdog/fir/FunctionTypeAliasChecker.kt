@@ -21,9 +21,7 @@ internal class FunctionTypeAliasChecker(
             return
         }
 
-        // `functionTypeKind` expands nested aliases, so aliases of aliases are seen through.
-        // Reflection kinds (KFunction/KSuspendFunction) stay exempt: a fun interface can't
-        // replace them.
+        // A fun interface can't replace a reflection kind (`KFunction`, `KSuspendFunction`).
         val kind = declaration.expandedTypeRef.coneType.functionTypeKind(context.session)
         if (kind == null || kind.isReflectType) {
             return

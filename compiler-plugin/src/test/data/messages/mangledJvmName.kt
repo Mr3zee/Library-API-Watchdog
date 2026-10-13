@@ -7,11 +7,8 @@ package foo.bar
 @JvmInline
 public value class UserId(public val raw: String)
 
-// Message parameters: the declaration kind, its name, the value class, and one of the nine fixes.
-
 public fun <!MANGLED_JVM_NAME_PUBLIC_API!>take<!>(id: UserId) {}
 
-// The constructor fix, and the getter fix for the property made from the parameter.
 public class Wallet<!MANGLED_JVM_NAME_PUBLIC_API!>(public val <!MANGLED_JVM_NAME_PUBLIC_API!>id<!>: UserId)<!>
 
 public class Ledger {

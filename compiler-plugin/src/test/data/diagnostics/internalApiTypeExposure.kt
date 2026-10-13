@@ -2,9 +2,6 @@
 // EXPLICIT_API_MODE: WARNING
 // DIAGNOSTICS: -STATEFUL_CLASS_WITHOUT_EQUALS -STATEFUL_CLASS_WITHOUT_HASH_CODE -STATEFUL_CLASS_WITHOUT_TO_STRING -UNDOCUMENTED_PUBLIC_API -TOP_LEVEL_API_WITHOUT_JVM_NAME
 
-// Internal-API types may be used within implementation code, but supported public source API must
-// not expose them. Every public signature position and nested type argument is checked.
-
 // MODULE: lib
 // FILE: internalTypes.kt
 package lib.api
@@ -94,8 +91,7 @@ public fun leakedDifferentAnnotations(
     second: <!PUBLIC_TYPE_WITH_INTERNAL_API!>OtherInternalType<!>,
 ) {}
 
-// Declarations that only @PublishedApi promotes are binary implementation details rather than
-// source API. They and ordinary internal declarations are not checked.
+// `@PublishedApi` doesn't make a declaration callable in source.
 
 @PublishedApi
 internal fun publishedHelper(value: InternalType): InternalType = value
@@ -105,8 +101,6 @@ internal class PublishedHolder<T : InternalType>(val value: InternalType)
 
 internal fun implementationHelper(value: InternalType): InternalType = value
 
-// An exposing declaration marked as internal API is itself outside the supported API surface.
-
 @InternalLibApi
 public fun internalApiFunction(value: InternalType): InternalType = value
 
@@ -114,7 +108,5 @@ public fun internalApiFunction(value: InternalType): InternalType = value
 public class InternalApiContainer {
     public fun member(value: InternalType): InternalType = value
 }
-
-// Supported types in the same positions are accepted.
 
 public fun supported(value: SupportedType): List<SupportedType> = listOf(value)

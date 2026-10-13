@@ -23,23 +23,14 @@ import org.openjdk.jmh.annotations.Warmup
 import java.nio.file.Path
 
 /**
- * End-to-end cost of the watchdog in a real in-process `K2JVMCompiler` run over the synthetic
- * corpus, one full compilation per operation.
+ * One in-process `K2JVMCompiler` run over the corpus for each operation. The modes:
  *
- * Modes:
- * - `noPlugin` - the compiler alone, without the watchdog jar.
- * - `pluginBaseline` - the plugin applied with every configurable diagnostic set to `none`. The
- *   non-configurable `ExemptionExplanationChecker` still runs. This is the honest floor every
- *   per-checker mode is compared against.
- * - `allCheckers` - every configurable diagnostic enabled at `warning` severity,
- *   dependency-path options included.
- * - `<CheckerName>` - only that checker's diagnostics enabled at `warning`, everything else
- *   `none`. The per-checker cost is this mode minus `pluginBaseline`.
- *
- * `ExemptionExplanationChecker` has no mode of its own: it can't be enabled separately, and its
- * cost is `pluginBaseline` minus `noPlugin` less the fixed plugin-infrastructure overhead.
- *
- * Allocation numbers come from JMH's GC profiler, which the Gradle `benchmark` task enables.
+ * - `noPlugin`: the compiler alone.
+ * - `pluginBaseline`: every configurable diagnostic set to `none`. `ExemptionExplanationChecker`
+ *   still runs.
+ * - `allCheckers`: every configurable diagnostic at `warning`, with the dependency-path options.
+ * - `<CheckerName>`: the diagnostics of that checker at `warning`, the rest `none`. The cost of
+ *   the checker is this mode minus `pluginBaseline`.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.SingleShotTime)

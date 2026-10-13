@@ -1,61 +1,36 @@
 package org.jetbrains.kotlinx.library.api.watchdog.fixer
 
-/** How the fix target is located from the source element a diagnostic was reported on. */
 internal enum class TargetStrategy {
-    /** The nearest enclosing class, interface, or object. Never a enum entry. */
+    /** Never an enum entry. */
     ENCLOSING_CLASS,
-
-    /** The nearest enclosing annotation class. */
     ENCLOSING_ANNOTATION_CLASS,
-
-    /** The reported declaration itself: class, type alias, function, property, or constructor. */
     REPORTED_DECLARATION,
-
-    /** The reported declaration as the owner of a KDoc: any of [REPORTED_DECLARATION]'s targets. */
     DOCUMENTED_DECLARATION,
 
-    /**
-     * The annotation entry the diagnostic was reported on. The reported annotation is the problem
-     * itself, so the exemption replaces it instead of joining it.
-     */
+    /** The exemption replaces the reported annotation. */
     REPORTED_ANNOTATION,
-
-    /** The callable whose signature contains the reported type, parameter, or bound. */
     ENCLOSING_CALLABLE,
-
-    /** The nearest enclosing function or constructor. */
     ENCLOSING_FUNCTION_OR_CONSTRUCTOR,
 
-    /** The containing file, as a `@file:` annotation. */
+    /** A `@file:` annotation. */
     CONTAINING_FILE,
 }
 
-/** The source insertion that resolves one watchdog diagnostic, and where it goes. */
 internal sealed interface Fix {
-    /**
-     * Identifies the inserted text: the same fix planned for one target by several diagnostics
-     * is applied once.
-     */
+    /** Fixes with one id on one target are applied once. */
     val id: String
 
     val targetStrategy: TargetStrategy
 }
 
-/** The exemption annotation that acknowledges one watchdog diagnostic. */
 internal class ExemptionFix(
     val annotationShortName: String,
     override val targetStrategy: TargetStrategy,
-    /** `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` bakes its reason in. */
     val hasReasonParameter: Boolean = true,
 ) : Fix {
     override val id: String get() = annotationShortName
 }
 
-/**
- * A placeholder KDoc in front of an undocumented declaration. Documentation is not an API shape
- * that users depend on, so instead of an exemption the declaration gets a KDoc that satisfies the
- * check and asks its author to write the real text.
- */
 internal object PlaceholderKdocFix : Fix {
     const val TEXT = "TODO: Provide kDocs for this declaration"
 
@@ -63,22 +38,12 @@ internal object PlaceholderKdocFix : Fix {
     override val targetStrategy: TargetStrategy get() = TargetStrategy.DOCUMENTED_DECLARATION
 }
 
-/** How one watchdog diagnostic can be resolved by the fixer. */
 internal sealed interface FixResolution {
     class Fixable(val fix: Fix) : FixResolution
 
     class Unfixable(val reason: String) : FixResolution
 }
 
-/**
- * Maps every watchdog diagnostic to the `@Intentionally*` exemption annotation that acknowledges
- * it (or, for `UNDOCUMENTED_PUBLIC_API`, to the placeholder KDoc that documents it), or to the
- * reason why nothing can be added automatically. The diagnostic names mirror
- * `WatchdogDiagnostics` in `:kotlin-library-api-watchdog-compiler-plugin` and the annotations
- * mirror `:kotlin-library-api-watchdog-plugin-annotations`.
- * The Gradle plugin's functional tests exercise every fixable entry end to end, which keeps the
- * three lists in sync.
- */
 internal object ExemptionRegistry {
     const val ANNOTATIONS_PACKAGE = "org.jetbrains.kotlinx.library.api.watchdog"
     const val REASON_CLASS = "ExemptionReason"
@@ -86,8 +51,6 @@ internal object ExemptionRegistry {
 
     private val resolutions: Map<String, FixResolution> = mapOf(
         "OPEN_API_WITHOUT_SUBCLASS_OPT_IN" to fixable("IntentionallyOpen", TargetStrategy.ENCLOSING_CLASS),
-        // A markerless @SubclassOptInRequired gates nothing, so the exemption takes its place:
-        // the class stays open to everyone, now stated outright.
         "SUBCLASS_OPT_IN_WITHOUT_MARKERS" to fixable("IntentionallyOpen", TargetStrategy.REPORTED_ANNOTATION),
         "EXHAUSTIVE_PUBLIC_API" to fixable("IntentionallyExhaustive", TargetStrategy.ENCLOSING_CLASS),
         "FUNCTION_TYPE_ALIAS_PUBLIC_API" to fixable("IntentionallyFunctionTypeAlias", TargetStrategy.REPORTED_DECLARATION),
@@ -112,19 +75,14 @@ internal object ExemptionRegistry {
         "DSL_MARKER_NOOP_TARGET" to fixable("IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility", TargetStrategy.ENCLOSING_ANNOTATION_CLASS, hasReasonParameter = false),
         "DSL_MARKER_WITHOUT_EXPLICIT_TARGETS" to fixable("IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility", TargetStrategy.ENCLOSING_ANNOTATION_CLASS, hasReasonParameter = false),
 
-        // Documentation is never a compatibility concern, so instead of an exemption the
-        // declaration gets a placeholder KDoc for its author to replace.
+        // Documentation isn't a compatibility concern, so a placeholder KDoc replaces the exemption.
         "UNDOCUMENTED_PUBLIC_API" to FixResolution.Fixable(PlaceholderKdocFix),
         "EXEMPTION_WITHOUT_EXPLANATION" to FixResolution.Unfixable("The existing exemption needs a reason or description only its author can write"),
         "DSL_MARKER_NOOP_TYPE_POSITION" to FixResolution.Unfixable("No exemption annotation exists. Move the DSL marker to an effective position or remove it"),
         "PUBLIC_TYPE_WITH_INTERNAL_API" to FixResolution.Unfixable("Remove the internal type from the public signature or mark the exposing declaration as internal API"),
     )
 
-    /**
-     * Combined exemption annotations, each standing for the set of individual annotations it
-     * acknowledges at once. When one declaration collects every individual annotation of a group,
-     * the fixer applies the combined annotation instead of stacking all of them.
-     */
+    /** A declaration that collects every part of a group gets the combined annotation instead. */
     val combinedExemptions: Map<String, Set<String>> = mapOf(
         "IntentionallyWithoutEqualsHashCodeOrToString" to setOf(
             "IntentionallyWithoutEquals",
@@ -135,7 +93,7 @@ internal object ExemptionRegistry {
 
     val knownDiagnostics: Set<String> get() = resolutions.keys
 
-    /** Every exemption annotation the fixer can add, and whether its reason is an argument. */
+    /** Each annotation the fixer can add, and whether it takes a `reason` argument. */
     val exemptionAnnotations: Map<String, Boolean> = resolutions.values
         .filterIsInstance<FixResolution.Fixable>()
         .map { it.fix }
@@ -143,10 +101,6 @@ internal object ExemptionRegistry {
         .associate { it.annotationShortName to it.hasReasonParameter } +
             combinedExemptions.keys.associateWith { true }
 
-    /**
-     * The annotation a diagnostic would receive, or null when it can't be acknowledged with one:
-     * either nothing can be added automatically, or the fix is a placeholder KDoc.
-     */
     fun annotationFor(diagnostic: String): String? =
         ((resolutions[diagnostic] as? FixResolution.Fixable)?.fix as? ExemptionFix)?.annotationShortName
 

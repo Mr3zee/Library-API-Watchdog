@@ -10,8 +10,6 @@ public annotation class TreeDsl
 
 public class Tag
 
-// Message parameters: the marker name and one of the four inert type positions.
-
 public fun process(tag: <!DSL_MARKER_NOOP_TYPE_POSITION!>@TreeDsl<!> Tag) { }
 
 public fun make(): <!DSL_MARKER_NOOP_TYPE_POSITION!>@TreeDsl<!> Tag = Tag()

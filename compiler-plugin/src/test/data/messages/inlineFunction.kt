@@ -4,8 +4,6 @@
 
 package foo.bar
 
-// Message parameters: the inlined declaration kind (function, getter, or setter) and its name.
-
 @PublishedApi
 internal var storedLimit: Int = 0
 

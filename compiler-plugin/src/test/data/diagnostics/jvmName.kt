@@ -5,8 +5,7 @@
 // FILE: facade.kt
 package foo.bar
 
-// The facade class FacadeKt leaks the file name to Java callers: reported once per file, on the
-// first public top-level function or property.
+// Each file is reported one time, on its first public top-level callable.
 public fun <!TOP_LEVEL_API_WITHOUT_JVM_NAME!>connect<!>(): Int = 0
 
 public fun disconnect(): Int = 0
@@ -16,7 +15,6 @@ public val timeout: Int = 0
 // FILE: propertyFirst.kt
 package foo.bar
 
-// A public top-level property creates the facade too.
 public val <!TOP_LEVEL_API_WITHOUT_JVM_NAME!>retries<!>: Int = 3
 
 // FILE: named.kt
@@ -24,15 +22,12 @@ public val <!TOP_LEVEL_API_WITHOUT_JVM_NAME!>retries<!>: Int = 3
 
 package foo.bar
 
-// The facade name is pinned deliberately: no warning.
 public fun encrypt(payload: String): String = payload
 
 public val strength: Int = 256
 
 // FILE: classifiers.kt
 package foo.bar
-
-// Classifiers don't compile into a file facade: no warning.
 
 public class Session
 
@@ -45,8 +40,6 @@ public typealias Handler = Session
 // FILE: hiddenOnly.kt
 package foo.bar
 
-// Every top-level callable is hidden from Java, so the facade has no Java-visible members.
-
 @JvmSynthetic
 public fun kotlinOnlyHelper(): Int = 0
 
@@ -56,8 +49,8 @@ public val kotlinOnlyValue: Int = 0
 // FILE: syntheticFields.kt
 package foo.bar
 
-// A const or @JvmField property has no accessors. A synthetic backing field hides its only Java
-// entry point, so this file exposes no Java-visible facade member.
+// The backing field is the only Java entry point of a `const` or `@JvmField` property, so
+// `@JvmSynthetic` on it hides the property.
 
 @JvmSynthetic
 public const val HIDDEN_CONSTANT: Int = 1
@@ -69,15 +62,14 @@ public val HIDDEN_FIELD: Int = 2
 // FILE: partiallyHiddenProperty.kt
 package foo.bar
 
-// Hiding only a var's getter leaves its setter and therefore its facade visible.
+// The setter is still visible.
 @get:JvmSynthetic
 public var <!TOP_LEVEL_API_WITHOUT_JVM_NAME!>partiallyHidden<!>: Int = 0
 
 // FILE: fieldAnnotationOnly.kt
 package foo.bar
 
-// On an ordinary property the untargeted annotation hides only the backing field. Accessors stay
-// visible and still require a stable facade name.
+// On an ordinary property, `@JvmSynthetic` without a use-site target hides only the backing field.
 @JvmSynthetic
 public val <!TOP_LEVEL_API_WITHOUT_JVM_NAME!>fieldAnnotationOnly<!>: Int = 0
 
@@ -89,13 +81,10 @@ package foo.bar
 import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName
 
-// The derived facade name is acknowledged: no warning.
 public fun legacyEntryPoint(): Int = 0
 
 // FILE: internalOnly.kt
 package foo.bar
-
-// Not visible outside the library: no warning.
 
 internal fun helper(): Int = 0
 
@@ -104,6 +93,6 @@ private val secret: Int = 0
 // FILE: publishedOnly.kt
 package foo.bar
 
-// The facade remains part of the binary contract copied into public inline callers.
+// `@PublishedApi` makes an internal declaration binary API.
 @PublishedApi
 internal fun <!TOP_LEVEL_API_WITHOUT_JVM_NAME!>publishedHelper<!>(): Int = 0

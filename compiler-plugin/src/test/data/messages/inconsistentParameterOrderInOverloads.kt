@@ -4,8 +4,6 @@
 
 package foo.bar
 
-// Message parameters: the two swapped parameter names, the callable name, and the callable kind.
-
 public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>draw<!>(x: Int, y: Int) {}
 
 public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>draw<!>(y: Int, x: Int, scale: Double) {}

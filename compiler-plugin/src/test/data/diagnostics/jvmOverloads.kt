@@ -7,28 +7,20 @@ package foo.bar
 import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutJvmOverloads
 
-// For Java callers the defaults don't exist: should warn.
-
 public fun <!DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS!>connect<!>(host: String, port: Int = 80, timeout: Int = 30) {}
 
-// @JvmOverloads compiles the reduced overloads: no warning.
 @JvmOverloads
 public fun connectJava(host: String, port: Int = 80) {}
-
-// No defaults, and vararg is not a default: nothing to generate.
 
 public fun send(host: String, port: Int) {}
 
 public fun log(vararg entries: String) {}
 
-// @JvmSynthetic hides the function from Java on purpose: no warning.
 @JvmSynthetic
 public fun kotlinConnect(host: String, port: Int = 80) {}
 
-// suspend functions are not Java-callable regardless of overloads (muted own diagnostic here).
+// A suspend function isn't Java-callable.
 public suspend fun fetch(host: String, timeout: Int = 30): String = host
-
-// Constructors generate overloads the same way.
 
 public class Connection<!DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS!>(host: String, port: Int = 80)<!> {
     <!DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS!>public constructor(port: Int = 443) : this("localhost", port)<!>
@@ -41,8 +33,8 @@ public class Connection<!DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS!>(host: String
 
 public class Tunnel @JvmOverloads constructor(host: String, port: Int = 22)
 
-// @JvmOverloads is not applicable to abstract members, interface members, or annotation class
-// constructors: no warning.
+// `@JvmOverloads` isn't applicable to an abstract member, an interface member, or an annotation
+// class constructor.
 
 public interface Api {
     public fun call(timeout: Int = 30)
@@ -53,24 +45,20 @@ public interface Api {
 public abstract class Base {
     public abstract fun run(retries: Int = 3)
 
-    // A concrete member generates overloads like any other function: should warn.
     public fun <!DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS!>walk<!>(steps: Int = 1) {}
 }
 
-// An override can't re-declare default values: no warning.
 public class Runner : Base() {
     override fun run(retries: Int) {}
 }
 
 public annotation class Retry(val count: Int = 3)
 
-// Everything inside a value class is invisible to Java sources anyway: no warning.
+// Java can't see the members of a value class.
 @JvmInline
 public value class Port(public val number: Int) {
     public fun shifted(by: Int = 1): Int = number + by
 }
-
-// Acknowledged declarations: no warning.
 
 @IntentionallyWithoutJvmOverloads(reason = ExemptionReason.API_DESIGN)
 public fun acknowledgedConnect(host: String, port: Int = 80) {}
@@ -79,8 +67,6 @@ public class Gateway @IntentionallyWithoutJvmOverloads(reason = ExemptionReason.
     host: String,
     port: Int = 80,
 )
-
-// Not visible outside the library: no warning.
 
 @PublishedApi
 internal fun publishedConnect(host: String, port: Int = 80) {}

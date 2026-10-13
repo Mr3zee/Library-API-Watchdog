@@ -22,13 +22,7 @@ import org.jetbrains.kotlin.fir.types.contextParameterTypes
 import org.jetbrains.kotlin.fir.types.receiverType
 import org.jetbrains.kotlin.name.StandardClassIds
 
-/**
- * Reports DSL marker annotations on callable type positions other than receiver types, context
- * parameter types, and function types with implicit values. The check is position-local: later
- * use of the annotated type as an inferred receiver does not change the reported position.
- *
- * All declaration visibilities are checked.
- */
+/** Checks every visibility, because a marker on a private type has no effect either. */
 internal class DslMarkerTypePositionChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirCallableDeclarationChecker(MppCheckerKind.Common) {
@@ -40,15 +34,13 @@ internal class DslMarkerTypePositionChecker(
             return
         }
 
-        // `val`/`var` constructor parameters also produce a property with a fake source pointing
-        // at the same parameter text. Skipping fake sources keeps the report single.
+        // The property of a val/var constructor parameter has a fake source over the same text.
         if (declaration.source?.kind != KtRealSourceElementKind) {
             return
         }
 
         val position = when (declaration) {
             is FirValueParameter -> {
-                // A context parameter is an implicit value, so a marker on its type is effective.
                 if (declaration.valueParameterKind != FirValueParameterKind.Regular) return
                 "parameterType"
             }
@@ -64,10 +56,7 @@ internal class DslMarkerTypePositionChecker(
             if (!annotation.isDslMarker(session)) continue
 
             if (!checkedFunctionTypePosition) {
-                // A marker on a function type propagates to its receiver and context parameters,
-                // so it is effective as long as the type has at least one implicit value.
-                // Receiver types inside a function type ((@M Tag).() -> Unit) are nested type refs
-                // and never reach this point.
+                // A marker on a function type applies to its receiver and context parameters.
                 val coneType = typeRef.coneType
                 if (coneType.receiverType(session) != null ||
                     coneType.contextParameterTypes(session).isNotEmpty()

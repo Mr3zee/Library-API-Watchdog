@@ -36,14 +36,8 @@ import org.jetbrains.kotlinx.library.api.watchdog.fir.UndocumentedApiChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnosticSeverities
 
 /**
- * One watchdog checker as a benchmark subject: how to construct it in isolation for the
- * per-checker benchmark, and which configurable diagnostics enable it in a whole-compilation
- * run.
- *
- * [configurableDiagnostics] is empty for the two checkers that no `diagnosticSeverity` option
- * controls: `ExemptionExplanationChecker` always runs with the plugin, and
- * `NonTransitiveDependencyChecker` is activated by the dependency-path options instead
- * ([needsDependencyPaths]).
+ * [configurableDiagnostics] is empty for `ExemptionExplanationChecker`, which always runs, and
+ * for `NonTransitiveDependencyChecker`, which the dependency-path options enable.
  */
 internal class CheckerSubject(
     val name: String,
@@ -62,16 +56,11 @@ internal class CheckerEnvironment(
     val session: FirSession,
 )
 
-/**
- * Registry of independently benchmarkable watchdog checkers. Checkers whose diagnostics are
- * unavoidable errors are omitted when they can't run against the triggering corpus without
- * failing compilation.
- */
+/** A checker whose diagnostic is always an error isn't listed, because the corpus wouldn't compile. */
 internal object CheckerSubjects {
     private val severities = WatchdogDiagnosticSeverities.DEFAULT
 
     val all: List<CheckerSubject> = listOf(
-        // Class checkers.
         CheckerSubject(
             "OpenApiChecker",
             listOf("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", "SUBCLASS_OPT_IN_WITHOUT_MARKERS"),
@@ -95,7 +84,6 @@ internal object CheckerSubjects {
             listOf("DSL_MARKER_NOOP_TARGET", "DSL_MARKER_WITHOUT_EXPLICIT_TARGETS"),
         ) { ofClass(DslMarkerTargetsChecker(severities)) },
 
-        // Basic declaration checkers.
         CheckerSubject("UndocumentedApiChecker", listOf("UNDOCUMENTED_PUBLIC_API")) { environment ->
             ofBasic(UndocumentedApiChecker(severities))
         },
@@ -139,7 +127,6 @@ internal object CheckerSubjects {
             )
         },
 
-        // Function checkers.
         CheckerSubject("BooleanParameterChecker", listOf("BOOLEAN_PARAMETER_PUBLIC_API")) {
             ofFunction(BooleanParameterChecker(severities))
         },
@@ -158,17 +145,14 @@ internal object CheckerSubjects {
             ofFunction(JvmOverloadsChecker(severities))
         },
 
-        // File checkers.
         CheckerSubject("TopLevelJvmNameChecker", listOf("TOP_LEVEL_API_WITHOUT_JVM_NAME")) {
             ofFile(TopLevelJvmNameChecker(severities))
         },
 
-        // Type alias checkers.
         CheckerSubject("FunctionTypeAliasChecker", listOf("FUNCTION_TYPE_ALIAS_PUBLIC_API")) {
             ofTypeAlias(FunctionTypeAliasChecker(severities))
         },
 
-        // Callable declaration checkers.
         CheckerSubject("DslMarkerTypePositionChecker", listOf("DSL_MARKER_NOOP_TYPE_POSITION")) {
             ofCallable(DslMarkerTypePositionChecker(severities))
         },
@@ -186,7 +170,6 @@ internal object CheckerSubjects {
 
     val byName: Map<String, CheckerSubject> = all.associateBy { it.name }
 
-    /** Traversal-only baseline for the isolated benchmark. */
     val emptyCheckers: IsolatedCheckers = IsolatedCheckers()
 
     private fun ofClass(checker: FirClassChecker): IsolatedCheckers =

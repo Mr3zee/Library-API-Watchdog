@@ -94,8 +94,7 @@ class GradleCompatibilityTest {
 
     @Test
     fun realizingEveryTaskKeepsConfiguredSeverities() {
-        // IDE sync and `tasks.all { }` realize the exemption tasks without scheduling them, which
-        // must not switch regular compilations into the all-warnings collection mode.
+        // `tasks.all { }` realizes the exemption tasks without a schedule.
         val project = jvmProject {
             buildScript("tasks.all { }")
             source("/** An open API. */\npublic open class OpenApi", "OpenApi")

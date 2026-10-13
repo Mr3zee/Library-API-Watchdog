@@ -15,9 +15,8 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.provider.SetProperty
 
 /**
- * Configures the severity of each configurable watchdog diagnostic. Every configurable
- * diagnostic is reported as an error unless demoted to [WatchdogSeverity.WARNING] or disabled
- * with [WatchdogSeverity.NONE] here:
+ * The `apiWatchdog` block: the severity of each configurable diagnostic. Default is
+ * [WatchdogSeverity.ERROR] unless the property says otherwise.
  *
  * ```kotlin
  * apiWatchdog {
@@ -25,34 +24,14 @@ import org.gradle.api.provider.SetProperty
  *     dataClassPublicApi = WatchdogSeverity.NONE
  * }
  * ```
- *
- * The Java-interop diagnostics live in the [javaInterop] group. They only pay off for libraries
- * with Java consumers, so the group has one off-switch - a Kotlin-only library disables all of
- * them at once, no matter what the individual severities say:
- *
- * ```kotlin
- * apiWatchdog {
- *     javaInterop {
- *         enabled = false
- *     }
- * }
- * ```
  */
 public open class WatchdogGradleExtension @Inject constructor(
     /**
-     * The `apiWatchdogExemptNonTransitive` configuration: dependencies whose types
-     * `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY` accepts in public signatures although the
-     * module doesn't publish them transitively. Use it when the environment that loads the
-     * library supplies a dependency on its own, so every declaration mentioning its types would
-     * otherwise need an `@IntentionallyNonTransitiveDependency` exemption: a Gradle plugin
-     * compiled against `compileOnly` plugin APIs, an IDE plugin, or a library whose host
-     * application ships a framework.
-     *
-     * Declare dependencies on it like on any other configuration, with coordinates, a version
-     * catalog entry, a project, or `gradleApi()`. A version is optional, the one on the compile
-     * classpath is used. Everything a listed dependency pulls onto the compile classpath is
-     * exempt with it, so a Kotlin Multiplatform library is covered together with its platform
-     * artifact. Exempt a whole configuration by extending from it:
+     * The `apiWatchdogExemptNonTransitive` configuration. `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`
+     * accepts the types of its dependencies in public signatures although the module doesn't
+     * publish them transitively. Use it when the environment that loads the library already has
+     * the dependency: a Gradle plugin, an IDE plugin, or a library whose host application includes
+     * a framework.
      *
      * ```kotlin
      * dependencies {
@@ -68,10 +47,9 @@ public open class WatchdogGradleExtension @Inject constructor(
      * }
      * ```
      *
-     * The configuration is a marker only: it adds nothing to the compile classpath, and the
-     * dependency itself is still declared as `implementation` or `compileOnly`. Types from any
-     * other non-transitive dependency are still reported. [publicTypesMustBeTransitiveDependencies]
-     * remains the whole-check switch.
+     * A version is optional. Everything a listed dependency pulls onto the compile classpath is
+     * exempt with it. The configuration adds nothing to the compile classpath, so the dependency
+     * itself stays declared as `implementation` or `compileOnly`.
      */
     public val exemptNonTransitiveDependencies: NamedDomainObjectProvider<Configuration>,
     objectFactory: ObjectFactory,
@@ -88,8 +66,8 @@ public open class WatchdogGradleExtension @Inject constructor(
     /** Severity of `EXHAUSTIVE_PUBLIC_API`: exhaustively matchable enums and sealed hierarchies. */
     public val exhaustivePublicApi: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `UNDOCUMENTED_PUBLIC_API`: public declarations without KDoc. */
-    public val undocumentedPublicApi: Property<WatchdogSeverity> = objectFactory.severityProperty()
+    /** Severity of `UNDOCUMENTED_PUBLIC_API`: public declarations without KDoc. Default is [WatchdogSeverity.WARNING]. */
+    public val undocumentedPublicApi: Property<WatchdogSeverity> = objectFactory.severityProperty(WatchdogSeverity.WARNING)
 
     /** Severity of `FUNCTION_TYPE_ALIAS_PUBLIC_API`: type aliases that abbreviate function types. */
     public val functionTypeAliasPublicApi: Property<WatchdogSeverity> = objectFactory.severityProperty()
@@ -136,21 +114,15 @@ public open class WatchdogGradleExtension @Inject constructor(
     /** Severity of `DSL_MARKER_NOOP_TYPE_POSITION`: DSL markers on type positions without effect. */
     public val dslMarkerNoopTypePosition: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /**
-     * Whether `PUBLIC_TYPE_WITH_INTERNAL_API` is checked. Enabled by default. A violation is
-     * always an error when enabled. This Boolean property is the check's only off-switch.
-     */
+    /** Whether `PUBLIC_TYPE_WITH_INTERNAL_API` runs. Default is `true`. A violation is always an error. */
     public val publicTypeWithInternalApi: Property<Boolean> =
         objectFactory.property(Boolean::class.java).convention(true)
 
     /**
-     * Fully qualified names of annotation classes that mark internal API in addition to the
-     * annotation classes carrying `@InternalAnnotationMarker`. A declaration annotated with one
-     * of them, directly or through an enclosing declaration, is not watched, and
-     * `PUBLIC_TYPE_WITH_INTERNAL_API` reports its type like any other internal-API type.
-     *
-     * Use it for annotations the library can't mark itself, typically the internal-API annotation
-     * of a dependency:
+     * Fully qualified names of annotation classes that mark internal API, besides the classes
+     * that carry `@InternalAnnotationMarker`. The watchdog doesn't check a declaration
+     * under such an annotation, and `PUBLIC_TYPE_WITH_INTERNAL_API` reports its type. Use it for
+     * the internal-API annotation of a dependency:
      *
      * ```kotlin
      * apiWatchdog {
@@ -162,40 +134,33 @@ public open class WatchdogGradleExtension @Inject constructor(
         objectFactory.setProperty(String::class.java).convention(emptySet())
 
     /**
-     * Whether public signatures may only expose types from dependencies published transitively
-     * to consumers. Enabled by default. Unlike design diagnostics, a violation is always an error
-     * and has no warning severity. Setting this Gradle property to `false` is the check's only
-     * off-switch. To keep the check and accept the types of selected dependencies, declare them on
+     * Whether `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY` runs. Default is `true`. A violation is
+     * always an error. To accept the types of selected dependencies, declare them on
      * [exemptNonTransitiveDependencies] instead.
      */
     public val publicTypesMustBeTransitiveDependencies: Property<Boolean> =
         objectFactory.property(Boolean::class.java).convention(true)
 
     /**
-     * Whether to suggest enabling binary compatibility validation when neither the Kotlin Gradle
-     * plugin's built-in
+     * Whether the build warns when neither the Kotlin Gradle plugin's
      * [ABI validation](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html)
-     * nor the standalone
-     * [Binary Compatibility Validator](https://github.com/Kotlin/binary-compatibility-validator)
-     * plugin is active. The watchdog reviews the shape of new API declarations, while binary
-     * compatibility validation guards the API that already shipped, so the plugin recommends it
-     * with a build warning. `true` by default, set to `false` to silence the suggestion.
+     * nor the [Binary Compatibility Validator](https://github.com/Kotlin/binary-compatibility-validator)
+     * plugin is active. Default is `true`.
      */
     public val suggestAbiValidation: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(true)
 
-    /** The Java-interop diagnostic group: its off-switch and the individual severities. */
+    /** The Java-interop diagnostics, see [WatchdogJavaInteropExtension]. */
     public val javaInterop: WatchdogJavaInteropExtension =
         objectFactory.newInstance(WatchdogJavaInteropExtension::class.java)
 
-    /** Configures the [javaInterop] diagnostic group. */
+    /** Configures [javaInterop]. */
     public fun javaInterop(action: Action<WatchdogJavaInteropExtension>) {
         action.execute(javaInterop)
     }
 
     /**
-     * Ignores [check] on a declaration carrying any annotation identified by
-     * [whenAnnotatedWith]. The check is named by its diagnostic name, which [WatchdogChecks]
-     * holds as constants, and the annotations by their fully qualified class names:
+     * Ignores [check] on a declaration that carries one of the [whenAnnotatedWith] annotations.
+     * [WatchdogChecks] holds the check names. An annotation is its fully qualified class name:
      *
      * ```kotlin
      * import org.jetbrains.kotlinx.library.api.watchdog.WatchdogChecks
@@ -211,9 +176,7 @@ public open class WatchdogGradleExtension @Inject constructor(
      * }
      * ```
      *
-     * Call this method repeatedly to associate the annotations with several checks. Only
-     * configurable checks support annotation ignore rules. The diagnostics documented as always
-     * errors can't be ignored.
+     * Call it again for another check. An always-error diagnostic has no ignore rule.
      */
     public fun ignore(check: String, whenAnnotatedWith: List<String>) {
         val knownChecks = diagnosticSeverities.keys
@@ -221,7 +184,7 @@ public open class WatchdogGradleExtension @Inject constructor(
             "Unknown API Watchdog check '$check'. Known configurable checks: ${knownChecks.joinToString()}"
         }
         require(whenAnnotatedWith.isNotEmpty()) {
-            "At least one annotation name must be supplied for API Watchdog check '$check'"
+            "API Watchdog check '$check' needs at least one annotation name"
         }
         whenAnnotatedWith.forEach { annotationName ->
             require(annotationName.isNotBlank() && ':' !in annotationName) {
@@ -263,10 +226,8 @@ public open class WatchdogGradleExtension @Inject constructor(
 }
 
 /**
- * Exempts [dependency] from `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`, so its types may appear in
- * the public API although it is not published transitively. Call it from the
- * declaration that adds it to a compilation. Inside the configuration block of a dependency,
- * `this` is the dependency being declared:
+ * Exempts [dependency] from `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`. Call it in the
+ * configuration block of the dependency:
  *
  * ```kotlin
  * dependencies {
@@ -275,9 +236,9 @@ public open class WatchdogGradleExtension @Inject constructor(
  * }
  * ```
  *
- * Equivalent to declaring the same dependency on `apiWatchdogExemptNonTransitive` a second
- * time, see [WatchdogGradleExtension.exemptNonTransitiveDependencies]. The watchdog plugin must
- * be applied before the `dependencies` block runs.
+ * The effect is the same as a second declaration of the dependency on
+ * [WatchdogGradleExtension.exemptNonTransitiveDependencies]. Apply the watchdog plugin before
+ * the `dependencies` block.
  */
 public fun DependencyHandler.exemptNonTransitiveDependency(dependency: Dependency) {
     try {
@@ -285,7 +246,7 @@ public fun DependencyHandler.exemptNonTransitiveDependency(dependency: Dependenc
     } catch (e: UnknownConfigurationException) {
         throw GradleException(
             """
-            Apply the watchdog plugin before calling exemptNonTransitiveDependency.
+            Apply the watchdog plugin before you call exemptNonTransitiveDependency.
 
               plugins {
                   id("${PluginInfo.PLUGIN_ID}")
@@ -297,15 +258,19 @@ public fun DependencyHandler.exemptNonTransitiveDependency(dependency: Dependenc
 }
 
 /**
- * The Java-interop diagnostic group of [WatchdogGradleExtension]. The [enabled] off-switch
- * disables every diagnostic of the group at once, regardless of the individual severities.
+ * The `javaInterop` block of [WatchdogGradleExtension]: the Java-interop diagnostics. They
+ * matter only for a library with Java consumers, so a Kotlin-only library turns them all off:
+ *
+ * ```kotlin
+ * apiWatchdog {
+ *     javaInterop {
+ *         enabled = false
+ *     }
+ * }
+ * ```
  */
 public open class WatchdogJavaInteropExtension @Inject constructor(objectFactory: ObjectFactory) {
-    /**
-     * Whether the Java-interop diagnostics run at all. `true` by default. A library with a
-     * Kotlin-only audience sets it to `false` instead of disabling the six diagnostics one by
-     * one - the switch wins over the individual severities.
-     */
+    /** Whether the Java-interop diagnostics run. Default is `true`. `false` wins over the severities. */
     public val enabled: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(true)
 
     /** Severity of `MANGLED_JVM_NAME_PUBLIC_API`: value classes mangling public JVM signatures. */
@@ -320,13 +285,12 @@ public open class WatchdogJavaInteropExtension @Inject constructor(objectFactory
     /** Severity of `COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS`: non-static companion property accessors. */
     public val companionPropertyWithoutStaticAccess: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `TOP_LEVEL_API_WITHOUT_JVM_NAME`: file facades leaking the file name to Java. */
+    /** Severity of `TOP_LEVEL_API_WITHOUT_JVM_NAME`: file facades that show the file name to Java. */
     public val topLevelApiWithoutJvmName: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
     /** Severity of `DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS`: defaults that don't exist for Java callers. */
     public val defaultParametersWithoutJvmOverloads: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** The severity the compiler plugin sees: the diagnostic's own, or NONE when switched off. */
     internal fun effectiveSeverity(
         severity: WatchdogJavaInteropExtension.() -> Property<WatchdogSeverity>,
     ): Provider<WatchdogSeverity> = enabled.zip(severity()) { on, configured ->
@@ -334,5 +298,5 @@ public open class WatchdogJavaInteropExtension @Inject constructor(objectFactory
     }
 }
 
-private fun ObjectFactory.severityProperty(): Property<WatchdogSeverity> =
-    property(WatchdogSeverity::class.java).convention(WatchdogSeverity.ERROR)
+private fun ObjectFactory.severityProperty(default: WatchdogSeverity = WatchdogSeverity.ERROR): Property<WatchdogSeverity> =
+    property(WatchdogSeverity::class.java).convention(default)

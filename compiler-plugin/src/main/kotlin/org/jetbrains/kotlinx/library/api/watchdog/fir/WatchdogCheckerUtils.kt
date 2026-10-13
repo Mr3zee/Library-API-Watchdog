@@ -48,13 +48,10 @@ import org.jetbrains.kotlin.name.JvmStandardClassIds
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
 
-/**
- * The `sharedParameterValues` name in diagnostics.json of the kind word for this class, or null
- * for a kind no watchdog message names.
- */
+/** The kind word of `diagnostics.json` for this class, or null when no message names the kind. */
 internal val FirRegularClass.kindParameterValue: String?
-    // Comparisons instead of a `when` over the enum: an exhaustive `when` compiles to an
-    // `ordinal()` switch, and AnimalSniffer rejects that call against the compiler API baseline.
+    // An exhaustive `when` over the enum compiles to an `ordinal()` switch, which AnimalSniffer
+    // rejects against the compiler API baseline.
     get() = when {
         classKind == ClassKind.CLASS -> "class"
         classKind == ClassKind.INTERFACE -> "interface"
@@ -64,7 +61,7 @@ internal val FirRegularClass.kindParameterValue: String?
         else -> null
     }
 
-/** The parameter name as written in the source: `_` for an unnamed context parameter. */
+/** The name as written in the source: `_` for an unnamed context parameter. */
 internal val FirValueParameter.sourceName: Name
     get() = if (name == SpecialNames.UNDERSCORE_FOR_UNUSED_VAR) UNDERSCORE else name
 
@@ -100,11 +97,9 @@ internal object WatchdogClassIds {
     val InternalAnnotationMarker: ClassId = ClassId(annotationsPackage, Name.identifier("InternalAnnotationMarker"))
 
     /**
-     * The annotations that exempt a declaration from a check and must explain why they do.
-     * [InternalAnnotationMarker] is deliberately not one of them: the marked annotation class
-     * documents the internal API surface itself. Neither is
-     * [IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility]: its only accepted reason is
-     * baked into its name, so its description may stay empty.
+     * The exemption annotations whose `reason` or `description` must explain the exemption.
+     * The name of [IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility] is its reason, so
+     * it isn't in the set.
      */
     val exemptionAnnotations: Set<ClassId> = setOf(
         IntentionallyOpen,
@@ -132,18 +127,10 @@ internal object WatchdogClassIds {
     )
 }
 
-/** The class the checked declaration is a member of, or null for a top-level declaration. */
 internal val CheckerContext.containingClassSymbol: FirClassSymbol<*>?
     get() = containingDeclarations.lastOrNull() as? FirClassSymbol<*>
 
-/**
- * Whether this source declaration is the implementation of an `expect` contract. Contract-shape
- * checks report the `expect` once and skip its `actual`. Declarations added only by an actual
- * class are not actualized and remain eligible for checking.
- *
- * Value parameters do not carry the expect/actual status themselves, so their closest containing
- * callable owns the answer.
- */
+/** A value parameter takes the status of its closest enclosing callable. */
 context(context: CheckerContext)
 internal fun FirDeclaration.isActualizedDeclaration(): Boolean =
     (this as? FirMemberDeclaration)?.isActual == true ||
@@ -151,7 +138,6 @@ internal fun FirDeclaration.isActualizedDeclaration(): Boolean =
             context.containingDeclarations.lastOrNull { it is FirCallableSymbol<*> }
                 ?.let { (it as FirCallableSymbol<*>).isActual } == true
 
-/** Whether this declaration belongs to an `expect` tree and therefore has no implementation. */
 context(context: CheckerContext)
 internal fun FirDeclaration.isExpectedDeclaration(): Boolean =
     (this as? FirMemberDeclaration)?.isExpect == true ||
@@ -163,11 +149,6 @@ internal fun FirDeclaration.isExpectedDeclaration(): Boolean =
                 }
             }
 
-/**
- * An implementation-side check accepts an annotation written either on the `actual` declaration
- * or on its matched `expect`. This makes the contract declaration the canonical place for a
- * watchdog exemption while still honoring platform-only annotations.
- */
 context(context: CheckerContext)
 internal fun FirBasedSymbol<*>.hasAnnotationOnActualOrExpect(classId: ClassId): Boolean =
     hasAnnotation(classId, context.session) ||
@@ -177,7 +158,6 @@ context(context: CheckerContext)
 internal fun FirDeclaration.hasAnnotationOnActualOrExpect(classId: ClassId): Boolean =
     symbol.hasAnnotationOnActualOrExpect(classId)
 
-/** The name a diagnostic reports for a callable: a constructor is named after its class. */
 context(context: CheckerContext)
 internal fun FirFunction.reportedName(): Name? = when (this) {
     is FirConstructor -> context.containingClassSymbol?.classId?.shortClassName
@@ -186,18 +166,9 @@ internal fun FirFunction.reportedName(): Name? = when (this) {
 }
 
 /**
- * Only declarations written in real sources and visible to library users (public or protected)
- * are worth watching: everything else can't be referenced from outside the library. Properties
- * created from constructor `val`/`var` parameters carry a fake source pointing at the parameter,
- * but they are still hand-written public API, so they count as real.
- *
- * `@PublishedApi` declarations are internal in sources but belong to the published binary API:
- * public inline functions expose them to users, so they are watched like public declarations.
- *
- * Declarations marked as internal API - annotated, directly or on an enclosing declaration, with
- * an annotation whose class carries `@InternalAnnotationMarker` or whose name is configured as an
- * internal API annotation - offer no compatibility contract despite their visibility, so they
- * are not watched either.
+ * Whether the declaration is in the public or `@PublishedApi` binary API and isn't marked as
+ * internal API. A property from a constructor parameter has a fake source but is hand-written
+ * API, so it counts as real.
  */
 context(context: CheckerContext)
 internal fun FirMemberDeclaration.isWatchedPublicApi(): Boolean {
@@ -218,21 +189,13 @@ internal fun FirMemberDeclaration.isWatchedPublicApi(): Boolean {
 }
 
 /**
- * Whether this declaration is part of the supported source API. `@PublishedApi` only makes an
- * internal declaration available to compiled inline bodies. It does not make the declaration
- * referenceable by library users in Kotlin source.
- *
- * Checks concerned with call-site readability, source extensibility, or Java ergonomics use this
- * gate. Checks protecting the published binary surface use [isWatchedPublicApi] directly.
+ * Whether users can reference the declaration in Kotlin source. Use it in a check about how users
+ * write code against the declaration. A check about the binary shape uses [isWatchedPublicApi].
  */
 context(context: CheckerContext)
 internal fun FirMemberDeclaration.isWatchedPublicSourceApi(): Boolean =
     isWatchedPublicApi() && !isPublishedApiOnly()
 
-/**
- * The marker on an enclosing declaration covers the whole subtree: an internal API class can't
- * be used by users, so nothing declared inside it is usable public API.
- */
 context(context: CheckerContext)
 private fun FirMemberDeclaration.isMarkedAsInternalApi(): Boolean =
     symbol.hasInternalApiMarker() || context.containingDeclarations.any { it.hasInternalApiMarker() }
@@ -241,9 +204,8 @@ context(context: CheckerContext)
 internal fun FirBasedSymbol<*>.hasInternalApiMarker(): Boolean = internalApiAnnotation() != null
 
 /**
- * An annotation on this declaration whose class carries the internal-API meta-annotation, or
- * whose fully qualified name is configured through the `internalApiAnnotation` plugin option
- * (see [ConfiguredInternalApiAnnotations]). Type aliases of the annotation are expanded first.
+ * The annotation on this declaration whose class carries [WatchdogClassIds.InternalAnnotationMarker]
+ * or that [ConfiguredInternalApiAnnotations] lists, or null.
  */
 context(context: CheckerContext)
 internal fun FirBasedSymbol<*>.internalApiAnnotation(): ClassId? {
@@ -260,25 +222,16 @@ internal fun FirBasedSymbol<*>.internalApiAnnotation(): ClassId? {
     }
 }
 
-/**
- * Whether the declaration reaches the API surface only through `@PublishedApi`: it is internal in
- * sources - directly or because an enclosing declaration is - so users can't reference it by name,
- * even though inline function bodies expose it to their compiled code. Checks that are about how
- * users write code against a declaration, rather than about its binary shape, skip it.
- *
- * Only meaningful for a declaration that already passed [isWatchedPublicApi]: nothing else is
- * watched in the first place.
- */
+/** Valid only for a declaration that passed [isWatchedPublicApi]. */
 internal fun FirMemberDeclaration.isPublishedApiOnly(): Boolean = !effectiveVisibility.publicApi
 
-/** `value class` sets the `isValue` status flag. `isInline` covers the legacy `inline class`. */
+/** `isInline` covers the legacy `inline class`. */
 internal fun FirClassSymbol<*>.isValueClass(): Boolean =
     resolvedStatus.let { it.isValue || it.isInline }
 
 /**
- * The class this type stands for, or null when it is no class at all. Type aliases are expanded,
- * and a type parameter erases to its first upper bound, so `<T : UserId> f(t: T)` names the same
- * class as a direct mention. The visited set guards against cyclic bounds in erroneous code.
+ * The class of the expanded type, or null. A type parameter erases to its first upper bound.
+ * A cyclic bound in erroneous code gives null.
  */
 context(context: CheckerContext)
 internal fun ConeKotlinType.erasedClassSymbol(): FirClassSymbol<*>? {
@@ -298,9 +251,8 @@ internal fun ConeKotlinType.erasedClassSymbol(): FirClassSymbol<*>? {
 }
 
 /**
- * The name of the value class that mangles a JVM signature mentioning this type, or null.
- * Only the classifier itself counts - a value class inside a type argument is boxed and
- * leaves the name intact.
+ * The name of the value class that mangles a JVM signature with this type, or null. The JVM
+ * boxes a value class in a type argument, so it doesn't count.
  */
 context(context: CheckerContext)
 internal fun ConeKotlinType.mangledValueClass(): Name? {
@@ -308,19 +260,11 @@ internal fun ConeKotlinType.mangledValueClass(): Name? {
     return symbol.classId.shortClassName.takeIf { symbol.isValueClass() }
 }
 
-/**
- * Return types only mangle members: a dispatch receiver is what distinguishes `give()` - a
- * top-level function keeping its JVM name - from `member-<hash>()`.
- */
+/** A return type mangles the JVM name of a member only. */
 context(context: CheckerContext)
 internal fun FirCallableDeclaration.returnValueClassIfMember(): Name? =
     if (dispatchReceiverType != null) returnTypeRef.coneType.mangledValueClass() else null
 
-/**
- * The value class that mangles this function's compiled JVM name - found among the value
- * parameters, the extension receiver, the context parameters, or, for a member, the return
- * type - or null when the JVM name is kept.
- */
 context(context: CheckerContext)
 internal fun FirNamedFunction.mangledValueClassInSignature(): Name? =
     receiverParameter?.typeRef?.coneType?.mangledValueClass()
@@ -328,12 +272,7 @@ internal fun FirNamedFunction.mangledValueClassInSignature(): Name? =
         ?: valueParameters.firstNotNullOfOrNull { it.returnTypeRef.coneType.mangledValueClass() }
         ?: returnValueClassIfMember()
 
-/**
- * Whether Java sources can't see this declaration because it is marked `@JvmSynthetic`. A
- * property is hidden when its every Java entry point is: the getter - and the setter of a
- * `var` - via `@get:`/`@set:JvmSynthetic`. For a `const` or `@JvmField` property, its sole
- * backing-field entry point.
- */
+/** `@JvmSynthetic` hides a property when it hides every Java entry point of it. */
 context(context: CheckerContext)
 internal fun FirCallableDeclaration.isHiddenFromJavaWithJvmSynthetic(): Boolean {
     val session = context.session
@@ -342,8 +281,7 @@ internal fun FirCallableDeclaration.isHiddenFromJavaWithJvmSynthetic(): Boolean 
     }
 
     if (isConst || hasJvmFieldAnnotation()) {
-        // These properties expose only their backing field. Unlike an accessor-targeted
-        // annotation, @JvmSynthetic on that field hides the property's sole Java entry point.
+        // The backing field is the only Java entry point.
         return backingField?.hasAnnotation(
             JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID,
             session,
@@ -356,7 +294,7 @@ internal fun FirCallableDeclaration.isHiddenFromJavaWithJvmSynthetic(): Boolean 
             (!isVar || isAccessorHiddenWithJvmSynthetic(setter, AnnotationUseSiteTarget.PROPERTY_SETTER))
 }
 
-/** The annotation is moved to the backing field during resolution, so both carriers count. */
+/** Resolution moves the annotation to the backing field, so both carriers count. */
 context(context: CheckerContext)
 internal fun FirProperty.hasJvmFieldAnnotation(): Boolean =
     hasAnnotation(JvmStandardClassIds.Annotations.JvmField, context.session) ||
@@ -366,10 +304,6 @@ internal fun FirProperty.hasJvmFieldAnnotation(): Boolean =
                         it.toAnnotationClassIdSafe(context.session) == JvmStandardClassIds.Annotations.JvmField
             }
 
-/**
- * `@JvmSynthetic` sits on an explicit accessor directly. The `@get:`/`@set:` use-site form
- * stays on the property with the accessor as its use-site target.
- */
 context(context: CheckerContext)
 private fun FirProperty.isAccessorHiddenWithJvmSynthetic(
     accessor: FirPropertyAccessor?,
@@ -384,11 +318,9 @@ private fun FirProperty.isAccessorHiddenWithJvmSynthetic(
 }
 
 /**
- * Symbol-based public API gate for overload siblings, which checkers only reach as symbols. The
- * declaration under check shares the containers its own [isWatchedPublicSourceApi] gate already
- * vets - or, for an inherited sibling, subsumes them: a supertype visible in a public class's
- * scope is itself reachable by users. So only the sibling's own state matters here. Library
- * symbols carry no real source, so dependencies never pass this gate.
+ * [isWatchedPublicSourceApi] for an overload sibling. The check of the declaration under check
+ * already vets the containers, so only the state of the sibling counts. A library symbol has no
+ * real source, so a dependency never passes.
  */
 context(context: CheckerContext)
 internal fun FirCallableSymbol<*>.isWatchedPublicSourceApiSibling(): Boolean =
@@ -400,19 +332,13 @@ private val reasonParameter = Name.identifier("reason")
 private val descriptionParameter = Name.identifier("description")
 private val otherReason = Name.identifier("OTHER")
 
-/**
- * The reasons that explain an exemption on their own. Every other entry - including ones a
- * future annotations version may add - only categorizes the exemption and requires a
- * non-empty description next to it.
- */
+/** The reasons that explain an exemption without a description. */
 private val backwardsCompatibilityReason = Name.identifier("FOR_BACKWARDS_COMPATIBILITY")
 private val apiDesignReason = Name.identifier("API_DESIGN")
 
 /**
- * The reason that fails to explain this exemption annotation on its own ([otherReason] when the
- * argument is absent), or null when the exemption is explained - by a self-sufficient reason or
- * by a non-blank description. Used by [ExemptionExplanationChecker] for exemption annotations on
- * declarations and type usages.
+ * The reason that doesn't explain this exemption, [otherReason] when the argument is absent, or
+ * null when a reason or a description explains the exemption.
  */
 context(context: SessionHolder)
 internal fun FirAnnotation.unexplainedExemptionReason(): Name? {
@@ -420,8 +346,7 @@ internal fun FirAnnotation.unexplainedExemptionReason(): Name? {
     val reason = if (reasonArgument == null) {
         otherReason
     } else {
-        // An argument that resolves to no enum entry is already a compilation error, so it
-        // is not reported again.
+        // An argument that resolves to no enum entry is already a compilation error.
         reasonArgument.extractEnumValueArgumentInfo()?.enumEntryName ?: return null
     }
     if (reason == backwardsCompatibilityReason || reason == apiDesignReason) {

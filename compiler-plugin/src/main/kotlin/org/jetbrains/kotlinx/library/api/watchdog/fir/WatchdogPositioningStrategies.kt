@@ -16,10 +16,7 @@ import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtConstructor
 import org.jetbrains.kotlin.util.getChildren
 
-/**
- * Marks a named callable's name, an explicit constructor's `constructor` keyword, or the class
- * name that stands in for an implicit primary constructor's missing keyword.
- */
+/** The callable name, the `constructor` keyword, or the class name for an implicit primary constructor. */
 internal val CALLABLE_NAME_OR_CONSTRUCTOR_KEYWORD = SourceElementPositioningStrategy(
     lightTreeStrategy = object : LightTreePositioningStrategy() {
         override fun mark(

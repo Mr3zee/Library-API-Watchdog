@@ -8,11 +8,7 @@ import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlinx.library.api.watchdog.PluginInfo
 
-/**
- * Values the Gradle `benchmark` task passes into the benchmark JVM: the assembled compiler
- * plugin jar and the classpath the synthetic corpus compiles against (the watchdog annotations
- * library plus its dependencies, including the Kotlin stdlib).
- */
+/** The system properties that the Gradle `benchmark` task passes to the benchmark JVM. */
 internal object BenchmarkEnv {
     val pluginJar: String by lazy { requireProperty("watchdog.benchmark.pluginJar") }
 
@@ -29,10 +25,7 @@ internal object BenchmarkEnv {
             ?: error("Missing system property '$name'. Run the benchmarks through the Gradle 'benchmark' task.")
 }
 
-/**
- * Swallows everything below error severity: the corpus deliberately produces warnings, and
- * printing them would dominate the benchmark output. Errors are kept for failure messages.
- */
+/** Collects errors only, because the corpus produces many warnings. */
 internal class ErrorSummaryMessageCollector : MessageCollector {
     private val errors = mutableListOf<String>()
 
@@ -55,7 +48,6 @@ internal class ErrorSummaryMessageCollector : MessageCollector {
     fun summary(): String = errors.joinToString("\n")
 }
 
-/** Compiler arguments shared by both benchmarks. The plugin is configured on top of these. */
 internal fun corpusCompilerArguments(sourceRoot: Path, destination: Path): K2JVMCompilerArguments =
     K2JVMCompilerArguments().apply {
         freeArgs = listOf(sourceRoot.toAbsolutePath().toString())
@@ -67,7 +59,6 @@ internal fun corpusCompilerArguments(sourceRoot: Path, destination: Path): K2JVM
         noReflect = true
     }
 
-/** Deletes a temporary directory tree, tolerating files that are already gone. */
 internal fun deleteRecursively(root: Path) {
     val file = root.toFile()
     if (file.exists()) {

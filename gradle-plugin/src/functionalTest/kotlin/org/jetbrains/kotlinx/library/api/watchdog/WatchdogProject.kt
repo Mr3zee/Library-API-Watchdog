@@ -20,36 +20,23 @@ import org.jetbrains.kotlin.compiler.plugin.devkit.test.TEST_COMPILER_VERSION
 import org.jetbrains.kotlin.compiler.plugin.devkit.test.pluginUnderTestVersion
 import org.junit.Assume.assumeTrue
 
-// The entry points. Each one writes a Gradle build to disk and returns it ready to run.
-
-/** A Kotlin/JVM library with the watchdog applied. */
+/** A Kotlin/JVM library with the watchdog applied, written to disk. */
 fun jvmProject(block: ProjectSpec.() -> Unit = {}): WatchdogBuild =
     ProjectSpec(sourceSet = "main").apply(block).write(ProjectKind.Jvm)
 
-/**
- * A Kotlin Multiplatform library with the watchdog applied. [targets] are the target
- * declarations of the `kotlin { }` block. Sources go to `commonMain` unless a source set is named.
- */
+/** A Kotlin Multiplatform library with the watchdog applied. [targets] is the body of the `kotlin { }` block. */
 fun kmpProject(targets: String = "jvm()", block: ProjectSpec.() -> Unit = {}): WatchdogBuild =
     ProjectSpec(sourceSet = "commonMain").apply(block).write(ProjectKind.Kmp(targets))
 
-/**
- * An Android library with the watchdog applied, on the AGP generation [agp]. The test is skipped
- * when the machine can't build Android projects.
- *
- * Main compilations are named after their build variant (`debug`, `release`, or `freeDebug` with
- * a product flavor) and test compilations after the variant plus a suffix (`debugUnitTest`,
- * `debugAndroidTest`). [ProjectSpec.subproject] adds another Android library, consumed as an AAR.
- */
+/** An Android library with the watchdog applied. Skips the test without an Android SDK. */
 fun androidLibrary(agp: AgpVersion, block: AndroidLibrarySpec.() -> Unit = {}): WatchdogBuild {
     assumeAndroidBuildEnvironment()
     return AndroidLibrarySpec().apply(block).write(ProjectKind.AndroidLibrary(agp))
 }
 
 /**
- * A multiplatform library with a `jvm()` target and the Android [target], with the watchdog
- * applied. Sources go to `commonMain` unless a source set is named. The test is skipped when the
- * machine can't build Android projects. [ProjectSpec.subproject] adds a plain Kotlin/JVM module.
+ * A multiplatform library with a `jvm()` target and the Android [target]. Skips the test without
+ * an Android SDK. [ProjectSpec.subproject] adds a plain Kotlin/JVM module.
  */
 fun kmpAndroidProject(target: KmpAndroidTarget, block: ProjectSpec.() -> Unit = {}): WatchdogBuild {
     assumeAndroidBuildEnvironment()
@@ -58,20 +45,11 @@ fun kmpAndroidProject(target: KmpAndroidTarget, block: ProjectSpec.() -> Unit = 
         .write(ProjectKind.KmpAndroid(target))
 }
 
-/** The Android Gradle plugin generation of an Android fixture. */
 enum class AgpVersion(internal val gradleVersion: GradleVersion) {
-    /**
-     * AGP 8 with the Kotlin Android Gradle plugin. AGP 8 relies on a Gradle internal API that
-     * Gradle 9.6.0 removed, so its builds run on the newest Gradle release line that still has it.
-     */
+    /** Gradle 9.6.0 removed an internal API that AGP 8 uses, so AGP 8 runs on the last Gradle before it. */
     AGP8(GradleVersion.version("9.5.1")),
 
-    /**
-     * AGP 9 with its built-in Kotlin support: AGP refuses the Kotlin Android plugin and drives
-     * KGP's compiler plugin integration itself. The Kotlin version under test is pinned onto the
-     * build classpath with an `apply false` plugin line, which overrides the KGP that AGP embeds.
-     * Builds run on the current Gradle.
-     */
+    /** AGP 9 embeds its own KGP. An `apply false` plugin line pins the Kotlin version under test. */
     AGP9(GradleVersion.current()),
     ;
 
@@ -85,53 +63,38 @@ enum class AgpVersion(internal val gradleVersion: GradleVersion) {
 /** The Android target of a multiplatform fixture. */
 enum class KmpAndroidTarget(
     val agp: AgpVersion,
-    /** The compile task of the target's main compilation. */
     val mainCompileTask: String,
-    /** The compile task of the target's unit test compilation. */
     val hostTestCompileTask: String,
-    /** The source set of the target's unit tests. */
     val hostTestSourceSet: String,
 ) {
-    /**
-     * `com.android.kotlin.multiplatform.library` from AGP 8, declared in an `androidLibrary { }`
-     * block. The target names its compilations `main`, `hostTest`, and `deviceTest`, and has no
-     * build variants.
-     */
+    /** `com.android.kotlin.multiplatform.library` from AGP 8. */
     LIBRARY_AGP8(AgpVersion.AGP8, "compileAndroidMain", "compileAndroidHostTest", "androidHostTest"),
 
-    /** The same plugin from AGP 9, which renames the block to `android { }`. */
+    /** The same plugin from AGP 9. */
     LIBRARY_AGP9(AgpVersion.AGP9, "compileAndroidMain", "compileAndroidHostTest", "androidHostTest"),
 
-    /**
-     * The multiplatform plugin's own `androidTarget()` on `com.android.library`: the setup every
-     * multiplatform library used before AGP's multiplatform plugin existed, and one AGP 9 no
-     * longer accepts. Compilations are named after the build variant (`debug`, `debugUnitTest`,
-     * `debugAndroidTest`) and its compile tasks carry the target name.
-     */
+    /** `androidTarget()` on `com.android.library`. AGP 9 doesn't accept it. */
     LEGACY(AgpVersion.AGP8, "compileDebugKotlinAndroid", "compileDebugUnitTestKotlinAndroid", "androidUnitTest"),
 }
 
-/** A generated Gradle build on disk, launched on the Gradle version its fixture needs. */
+/** A generated Gradle build on disk. */
 class WatchdogBuild internal constructor(
     val gradleProject: GradleProject,
     private val gradleVersion: GradleVersion,
 ) {
     val rootDir: File get() = gradleProject.rootDir
 
-    /** Runs Gradle with [arguments] and expects success. */
     fun build(vararg arguments: String): BuildResult = GradleBuilder.build(gradleVersion, rootDir, *arguments)
 
-    /** Runs Gradle with [arguments] and expects failure. */
     fun buildAndFail(vararg arguments: String): BuildResult =
         GradleBuilder.buildAndFail(gradleVersion, rootDir, *arguments)
 
-    /** A file of the build by its path from the root directory. */
     fun file(relativePath: String): File = rootDir.resolve(relativePath)
 }
 
-/** What one module of a generated build declares. */
+/** The declarations of one module of a generated build. */
 open class ModuleSpec internal constructor(
-    /** The source set [source] targets by default. */
+    /** The default source set of [source]. */
     val sourceSet: String,
 ) {
     internal val sources = mutableListOf<Source>()
@@ -141,9 +104,8 @@ open class ModuleSpec internal constructor(
     internal var plugins: List<Plugin>? = null
 
     /**
-     * A Kotlin file of [code] in [packageName], led by the package statement and the imports. The
-     * watchdog annotations are imported unless [defaultImports] is false. The file name is [name],
-     * else the first declared type or function. [fileAnnotation] precedes the package statement.
+     * A Kotlin file of [code] with a package statement and imports. [defaultImports] imports the
+     * watchdog annotations. The file name is [name] or the first declared type or function.
      */
     fun source(
         @Language("kotlin") code: String,
@@ -173,51 +135,43 @@ open class ModuleSpec internal constructor(
         )
     }
 
-    /** A Kotlin file written as is. Its directory comes from its package statement. */
+    /** A Kotlin file written as is. */
     fun kotlinFile(name: String, sourceSet: String = this.sourceSet, @Language("kotlin") text: String): Source =
         add(Source.kotlin(text).withSourceSet(sourceSet).withPath(packagePath(text), name).build())
 
-    /** A Java file written as is. Its directory comes from its package statement. */
+    /** A Java file written as is. */
     fun javaFile(name: String, @Language("java") text: String): Source =
         add(Source.java(text).withPath(packagePath(text), name).build())
 
-    /** Prebuilt sources. */
     fun sources(vararg sources: Source) {
         this.sources += sources
     }
 
-    /** Dependencies of the module's default source set. */
     fun dependencies(vararg dependencies: Dependency) {
         dependencies.forEach { this.dependencies += null to it }
     }
 
-    /** Dependencies of [sourceSet], declared as `<sourceSet><Configuration>(...)`. */
+    /** Dependencies declared as `<sourceSet><Configuration>(...)`. */
     fun dependencies(sourceSet: String, vararg dependencies: Dependency) {
         dependencies.forEach { this.dependencies += sourceSet to it }
     }
 
-    /** Script text appended to the build script, before the dependencies. */
+    /** Script text before the dependencies block. */
     fun buildScript(@Language("kts") script: String) {
         scriptParts += script.trimIndent()
     }
 
-    /** The `apiWatchdog { }` block of the build script. */
     fun apiWatchdog(block: ApiWatchdogBlock.() -> Unit) {
         imports += "$WATCHDOG_PACKAGE.WatchdogSeverity"
         imports += "$WATCHDOG_PACKAGE.WatchdogChecks"
         scriptParts += ApiWatchdogBlock().apply(block).render()
     }
 
-    /** Imports of the build script. */
     fun imports(vararg imports: String) {
         this.imports += imports
     }
 
-    /**
-     * Replaces the default plugins, which are the Kotlin plugin of the project kind and the
-     * watchdog. With an empty list the module applies no plugins. The default Kotlin script is
-     * dropped too, so the module declares everything itself.
-     */
+    /** Replaces the default plugins and removes the default Kotlin script. */
     fun plugins(vararg plugins: Plugin) {
         this.plugins = plugins.toList()
     }
@@ -225,12 +179,12 @@ open class ModuleSpec internal constructor(
     private fun add(source: Source): Source = source.also { sources += it }
 }
 
-/** What the root module and the whole build declare. */
+/** The declarations of the root module and the whole build. */
 open class ProjectSpec internal constructor(
     sourceSet: String,
     private val subprojectSourceSet: String = sourceSet,
 ) : ModuleSpec(sourceSet) {
-    /** `kotlin { explicitApi() }` in every module. The watchdog checks only explicit API modules. */
+    /** `kotlin { explicitApi() }` in every module. */
     var explicitApi: Boolean = true
 
     internal val subprojects = linkedMapOf<String, SubprojectSpec>()
@@ -238,30 +192,24 @@ open class ProjectSpec internal constructor(
     internal val files = linkedMapOf<String, String>()
     internal var buildSrc: ModuleSpec? = null
 
-    /**
-     * A subproject of the root's kind: Kotlin/JVM, multiplatform with the same targets, or an
-     * Android library. Under a multiplatform Android root it is a plain Kotlin/JVM module.
-     */
+    /** A subproject of the kind of the root. Under a multiplatform Android root it is Kotlin/JVM. */
     fun subproject(path: String, block: ModuleSpec.() -> Unit = {}) {
         subprojects[path] = SubprojectSpec(subprojectSourceSet, jvm = false).apply(block)
     }
 
-    /** A plain Kotlin/JVM subproject, whatever the root is. */
     fun jvmSubproject(path: String, block: ModuleSpec.() -> Unit = {}) {
         subprojects[path] = SubprojectSpec("main", jvm = true).apply(block)
     }
 
-    /** The `gradle/libs.versions.toml` of the build. */
     fun versionCatalog(@Language("toml") toml: String) {
         versionCatalog = toml.trimIndent()
     }
 
-    /** A file of the build by its path from the root directory. */
     fun file(relativePath: String, content: String) {
         files[relativePath] = content
     }
 
-    /** The `buildSrc` build, which declares its plugins and script itself. */
+    /** The `buildSrc` build. It declares its plugins itself. */
     fun buildSrc(block: ModuleSpec.() -> Unit) {
         buildSrc = ModuleSpec("main").apply(block)
     }
@@ -270,20 +218,16 @@ open class ProjectSpec internal constructor(
         WatchdogBuild(WatchdogFixture(kind, this).gradleProject, kind.gradleVersion)
 }
 
-/** What an Android library root declares on top of a [ProjectSpec]. */
 class AndroidLibrarySpec internal constructor() : ProjectSpec(sourceSet = "main") {
     internal val androidLines = mutableListOf<String>()
     internal val kotlinLines = mutableListOf<String>()
 
-    /** Script text inside the `android { }` block, where build types and product flavors live. */
+    /** Script text inside the `android { }` block. */
     fun android(@Language("kts") script: String) {
         androidLines += script.trimIndent()
     }
 
-    /**
-     * Script text inside the `kotlin { }` block. AGP 9 hosts the block inside `android { }`, AGP 8
-     * next to it.
-     */
+    /** Script text inside the `kotlin { }` block. */
     fun kotlin(@Language("kts") script: String) {
         kotlinLines += script.trimIndent()
     }
@@ -300,18 +244,17 @@ internal sealed class ProjectKind(val multiplatform: Boolean, val gradleVersion:
     val android: Boolean get() = this is AndroidLibrary || this is KmpAndroid
 }
 
-/** Renders a [ProjectSpec] of a [ProjectKind] through the dev kit's TestKit support. */
 internal class WatchdogFixture(
     private val kind: ProjectKind,
     private val spec: ProjectSpec,
 ) : AbstractDevKitGradleProject(multiplatform = kind.multiplatform) {
     override val pluginUnderTest: Plugin = Plugin(WATCHDOG_PLUGIN_ID, pluginUnderTestVersion)
 
-    // The dev kit runtime artifacts are consumed from mavenLocal rather than from included builds.
+    // The dev kit runtime artifacts come from mavenLocal.
     override fun repositories(defaults: List<Repository>): Repositories =
         Repositories((defaults + Repository.MAVEN_LOCAL).toMutableList())
 
-    // AGP 8 refuses AndroidX dependencies without this opt-in, which AGP 9 made the default.
+    // AGP 8 refuses AndroidX dependencies without the opt-in.
     override val extraGradleProperties: List<String>
         get() = if (kind.android) super.extraGradleProperties + "android.useAndroidX=true" else super.extraGradleProperties
 
@@ -371,11 +314,7 @@ internal class WatchdogFixture(
         }
     }
 
-    /**
-     * Subprojects name no Kotlin plugin version: they find the plugin on the build classpath the
-     * root assembled, and a Kotlin/JVM module under a multiplatform or Android root reuses its
-     * KGP. Only a root that applies its own plugins leaves the version to them.
-     */
+    /** A subproject names the Kotlin plugin version only when the root applies its own plugins. */
     private fun BuildScript.Builder.renderSubproject(path: String, module: SubprojectSpec) {
         if (module.plugins != null) return renderCustom(module)
         val kotlinVersion = testKotlinVersion().takeIf { spec.plugins != null }
@@ -403,7 +342,6 @@ internal class WatchdogFixture(
         }
     }
 
-    /** A module that declares its plugins itself, with no default Kotlin script. */
     private fun BuildScript.Builder.renderCustom(module: ModuleSpec) {
         plugins(module.plugins.orEmpty())
         finish(module, head = "")
@@ -430,11 +368,7 @@ internal class WatchdogFixture(
         appendLine("}")
     }
 
-    /**
-     * The dependencies block. A source set configuration such as `commonMainImplementation` has
-     * no type-safe accessor when the source set appears after plugin application, so those are
-     * called by name.
-     */
+    /** A source set configuration such as `commonMainImplementation` has no type-safe accessor. */
     private fun dependenciesBlock(module: ModuleSpec, sourceSetPrefix: String?): String {
         if (module.dependencies.isEmpty()) return ""
         return buildString {
@@ -455,7 +389,6 @@ internal class WatchdogFixture(
     private fun Dependency.notation(): String =
         if (identifier.startsWith(":")) "project(\"$identifier\")" else "\"$identifier${version?.let { ":$it" }.orEmpty()}\""
 
-    /** The plugins of an Android library module. Only the root names versions. */
     private fun androidLibraryPlugins(agp: AgpVersion, root: Boolean): Array<Plugin> = buildList {
         add(Plugin("com.android.library", agp.version.takeIf { root }))
         when (agp) {
@@ -481,8 +414,8 @@ internal class WatchdogFixture(
                 appendLine("}")
             }
             AgpVersion.AGP8 -> {
-                // AGP 8 defaults its Java tasks to 1.8 while Kotlin follows the build JDK, so
-                // both sides are pinned to keep KGP's JVM target validation quiet.
+                // AGP 8 defaults Java to 1.8 while Kotlin follows the build JDK, and KGP
+                // validates that the JVM targets match.
                 appendLine("    compileOptions {")
                 appendLine("        sourceCompatibility = JavaVersion.VERSION_17")
                 appendLine("        targetCompatibility = JavaVersion.VERSION_17")
@@ -500,7 +433,6 @@ internal class WatchdogFixture(
     }
 
     private fun kmpAndroidScript(target: KmpAndroidTarget): String = when (target) {
-        // AGP 9 renames the multiplatform target block from `androidLibrary` to `android`.
         KmpAndroidTarget.LIBRARY_AGP8, KmpAndroidTarget.LIBRARY_AGP9 -> kotlinBlock(
             """
                 jvm()
@@ -512,7 +444,7 @@ internal class WatchdogFixture(
                 }
             """
         )
-        // The Java and Kotlin JVM targets are pinned for the same reason as in androidLibraryScript.
+        // The JVM targets match for the same reason as in androidLibraryScript.
         KmpAndroidTarget.LEGACY -> kotlinBlock(
             """
                 jvm()
@@ -540,7 +472,6 @@ private const val WATCHDOG_PACKAGE = "org.jetbrains.kotlinx.library.api.watchdog
 private const val WATCHDOG_PLUGIN_ID = "org.jetbrains.kotlin.library.api-watchdog"
 private const val JVM_TARGET_17 = "compilerOptions { jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17 }"
 
-/** The annotations library, imported into every [ModuleSpec.source] by default. */
 private val watchdogAnnotationImports: List<String> = listOf(
     "ExemptionReason",
     "IntentionallyOpen",
@@ -580,22 +511,19 @@ private fun inferFileName(code: String): String =
 private fun packagePath(text: String): String =
     PACKAGE.find(text)?.groupValues?.get(1)?.replace('.', '/') ?: "test"
 
-// The Android build environment, wired in by build.gradle.kts.
-
 private val testAgp8Version: String? = System.getProperty("watchdog.test.agp8Version")
 private val testAgp9Version: String? = System.getProperty("watchdog.test.agp9Version")
 private val testAndroidSdkPath: String? = System.getProperty("watchdog.test.androidHome")
 
-/** Skips the calling test when the environment can't build Android projects. */
 fun assumeAndroidBuildEnvironment() {
     assumeTrue(
-        "No AGP versions are wired in, see build.gradle.kts",
+        "No AGP version is configured, see build.gradle.kts",
         testAgp8Version != null && testAgp9Version != null,
     )
     assumeTrue("No Android SDK was found, see build.gradle.kts", testAndroidSdkPath != null)
 }
 
 private fun requiredProperty(value: String?): String =
-    requireNotNull(value) { "Android fixtures require assumeAndroidBuildEnvironment()" }
+    requireNotNull(value) { "Call assumeAndroidBuildEnvironment() before an Android fixture" }
 
 private fun androidSdkDir(): String = File(requiredProperty(testAndroidSdkPath)).invariantSeparatorsPath

@@ -35,17 +35,10 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 
 /**
- * Shared sweep for checks that find a type in public signatures. It covers callable return,
- * receiver, value and context parameter types. It also covers class supertypes and context parameters, type
- * parameter bounds, type aliases, and nested type arguments. The constructor options let checks
- * omit positions that do not expose the trait they police.
- *
- * Subclasses decide which declarations belong to their API surface, which classifier violates
- * their rule, and how a violation is reported. They may also customize alias traversal and
- * exemptions without reimplementing the signature sweep.
- *
- * With an [exemption] annotation, the sweep honors it on a whole declaration, on a single (type)
- * parameter, or on a type usage, where it covers the annotated type and everything nested in it.
+ * Finds a type in public signatures: return, receiver, parameter, and context parameter types,
+ * class supertypes, type parameter bounds, type alias expansions, and nested type arguments.
+ * The [exemption] annotation applies to a declaration, a parameter, or a type usage with the
+ * types nested in it.
  */
 internal abstract class PublicSignatureTypeChecker<Violation : Any>(
     private val checkExtensionReceivers: Boolean = true,
@@ -57,14 +50,11 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
 ) : FirBasicDeclarationChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     final override fun check(declaration: FirDeclaration) {
-        // Ordinary actual declarations repeat the common contract and would duplicate its
-        // diagnostics. An actual typealias is different: its platform expansion is absent from
-        // the expect declaration and can expose types that the common signature never mentions.
+        // The expansion of an actual typealias can expose a type that the expect doesn't mention.
         if (declaration.isActualizedDeclaration() && declaration !is FirTypeAlias) return
 
         when (declaration) {
-            // Parameters are swept from their containing callable, where its public API gate and
-            // any signature-wide exemption are evaluated once.
+            // The enclosing callable checks its parameters.
             is FirValueParameter -> return
             is FirProperty -> checkProperty(declaration)
             is FirConstructor -> checkConstructor(declaration)
@@ -75,66 +65,45 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
         }
     }
 
-    /** Whether this declaration belongs to the API surface the check protects. */
     context(context: CheckerContext)
     protected open fun isCheckedDeclaration(declaration: FirMemberDeclaration): Boolean =
         declaration.isWatchedPublicApi()
 
-    /** Whether an annotation exempts this declaration's whole checked signature. */
     context(context: CheckerContext)
     protected open fun isDeclarationExempt(declaration: FirDeclaration): Boolean =
         exemption != null && declaration.hasAnnotation(exemption, context.session)
 
-    /** Whether an annotation exempts a single parameter. */
     context(context: CheckerContext)
     protected open fun isParameterExempt(parameter: FirValueParameterSymbol): Boolean =
         exemption != null && parameter.hasAnnotation(exemption, context.session)
 
-    /** The violation represented by this classifier, or null when the classifier is accepted. */
     context(context: CheckerContext)
     protected abstract fun ConeKotlinType.violatingClassifier(): Violation?
 
-    /**
-     * The bound a flexible (Java platform) type is inspected through. Checks normally use the
-     * upper bound, but may choose the lower bound when that better represents the declared trait.
-     */
+    /** The bound of a flexible type that the check inspects. */
     protected open fun ConeKotlinType.declaredBound(): ConeKotlinType = upperBoundIfFlexible()
 
-    /** Whether this annotated type and everything nested in it should be skipped. */
     context(context: CheckerContext)
     protected open fun ConeKotlinType.isTypeExempt(): Boolean =
         exemption != null && customAnnotations.any {
             it.toAnnotationClassIdSafe(context.session) == exemption
         }
 
-    /** An alternate type whose classifier must be inspected before this type's classifier. */
     context(context: CheckerContext)
     protected open fun ConeKotlinType.typeBeforeClassifier(): ConeKotlinType? = null
 
-    /**
-     * The type whose classifier and arguments are inspected. Expanding aliases is the normal
-     * public-signature behavior. Checks interested in an alias declaration itself may opt out.
-     */
     context(context: CheckerContext)
     protected open fun ConeKotlinType.classifierType(): ConeKotlinType =
         if (this is ConeClassLikeType) fullyExpandedType() else this
 
-    /** An alternate type whose classifier must be inspected after this type's classifier. */
     context(context: CheckerContext)
     protected open fun ConeKotlinType.typeAfterClassifier(): ConeKotlinType? = null
 
-    /**
-     * The violation a `vararg` parameter exposes. Most checks inspect its array type normally.
-     * checks for which the compiler-generated array is not itself exposure may customize this.
-     */
     context(context: CheckerContext, reporter: DiagnosticReporter)
     protected open fun findVarargViolation(parameterType: ConeKotlinType): Violation? =
         parameterType.findViolation()
 
-    /**
-     * Reports a violation found in the signature part named [name]. [kind] is the
-     * `sharedParameterValues` name of the part's kind word in diagnostics.json.
-     */
+    /** [kind] is the kind word of `diagnostics.json` for the signature part named [name]. */
     context(context: CheckerContext, reporter: DiagnosticReporter)
     protected abstract fun report(
         source: KtSourceElement?,
@@ -147,8 +116,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
     private fun checkProperty(declaration: FirProperty) {
         if (!shouldCheck(declaration)) return
 
-        // For a val/var constructor parameter an exemption annotation lands on the parameter
-        // (the default use-site target), not on the property generated from it.
+        // An exemption on a val/var constructor parameter is on the parameter, not on the property.
         val constructorParameter = declaration.correspondingValueParameterFromPrimaryConstructor
         if (constructorParameter != null && isParameterExempt(constructorParameter)) {
             return
@@ -183,8 +151,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
     private fun checkConstructor(declaration: FirConstructor) {
         if (!shouldCheck(declaration)) return
 
-        // A val/var parameter is also a property over the same source text. Let that property own
-        // the report so one exposed type produces one diagnostic.
+        // The property of a val/var parameter reports the parameter type.
         var propertyParameters: MutableSet<FirValueParameterSymbol>? = null
         if (declaration.isPrimary) {
             context.containingClassSymbol?.processAllDeclarations(context.session) { member ->
@@ -255,10 +222,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
         }
     }
 
-    /**
-     * Reports violating bounds. Outer-class parameters reappear as [FirTypeParameterRef]s without
-     * their own declaration and are skipped. They are reported on the declaring class.
-     */
+    /** A type parameter of an outer class is a [FirTypeParameterRef] without a declaration. The outer class reports it. */
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun checkTypeParameters(typeParameters: List<FirTypeParameterRef>) {
         for (typeParameterRef in typeParameters) {
@@ -282,7 +246,6 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
         report(typeRef.source ?: fallbackSource, kind, name, violation)
     }
 
-    /** The first violation in this type or any nested type, guarded against recursive types. */
     context(context: CheckerContext, reporter: DiagnosticReporter)
     protected fun ConeKotlinType.findViolation(): Violation? =
         findViolation(visited = null)

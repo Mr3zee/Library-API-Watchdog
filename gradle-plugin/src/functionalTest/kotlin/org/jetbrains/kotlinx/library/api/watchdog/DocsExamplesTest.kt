@@ -10,7 +10,7 @@ import kotlin.test.assertTrue
 import org.jetbrains.kotlinx.library.api.watchdog.Severity.WARNING
 import org.junit.Test
 
-/** Compiles every public-API sample in the docs against all watchdog checks at once. */
+/** Compiles every public API sample of the docs with every check on. */
 class DocsExamplesTest {
     @Test
     fun examplesReportExactlyTheirAnnotatedDiagnostics() {
@@ -47,8 +47,7 @@ class DocsExamplesTest {
             }
         }
 
-        // Some docs demonstrate always-error diagnostics, so the compilation as a whole is
-        // expected to fail. Their report entries are still checked against the annotations below.
+        // Some samples show always-error diagnostics, so the compilation fails.
         val result = project.buildAndFail("compileKotlin", "--stacktrace")
         result.assertOutputLacks("Unresolved reference")
         result.assertOutputLacks("Syntax error")
@@ -59,7 +58,7 @@ class DocsExamplesTest {
         assertEquals(emptyList(), unexpectedCompilerErrors, unexpectedCompilerErrors.joinToString("\n"))
 
         val report = project.file(REPORT_FILE)
-        assertTrue(report.isFile, "The compiler produced no docs diagnostics report:\n${result.output}")
+        assertTrue(report.isFile, "The compiler wrote no docs diagnostics report:\n${result.output}")
         val pokoSamples = samples.filter { "@Poko" in it.code }.mapTo(mutableSetOf(), DocumentationSample::name)
         val actualBySample = report.readLines()
             .filter(String::isNotBlank)
@@ -71,8 +70,7 @@ class DocsExamplesTest {
             .groupBy(keySelector = Pair<String, String>::first, valueTransform = Pair<String, String>::second)
             .mapValues { (sample, diagnostics) ->
                 diagnostics
-                    // The docs use a stand-in annotation instead of applying Poko's compiler
-                    // plugin to this synthetic project, so ignore only the members Poko generates.
+                    // The project has its own `@Poko` annotation, not the Poko compiler plugin.
                     .filterNot { sample in pokoSamples && it in POKO_GENERATED_DIAGNOSTICS }
                     .sorted()
             }
@@ -101,7 +99,6 @@ class DocsExamplesTest {
             .sortedBy { it.path }
             .flatMap { file ->
                 extractKotlinBlocks(file).asSequence().mapNotNull { block ->
-                    // Gradle DSL snippets and comment-only placeholders do not declare API.
                     if (!PUBLIC_DECLARATION.containsMatchIn(block.code)) return@mapNotNull null
                     index++
                     DocumentationSample(
@@ -206,7 +203,7 @@ class DocsExamplesTest {
     }
 }
 
-/** The declarations isolated documentation snippets refer to. */
+/** The declarations that the docs samples refer to. */
 private val supportFile = """
     @file:org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName(
         reason = org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason.API_DESIGN,

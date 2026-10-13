@@ -1,11 +1,11 @@
-/requiredParameterAfterOptional.kt:9:38: error: REQUIRED_PARAMETER_AFTER_OPTIONAL
+/requiredParameterAfterOptional.kt:7:38: error: REQUIRED_PARAMETER_AFTER_OPTIONAL
     The parameter `host` of `connect` is required but declared after an optional parameter. Move it in front of the optional parameters.
 
     If this is intended, apply `@IntentionallyRequiredParameterAfterOptional` to the function.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/required-parameter-after-optional
 
-/requiredParameterAfterOptional.kt:11:37: error: REQUIRED_PARAMETER_AFTER_OPTIONAL
+/requiredParameterAfterOptional.kt:9:37: error: REQUIRED_PARAMETER_AFTER_OPTIONAL
     The parameter `host` of `Server` is required but declared after an optional parameter. Move it in front of the optional parameters.
 
     If this is intended, apply `@IntentionallyRequiredParameterAfterOptional` to the constructor.

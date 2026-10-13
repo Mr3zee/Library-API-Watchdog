@@ -13,14 +13,7 @@ import org.jetbrains.kotlin.fir.types.FirResolvedTypeRef
 import org.jetbrains.kotlin.fir.types.customAnnotations
 import org.jetbrains.kotlin.fir.types.forEachType
 
-/**
- * Reports watchdog exemptions whose reason requires a description and whose description is blank.
- * The declaration checker covers annotations attached to declarations. The type checker covers
- * annotations anywhere inside resolved types. The diagnostic is always an error in ordinary
- * compilations. The backwards-compatibility exemptions task temporarily omits both checkers because
- * it can't repair explanations written by an API author. Unlike declaration-shape checks, this is
- * occurrence-based: annotations on both `expect` and `actual` declarations are validated.
- */
+/** Checks both the `expect` and the `actual` annotation, because each occurrence needs its explanation. */
 internal object ExemptionExplanationChecker {
     val declarationChecker: FirBasicDeclarationChecker = DeclarationChecker
     val typeChecker: FirResolvedTypeRefChecker = TypeChecker

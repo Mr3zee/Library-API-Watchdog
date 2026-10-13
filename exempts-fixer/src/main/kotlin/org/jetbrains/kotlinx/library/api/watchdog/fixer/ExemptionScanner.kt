@@ -5,7 +5,6 @@ import org.jetbrains.kotlin.psi.KtAnnotationEntry
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
 
-/** Finds every Watchdog `@Intentionally*` annotation already applied in Kotlin sources. */
 internal class ExemptionScanner(private val parser: KotlinFileParser) {
     fun scan(filePath: String, text: String): List<AppliedExemption> {
         val file = parser.parse(Paths.get(filePath).fileName.toString(), text)

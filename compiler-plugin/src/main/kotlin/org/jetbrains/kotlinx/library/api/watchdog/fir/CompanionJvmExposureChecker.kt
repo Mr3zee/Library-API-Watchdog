@@ -20,14 +20,6 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.JvmStandardClassIds
 import org.jetbrains.kotlin.name.Name
 
-/**
- * Reports watched companion functions without static access and companion properties whose
- * Java-visible accessors are not all exposed statically or hidden from Java. `@JvmStatic` applies
- * to functions and every property shape, while `const val` and `@JvmField` provide static fields.
- *
- * Exemptions are honored on the member and enclosing classes. Java-hidden members are skipped.
- * [WatchdogFirCheckers] registers this checker only for JVM compilations.
- */
 internal class CompanionJvmExposureChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirCallableDeclarationChecker(MppCheckerKind.Common) {
@@ -48,10 +40,6 @@ internal class CompanionJvmExposureChecker(
         }
     }
 
-    /**
-     * The exemption is honored on the member itself and on any enclosing class - the companion
-     * object or its outer class - where it acknowledges every member inside.
-     */
     context(context: CheckerContext)
     private fun FirCallableDeclaration.isExempt(): Boolean =
         hasAnnotationOnActualOrExpect(WatchdogClassIds.IntentionallyNonStaticCompanionApi) ||
@@ -124,7 +112,6 @@ internal class CompanionJvmExposureChecker(
         )
     }
 
-    /** Whether a supported Java accessor still exists only on the companion instance. */
     context(context: CheckerContext)
     private fun FirProperty.accessorRemainsOnCompanion(
         accessor: FirPropertyAccessor?,
@@ -133,7 +120,7 @@ internal class CompanionJvmExposureChecker(
             !hasAccessorAnnotation(accessor, useSiteTarget, JvmStandardClassIds.Annotations.JvmStatic) &&
             !hasAccessorAnnotation(accessor, useSiteTarget, JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID)
 
-    /** Accessor annotations may resolve onto the accessor or remain use-site-targeted on the property. */
+    /** An accessor annotation resolves onto the accessor or stays on the property with a use-site target. */
     context(context: CheckerContext)
     private fun FirProperty.hasAccessorAnnotation(
         accessor: FirPropertyAccessor,

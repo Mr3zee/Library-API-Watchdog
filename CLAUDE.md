@@ -31,6 +31,14 @@ markers plus a `.messages.txt` dump of the full messages (`JvmDiagnosticMessages
 dump is generated on the first run. The dump replaces the macOS shortcut `⌘N` with `Alt+Insert`.
 Hand-written tests in `compiler-plugin/src/test/kotlin` run in every `k*Test` task.
 
+The docs website has its own checks. Run them in `docs/` after `npm ci`. The `docs.yml` workflow runs all three:
+
+```bash
+npm test                            # the remark plugins: diagnostic annotations in code samples, check-page links, README order
+npm run check:diagnostic-exemptions # the exemption wording in the check pages matches diagnostics.json
+npm run build                       # the site build, fails on a broken link or anchor
+```
+
 ## Constraints the code doesn't show
 
 - `diagnostics.json` is the single source of truth for diagnostic texts. The build generates `WatchdogDiagnosticMessages`

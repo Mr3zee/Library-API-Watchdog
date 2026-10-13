@@ -37,9 +37,8 @@ kotlin {
     }
 }
 
-// The dev kit's backported diagnostic test runner can't link against the test framework of the
-// 2.5.20 dev builds yet (the `IrDiagnosticsHandler` constructor changed). The plugin itself
-// compiles there. Drop this once https://github.com/Kotlin/compiler-plugin-dev-kit/issues/63 is fixed.
+// The diagnostic test runner of the dev kit doesn't link against the test framework of the
+// 2.5.20 dev builds: https://github.com/Kotlin/compiler-plugin-dev-kit/issues/63
 pluginDevKit.testAgainst
     .matching { it.version.toString().startsWith("2.5.20-dev") }
     .configureEach { testTask.configure { enabled = false } }

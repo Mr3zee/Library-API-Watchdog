@@ -4,8 +4,6 @@
 
 package foo.bar
 
-// Message parameters: the declaration kind, its name, the tuple type, and its component names.
-
 public fun locate(): <!PAIR_OR_TRIPLE_PUBLIC_API!>Pair<Int, Int><!> = 0 to 0
 
 public var bounds: <!PAIR_OR_TRIPLE_PUBLIC_API!>Triple<Int, Int, Int><!> = Triple(0, 0, 0)

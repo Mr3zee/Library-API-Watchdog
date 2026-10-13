@@ -4,9 +4,6 @@
 
 package foo.bar
 
-// Message parameters: the marker name and, for a no-op target, each target name a DSL marker has
-// no effect on.
-
 // The EXPRESSION target needs SOURCE retention.
 @DslMarker
 @Retention(AnnotationRetention.SOURCE)

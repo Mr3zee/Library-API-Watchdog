@@ -1,46 +1,46 @@
-/mutableCollection.kt:10:23: error: MUTABLE_COLLECTION_PUBLIC_API
+/mutableCollection.kt:7:23: error: MUTABLE_COLLECTION_PUBLIC_API
     The function `produce` exposes the mutable collection type `MutableList`. Expose a read-only type, and return a defensive copy where needed. Arrays count as mutable collections too.
 
     If this is intended, apply `@IntentionallyMutableCollection` to the declaration, parameter, or type usage.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/mutable-collection-public-api
 
-/mutableCollection.kt:12:22: error: MUTABLE_COLLECTION_PUBLIC_API
+/mutableCollection.kt:9:22: error: MUTABLE_COLLECTION_PUBLIC_API
     The property `registry` exposes the mutable collection type `MutableMap`. Expose a read-only type, and return a defensive copy where needed. Arrays count as mutable collections too.
 
     If this is intended, apply `@IntentionallyMutableCollection` to the declaration, parameter, or type usage.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/mutable-collection-public-api
 
-/mutableCollection.kt:14:27: error: MUTABLE_COLLECTION_PUBLIC_API
+/mutableCollection.kt:11:27: error: MUTABLE_COLLECTION_PUBLIC_API
     The parameter `items` exposes the mutable collection type `MutableSet`. Accept a read-only type, and copy it before you mutate it. Arrays count as mutable collections too.
 
     If this is intended, apply `@IntentionallyMutableCollection` to the declaration, parameter, or type usage.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/mutable-collection-public-api
 
-/mutableCollection.kt:16:39: error: MUTABLE_COLLECTION_PUBLIC_API
+/mutableCollection.kt:13:39: error: MUTABLE_COLLECTION_PUBLIC_API
     The property `items` exposes the mutable collection type `MutableList`. Expose a read-only type, and return a defensive copy where needed. Arrays count as mutable collections too.
 
     If this is intended, apply `@IntentionallyMutableCollection` to the declaration, parameter, or type usage.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/mutable-collection-public-api
 
-/mutableCollection.kt:18:21: error: MUTABLE_COLLECTION_PUBLIC_API
+/mutableCollection.kt:15:21: error: MUTABLE_COLLECTION_PUBLIC_API
     The function `table` exposes the mutable collection type `Array`. Expose a read-only type, and return a defensive copy where needed. Arrays count as mutable collections too.
 
     If this is intended, apply `@IntentionallyMutableCollection` to the declaration, parameter, or type usage.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/mutable-collection-public-api
 
-/mutableCollection.kt:20:17: error: MUTABLE_COLLECTION_PUBLIC_API
+/mutableCollection.kt:17:17: error: MUTABLE_COLLECTION_PUBLIC_API
     The type parameter `T` exposes the mutable collection type `MutableList`. Constrain the type parameter to a read-only collection type.
 
     If this is intended, apply `@IntentionallyMutableCollection` to the declaration, parameter, or type usage.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/mutable-collection-public-api
 
-/mutableCollection.kt:22:24: error: MUTABLE_COLLECTION_PUBLIC_API
+/mutableCollection.kt:19:24: error: MUTABLE_COLLECTION_PUBLIC_API
     The type parameter `T` exposes the mutable collection type `MutableCollection`. Constrain the type parameter to a read-only collection type.
 
     If this is intended, apply `@IntentionallyMutableCollection` to the declaration, parameter, or type usage.

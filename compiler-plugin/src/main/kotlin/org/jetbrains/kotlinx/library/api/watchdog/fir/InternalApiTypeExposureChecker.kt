@@ -16,25 +16,16 @@ import org.jetbrains.kotlin.fir.types.abbreviatedType
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 
-/**
- * Reports internal-API types exposed in supported public source signatures. A declaration marked
- * as internal API is already outside the supported surface and is skipped by
- * [isWatchedPublicApi]. Declarations that only `@PublishedApi` promotes are skipped too: they are
- * binary implementation details rather than types users can name as source API.
- *
- * [PublicSignatureTypeChecker] supplies the same sweep as [NonTransitiveDependencyChecker]. Both
- * type aliases and their expanded types are checked.
- */
 internal class InternalApiTypeExposureChecker : PublicSignatureTypeChecker<InternalApiExposure>() {
     context(context: CheckerContext)
     override fun isCheckedDeclaration(declaration: FirMemberDeclaration): Boolean =
         declaration.isWatchedPublicSourceApi()
 
-    /** Preserve an alias long enough to inspect a marker on the alias declaration itself. */
+    /** The alias itself can carry the marker, so it isn't expanded here. */
     context(context: CheckerContext)
     override fun ConeKotlinType.classifierType(): ConeKotlinType = this
 
-    /** FIR may retain the source alias separately from the type reached through it. */
+    /** FIR can keep the source alias apart from the type reached through it. */
     context(context: CheckerContext)
     override fun ConeKotlinType.typeBeforeClassifier(): ConeKotlinType? = abbreviatedType
 
@@ -44,7 +35,7 @@ internal class InternalApiTypeExposureChecker : PublicSignatureTypeChecker<Inter
         return symbol?.internalApiExposure()
     }
 
-    /** An unmarked alias can still expand to an internal-API type. */
+    /** An unmarked alias can expand to an internal API type. */
     context(context: CheckerContext)
     override fun ConeKotlinType.typeAfterClassifier(): ConeKotlinType? {
         val symbol = (this as? ConeClassLikeType)?.lookupTag?.toSymbol(context.session)
@@ -83,5 +74,4 @@ internal class InternalApiTypeExposureChecker : PublicSignatureTypeChecker<Inter
     }
 }
 
-/** An internal type found in a public signature and the annotation that marks it. */
 internal data class InternalApiExposure(val type: ClassId, val annotation: ClassId)

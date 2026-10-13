@@ -5,7 +5,11 @@ import org.gradle.api.Project
 import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.Usage
 
-/** Adds Dokka-style, dependency-driven aggregation for module exemption reports. */
+/**
+ * Combines the backwards-compatibility exemption reports of the projects in the
+ * `backwardsCompatibilityExemptsReports` configuration into one HTML report. Apply it to the
+ * root project of a multi-project build.
+ */
 public class WatchdogReportAggregationPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         val reportDependencies = target.configurations.register(

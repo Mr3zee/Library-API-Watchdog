@@ -43,9 +43,6 @@ import third.party.ThirdPartyInternalType
 import third.party.ThirdPartyOrdinary
 import third.party.ThirdPartySupportedType
 
-// Declarations carrying a configured annotation are internal API: no public API check fires on
-// them, nor on anything nested in them.
-
 @ThirdPartyInternalApi
 public open class InternalOpenClass {
     public fun memberOfInternal() {}
@@ -72,20 +69,14 @@ public val internalProperty: Int = 0
 @Markers.NestedInternalApi
 public open class InternalThroughNestedAnnotation
 
-// A configured annotation applied through a type alias is still recognized.
-
 /** Alias of the configured annotation. */
 public typealias AliasedInternalApi = ThirdPartyInternalApi
 
 @AliasedInternalApi
 public class InternalThroughAlias
 
-// An annotation that is not configured exempts nothing.
-
 @ThirdPartyOrdinary
 public class <!UNDOCUMENTED_PUBLIC_API!>WatchedDespiteAnnotated<!>
-
-// Unmarked declarations in the same module are still watched.
 
 /** Documented, but open for unrestricted subclassing: still reported. */
 public open class <!OPEN_API_WITHOUT_SUBCLASS_OPT_IN!>WatchedOpenClass<!>
@@ -96,17 +87,11 @@ public enum class <!EXHAUSTIVE_PUBLIC_API!>WatchedEnum<!> {
     ENTRY,
 }
 
-// A supported public signature exposing a type marked with a configured annotation is reported
-// like one exposing a type marked through @InternalAnnotationMarker, and the message names the
-// configured annotation.
-
 /** Leaks the dependency's internal type. */
 public fun leakedReturn(): <!PUBLIC_TYPE_WITH_INTERNAL_API!>ThirdPartyInternalType<!> = ThirdPartyInternalType()
 
 /** Leaks a locally declared type marked with a configured annotation. */
 public fun leakedParameter(value: <!PUBLIC_TYPE_WITH_INTERNAL_API!>InternalThroughNestedAnnotation<!>) {}
-
-// The exposing declaration is itself internal API, so nothing is reported.
 
 @ThirdPartyInternalApi
 public fun internalApiFunction(value: ThirdPartyInternalType): ThirdPartyInternalType = value

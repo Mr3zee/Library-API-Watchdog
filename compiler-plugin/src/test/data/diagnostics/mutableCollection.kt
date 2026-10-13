@@ -6,8 +6,6 @@ package foo.bar
 
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyMutableCollection
 
-// Mutable collection types in public signatures: should warn.
-
 public fun produce(): <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<String><!> = mutableListOf()
 
 public fun consume(items: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableSet<Int><!>) { items.clear() }
@@ -22,11 +20,9 @@ public class Holder(public val items: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableLi
 
 public class Sink(buffer: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int><!>)
 
-// @PublishedApi declarations do not expose their types to source callers.
+// `@PublishedApi` doesn't make a declaration callable in source.
 @PublishedApi
 internal fun stash(): MutableList<Int> = mutableListOf()
-
-// The mutable type may hide in a type argument, behind a type alias, or in a function type.
 
 public fun nested(): <!MUTABLE_COLLECTION_PUBLIC_API!>List<MutableList<Int>><!> = emptyList()
 
@@ -36,27 +32,19 @@ public fun aliased(): <!MUTABLE_COLLECTION_PUBLIC_API!>Bag<!> = mutableListOf()
 
 public val makeBuffer: <!MUTABLE_COLLECTION_PUBLIC_API!>() -> MutableList<Int><!> = { mutableListOf() }
 
-// Function types are FunctionN classifiers, so mutable state hidden in a lambda's parameter,
-// return, or receiver position is found the same way - whether the lambda is accepted...
-
 public fun onBatch(action: <!MUTABLE_COLLECTION_PUBLIC_API!>(MutableList<Int>) -> Unit<!>) { }
 
 public fun provider(factory: <!MUTABLE_COLLECTION_PUBLIC_API!>() -> MutableSet<String><!>) { }
 
 public fun schedule(task: <!MUTABLE_COLLECTION_PUBLIC_API!>suspend () -> MutableList<Int><!>) { }
 
-// ...returned...
-
 public fun callbackFactory(): <!MUTABLE_COLLECTION_PUBLIC_API!>(MutableList<Int>) -> Unit<!> = {}
 
-// ...or given a mutable receiver: unlike an extension declared on a mutable collection, a
-// builder lambda receives mutable state the user did not hold before.
+// A function-type receiver is reported, unlike an extension receiver: the lambda gets state that
+// the user didn't hold before.
 
 public fun assemble(block: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int>.() -> Unit<!>): List<Int> =
     mutableListOf<Int>().apply(block).toList()
-
-// Deliberately mutable lambdas: acknowledged on the parameter, on the mutable type inside the
-// function type, on the whole function type, or on the declaration.
 
 public fun buildInto(@IntentionallyMutableCollection block: MutableList<Int>.() -> Unit): List<Int> =
     mutableListOf<Int>().apply(block).toList()
@@ -71,11 +59,7 @@ public fun batchCallbackFactory(): (MutableList<Int>) -> Unit = {}
 @IntentionallyMutableCollection
 public val batchSink: (MutableList<Int>) -> Unit = {}
 
-// Lambdas over read-only types stay clean.
-
 public fun transform(f: (List<Int>) -> Set<String>) { }
-
-// Concrete implementations expose the same mutators as the interfaces they implement.
 
 public fun grow(): <!MUTABLE_COLLECTION_PUBLIC_API!>ArrayList<String><!> = ArrayList()
 
@@ -83,8 +67,7 @@ public abstract class IntBuffer : MutableList<Int>
 
 public fun buffer(): <!MUTABLE_COLLECTION_PUBLIC_API!>IntBuffer<!> = TODO()
 
-// User-defined mutable collection subtypes are recognized transitively and through an unrelated
-// first superinterface. Read-only subtypes remain clean, including after their result is cached.
+// `BufferMarker` is an unrelated first superinterface.
 
 public interface BufferMarker
 
@@ -100,27 +83,19 @@ public fun specializedBuffer(): <!MUTABLE_COLLECTION_PUBLIC_API!>SpecializedBuff
 
 public fun readOnlyBuffer(): ReadOnlyBuffer = TODO()
 
-// Alias expansion preserves type arguments supplied at the use site.
 public typealias ReadOnlyBox<T> = List<T>
 
 public fun boxedBuffer(): <!MUTABLE_COLLECTION_PUBLIC_API!>ReadOnlyBox<MutableList<Int>><!> = emptyList()
-
-// Arrays are mutable collections too.
 
 public fun table(): <!MUTABLE_COLLECTION_PUBLIC_API!>Array<String><!> = arrayOf()
 
 public fun bytes(): <!MUTABLE_COLLECTION_PUBLIC_API!>ByteArray<!> = ByteArray(0)
 
-// A vararg parameter receives a defensive copy of the array: no warning...
+// A vararg array is a defensive copy. Its mutable elements aren't.
 
 public fun joined(vararg parts: String): String = parts.joinToString()
 
-// ...but a mutable element type is still shared.
-
 public fun batches(vararg groups: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int><!>) { }
-
-// A mutable bound constrains every instantiation of the type parameter to mutable state,
-// exposing the same mutability as a direct mention of the bound.
 
 public fun <T : <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int><!>> drain(source: T): List<Int> = source.toList()
 
@@ -129,8 +104,6 @@ public fun <T> constrain(value: T): T where T : <!MUTABLE_COLLECTION_PUBLIC_API!
 public class Depot<T : <!MUTABLE_COLLECTION_PUBLIC_API!>MutableCollection<Int><!>>
 
 public val <T : <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int><!>> T.lastItem: Int get() = last()
-
-// ...unless the type parameter (or its owner) acknowledges the mutable bound.
 
 public fun <@IntentionallyMutableCollection C : MutableCollection<Int>> fillAll(destination: C): C {
     destination.add(1)
@@ -142,18 +115,13 @@ public class Silo<@IntentionallyMutableCollection T : MutableSet<String>>
 @IntentionallyMutableCollection
 public fun <T : MutableList<Int>> drainExempt(source: T): List<Int> = source.toList()
 
-// A type-use exemption covers the annotated type and everything nested in it.
-
 public fun snapshots(): List<@IntentionallyMutableCollection MutableList<Int>> = emptyList()
 
 public fun buffered(): @IntentionallyMutableCollection MutableList<Int> = mutableListOf()
 
-// Extensions on mutable collections provide functionality for values the user already
-// holds instead of sharing new mutable state: no warning on the receiver.
-
 public fun MutableList<Int>.compact(): List<Int> = toList()
 
-// Overrides repeat the signature fixed by the overridden declaration, which is reported instead.
+// An override isn't reported.
 
 public interface Producer {
     public fun produceAll(): <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int><!>
@@ -163,8 +131,6 @@ public class DefaultProducer : Producer {
     override fun produceAll(): MutableList<Int> = mutableListOf()
 }
 
-// Deliberately shared mutable state: no warning.
-
 @IntentionallyMutableCollection
 public fun sharedRegistry(): MutableList<String> = mutableListOf()
 
@@ -172,11 +138,7 @@ public fun fill(@IntentionallyMutableCollection target: MutableList<Int>) { targ
 
 public class Pipeline(@IntentionallyMutableCollection public val stages: MutableList<String>)
 
-// Read-only collection types: no warning.
-
 public fun snapshot(items: List<Int>): Map<String, Set<Int>> = mapOf("all" to items.toSet())
-
-// Not visible outside the library: no warning.
 
 internal fun scratch(): MutableList<Int> = mutableListOf()
 

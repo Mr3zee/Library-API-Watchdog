@@ -34,13 +34,9 @@ import org.opentest4j.AssertionFailedError
 private val PATH_SEPARATOR = File.pathSeparator
 
 /**
- * Runs the fixer over the compiler plugin's own diagnostics fixtures.
- *
- * The inline `<!DIAGNOSTIC!>...<!>` expectations are the diagnostics report: removing the
- * markers gives the source handed to [ExemptionFixer], and their ranges become
- * [RecordedDiagnostic] offsets. The fixed source is then compiled by the same diagnostics test
- * runner. Only markers for deliberately unfixable diagnostics are carried into that generated
- * expectation. Every fixable diagnostic must have disappeared because of the inserted exemption.
+ * Runs the fixer over the diagnostics test data of the compiler plugin. The `<!NAME!>...<!>`
+ * markers are the diagnostics report. The fixed source then runs through the diagnostics test
+ * runner with the markers of the unfixable diagnostics only.
  */
 class CompilerPluginTestDataFixerTest {
     private val parser = KotlinFileParser()
@@ -164,9 +160,8 @@ class CompilerPluginTestDataFixerTest {
         }
 
     /**
-     * [KotlinFileParser] initializes a standalone Kotlin PSI application before this validation.
-     * Run the diagnostics framework in a clean child JVM so its compiler application and
-     * disposables can't conflict with the parser environment.
+     * [KotlinFileParser] already set up a standalone PSI application in this JVM, so the
+     * diagnostics framework runs in a child JVM.
      */
     private fun validateWithCompilerPlugin(generatedFiles: List<Path>) {
         val runtimeClasspath = System.getProperty("java.class.path")
@@ -230,7 +225,6 @@ class CompilerPluginTestDataFixerTest {
     }
 }
 
-/** Entry point for the non-embeddable compiler process launched by the fixer test. */
 object FixedOutputCompilerTestMain {
     @JvmStatic
     fun main(args: Array<String>) {
@@ -276,10 +270,7 @@ private class FixedOutputDiagnosticRunner : DevKitTest(
     fun run(filePath: String) = runTest(filePath)
 }
 
-/**
- * The `// INTERNAL_API_ANNOTATIONS:` directive of the compiler plugin's fixtures. It mirrors the
- * directive in the compiler plugin's test fixtures, which are not on this source set's classpath.
- */
+/** A copy of the directive of the compiler plugin, whose test fixtures aren't on this classpath. */
 private object WatchdogTestDirectives : SimpleDirectivesContainer() {
     val INTERNAL_API_ANNOTATIONS by stringDirective(
         description = "Annotation FQ names configured as internal API markers (internalApiAnnotation option)",
@@ -299,7 +290,7 @@ private class WatchdogOptionsConfigurator(testServices: TestServices) : Environm
 }
 
 private data class TestDataSection(
-    /** Fixture directives and the `// FILE:` line preceding [markedText]. */
+    /** The directives and the `// FILE:` line in front of [markedText]. */
     val prefix: String,
     val fileName: String,
     val markedText: String,

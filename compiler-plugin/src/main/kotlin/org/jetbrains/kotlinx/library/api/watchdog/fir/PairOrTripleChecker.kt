@@ -10,10 +10,7 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 
-/**
- * Reports direct `Pair` and `Triple` classifier matches found by the [ExposedTypeChecker]
- * signature sweep. Subtype checks are unnecessary because both tuple classes are final.
- */
+/** `Pair` and `Triple` are final, so the check skips subtypes. */
 internal class PairOrTripleChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : ExposedTypeChecker(WatchdogClassIds.IntentionallyPairOrTriple) {

@@ -2,11 +2,9 @@
 // EXPLICIT_API_MODE: WARNING
 // DIAGNOSTICS: -TOP_LEVEL_API_WITHOUT_JVM_NAME -KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
 
-// Published declarations are watched in every module of a multimodule compilation. The
-// dependency module acknowledges everything its published API is reported for, so it compiles
-// into a binary cleanly. The consuming module reports its own published declarations while using
-// the dependency's published API through its public inline functions. Neither module documents a
-// published declaration: the KDoc check leaves them alone.
+// The checks watch published declarations in every module. The `lib` module exempts its reported
+// published API, so it compiles into a binary cleanly. Neither module documents a published
+// declaration.
 
 // MODULE: lib
 // FILE: lib.kt

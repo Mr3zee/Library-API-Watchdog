@@ -4,8 +4,6 @@
 
 package foo.bar
 
-// Message parameters: every declaration kind the check reports and the declaration name.
-
 public class <!UNDOCUMENTED_PUBLIC_API!>Undocumented<!>
 
 public interface <!UNDOCUMENTED_PUBLIC_API!>Contract<!>

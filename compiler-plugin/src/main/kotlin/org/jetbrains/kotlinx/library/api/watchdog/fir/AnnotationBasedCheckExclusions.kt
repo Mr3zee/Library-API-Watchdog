@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirDeclarationChec
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
 
-/** Configurable diagnostics suppressed by annotations on the checked declaration. */
+/** The annotation FQ names that disable each configurable diagnostic on the annotated declaration. */
 internal class AnnotationBasedCheckExclusions(
     private val annotationNamesByDiagnostic: Map<String, Set<String>>,
 ) {
@@ -27,7 +27,6 @@ internal class AnnotationBasedCheckExclusions(
     }
 }
 
-/** Applies [AnnotationBasedCheckExclusions] before a diagnostic reaches recording and reporting. */
 internal class AnnotationExcludingDeclarationChecker<D : FirDeclaration>(
     private val delegate: FirDeclarationChecker<D>,
     private val exclusions: AnnotationBasedCheckExclusions,

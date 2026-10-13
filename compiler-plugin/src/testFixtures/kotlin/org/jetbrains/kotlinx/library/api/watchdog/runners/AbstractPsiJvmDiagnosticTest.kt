@@ -3,10 +3,7 @@ package org.jetbrains.kotlinx.library.api.watchdog.runners
 import org.jetbrains.kotlin.compiler.plugin.devkit.runners.DevKitJvmDiagnosticTest
 import org.jetbrains.kotlin.test.FirParser
 
-/**
- * Runs the same diagnostics over PSI-backed sources - the representation the Analysis API (IDE)
- * builds FIR from - so checkers that inspect source trees are verified in both parser modes.
- */
+/** Runs the diagnostics tests over PSI sources, the representation the Analysis API builds FIR from. */
 open class AbstractPsiJvmDiagnosticTest : DevKitJvmDiagnosticTest(
     {
         configureWatchdogDiagnosticTest()

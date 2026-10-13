@@ -14,17 +14,10 @@ import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils
 import org.jetbrains.kotlin.name.JvmStandardClassIds
 
-/**
- * Reports a file with watched top-level functions or properties and no `@file:JvmName` or file-level
- * exemption. The diagnostic is anchored on the first qualifying callable and emitted once per
- * file. Files with only classifiers or only Java-hidden callables are skipped.
- *
- * [WatchdogFirCheckers] registers this checker only for JVM compilations.
- */
+/** Reports one time for each file, on the first Java-visible top-level callable. */
 internal class TopLevelJvmNameChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirFileChecker(MppCheckerKind.Common) {
-    // Direct declaration access is what a file checker is for: the file's own top-level list.
     @OptIn(DirectDeclarationsAccess::class)
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirFile) {

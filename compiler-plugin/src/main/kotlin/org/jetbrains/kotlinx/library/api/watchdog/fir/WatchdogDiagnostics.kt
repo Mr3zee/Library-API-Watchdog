@@ -31,7 +31,7 @@ import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.psi.KtTypeAlias
 
-/** Severity with which a configurable watchdog diagnostic is reported, or [NONE] to disable it. */
+/** The severity of a configurable diagnostic. [NONE] disables it. */
 enum class WatchdogSeverity {
     ERROR,
     WARNING,
@@ -39,9 +39,8 @@ enum class WatchdogSeverity {
 }
 
 /**
- * A diagnostic whose severity is chosen per compilation. A diagnostic factory bakes its severity
- * in at construction, so each configurable diagnostic keeps an [error] and a [warning] factory
- * under the same diagnostic name and the checkers pick one of them - or none - at report time.
+ * A diagnostic with a severity chosen for each compilation. A factory has a fixed severity, so the
+ * diagnostic has one factory for each severity under the same name.
  */
 class ConfigurableWatchdogDiagnostic<out F : AbstractKtDiagnosticFactory>(
     val error: F,
@@ -49,7 +48,6 @@ class ConfigurableWatchdogDiagnostic<out F : AbstractKtDiagnosticFactory>(
 ) {
     val name: String get() = error.name
 
-    /** The factory reporting with [severity], or null when the diagnostic is disabled. */
     fun withSeverity(severity: WatchdogSeverity): F? = when (severity) {
         WatchdogSeverity.ERROR -> error
         WatchdogSeverity.WARNING -> warning
@@ -57,12 +55,7 @@ class ConfigurableWatchdogDiagnostic<out F : AbstractKtDiagnosticFactory>(
     }
 }
 
-/**
- * Per-compilation severity overrides keyed by diagnostic name. Unlisted diagnostics are errors.
- * Returns null for diagnostics overridden to [WatchdogSeverity.NONE]: their check is disabled,
- * and [WatchdogFirCheckers] doesn't even register a checker all of whose diagnostics are
- * disabled.
- */
+/** Severity overrides keyed by diagnostic name. An unlisted diagnostic is an error. */
 class WatchdogDiagnosticSeverities(private val overrides: Map<String, WatchdogSeverity>) {
     operator fun <F : AbstractKtDiagnosticFactory> get(diagnostic: ConfigurableWatchdogDiagnostic<F>): F? =
         diagnostic.withSeverity(overrides[diagnostic.name] ?: WatchdogSeverity.ERROR)
@@ -70,17 +63,12 @@ class WatchdogDiagnosticSeverities(private val overrides: Map<String, WatchdogSe
     fun isEnabled(diagnostic: ConfigurableWatchdogDiagnostic<*>): Boolean = this[diagnostic] != null
 
     companion object {
-        /** Every diagnostic reported with its default severity, an error. */
         val DEFAULT = WatchdogDiagnosticSeverities(emptyMap())
     }
 }
 
 object WatchdogDiagnostics : KtDiagnosticsContainer() {
-    /**
-     * Every diagnostic whose severity can be configured, for CLI option validation. Must be
-     * declared before the diagnostics themselves: their delegate providers register into it
-     * during class initialization.
-     */
+    /** Must stay declared before the diagnostics: their delegate providers register into it. */
     val allDiagnostics: List<ConfigurableWatchdogDiagnostic<*>>
         field = mutableListOf()
 
@@ -148,30 +136,19 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
         NAME_IDENTIFIER,
     )
 
-    /** Parameters: facade class name and the file's Java-visible callable kinds. Emitted once per file. */
+    /** Parameters: facade class name, Java-visible callable kinds of the file. Reported one time for each file. */
     val TOP_LEVEL_API_WITHOUT_JVM_NAME by configurable2<KtDeclaration, String, String>(NAME_IDENTIFIER)
 
     /** Parameters: declaration kind in words, declaration name. */
     val DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS by configurable2<KtDeclaration, String, Name>(NAME_IDENTIFIER)
 
-    /**
-     * Parameters: the exemption annotation name, the reason that needs a description. Deliberately
-     * not configurable, unlike the other diagnostics: the explanation requirement is what keeps
-     * every exemption honest, so it is always an error.
-     */
+    /** Parameters: the exemption annotation name, the reason that needs a description. */
     val EXEMPTION_WITHOUT_EXPLANATION by error2<KtAnnotationEntry, Name, Name>()
 
-    /**
-     * Parameters: declaration kind, declaration name, exposed type's fully qualified name.
-     * Gradle may disable the check, but whenever it runs this diagnostic is always an error.
-     */
+    /** Parameters: declaration kind, declaration name, exposed type FQ name, exemption snippet. */
     val PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY by error4<KtElement, String, Name, String, String>()
 
-    /**
-     * Parameters: declaration kind, declaration name, internal type FQ name, annotation name.
-     * A supported API exposing a type that explicitly has no supported contract is always an
-     * error. The whole check has a Boolean off-switch, but its diagnostic can't be demoted.
-     */
+    /** Parameters: declaration kind, declaration name, internal type FQ name, annotation name. */
     val PUBLIC_TYPE_WITH_INTERNAL_API by error4<KtElement, String, Name, String, Name>()
 
     /** Parameters: the marker name, the no-op target name. */
@@ -185,7 +162,6 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
 
     override fun getRendererFactory(): BaseDiagnosticRendererFactory = WatchdogErrorMessages
 
-    /** Builds the error/warning factory pair, deriving the diagnostic name from the property. */
     private fun <F : AbstractKtDiagnosticFactory> configurableDiagnostic(
         createFactory: (name: String, severity: Severity) -> F,
     ): PropertyDelegateProvider<Any?, ReadOnlyProperty<Any?, ConfigurableWatchdogDiagnostic<F>>> =
@@ -229,12 +205,7 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     }
 }
 
-/**
- * Binds every diagnostic to its parameter renderers. The message texts themselves live in the
- * shared `diagnostics.json` and reach this file through the generated
- * [WatchdogDiagnosticMessages], keyed by diagnostic name, so the compiler and the documentation
- * website always speak about a check in the same words.
- */
+/** The message texts come from `diagnostics.json` through the generated [WatchdogDiagnosticMessages]. */
 private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
     override val MAP by KtDiagnosticFactoryToRendererMap("LibsApiWatchdog") { map ->
         map.put(

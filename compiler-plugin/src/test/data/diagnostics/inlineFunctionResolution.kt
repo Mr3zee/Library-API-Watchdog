@@ -2,7 +2,7 @@
 // EXPLICIT_API_MODE: WARNING
 // DIAGNOSTICS: -UNDOCUMENTED_PUBLIC_API -EXEMPTION_WITHOUT_EXPLANATION -NOTHING_TO_INLINE -TOP_LEVEL_API_WITHOUT_JVM_NAME -KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC -BOOLEAN_PARAMETER_PUBLIC_API -DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS -COMPANION_API_WITHOUT_JVM_STATIC -OPEN_API_WITHOUT_SUBCLASS_OPT_IN -PAIR_OR_TRIPLE_PUBLIC_API -MUTABLE_COLLECTION_PUBLIC_API -STATEFUL_CLASS_WITHOUT_EQUALS -STATEFUL_CLASS_WITHOUT_HASH_CODE -STATEFUL_CLASS_WITHOUT_TO_STRING -MANGLED_JVM_NAME_PUBLIC_API -EXHAUSTIVE_PUBLIC_API -COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS -USELESS_CAST -UNCHECKED_CAST -FINAL_UPPER_BOUND
 
-// Shapes where the classification depends on what a call resolves to. The syntax shapes are in
+// Shapes where the classification depends on the resolution of a call. The syntax shapes are in
 // inlineFunctionShapes.kt.
 
 package foo.bar
@@ -63,8 +63,7 @@ public class Money(public val amount: Int) : Comparable<Money> {
 
 public enum class Color { RED }
 
-// An implicit `invoke` or an index access resolves to the callee's declaration. An inline getter,
-// an inline `invoke`, or an inline `get` copies: should warn. Non-inline ones delegate.
+// An implicit `invoke` or an index access resolves to the declaration of the callee.
 
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>invokeInlineAction<!>(): Int = inlineAction()
 
@@ -76,8 +75,6 @@ public inline fun invokeCompanion(): Host = Host()
 
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>indexInlineGet<!>(grid: Grid): Int = grid[0]
 
-// Nullable receivers and casts.
-
 public inline fun String?.nullableReceiver(): Int = implAny(this)
 
 public inline fun String?.<!INLINE_FUNCTION_WITH_LOGIC!>safeCallReceiver<!>(): Int = this?.length ?: 0
@@ -88,8 +85,6 @@ public inline fun <T : Any> <!INLINE_FUNCTION_WITH_LOGIC!>forced<!>(x: T?): T = 
 
 public inline fun <reified T> castToReified(x: Any?): Int = implAny(x as T)
 
-// Labeled and implicit `this` in lambdas and anonymous functions. No warning.
-
 public inline fun Vec.labeledThis(): Int = runInt { this@labeledThis[0] }
 
 public inline fun String.labeledThisLength(): Int = runInt { this@labeledThisLength.length }
@@ -98,8 +93,8 @@ public inline fun receiverLambda(): Int = useVecBlock { this[0] }
 
 public inline fun anonymousReceiver(): Int = useVecBlock(fun Vec.(): Int = this[0])
 
-// A comparison resolves to `compareTo`. On a `Comparable` it is an interface call, on a built-in
-// type it is an instruction.
+// A comparison resolves to `compareTo`: an interface call on a `Comparable`, an instruction on
+// a built-in type.
 
 public inline fun <C : Comparable<C>> genericLess(a: C, b: C): Int = useBool(a < b)
 
@@ -109,8 +104,7 @@ public inline fun moneyLess(a: Money, b: Money): Int = useBool(a < b)
 
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>anyEquals<!>(a: Any, b: Any): Int = useBool(a.equals(b))
 
-// Built-in operators on unsigned types, characters, and arrays: should warn. Collection operators
-// are interface calls, and a negative literal is a constant. No warning.
+// A collection operator is an interface call. A negative literal is a constant.
 
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>unsignedPlus<!>(a: UInt, b: UInt): UInt = a + b
 
@@ -130,8 +124,6 @@ public inline fun negativeLiteral(): Int = impl(-1)
 
 public inline fun absolute(): Int = kotlin.math.abs(-1)
 
-// A reference to an inline property or an inline member of this library: should warn.
-
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>inlinePropertyReference<!>(): KProperty0<Int> = ::thresholdInline
 
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>inlineMemberReference<!>(host: Host): KFunction0<Int> = host::thinMember
@@ -139,8 +131,6 @@ public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>inlineMemberReference<!>(host: H
 public inline fun plainReference(): KFunction0<Int> = ::impl0
 
 public inline fun referenceArgument(x: Int): Int = x.let(::impl)
-
-// Java static calls, varargs, synthetic properties, enum and companion members. No warning.
 
 public inline fun javaStatic(): Int = Integer.valueOf(1)
 

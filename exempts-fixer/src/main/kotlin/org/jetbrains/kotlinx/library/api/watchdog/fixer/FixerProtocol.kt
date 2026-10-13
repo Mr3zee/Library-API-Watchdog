@@ -5,9 +5,8 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 /**
- * A watchdog diagnostic recorded by the compiler plugin's `diagnosticsOutputFile` option: one
- * tab-separated line of diagnostic name, absolute source file path, start offset, and end offset
- * of the source element the diagnostic was reported on.
+ * One line of the `diagnosticsOutputFile` of the compiler plugin: the diagnostic name, the
+ * absolute file path, the start offset, and the end offset, separated by tabs.
  */
 internal data class RecordedDiagnostic(
     val name: String,
@@ -16,10 +15,7 @@ internal data class RecordedDiagnostic(
     val endOffset: Int,
 ) {
     companion object {
-        /**
-         * Merges the compilation reports and drops exact duplicates: multiplatform compilations
-         * revisit common source files for metadata and each platform target.
-         */
+        /** A multiplatform build reports a common source file for each target, so the result has no duplicates. */
         fun parseReports(reportFiles: List<Path>): List<RecordedDiagnostic> = reportFiles
             .asSequence()
             .filter { Files.isRegularFile(it) }
@@ -35,19 +31,12 @@ internal data class RecordedDiagnostic(
     }
 }
 
-/**
- * The request the Gradle task hands to the fixer process as a file of `key=value` lines, one
- * value per line, keys repeating for list entries. A file sidesteps command-line length limits
- * and quoting rules.
- */
+/** The request of the Gradle task: a file of `key=value` lines. A list key repeats. */
 internal class FixerRequest(
-    /** Reports produced by the regular Kotlin compile tasks for every main target. */
     val reportFiles: List<Path>,
-    /** Main Kotlin sources scanned for exemptions that are already present. */
+    /** The files to scan for exemptions. */
     val sourceFiles: List<Path>,
-    /** Whether planned fixes are written back to the source files. */
     val updateSources: Boolean,
-    /** Where the fixer writes its [FixerResponse]. */
     val responseFile: Path,
 ) {
     companion object {
@@ -79,18 +68,14 @@ internal class FixerRequest(
     }
 }
 
-/**
- * A fix the fixer applied or could apply: an exemption annotation, or a placeholder KDoc when
- * [annotation] is null.
- */
 internal data class AppliedFix(
     val diagnostic: String,
+    /** Null for a placeholder KDoc. */
     val annotation: String?,
     val filePath: String,
     val line: Int,
 )
 
-/** A diagnostic the fixer could not resolve. */
 internal data class SkippedDiagnostic(
     val diagnostic: String,
     val filePath: String,
@@ -98,18 +83,13 @@ internal data class SkippedDiagnostic(
     val reason: String,
 )
 
-/** A Watchdog `@Intentionally*` annotation found in a requested source file. */
 internal data class AppliedExemption(
     val annotation: String,
     val filePath: String,
     val line: Int,
 )
 
-/**
- * What the fixer reports back, as a file of `key=value` lines mirroring [FixerRequest]. Tabs
- * separate the fields inside a value. The annotation field of a `fixed` line is empty when the
- * fix is a placeholder KDoc rather than an annotation.
- */
+/** The response to the Gradle task: a file of `key=value` lines with tab-separated fields. */
 internal class FixerResponse {
     val applied = mutableListOf<AppliedFix>()
     val skipped = mutableListOf<SkippedDiagnostic>()
@@ -124,8 +104,7 @@ internal class FixerResponse {
                 appendLine("$FIXED=${it.diagnostic}\t${it.annotation.orEmpty()}\t${it.line}\t${it.filePath}")
             }
             skipped.forEach {
-                // The reason is free-form text and the line's last field: escaping its line
-                // breaks keeps the line-based protocol intact (tabs are fine in a last field).
+                // The reason is free text, so the writer escapes its line breaks. Tabs are fine in a last field.
                 val annotation = ExemptionRegistry.annotationFor(it.diagnostic).orEmpty()
                 appendLine(
                     "$SKIPPED=${it.diagnostic}\t$annotation\t${it.line}\t${it.filePath}\t${it.reason.escapeNewlines()}"

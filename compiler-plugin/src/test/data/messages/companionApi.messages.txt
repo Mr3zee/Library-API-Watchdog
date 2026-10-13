@@ -1,39 +1,39 @@
-/companionApi.kt:12:20: error: COMPANION_API_WITHOUT_JVM_STATIC
+/companionApi.kt:9:20: error: COMPANION_API_WITHOUT_JVM_STATIC
     The `companion object` function `create` compiles to an instance method of the nested `Companion` class, so Java callers write `Registry.Companion.create(...)`. Mark it with `@JvmStatic` to add a static `Registry.create(...)` entry point, or hide it from Java with `@JvmSynthetic`.
 
     If this is intended, apply `@IntentionallyNonStaticCompanionApi` to the function or an enclosing class.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-api-without-jvm-static
 
-/companionApi.kt:14:20: error: COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS
+/companionApi.kt:11:20: error: COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS
     The `companion object` property `DEFAULT_NAME` has its getter on the nested companion class, so Java callers write `Registry.Companion`. Mark the property with `@JvmStatic` to add a static getter on `Registry`. To change only the getter, use `@get:JvmStatic`, or hide it with `@get:JvmSynthetic`.
 
     If this is intended, apply `@IntentionallyNonStaticCompanionApi` to the property or an enclosing class.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-property-without-static-access
 
-/companionApi.kt:16:20: error: COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS
+/companionApi.kt:13:20: error: COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS
     The `companion object` property `mutable` has its getter and setter on the nested companion class, so Java callers write `Registry.Companion`. Mark the property with `@JvmStatic` to add static accessors on `Registry`. To change one accessor, use `@get:JvmStatic` or `@set:JvmStatic`, or hide it with `@get:JvmSynthetic` or `@set:JvmSynthetic`.
 
     If this is intended, apply `@IntentionallyNonStaticCompanionApi` to the property or an enclosing class.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-property-without-static-access
 
-/companionApi.kt:19:20: error: COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS
+/companionApi.kt:16:20: error: COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS
     The `companion object` property `staticRead` has its setter on the nested companion class, so Java callers write `Registry.Companion`. Mark the property with `@JvmStatic` to add a static setter on `Registry`. To change only the setter, use `@set:JvmStatic`, or hide it with `@set:JvmSynthetic`.
 
     If this is intended, apply `@IntentionallyNonStaticCompanionApi` to the property or an enclosing class.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-property-without-static-access
 
-/companionApi.kt:25:20: error: COMPANION_API_WITHOUT_JVM_STATIC
+/companionApi.kt:22:20: error: COMPANION_API_WITHOUT_JVM_STATIC
     The `companion object` function `create` compiles to an instance method of the nested `Factory` class, so Java callers write `Config.Factory.create(...)`. Mark it with `@JvmStatic` to add a static `Config.create(...)` entry point, or hide it from Java with `@JvmSynthetic`.
 
     If this is intended, apply `@IntentionallyNonStaticCompanionApi` to the function or an enclosing class.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-api-without-jvm-static
 
-/companionApi.kt:27:20: error: COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS
+/companionApi.kt:24:20: error: COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS
     The `companion object` property `DEFAULT_LABEL` has its getter on the nested companion class, so Java callers write `Config.Factory`. Mark the property with `@JvmStatic` to add a static getter on `Config`. To change only the getter, use `@get:JvmStatic`, or hide it with `@get:JvmSynthetic`.
 
     If this is intended, apply `@IntentionallyNonStaticCompanionApi` to the property or an enclosing class.

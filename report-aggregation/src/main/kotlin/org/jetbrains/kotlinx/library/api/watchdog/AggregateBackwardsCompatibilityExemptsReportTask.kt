@@ -13,12 +13,12 @@ import org.gradle.api.tasks.TaskAction
 /** Combines the report variants declared in `backwardsCompatibilityExemptsReports`. */
 @CacheableTask
 public abstract class AggregateBackwardsCompatibilityExemptsReportTask : DefaultTask() {
-    /** Machine-readable module reports resolved through Gradle variant selection. */
+    /** The module reports to combine. */
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.NONE)
     public abstract val reportDataFiles: ConfigurableFileCollection
 
-    /** The aggregate HTML report. */
+    /** The aggregate HTML report. Default: `build/reports/api-watchdog/backwards-compatibility-exempts-aggregate.html`. */
     @get:OutputFile
     public abstract val reportFile: RegularFileProperty
 

@@ -1,19 +1,19 @@
-/dslMarkerTypePosition.kt:15:25: error: DSL_MARKER_NOOP_TYPE_POSITION
+/dslMarkerTypePosition.kt:13:25: error: DSL_MARKER_NOOP_TYPE_POSITION
     The DSL marker `TreeDsl` has no effect on this parameter type. Scope control reacts only to a marker on the type of an implicit value: a receiver, a context parameter, or a function type with one. Move the marker to the class or to a receiver type, or remove it.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-type-position
 
-/dslMarkerTypePosition.kt:17:20: error: DSL_MARKER_NOOP_TYPE_POSITION
+/dslMarkerTypePosition.kt:15:20: error: DSL_MARKER_NOOP_TYPE_POSITION
     The DSL marker `TreeDsl` has no effect on this return type. Scope control reacts only to a marker on the type of an implicit value: a receiver, a context parameter, or a function type with one. Move the marker to the class or to a receiver type, or remove it.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-type-position
 
-/dslMarkerTypePosition.kt:19:21: error: DSL_MARKER_NOOP_TYPE_POSITION
+/dslMarkerTypePosition.kt:17:21: error: DSL_MARKER_NOOP_TYPE_POSITION
     The DSL marker `TreeDsl` has no effect on this property type. Scope control reacts only to a marker on the type of an implicit value: a receiver, a context parameter, or a function type with one. Move the marker to the class or to a receiver type, or remove it.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-type-position
 
-/dslMarkerTypePosition.kt:22:14: error: DSL_MARKER_NOOP_TYPE_POSITION
+/dslMarkerTypePosition.kt:20:14: error: DSL_MARKER_NOOP_TYPE_POSITION
     The DSL marker `TreeDsl` has no effect on this variable type. Scope control reacts only to a marker on the type of an implicit value: a receiver, a context parameter, or a function type with one. Move the marker to the class or to a receiver type, or remove it.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-type-position

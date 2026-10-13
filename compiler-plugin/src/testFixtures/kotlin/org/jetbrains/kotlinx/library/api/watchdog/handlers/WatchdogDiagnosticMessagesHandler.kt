@@ -13,16 +13,9 @@ import org.jetbrains.kotlin.test.utils.MultiModuleInfoDumper
 import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnostics
 
 /**
- * Dumps every watchdog diagnostic of the test with its rendered message into the `.messages.txt`
- * file next to the test data. The `DIAGNOSTICS` directive filters the dump as it filters the
- * markers. The dev kit picks a Kotlin-version-specific dump when one exists.
- *
- * Each entry has a header line `/<file>:<line>:<column>: <severity>: <DIAGNOSTIC_NAME>` and the
- * message lines indented by four spaces. Entries are sorted by offset, then by message.
- *
- * The IntelliJ IDEA shortcut in the stateful class messages depends on the host OS. The dump
- * replaces the macOS shortcut with the shortcut of the other systems, so one dump serves every
- * host.
+ * Dumps the rendered watchdog messages into the `.messages.txt` file next to the test data. The
+ * `DIAGNOSTICS` directive filters the dump as it filters the markers. The dump replaces the macOS
+ * shortcut of IntelliJ IDEA with the shortcut of the other systems, so one dump serves every host.
  */
 class WatchdogDiagnosticMessagesHandler(testServices: TestServices) : FirAnalysisHandler(testServices) {
     private val dumper = MultiModuleInfoDumper()
@@ -80,7 +73,6 @@ class WatchdogDiagnosticMessagesHandler(testServices: TestServices) : FirAnalysi
         const val MAC_SHORTCUT = "⌘N"
         const val DEFAULT_SHORTCUT = "Alt+Insert"
 
-        /** The configurable diagnostics and the three that are always errors. */
         val watchdogDiagnosticNames: Set<String> = buildSet {
             WatchdogDiagnostics.allDiagnostics.mapTo(this) { it.name }
             add(WatchdogDiagnostics.EXEMPTION_WITHOUT_EXPLANATION.name)

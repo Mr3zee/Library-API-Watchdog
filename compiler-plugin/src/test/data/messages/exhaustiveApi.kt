@@ -4,8 +4,6 @@
 
 package foo.bar
 
-// Message parameters: the class kind, the kind of member users can't add, and the fix.
-
 public enum class <!EXHAUSTIVE_PUBLIC_API!>Status<!> {
     ACTIVE,
 }

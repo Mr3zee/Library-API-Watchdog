@@ -4,8 +4,6 @@
 
 package foo.bar
 
-// Message parameters: the callable kind and its name.
-
 public fun <!DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS!>connect<!>(host: String, port: Int = 80) {}
 
 public class Connection<!DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS!>(host: String, port: Int = 80)<!>

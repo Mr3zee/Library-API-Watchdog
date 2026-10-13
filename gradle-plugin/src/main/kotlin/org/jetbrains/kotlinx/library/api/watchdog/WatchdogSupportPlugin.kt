@@ -35,31 +35,22 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 
-@Suppress("unused") // Used via reflection.
+@Suppress("unused") // Loaded by reflection.
 public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO) {
-    /** Enabled once the task graph of the build schedules an exemptions update or report task. */
     private lateinit var collectDiagnosticsForExempts: Property<Boolean>
 
-    /**
-     * Test sources are never published, so they carry no API contract to watch. The Kotlin Gradle
-     * plugin already keeps explicit API mode off for test compilations, which is enough for the
-     * usual `kotlin { explicitApi() }` setup, but a raw `-Xexplicit-api` flag added to every
-     * compilation would otherwise turn the checks on there too. Skipping the compiler plugin for
-     * test compilations makes the exclusion hold whichever way explicit API mode is enabled.
-     */
+    /** A raw `-Xexplicit-api` flag turns explicit API mode on in test compilations too. */
     override fun isApplicable(kotlinCompilation: KotlinCompilation<*>): Boolean =
         !kotlinCompilation.isTestCompilation()
 
     override fun apply(target: Project) {
-        // The user-facing bucket is declarable only. Each compilation resolves it with its own
-        // classpath attributes, see [exemptNonTransitiveDependenciesFor].
         val exemptNonTransitiveDependencies = target.configurations.register(
             EXEMPT_NON_TRANSITIVE_CONFIGURATION_NAME,
         ) { configuration ->
             configuration.isCanBeConsumed = false
             configuration.isCanBeResolved = false
-            configuration.description = "Dependencies whose types may appear in the public API " +
-                    "although they are not published transitively, see apiWatchdog.exemptNonTransitiveDependencies"
+            configuration.description = "Dependencies whose types the public API can expose " +
+                    "although they aren't published transitively, see apiWatchdog.exemptNonTransitiveDependencies"
         }
         val extension = target.extensions.create(
             "apiWatchdog",
@@ -81,10 +72,6 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         }
     }
 
-    /**
-     * Registers the source update and non-mutating report tasks. [applyToCompilation] wires every
-     * main Kotlin compilation into both, so KGP drives JVM, JS, native, Wasm, and metadata analysis.
-     */
     private fun Project.registerBackwardsCompatibilityExemptsTasks(
         collectDiagnostics: Property<Boolean>,
     ) {
@@ -102,7 +89,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 configuration.isCanBeConsumed = false
                 configuration.isCanBeResolved = true
                 configuration.isTransitive = false
-                configuration.description = "The multi-version watchdog exemption fixer artifact"
+                configuration.description = "The multi-version artifact of the watchdog exemption fixer"
                 configuration.dependencies.add(fixerDependency)
             },
         )
@@ -121,9 +108,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             UpdateBackwardsCompatibilityExemptsTask::class.java,
         ) { task ->
             task.group = "api watchdog"
-            task.description = "Acknowledges every watchdog diagnostic in the main Kotlin " +
-                    "compilation sources with the matching @Intentionally* annotation and the " +
-                    "FOR_BACKWARDS_COMPATIBILITY reason"
+            task.description = "Exempts every watchdog diagnostic in the main Kotlin sources " +
+                    "with the matching @Intentionally* annotation and the FOR_BACKWARDS_COMPATIBILITY reason"
             task.compilationNames.convention(emptyList())
             task.projectDirectory.set(layout.projectDirectory)
             task.kotlinVersion.set(kotlinVersion)
@@ -136,7 +122,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         ) { task ->
             task.group = "api watchdog"
             task.description =
-                "Reports applied and not-applied backwards-compatibility exemptions without changing sources"
+                "Reports the applied and the missing backwards-compatibility exemptions without a source change"
             task.compilationNames.convention(emptyList())
             task.projectDirectory.set(layout.projectDirectory)
             @Suppress("UnstableApiUsage")
@@ -151,11 +137,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 layout.buildDirectory.file("reports/api-watchdog/backwards-compatibility-exempts.data")
             )
         }
-        // Only a scheduled update or report task enables collection. Task realization is not a
-        // usable signal: IDE sync, `tasks.all { }`, and the `tasks` report realize every task,
-        // which would demote the configured severities in builds that never run these tasks.
-        // The graph also covers a report task scheduled indirectly through variant resolution.
-        // Compile-task inputs and options consume this property lazily during execution.
+        // IDE sync and the `tasks` report realize every task, so task realization can't be the
+        // signal.
         val exemptsTaskPaths = listOf(UPDATE_EXEMPTS_TASK_NAME, GENERATE_EXEMPTS_REPORT_TASK_NAME)
             .map { if (path == ":") ":$it" else "$path:$it" }
         gradle.taskGraph.whenReady { graph ->
@@ -216,10 +199,9 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
 
             kotlinCompilation.compileTaskProvider.configure { task ->
                 task.inputs.property("apiWatchdog.collectDiagnosticsForExempts", collect)
-                // The report deliberately stays outside the task's declared outputs. JVM compile
-                // tasks prepare every extra output as a directory, while the compiler plugin
-                // needs a file. Collection mode always executes and bypasses the build cache so
-                // an internal report can never be stale or absent after an up-to-date/cache hit.
+                // The report isn't a declared output because JVM compile tasks prepare every
+                // extra output as a directory. So collection mode always runs and skips the
+                // build cache.
                 task.outputs.upToDateWhen { !collect.get() }
                 task.outputs.doNotCacheIf("watchdog diagnostic collection is enabled") {
                     collect.get()
@@ -238,10 +220,9 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             }
         }
 
-        // Native compile tasks read this option list while they are configured, before the task
-        // graph settles whether diagnostics are collected. The set of options is therefore fixed
-        // and every collection-dependent value is lazy, so it is computed when the compiler
-        // arguments are built. The compiler plugin ignores the blank placeholder values.
+        // Native compile tasks read the option list at configuration time, before the task graph
+        // is ready. So the set of options is fixed and each value that depends on collection is
+        // lazy. The compiler plugin ignores a blank value.
         val checkDependencyExposure = extension.publicTypesMustBeTransitiveDependencies.map { it && !collect.get() }
         val compilesForAndroid = compileDependencies.map { kotlinCompilation.compilesForAndroid(it) }
         return providers.provider {
@@ -294,8 +275,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                         },
                     ),
                 )
-                // Exempt dependencies travel as transitive paths: the compiler plugin treats
-                // every type found under them as published and needs no option of its own.
+                // The compiler plugin has no option for exempt dependencies. They go into the
+                // transitive paths.
                 add(
                     SubpluginOption(
                         "transitiveDependencyPaths",
@@ -322,12 +303,9 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
     }
 
     /**
-     * For each artifact of [configuration], the build script declaration that pulls it in, as
+     * The build script declaration behind each artifact of [configuration], as
      * tab-separated `path`, `configuration`, `notation` triples. The declaration is the nearest
-     * declared dependency on the resolution path to the artifact's component, with the
-     * configuration it is declared on: `compileOnly` and `"com.example:models:1.0"`, or
-     * `implementation` and `project(":model")`. The diagnostic shows it in its exemption snippet,
-     * so the user can paste the exemption into the declaration that exists.
+     * declared dependency on the resolution path to the component of the artifact.
      */
     private fun dependencyDeclarations(configuration: Configuration, android: Boolean): String {
         val declarations = HashMap<ComponentIdentifier, String>()
@@ -337,8 +315,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             val declaration = declarationOf(dependency.requested, configuration) ?: continue
             queue.add(dependency.selected to declaration)
         }
-        // Breadth-first from all declared dependencies together: a component that two declarations
-        // reach gets the nearest one, and a declared component gets its own.
+        // Breadth-first from all declared dependencies together, so a component that two
+        // declarations reach gets the nearest one.
         while (queue.isNotEmpty()) {
             val (component, declaration) = queue.removeFirst()
             if (declarations.putIfAbsent(component.id, declaration) != null) continue
@@ -354,11 +332,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
     }
 
     /**
-     * The declaration of [requested] as a tab-separated configuration and notation. Null for a
-     * file dependency or any other selector that is neither a module nor a project. The
-     * configuration in the hierarchy of [configuration] that declares it gives the name:
-     * `compileOnly`, `commonMainImplementation`. When none declares it, the name is
-     * `implementation`.
+     * The declaration of [requested] as a tab-separated configuration name and notation, or null
+     * for a selector that is neither a module nor a project.
      */
     private fun declarationOf(requested: ComponentSelector, configuration: Configuration): String? {
         val notation: String
@@ -384,29 +359,19 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         return "$declaringConfiguration\t$notation"
     }
 
-    /**
-     * Whether this compilation builds for Android, by the environment its compile classpath
-     * requests. The platform type is not enough: the Android target of AGP 8's
-     * `com.android.kotlin.multiplatform.library` plugin reports `jvm`, while its compile
-     * classpath still asks for Android artifacts and AARs like every other Android compilation.
-     */
+    /** The `com.android.kotlin.multiplatform.library` target of AGP 8 reports platform type `jvm`. */
     private fun KotlinCompilation<*>.compilesForAndroid(compileDependencies: Configuration): Boolean =
         platformType == KotlinPlatformType.androidJvm ||
                 compileDependencies.attributes.getAttribute(TARGET_JVM_ENVIRONMENT_ATTRIBUTE)?.name ==
                 TargetJvmEnvironment.ANDROID
 
     /**
-     * The files of [configuration] as the compiler sees them. An Android library publishes an AAR
-     * whose classes reach the compiler through AGP's classes-jar artifact transform, and a
-     * project AAR has no artifact at all without that request. Android compilations therefore
-     * resolve every configuration through the same transform, which leaves plain jars untouched,
-     * so the paths match the ones the compiler reports for a type's origin. Elsewhere the
-     * configuration's own artifacts are the compiler's input.
+     * The files of [configuration] as the compiler sees them. Without the `android-classes-jar`
+     * view, a project AAR has no artifact. The view leaves a plain jar as it is.
      */
     private fun dependencyFiles(configuration: Configuration, android: Boolean): FileCollection =
         if (android) dependencyArtifacts(configuration, android).artifactFiles else configuration
 
-    /** The artifacts behind [dependencyFiles], with the component each one comes from. */
     private fun dependencyArtifacts(configuration: Configuration, android: Boolean): ArtifactCollection =
         if (android) {
             configuration.incoming.artifactView { view ->
@@ -416,12 +381,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             configuration.incoming.artifacts
         }
 
-    /**
-     * Resolves the dependencies inherited by this target's published API elements with the same
-     * variant attributes as its compile classpath. Extending from the outgoing configuration
-     * preserves source-set hierarchies, `api` transitives, project dependencies and
-     * `compileOnlyApi` where the platform supports it.
-     */
+    /** The dependencies of the published API elements of the target, resolved like the compile classpath. */
     private fun Project.transitiveDependenciesFor(
         kotlinCompilation: KotlinCompilation<*>,
         compileDependencies: Provider<Configuration>,
@@ -437,12 +397,6 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         }
     }
 
-    /**
-     * Resolves the `apiWatchdogExemptNonTransitive` bucket with the variant attributes of this
-     * compilation's compile classpath. The resolved files join the transitive paths handed to the
-     * compiler plugin, so the exemption covers the declared dependencies together with everything
-     * they pull in, exactly like Gradle resolves them for the compilation itself.
-     */
     private fun Project.exemptNonTransitiveDependenciesFor(
         kotlinCompilation: KotlinCompilation<*>,
         compileDependencies: Provider<Configuration>,
@@ -452,20 +406,17 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             kotlinCompilation,
             compileDependencies,
             suffix = "ExemptNonTransitiveDependencies",
-            description = "Dependencies whose types the public API of ${kotlinCompilation.target.name} may expose " +
-                    "although they are not published transitively",
+            description = "Dependencies whose types the public API of ${kotlinCompilation.target.name} can expose " +
+                    "although they aren't published transitively",
         ) { configuration ->
             configuration.extendsFrom(exempt.get())
         }
     }
 
     /**
-     * Registers a resolvable view of some dependency declarations through the lens of this
-     * compilation's compile classpath: the same variant attributes select the same artifacts, and
-     * consistent resolution pins every shared module to the version the compilation compiles
-     * against. Without it a conflict-upgraded version on the compile classpath would resolve to a
-     * different jar here, and the compiler plugin, which matches dependency files by path, would
-     * miss it. The pinning also lets an exempt dependency be declared without a version.
+     * Registers a configuration that resolves with the attributes and the versions of the compile
+     * classpath. The compiler plugin matches dependency files by path, so a conflict-upgraded
+     * version on the compile classpath must resolve to the same jar here.
      */
     private fun Project.registerCompilationClasspathView(
         kotlinCompilation: KotlinCompilation<*>,
@@ -489,13 +440,9 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         }
     }
 
-    /** The configuration whose dependencies this compilation publishes to consumers. */
     private fun Project.publishedApiElementsName(kotlinCompilation: KotlinCompilation<*>): String {
-        // Android publishes one API-elements configuration per variant, and its compilation name
-        // is that variant name. The target-level configuration does not carry variant-specific
-        // dependencies such as build-type and flavor `api` declarations. Some non-library Android
-        // variants have no publishable API elements, so retain the target configuration as a safe
-        // fallback for those.
+        // The target-level configuration of Android lacks the build-type and flavor `api`
+        // dependencies. A non-library Android variant has no API elements of its own.
         val androidApiElementsName = "${kotlinCompilation.name}ApiElements"
         return if (
             kotlinCompilation.platformType == KotlinPlatformType.androidJvm &&
@@ -516,52 +463,27 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
     }
 
     internal companion object {
-        /** The name of the task that acknowledges existing diagnostics as backwards-compatibility exemptions. */
         private const val UPDATE_EXEMPTS_TASK_NAME = "updateBackwardsCompatibilityExempts"
-
-        /** The non-mutating module report task whose data variant can be aggregated. */
         private const val GENERATE_EXEMPTS_REPORT_TASK_NAME = "generateBackwardsCompatibilityExemptsReport"
-
-        /** AGP's artifact type for the classes jar of an AAR, which its Kotlin compilations consume. */
         private const val ANDROID_CLASSES_JAR = "android-classes-jar"
-
-        /** The declarable bucket behind `apiWatchdog.exemptNonTransitiveDependencies`. */
         internal const val EXEMPT_NON_TRANSITIVE_CONFIGURATION_NAME = "apiWatchdogExemptNonTransitive"
 
-        /**
-         * The suffix every test compilation that isn't simply called `test` carries. Android
-         * compilations are named after their variant (`debugUnitTest`, `debugAndroidTest`,
-         * `releaseScreenshotTest`), and the Android target of a multiplatform project names them
-         * `hostTest` and `deviceTest`, so there is no single name to recognize them by.
-         */
+        /** Android names a test compilation after its variant, so the suffix is the only common part. */
         private const val TEST_COMPILATION_NAME_SUFFIX = "Test"
 
-        /**
-         * Whether the compilation builds test sources. Test fixtures are deliberately not treated
-         * as tests: they are published alongside the library, so their API is worth watching.
-         */
+        /** Test fixtures are published with the library, so they aren't test compilations. */
         private fun KotlinCompilation<*>.isTestCompilation(): Boolean =
             name == KotlinCompilation.TEST_COMPILATION_NAME || name.endsWith(TEST_COMPILATION_NAME_SUFFIX)
 
-        /** The artifact carrying the standalone fixer tool, published next to this plugin. */
         private const val FIXER_ARTIFACT_ID = "kotlin-library-api-watchdog-exempts-fixer"
-
-        /** Resolvable runtime used by the exemptions update and report tasks. */
         private const val FIXER_CLASSPATH_CONFIGURATION_NAME = "apiWatchdogExemptsFixerClasspath"
-
-        /** Multi-version fixer artifact resolved separately from its matching compiler runtime. */
         private const val FIXER_ARTIFACT_CONFIGURATION_NAME = "apiWatchdogExemptsFixerArtifact"
-
-        /** The standalone Binary Compatibility Validator's plugin id. */
         private const val BCV_PLUGIN_ID = "org.jetbrains.kotlinx.binary-compatibility-validator"
 
-        /** Tasks the Kotlin Gradle plugin registers only once its ABI validation is activated. */
+        /** The Kotlin Gradle plugin registers these tasks only when its ABI validation is active. */
         private val ABI_VALIDATION_TASK_NAMES = listOf("checkKotlinAbi", "checkLegacyAbi")
 
-        /**
-         * Deliberately undocumented escape hatch: `-P` this property to `true` to silence the
-         * missing-explicit-API warning should its detection misjudge a project.
-         */
+        /** An undocumented Gradle property. Set it to `true` when the explicit API detection misjudges a project. */
         private const val SUPPRESS_EXPLICIT_API_WARNING_PROPERTY =
             "org.jetbrains.kotlin.library.api-watchdog.suppressExplicitApiWarning"
 
@@ -570,17 +492,12 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 .map(String::toBoolean)
                 .getOrElse(false)
 
-        /** The version of the Kotlin Gradle plugin applied alongside the watchdog. */
         private fun Project.kotlinPluginVersion(): String =
             plugins.withType(KotlinBasePlugin::class.java)
                 .firstOrNull()?.pluginVersion
-                ?: error("The Kotlin Gradle plugin must be applied alongside library-api-watchdog")
+                ?: error("Apply the Kotlin Gradle plugin together with library-api-watchdog")
 
-        /**
-         * Whether explicit API mode (strict or warning) is enabled through the `kotlin` DSL or a
-         * raw flag in its top-level compiler options. Inspecting the extension keeps compile tasks
-         * unrealized during configuration.
-         */
+        /** Reads the extension, not the compile tasks, so the tasks stay unrealized. */
         private fun Project.hasExplicitApiMode(): Boolean {
             val kotlin = extensions.findByName("kotlin") as? KotlinBaseExtension ?: return false
             val mode = kotlin.explicitApi
@@ -591,16 +508,12 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             }
         }
 
-        /**
-         * Whether binary compatibility validation is configured in this isolated project: the
-         * standalone Binary Compatibility Validator plugin or Kotlin's built-in ABI validation.
-         */
         private fun Project.hasAbiValidation(): Boolean {
             if (pluginManager.hasPlugin(BCV_PLUGIN_ID)) return true
             val kotlin = extensions.findByName("kotlin") as? ExtensionAware ?: return false
-            // Kotlin 2.2 and 2.3 register the DSL as a `kotlin` sub-extension whose `enabled`
-            // flag is the opt-in. The flag is deprecated for removal in the API compiled
-            // against, so it is read reflectively.
+            // Kotlin 2.2 and 2.3 opt in with the `enabled` flag of the `abiValidation`
+            // sub-extension. The compiled-against API deprecates the flag for removal, so
+            // reflection reads it.
             val legacyAbiValidation = kotlin.extensions.findByName("abiValidation")
             if (legacyAbiValidation != null) {
                 val enabled = runCatching {
@@ -608,16 +521,14 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 }.getOrNull()
                 return (enabled as? Provider<*>)?.orNull == true
             }
-            // Kotlin 2.4+ activates ABI validation the moment the `abiValidation` DSL property
-            // is touched (its getter has that side effect, so it must not be called here).
-            // Activation is observed through the tasks it registers instead.
+            // The `abiValidation` getter of Kotlin 2.4 and later activates ABI validation, so
+            // don't call it. The registered tasks show the activation.
             return ABI_VALIDATION_TASK_NAMES.any(tasks.names::contains)
         }
 
         private fun missingExplicitApiWarning(projectPath: String): String = """
             |Project '$projectPath' applies library-api-watchdog but doesn't enable explicit API mode, so the
-            |watchdog registers no checks: there is no declared public API contract to watch. Enable it in
-            |the module's build script:
+            |watchdog registers no checks. Enable it in the build script of the module:
             |
             |    kotlin {
             |        explicitApi()
@@ -650,22 +561,20 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             }.prependIndent("    ")
             return """
             |Project '$projectPath' applies library-api-watchdog but no binary compatibility validation is enabled.
-            |The watchdog reviews the shape of new API declarations, while binary compatibility validation
-            |compares each build against a committed dump of the released API surface and catches accidental
-            |breaking changes to it. Enable the Kotlin Gradle plugin's built-in ABI validation in the module's
-            |build script:
+            |The watchdog checks the shape of new API. Binary compatibility validation compares each build with
+            |a committed dump of the released API and catches a breaking change. Enable the ABI validation of
+            |the Kotlin Gradle plugin in the build script of the module:
             |
             |$setupSnippet
             |
-            |See https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html for the check and
-            |dump tasks and the full configuration reference. On older Kotlin versions, apply the standalone
-            |Binary Compatibility Validator plugin instead: https://github.com/Kotlin/binary-compatibility-validator.
+            |Configuration reference: https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html
+            |On an older Kotlin version, apply the Binary Compatibility Validator plugin instead:
+            |https://github.com/Kotlin/binary-compatibility-validator
             |
             |Disable this suggestion with `apiWatchdog { suggestAbiValidation = false }`.
             """.trimMargin()
         }
 
-        /** Kotlin 2.2 and 2.3 use an `enabled` property instead of an activating DSL function. */
         private fun String.usesLegacyAbiValidationDsl(): Boolean {
             val components = substringBefore('-').split('.')
             val major = components.getOrNull(0)?.toIntOrNull() ?: return false

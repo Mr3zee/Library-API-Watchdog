@@ -22,15 +22,6 @@ import org.jetbrains.kotlin.fir.types.varargElementType
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
 
-/**
- * Reports Boolean value and context parameters of watched functions, including nullable and
- * aliased Booleans. For `vararg` parameters it inspects the declared element type rather than the
- * generated array type.
- *
- * Constructors, constructor functions, overrides, and legacy context receivers are skipped.
- * Exemptions may cover the whole function or one parameter. Return types and properties are not
- * inspected.
- */
 internal class BooleanParameterChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirFunctionChecker(MppCheckerKind.Common) {
@@ -72,18 +63,11 @@ internal class BooleanParameterChecker(
         )
     }
 
-    /**
-     * A constructor function is named after the type it creates - the alias, not its expansion,
-     * when the declared return type is a type alias, since that is the name the call site reads.
-     */
+    /** A constructor function is named after the declared return type, the alias when the source names one. */
     private fun FirNamedFunction.isConstructorFunction(): Boolean =
         returnTypeRef.coneType.abbreviatedTypeOrSelf.classId?.shortClassName == name
 
-    /**
-     * The type users pass arguments as: the fully expanded parameter type, unwrapped to the
-     * declared element type for `vararg` parameters (`vararg flags: Boolean` is typed as
-     * `BooleanArray`, but every argument is a plain Boolean).
-     */
+    /** The type of one argument: the element type for a `vararg` parameter. */
     context(context: CheckerContext)
     private fun FirValueParameter.declaredType(): ConeKotlinType {
         val type = returnTypeRef.coneType.fullyExpandedType()

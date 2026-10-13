@@ -16,22 +16,10 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
 
-/**
- * Reports mutable collection classifiers and arrays found by the [ExposedTypeChecker] signature
- * sweep. Implementations and subtypes of the Kotlin mutable collection interfaces count. Flexible
- * types are inspected through their upper bound.
- *
- * A `vararg` array is handled separately so only a mutable element type is reported.
- */
 internal class MutableCollectionChecker(
     private val session: FirSession,
     private val severities: WatchdogDiagnosticSeverities,
 ) : ExposedTypeChecker(WatchdogClassIds.IntentionallyMutableCollection) {
-    /**
-     * A checker instance belongs to one FIR session. Public signatures repeatedly use the same
-     * classifiers, so retain the hierarchy answer instead of rebuilding the complete transitive
-     * supertype list for every occurrence.
-     */
     private val isMutableCollectionByClassId =
         session.firCachesFactory.createCache<ClassId, Boolean, ConeClassLikeType> { _, type ->
             type.toClassSymbol(session)?.inheritsMutableCollection() == true
@@ -44,10 +32,7 @@ internal class MutableCollectionChecker(
         return classId.shortClassName.takeIf { classId.isMutableCollectionLike(type) }
     }
 
-    /**
-     * A `vararg` parameter receives a defensive copy of the array, so only the declared element
-     * type - the array's type argument - can leak a mutable collection, not the array itself.
-     */
+    /** A `vararg` parameter gets a copy of the array, so only the element type can leak a mutable collection. */
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun findVarargViolation(parameterType: ConeKotlinType): Name? =
         parameterType.typeArguments.firstNotNullOfOrNull { it.type?.findViolation() }
@@ -74,15 +59,10 @@ internal class MutableCollectionChecker(
     }
 
     private fun ClassId.isMutableCollectionLike(type: ConeClassLikeType): Boolean {
-        // Concrete implementations (ArrayList, java.util.HashMap, a hand-written MutableList
-        // subtype, ...) expose the same mutators as the interfaces they implement.
         return this in mutableCollectionTypes || this in arrayTypes || isMutableCollectionByClassId.getValue(this, type)
     }
 
-    /**
-     * Walks direct FIR supertypes so the Boolean query can short-circuit without materializing the
-     * compiler utility's complete hierarchy or its `(symbol, substitutor)` traversal pairs.
-     */
+    /** A hand-written walk stops at the first match, unlike the compiler utility that builds the whole hierarchy. */
     private fun FirClassSymbol<*>.inheritsMutableCollection(): Boolean {
         val pending = ArrayDeque<FirClassSymbol<*>>()
         val visited = hashSetOf<ClassId>()

@@ -9,7 +9,6 @@ import org.jetbrains.kotlin.test.directives.LanguageSettingsDirectives.LANGUAGE
 import org.jetbrains.kotlinx.library.api.watchdog.WatchdogComponentRegistrar
 import org.jetbrains.kotlinx.library.api.watchdog.services.configureWatchdogOptions
 
-/** Registers the watchdog plugin, its option directives, and the language features the test data uses. */
 fun TestConfigurationBuilder.configureWatchdogDiagnosticTest() {
     configurePlugin(WatchdogComponentRegistrar())
     configureWatchdogOptions()

@@ -25,15 +25,8 @@ import org.jetbrains.kotlin.fir.unwrapFakeOverrides
 import org.jetbrains.kotlin.name.Name
 
 /**
- * Reports watched overloads whose shared parameter names have different relative orders. Members
- * visible in one class, top-level functions in one package, constructors of one class, and
- * extensions alongside members of their receiver are compared. Dependencies are excluded.
- *
- * Both declarations in a local inconsistent pair report. For inherited-member and extension-member
- * pairs, only the declaration introduced alongside the existing members reports. Overrides remain
- * comparison references but do not report. Exempt declarations are excluded as both reporters and
- * references. Only value parameters are compared because context parameters are resolved
- * implicitly rather than passed in the call's argument list.
+ * Reports an overload whose shared parameter names have a different relative order than in a
+ * sibling. Context parameters aren't compared, because the call site doesn't pass them.
  */
 internal class OverloadParameterOrderChecker(
     private val severities: WatchdogDiagnosticSeverities,
@@ -80,17 +73,8 @@ internal class OverloadParameterOrderChecker(
     }
 
     /**
-     * The callables this declaration overloads: same-named functions visible in the class -
-     * declared and inherited alike, since users see them side by side - or the module's
-     * top-level functions of the same package, or the sibling constructors of the class, which
-     * are not inherited. An extension is called like a member of the type it extends, so the
-     * same-named members of its receiver class join the list, wherever the extension itself is
-     * declared. A receiver that is no class - a type parameter without a class bound, say -
-     * contributes nothing.
-     *
-     * Inherited members surface as fake overrides and are unwrapped to the original declaration,
-     * whose source, visibility, and exemption the sibling gate inspects. Members originating in
-     * dependencies fall out there, having no real source.
+     * The same-named members of the receiver class of an extension are siblings too, because a
+     * call to the extension looks like a member call.
      */
     context(context: CheckerContext)
     private inline fun FirFunction.forEachOverloadSibling(
@@ -139,11 +123,7 @@ internal class OverloadParameterOrderChecker(
         }
     }
 
-    /**
-     * Reports the first pair of names shared by both parameter lists whose relative order
-     * differs, in [current]'s order, and returns true. Returns false without reporting when
-     * the shared names are ordered consistently.
-     */
+    /** Reports the first swapped pair of shared names and returns true. */
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun reportSwappedPair(
         declaration: FirFunction,

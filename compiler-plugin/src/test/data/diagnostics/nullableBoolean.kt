@@ -6,13 +6,9 @@ package foo.bar
 
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyNullableBoolean
 
-// Nullable Booleans in public signatures: should warn.
-
 public fun probe(): <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!> = null
 
 public fun tristate(flag: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!>) {}
-
-// Context parameters are signature parameters too, whether they belong to a function or property.
 
 context(state: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!>)
 public fun contextualFunction(): String = state.toString()
@@ -24,18 +20,15 @@ public val lastOutcome: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!> = null
 
 public var cachedDecision: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!> = null
 
-// Unlike plain Boolean parameters, constructors are checked too: a stored three-state flag is
-// as opaque to its readers as a passed one.
+// Unlike BOOLEAN_PARAMETER_PUBLIC_API, the check covers constructors.
 
 public class Holder(public val checked: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!>)
 
 public class Sink(initial: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!>)
 
-// @PublishedApi declarations do not expose their types to source callers.
+// `@PublishedApi` doesn't make a declaration callable in source.
 @PublishedApi
 internal fun published(): Boolean? = null
-
-// The nullable Boolean may hide in a type argument, behind a type alias, or in a function type.
 
 public fun outcomes(): <!NULLABLE_BOOLEAN_PUBLIC_API!>List<Boolean?><!> = emptyList()
 
@@ -51,33 +44,23 @@ public fun onDecision(callback: <!NULLABLE_BOOLEAN_PUBLIC_API!>(Boolean?) -> Uni
 
 public fun decider(): <!NULLABLE_BOOLEAN_PUBLIC_API!>() -> Boolean?<!> = { null }
 
-// A vararg parameter still passes the three-state values one by one.
-
 public fun varargFlags(vararg flags: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!>) { }
-
-// A nullable bound constrains every instantiation of the type parameter to the same
-// three-state values as a direct mention of the bound.
 
 public fun <T : <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!>> narrow(value: T): T = value
 
 public class Tri<T : <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!>>
 
-// ...unless the type parameter (or its owner) acknowledges the nullable bound.
-
 public fun <@IntentionallyNullableBoolean C : Boolean?> pick(value: C): C = value
-
-// A type-use exemption covers the annotated type and everything nested in it.
 
 public fun snapshots(): List<@IntentionallyNullableBoolean Boolean?> = emptyList()
 
 public fun buffered(): @IntentionallyNullableBoolean Boolean? = null
 
-// Extensions on nullable Booleans provide functionality for values the user already holds -
-// typically remedial helpers: no warning on the receiver.
+// An extension receiver isn't reported.
 
 public fun Boolean?.orFalse(): Boolean = this ?: false
 
-// Overrides repeat the signature fixed by the overridden declaration, which is reported instead.
+// An override isn't reported.
 
 public interface Probe {
     public fun read(): <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!>
@@ -86,8 +69,6 @@ public interface Probe {
 public class DefaultProbe : Probe {
     override fun read(): Boolean? = null
 }
-
-// Deliberately nullable Booleans: no warning.
 
 @IntentionallyNullableBoolean
 public fun legacyProbe(): Boolean? = null
@@ -106,15 +87,11 @@ public class Settings(@IntentionallyNullableBoolean public val checked: Boolean?
 @IntentionallyNullableBoolean
 public val acknowledgedOutcome: Boolean? = null
 
-// Non-nullable Booleans are two honest states: no warning.
-
 public fun isReady(): Boolean = true
 
 public class Session {
     public var active: Boolean = false
 }
-
-// Not visible outside the library: no warning.
 
 internal fun internalProbe(): Boolean? = null
 

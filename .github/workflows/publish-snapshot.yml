@@ -10,8 +10,7 @@ permissions:
 
 jobs:
   publish:
-    # A macOS host can publish the Apple annotation variants as well as the cross-compiled
-    # Linux, Windows, Android Native, JVM, JS, and Wasm variants.
+    # Only a macOS host can publish the Apple annotation variants.
     runs-on: macos-latest
     steps:
       - name: Checkout repository

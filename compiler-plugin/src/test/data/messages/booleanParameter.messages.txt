@@ -1,11 +1,11 @@
-/booleanParameter.kt:10:19: error: BOOLEAN_PARAMETER_PUBLIC_API
+/booleanParameter.kt:7:19: error: BOOLEAN_PARAMETER_PUBLIC_API
     The function `doWork` takes the `Boolean` parameter `optimizeForSpeed`, and a bare `true` or `false` at the call site is ambiguous. Declare a named function for each mode, or replace the parameter with an `enum class`.
 
     If this is intended, apply `@IntentionallyBooleanParameter` to the function or Boolean parameter.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/boolean-parameter-public-api
 
-/booleanParameter.kt:12:9: error: BOOLEAN_PARAMETER_PUBLIC_API
+/booleanParameter.kt:9:9: error: BOOLEAN_PARAMETER_PUBLIC_API
     The function `trace` takes the `Boolean` parameter `_`, and a bare `true` or `false` at the call site is ambiguous. Declare a named function for each mode, or replace the parameter with an `enum class`.
 
     If this is intended, apply `@IntentionallyBooleanParameter` to the function or Boolean parameter.

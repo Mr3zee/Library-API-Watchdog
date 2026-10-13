@@ -4,15 +4,12 @@
 
 package foo.bar
 
-// Message parameters: the declaration kind and its name.
-
 public fun probe(): <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!> = null
 
 public val lastOutcome: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!> = null
 
 public fun tristate(flag: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!>) {}
 
-// An unnamed context parameter is named `_` in the message.
 context(_: <!NULLABLE_BOOLEAN_PUBLIC_API!>Boolean?<!>)
 public fun trace() {}
 

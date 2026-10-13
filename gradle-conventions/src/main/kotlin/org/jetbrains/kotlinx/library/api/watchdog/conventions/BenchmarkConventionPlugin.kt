@@ -23,11 +23,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-/**
- * Configures the manual JMH benchmarks in `src/benchmark`. The source set is associated with
- * main so isolated benchmarks can construct internal checkers directly, while whole-compilation
- * benchmarks load the dev kit's multi-version jar through `-Xplugin` like a real compilation.
- */
 class BenchmarkConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
@@ -40,14 +35,13 @@ class BenchmarkConventionPlugin : Plugin<Project> {
             val benchmarkCompilation =
                 kotlinTarget.compilations.create("benchmark") {
                     associateWith(mainCompilation)
-                    // The dev kit generates PluginInfo in its entry-point compilation. Benchmarks
-                    // use that canonical plugin ID when invoking the compiler programmatically.
+                    // The dev kit generates `PluginInfo` in the entry-point compilation.
                     associateWith(entryPointCompilation)
                     defaultSourceSet.kotlin.srcDir("src/benchmark/kotlin")
                 }
             configurations.named(checkNotNull(benchmarkCompilation.runtimeDependencyConfigurationName)) {
-                // Custom compilations do not inherit the dev kit's compiler-version attribute,
-                // so their runtime would otherwise contain unflattened multi-release artifacts.
+                // A custom compilation doesn't inherit the compiler-version attribute of the dev kit.
+                // Without it the runtime has unflattened multi-release artifacts.
                 val mainRuntime =
                     configurations.getByName(
                         checkNotNull(mainCompilation.runtimeDependencyConfigurationName),
@@ -55,9 +49,7 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                 attributes.addAllLater(mainRuntime.attributes)
             }
 
-            // What the synthetic corpus compiles against: the annotations library plus its
-            // transitive dependencies, notably the Kotlin standard library. This is separate
-            // from the benchmark's own classpath.
+            // The classpath the corpus compiles against, separate from the classpath of the benchmark.
             val benchmarkCorpusClasspath: Configuration = configurations.create("benchmarkCorpusClasspath") {
                 isCanBeConsumed = false
                 attributes {
@@ -120,7 +112,6 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                 destinationDirectory.set(benchmarkGeneratedClasses)
             }
 
-            /** Passes the plugin jar and the corpus classpath into a benchmark JVM. */
             fun configureWatchdogBenchmarkInputs(task: JavaExec) {
                 val pluginJar: Provider<RegularFile> =
                     tasks.named(kotlinTarget.artifactsTaskName, Jar::class.java).flatMap { it.archiveFile }

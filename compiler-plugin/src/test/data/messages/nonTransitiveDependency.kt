@@ -5,13 +5,10 @@
 // TRANSITIVE_DEPENDENCY_PATHS: nonTransitiveDependency.deps/shared
 // DEPENDENCY_DECLARATIONS: nonTransitiveDependency.deps/models implementation "com.example:models:1.0"
 
-// The `lib` module stands in for three dependencies. The roots under `nonTransitiveDependency.deps`
-// hold an empty `.class` file per type, which is all the checker looks up. The `DIAGNOSTICS`
-// directive doesn't cover a dependency module, so its declarations are documented and exempt.
-//
-// Message parameters: every signature position kind, the declaration name, the exposed type, and
-// the exemption snippet, with the declared `models` dependency or the placeholder of the
-// undeclared `tools` dependency.
+// The `lib` module declares the types of three dependencies. The roots under
+// `nonTransitiveDependency.deps` hold an empty `.class` file for each type, which is all the
+// checker reads. The `DIAGNOSTICS` directive doesn't cover a dependency module, so its
+// declarations are documented and exempt.
 
 // MODULE: lib
 // FILE: models.kt

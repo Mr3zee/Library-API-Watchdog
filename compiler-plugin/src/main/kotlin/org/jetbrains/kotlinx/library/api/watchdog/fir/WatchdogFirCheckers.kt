@@ -20,17 +20,9 @@ import org.jetbrains.kotlin.fir.moduleData
 import org.jetbrains.kotlin.platform.jvm.isJvm
 
 /**
- * The checkers guard a library's public API surface, so they only run in modules compiled with
- * [explicit API mode](https://kotlinlang.org/docs/api-guidelines-simplicity.html#use-explicit-api-mode)
- * (`kotlin { explicitApi() }` / `-Xexplicit-api`), in either `strict` or `warning` variant.
- *
- * A checker whose every diagnostic is configured to [WatchdogSeverity.NONE] is not registered at
- * all, so a disabled check costs nothing per declaration.
- *
- * For multiplatform declarations, contract-shape checks report on `expect` declarations,
- * implementation and JVM checks report on `actual` declarations, and the latter inherit matching
- * `expect` annotations. [ExemptionExplanationChecker] is occurrence-based and validates annotations
- * wherever they are written.
+ * Registers the checkers in a module compiled with explicit API mode, `strict` or `warning`.
+ * A contract-shape check reports on the `expect` declaration. An implementation or JVM check
+ * reports on the `actual` declaration and accepts annotations of the matched `expect`.
  */
 class WatchdogFirCheckers internal constructor(
     session: FirSession,
@@ -48,15 +40,11 @@ class WatchdogFirCheckers internal constructor(
         private fun <C : Any> C.unlessDisabled(vararg diagnostics: ConfigurableWatchdogDiagnostic<*>): C? =
             takeIf { enabled && diagnostics.any(severities::isEnabled) }
 
-        // The Java-interop checks guard how the compiled API looks to Java sources - a concern
-        // with no counterpart on other backends, so they only register for JVM compilations.
         private fun <C : Any> C.onlyOnJvm(): C? = takeIf { session.moduleData.platform.isJvm() }
 
-        /** With a [recorder], every checker also records its diagnostics for external tooling. */
         private fun <D : FirDeclaration> Set<FirDeclarationChecker<D>>.recorded(): Set<FirDeclarationChecker<D>> =
             if (recorder == null) this else mapTo(mutableSetOf()) { RecordingDeclarationChecker(it, recorder) }
 
-        /** Filters configured annotation rules before diagnostics reach recording and reporting. */
         private fun <D : FirDeclaration> Set<FirDeclarationChecker<D>>.excludingConfiguredAnnotations():
                 Set<FirDeclarationChecker<D>> =
             if (annotationBasedExclusions.isEmpty) this else mapTo(mutableSetOf()) {
@@ -76,12 +64,9 @@ class WatchdogFirCheckers internal constructor(
                 .unlessDisabled(WatchdogDiagnostics.DSL_MARKER_NOOP_TARGET, WatchdogDiagnostics.DSL_MARKER_WITHOUT_EXPLICIT_TARGETS),
         ).excludingConfiguredAnnotations().recorded()
 
-        // These checkers watch every declaration kind, not just classes. MutableCollectionChecker
-        // is one of them because it also inspects class-level type parameter bounds.
         override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> = setOfNotNull(
             UndocumentedApiChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API),
-            // Not user-configurable. Skipped only by the adoption task.
             ExemptionExplanationChecker.declarationChecker
                 .takeIf { enabled && !updatingBackwardsCompatibilityExempts },
             MutableCollectionChecker(session, severities)
@@ -90,13 +75,12 @@ class WatchdogFirCheckers internal constructor(
                 .unlessDisabled(WatchdogDiagnostics.PAIR_OR_TRIPLE_PUBLIC_API),
             NullableBooleanChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.NULLABLE_BOOLEAN_PUBLIC_API),
-            InternalApiTypeExposureChecker() // Skipped only while the adoption task collects fixable diagnostics.
+            InternalApiTypeExposureChecker()
                 .takeIf { enabled && publicTypeWithInternalApiEnabled && !updatingBackwardsCompatibilityExempts },
             dependencyExposure?.let { NonTransitiveDependencyChecker(session, it) }
                 ?.takeIf { enabled && !updatingBackwardsCompatibilityExempts },
         ).excludingConfiguredAnnotations().recorded()
 
-        // Dispatched to named functions and constructors alike: both declare parameter lists.
         override val functionCheckers: Set<FirFunctionChecker> = setOfNotNull(
             BooleanParameterChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.BOOLEAN_PARAMETER_PUBLIC_API),
@@ -122,10 +106,8 @@ class WatchdogFirCheckers internal constructor(
             FunctionTypeAliasChecker(severities).unlessDisabled(WatchdogDiagnostics.FUNCTION_TYPE_ALIAS_PUBLIC_API),
         ).excludingConfiguredAnnotations().recorded()
 
-        // Dispatched to every callable: functions, properties, accessors, and value parameters.
         override val callableDeclarationCheckers: Set<FirCallableDeclarationChecker> = setOfNotNull(
             DslMarkerTypePositionChecker(severities).unlessDisabled(WatchdogDiagnostics.DSL_MARKER_NOOP_TYPE_POSITION),
-            // Watches properties besides functions: inline accessors are inlined the same way.
             InlineFunctionLogicChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.INLINE_FUNCTION_WITH_LOGIC),
             MangledJvmNameChecker(severities)

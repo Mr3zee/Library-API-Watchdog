@@ -11,8 +11,6 @@ import kotlin.reflect.KClass
 import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyInlinedLogic
 
-// The non-inline internals the thin wrappers below delegate to.
-
 @PublishedApi
 internal fun logImpl(tag: String, message: String) {}
 
@@ -53,8 +51,8 @@ public object Registry {
     internal fun lookup(name: String, type: KClass<*>): Any? = null
 }
 
-// Thin wrappers: a single delegating call built from parameter reads, literals, `this`, and
-// nested non-inline calls. No warning.
+// A thin wrapper: one delegating call built from parameter reads, literals, `this`, and
+// non-inline calls.
 
 public inline fun log(tag: String, message: String): Unit = logImpl(tag, message)
 
@@ -82,22 +80,20 @@ public inline fun newBuffer(value: String): Any = StringBuilder(value)
 
 public inline fun noop() {}
 
-// The wrapper resolves the reified type argument and hands it over. `as` and `as?` only narrow
-// the delegate's result. No warning.
+// A cast of the result is thin.
 
 public inline fun <reified T> lookup(name: String): T = Registry.lookup(name, T::class) as T
 
 public inline fun <reified T> find(name: String): T? = Registry.lookup(name, T::class) as? T
 
-// Calling the wrapper's own functional parameter executes caller code rather than library code.
-// When called from a suspend function, direct in-place invocation also lets a non-suspend lambda
-// inherit that call site's suspend context. No warning.
+// A call of the own functional parameter runs caller code. In a suspend caller, the lambda
+// inherits the suspend context.
 
 public inline fun <R> once(block: () -> R): R = block()
 
 public suspend fun suspensionPropagatesFromCallSite(): String = once { awaitImpl() }
 
-// A contract doesn't count against the single delegating statement. No warning.
+// A contract doesn't count as a statement.
 
 @OptIn(ExperimentalContracts::class)
 public inline fun <R> measured(block: () -> R): R {
@@ -105,12 +101,9 @@ public inline fun <R> measured(block: () -> R): R {
     return block()
 }
 
-// A lambda that only forwards to the inlined parameter is the shape a crossinline wrapper
-// needs. No warning.
+// A lambda that only forwards the inlined parameter is thin.
 
 public inline fun transact(crossinline work: () -> Unit): Unit = transactImpl { work() }
-
-// Branching is logic compiled into every user binary: should warn.
 
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>choose<!>(value: Int): Int = if (value < 0) negImpl() else posImpl()
 
@@ -119,8 +112,6 @@ public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>pick<!>(mode: Int): Int = when (
     else -> posImpl()
 }
 
-// Null handling is branching too: should warn.
-
 public inline fun <reified T> <!INLINE_FUNCTION_WITH_LOGIC!>lookupOrDefault<!>(name: String, default: T): T =
     Registry.lookup(name, T::class) as? T ?: default
 
@@ -128,29 +119,19 @@ public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>lengthOrZero<!>(tag: String?): I
 
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>forcedLength<!>(tag: String): Int = lengthOrNull(tag)!!
 
-// Multiple statements: should warn.
-
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>logTwice<!>(tag: String, message: String) {
     logImpl(tag, message)
     logImpl(tag, message)
 }
-
-// A local variable: should warn.
 
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>cachedLength<!>(tag: String): Int {
     val cached = length(tag)
     return cached
 }
 
-// Operators compute in the user binary: should warn.
-
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>doubled<!>(value: Int): Int = value + value
 
-// A string template builds the string in the user binary: should warn.
-
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>greeting<!>(name: String): String = "Hello, $name"
-
-// try/catch: should warn.
 
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>guardedLength<!>(tag: String): Int = try {
     length(tag)
@@ -158,19 +139,15 @@ public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>guardedLength<!>(tag: String): I
     0
 }
 
-// Delegating to another inline function drags its body into the user just as transitively:
-// should warn.
+// A call of an inline function of this library is logic.
 
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>onceMore<!>(block: () -> Int): Int = once(block)
-
-// A lambda literal with logic is regenerated into the user binary: should warn.
 
 public inline fun <!INLINE_FUNCTION_WITH_LOGIC!>transactChecked<!>(crossinline work: () -> Unit): Unit = transactImpl {
     if (ready()) work()
 }
 
-// A @PublishedApi internal inline function backs public wrappers, so its body reaches user
-// binaries transitively: should warn.
+// A `@PublishedApi` inline declaration is checked too.
 
 @PublishedApi
 internal inline fun <!INLINE_FUNCTION_WITH_LOGIC!>publishedWithLogic<!>(value: Int): Int {
@@ -178,26 +155,17 @@ internal inline fun <!INLINE_FUNCTION_WITH_LOGIC!>publishedWithLogic<!>(value: I
     return squared
 }
 
-// Acknowledged inlined logic: no warning.
-
 @IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)
 public inline fun clamped(value: Int): Int = if (value < 0) 0 else value
-
-// Not visible outside the library: no warning.
 
 internal inline fun internalChoose(value: Int): Int = if (value < 0) negImpl() else posImpl()
 
 private inline fun privateChoose(value: Int): Int = if (value < 0) negImpl() else posImpl()
 
-// Only inline bodies freeze into users. A non-inline function or accessor keeps its logic in
-// the library binary. No warning.
-
 public fun regularChoose(value: Int): Int = if (value < 0) negImpl() else posImpl()
 
 public val computedInLibrary: Int
     get() = negImpl() + posImpl()
-
-// Inline property accessors play by the same rules as inline functions.
 
 @PublishedApi
 internal var storedLimit: Int = 0
@@ -210,9 +178,6 @@ internal val storedTagOrNull: String? = null
 
 @PublishedApi
 internal fun refreshNoop() {}
-
-// Thin accessors: reads and writes of a non-inline property, delegating calls, `this`, casts,
-// and callable references. No warning.
 
 public inline var limit: Int
     get() = storedLimit
@@ -241,9 +206,6 @@ public inline var tagged: String
     get() = storedTag
     set(value) = logImpl("tag", value)
 
-// Logic in an inline accessor is compiled into users like any inline function body: should
-// warn - whether the modifier sits on the property or on the single accessor.
-
 public inline val <!INLINE_FUNCTION_WITH_LOGIC!>threshold<!>: Int
     get() = 1 + 1
 
@@ -256,16 +218,13 @@ public inline var <!INLINE_FUNCTION_WITH_LOGIC!>clampedLimit<!>: Int
         storedLimit = if (value < 0) 0 else value
     }
 
-// Only the inline accessor of a mixed pair is reported: the non-inline getter keeps its logic
-// in the library binary.
+// Only the inline setter is reported.
 
 public var <!INLINE_FUNCTION_WITH_LOGIC!>mixedAccessors<!>: Int
     get() = negImpl() + posImpl()
     inline set(value) {
         storedLimit = if (value < 0) 0 else value
     }
-
-// Branching: should warn.
 
 public inline val <!INLINE_FUNCTION_WITH_LOGIC!>statusSign<!>: Int
     get() = if (ready()) posImpl() else negImpl()
@@ -276,8 +235,6 @@ public inline val <!INLINE_FUNCTION_WITH_LOGIC!>modeSign<!>: Int
         else -> posImpl()
     }
 
-// Null handling is branching too: should warn.
-
 public inline val <!INLINE_FUNCTION_WITH_LOGIC!>knownLength<!>: Int
     get() = lengthOrNull("known") ?: 0
 
@@ -286,8 +243,6 @@ public inline val <!INLINE_FUNCTION_WITH_LOGIC!>forcedKnownLength<!>: Int
 
 public inline val <!INLINE_FUNCTION_WITH_LOGIC!>taggedLength<!>: Int?
     get() = storedTagOrNull?.length
-
-// Multiple statements and local variables: should warn.
 
 public inline val <!INLINE_FUNCTION_WITH_LOGIC!>loggedLength<!>: Int
     get() {
@@ -308,12 +263,8 @@ public inline val <!INLINE_FUNCTION_WITH_LOGIC!>cachedThreshold<!>: Int
         return cached
     }
 
-// A string template builds the string in the user binary: should warn.
-
 public inline val <!INLINE_FUNCTION_WITH_LOGIC!>limitLine<!>: String
     get() = "limit: $storedLimit"
-
-// try/catch: should warn.
 
 public inline val <!INLINE_FUNCTION_WITH_LOGIC!>guardedThreshold<!>: Int
     get() = try {
@@ -322,13 +273,10 @@ public inline val <!INLINE_FUNCTION_WITH_LOGIC!>guardedThreshold<!>: Int
         0
     }
 
-// Calling an inline function from an accessor drags its body into the user too: should warn.
-
 public inline val <!INLINE_FUNCTION_WITH_LOGIC!>onceThreshold<!>: Int
     get() = once { 1 }
 
-// Reading through an inline getter or writing through an inline setter inlines that accessor's
-// body as well: should warn.
+// A read or a write through an inline accessor is a call of it.
 
 public inline val <!INLINE_FUNCTION_WITH_LOGIC!>relayedThreshold<!>: Int
     get() = threshold
@@ -339,14 +287,9 @@ public inline var <!INLINE_FUNCTION_WITH_LOGIC!>relayedLimit<!>: Int
         clampedLimit = value
     }
 
-// A @PublishedApi internal inline accessor reaches user binaries transitively: should warn.
-
 @PublishedApi
 internal inline val <!INLINE_FUNCTION_WITH_LOGIC!>publishedThreshold<!>: Int
     get() = 5 + 5
-
-// Acknowledged on the property, covering both accessors, and non-public inline accessors: no
-// warning.
 
 @IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)
 public inline val fastThreshold: Int

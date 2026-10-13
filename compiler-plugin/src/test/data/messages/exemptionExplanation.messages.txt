@@ -1,19 +1,19 @@
-/exemptionExplanation.kt:13:1: error: EXEMPTION_WITHOUT_EXPLANATION
+/exemptionExplanation.kt:11:1: error: EXEMPTION_WITHOUT_EXPLANATION
     The `@IntentionallyOpen` exemption doesn't explain why it is applied: the reason `OTHER` is generic, and the `description` is empty. Pass a self-explanatory reason (`FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`), or explain the exemption in the `description`.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/exemption-without-explanation
 
-/exemptionExplanation.kt:16:1: error: EXEMPTION_WITHOUT_EXPLANATION
+/exemptionExplanation.kt:14:1: error: EXEMPTION_WITHOUT_EXPLANATION
     The `@IntentionallyExhaustive` exemption doesn't explain why it is applied: the reason `INTEROP` is generic, and the `description` is empty. Pass a self-explanatory reason (`FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`), or explain the exemption in the `description`.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/exemption-without-explanation
 
-/exemptionExplanation.kt:21:1: error: EXEMPTION_WITHOUT_EXPLANATION
+/exemptionExplanation.kt:19:1: error: EXEMPTION_WITHOUT_EXPLANATION
     The `@IntentionallyExhaustive` exemption doesn't explain why it is applied: the reason `EXTERNAL_CONTRACT` is generic, and the `description` is empty. Pass a self-explanatory reason (`FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`), or explain the exemption in the `description`.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/exemption-without-explanation
 
-/exemptionExplanation.kt:26:1: error: EXEMPTION_WITHOUT_EXPLANATION
+/exemptionExplanation.kt:24:1: error: EXEMPTION_WITHOUT_EXPLANATION
     The `@IntentionallyExhaustive` exemption doesn't explain why it is applied: the reason `IGNORE_JAVA_INTEROP` is generic, and the `description` is empty. Pass a self-explanatory reason (`FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`), or explain the exemption in the `description`.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/exemption-without-explanation

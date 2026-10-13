@@ -32,13 +32,11 @@ kotlin {
         }
     }
 
-    // Exercise the compiler-fixture integration test against every generated Kotlin target.
     pluginDevKit.testAgainst.configureEach { test { dependsOn(compilerIntegrationTest) } }
 }
 
-// These are regular unit tests. Unlike compiler-plugin suites, they do not generate Java runners.
-// The dev kit's GenerateTestsTask type is internal, so the tasks are matched by name,
-// see https://github.com/Kotlin/compiler-plugin-dev-kit/issues/62.
+// The tests need no generated runners. The `GenerateTestsTask` type of the dev kit is internal,
+// so the name selects the tasks: https://github.com/Kotlin/compiler-plugin-dev-kit/issues/62.
 tasks.matching { it.name.startsWith("generateTests") }.configureEach { enabled = false }
 
 tasks.withType<Test>().configureEach {

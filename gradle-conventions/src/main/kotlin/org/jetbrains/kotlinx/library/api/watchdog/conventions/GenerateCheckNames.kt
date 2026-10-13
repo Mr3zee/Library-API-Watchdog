@@ -12,10 +12,6 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 
-/**
- * Generates the `WatchdogChecks` object: one `const val` per diagnostic name in the shared
- * `diagnostics.json`, for build scripts to pass to `apiWatchdog.ignore` instead of a string literal.
- */
 abstract class GenerateCheckNames : DefaultTask() {
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)

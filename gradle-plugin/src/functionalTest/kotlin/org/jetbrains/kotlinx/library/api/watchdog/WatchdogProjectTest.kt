@@ -49,7 +49,6 @@ class WatchdogProjectTest {
 
         val result = project.buildAndFail("build")
         result.assertErrors(*singleModuleDiagnostics.toTypedArray())
-        // The filled-in parameter values.
         result.assertError("Poko (https://github.com/drewhamilton/Poko)")
         result.assertError(
             "Poko (https://mr3zee.github.io/Library-API-Watchdog/checks/" +
@@ -85,8 +84,7 @@ class WatchdogProjectTest {
 
     @Test
     fun severityIsConfiguredPerDiagnostic() {
-        // The compiler swallows regular warnings when a compilation fails with errors, so warning
-        // reporting is forced to observe the demoted diagnostic next to the remaining errors.
+        // The compiler omits warnings when the compilation fails, so the flag forces them.
         val project = jvmProject {
             buildScript("""kotlin { compilerOptions { freeCompilerArgs.add("-Xreport-all-warnings") } }""")
             apiWatchdog { severity(WARNING, UNDOCUMENTED_PUBLIC_API) }
@@ -100,8 +98,6 @@ class WatchdogProjectTest {
 
     @Test
     fun disabledJavaInteropGroupSilencesAllItsDiagnostics() {
-        // The off-switch silences every Java-interop diagnostic at once and wins over the
-        // individual severities inside the group.
         val project = jvmProject {
             apiWatchdog {
                 javaInterop {
@@ -113,9 +109,7 @@ class WatchdogProjectTest {
         }
 
         val result = project.buildAndFail("build")
-        // The non-interop diagnostics still fail the build...
         result.assertErrors(UNDOCUMENTED_PUBLIC_API)
-        // ...while the whole group is off, the explicitly set severity included.
         result.assertNotReported(*Diagnostic.entries.filter { it.javaInterop }.toTypedArray())
     }
 
@@ -135,9 +129,7 @@ class WatchdogProjectTest {
         }
 
         val result = project.buildAndFail("build")
-        // The remaining diagnostics still fail the build...
         result.assertErrors(OPEN_API_WITHOUT_SUBCLASS_OPT_IN, EXHAUSTIVE_PUBLIC_API)
-        // ...while the disabled ones are not reported at all.
         result.assertNotReported(
             UNDOCUMENTED_PUBLIC_API,
             STATEFUL_CLASS_WITHOUT_EQUALS,
@@ -169,9 +161,7 @@ class WatchdogProjectTest {
 
     @Test
     fun unexplainedExemptionIsAlwaysAnError() {
-        // The checker that honors this type-use exemption is disabled, so the remaining error
-        // proves EXEMPTION_WITHOUT_EXPLANATION is enforced independently and ignores severity
-        // configuration: the extension deliberately offers no property for it.
+        // The checker that reads the exemption is off, so the error can't come from it.
         val project = jvmProject {
             apiWatchdog { severity(NONE, MUTABLE_COLLECTION_PUBLIC_API) }
             source(unexplainedExemptionFile)
@@ -222,8 +212,6 @@ class WatchdogProjectTest {
 
     @Test
     fun testSourcesAreNotChecked() {
-        // Test sources are not published, so they carry no API contract to watch. The same
-        // declaration in main sources fails the build, see failsWithErrorsOnUnacknowledgedApiByDefault.
         val project = jvmProject {
             source(cleanMainFile)
             testOnlySource()
@@ -234,8 +222,6 @@ class WatchdogProjectTest {
 
     @Test
     fun testSourcesAreNotCheckedWhenExplicitApiModeIsForcedOnEveryCompilation() {
-        // A raw compiler flag reaches test compilations too, unlike `kotlin { explicitApi() }`,
-        // which the Kotlin Gradle plugin deliberately keeps off for them.
         val project = jvmProject {
             explicitApi = false
             buildScript(EXPLICIT_API_FLAG)
@@ -248,8 +234,6 @@ class WatchdogProjectTest {
 
     @Test
     fun multiplatformTestSourcesAreNotChecked() {
-        // Every multiplatform target compiles the shared `commonTest` source set along with its
-        // own, so the exclusion has to hold for both. The raw flag is the strict case here too.
         val project = kmpProject {
             explicitApi = false
             buildScript(EXPLICIT_API_FLAG)
@@ -409,11 +393,8 @@ class WatchdogProjectTest {
 
     @Test
     fun compilationsNamedAfterATestVariantAreNotChecked() {
-        // Only the Kotlin/JVM and multiplatform targets have a compilation literally called
-        // `test`. Android names them after the variant (`debugUnitTest`, `debugAndroidTest`), the
-        // Android target of a multiplatform project uses `hostTest` and `deviceTest`, and custom
-        // compilations follow the same shape. A locally declared one stands in for all of them
-        // without needing an Android SDK. The SDK-gated Android tests below build the real names.
+        // A local compilation has the shape of the Android names (`debugUnitTest`, `hostTest`)
+        // and needs no Android SDK.
         val project = jvmProject {
             explicitApi = false
             buildScript(
@@ -440,11 +421,6 @@ class WatchdogProjectTest {
     fun androidTestSourceCompilationsAreNotCheckedWithBuiltInKotlin() = androidTestSourceCompilationsCase(AGP9)
 
     private fun androidTestSourceCompilationsCase(agp: AgpVersion) {
-        // The real Android names for the stand-in above: unit tests compile as `debugUnitTest`
-        // and instrumented tests as `debugAndroidTest`. The raw flag reaches both because
-        // project-level compiler options apply to every compilation, so only the plugin's own
-        // exclusion keeps them silent. publicTypeFromImplementationDependencyIsAnErrorInAndroidLibraries
-        // proves the main compilations of the same project shape are checked.
         val project = androidLibrary(agp) {
             explicitApi = false
             kotlin("""compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") }""")
@@ -466,9 +442,6 @@ class WatchdogProjectTest {
     fun legacyMultiplatformAndroidTargetMainSourcesAreChecked() = multiplatformAndroidTargetMainSourcesCase(LEGACY)
 
     private fun multiplatformAndroidTargetMainSourcesCase(target: KmpAndroidTarget) {
-        // The control for the test-source cases below: the Android target's main compilation of
-        // the same project shape reports its diagnostics. The legacy target names it after the
-        // variant, so the plugin sees `debug` instead of `main`.
         val project = kmpAndroidProject(target) {
             source(cleanMainFile)
             unexemptedOpenClassSource("androidMain", "AndroidOnlyApi")
@@ -488,9 +461,6 @@ class WatchdogProjectTest {
     fun legacyMultiplatformAndroidTargetTestSourcesAreNotChecked() = multiplatformAndroidTargetTestSourcesCase(LEGACY)
 
     private fun multiplatformAndroidTargetTestSourcesCase(target: KmpAndroidTarget) {
-        // The Android target names its unit test compilation `hostTest`, or `debugUnitTest` for
-        // the legacy target, and compiles the shared test sources along with its own. The raw
-        // flag is the strict case here too, see multiplatformTestSourcesAreNotChecked.
         val project = kmpAndroidProject(target) {
             explicitApi = false
             buildScript(EXPLICIT_API_FLAG)
@@ -504,8 +474,6 @@ class WatchdogProjectTest {
 
     @Test
     fun internalAnnotationMarkerExemptsAcrossModules() {
-        // The marker annotation lives in `:lib`, so the consuming root module reads the
-        // @InternalAnnotationMarker meta-annotation from the compiled dependency.
         val project = jvmProject {
             source(markerConsumerFile, "consumer", imports = listOf("test.lib.InternalLibApi"))
             dependencies(implementation(":lib"))
@@ -513,9 +481,7 @@ class WatchdogProjectTest {
         }
 
         val result = project.buildAndFail("build")
-        // The unmarked control declaration proves the checks ran in the consuming module...
         result.assertError("`WatchedClass` has no `KDoc`")
-        // ...while declarations marked with the dependency's marker annotation are exempt.
         result.assertOutputLacks("InternalOpenClass")
         result.assertOutputLacks("memberOfInternal")
         result.assertOutputLacks("InternalEnum")
@@ -526,9 +492,6 @@ class WatchdogProjectTest {
 
     @Test
     fun configuredInternalApiAnnotationsExemptLikeTheMarker() {
-        // The annotation lives in `:lib` and carries no @InternalAnnotationMarker, standing in
-        // for the internal-API annotation of a dependency the consuming module can't annotate.
-        // Naming it in `internalApiAnnotations` makes it a marker for the consuming module.
         val project = jvmProject {
             apiWatchdog { internalApiAnnotations("test.lib.ThirdPartyInternalApi") }
             source(
@@ -541,15 +504,11 @@ class WatchdogProjectTest {
         }
 
         val result = project.buildAndFail("build")
-        // The unmarked control declaration proves the checks ran in the consuming module...
         result.assertError("`WatchedClass` has no `KDoc`")
-        // ...a supported signature exposing the dependency's internal type is reported, naming
-        // the configured annotation...
         result.assertError(
             "publicly exposes `test.lib.ThirdPartyInternalType`, but that type is marked as internal API " +
                     "with `@ThirdPartyInternalApi`",
         )
-        // ...while declarations carrying the configured annotation are exempt.
         result.assertOutputLacks("InternalOpenClass")
         result.assertOutputLacks("memberOfInternal")
         result.assertOutputLacks("InternalEnum")
@@ -616,9 +575,8 @@ class WatchdogProjectTest {
 
     @Test
     fun publicTypeFromImplementationDependencyIsAnErrorInMultiplatformProjects() {
-        // The JVM target consumes the dependency as a jar or classes directory while the JS
-        // target consumes it as a klib, so both artifact classification paths are exercised.
-        // `--continue` lets the second compilation run after the first one fails.
+        // The JVM target reads a jar and the JS target a klib. `--continue` runs the second
+        // compilation after the first one fails.
         val project = kmpProject(JVM_AND_JS_TARGETS) {
             consumerSource()
             dependencies(implementation(":model"))
@@ -633,7 +591,6 @@ class WatchdogProjectTest {
 
     @Test
     fun publicTypeFromApiDependencyIsAcceptedInMultiplatformProjects() {
-        // The api dependency lands in `commonMainApi`, so every target's API elements inherit it.
         val project = kmpProject(JVM_AND_JS_TARGETS) {
             consumerSource()
             dependencies(api(":model"))
@@ -665,8 +622,6 @@ class WatchdogProjectTest {
         project.build("build").assertNoNonTransitiveExposureReported()
     }
 
-    // Android libraries: the dependency collection corner cases of AGP, on both AGP generations.
-
     @Test
     fun publicTypeFromImplementationDependencyIsAnErrorInAndroidLibraries() =
         publicTypeFromImplementationDependencyIsAnErrorInAndroidLibrariesCase(AGP8)
@@ -676,10 +631,6 @@ class WatchdogProjectTest {
         publicTypeFromImplementationDependencyIsAnErrorInAndroidLibrariesCase(AGP9)
 
     private fun publicTypeFromImplementationDependencyIsAnErrorInAndroidLibrariesCase(agp: AgpVersion) {
-        // Android resolves the transitive dependencies against the variant-specific API elements
-        // configuration (`debugApiElements`), the branch the plugin reserves for androidJvm. With
-        // AGP 9 the built-in Kotlin support applies the compiler plugin and supplies the same
-        // variant-specific dependency configurations.
         val project = androidLibrary(agp) {
             consumerSource()
             dependencies(implementation(":model"))
@@ -715,8 +666,7 @@ class WatchdogProjectTest {
         androidPlatformTypesAreNotDependenciesCase(AGP9)
 
     private fun androidPlatformTypesAreNotDependenciesCase(agp: AgpVersion) {
-        // `android.jar` reaches the compiler as the platform's boot classpath, not through a
-        // Gradle configuration, so platform types are neither transitive nor non-transitive.
+        // `android.jar` is the boot classpath, not a Gradle dependency.
         val project = androidLibrary(agp) {
             source(exposesAndroidPlatformTypeFile, "PlatformFacing", "test.consumer")
         }
@@ -733,9 +683,6 @@ class WatchdogProjectTest {
         publicTypeFromImplementationAarProjectDependencyIsAnErrorCase(AGP9)
 
     private fun publicTypeFromImplementationAarProjectDependencyIsAnErrorCase(agp: AgpVersion) {
-        // An Android library module reaches the compiler as the classes jar extracted from its
-        // AAR by an artifact transform, not as the AAR its API elements publish. The dependency
-        // files handed to the compiler plugin must go through the same transform.
         val project = androidLibrary(agp) {
             consumerSource()
             dependencies(implementation(":model"))
@@ -772,9 +719,6 @@ class WatchdogProjectTest {
         exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInCase(AGP9)
 
     private fun exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInCase(agp: AgpVersion) {
-        // The exempt view resolves with the compile classpath's variant attributes, so it picks
-        // the same build-type variant of `:facade` as the compilation and follows its `api`
-        // edge to the `:model` AAR, which is where the exposed type lives.
         val project = androidLibrary(agp) {
             buildScript(exemptScript("project(\":facade\")"))
             consumerSource()
@@ -795,8 +739,7 @@ class WatchdogProjectTest {
         publicTypeFromImplementationExternalAarDependencyIsAnErrorCase(AGP9)
 
     private fun publicTypeFromImplementationExternalAarDependencyIsAnErrorCase(agp: AgpVersion) {
-        // A published AAR goes through the same classes-jar transform as a project AAR, but
-        // from the Gradle transforms cache rather than a project's build directory.
+        // A published AAR comes from the Gradle transforms cache, not from a build directory.
         val project = androidLibrary(agp) {
             source(exposesStartupInitializerFile, "StartupHooks", "test.consumer")
             dependencies(implementation(STARTUP_RUNTIME))
@@ -831,8 +774,6 @@ class WatchdogProjectTest {
         exemptNonTransitiveExternalAarDependencyIsAcceptedCase(AGP9)
 
     private fun exemptNonTransitiveExternalAarDependencyIsAcceptedCase(agp: AgpVersion) {
-        // The exemption names the AAR without a version. Consistent resolution supplies the
-        // compile classpath's version, and the exempt view must yield the same classes jar.
         val project = androidLibrary(agp) {
             buildScript(exemptScript(STARTUP_RUNTIME))
             source(exposesStartupInitializerFile, "StartupHooks", "test.consumer")
@@ -851,10 +792,7 @@ class WatchdogProjectTest {
         multiplatformLibraryIsMatchedThroughItsAndroidVariantCase(AGP9)
 
     private fun multiplatformLibraryIsMatchedThroughItsAndroidVariantCase(agp: AgpVersion) {
-        // An Android compilation selects the `-android` AAR variant of a multiplatform library
-        // where a JVM one would take `-jvm`. The transitive and exempt views copy the compile
-        // classpath's attributes, so they must land on that same AAR: first the unexempted
-        // `implementation` dependency is reported, then the version-less exemption covers it.
+        // An Android compilation selects the `-android` variant of the library, a JVM one `-jvm`.
         val lifecycleHooks: AndroidLibrarySpec.() -> Unit = {
             source(exposesLifecycleTypeFile, "LifecycleHooks", "test.consumer")
             dependencies(implementation(LIFECYCLE_RUNTIME))
@@ -878,9 +816,6 @@ class WatchdogProjectTest {
         buildTypeApiDependencyIsTransitiveOnlyForItsVariantCase(AGP9)
 
     private fun buildTypeApiDependencyIsTransitiveOnlyForItsVariantCase(agp: AgpVersion) {
-        // `debugApi` feeds `debugApiElements` alone, which is why the plugin reads the API
-        // elements of the variant a compilation is named after. The release variant reaches the
-        // same module only through `releaseImplementation`, so its consumers can't see the type.
         val project = androidLibrary(agp) {
             consumerSource()
             dependencies("debug", api(":model"))
@@ -901,8 +836,6 @@ class WatchdogProjectTest {
         flavorApiDependencyIsTransitiveOnlyForItsFlavorCase(AGP9)
 
     private fun flavorApiDependencyIsTransitiveOnlyForItsFlavorCase(agp: AgpVersion) {
-        // With product flavors the compilation is named after the full variant (`freeDebug`),
-        // and so are its API elements, which combine the flavor's and the build type's `api`.
         val project = androidLibrary(agp) {
             android(
                 """
@@ -932,8 +865,6 @@ class WatchdogProjectTest {
         compileOnlyDependenciesCanBeExemptedAsAWholeCase(AGP9)
 
     private fun compileOnlyDependenciesCanBeExemptedAsAWholeCase(agp: AgpVersion) {
-        // AGP's `compileOnly` is a bucket the variant compile classpaths extend from, so the
-        // exempt view resolves it through the compilation's own variant.
         val project = androidLibrary(agp) {
             apiWatchdog { exemptNonTransitiveDependencies("extendsFrom(configurations.compileOnly.get())") }
             consumerSource()
@@ -943,8 +874,6 @@ class WatchdogProjectTest {
 
         project.build("compileDebugKotlin").assertNoNonTransitiveExposureReported()
     }
-
-    // The Android target of a multiplatform project.
 
     @Test
     fun publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargets() =
@@ -959,11 +888,6 @@ class WatchdogProjectTest {
         publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsCase(LEGACY)
 
     private fun publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsCase(target: KmpAndroidTarget) {
-        // The multiplatform library plugin has no build variants: the compilation is `main`, so
-        // the plugin falls back from `mainApiElements` to the target's own API elements. The
-        // legacy target publishes through AGP's variant-specific API elements
-        // (`debugApiElements`) like a plain Android library, while its dependencies are declared
-        // on the multiplatform source sets.
         val project = kmpAndroidProject(target) {
             consumerSource()
             dependencies(implementation(":model"))
@@ -1008,8 +932,6 @@ class WatchdogProjectTest {
         androidSourceSetDependenciesCase(LEGACY)
 
     private fun androidSourceSetDependenciesCase(target: KmpAndroidTarget) {
-        // Dependencies declared on `androidMain` alone reach only the Android target's
-        // configurations, and the exposing declaration lives in `androidMain` too.
         kmpAndroidProject(target) {
             consumerSource("androidMain")
             dependencies("androidMain", api(":model"))
@@ -1056,8 +978,6 @@ class WatchdogProjectTest {
         externalAarDependencyInMultiplatformCase(LEGACY)
 
     private fun externalAarDependencyInMultiplatformCase(target: KmpAndroidTarget) {
-        // The Android target's compile classpath goes through AGP's classes-jar transform like
-        // a plain Android library's, while the exempt bucket is shared with the JVM target.
         val startupHooks: ProjectSpec.() -> Unit = {
             source(exposesStartupInitializerFile, "StartupHooks", "test.consumer", "androidMain")
             dependencies("androidMain", implementation(STARTUP_RUNTIME))
@@ -1085,9 +1005,6 @@ class WatchdogProjectTest {
         multiplatformLibraryAndroidVariantInMultiplatformCase(LEGACY)
 
     private fun multiplatformLibraryAndroidVariantInMultiplatformCase(target: KmpAndroidTarget) {
-        // Declared on `commonMain`, the library resolves to its `-android` AAR for the Android
-        // target and to its `-jvm` jar for the JVM target. Both compilations report the
-        // unexempted type, and one version-less exemption covers both variants.
         val lifecycleHooks: ProjectSpec.() -> Unit = {
             source(exposesLifecycleTypeFile, "LifecycleHooks", "test.consumer")
             dependencies(implementation(LIFECYCLE_RUNTIME))
@@ -1106,8 +1023,6 @@ class WatchdogProjectTest {
 
     @Test
     fun buildTypeApiDependencyIsTransitiveOnlyForItsVariantInLegacyMultiplatformAndroidTargets() {
-        // The legacy target still has AGP's build-type configurations next to the source-set
-        // ones, so `debugApi` scopes the exposure to the `debug` compilation.
         val project = kmpAndroidProject(LEGACY) {
             consumerSource("androidMain")
             dependencies("debug", api(":model"))
@@ -1145,8 +1060,6 @@ class WatchdogProjectTest {
 
     @Test
     fun exemptNonTransitiveDependencyCoversEverythingItPullsIn() {
-        // The consumer never names `:model`. It reaches it through the exempt `:facade`, the
-        // same way a Kotlin Multiplatform dependency reaches its platform artifact.
         val project = jvmProject {
             buildScript(exemptScript("project(\":facade\")"))
             consumerSource()
@@ -1173,8 +1086,6 @@ class WatchdogProjectTest {
 
     @Test
     fun exemptNonTransitiveDependenciesExtendFromAWholeConfiguration() {
-        // The whole-configuration form is the Gradle plugin case: everything the environment
-        // supplies is declared `compileOnly`, and nothing of it is published.
         val project = jvmProject {
             apiWatchdog { exemptNonTransitiveDependencies("extendsFrom(configurations.compileOnly.get())") }
             consumerSource()
@@ -1187,9 +1098,7 @@ class WatchdogProjectTest {
 
     @Test
     fun exemptNonTransitiveModuleDependencyIsResolvedConsistentlyWithTheCompileClasspath() {
-        // The exemption names the multiplatform module without a version and without its JVM
-        // artifact. Consistent resolution supplies the compile classpath's version, and the
-        // `available-at` redirect brings the `-jvm` artifact that actually holds the classes.
+        // The `available-at` redirect of the module brings the `-jvm` artifact that holds the classes.
         val project = jvmProject {
             buildScript(exemptScript(COROUTINES))
             source(exposesCoroutinesTypeFile, "Jobs", "test.consumer")
@@ -1213,10 +1122,8 @@ class WatchdogProjectTest {
 
     @Test
     fun exemptNonTransitiveDependencyFromTheDependencyDeclaration() {
-        // The version catalog form adds the dependency through a provider, so the exemption is
-        // recorded only when the compile classpath realizes its dependencies. The plugin resolves
-        // the transitive view, which is consistent with the compile classpath, before the exempt
-        // view, which is what makes this order-independent for users.
+        // A version catalog dependency is a provider, so the exemption exists only after the
+        // compile classpath realizes its dependencies.
         val project = jvmProject {
             imports(EXEMPT_IMPORT)
             buildScript("dependencies { implementation(libs.coroutines) { exemptNonTransitiveDependency(this) } }")
@@ -1248,7 +1155,7 @@ class WatchdogProjectTest {
 
         val result = project.buildAndFail("build")
         result.assertNonTransitiveExposureReported("kotlinx.coroutines.Job")
-        // The type is in the platform artifact, but the snippet names the declared dependency.
+        // The snippet names the declared dependency, not the platform artifact that holds the type.
         result.assertOutputHas(
             "        implementation(\"$COROUTINES\") {\n            exemptNonTransitiveDependency(this)\n        }"
         )
@@ -1256,7 +1163,6 @@ class WatchdogProjectTest {
 
     @Test
     fun exemptNonTransitiveDependenciesDoNotJoinTheCompileClasspath() {
-        // The bucket is a marker. A dependency declared only there is not compiled against.
         val project = jvmProject {
             buildScript(exemptScript("project(\":model\")"))
             consumerSource()
@@ -1268,8 +1174,7 @@ class WatchdogProjectTest {
 
     @Test
     fun transitiveDependencyConfigurationsAreNamedAfterTheCompilation() {
-        // The JVM plugin's target has no disambiguation classifier, which KGP's own
-        // `disambiguatedName` renders as a literal "null".
+        // KGP renders the missing disambiguation classifier of the JVM target as a literal "null".
         val project = jvmProject {
             buildScript(printWatchdogConfigurationsTask)
             source(unacknowledgedFile)
@@ -1296,7 +1201,6 @@ class WatchdogProjectTest {
 
     @Test
     fun warnsWhenExplicitApiModeIsNotEnabled() {
-        // The warning is logged during configuration, so `help` is enough to observe it.
         val project = jvmProject { explicitApi = false }
 
         val result = project.build("help")
@@ -1311,8 +1215,6 @@ class WatchdogProjectTest {
 
     @Test
     fun explicitApiWarningSeesTheRawCompilerFlag() {
-        // The flag lands in the effective free compiler arguments of the compile tasks, which is
-        // where the check looks when the DSL setting is absent.
         val project = jvmProject {
             explicitApi = false
             buildScript("""kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=strict") } }""")
@@ -1331,7 +1233,6 @@ class WatchdogProjectTest {
 
     @Test
     fun suggestsAbiValidationWhenItIsNotEnabled() {
-        // The suggestion is logged during configuration, so `help` is enough to observe it.
         val result = jvmProject().build("help")
 
         result.assertOutputHas("but no binary compatibility validation is enabled")
@@ -1378,8 +1279,7 @@ class WatchdogProjectTest {
 
     @Test
     fun abiValidationSuggestionIsSilentWhenStandaloneValidatorIsApplied() {
-        // A buildSrc stand-in registers the real Binary Compatibility Validator plugin id, so the
-        // check sees the plugin as applied without the test fetching the actual artifact.
+        // The buildSrc plugin registers the real plugin id, so the test doesn't fetch the real plugin.
         val project = jvmProject {
             buildScript("""apply(plugin = "org.jetbrains.kotlinx.binary-compatibility-validator")""")
             buildSrc {
@@ -1417,25 +1317,16 @@ class WatchdogProjectTest {
         project.build("help").assertOutputLacks("but no binary compatibility validation is enabled")
     }
 
-    /**
-     * The test source set counterpart of [ModuleSpec.source], carrying the unwatched declarations.
-     * [className] keeps the file names apart when several test source sets take part in one build.
-     */
+    /** [testOnlyFile] in a test source set. */
     private fun ModuleSpec.testOnlySource(sourceSet: String = "test", className: String = "TestOnlyHelper") {
         source(testOnlyFile(className), className, sourceSet = sourceSet)
     }
 
-    /**
-     * [testOnlySource] without the exemption annotation, placeable into any source set. The plugin
-     * adds the annotations dependency only to the compilations it applies to, so this fixture
-     * doesn't depend on whether a test compilation inherits that dependency from the main one it
-     * is associated with.
-     */
+    /** [unexemptedTestOnlyFile] in any source set. It needs no annotations dependency. */
     private fun ModuleSpec.unexemptedOpenClassSource(sourceSet: String, className: String = "TestOnlyHelper") {
         source(unexemptedTestOnlyFile(className), className, sourceSet = sourceSet, defaultImports = false)
     }
 
-    /** Asserts nothing in [testOnlyFile] was reported by any checker. */
     private fun BuildResult.assertNoTestSourceDiagnostics() {
         assertNotReported(
             OPEN_API_WITHOUT_SUBCLASS_OPT_IN,
@@ -1457,7 +1348,7 @@ class WatchdogProjectTest {
     private fun BuildResult.hasStatefulDiagnostic(className: String, missingMember: String): Boolean =
         output.lineSequence().any { "`$className`" in it && "inherits $missingMember" in it }
 
-    /** Exempts [dependency] by its version-less coordinates, or a `project(...)` notation as is. */
+    /** Exempts [dependency] without its version. */
     private fun exemptScript(dependency: String): String {
         val notation = if (dependency.startsWith("project(")) dependency else "\"${dependency.substringBeforeLast(':')}\""
         return "dependencies { apiWatchdogExemptNonTransitive($notation) }"
@@ -1466,7 +1357,6 @@ class WatchdogProjectTest {
     private fun ideaGenerateShortcut(): String =
         if (System.getProperty("os.name").startsWith("Mac", ignoreCase = true)) "⌘N" else "Alt+Insert"
 
-    /** KGP before 2.4 configures ABI validation through a block instead of a call. */
     private val legacyAbiValidationDsl: Boolean
         get() = TEST_COMPILER_VERSION.major <= 2 && TEST_COMPILER_VERSION.minor < 4
 }
@@ -1481,7 +1371,6 @@ private const val DEFAULT_FACADE_NAME_FILE_ANNOTATION =
 
 private const val EXEMPT_IMPORT = "org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency"
 
-/** A dependency the functional tests resolve from Maven Central as a non-project module. */
 private const val COROUTINES = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
 
 private const val COROUTINES_CATALOG = """
@@ -1489,22 +1378,16 @@ private const val COROUTINES_CATALOG = """
     coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.10.2" }
 """
 
-/** A dependency from Google's Maven repository published as an AAR. */
+/** An AAR from the Google Maven repository. */
 private const val STARTUP_RUNTIME = "androidx.startup:startup-runtime:1.2.0"
 
 /**
- * A multiplatform AndroidX library whose Android variant is an AAR of its own
- * (`lifecycle-runtime-android`), next to a plain JVM variant for desktop consumers. Its
- * `LifecycleRegistry` is compiled into each variant, unlike `Lifecycle` from the plain
- * `lifecycle-common` jar it depends on.
+ * A multiplatform library with an AAR variant and a JVM variant. `LifecycleRegistry` is in each
+ * variant, unlike `Lifecycle` from the `lifecycle-common` jar.
  */
 private const val LIFECYCLE_RUNTIME = "androidx.lifecycle:lifecycle-runtime:2.8.7"
 
-/**
- * A test-source declaration several checkers would report if they ran on test sources. The bare
- * exemption also covers the one diagnostic no configuration can demote,
- * `EXEMPTION_WITHOUT_EXPLANATION`, and proves the annotations stay resolvable from test sources.
- */
+/** A declaration that several checkers report, with a bare exemption for `EXEMPTION_WITHOUT_EXPLANATION`. */
 @Language("kotlin")
 private fun testOnlyFile(className: String) = """
     @IntentionallyOpen
@@ -1513,7 +1396,7 @@ private fun testOnlyFile(className: String) = """
     }
 """.trimIndent()
 
-/** [testOnlyFile] stripped of the exemption, so that it needs nothing on the compile classpath. */
+/** [testOnlyFile] without the exemption. */
 @Language("kotlin")
 private fun unexemptedTestOnlyFile(className: String) = """
     public open class $className {
@@ -1521,7 +1404,7 @@ private fun unexemptedTestOnlyFile(className: String) = """
     }
 """.trimIndent()
 
-/** The diagnostics [unacknowledgedFile] and [internalApiExposureFile] report together. */
+/** The diagnostics of [unacknowledgedFile] and [internalApiExposureFile]. */
 private val singleModuleDiagnostics: List<Diagnostic> =
     Diagnostic.entries - setOf(PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY, EXEMPTION_WITHOUT_EXPLANATION)
 
@@ -1831,10 +1714,7 @@ private val exposesCoroutinesTypeFile = """
     }
 """.trimIndent()
 
-/**
- * A task listing the watchdog's transitive-dependency configurations. They are registered when
- * KGP hands each compilation to the plugin, so the task runs after the compile tasks.
- */
+/** The configurations are registered per compilation, so the task runs after the compile tasks. */
 @Language("kts")
 private val printWatchdogConfigurationsTask = """
     tasks.register("printWatchdogConfigurations") {
@@ -1898,7 +1778,7 @@ private val exposesJavaDependencyTypeFile = """
     }
 """.trimIndent()
 
-/** One acknowledged specimen of every diagnostic in [unacknowledgedFile]. */
+/** [unacknowledgedFile] with every diagnostic exempted. */
 @Suppress("RedundantSuspendModifier", "MayBeConstant")
 @Language("kotlin")
 private val acknowledgedFile = """

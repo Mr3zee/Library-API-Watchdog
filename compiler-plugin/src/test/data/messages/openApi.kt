@@ -4,8 +4,6 @@
 
 package foo.bar
 
-// Message parameters: the class kind and the fix for a class or an interface.
-
 public open class <!OPEN_API_WITHOUT_SUBCLASS_OPT_IN!>OpenClass<!>
 
 public abstract class <!OPEN_API_WITHOUT_SUBCLASS_OPT_IN!>AbstractClass<!>

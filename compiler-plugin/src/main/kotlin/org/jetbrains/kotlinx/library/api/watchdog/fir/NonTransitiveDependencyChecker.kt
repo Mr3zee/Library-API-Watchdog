@@ -24,40 +24,18 @@ import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinarySourceElement
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 
-/**
- * The Gradle-derived inputs needed to distinguish `api` from non-transitive dependencies.
- * [dependencyDeclarations] maps a compile dependency path to the build script declaration that
- * adds it, for the exemption snippet of the diagnostic.
- */
+/** [dependencyDeclarations] maps a compile dependency path to the build script declaration that adds it. */
 internal data class DependencyExposureCheckConfiguration(
     val compileDependencies: Set<String>,
     val transitiveDependencies: Set<String>,
     val dependencyDeclarations: Map<String, DependencyDeclaration> = emptyMap(),
 )
 
-/**
- * A dependency declaration in a build script. [configuration] is the one it is declared on,
- * such as `implementation`. [notation] is written as in the script: `"com.example:models:1.0"`
- * or `project(":model")`.
- */
+/** [notation] is as written in the script: `"com.example:models:1.0"` or `project(":model")`. */
 internal data class DependencyDeclaration(val configuration: String, val notation: String)
 
-/** A dependency type in a public signature and the compile classpath entry that holds it. */
 internal data class NonTransitiveType(val classId: ClassId, val origin: Path)
 
-/**
- * Reports dependency types in public signatures unless their artifacts are published to
- * consumers. Dependency scope is a build-model concern, so this checker is registered only when
- * the Gradle plugin supplies [DependencyExposureCheckConfiguration]. It can't be demoted: the
- * Gradle extension's Boolean switch disables it for a whole module, and
- * `@IntentionallyNonTransitiveDependency` exempts a declaration whose dependency the runtime
- * environment supplies on its own, as Gradle does for every plugin.
- *
- * The sweep includes callable return, receiver, value and context parameter types. It also includes class
- * supertypes and context parameters, type parameter bounds, public type aliases, and every type
- * argument nested inside those types. Overrides still count because their hand-written signature
- * remains part of this library's API even when another declaration fixed its shape.
- */
 internal class NonTransitiveDependencyChecker(
     session: FirSession,
     configuration: DependencyExposureCheckConfiguration,
@@ -66,11 +44,7 @@ internal class NonTransitiveDependencyChecker(
     private val dependencyDeclarations = configuration.dependencyDeclarations
         .mapKeys { (path, _) -> normalizedPath(path) }
 
-    /**
-     * The exemption on an enclosing class covers everything declared inside it: a Gradle task or
-     * extension class mentions the environment's types in most members, and one acknowledgement
-     * on the class states why for all of them.
-     */
+    /** An exemption on an enclosing class covers every member, because a Gradle task class mentions environment types in most members. */
     context(context: CheckerContext)
     override fun isDeclarationExempt(declaration: FirDeclaration): Boolean =
         super.isDeclarationExempt(declaration) || context.containingDeclarations.any {
@@ -97,10 +71,7 @@ internal class NonTransitiveDependencyChecker(
         )
     }
 
-    /**
-     * The build script block that exempts the dependency. A direct compiler invocation passes
-     * no declarations, so the snippet then names the classpath entry instead.
-     */
+    /** A direct compiler invocation passes no declarations, so the snippet then names the classpath entry. */
     private fun exemptionSnippet(origin: Path): String {
         val declaration = dependencyDeclarations[origin]
             ?: DependencyDeclaration("implementation", "\"<the dependency of ${origin.fileName}>\"")
@@ -113,7 +84,6 @@ internal class NonTransitiveDependencyChecker(
     }
 }
 
-/** Classifies a resolved FIR class by the Gradle artifacts that contain it. */
 private class DependencyExposureIndex(
     session: FirSession,
     configuration: DependencyExposureCheckConfiguration,
@@ -122,19 +92,14 @@ private class DependencyExposureIndex(
     private val transitiveRoots = configuration.transitiveDependencies.mapTo(linkedSetOf(), ::normalizedPath)
     private val classification = session.firCachesFactory.createCache(::classifyByContents)
 
-    /**
-     * The compile classpath root that holds [symbol] when consumers don't get it, or null when
-     * they do.
-     */
+    /** The compile classpath root that holds [symbol], or null when consumers get the class. */
     fun nonTransitiveOrigin(symbol: FirClassSymbol<*>, context: CheckerContext): Path? {
-        // A class declared by the compilation itself needs no dependency at all.
         if (symbol.moduleData == context.session.moduleData) {
             return null
         }
 
-        // The Kotlin standard library is implicit for every Kotlin compilation. Older Kotlin
-        // Gradle plugins do not consistently expose it through the target's API elements, so
-        // classifying kotlin.* types from those configurations would produce false positives.
+        // Older Kotlin Gradle plugins don't always expose the standard library through the API
+        // elements of the target.
         val packageName = symbol.classId.packageFqName.asString()
         if (packageName == "kotlin" || packageName.startsWith("kotlin.")) {
             return null
@@ -148,10 +113,8 @@ private class DependencyExposureIndex(
             compileRoots.firstOrNull { it.containsOrigin(origin) }?.let { return it }
         }
 
-        // Project artifacts can be represented as a jar in one configuration and as a classes
-        // directory in another. Java dependency classes also lack the Kotlin container source
-        // above. Looking up the class in both root sets covers both cases without relying on path
-        // identity.
+        // A project artifact is a jar in one configuration and a classes directory in another,
+        // and a Java class has no Kotlin container source.
         return classification.getValue(symbol.classId)
     }
 

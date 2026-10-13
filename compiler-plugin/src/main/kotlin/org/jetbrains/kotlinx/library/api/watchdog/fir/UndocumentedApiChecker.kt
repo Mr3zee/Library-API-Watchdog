@@ -22,16 +22,8 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
 
 /**
- * Reports watched classifiers, type aliases, functions, properties, and secondary constructors
- * with no KDoc token. KDoc content is not inspected.
- *
- * Overrides, `actual` declarations, primary constructors, enum entries, companion objects with
- * the default name, declarations visible only through `@PublishedApi`, and exempt declarations
- * are skipped.
- *
- * The KDoc lookup isn't cached. In the IDE the session outlives a KDoc edit, and the source
- * element of the declaration stays the same object. A session cache keyed by it keeps the
- * result from before the edit.
+ * The KDoc lookup isn't cached: in the IDE the session outlives a KDoc edit, and the source
+ * element of the declaration stays the same object.
  */
 internal class UndocumentedApiChecker(
     severities: WatchdogDiagnosticSeverities,
@@ -40,11 +32,9 @@ internal class UndocumentedApiChecker(
 
     private companion object {
         /**
-         * The same plugin jar runs both in the CLI compiler and in `kotlin-compiler-embeddable`,
-         * which relocates the IntelliJ platform classes to another package. Referencing
-         * `KDocTokens.KDOC` directly would hard-code the `com.intellij` field type in the bytecode
-         * and fail to link in one of the two worlds, so the value is resolved reflectively. It is
-         * only passed through generic signatures, which erase to `java.util.Set` and link everywhere.
+         * The jar runs in the CLI and in `kotlin-compiler-embeddable`, which relocates
+         * `com.intellij`. A direct reference to `KDocTokens.KDOC` puts the field type in the
+         * bytecode and fails to link in one of them. The generic signature erases to `java.util.Set`.
          */
         @Suppress("UNCHECKED_CAST")
         private val kdocElementTypes: Set<IElementType> =
@@ -83,14 +73,8 @@ internal class UndocumentedApiChecker(
     }
 
     /**
-     * The `sharedParameterValues` name of the declaration kind for the message, or null when the
-     * declaration is not watched: either
-     * users can't reference it directly, or its documentation lives on another declaration -
-     * overrides and `actual`s inherit it, and the primary constructor is described by class KDoc.
-     * A `companion object` with the default name is a namespace for its members, which are
-     * documented on their own, so it is skipped too. A named companion is a deliberate type
-     * and stays watched. Enum entries are described by the KDoc of their enum class: a name
-     * is usually all the documentation a constant needs.
+     * The kind word of `diagnostics.json`, or null when another declaration holds the KDoc: the
+     * class for a primary constructor, the members for a default-named companion.
      */
     context(context: CheckerContext)
     private fun FirMemberDeclaration.watchedKind(): String? = when {
@@ -106,7 +90,6 @@ internal class UndocumentedApiChecker(
     private val FirRegularClass.isDefaultNamedCompanion: Boolean
         get() = isCompanion && name == SpecialNames.DEFAULT_NAME_FOR_COMPANION_OBJECT
 
-    /** Secondary constructors report the class name instead of their internal `<init>` name. */
     private fun FirMemberDeclaration.watchedName(context: CheckerContext): Name? = when (this) {
         is FirRegularClass -> name
         is FirTypeAlias -> name
@@ -116,9 +99,7 @@ internal class UndocumentedApiChecker(
         else -> null
     }
 
-    // KDoc never reaches FIR, but the source element keeps the underlying parse tree, where
-    // the KDoc is a direct child of the declaration node. `getChild` traverses both source
-    // representations: the light tree (CLI) and PSI (Analysis API).
+    // KDoc isn't in FIR. `getChild` reads both the light tree (CLI) and PSI (Analysis API).
     private fun KtSourceElement?.hasKdoc(): Boolean =
         this?.getChild(kdocElementTypes, index = 0, depth = 1, reverse = false) != null
 }

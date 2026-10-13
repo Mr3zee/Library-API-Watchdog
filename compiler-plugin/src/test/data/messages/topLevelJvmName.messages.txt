@@ -1,18 +1,18 @@
-/functions.kt:10:12: error: TOP_LEVEL_API_WITHOUT_JVM_NAME
+/functions.kt:8:12: error: TOP_LEVEL_API_WITHOUT_JVM_NAME
     The facade class `FunctionsKt` holds this file's Java-visible top-level functions. Its name comes from the file name, so a file rename breaks Java callers. Set the facade name with `@file:JvmName`.
 
     If this is intended, apply `@file:IntentionallyDefaultFacadeName` to the file.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/top-level-api-without-jvm-name
 
-/properties.kt:17:12: error: TOP_LEVEL_API_WITHOUT_JVM_NAME
+/properties.kt:15:12: error: TOP_LEVEL_API_WITHOUT_JVM_NAME
     The facade class `PropertiesKt` holds this file's Java-visible top-level properties. Its name comes from the file name, so a file rename breaks Java callers. Set the facade name with `@file:JvmName`.
 
     If this is intended, apply `@file:IntentionallyDefaultFacadeName` to the file.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/top-level-api-without-jvm-name
 
-/mixed.kt:22:12: error: TOP_LEVEL_API_WITHOUT_JVM_NAME
+/mixed.kt:20:12: error: TOP_LEVEL_API_WITHOUT_JVM_NAME
     The facade class `MixedKt` holds this file's Java-visible top-level functions and properties. Its name comes from the file name, so a file rename breaks Java callers. Set the facade name with `@file:JvmName`.
 
     If this is intended, apply `@file:IntentionallyDefaultFacadeName` to the file.

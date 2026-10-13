@@ -9,31 +9,22 @@ import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyNonStaticCompanio
 
 public class Registry {
     public companion object {
-        // Reachable from Java only as Registry.Companion.create(): should warn.
         public fun <!COMPANION_API_WITHOUT_JVM_STATIC!>create<!>(): Registry = Registry()
 
-        // @JvmStatic compiles the static entry point: no warning.
         @JvmStatic
         public fun createStatic(): Registry = Registry()
 
         @JvmStatic
         public suspend fun createStaticLater(): Registry = Registry()
 
-        // @JvmSynthetic hides the member from Java on purpose: no warning.
         @JvmSynthetic
         public fun createHidden(): Registry = Registry()
 
-        // A suspend member can still be placed on the outer class. Its separate Kotlin-only API
-        // diagnostic is muted in this test.
         public suspend fun <!COMPANION_API_WITHOUT_JVM_STATIC!>createLater<!>(): Registry = Registry()
 
-        // Not visible outside the library: no warning.
         internal fun createInternal(): Registry = Registry()
 
-        // A constant-shaped val is only reachable through the Companion instance getter.
         public val <!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>DEFAULT_NAME<!>: String = "registry"
-
-        // const, @JvmField, and a @JvmStatic getter expose the value statically: no warning.
 
         public const val VERSION: Int = 1
 
@@ -46,11 +37,8 @@ public class Registry {
         @get:JvmStatic
         public val TARGETED: String = "static getter"
 
-        // @get:JvmSynthetic hides the property from Java on purpose: no warning.
         @get:JvmSynthetic
         public val HIDDEN: String = "kotlin only"
-
-        // Every property shape can expose static accessors with @JvmStatic.
 
         public val <!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>computed<!>: String get() = "computed"
 
@@ -80,8 +68,6 @@ public class Registry {
         @JvmField
         public var mutableField: String = "field"
 
-        // A var is clean only when every supported Java accessor is static or hidden.
-
         @get:JvmStatic
         public var <!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>staticRead<!>: String = "read"
 
@@ -102,14 +88,11 @@ public class Registry {
     }
 }
 
-// Interface companions compile the same way.
 public interface Codec {
     public companion object {
         public fun <!COMPANION_API_WITHOUT_JVM_STATIC!>lookup<!>(): Int = 0
     }
 }
-
-// Companion overrides can add a static bridge on the outer class.
 
 public fun interface Maker {
     public fun make(): Int
@@ -145,8 +128,6 @@ public class StaticNamedBuilt {
     }
 }
 
-// A named companion compiles to a nested class with the chosen name and is checked the same way.
-
 public class Config {
     public companion object Factory {
         public fun <!COMPANION_API_WITHOUT_JVM_STATIC!>create<!>(): Config = Config()
@@ -154,8 +135,6 @@ public class Config {
         public val <!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>DEFAULT_LABEL<!>: String = "config"
     }
 }
-
-// Acknowledged members: no warning.
 
 public class Acknowledged {
     public companion object {
@@ -167,7 +146,6 @@ public class Acknowledged {
     }
 }
 
-// The exemption on the companion object covers every member inside.
 public class AcknowledgedCompanion {
     @IntentionallyNonStaticCompanionApi(reason = ExemptionReason.API_DESIGN)
     public companion object {
@@ -177,7 +155,6 @@ public class AcknowledgedCompanion {
     }
 }
 
-// The exemption on the outer class covers its companion members as well.
 @IntentionallyNonStaticCompanionApi(reason = ExemptionReason.API_DESIGN)
 public class AcknowledgedOuter {
     public companion object {
@@ -186,8 +163,6 @@ public class AcknowledgedOuter {
         public val DEFAULT_NAME: String = "acknowledged"
     }
 }
-
-// Named objects and plain class members are not companion members: no warning.
 
 public object Singleton {
     public fun make(): Int = 0
@@ -201,7 +176,7 @@ public class Plain {
     public val value: Int = 0
 }
 
-// @PublishedApi members are binary implementation details, not supported Java API.
+// `@PublishedApi` members aren't supported Java API.
 
 public class PublishedMembers {
     public companion object {

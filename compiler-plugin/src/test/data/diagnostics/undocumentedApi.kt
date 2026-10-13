@@ -6,8 +6,6 @@ package foo.bar
 
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyUndocumented
 
-// Public API without KDoc: should warn.
-
 public class <!UNDOCUMENTED_PUBLIC_API!>UndocumentedClass<!>
 
 public interface <!UNDOCUMENTED_PUBLIC_API!>UndocumentedInterface<!>
@@ -19,8 +17,6 @@ public enum class <!UNDOCUMENTED_PUBLIC_API!>UndocumentedEnum<!> {
 }
 
 public annotation class <!UNDOCUMENTED_PUBLIC_API!>UndocumentedAnnotation<!>
-
-// Every public declaration kind is watched, not only classifiers.
 
 public fun <!UNDOCUMENTED_PUBLIC_API!>undocumentedTopLevelFunction<!>() {}
 
@@ -37,15 +33,11 @@ public val documentedTopLevelProperty: Int = 0
 /** Documented. */
 public typealias DocumentedTypeAlias = String
 
-// Non-KDoc comments are not documentation: should warn.
-
 // A line comment is not KDoc.
 public class <!UNDOCUMENTED_PUBLIC_API!>LineCommentedClass<!>
 
 /* A block comment is not KDoc. */
 public class <!UNDOCUMENTED_PUBLIC_API!>BlockCommentedClass<!>
-
-// Documented API: no warning.
 
 /** Documented. */
 public class DocumentedClass
@@ -61,8 +53,6 @@ public annotation class Marker
 /** Documented even though annotations follow the KDoc. */
 @Marker
 public class DocumentedAnnotatedClass
-
-// Deliberately undocumented: no warning.
 
 @IntentionallyUndocumented
 public class DeliberatelyUndocumentedClass
@@ -85,14 +75,12 @@ public class WithAcknowledgedMembers {
     public val acknowledgedProperty: Int = 0
 }
 
-// The acknowledgment covers only the annotated declaration, not its nested ones.
+// The exemption doesn't cover nested declarations.
 
 @IntentionallyUndocumented
 public class DeliberatelyUndocumentedOuter {
     public class <!UNDOCUMENTED_PUBLIC_API!>UndocumentedNestedInAcknowledged<!>
 }
-
-// Nested public declarations are checked on their own.
 
 /** Documented outer. */
 public class DocumentedOuter {
@@ -104,8 +92,6 @@ public class DocumentedOuter {
     private class PrivateNested
 }
 
-// Public members without KDoc: should warn.
-
 /** Documented. */
 public class WithUndocumentedMembers {
     public fun <!UNDOCUMENTED_PUBLIC_API!>undocumentedFunction<!>() {}
@@ -113,8 +99,8 @@ public class WithUndocumentedMembers {
     public val <!UNDOCUMENTED_PUBLIC_API!>undocumentedProperty<!>: Int = 0
 }
 
-// The class KDoc doesn't document the properties, and its `@property` and `@param` tags don't
-// count. Only the primary constructor takes its documentation from the class KDoc.
+// The `@property` and `@param` tags of the class KDoc don't document the properties. Only the
+// primary constructor takes its documentation from the class KDoc.
 
 /**
  * Documented.
@@ -131,8 +117,6 @@ public class DocumentedThroughClassKDocTags(
     public val <!UNDOCUMENTED_PUBLIC_API!>fromBody<!>: Int = input
 }
 
-// A constructor property can also carry its own KDoc on the parameter.
-
 /** Documented. */
 public class ConstructorPropertyDocumentedInPlace(
     /** Documented on the parameter itself. */
@@ -140,8 +124,7 @@ public class ConstructorPropertyDocumentedInPlace(
     public val <!UNDOCUMENTED_PUBLIC_API!>undocumentedParameter<!>: Int,
 )
 
-// The primary constructor can't carry its own KDoc - `@constructor` and `@param` tags in the
-// class KDoc describe it - so only secondary constructors are watched.
+// A primary constructor can't carry its own KDoc, so the check watches only secondary constructors.
 
 /** Documented. */
 public class WithSecondaryConstructors(input: Int) {
@@ -151,9 +134,7 @@ public class WithSecondaryConstructors(input: Int) {
     public constructor(a: Int, b: Int) : this(a + b)
 }
 
-// A companion object with the default name is a namespace for its members. The members are
-// documented on their own, so the companion itself needs no KDoc. A named companion is a
-// deliberate type and stays watched.
+// A companion with the default name needs no KDoc. The check watches a named companion.
 
 /** Documented. */
 public class WithDefaultNamedCompanion {
@@ -181,7 +162,7 @@ public class WithDocumentedNamedCompanion {
     public companion object Factory
 }
 
-// Overrides inherit the documentation of the declaration they override: no warning on them.
+// An override inherits the documentation.
 
 /** Documented. */
 public interface DocumentedContract {
@@ -202,7 +183,7 @@ public class DocumentedImplementation : DocumentedContract {
     override val undocumentedValue: Int = 0
 }
 
-// Enum entries are described by the KDoc of their enum class: no warning on them.
+// An enum entry isn't checked.
 
 /** Documented enum with entries in every documentation state. */
 public enum class DocumentedEnumWithEntries {
@@ -215,16 +196,11 @@ public enum class DocumentedEnumWithEntries {
     ACKNOWLEDGED_ENTRY,
 }
 
-// Compiler-generated members (data class copy/componentN, enum values/valueOf/entries) have no
-// source of their own: no warning.
-
 /** Documented. */
 public data class DocumentedDataClass(
     /** Documented. */
     public val value: Int,
 )
-
-// Not visible outside the library: no warning.
 
 internal class InternalClass
 
