@@ -92,7 +92,7 @@ public class Registry {
 ## Exemption
 
 <!-- diagnostic-exemption: COMPANION_API_WITHOUT_JVM_STATIC -->
-If this API shape is intentional, apply `@IntentionallyNonStaticCompanionApi` to the function or an
+If this is intended, apply `@IntentionallyNonStaticCompanionApi` to the function or an
 enclosing class.
 
 ```kotlin

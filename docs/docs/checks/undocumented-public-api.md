@@ -120,8 +120,7 @@ public class Profile(
 ## Exemption
 
 <!-- diagnostic-exemption: UNDOCUMENTED_PUBLIC_API -->
-If this API shape is intentional, apply `@IntentionallyUndocumented` directly to the undocumented
-declaration.
+If this is intended, apply `@IntentionallyUndocumented` to the declaration.
 
 ```kotlin
 // No example here, because I couldn't find a valid case when an API

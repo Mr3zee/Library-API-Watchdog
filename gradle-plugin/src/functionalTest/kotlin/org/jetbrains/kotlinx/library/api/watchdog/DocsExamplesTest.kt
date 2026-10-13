@@ -36,7 +36,7 @@ class DocsExamplesTest {
         val unexpectedCompilerErrors = result.output.lineSequence()
             .filter { it.startsWith("e: ") }
             .filterNot { "exemption doesn't explain why it is applied" in it }
-            .filterNot { "not published transitively to consumers" in it }
+            .filterNot { "published transitively to consumers" in it }
             .filterNot { "marked as internal API" in it }
             .toList()
         assertEquals(emptyList(), unexpectedCompilerErrors, unexpectedCompilerErrors.joinToString("\n"))

@@ -30,11 +30,11 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = buildAndFail(project.rootDir, "build")
-        result.assertDiagnosticReported("e: ", "can be subclassed outside the library without restriction")
-        result.assertDiagnosticReported("e: ", "can be matched exhaustively by users")
+        result.assertDiagnosticReported("e: ", "can be subclassed outside the library")
+        result.assertDiagnosticReported("e: ", "exhaustively, so adding")
         result.assertDiagnosticReported("e: ", "has no `KDoc`")
         result.assertDiagnosticReported("e: ", "abbreviates a function type")
-        result.assertDiagnosticReported("e: ", "bakes its constructor property list")
+        result.assertDiagnosticReported("e: ", "exposes its constructor property list")
         result.assertDiagnosticReported("e: ", "Poko (https://github.com/drewhamilton/Poko)")
         result.assertDiagnosticReported("e: ", "neither declares nor inherits an `equals`")
         result.assertDiagnosticReported("e: ", "neither declares nor inherits a `hashCode`")
@@ -53,13 +53,13 @@ class WatchdogProjectTest {
         result.assertDiagnosticReported("e: ", "appear in the opposite relative order in another overload")
         result.assertDiagnosticReported("e: ", "contains logic beyond a single thin delegating statement")
         result.assertDiagnosticReported("e: ", "mangles the JVM method name")
-        result.assertDiagnosticReported("e: ", "still lands in the API surface Java sources see")
-        result.assertDiagnosticReported("e: ", "compiles to an instance method on the nested `Companion` class")
-        result.assertDiagnosticReported("e: ", "leaves its getter on the nested companion class")
+        result.assertDiagnosticReported("e: ", "Hide it from Java with `@JvmSynthetic`")
+        result.assertDiagnosticReported("e: ", "compiles to an instance method of the nested `Companion` class")
+        result.assertDiagnosticReported("e: ", "has its getter on the nested companion class")
         result.assertDiagnosticReported("e: ", "Java-visible top-level functions")
         result.assertDiagnosticReported("e: ", "declares default parameter values")
-        result.assertDiagnosticReported("e: ", "allows the `FUNCTION` annotation target")
-        result.assertDiagnosticReported("e: ", "declares no annotation targets")
+        result.assertDiagnosticReported("e: ", "declares the `FUNCTION` annotation target")
+        result.assertDiagnosticReported("e: ", "declares no `@Target`")
         result.assertDiagnosticReported("e: ", "has no effect on this parameter type")
         result.assertDiagnosticReported(
             "e: ",
@@ -111,11 +111,11 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = build(project.rootDir, "build")
-        result.assertDiagnosticReported("w: ", "can be subclassed outside the library without restriction")
-        result.assertDiagnosticReported("w: ", "can be matched exhaustively by users")
+        result.assertDiagnosticReported("w: ", "can be subclassed outside the library")
+        result.assertDiagnosticReported("w: ", "exhaustively, so adding")
         result.assertDiagnosticReported("w: ", "has no `KDoc`")
         result.assertDiagnosticReported("w: ", "abbreviates a function type")
-        result.assertDiagnosticReported("w: ", "bakes its constructor property list")
+        result.assertDiagnosticReported("w: ", "exposes its constructor property list")
         result.assertDiagnosticReported("w: ", "neither declares nor inherits an `equals`")
         result.assertDiagnosticReported("w: ", "neither declares nor inherits a `hashCode`")
         result.assertDiagnosticReported("w: ", "neither declares nor inherits a `toString`")
@@ -127,13 +127,13 @@ class WatchdogProjectTest {
         result.assertDiagnosticReported("w: ", "appear in the opposite relative order in another overload")
         result.assertDiagnosticReported("w: ", "contains logic beyond a single thin delegating statement")
         result.assertDiagnosticReported("w: ", "mangles the JVM method name")
-        result.assertDiagnosticReported("w: ", "still lands in the API surface Java sources see")
-        result.assertDiagnosticReported("w: ", "compiles to an instance method on the nested `Companion` class")
-        result.assertDiagnosticReported("w: ", "leaves its getter on the nested companion class")
+        result.assertDiagnosticReported("w: ", "Hide it from Java with `@JvmSynthetic`")
+        result.assertDiagnosticReported("w: ", "compiles to an instance method of the nested `Companion` class")
+        result.assertDiagnosticReported("w: ", "has its getter on the nested companion class")
         result.assertDiagnosticReported("w: ", "Java-visible top-level functions")
         result.assertDiagnosticReported("w: ", "declares default parameter values")
-        result.assertDiagnosticReported("w: ", "allows the `FUNCTION` annotation target")
-        result.assertDiagnosticReported("w: ", "declares no annotation targets")
+        result.assertDiagnosticReported("w: ", "declares the `FUNCTION` annotation target")
+        result.assertDiagnosticReported("w: ", "declares no `@Target`")
         result.assertDiagnosticReported("w: ", "has no effect on this parameter type")
     }
 
@@ -153,8 +153,8 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = buildAndFail(project.rootDir, "build")
-        result.assertDiagnosticReported("e: ", "can be subclassed outside the library without restriction")
-        result.assertDiagnosticReported("e: ", "can be matched exhaustively by users")
+        result.assertDiagnosticReported("e: ", "can be subclassed outside the library")
+        result.assertDiagnosticReported("e: ", "exhaustively, so adding")
         result.assertDiagnosticReported("w: ", "has no `KDoc`")
     }
 
@@ -180,7 +180,7 @@ class WatchdogProjectTest {
         result.assertDiagnosticReported("e: ", "has no `KDoc`")
         // ...while the whole group is off, the explicitly set severity included.
         assertFalse(result.output.contains("has the `value class`"))
-        assertFalse(result.output.contains("still lands in the API surface Java sources see"))
+        assertFalse(result.output.contains("Hide it from Java with `@JvmSynthetic`"))
         assertFalse(result.output.contains("The `companion object`"))
         assertFalse(result.output.contains("The facade class"))
         assertFalse(result.output.contains("declares default parameter values"))
@@ -203,8 +203,8 @@ class WatchdogProjectTest {
 
         val result = buildAndFail(project.rootDir, "build")
         // The remaining diagnostics still fail the build...
-        result.assertDiagnosticReported("e: ", "can be subclassed outside the library without restriction")
-        result.assertDiagnosticReported("e: ", "can be matched exhaustively by users")
+        result.assertDiagnosticReported("e: ", "can be subclassed outside the library")
+        result.assertDiagnosticReported("e: ", "exhaustively, so adding")
         // ...while the disabled ones are not reported at all.
         assertFalse(result.output.contains("has no `KDoc`"))
         assertFalse(result.output.contains("neither declares nor inherits an `equals`"))
@@ -305,10 +305,10 @@ class WatchdogProjectTest {
 
         val result = build(project.rootDir, "build")
         assertFalse(result.output.contains("can be subclassed outside the library"))
-        assertFalse(result.output.contains("can be matched exhaustively by users"))
+        assertFalse(result.output.contains("exhaustively, so adding"))
         assertFalse(result.output.contains("has no `KDoc`"))
         assertFalse(result.output.contains("abbreviates a function type"))
-        assertFalse(result.output.contains("bakes its constructor property list"))
+        assertFalse(result.output.contains("exposes its constructor property list"))
         assertFalse(result.output.contains("neither declares nor inherits an `equals`"))
         assertFalse(result.output.contains("neither declares nor inherits a `hashCode`"))
         assertFalse(result.output.contains("neither declares nor inherits a `toString`"))
@@ -320,7 +320,7 @@ class WatchdogProjectTest {
         assertFalse(result.output.contains("appear in the opposite relative order in another overload"))
         assertFalse(result.output.contains("contains logic beyond a single thin delegating statement"))
         assertFalse(result.output.contains("has the `value class`"))
-        assertFalse(result.output.contains("still lands in the API surface Java sources see"))
+        assertFalse(result.output.contains("Hide it from Java with `@JvmSynthetic`"))
         assertFalse(result.output.contains("The `companion object`"))
         assertFalse(result.output.contains("The facade class"))
         assertFalse(result.output.contains("declares default parameter values"))
@@ -335,10 +335,10 @@ class WatchdogProjectTest {
 
         val result = build(project.rootDir, "build")
         assertFalse(result.output.contains("can be subclassed outside the library"))
-        assertFalse(result.output.contains("can be matched exhaustively by users"))
+        assertFalse(result.output.contains("exhaustively, so adding"))
         assertFalse(result.output.contains("has no `KDoc`"))
         assertFalse(result.output.contains("abbreviates a function type"))
-        assertFalse(result.output.contains("bakes its constructor property list"))
+        assertFalse(result.output.contains("exposes its constructor property list"))
         assertFalse(result.output.contains("neither declares nor inherits an `equals`"))
         assertFalse(result.output.contains("neither declares nor inherits a `hashCode`"))
         assertFalse(result.output.contains("neither declares nor inherits a `toString`"))
@@ -350,7 +350,7 @@ class WatchdogProjectTest {
         assertFalse(result.output.contains("appear in the opposite relative order in another overload"))
         assertFalse(result.output.contains("contains logic beyond a single thin delegating statement"))
         assertFalse(result.output.contains("has the `value class`"))
-        assertFalse(result.output.contains("still lands in the API surface Java sources see"))
+        assertFalse(result.output.contains("Hide it from Java with `@JvmSynthetic`"))
         assertFalse(result.output.contains("The `companion object`"))
         assertFalse(result.output.contains("The facade class"))
         assertFalse(result.output.contains("declares default parameter values"))
@@ -520,7 +520,7 @@ class WatchdogProjectTest {
 
         val result = build(project.rootDir, "compileKotlinJvm")
         val kotlinOnlyReports = result.output.lineSequence()
-            .filter { "still lands in the API surface Java sources see" in it }
+            .filter { "Hide it from Java with `@JvmSynthetic`" in it }
             .toList()
         val defaultReports = result.output.lineSequence()
             .filter { "declares default parameter values" in it }
@@ -591,7 +591,7 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = build(project.rootDir, "compileKotlinJvm")
-        assertFalse(result.output.contains("bakes its constructor property list"), result.output)
+        assertFalse(result.output.contains("exposes its constructor property list"), result.output)
         assertFalse(result.output.contains("neither declares nor inherits"), result.output)
         assertFalse(result.output.contains("contains logic beyond"), result.output)
     }
@@ -687,7 +687,7 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = buildAndFail(agpCompatibleGradle, project.rootDir, "compileAndroidMain")
-        result.assertDiagnosticReported("e: ", "can be subclassed outside the library without restriction")
+        result.assertDiagnosticReported("e: ", "can be subclassed outside the library")
         result.assertDiagnosticReported("e: ", "has no `KDoc`")
         result.assertDiagnosticReported("e: ", "exposes a nullable `Boolean`")
     }
@@ -728,7 +728,7 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = buildAndFail(project.rootDir, "compileAndroidMain")
-        result.assertDiagnosticReported("e: ", "can be subclassed outside the library without restriction")
+        result.assertDiagnosticReported("e: ", "can be subclassed outside the library")
         result.assertDiagnosticReported("e: ", "has no `KDoc`")
         result.assertDiagnosticReported("e: ", "exposes a nullable `Boolean`")
     }
@@ -769,7 +769,7 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = buildAndFail(agpCompatibleGradle, project.rootDir, "compileDebugKotlinAndroid")
-        result.assertDiagnosticReported("e: ", "can be subclassed outside the library without restriction")
+        result.assertDiagnosticReported("e: ", "can be subclassed outside the library")
         result.assertDiagnosticReported("e: ", "has no `KDoc`")
         result.assertDiagnosticReported("e: ", "exposes a nullable `Boolean`")
     }
@@ -815,7 +815,7 @@ class WatchdogProjectTest {
 
         val result = buildAndFail(project.rootDir, "build")
         // The unmarked control declaration proves the checks ran in the consuming module...
-        result.assertDiagnosticReported("e: ", "`WatchedClass` is part of the public API but has no `KDoc`")
+        result.assertDiagnosticReported("e: ", "`WatchedClass` has no `KDoc`")
         // ...while declarations marked with the dependency's marker annotation are exempt.
         assertFalse(result.output.contains("InternalOpenClass"))
         assertFalse(result.output.contains("memberOfInternal"))
@@ -823,7 +823,7 @@ class WatchdogProjectTest {
         assertFalse(result.output.contains("INTERNAL_ENTRY"))
         assertFalse(result.output.contains("internalFunction"))
         assertFalse(result.output.contains("can be subclassed outside the library"))
-        assertFalse(result.output.contains("can be matched exhaustively by users"))
+        assertFalse(result.output.contains("exhaustively, so adding"))
     }
 
     @Test
@@ -860,7 +860,7 @@ class WatchdogProjectTest {
 
         val result = buildAndFail(project.rootDir, "build")
         // The unmarked control declaration proves the checks ran in the consuming module...
-        result.assertDiagnosticReported("e: ", "`WatchedClass` is part of the public API but has no `KDoc`")
+        result.assertDiagnosticReported("e: ", "`WatchedClass` has no `KDoc`")
         // ...a supported signature exposing the dependency's internal type is reported, naming
         // the configured annotation...
         result.assertDiagnosticReported(
@@ -875,7 +875,7 @@ class WatchdogProjectTest {
         assertFalse(result.output.contains("INTERNAL_ENTRY"))
         assertFalse(result.output.contains("internalFunction"))
         assertFalse(result.output.contains("can be subclassed outside the library"))
-        assertFalse(result.output.contains("can be matched exhaustively by users"))
+        assertFalse(result.output.contains("exhaustively, so adding"))
     }
 
     @Test
@@ -895,8 +895,8 @@ class WatchdogProjectTest {
         val result = buildAndFail(project.rootDir, "build")
         result.assertDiagnosticReported(
             "e: ",
-            "publicly exposes `test.model.ExternalModel`, but the dependency providing that type " +
-                    "is not published transitively",
+            "publicly exposes `test.model.ExternalModel`, but the dependency with that type " +
+                    "isn't published transitively",
         )
         result.assertDiagnosticReported("e: ", "The type alias `ExternalModels` publicly exposes")
         result.assertDiagnosticReported("e: ", "The supertype of `Consumer` publicly exposes")
@@ -920,7 +920,7 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("not published transitively to consumers"))
+        assertFalse(result.output.contains("published transitively to consumers"))
     }
 
     @Test
@@ -938,7 +938,7 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("not published transitively to consumers"))
+        assertFalse(result.output.contains("published transitively to consumers"))
     }
 
     @Test
@@ -985,8 +985,8 @@ class WatchdogProjectTest {
         assertEquals(TaskOutcome.FAILED, result.task(":compileKotlinJs")?.outcome)
         result.assertDiagnosticReported(
             "e: ",
-            "publicly exposes `test.model.ExternalModel`, but the dependency providing that type " +
-                    "is not published transitively",
+            "publicly exposes `test.model.ExternalModel`, but the dependency with that type " +
+                    "isn't published transitively",
         )
     }
 
@@ -1008,7 +1008,7 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = build(project.rootDir, "compileKotlinJvm", "compileKotlinJs")
-        assertFalse(result.output.contains("not published transitively to consumers"))
+        assertFalse(result.output.contains("published transitively to consumers"))
     }
 
     @Test
@@ -1032,8 +1032,8 @@ class WatchdogProjectTest {
         val result = buildAndFail(project.rootDir, "build")
         result.assertDiagnosticReported(
             "e: ",
-            "publicly exposes `test.model.ExternalJavaModel`, but the dependency providing that type " +
-                    "is not published transitively",
+            "publicly exposes `test.model.ExternalJavaModel`, but the dependency with that type " +
+                    "isn't published transitively",
         )
     }
 
@@ -1056,7 +1056,7 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("not published transitively to consumers"))
+        assertFalse(result.output.contains("published transitively to consumers"))
     }
 
     @Test
@@ -1077,8 +1077,8 @@ class WatchdogProjectTest {
         val result = buildAndFail(agpCompatibleGradle, project.rootDir, "compileDebugKotlin")
         result.assertDiagnosticReported(
             "e: ",
-            "publicly exposes `test.model.ExternalModel`, but the dependency providing that type " +
-                    "is not published transitively",
+            "publicly exposes `test.model.ExternalModel`, but the dependency with that type " +
+                    "isn't published transitively",
         )
     }
 
@@ -1096,7 +1096,7 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = build(agpCompatibleGradle, project.rootDir, "compileDebugKotlin")
-        assertFalse(result.output.contains("not published transitively to consumers"))
+        assertFalse(result.output.contains("published transitively to consumers"))
     }
 
     @Test
@@ -1117,8 +1117,8 @@ class WatchdogProjectTest {
         val result = buildAndFail(project.rootDir, "compileDebugKotlin")
         result.assertDiagnosticReported(
             "e: ",
-            "publicly exposes `test.model.ExternalModel`, but the dependency providing that type " +
-                    "is not published transitively",
+            "publicly exposes `test.model.ExternalModel`, but the dependency with that type " +
+                    "isn't published transitively",
         )
     }
 
@@ -1136,7 +1136,7 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = build(project.rootDir, "compileDebugKotlin")
-        assertFalse(result.output.contains("not published transitively to consumers"))
+        assertFalse(result.output.contains("published transitively to consumers"))
     }
 
     // Android libraries: the dependency collection corner cases of AGP, on both AGP generations.
@@ -1764,7 +1764,7 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("not published transitively to consumers"))
+        assertFalse(result.output.contains("published transitively to consumers"))
     }
 
     @Test
@@ -1788,7 +1788,7 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("not published transitively to consumers"))
+        assertFalse(result.output.contains("published transitively to consumers"))
     }
 
     @Test
@@ -1817,7 +1817,7 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("not published transitively to consumers"))
+        assertFalse(result.output.contains("published transitively to consumers"))
     }
 
     @Test
@@ -1846,8 +1846,8 @@ class WatchdogProjectTest {
         val result = buildAndFail(project.rootDir, "build")
         result.assertDiagnosticReported(
             "e: ",
-            "publicly exposes `test.model.ExternalModel`, but the dependency providing that type " +
-                    "is not published transitively",
+            "publicly exposes `test.model.ExternalModel`, but the dependency with that type " +
+                    "isn't published transitively",
         )
     }
 
@@ -1876,7 +1876,7 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("not published transitively to consumers"))
+        assertFalse(result.output.contains("published transitively to consumers"))
     }
 
     @Test
@@ -1900,7 +1900,7 @@ class WatchdogProjectTest {
         }.gradleProject
 
         val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("not published transitively to consumers"))
+        assertFalse(result.output.contains("published transitively to consumers"))
     }
 
     @Test
@@ -1930,7 +1930,7 @@ class WatchdogProjectTest {
         }
 
         val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("not published transitively to consumers"))
+        assertFalse(result.output.contains("published transitively to consumers"))
     }
 
     @Test
@@ -1964,7 +1964,7 @@ class WatchdogProjectTest {
         project.rootDir.resolve("build.gradle.kts").prependImport(EXEMPT_IMPORT)
 
         val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("not published transitively to consumers"))
+        assertFalse(result.output.contains("published transitively to consumers"))
     }
 
     @Test
@@ -1993,7 +1993,7 @@ class WatchdogProjectTest {
         project.rootDir.resolve("model/build.gradle.kts").prependImport(EXEMPT_IMPORT)
 
         val result = build(project.rootDir, "build")
-        assertFalse(result.output.contains("not published transitively to consumers"))
+        assertFalse(result.output.contains("published transitively to consumers"))
     }
 
     @Test
@@ -2010,8 +2010,8 @@ class WatchdogProjectTest {
         val result = buildAndFail(project.rootDir, "build")
         result.assertDiagnosticReported(
             "e: ",
-            "publicly exposes `kotlinx.coroutines.Job`, but the dependency providing that type " +
-                    "is not published transitively",
+            "publicly exposes `kotlinx.coroutines.Job`, but the dependency with that type " +
+                    "isn't published transitively",
         )
     }
 
@@ -2288,11 +2288,11 @@ class WatchdogProjectTest {
     private fun BuildResult.assertNonTransitiveExposureReported(type: String) =
         assertDiagnosticReported(
             "e: ",
-            "publicly exposes `$type`, but the dependency providing that type is not published transitively",
+            "publicly exposes `$type`, but the dependency with that type isn't published transitively",
         )
 
     private fun BuildResult.assertNoNonTransitiveExposureReported() =
-        assertFalse(output.contains("not published transitively to consumers"), output)
+        assertFalse(output.contains("published transitively to consumers"), output)
 
     private fun BuildResult.hasStatefulDiagnostic(className: String, missingMember: String): Boolean =
         output.lineSequence().any { "`$className`" in it && "inherits $missingMember" in it }

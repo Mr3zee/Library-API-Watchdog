@@ -149,7 +149,7 @@ public class Holder(public val checked: CheckState)
 ## Exemption
 
 <!-- diagnostic-exemption: NULLABLE_BOOLEAN_PUBLIC_API -->
-If this API shape is intentional, apply `@IntentionallyNullableBoolean` to the declaration,
+If this is intended, apply `@IntentionallyNullableBoolean` to the declaration,
 parameter, or type usage.
 
 Use the exemption when the nullable Boolean is a deliberate part of the API contract.

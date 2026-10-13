@@ -95,7 +95,7 @@ public fun interface SuspendAction {
 ## Exemption
 
 <!-- diagnostic-exemption: FUNCTION_TYPE_ALIAS_PUBLIC_API -->
-If this API shape is intentional, apply `@IntentionallyFunctionTypeAlias` to the type alias.
+If this is intended, apply `@IntentionallyFunctionTypeAlias` to the type alias.
 
 ```kotlin
 // !hide-focused

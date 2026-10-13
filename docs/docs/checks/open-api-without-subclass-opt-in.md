@@ -102,7 +102,7 @@ public interface Plugin {
 
 <!-- diagnostic-exemption: OPEN_API_WITHOUT_SUBCLASS_OPT_IN -->
 <!-- diagnostic-exemption-substitution: class or interface => {0} -->
-If this API shape is intentional, apply `@IntentionallyOpen` to the class or interface.
+If this is intended, apply `@IntentionallyOpen` to the class or interface.
 
 Use the exemption when unrestricted subclassing is an intended, stable part of the contract:
 

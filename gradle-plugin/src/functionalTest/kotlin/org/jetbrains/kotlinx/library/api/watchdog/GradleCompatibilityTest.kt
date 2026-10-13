@@ -164,6 +164,6 @@ class GradleCompatibilityTest {
         val result = buildAndFail(project.rootDir, "compileKotlin")
 
         assertContains(result.output, "e: ")
-        assertContains(result.output, "can be subclassed outside the library without restriction")
+        assertContains(result.output, "can be subclassed outside the library")
     }
 }

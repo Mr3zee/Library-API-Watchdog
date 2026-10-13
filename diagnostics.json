@@ -1,37 +1,33 @@
 {
   "$comment": [
-    "The single source of truth for watchdog diagnostic texts, shared by the compiler plugin and",
-    "the documentation website.",
+    "The source of every watchdog diagnostic text.",
     "",
-    "Consumers:",
-    "  - :kotlin-library-api-watchdog-compiler-plugin generates WatchdogDiagnosticMessages from this file (see its",
-    "    build.gradle.kts). The generator appends a final 'See more: <docsBaseUrl><docs>' section",
-    "    to every message, after messageTrailer if present, and escapes ' as '' for messages with",
-    "    parameters, which the compiler renders through java.text.MessageFormat.",
-    "  - :kotlin-library-api-watchdog-gradle-plugin generates the public WatchdogChecks object from this file (see",
-    "    GradlePluginConventionPlugin): one const val per diagnostic name for apiWatchdog.ignore calls.",
-    "  - docs/plugins/diagnostics.mjs validates the '// !diag[/range/] DIAGNOSTIC_NAME [params]'",
-    "    Code Hike annotations in docs samples. The docs Code component renders their underlines,",
-    "    fills the message template parameters, and shows the resulting diagnostic tooltips.",
+    "Generated from this file:",
+    "  - WatchdogDiagnosticMessages in :kotlin-library-api-watchdog-compiler-plugin (build.gradle.kts).",
+    "    The generator adds 'See more: <docsBaseUrl><docs>' after every message and its messageTrailer.",
+    "    The compiler formats a message with parameters with java.text.MessageFormat, so the",
+    "    generator escapes ' as ''.",
+    "  - WatchdogChecks in :kotlin-library-api-watchdog-gradle-plugin (GradlePluginConventionPlugin):",
+    "    one const val for each diagnostic name.",
+    "  - The '// !diag[/range/] DIAGNOSTIC_NAME [params]' annotations in docs samples, which",
+    "    docs/plugins/diagnostics.mjs validates and the docs Code component renders as tooltips.",
     "",
     "Fields:",
-    "  name    - the diagnostic name, matching the property in WatchdogDiagnostics.",
-    "  title   - the H1 of the check page, shown in the docs tooltip.",
-    "  docs    - the check page path under docsBaseUrl, without an extension.",
-    "  message - the message template as source-wrapped lines. Consumers join adjacent lines with",
-    "            spaces and preserve empty lines as paragraph breaks. Docs render it as Markdown. The",
-    "            compiler uses the same text. Enclose every code reference in backticks.",
-    "            Write ' as a single quote: the generator escapes it where MessageFormat needs it.",
-    "            Do not spell out the documentation link. The generator derives it from docs.",
-    "  messageTrailer - optional sentence appended to the message before the documentation link.",
-    "  parameterValues - optional named values for long or reusable diagnostic parameters, using the",
-    "                    same source-wrapped line format as message. Values may have {0}, {1}, ...",
-    "                    placeholders. Compiler checkers resolve them through generated code. Docs",
-    "                    annotations use $name or $name(value) references.",
+    "  name: the diagnostic name. Matches the property in WatchdogDiagnostics.",
+    "  title: the H1 of the check page. Shown in the docs tooltip.",
+    "  docs: the check page path under docsBaseUrl, without an extension.",
+    "  message: the message template. Consumers join adjacent lines with a space and keep an empty",
+    "    line as a paragraph break. Docs render it as Markdown.",
+    "  messageTrailer: an optional sentence after the message, before the documentation link.",
+    "  parameterValues: named values for long or reusable parameters, in the format of message.",
+    "    A value can have {0}, {1}, ... placeholders. Checkers resolve a value through generated",
+    "    code. Docs annotations reference it as $name or $name(value).",
     "",
-    "  Links in message, messageTrailer, and parameterValues are written as Markdown links,",
-    "  [text](url). The docs render them as links. The generator rewrites them to 'text (url)'",
-    "  so compiler output stays readable."
+    "Text rules:",
+    "  - Enclose every code reference in backticks.",
+    "  - Write ' as a single quote. The generator escapes it.",
+    "  - Don't write the documentation link. The generator derives it from docs.",
+    "  - Write a link as [text](url). The generator rewrites it to 'text (url)' for compiler output."
   ],
   "docsBaseUrl": "https://mr3zee.github.io/Library-API-Watchdog/",
   "diagnostics": [
@@ -41,19 +37,16 @@
       "docs": "checks/open-api-without-subclass-opt-in",
       "parameterValues": {
         "classFix": [
-          "Mark it with `@SubclassOptInRequired` to control external subclassing. Alternatively, make",
-          "every externally visible constructor `internal` or `private`."
+          "Apply `@SubclassOptInRequired`, or make every constructor `internal` or `private`."
         ],
         "interfaceFix": [
-          "Mark it with `@SubclassOptInRequired` to control external subclassing."
+          "Apply `@SubclassOptInRequired`."
         ]
       },
       "message": [
-        "The {0} `{1}` can be subclassed outside the library without restriction, so the library can no",
-        "longer add abstract members, change existing members' signatures, or tighten invariants without",
-        "breaking external subclasses. {2}",
+        "The {0} `{1}` can be subclassed outside the library. {2}",
         "",
-        "If this API shape is intentional, apply `@IntentionallyOpen` to the {0}."
+        "If this is intended, apply `@IntentionallyOpen` to the {0}."
       ]
     },
     {
@@ -61,9 +54,8 @@
       "title": "Subclass opt-in without markers",
       "docs": "checks/subclass-opt-in-without-markers",
       "message": [
-        "`@SubclassOptInRequired` lists no marker classes, so any external class can subclass `{0}`",
-        "without opting in to anything, and the library keeps the evolution risk it meant to opt out of.",
-        "Pass at least one opt-in marker class with a description of why the subclassing is restricted."
+        "`@SubclassOptInRequired` on `{0}` lists no marker classes, so any external class can subclass it.",
+        "Pass at least one opt-in marker class or remove the annotation."
       ]
     },
     {
@@ -72,18 +64,17 @@
       "docs": "checks/exhaustive-public-api",
       "parameterValues": {
         "enumFix": [
-          "To keep the set extensible, replace the enum with a regular class and named instances."
+          "Replace the enum with a regular class and named instances."
         ],
         "sealedFix": [
-          "To keep the subtype set extensible, replace the sealed hierarchy with a non-sealed class or",
-          "interface and use `@SubclassOptInRequired` to control external subclassing."
+          "Replace the sealed hierarchy with an open class or interface marked with",
+          "`@SubclassOptInRequired`."
         ]
       },
       "message": [
-        "The {0} `{1}` can be matched exhaustively by users (a `when` with no `else` branch), so adding {2}",
-        "later makes every such `when` stop compiling. {3}",
+        "Users can match the {0} `{1}` exhaustively, so adding {2} later breaks their `when` expressions. {3}",
         "",
-        "If this API shape is intentional, apply `@IntentionallyExhaustive` to the {0}."
+        "If this is intended, apply `@IntentionallyExhaustive` to the {0}."
       ]
     },
     {
@@ -95,21 +86,18 @@
           "Document the behavior users can rely on."
         ],
         "memberPropertyDocumentation": [
-          "Document the behavior users can rely on. Add `KDoc` directly, or add an `@property` tag for",
-          "the property to the containing class's `KDoc`."
+          "Document the behavior users can rely on in a `KDoc` on the property or in an `@property` tag",
+          "of the class `KDoc`."
         ],
         "constructorPropertyDocumentation": [
-          "Document the behavior users can rely on. Add `KDoc` directly, or add an `@property` or `@param`",
-          "tag for the property to the containing class's `KDoc`."
+          "Document the behavior users can rely on in a `KDoc` on the property or in an `@property` or",
+          "`@param` tag of the class `KDoc`."
         ]
       },
       "message": [
-        "The {0} `{1}` is part of the public API but has no `KDoc`, so users can only guess the usage",
-        "contract from the implementation, and any later change risks breaking a usage nobody wrote down as",
-        "supported. {2}",
+        "The public {0} `{1}` has no `KDoc`. {2}",
         "",
-        "If this API shape is intentional, apply `@IntentionallyUndocumented` directly to the undocumented",
-        "declaration."
+        "If this is intended, apply `@IntentionallyUndocumented` to the declaration."
       ]
     },
     {
@@ -117,12 +105,10 @@
       "title": "Function type aliases in public API",
       "docs": "checks/function-type-alias-public-api",
       "message": [
-        "The type alias `{0}` abbreviates a function type. The alias is erased from the compiled API, and users",
-        "bind to the bare function type. The problem is that it can never grow members, default implementations, or",
-        "constraints later. Declare a `fun interface` instead to keep lambda ergonomics behind a stable",
-        "nominal type.",
+        "`{0}` is a type alias for a function type, and users bind it. This complicates possible future evolution.",
+        "Declare a `fun interface` instead.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyFunctionTypeAlias` to the type alias."
+        "If this is intended, apply `@IntentionallyFunctionTypeAlias` to the type alias."
       ]
     },
     {
@@ -130,13 +116,12 @@
       "title": "Data classes in public API",
       "docs": "checks/data-class-public-api",
       "message": [
-        "The `data class` `{0}` bakes its constructor property list into the compiled API through the",
-        "generated `copy` and `componentN` functions and the constructor itself, so adding, removing, or",
-        "reordering a property later is a breaking change. Declare a regular class and implement",
-        "`equals`/`hashCode`/`toString` explicitly, or generate them with the",
-        "[Poko](https://github.com/drewhamilton/Poko) library.",
+        "The `data class` `{0}` exposes its constructor property list through `copy`, `componentN`, and",
+        "the constructor, so adding, removing, or reordering a property breaks users. Declare a regular class, and",
+        "implement `equals`, `hashCode`, and `toString` or generate them with",
+        "[Poko](https://github.com/drewhamilton/Poko).",
         "",
-        "If this API shape is intentional, apply `@IntentionallyDataClass` to the class."
+        "If this is intended, apply `@IntentionallyDataClass` to the class."
       ]
     },
     {
@@ -157,13 +142,12 @@
         ]
       },
       "message": [
-        "The class `{0}` holds state - at least one property with a backing field - but neither declares nor",
-        "inherits an `equals` implementation, so comparisons use object identity instead of the class's",
-        "meaningful state. Override `equals` and `hashCode` together. {1} Alternatively, in IntelliJ IDEA",
-        "press `{2}` or choose `Code | Generate` to generate the methods.",
+        "The class `{0}` has a property with a backing field but neither declares nor inherits an `equals`",
+        "implementation. Comparisons use object identity. Override `equals` and `hashCode` together. {1}",
+        "In IntelliJ IDEA, press `{2}` or choose `Code | Generate`.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyWithoutEquals` to the class, or apply",
-        "`@IntentionallyWithoutEqualsHashCodeOrToString` to acknowledge all three inherited implementations."
+        "If this is intended, apply `@IntentionallyWithoutEquals` or",
+        "`@IntentionallyWithoutEqualsHashCodeOrToString` to the class."
       ]
     },
     {
@@ -184,13 +168,12 @@
         ]
       },
       "message": [
-        "The class `{0}` holds state - at least one property with a backing field - but neither declares nor",
-        "inherits a `hashCode` implementation, so hash-based collections use object identity instead of the",
-        "class's meaningful state. Override `equals` and `hashCode` together. {1} Alternatively, in IntelliJ",
-        "IDEA press `{2}` or choose `Code | Generate` to generate the methods.",
+        "The class `{0}` has a property with a backing field but neither declares nor inherits a `hashCode`",
+        "implementation. Hash-based collections use object identity. Override `equals` and `hashCode`",
+        "together. {1} In IntelliJ IDEA, press `{2}` or choose `Code | Generate`.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyWithoutHashCode` to the class, or apply",
-        "`@IntentionallyWithoutEqualsHashCodeOrToString` to acknowledge all three inherited implementations."
+        "If this is intended, apply `@IntentionallyWithoutHashCode` or",
+        "`@IntentionallyWithoutEqualsHashCodeOrToString` to the class."
       ]
     },
     {
@@ -211,14 +194,12 @@
         ]
       },
       "message": [
-        "The class `{0}` holds state - at least one property with a backing field - but neither declares nor",
-        "inherits a `toString` implementation, so instances render as the opaque class-name-with-hash-code",
-        "default and reveal nothing in logs and debugger output. Override `toString` to render the current",
-        "state. {1} Alternatively, in IntelliJ IDEA press `{2}` or choose `Code | Generate` to generate the",
-        "methods.",
+        "The class `{0}` has a property with a backing field but neither declares nor inherits a `toString`",
+        "implementation. Instances print as a class name and a hash code. Override `toString` to print the",
+        "state. {1} In IntelliJ IDEA, press `{2}` or choose `Code | Generate`.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyWithoutToString` to the class, or apply",
-        "`@IntentionallyWithoutEqualsHashCodeOrToString` to acknowledge all three inherited implementations."
+        "If this is intended, apply `@IntentionallyWithoutToString` or",
+        "`@IntentionallyWithoutEqualsHashCodeOrToString` to the class."
       ]
     },
     {
@@ -227,23 +208,22 @@
       "docs": "checks/mutable-collection-public-api",
       "parameterValues": {
         "returnTypeFix": [
-          "Expose a read-only type instead (arrays count as mutable collections too), and hand out a",
-          "defensive copy where needed."
+          "Expose a read-only type, and return a defensive copy where needed. Arrays count as mutable",
+          "collections too."
         ],
         "parameterFix": [
-          "Accept a read-only type instead (arrays count as mutable collections too), and make a copy",
-          "before mutating it."
+          "Accept a read-only type, and copy it before you mutate it. Arrays count as mutable collections",
+          "too."
         ],
         "typeParameterFix": [
-          "Constrain the type parameter to a read-only collection type instead."
+          "Constrain the type parameter to a read-only collection type."
         ]
       },
       "message": [
-        "The {0} `{1}` exposes the mutable collection type `{2}`. Once a mutable collection is shared across",
-        "the API boundary, it is unclear whether user-side and library-side mutations affect each other. {3}",
+        "The {0} `{1}` exposes the mutable collection type `{2}`. {3}",
         "",
-        "If this API shape is intentional, apply `@IntentionallyMutableCollection` to the declaration,",
-        "parameter, or type usage."
+        "If this is intended, apply `@IntentionallyMutableCollection` to the declaration, parameter, or type",
+        "usage."
       ]
     },
     {
@@ -259,13 +239,11 @@
         ]
       },
       "message": [
-        "The {0} `{1}` exposes the tuple type `{2}`. Tuple components carry no domain meaning: at the use",
-        "site {3} and positional destructuring reveal nothing about the values, and the",
-        "fixed shape can't evolve - adding a value means switching to a different type, breaking users.",
-        "Declare a small class with descriptively named properties instead.",
+        "The {0} `{1}` exposes the tuple type `{2}`, whose components {3} carry no domain meaning.",
+        "Declare a small class with named properties instead.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyPairOrTriple` to the declaration,",
-        "parameter, or type usage."
+        "If this is intended, apply `@IntentionallyPairOrTriple` to the declaration, parameter, or type",
+        "usage."
       ]
     },
     {
@@ -273,12 +251,10 @@
       "title": "Required parameters after optional ones",
       "docs": "checks/required-parameter-after-optional",
       "message": [
-        "The parameter `{0}` of `{1}` is required but declared after an optional parameter, so it can't be",
-        "passed positionally without re-stating the defaults in front of it. Declare parameters from the",
-        "general to the specific: essential inputs first, optional inputs - defaulted and `vararg` parameters",
-        "- last. Move the required parameter in front of the optional ones.",
+        "The parameter `{0}` of `{1}` is required but declared after an optional parameter. Move it in",
+        "front of the optional parameters.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyRequiredParameterAfterOptional` to the {2}."
+        "If this is intended, apply `@IntentionallyRequiredParameterAfterOptional` to the {2}."
       ]
     },
     {
@@ -287,11 +263,9 @@
       "docs": "checks/inconsistent-parameter-order-in-overloads",
       "message": [
         "The parameters `{0}` and `{1}` of `{2}` appear in the opposite relative order in another overload.",
-        "Users transfer their expectations between overloads, so an inconsistent order of same-named",
-        "parameters invites silently swapped arguments that still compile. Keep shared parameters in the",
-        "same relative order across overloads.",
+        "Use the same relative order in every overload.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyInconsistentParameterOrder` to the {3}."
+        "If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the {3}."
       ]
     },
     {
@@ -299,13 +273,11 @@
       "title": "Boolean parameters in public API",
       "docs": "checks/boolean-parameter-public-api",
       "message": [
-        "The function `{0}` takes the `Boolean` parameter `{1}`. At the call site a bare `true`/`false`",
-        "reveals nothing about its meaning, and users can't be forced to name the argument they pass.",
-        "Introduce separate, descriptively named functions for each mode, or replace the parameter with an",
+        "The function `{0}` takes the `Boolean` parameter `{1}`, and a bare `true` or `false` at the call",
+        "site is ambiguous. Declare a named function for each mode, or replace the parameter with an",
         "`enum class`.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyBooleanParameter` to the function or Boolean",
-        "parameter."
+        "If this is intended, apply `@IntentionallyBooleanParameter` to the function or Boolean parameter."
       ]
     },
     {
@@ -313,12 +285,11 @@
       "title": "Nullable Booleans in public API",
       "docs": "checks/nullable-boolean-public-api",
       "message": [
-        "The {0} `{1}` exposes a nullable `Boolean`. `Boolean?` models three states but names only two of",
-        "them, so every use site has to know what `null` stands for, and three-state logic hides in",
-        "two-branch `if`s. Replace it with an `enum class` naming all three states, or drop the third state.",
+        "The {0} `{1}` exposes a nullable `Boolean`, which has three states but names only two. Replace it",
+        "with an `enum class` that names all three states, or remove the third state.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyNullableBoolean` to the declaration,",
-        "parameter, or type usage."
+        "If this is intended, apply `@IntentionallyNullableBoolean` to the declaration, parameter, or type",
+        "usage."
       ]
     },
     {
@@ -326,13 +297,11 @@
       "title": "Inline functions with logic",
       "docs": "checks/inline-function-with-logic",
       "message": [
-        "The {0} `{1}` contains logic beyond a single thin delegating statement. The compiler copies an",
-        "`inline` body into every user binary, so logic placed there - and its bugs - stays frozen in users",
-        "compiled against an old library version until they recompile. Extract the logic into a function",
-        "without the `inline` modifier (`@PublishedApi internal` if it should stay out of the public API)",
-        "and delegate to it.",
+        "The {0} `{1}` contains logic beyond a single thin delegating statement, and the compiler copies an",
+        "`inline` body into every user binary. Move the logic into a function without `inline`",
+        "(`@PublishedApi internal` keeps it out of the public API) and delegate to it.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyInlinedLogic` to the declaration."
+        "If this is intended, apply `@IntentionallyInlinedLogic` to the declaration."
       ]
     },
     {
@@ -341,52 +310,50 @@
       "docs": "checks/java-interop/mangled-jvm-name-public-api",
       "parameterValues": {
         "functionFix": [
-          "This mangles the JVM method name, so Java sources can't call it. Rename it with `@JvmName`,",
-          "or generate a Java-callable boxed variant with `@JvmExposeBoxed`."
+          "The compiler mangles the JVM method name, so Java can't call it. Rename it with `@JvmName`, or",
+          "add a boxed variant with `@JvmExposeBoxed`."
         ],
         "nonFinalFunctionFix": [
-          "This mangles the JVM method name, so Java sources can't call it. Open and abstract functions",
-          "support neither `@JvmName` nor a boxed variant from `@JvmExposeBoxed`, so change the signature",
-          "to avoid the value class if Java access is required."
+          "The compiler mangles the JVM method name, so Java can't call it. An open or abstract function",
+          "supports neither `@JvmName` nor `@JvmExposeBoxed`, so remove the value class from the signature",
+          "if Java needs access."
         ],
         "propertyGetterFix": [
-          "This mangles the getter's JVM name, so Java sources can't call the getter. Rename it with",
-          "`@get:JvmName`, or generate a Java-callable boxed variant with `@JvmExposeBoxed`."
+          "The compiler mangles the JVM name of the getter, so Java can't call it. Rename it with",
+          "`@get:JvmName`, or add a boxed variant with `@JvmExposeBoxed`."
         ],
         "propertySetterFix": [
-          "This mangles the setter's JVM name, so Java sources can't call the setter. Rename it with",
-          "`@set:JvmName`, or generate a Java-callable boxed variant with `@JvmExposeBoxed`."
+          "The compiler mangles the JVM name of the setter, so Java can't call it. Rename it with",
+          "`@set:JvmName`, or add a boxed variant with `@JvmExposeBoxed`."
         ],
         "propertyGetterAndSetterFix": [
-          "This mangles both accessors' JVM names, so Java sources can't call either accessor. Rename them",
-          "with `@get:JvmName` and `@set:JvmName`, or generate Java-callable boxed variants with",
-          "`@JvmExposeBoxed`."
+          "The compiler mangles the JVM names of both accessors, so Java can't call them. Rename them with",
+          "`@get:JvmName` and `@set:JvmName`, or add boxed variants with `@JvmExposeBoxed`."
         ],
         "nonFinalPropertyGetterFix": [
-          "This mangles the getter's JVM name, so Java sources can't call the getter. Open and abstract",
-          "properties support neither `@get:JvmName` nor a boxed getter from `@JvmExposeBoxed`, so change",
-          "the signature to avoid the value class if Java access is required."
+          "The compiler mangles the JVM name of the getter, so Java can't call it. An open or abstract",
+          "property supports neither `@get:JvmName` nor `@JvmExposeBoxed`, so remove the value class from",
+          "the signature if Java needs access."
         ],
         "nonFinalPropertySetterFix": [
-          "This mangles the setter's JVM name, so Java sources can't call the setter. Open and abstract",
-          "properties support neither `@set:JvmName` nor a boxed setter from `@JvmExposeBoxed`, so change",
-          "the signature to avoid the value class if Java access is required."
+          "The compiler mangles the JVM name of the setter, so Java can't call it. An open or abstract",
+          "property supports neither `@set:JvmName` nor `@JvmExposeBoxed`, so remove the value class from",
+          "the signature if Java needs access."
         ],
         "nonFinalPropertyGetterAndSetterFix": [
-          "This mangles both accessors' JVM names, so Java sources can't call either accessor. Open and",
-          "abstract properties support neither accessor `@JvmName` annotations nor boxed variants from",
-          "`@JvmExposeBoxed`, so change the signature to avoid the value class if Java access is required."
+          "The compiler mangles the JVM names of both accessors, so Java can't call them. An open or",
+          "abstract property supports neither accessor `@JvmName` nor `@JvmExposeBoxed`, so remove the",
+          "value class from the signature if Java needs access."
         ],
         "constructorFix": [
-          "This hides the source constructor behind a synthetic one, so Java sources can't call it. Generate",
-          "a Java-callable boxed constructor with `@JvmExposeBoxed`."
+          "The compiler hides the constructor behind a synthetic one, so Java can't call it. Add a boxed",
+          "constructor with `@JvmExposeBoxed`."
         ]
       },
       "message": [
         "The {0} `{1}` has the `value class` `{2}` in its signature. {3}",
         "",
-        "If this API shape is intentional, apply `@IntentionallyMangledJvmName` to the declaration or an",
-        "enclosing class."
+        "If this is intended, apply `@IntentionallyMangledJvmName` to the declaration or an enclosing class."
       ]
     },
     {
@@ -395,33 +362,28 @@
       "docs": "checks/java-interop/kotlin-only-api-without-jvm-synthetic",
       "parameterValues": {
         "suspend": [
-          "is a `suspend` function, which Java sees with a trailing `Continuation` parameter it can't provide",
-          "idiomatically"
+          "is a `suspend` function, which Java sees with an extra `Continuation` parameter"
         ],
         "reified": [
-          "declares a `reified` type parameter, which only inlining Kotlin call sites can substitute - calling",
-          "the compiled method from Java fails at runtime"
+          "declares a `reified` type parameter, so a call from Java fails at runtime"
         ],
         "suspendFunctionType": [
-          "takes a `suspend` function type in the parameter `{0}`, which a Java lambda can't implement",
-          "correctly"
+          "takes a `suspend` function type in the parameter `{0}`, which a Java lambda can't implement"
         ],
         "extensionFunctionType": [
-          "takes a function type with receiver in the parameter `{0}`, which a Java lambda can only emulate by",
-          "taking the receiver as an explicit first argument"
+          "takes a function type with receiver in the parameter `{0}`, which a Java lambda gets as an",
+          "explicit first argument"
         ],
         "unitFunctionType": [
-          "takes a `Unit`-returning function type in the parameter `{0}`, which forces a Java lambda to return",
-          "the `Unit.INSTANCE` token explicitly"
+          "takes a `Unit`-returning function type in the parameter `{0}`, so a Java lambda has to return",
+          "`Unit.INSTANCE`"
         ]
       },
       "message": [
-        "The function `{0}` {1}. Kotlin callers see the intended shape, but the function still lands in the",
-        "API surface Java sources see. Hide it from Java with `@JvmSynthetic`, or provide a Java-friendly",
+        "The function `{0}` {1}. Hide it from Java with `@JvmSynthetic`, and add a Java-friendly",
         "alternative.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyKotlinOnlyApi` to the function or an",
-        "enclosing class."
+        "If this is intended, apply `@IntentionallyKotlinOnlyApi` to the function or an enclosing class."
       ]
     },
     {
@@ -429,13 +391,12 @@
       "title": "Companion function without JvmStatic",
       "docs": "checks/java-interop/companion-api-without-jvm-static",
       "message": [
-        "The `companion object` function `{1}` compiles to an instance method on the nested `{2}`",
-        "class, so Java callers have to reach it as `{0}.{2}.{1}(...)`. Mark it with `@JvmStatic` to",
-        "additionally compile a static `{0}.{1}(...)` entry point for Java callers - Kotlin call sites are",
-        "unaffected. Alternatively, hide it from Java with `@JvmSynthetic`.",
+        "The `companion object` function `{1}` compiles to an instance method of the nested `{2}` class,",
+        "so Java callers write `{0}.{2}.{1}(...)`. Mark it with `@JvmStatic` to add a static",
+        "`{0}.{1}(...)` entry point, or hide it from Java with `@JvmSynthetic`.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyNonStaticCompanionApi` to the function or an",
-        "enclosing class."
+        "If this is intended, apply `@IntentionallyNonStaticCompanionApi` to the function or an enclosing",
+        "class."
       ]
     },
     {
@@ -444,25 +405,25 @@
       "docs": "checks/java-interop/companion-property-without-static-access",
       "parameterValues": {
         "getterFix": [
-          "Mark the property with `@JvmStatic` to add a static getter on `{0}`. To change only this accessor,",
-          "use `@get:JvmStatic` to expose it or `@get:JvmSynthetic` to hide it."
+          "Mark the property with `@JvmStatic` to add a static getter on `{0}`. To change only the getter,",
+          "use `@get:JvmStatic`, or hide it with `@get:JvmSynthetic`."
         ],
         "setterFix": [
-          "Mark the property with `@JvmStatic` to add a static setter on `{0}`. To change only this accessor,",
-          "use `@set:JvmStatic` to expose it or `@set:JvmSynthetic` to hide it."
+          "Mark the property with `@JvmStatic` to add a static setter on `{0}`. To change only the setter,",
+          "use `@set:JvmStatic`, or hide it with `@set:JvmSynthetic`."
         ],
         "getterAndSetterFix": [
-          "Mark the property with `@JvmStatic` to add static accessors on `{0}`. To change the accessors",
-          "independently, use `@get:JvmStatic`/`@set:JvmStatic` to expose them or",
-          "`@get:JvmSynthetic`/`@set:JvmSynthetic` to hide them."
+          "Mark the property with `@JvmStatic` to add static accessors on `{0}`. To change one accessor,",
+          "use `@get:JvmStatic` or `@set:JvmStatic`, or hide it with `@get:JvmSynthetic` or",
+          "`@set:JvmSynthetic`."
         ]
       },
       "message": [
-        "The `companion object` property `{1}` leaves its {2} on the nested companion class, so Java",
-        "callers have to use `{0}`. {3}",
+        "The `companion object` property `{1}` has its {2} on the nested companion class, so Java callers",
+        "write `{0}`. {3}",
         "",
-        "If this API shape is intentional, apply `@IntentionallyNonStaticCompanionApi` to the property or an",
-        "enclosing class."
+        "If this is intended, apply `@IntentionallyNonStaticCompanionApi` to the property or an enclosing",
+        "class."
       ]
     },
     {
@@ -470,12 +431,10 @@
       "title": "Top-level API without JvmName",
       "docs": "checks/java-interop/top-level-api-without-jvm-name",
       "message": [
-        "The facade class `{0}` contains this file's {1}. Its name is derived from the file name: it reads as",
-        "an implementation detail at Java call sites, and renaming",
-        "the file - invisible to Kotlin callers - renames the facade and breaks Java callers. Choose and pin",
-        "the facade name deliberately with `@file:JvmName`.",
+        "The facade class `{0}` holds this file's {1}. Its name comes from the file name, so a file rename",
+        "breaks Java callers. Set the facade name with `@file:JvmName`.",
         "",
-        "If this API shape is intentional, apply `@file:IntentionallyDefaultFacadeName` to the file."
+        "If this is intended, apply `@file:IntentionallyDefaultFacadeName` to the file."
       ]
     },
     {
@@ -483,11 +442,10 @@
       "title": "Default parameters without JvmOverloads",
       "docs": "checks/java-interop/default-parameters-without-jvm-overloads",
       "message": [
-        "The {0} `{1}` declares default parameter values, but for Java callers the defaults don't exist: only",
-        "the full signature is compiled, and every argument must be spelled out. Mark the {0} with",
-        "`@JvmOverloads` to generate overloads that omit trailing defaulted parameters.",
+        "The {0} `{1}` declares default parameter values, but Java callers have to pass every argument.",
+        "Mark the {0} with `@JvmOverloads`.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyWithoutJvmOverloads` to the {0}."
+        "If this is intended, apply `@IntentionallyWithoutJvmOverloads` to the {0}."
       ]
     },
     {
@@ -495,9 +453,8 @@
       "title": "Public types marked as internal API",
       "docs": "checks/special/public-type-with-internal-api",
       "message": [
-        "The {0} `{1}` publicly exposes `{2}`, but that type is marked as internal API with `@{3}`. Keep the",
-        "internal type out of the public signature, or mark the exposing declaration with an internal API",
-        "annotation too."
+        "The {0} `{1}` publicly exposes `{2}`, but that type is marked as internal API with `@{3}`. Remove",
+        "the internal type from the public signature, or mark the {0} with an internal API annotation too."
       ]
     },
     {
@@ -505,12 +462,12 @@
       "title": "Public types from non-transitive dependencies",
       "docs": "checks/special/public-type-from-non-transitive-dependency",
       "message": [
-        "The {0} `{1}` publicly exposes `{2}`, but the dependency providing that type is not published",
-        "transitively to consumers. Declare the dependency with `api` instead of `implementation`.",
+        "The {0} `{1}` publicly exposes `{2}`, but the dependency with that type isn't published transitively",
+        "to consumers. Declare the dependency with `api` instead of `implementation`.",
         "",
-        "If this API shape is intentional, apply `@IntentionallyNonTransitiveDependency` to the declaration,",
-        "an enclosing class, a parameter, or a type usage, or exempt the dependency that provides the type",
-        "through `apiWatchdog.exemptNonTransitiveDependencies` in the build script."
+        "If this is intended, apply `@IntentionallyNonTransitiveDependency` to the declaration, an enclosing",
+        "class, a parameter, or a type usage. To exempt the whole dependency, mark it as exempted",
+        "in the build configuration."
       ]
     },
     {
@@ -518,10 +475,9 @@
       "title": "Exemptions without explanation",
       "docs": "checks/special/exemption-without-explanation",
       "message": [
-        "The `@{0}` exemption doesn't explain why it is applied: the `{1}` reason doesn't speak for itself,",
-        "and the `description` is empty, so the exemption records nothing for the next reader. Pass a",
-        "self-explanatory reason (`FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`), or describe the motivation",
-        "in the `description` argument."
+        "The `@{0}` exemption doesn't explain why it is applied: the reason `{1}` is generic, and the",
+        "`description` is empty. Pass a self-explanatory reason (`FOR_BACKWARDS_COMPATIBILITY`,",
+        "`API_DESIGN`), or explain the exemption in the `description`."
       ]
     },
     {
@@ -529,13 +485,11 @@
       "title": "DSL markers with no-op targets",
       "docs": "checks/special/dsl-marker-noop-target",
       "message": [
-        "The DSL marker `{0}` allows the `{1}` annotation target, but a DSL marker only takes effect on",
-        "classifier declarations (`CLASS`, `ANNOTATION_CLASS`), type usages (`TYPE`), and type aliases",
-        "(`TYPEALIAS`). Applied to a `{1}` element the marker restricts nothing and only gives a false sense",
-        "of receiver scope control. Remove the target from `@Target`.",
+        "The DSL marker `{0}` declares the `{1}` annotation target, but a DSL marker has an effect only on",
+        "`CLASS`, `ANNOTATION_CLASS`, `TYPE`, and `TYPEALIAS`. Remove `{1}` from `@Target`.",
         "",
-        "If this API shape is intentional, apply",
-        "`@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker."
+        "If this is intended, apply `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL",
+        "marker."
       ]
     },
     {
@@ -543,14 +497,13 @@
       "title": "DSL markers without explicit targets",
       "docs": "checks/special/dsl-marker-without-explicit-targets",
       "message": [
-        "The DSL marker `{0}` declares no annotation targets, so it can't provide receiver scope control as",
-        "written. A missing `@Target` also defaults to ineffective targets while leaving effective type usage",
-        "(`TYPE`) and type alias (`TYPEALIAS`) targets unavailable. Declare `@Target(AnnotationTarget.CLASS,",
+        "The DSL marker `{0}` declares no `@Target`. The default targets lack `TYPE` and `TYPEALIAS` and",
+        "include targets a DSL marker has no effect on. Declare `@Target(AnnotationTarget.CLASS,",
         "AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPEALIAS)` or a subset",
         "of it.",
         "",
-        "If this API shape is intentional, apply",
-        "`@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker."
+        "If this is intended, apply `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL",
+        "marker."
       ]
     },
     {
@@ -558,10 +511,9 @@
       "title": "DSL markers on no-op type positions",
       "docs": "checks/special/dsl-marker-noop-type-position",
       "message": [
-        "The DSL marker `{0}` has no effect on this {1}: scope control only reacts to markers on the type of",
-        "an implicit value - a receiver type, a context parameter type, or a function type with such implicit",
-        "values. A named value is always accessed explicitly, so the marker restricts nothing here. Move it",
-        "to the class or to a receiver position, or remove it."
+        "The DSL marker `{0}` has no effect on this {1}. Scope control reacts only to a marker on the type",
+        "of an implicit value: a receiver, a context parameter, or a function type with one. Move the",
+        "marker to the class or to a receiver type, or remove it."
       ]
     }
   ]

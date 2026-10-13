@@ -139,7 +139,7 @@ public interface Event {
 
 <!-- diagnostic-exemption: EXHAUSTIVE_PUBLIC_API -->
 <!-- diagnostic-exemption-substitution: enum or sealed hierarchy => {0} -->
-If this API shape is intentional, apply `@IntentionallyExhaustive` to the enum or sealed hierarchy.
+If this is intended, apply `@IntentionallyExhaustive` to the enum or sealed hierarchy.
 
 Use the exemption when a fixed set of entries or subtypes is a deliberate, stable part of the
 contract:

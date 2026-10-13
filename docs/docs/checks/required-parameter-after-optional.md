@@ -123,7 +123,7 @@ public class Server
 
 <!-- diagnostic-exemption: REQUIRED_PARAMETER_AFTER_OPTIONAL -->
 <!-- diagnostic-exemption-substitution: function or constructor => {2} -->
-If this API shape is intentional, apply `@IntentionallyRequiredParameterAfterOptional` to the
+If this is intended, apply `@IntentionallyRequiredParameterAfterOptional` to the
 function or constructor.
 
 Use the exemption when the order is a deliberate, stable part of the contract, for example an old

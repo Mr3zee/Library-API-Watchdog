@@ -87,7 +87,7 @@ public fun disableLogging() {}
 ## Exemption
 
 <!-- diagnostic-exemption: BOOLEAN_PARAMETER_PUBLIC_API -->
-If this API shape is intentional, apply `@IntentionallyBooleanParameter` to the function or
+If this is intended, apply `@IntentionallyBooleanParameter` to the function or
 Boolean parameter.
 
 Use the exemption when the parameter's meaning is unmistakable from the function name.

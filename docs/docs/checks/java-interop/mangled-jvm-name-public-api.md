@@ -166,7 +166,7 @@ For a `val` or `var` member, put the rename on the accessors with `@get:JvmName`
 ## Exemption
 
 <!-- diagnostic-exemption: MANGLED_JVM_NAME_PUBLIC_API -->
-If this API shape is intentional, apply `@IntentionallyMangledJvmName` to the declaration or an
+If this is intended, apply `@IntentionallyMangledJvmName` to the declaration or an
 enclosing class.
 
 ```kotlin

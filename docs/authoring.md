@@ -52,7 +52,7 @@ the diagnostic name:
 
 ```markdown
 <!-- diagnostic-exemption: DIAGNOSTIC_NAME -->
-If this API shape is intentional, apply `@IntentionallyExample` to the declaration.
+If this is intended, apply `@IntentionallyExample` to the declaration.
 ```
 
 From `docs/`, run `npm run sync:diagnostic-exemptions` to copy every marked paragraph into the final,
@@ -68,7 +68,7 @@ reader-facing alternatives, while synchronization replaces them with the diagnos
 ```markdown
 <!-- diagnostic-exemption: EXAMPLE_DIAGNOSTIC -->
 <!-- diagnostic-exemption-substitution: function or constructor => {0} -->
-If this API shape is intentional, apply `@IntentionallyExample` to the function or constructor.
+If this is intended, apply `@IntentionallyExample` to the function or constructor.
 ```
 
 ## Kotlin sample checks

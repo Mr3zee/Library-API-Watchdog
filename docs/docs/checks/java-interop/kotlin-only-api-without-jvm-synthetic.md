@@ -144,7 +144,7 @@ public fun onEach(action: Action) { }
 ## Exemption
 
 <!-- diagnostic-exemption: KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC -->
-If this API shape is intentional, apply `@IntentionallyKotlinOnlyApi` to the function or an
+If this is intended, apply `@IntentionallyKotlinOnlyApi` to the function or an
 enclosing class.
 
 ```kotlin

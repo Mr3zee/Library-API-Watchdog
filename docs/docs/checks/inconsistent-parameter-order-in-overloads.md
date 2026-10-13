@@ -171,7 +171,7 @@ public fun Grid.fill(
 
 <!-- diagnostic-exemption: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS -->
 <!-- diagnostic-exemption-substitution: function or constructor => {3} -->
-If this API shape is intentional, apply `@IntentionallyInconsistentParameterOrder` to the function
+If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function
 or constructor.
 
 Use the exemption when the differing order is a deliberate, stable part of the contract, for

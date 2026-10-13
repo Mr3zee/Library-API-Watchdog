@@ -85,7 +85,7 @@ public annotation class KtorDsl
 ## Exemption
 
 <!-- diagnostic-exemption: DSL_MARKER_WITHOUT_EXPLICIT_TARGETS -->
-If this API shape is intentional, apply
+If this is intended, apply
 `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker.
 
 Use the exemption when the marker is already published and adding a `@Target` would reject existing

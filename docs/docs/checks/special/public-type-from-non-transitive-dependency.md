@@ -116,9 +116,9 @@ apiWatchdog {
 ## Exemption
 
 <!-- diagnostic-exemption: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY -->
-If this API shape is intentional, apply `@IntentionallyNonTransitiveDependency` to the declaration,
-an enclosing class, a parameter, or a type usage, or exempt the dependency that provides the type
-through `apiWatchdog.exemptNonTransitiveDependencies` in the build script.
+If this is intended, apply `@IntentionallyNonTransitiveDependency` to the declaration, an
+enclosing class, a parameter, or a type usage. To exempt the whole dependency, list it in
+`apiWatchdog.exemptNonTransitiveDependencies` in the build script.
 
 Use the exemption when the environment that loads the library supplies the dependency on its own,
 so publishing it transitively is not needed or not possible. A Gradle plugin is the common case: it

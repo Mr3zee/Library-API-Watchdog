@@ -182,7 +182,7 @@ APIs:
 ## Exemption
 
 <!-- diagnostic-exemption: DATA_CLASS_PUBLIC_API -->
-If this API shape is intentional, apply `@IntentionallyDataClass` to the class.
+If this is intended, apply `@IntentionallyDataClass` to the class.
 
 Use the exemption when the data class is deliberate, stable part of the contract with
 `copy` and positional destructuring being intended API rather than incidental compiler output.

@@ -131,7 +131,7 @@ accessors, a delegate, no backing field, or is an override.
 ## Exemption
 
 <!-- diagnostic-exemption: COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS -->
-If this API shape is intentional, apply `@IntentionallyNonStaticCompanionApi` to the property or an
+If this is intended, apply `@IntentionallyNonStaticCompanionApi` to the property or an
 enclosing class.
 
 ```kotlin

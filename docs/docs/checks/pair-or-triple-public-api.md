@@ -174,7 +174,7 @@ public fun edges(): List<Point> = emptyList()
 ## Exemption
 
 <!-- diagnostic-exemption: PAIR_OR_TRIPLE_PUBLIC_API -->
-If this API shape is intentional, apply `@IntentionallyPairOrTriple` to the declaration,
+If this is intended, apply `@IntentionallyPairOrTriple` to the declaration,
 parameter, or type usage.
 
 ```kotlin

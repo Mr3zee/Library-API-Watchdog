@@ -130,7 +130,7 @@ public fun consume(items: Set<Int>) {
 ## Exemption
 
 <!-- diagnostic-exemption: MUTABLE_COLLECTION_PUBLIC_API -->
-If this API shape is intentional, apply `@IntentionallyMutableCollection` to the declaration,
+If this is intended, apply `@IntentionallyMutableCollection` to the declaration,
 parameter, or type usage.
 
 Use the exemption when sharing the mutable collection is a deliberate part of the API contract.

@@ -75,7 +75,7 @@ public fun disconnect(): Int = 0
 ## Exemption
 
 <!-- diagnostic-exemption: TOP_LEVEL_API_WITHOUT_JVM_NAME -->
-If this API shape is intentional, apply `@file:IntentionallyDefaultFacadeName` to the file.
+If this is intended, apply `@file:IntentionallyDefaultFacadeName` to the file.
 
 ```kotlin
 @file:IntentionallyDefaultFacadeName(

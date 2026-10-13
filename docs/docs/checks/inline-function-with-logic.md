@@ -433,7 +433,7 @@ requires `crossinline`. In both cases, `authorizedQuery` can no longer call `fet
 ## Exemption
 
 <!-- diagnostic-exemption: INLINE_FUNCTION_WITH_LOGIC -->
-If this API shape is intentional, apply `@IntentionallyInlinedLogic` to the declaration.
+If this is intended, apply `@IntentionallyInlinedLogic` to the declaration.
 
 Use the exemption when a lambda must run in place for non-local returns or suspend calls, such as
 the builder above, or when a hot path must not pay for an extra call:

@@ -324,7 +324,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
         val compileResult = buildAndFail(project.rootDir, "compileKotlin")
         assertContains(compileResult.output, "exemption doesn't explain why it is applied")
         assertContains(compileResult.output, "type is marked as internal API")
-        assertContains(compileResult.output, "not published transitively to consumers")
+        assertContains(compileResult.output, "published transitively to consumers")
     }
 
     @Test
@@ -418,10 +418,10 @@ class UpdateBackwardsCompatibilityExemptsTest {
 
         val WATCHDOG_MESSAGES = listOf(
             "can be subclassed outside the library",
-            "can be matched exhaustively by users",
+            "exhaustively, so adding",
             "has no `KDoc`",
             "abbreviates a function type",
-            "bakes its constructor property list",
+            "exposes its constructor property list",
             "neither declares nor inherits an `equals`",
             "neither declares nor inherits a `hashCode`",
             "neither declares nor inherits a `toString`",
@@ -433,7 +433,7 @@ class UpdateBackwardsCompatibilityExemptsTest {
             "appear in the opposite relative order in another overload",
             "contains logic beyond a single thin delegating statement",
             "has the `value class`",
-            "still lands in the API surface Java sources see",
+            "Hide it from Java with `@JvmSynthetic`",
             "The `companion object`",
             "The facade class",
             "declares default parameter values",

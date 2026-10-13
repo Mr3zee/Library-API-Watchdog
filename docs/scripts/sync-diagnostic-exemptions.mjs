@@ -157,7 +157,7 @@ function validateExemptions() {
       failures.push(`${location}: marker must be in the Exemption section.`);
     }
     if (
-      !exemption.wording.startsWith('If this API shape is intentional, apply `@') ||
+      !exemption.wording.startsWith('If this is intended, apply `@') ||
       !exemption.wording.includes('Intentionally')
     ) {
       failures.push(`${location}: exemption wording must use the standard opening.`);
@@ -202,8 +202,7 @@ function readExemptionTable(result, lines, markerIndex, file, section) {
       line: index + 1,
       section,
       wording:
-        `If this API shape is intentional, apply \`${individual}\` to the class, or apply ` +
-        `\`${combined}\` to acknowledge all three inherited implementations.`,
+        `If this is intended, apply \`${individual}\` or \`${combined}\` to the class.`,
     });
     rowCount += 1;
   }
