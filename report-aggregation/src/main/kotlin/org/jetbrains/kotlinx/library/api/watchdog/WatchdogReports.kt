@@ -24,7 +24,7 @@ import org.gradle.api.tasks.OutputFile
  * ```
  */
 public abstract class WatchdogReports @Inject internal constructor(private val objectFactory: ObjectFactory) {
-    /** Whether the task writes the HTML report for a person. Default is `true`. */
+    /** Whether the task writes the HTML report. Default is `true`. */
     @get:Input
     public abstract val html: Property<Boolean>
 

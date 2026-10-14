@@ -5,7 +5,6 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 
 abstract class GenerateCheckNames : DiagnosticsJsonGeneratorTask() {
-    /** `true` generates an `internal` enum without the Gradle usage sample. Default `false`. */
     @get:Input
     @get:Optional
     abstract val internalVisibility: Property<Boolean>
@@ -16,7 +15,7 @@ abstract class GenerateCheckNames : DiagnosticsJsonGeneratorTask() {
         val internal = internalVisibility.getOrElse(false)
         val visibility = if (internal) "internal" else "public"
         appendLine("/**")
-        appendLine(" * The watchdog checks, generated from the shared `diagnostics.json`. The entry name is the diagnostic name.")
+        appendLine(" * The watchdog checks. The entry name is the diagnostic name.")
         if (!internal) {
             appendLine(" * Pass one to [WatchdogGradleExtension.ignore]:")
             appendLine(" *")
@@ -28,8 +27,7 @@ abstract class GenerateCheckNames : DiagnosticsJsonGeneratorTask() {
             appendLine(" * }")
             appendLine(" * ```")
             appendLine(" *")
-            appendLine(" * Every check is listed, including the always-error checks that accept no ignore rules.")
-            appendLine(" * [WatchdogGradleExtension.ignore] rejects those.")
+            appendLine(" * The list includes the always-error checks. [WatchdogGradleExtension.ignore] rejects those.")
         }
         appendLine(" */")
         appendLine("$visibility enum class WatchdogChecks {")

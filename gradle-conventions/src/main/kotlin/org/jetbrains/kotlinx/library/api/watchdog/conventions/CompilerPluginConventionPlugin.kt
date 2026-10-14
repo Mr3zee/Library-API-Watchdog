@@ -9,7 +9,7 @@ class CompilerPluginConventionPlugin : Plugin<Project> {
         with(target) {
             val generateDiagnosticMessages = registerDiagnosticsGenerator<GenerateDiagnosticMessages>(
                 name = "generateDiagnosticMessages",
-                description = "Generates the diagnostic message templates from the shared diagnostics.json.",
+                description = "Generates the diagnostic message templates from diagnostics.json.",
                 packageName = "org.jetbrains.kotlinx.library.api.watchdog.fir",
                 outputDirectory = "diagnostics/main/kotlin",
             )

@@ -7,8 +7,8 @@ internal object ProjectReportWriter {
     internal const val WARNING_REASON = "exemptExistingApi exempts errors only."
 
     /**
-     * @param sourcesUpdated whether the fixer rewrote the sources. Then the `exemption` entries
-     *   hold the applied annotations, so the `fixed` entries aren't listed as not applied.
+     * @param sourcesUpdated whether the fixer rewrote the sources. Then each `fixed` entry is also
+     *   an `exemption` entry, so the report lists it as applied only.
      */
     fun write(
         response: FixerResponse,

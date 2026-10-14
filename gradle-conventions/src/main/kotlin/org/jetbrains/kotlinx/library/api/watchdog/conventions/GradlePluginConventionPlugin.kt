@@ -13,13 +13,13 @@ class GradlePluginConventionPlugin : Plugin<Project> {
         with(target) {
             val generateCheckNames = registerDiagnosticsGenerator<GenerateCheckNames>(
                 name = "generateCheckNames",
-                description = "Generates the WatchdogChecks enum from the shared diagnostics.json.",
+                description = "Generates the WatchdogChecks enum from diagnostics.json.",
                 packageName = "org.jetbrains.kotlinx.library.api.watchdog",
                 outputDirectory = "checkNames/main/kotlin",
             )
             val generateFunctionalTestDiagnostics = registerDiagnosticsGenerator<GenerateFunctionalTestDiagnostics>(
                 name = "generateFunctionalTestDiagnostics",
-                description = "Generates the Diagnostic enum of the functional tests from the shared diagnostics.json.",
+                description = "Generates the Diagnostic enum of the functional tests from diagnostics.json.",
                 packageName = "org.jetbrains.kotlinx.library.api.watchdog",
                 outputDirectory = "functionalTestDiagnostics/functionalTest/kotlin",
             )

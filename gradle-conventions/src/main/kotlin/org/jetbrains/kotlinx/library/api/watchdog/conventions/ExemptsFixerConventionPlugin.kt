@@ -9,7 +9,7 @@ class ExemptsFixerConventionPlugin : Plugin<Project> {
         with(target) {
             val generateCheckNames = registerDiagnosticsGenerator<GenerateCheckNames>(
                 name = "generateCheckNames",
-                description = "Generates the WatchdogChecks enum from the shared diagnostics.json.",
+                description = "Generates the WatchdogChecks enum from diagnostics.json.",
                 packageName = "org.jetbrains.kotlinx.library.api.watchdog.fixer",
                 outputDirectory = "checkNames/main/kotlin",
             ) {

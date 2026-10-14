@@ -77,9 +77,7 @@ configurations.apiWatchdogExemptNonTransitive {
 ```
 
 The configuration is a marker only. It adds nothing to the compile classpath, and the dependency
-is still declared as `implementation` or `compileOnly`. See
-[Exempt non-transitive dependencies](../../configuration.md#exempt-non-transitive-dependencies)
-in the configuration reference.
+is still declared as `implementation` or `compileOnly`.
 
 If dependency exposure is deliberately managed outside Gradle metadata for the whole module, disable
 the check for the module:

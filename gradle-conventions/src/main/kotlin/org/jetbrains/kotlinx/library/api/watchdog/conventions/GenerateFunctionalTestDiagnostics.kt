@@ -5,10 +5,8 @@ abstract class GenerateFunctionalTestDiagnostics : DiagnosticsJsonGeneratorTask(
 
     override fun StringBuilder.appendDeclarations(diagnostics: DiagnosticsJson) {
         appendLine("/**")
-        appendLine(" * The watchdog diagnostics as the functional tests see them, generated from the shared")
-        appendLine(" * `diagnostics.json`. [template] is the first paragraph of the message, with the `{n}`")
-        appendLine(" * placeholders the compiler fills in. [javaInterop] marks the `javaInterop { }` group of")
-        appendLine(" * the Gradle extension.")
+        appendLine(" * [template] is the first paragraph of the message, with its `{n}` placeholders.")
+        appendLine(" * [javaInterop] is true for a check of the `javaInterop { }` group of the Gradle extension.")
         appendLine(" */")
         appendLine("enum class Diagnostic(")
         appendLine("    val title: String,")

@@ -7,7 +7,7 @@ dependencies {
     implementation(
         "org.jetbrains.kotlin.compiler.plugin.devkit:plugins:${providers.systemProperty("devkitVersion").get()}",
     ) {
-        // The running Gradle distribution supplies its own public API.
+        // The Gradle distribution has its own public API.
         exclude(group = "org.gradle.experimental", module = "gradle-public-api")
     }
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlin.get()}")

@@ -2,12 +2,13 @@
 
 Four mechanisms exclude a declaration from a check while the check stays enabled for the project:
 
-- An `@Intentionally*` annotation exempts one declaration from one check.
+- An [`@Intentionally*` annotation](#exempting-a-single-declaration) exempts one declaration
+  from one check.
 - A [dependency exemption](#exempting-a-dependency) in the build script exempts every use of a
   dependency's types from [Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md).
-- An internal API annotation, such as `@InternalMyLibraryApi`, excludes a declaration from every
-  public API check. Use it when a declaration is public only for technical reasons and the library
-  gives no compatibility guarantee for it, whatever its visibility.
+- An [internal API annotation](#internal-api-annotations), such as `@InternalMyLibraryApi`,
+  excludes a declaration from every public API check. Use it when a declaration is public only for
+  technical reasons and the library gives no compatibility guarantee for it.
 - An [annotation ignore rule](./configuration.md#annotation-ignore-rules) in the `apiWatchdog`
   extension skips one configurable check on every declaration with a given annotation. Use it when
   the annotation already guarantees the condition that the check tests. An example is a code
@@ -26,16 +27,10 @@ Every `@Intentionally*` annotation has two parameters:
 | `description` | `String`          | `""`    |
 | `reason`      | `ExemptionReason` | `OTHER` |
 
-The `reason` decides whether the `description` is required:
-
-- `FOR_BACKWARDS_COMPATIBILITY` and `API_DESIGN` explain the exemption on their own. The
-  `description` is optional.
-- `INTEROP`, `EXTERNAL_CONTRACT`, `IGNORE_JAVA_INTEROP`, and `OTHER` only categorize the exemption.
-  The `description` must still explain the exemption.
-
-[Exemptions without explanation](./checks/special/exemption-without-explanation.md) reports an
-exemption that breaks this rule. The check is always an error, can't be disabled, and runs on
-declarations of every visibility.
+`FOR_BACKWARDS_COMPATIBILITY` and `API_DESIGN` explain the exemption on their own. Every other
+reason needs a `description`, or
+[Exemptions without explanation](./checks/special/exemption-without-explanation.md) reports the
+annotation.
 
 An explained exemption:
 
@@ -57,8 +52,7 @@ public data class LegacyConfig(
 )
 ```
 
-For a library whose API is already published, the [`exemptExistingApi` task](./existing-libs.md)
-adds the exemption to every declaration with an error, with the `FOR_BACKWARDS_COMPATIBILITY` reason.
+For a published API, the [`exemptExistingApi` task](./existing-libs.md) adds the exemptions.
 
 ### The DSL marker exemption
 
@@ -98,13 +92,9 @@ exemption. Its `description` is optional.
 
 ## Exempting a dependency
 
-// TODO should be a brief reference to the page like "oh these is one more style of exemptions"
-
 [Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md)
-reports a type from an `implementation` or `compileOnly` dependency in a public signature. Some
-environments supply the dependency on their own, as a Gradle process supplies the Gradle API to a
-Gradle plugin. Declare such a dependency on the `apiWatchdogExemptNonTransitive` configuration
-instead of an exemption on each declaration, and the check accepts its types in the whole module:
+has a second exemption. A dependency declared on the `apiWatchdogExemptNonTransitive` configuration
+is exempt in the whole module:
 
 ```kotlin build.gradle.kts
 dependencies {
@@ -114,9 +104,8 @@ dependencies {
 }
 ```
 
-The exemption covers the dependency and everything it pulls onto the compile classpath.
-[Exempt non-transitive dependencies](./configuration.md#exempt-non-transitive-dependencies) in the
-configuration reference has the rules.
+[Exempting a dependency](./checks/special/public-type-from-non-transitive-dependency.md#exempting-a-dependency)
+on the check page describes the configuration.
 
 ## Internal API annotations
 
@@ -142,20 +131,20 @@ marker checks.
 
 The marker annotation class itself is public API and stays watched.
 
-A supported public declaration must not expose an internal API type in its signature.
 [Public types marked as internal API](./checks/special/public-type-with-internal-api.md) reports
-such a signature. Either remove the type from the signature or mark the declaration as internal
-API too.
+a supported public signature that exposes an internal API type.
 
 An annotation class from a dependency can't carry `@InternalAnnotationMarker`. List its fully
 qualified name in `internalApiAnnotations` instead. The plugin then treats it like a marked
 annotation:
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     internalApiAnnotations.add("com.example.dependency.InternalDependencyApi")
 }
 ```
+
+[Without Gradle](./configuration.md#without-gradle) gives the matching compiler option.
 
 ## The annotations artifact
 

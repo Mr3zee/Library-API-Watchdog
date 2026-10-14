@@ -43,7 +43,6 @@ public class Config
 
 The task writes the [API Watchdog report](./report.md). Its not-applied section lists the
 diagnostics that need manual attention. The console prints the same list as warnings.
-`generateApiWatchdogReport` writes the same report and changes no source.
 
 Review the diff and commit it. The checks then report only the API that you add later. For a new
 declaration, fix the shape or pick the exemption reason by hand.

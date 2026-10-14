@@ -46,7 +46,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
 
     /**
      * KGP calls it after `afterEvaluate`, so `apiWatchdog.enabled` is final here. A raw
-     * `-Xexplicit-api` flag also applies to test compilations.
+     * `-Xexplicit-api` flag turns explicit API mode on for test compilations too, so the
+     * exclusion is here and not in the compiler plugin.
      */
     override fun isApplicable(kotlinCompilation: KotlinCompilation<*>): Boolean =
         enabled.get() && !kotlinCompilation.isTestCompilation()
@@ -342,9 +343,9 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
     }
 
     /**
-     * The build script declaration behind each artifact of [configuration], as
-     * tab-separated `path`, `configuration`, `notation` triples. The declaration is the nearest
-     * declared dependency on the resolution path to the component of the artifact.
+     * The build script declaration of each artifact of [configuration], as tab-separated
+     * `path`, `configuration`, `notation` triples. The declaration is the direct dependency with
+     * the shortest resolution path to the component of the artifact.
      */
     private fun dependencyDeclarations(configuration: Configuration, android: Boolean): String {
         val declarations = HashMap<ComponentIdentifier, String>()
@@ -521,7 +522,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
 
         private const val DISABLED_TASK_REASON = "apiWatchdog.enabled is true"
 
-        /** Undocumented. `true` silences the warning when the explicit API detection misjudges a project. */
+        /** Undocumented. `true` silences the warning for a project where the explicit API detection is wrong. */
         private const val SUPPRESS_EXPLICIT_API_WARNING_PROPERTY =
             "org.jetbrains.kotlin.library.api-watchdog.suppressExplicitApiWarning"
 

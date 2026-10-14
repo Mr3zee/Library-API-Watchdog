@@ -40,8 +40,8 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                     defaultSourceSet.kotlin.srcDir("src/benchmark/kotlin")
                 }
             configurations.named(checkNotNull(benchmarkCompilation.runtimeDependencyConfigurationName)) {
-                // A custom compilation doesn't inherit the compiler-version attribute of the dev kit.
-                // Without it the runtime has unflattened multi-release artifacts.
+                // A custom compilation doesn't inherit the compiler-version attribute of the dev kit,
+                // so its runtime has unflattened multi-release artifacts.
                 val mainRuntime =
                     configurations.getByName(
                         checkNotNull(mainCompilation.runtimeDependencyConfigurationName),
@@ -49,7 +49,7 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                 attributes.addAllLater(mainRuntime.attributes)
             }
 
-            // The classpath the corpus compiles against, separate from the classpath of the benchmark.
+            // The classpath that the corpus compiles against.
             val benchmarkCorpusClasspath: Configuration = configurations.create("benchmarkCorpusClasspath") {
                 isCanBeConsumed = false
                 attributes {
@@ -132,8 +132,8 @@ class BenchmarkConventionPlugin : Plugin<Project> {
             tasks.register("benchmark", JavaExec::class.java) {
                 group = "benchmark"
                 description = "Runs the watchdog JMH benchmarks with the GC (allocation) profiler. " +
-                        "Manual only and not wired into check. Filter with -Pbenchmark.include=<regex>, " +
-                        "pass extra JMH options with -Pbenchmark.args='...'."
+                        "The check task doesn't run it. Filter with -Pbenchmark.include=<regex>. " +
+                        "Pass extra JMH options with -Pbenchmark.args='...'."
                 mainClass.set("org.openjdk.jmh.Main")
                 classpath = files(benchmarkGeneratedClasses, benchmarkGeneratedResources) +
                         benchmarkRuntimeClasspath
@@ -248,8 +248,8 @@ class BenchmarkConventionPlugin : Plugin<Project> {
 
             tasks.register("benchmarkCorpusAudit", JavaExec::class.java) {
                 group = "benchmark"
-                description = "Compiles the benchmark corpus with all watchdog diagnostics enabled and " +
-                        "prints how often each one fired. Set the file count with " +
+                description = "Compiles the benchmark corpus with every watchdog diagnostic enabled and " +
+                        "prints the report count of each one. Set the file count with " +
                         "-Pbenchmark.corpusFiles=<n>."
                 mainClass.set("org.jetbrains.kotlinx.library.api.watchdog.benchmark.CorpusAudit")
                 classpath = benchmarkRuntimeClasspath

@@ -10,15 +10,15 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 
-/** Combines the report variants declared in `apiWatchdogReports`. */
+/** Combines the API Watchdog reports of the projects declared in `apiWatchdogReports`. */
 @CacheableTask
 public abstract class AggregateApiWatchdogReportsTask internal constructor() : DefaultTask() {
-    /** The module reports to combine. */
+    /** The project reports to combine. */
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.NONE)
     public abstract val reportDataFiles: ConfigurableFileCollection
 
-    /** The aggregate reports. Default: `build/reports/api-watchdog/aggregate-report.html` and `.sarif`. */
+    /** The report formats. Default files are `build/reports/api-watchdog/aggregate-report.html` and `.sarif`. */
     @get:Nested
     public val reports: WatchdogReports = project.objects.newInstance(WatchdogReports::class.java)
 

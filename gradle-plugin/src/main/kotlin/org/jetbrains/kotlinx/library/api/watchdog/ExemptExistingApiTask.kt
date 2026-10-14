@@ -4,10 +4,10 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.UntrackedTask
 
 /**
- * The `exemptExistingApi` task. It adds the matching `@Intentionally*` annotation with
- * `reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY` to every declaration with a watchdog
- * error in the main Kotlin sources, then writes the API Watchdog report. A diagnostic with the
- * `WARNING` severity stays. Use the task when you adopt the watchdog on a library with a released API.
+ * The `exemptExistingApi` task. It exempts every watchdog error in the main Kotlin sources: the
+ * matching `@Intentionally*` annotation with `reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`.
+ * Then it writes the API Watchdog report. It doesn't exempt warnings. Use it when you adopt the
+ * watchdog on a library with a released API.
  */
 @UntrackedTask(because = "Rewrites the Kotlin sources it analyzes")
 public abstract class ExemptExistingApiTask internal constructor() : ApiWatchdogReportTask() {

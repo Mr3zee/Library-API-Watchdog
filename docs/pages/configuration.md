@@ -54,25 +54,6 @@ Applying the plugin:
 - Warns when binary compatibility validation is off, with a setup snippet.
   [Binary compatibility validation suggestion](./abi-validation-suggestion.md) gives the details.
 
-## Errors by default
-
-Every check is on and reports a compilation error, except
-[`UNDOCUMENTED_PUBLIC_API`](./checks/undocumented-public-api.md), which reports a warning.
-[The `apiWatchdog` extension](#the-apiwatchdog-extension) changes the severity of a check or
-turns it off. [Exemptions and internal API](./exemptions.md) exempts selected declarations instead.
-
-## Adding the plugin to existing libraries
-
-A library with a released API can't change most of the reported declarations. The
-`exemptExistingApi` task adds the matching `@Intentionally*` annotation with
-`ExemptionReason.FOR_BACKWARDS_COMPATIBILITY` to every declaration with an error:
-
-```bash
-./gradlew exemptExistingApi
-```
-
-[Adding the plugin to existing libraries](./existing-libs.md) describes the task.
-
 ## The `apiWatchdog` extension
 
 The sample lists every property. A severity or a switch shows its default value:
@@ -94,7 +75,9 @@ apiWatchdog {
     // !link[/reports/] /report#selecting-the-formats
     reports {
         html = true
+        htmlFile = layout.buildDirectory.file("reports/api-watchdog/report.html")
         sarif = true
+        sarifFile = layout.buildDirectory.file("reports/api-watchdog/report.sarif")
     }
 
     // !link[/openApiWithoutSubclassOptIn/] /checks/open-api-without-subclass-opt-in
@@ -138,7 +121,6 @@ apiWatchdog {
 
     // !link[/javaInterop/] /checks/java-interop/
     javaInterop {
-        // false turns off all six checks, whatever their severities.
         // !link[/enabled/] /checks/java-interop/
         enabled = true
 
@@ -187,41 +169,33 @@ apiWatchdog {
 }
 ```
 
-`ignore` rejects always-error checks. Otherwise, it works the same as regular exemptions.
+`ignore` doesn't work for always-error checks. [Exemptions and internal API](./exemptions.md) states
+when to use a rule.
 
-## Internal API annotations from dependencies
+## Internal API annotations
 
-[Internal API annotations](./exemptions.md#internal-api-annotations) describes
-`@InternalAnnotationMarker` on the library's own annotation. An annotation class from a dependency
-can't carry it. List it in `internalApiAnnotations` by its fully qualified class name instead:
+`internalApiAnnotations` lists annotation classes by their fully qualified
+names. A listed annotation counts as an internal API annotation:
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     internalApiAnnotations.add("com.example.dependency.InternalDependencyApi")
 }
 ```
 
-A listed annotation works like one that carries `@InternalAnnotationMarker`.
-
-[Without Gradle](#without-gradle) gives the matching compiler option.
+See [Internal API annotations](./exemptions.md#internal-api-annotations) for more details.
 
 ## Exempt non-transitive dependencies
 
-[`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md)
-reports a dependency type in a public signature unless consumers get the dependency
-transitively. When the environment that loads the library has the dependency, as a Gradle process
-has the API of every Gradle plugin, exempt the dependency. The check then accepts its types in the
-whole module.
-
-Declare the dependency on the `apiWatchdogExemptNonTransitive` configuration, next to its own
-declaration:
+A dependency declared on the `apiWatchdogExemptNonTransitive` configuration is exempt from
+[Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md)
+in the whole module:
 
 ```kotlin build.gradle.kts
 dependencies {
     compileOnly(libs.kotlin.gradle.plugin)
 
     apiWatchdogExemptNonTransitive(libs.kotlin.gradle.plugin)
-    apiWatchdogExemptNonTransitive(project(":host-api"))
 }
 ```
 
@@ -233,16 +207,8 @@ configurations.apiWatchdogExemptNonTransitive {
 }
 ```
 
-The rules:
-
-- Any dependency notation works. The version is optional, because the exemption resolves with
-  the compile classpath.
-- The exemption covers everything the dependency pulls onto the compile classpath, so a Kotlin
-  Multiplatform library is exempt together with its platform artifact.
-- The configuration adds nothing to the compile classpath. The dependency stays declared as
-  `implementation` or `compileOnly`.
-- Every other non-transitive dependency is still reported.
-  `publicTypesMustBeTransitiveDependencies = false` turns off the whole check.
+See [Exempting a dependency](./checks/special/public-type-from-non-transitive-dependency.md#exempting-a-dependency)
+for more details.
 
 ## Severities
 
@@ -262,9 +228,6 @@ Three checks have no severity property:
   error while on. Turn off with `publicTypeWithInternalApi`.
 - [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md):
   always an error while on. Turn off with `publicTypesMustBeTransitiveDependencies`.
-
-The [`exemptExistingApi` task](./existing-libs.md) turns all three off while it collects
-diagnostics.
 
 ## Property reference
 
@@ -326,17 +289,18 @@ A direct compiler call configures the plugin with `-P` options of this form:
 | `publicTypeWithInternalApi` | `true` or `false`.                                     | `publicTypeWithInternalApi`   |
 
 `<NAME>` is a diagnostic name from the [Property reference](#property-reference). `<severity>` is
-`error`, `warning`, or `none`. Every diagnostic that no option names has its default severity:
-an error, except [`UNDOCUMENTED_PUBLIC_API`](./checks/undocumented-public-api.md), which is a
-warning. For example, this option makes undocumented public API an error:
+`error`, `warning`, or `none`. A diagnostic that no option names has its default severity. One
+value of each option:
 
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:error
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:ignoreWhenAnnotated=STATEFUL_CLASS_WITHOUT_EQUALS:com.example.GeneratedValueMembers
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:internalApiAnnotation=com.example.dependency.InternalDependencyApi
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:publicTypeWithInternalApi=false
 ```
 
 [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md)
-doesn't run without Gradle, because the compiler gets no information on which dependencies are
-`api` and which are `implementation`.
+doesn't run without Gradle.
 
 ## Next steps
 

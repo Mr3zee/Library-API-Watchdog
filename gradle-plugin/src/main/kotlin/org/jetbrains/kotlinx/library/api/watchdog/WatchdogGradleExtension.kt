@@ -10,7 +10,7 @@ import org.gradle.api.provider.SetProperty
 
 /**
  * The `apiWatchdog` block: the [enabled] switch and the severity of each configurable diagnostic.
- * Default severity is [WatchdogSeverity.ERROR]. A property with another default states it.
+ * Default severity is [WatchdogSeverity.ERROR] unless the property states another.
  *
  * ```kotlin
  * apiWatchdog {
@@ -73,7 +73,7 @@ public open class WatchdogGradleExtension @Inject internal constructor(
     /** Severity of `INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS`: overloads with different positions for shared parameters. */
     public val inconsistentParameterOrderInOverloads: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `INLINE_FUNCTION_WITH_LOGIC`: inline functions and accessors doing more than delegating. */
+    /** Severity of `INLINE_FUNCTION_WITH_LOGIC`: inline functions and accessors that do more than delegate. */
     public val inlineFunctionWithLogic: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
     /** Severity of `DSL_MARKER_NOOP_TARGET`: DSL marker targets without scope-control effect. */
@@ -90,10 +90,10 @@ public open class WatchdogGradleExtension @Inject internal constructor(
         objectFactory.property(Boolean::class.java).convention(true)
 
     /**
-     * Fully qualified names of annotation classes that mark internal API, besides the classes
-     * that carry `@InternalAnnotationMarker`. The watchdog doesn't check a declaration
-     * under such an annotation, and `PUBLIC_TYPE_WITH_INTERNAL_API` reports its type. Use it for
-     * the internal-API annotation of a dependency:
+     * Fully qualified names of annotation classes that mark internal API, besides those that
+     * carry `@InternalAnnotationMarker`. The watchdog skips the declarations under such an
+     * annotation, and `PUBLIC_TYPE_WITH_INTERNAL_API` reports a public declaration that exposes
+     * a type marked with it. Use it for the internal-API annotation of a dependency:
      *
      * ```kotlin
      * apiWatchdog {
@@ -142,10 +142,9 @@ public open class WatchdogGradleExtension @Inject internal constructor(
 
     /**
      * Ignores [check] on a declaration that carries one of the [whenAnnotatedWith] annotations.
-     * The rule applies where the `@Intentionally*` annotation of the check applies, an enclosing.
-     * [check] must have a severity property in this block or in [javaInterop]. An always-error
-     * diagnostic has no severity property, so `ignore` rejects it. An annotation is its fully
-     * qualified class name:
+     * When the `@Intentionally*` annotation of the check also covers an enclosing class, so does
+     * the rule. An always-error check has no severity property, so `ignore` rejects it. An
+     * annotation is its fully qualified class name:
      *
      * ```kotlin
      * import org.jetbrains.kotlinx.library.api.watchdog.WatchdogChecks
@@ -211,7 +210,7 @@ public open class WatchdogGradleExtension @Inject internal constructor(
 
 /**
  * The `javaInterop` block of [WatchdogGradleExtension]: the Java-interop diagnostics. They
- * matter only for a library with Java consumers, so a Kotlin-only library turns them all off:
+ * matter only to Java consumers, so a Kotlin-only library turns them off:
  *
  * ```kotlin
  * apiWatchdog {
@@ -225,7 +224,7 @@ public open class WatchdogJavaInteropExtension @Inject internal constructor(obje
     /** Whether the Java-interop diagnostics run. Default is `true`. `false` wins over the severities. */
     public val enabled: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(true)
 
-    /** Severity of `MANGLED_JVM_NAME_PUBLIC_API`: value classes mangling public JVM signatures. */
+    /** Severity of `MANGLED_JVM_NAME_PUBLIC_API`: value classes that mangle public JVM signatures. */
     public val mangledJvmNamePublicApi: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
     /** Severity of `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`: Kotlin-only shapes visible to Java. */

@@ -14,7 +14,7 @@ plugins {
 
 val generateCheckDescriptions = registerDiagnosticsGenerator<GenerateCheckDescriptions>(
     name = "generateCheckDescriptions",
-    description = "Generates the WatchdogCheckDescriptions table of the SARIF report from the shared diagnostics.json.",
+    description = "Generates the WatchdogCheckDescriptions table of the SARIF report from diagnostics.json.",
     packageName = "org.jetbrains.kotlinx.library.api.watchdog",
     outputDirectory = "checkDescriptions/main/kotlin",
 ) {
