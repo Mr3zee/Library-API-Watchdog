@@ -62,14 +62,24 @@ Both tasks read the block. A format that is off writes no file and no console li
 
 ## Multi-project builds
 
-Apply the report aggregation plugin to the root project and declare every module that applies the
-Watchdog:
+Apply the report aggregation plugin to the root project and declare every subproject. A module
+without the Watchdog adds nothing to the report:
 
 ```kotlin build.gradle.kts
 plugins {
     kotlin("library.api-watchdog-report-aggregation") version "{{libraryApiWatchdogVersion}}"
 }
 
+dependencies {
+    subprojects.forEach { apiWatchdogReports(project(it.path)) }
+}
+```
+
+This works with the configuration cache and with project isolation. 
+
+To report on some modules only, declare each one:
+
+```kotlin build.gradle.kts
 dependencies {
     apiWatchdogReports(project(":library-core"))
     apiWatchdogReports(project(":library-client"))
@@ -82,10 +92,10 @@ Then run:
 ./gradlew aggregateApiWatchdogReports
 ```
 
-The task runs `generateApiWatchdogReport` in each declared module and combines the results into
-`build/reports/api-watchdog/aggregate-report.html` and `aggregate-report.sarif` in the root
-project. Each row of the aggregate HTML report names its module. A module that isn't declared is
-missing from the aggregate reports.
+The task runs `generateApiWatchdogReport` in each declared module with the Watchdog and combines
+the results into `build/reports/api-watchdog/aggregate-report.html` and `aggregate-report.sarif`
+in the root project. The header of the HTML report counts the modules. Each row names its module.
+A module that isn't declared is missing from the aggregate reports.
 
 The `reports` block of the task selects the aggregate formats:
 

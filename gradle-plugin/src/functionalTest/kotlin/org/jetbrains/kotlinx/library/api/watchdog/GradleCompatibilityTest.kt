@@ -3,8 +3,10 @@ package org.jetbrains.kotlinx.library.api.watchdog
 import com.autonomousapps.kit.gradle.Plugin
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.gradle.testkit.runner.TaskOutcome.SUCCESS
+import org.jetbrains.kotlin.compiler.plugin.devkit.test.TEST_COMPILER_VERSION
 import org.jetbrains.kotlin.compiler.plugin.devkit.test.pluginUnderTestVersion
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.OPEN_API_WITHOUT_SUBCLASS_OPT_IN
 import org.junit.Test
@@ -74,6 +76,40 @@ class GradleCompatibilityTest {
         assertContains(sarif, "\"uri\": \"openApi/src/main/kotlin/test/OpenApi.kt\"")
         assertContains(sarif, "\"uri\": \"dataApi/src/main/kotlin/test/DataApi.kt\"")
         assertContains(sarif, "\"ruleId\": \"DATA_CLASS_PUBLIC_API\"")
+    }
+
+    @Test
+    fun aggregatesEverySubprojectAndSkipsProjectsWithoutTheWatchdog() {
+        val project = jvmProject {
+            plugins(Plugin("org.jetbrains.kotlin.library.api-watchdog-report-aggregation", pluginUnderTestVersion))
+            buildScript(
+                """
+                    dependencies {
+                        subprojects.forEach { apiWatchdogReports(project(it.path)) }
+                    }
+                """
+            )
+            subproject("openApi") { source("/** An open API. */\npublic open class OpenApi", "OpenApi") }
+            subproject("dataApi") {
+                source("/** A data API. */\npublic data class DataApi(public val value: Int)", "DataApi")
+            }
+            // A Kotlin module without the Watchdog has no report variant.
+            subproject("tools") {
+                plugins(Plugin("org.jetbrains.kotlin.jvm", "$TEST_COMPILER_VERSION"))
+                source("/** A tool. */\npublic open class Tool", "Tool")
+            }
+        }
+
+        val result = project.build("aggregateApiWatchdogReports", *PROJECT_ISOLATION)
+
+        result.assertTaskOutcome(":openApi:generateApiWatchdogReport", SUCCESS)
+        result.assertTaskOutcome(":dataApi:generateApiWatchdogReport", SUCCESS)
+        result.assertTaskOutcome(":tools:generateApiWatchdogReport", null)
+        val html = project.file("build/reports/api-watchdog/aggregate-report.html").readText()
+        assertContains(html, "Aggregate report for 2 project(s)")
+        assertContains(html, ":openApi")
+        assertContains(html, ":dataApi")
+        assertFalse(html.contains(":tools"), html)
     }
 
     @Test
