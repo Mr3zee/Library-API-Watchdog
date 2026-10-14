@@ -80,7 +80,7 @@ Constructors need this annotation because the compiler doesn't accept `@JvmName`
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
-// !diag[/[(].*[)]/] MANGLED_JVM_NAME_PUBLIC_API ["$constructor","Wallet","UserId","$constructorFix"]
+// !diag[/[(]/] MANGLED_JVM_NAME_PUBLIC_API ["$constructor","Wallet","UserId","$constructorFix"]
 public class Wallet(
     // !hide-focused
     /** Identifier of the account that owns the wallet. */ 
@@ -142,7 +142,7 @@ public class Ledger {
 - If a top-level function or getter uses a value class only as its return type, its JVM name doesn't change.
 - The check skips members and constructors of the value class itself.
 - The plugin checks `suspend` functions with [Kotlin-only API without JvmSynthetic](./kotlin-only-api-without-jvm-synthetic.md).
-- The check skips overrides, `@JvmSynthetic` declarations, and `@PublishedApi internal` declarations.
+- The check skips overrides, `@JvmSynthetic` functions and accessors, and `@PublishedApi internal` declarations.
 
 ## Exemption
 

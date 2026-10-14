@@ -11,7 +11,8 @@ Two tasks write it:
 ./gradlew generateApiWatchdogReport
 ```
 
-Both tasks compile the main sources in collection mode. [Collection mode](./existing-libs.md#collection-mode)
+Both tasks compile the `main` compilation of every target in collection mode. An Android library
+has no `main` compilation, so the tasks skip it. [Collection mode](./existing-libs.md#collection-mode)
 lists what collection mode changes.
 
 ## Formats

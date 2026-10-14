@@ -13,7 +13,7 @@ import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnostics
 import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogSeverity
 
 object WatchdogConfigurationKeys {
-    /** Severity overrides keyed by diagnostic name. An unlisted diagnostic is an error. */
+    /** Severity overrides keyed by diagnostic name. An unlisted diagnostic has its default severity. */
     val DIAGNOSTIC_SEVERITIES: CompilerConfigurationKey<Map<String, WatchdogSeverity>> =
         CompilerConfigurationKey.create("watchdog diagnostic severities")
 
@@ -39,7 +39,7 @@ object WatchdogConfigurationKeys {
     val REPORT_UNDOCUMENTED_CLASS_PROPERTIES: CompilerConfigurationKey<Boolean> =
         CompilerConfigurationKey.create("watchdog report undocumented class properties")
 
-    /** The compile classpath and the subset that consumers get. Only the Gradle plugin has them. */
+    /** The compile classpath and the subset that consumers get. The Gradle plugin and the benchmarks pass them. */
     val COMPILE_DEPENDENCY_PATHS: CompilerConfigurationKey<Set<String>> =
         CompilerConfigurationKey.create("watchdog compile dependency paths")
 
@@ -73,7 +73,7 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             valueDescription = "<diagnostic name>:error|warning|none",
             description = "Report the named watchdog diagnostic with the given severity, " +
                     "or disable its check with 'none'. " +
-                    "Every diagnostic not mentioned is reported as an error.",
+                    "Every diagnostic not mentioned has its default severity.",
             required = false,
             allowMultipleOccurrences = true,
         )

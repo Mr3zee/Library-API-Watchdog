@@ -292,7 +292,8 @@ A direct compiler call configures the plugin with `-P` options of this form:
 | `publicTypeWithInternalApi` | `true` or `false`.                                     | `publicTypeWithInternalApi`   |
 | `reportUndocumentedClassProperties` | `true` or `false`.                             | `reportUndocumentedClassProperties` |
 
-`<NAME>` is a diagnostic name from the [Property reference](#property-reference). `<severity>` is
+`<NAME>` is a diagnostic name from the [Property reference](#property-reference), except the two
+checks that a Boolean property turns off: the option rejects them. `<severity>` is
 `error`, `warning`, or `none`. A diagnostic that no option names has its default severity. One
 value of each option:
 
@@ -305,7 +306,8 @@ value of each option:
 ```
 
 [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md)
-doesn't run without Gradle.
+needs the dependency model that only the Gradle plugin passes to the compiler, so it doesn't run
+without Gradle.
 
 ## Next steps
 

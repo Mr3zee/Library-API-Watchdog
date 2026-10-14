@@ -11,7 +11,7 @@ internal class LineEndingMapping private constructor(
     private val rawOffsets: IntArray?,
     val newline: String,
 ) {
-    /** For a dropped `\r\n` pair, the offset of the `\n` that replaced it. */
+    /** For the `\r` of a dropped `\r\n` pair, the offset of the `\n` that replaced the pair. */
     fun toNormalizedOffset(rawOffset: Int): Int {
         val offsets = rawOffsets ?: return rawOffset
         var low = 0

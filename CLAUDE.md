@@ -3,9 +3,9 @@
 Skill from https://mr3zee.github.io/code-doc-writer/ must be installed 
 and used as `/code-doc-writer:code-doc-writer` in every session.
 
-A Kotlin K2 compiler plugin, a Gradle plugin, and an annotations library. The checkers warn library authors about
-public API declarations that are hard to evolve. README.md lists the diagnostics. `DOCS_GUIDELINE.md` holds the rules
-for every text a person reads.
+A Kotlin K2 compiler plugin, a Gradle plugin, an exemption fixer, a report-aggregation plugin, and an
+annotations library. The checkers warn library authors about public API declarations that are hard to
+evolve. README.md lists the diagnostics. `DOCS_GUIDELINE.md` holds the rules for every text a person reads.
 
 ## Commands
 
@@ -42,16 +42,19 @@ npm run build                       # the site build, fails on a broken link or 
 ## Constraints the code doesn't show
 
 - `diagnostics.json` is the single source of truth for diagnostic texts. The build generates `WatchdogDiagnosticMessages`
-  (compiler plugin), `WatchdogChecks` (Gradle plugin), and the `Diagnostic` enum of the Gradle plugin's functional
-  tests from it. The docs build fails on a diagnostic name or range that the compiler doesn't report.
+  (compiler plugin), `WatchdogChecks` (Gradle plugin and fixer), `WatchdogCheckDescriptions` (report aggregation),
+  and the `Diagnostic` enum of the Gradle plugin's functional tests from it. The docs build fails on a diagnostic
+  name that `diagnostics.json` doesn't list or a range that matches no sample line. `DocsExamplesTest` in the
+  Gradle functional tests compiles every docs sample and checks that the compiler reports exactly the annotated
+  diagnostics.
 - The Gradle functional tests describe a build with the DSL in `WatchdogProject.kt` (`jvmProject`, `kmpProject`,
   `androidLibrary`, `kmpAndroidProject`) and check output with the `BuildResult` assertions in `BuildAssertions.kt`,
   which match the first paragraph of each message. A new always-error diagnostic goes into `alwaysErrorDiagnostics`.
 - `WatchdogDiagnosticsRecorder` must not reference `com.intellij` types in bytecode, because the jar runs both in the
   CLI and in the relocated `kotlin-compiler-embeddable` classpath.
-- The fixer uses K2 PSI entry points only, with relocated `org.jetbrains.kotlin.com.intellij` imports. Its
-  dependencies are compile-only. The Gradle task gives it the `kotlin-compiler-embeddable` of the project's Kotlin
-  version at runtime.
+- The fixer uses K2 PSI entry points only, with unrelocated `com.intellij` imports. Its dependencies are
+  compile-only. The Gradle task runs it in a separate JVM with the `kotlin-compiler` artifact of the project's
+  Kotlin version.
 - The Gradle plugin checks the task graph in `gradle.taskGraph.whenReady`, never on task realization, because IDE
   sync realizes every task.
 - Android compilations resolve dependencies through an `android-classes-jar` artifact view. Without it a project AAR
@@ -59,9 +62,10 @@ npm run build                       # the site build, fails on a broken link or 
   `com.android.kotlin.multiplatform.library` target of AGP 8 reports platform type `jvm`.
 - `:kotlin-library-api-watchdog-report-aggregation` is a separate artifact so a root project that applies it doesn't
   put the KGP-dependent support plugin on every project's plugin classpath.
-- The Android functional tests skip themselves without an Android SDK. AGP 8 fixtures run with the pinned
-  `agpCompatibleGradle`, because AGP 8 can't run on Gradle 9.6 or later. The dev kit skips every multiplatform fixture
-  on Kotlin versions older than the build's own, because KLIBs aren't forward compatible.
+- The Android functional tests skip themselves without an Android SDK. AGP 8 fixtures run with the Gradle version
+  pinned in `AgpVersion.AGP8` of `WatchdogProject.kt`, because AGP 8 can't run on Gradle 9.6 or later. The dev kit
+  skips every multiplatform fixture on Kotlin versions older than the build's own, because KLIBs aren't forward
+  compatible.
 
 ## Adding a new diagnostic
 

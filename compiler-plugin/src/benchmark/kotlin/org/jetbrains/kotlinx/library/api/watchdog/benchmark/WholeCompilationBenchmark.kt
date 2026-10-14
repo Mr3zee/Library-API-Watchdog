@@ -26,7 +26,7 @@ import java.nio.file.Path
  *
  * - `noPlugin`: the compiler alone.
  * - `pluginBaseline`: every configurable diagnostic set to `none`. `ExemptionExplanationChecker`
- *   still runs.
+ *   and `InternalApiTypeExposureChecker` still run.
  * - `allCheckers`: every configurable diagnostic at `warning`, with the dependency-path options.
  * - `<CheckerName>`: the diagnostics of that checker at `warning`, the rest `none`. The cost of
  *   the checker is this mode minus `pluginBaseline`.

@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlinx.library.api.watchdog.PluginInfo
 import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnostics
 
-/** The system properties that the Gradle `benchmark` task passes to the benchmark JVM. */
+/** The system properties that the Gradle `benchmark`, `profile`, and `benchmarkCorpusAudit` tasks pass to the JVM. */
 internal object BenchmarkEnv {
     val pluginJar: String by lazy { requireProperty("watchdog.benchmark.pluginJar") }
 
@@ -23,7 +23,7 @@ internal object BenchmarkEnv {
 
     private fun requireProperty(name: String): String =
         System.getProperty(name)
-            ?: error("Missing system property '$name'. Run the benchmarks through the Gradle 'benchmark' task.")
+            ?: error("Missing system property '$name'. Run the benchmarks through a Gradle benchmark task.")
 }
 
 /** Collects errors only, because the corpus produces many warnings. */

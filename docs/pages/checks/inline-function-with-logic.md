@@ -324,7 +324,7 @@ public inline fun addCallback(
 }
 ```
 
-Move the logging to a non-inline function.
+Move the whole lambda body into one non-inline function, so the lambda has one plain call.
 
 ### User-defined operators and infix functions
 

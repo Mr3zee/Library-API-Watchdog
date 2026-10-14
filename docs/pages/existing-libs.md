@@ -12,7 +12,7 @@ Run it on a clean working tree. The task edits the source files.
 
 ## What the task changes
 
-The task compiles the main sources of every target and edits every declaration with a diagnostic
+The task compiles the `main` compilation of every target and edits every declaration with a diagnostic
 whose configured severity is `ERROR`. Each declaration gets the `@Intentionally*` annotation of its
 diagnostic with `ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`. The annotation goes below the KDoc
 and above the other annotations of the declaration. The task adds the imports.

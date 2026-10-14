@@ -12,7 +12,7 @@ import org.jetbrains.kotlin.config.Services
 import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnostics
 
 /**
- * Compiles the corpus with every diagnostic at `warning` and prints the count of each diagnostic.
+ * Compiles the corpus with every configurable diagnostic at `warning` and prints the count of each diagnostic.
  * Run it with the Gradle `benchmarkCorpusAudit` task after a change to the corpus templates.
  */
 fun main(args: Array<String>) {

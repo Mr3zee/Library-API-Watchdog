@@ -197,7 +197,7 @@ private class RewrittenLocations(
         val boundedOffset = sourceOffset.coerceIn(0, originalText.length)
         val rewrittenOffset = boundedOffset + edits.sumOf { edit ->
             // An edit that ends at the offset is in front of the token. An edit that covers the
-            // offset replaced the token, so the start of the edit is the new offset.
+            // offset replaced the token on the same line, so it doesn't move the line.
             if (edit.endOffset <= boundedOffset) edit.lengthDelta else 0
         }
         val normalizedOffset = rewrittenMapping.toNormalizedOffset(rewrittenOffset.coerceAtLeast(0))

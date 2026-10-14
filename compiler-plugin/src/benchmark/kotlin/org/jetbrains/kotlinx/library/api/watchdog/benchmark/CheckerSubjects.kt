@@ -56,7 +56,10 @@ internal class CheckerEnvironment(
     val session: FirSession,
 )
 
-/** A checker whose diagnostic is always an error isn't listed, because the corpus wouldn't compile. */
+/**
+ * Every checker except `InternalApiTypeExposureChecker`. Its diagnostic is always an error and the
+ * corpus triggers it, so the corpus wouldn't compile.
+ */
 internal object CheckerSubjects {
     private val severities = WatchdogDiagnosticSeverities.DEFAULT
 
@@ -84,7 +87,7 @@ internal object CheckerSubjects {
             listOf("DSL_MARKER_NOOP_TARGET", "DSL_MARKER_WITHOUT_EXPLICIT_TARGETS"),
         ) { ofClass(DslMarkerTargetsChecker(severities)) },
 
-        CheckerSubject("UndocumentedApiChecker", listOf("UNDOCUMENTED_PUBLIC_API")) { environment ->
+        CheckerSubject("UndocumentedApiChecker", listOf("UNDOCUMENTED_PUBLIC_API")) {
             ofBasic(UndocumentedApiChecker(severities, reportClassProperties = true))
         },
         CheckerSubject("ExemptionExplanationChecker", emptyList()) {

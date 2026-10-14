@@ -49,8 +49,7 @@ import org.jetbrains.kotlin.name.StandardClassIds
  *
  * - A call or a reference to an inline declaration of this library. The standard library is
  *   stable, so its inline declarations are plain.
- * - An operator or infix member of a built-in type, in any call syntax. It compiles to an
- *   instruction.
+ * - An operator or infix member of a built-in type, in any call syntax.
  * - Every construct that [isPlain] doesn't list.
  */
 internal class InlineFunctionLogicChecker(

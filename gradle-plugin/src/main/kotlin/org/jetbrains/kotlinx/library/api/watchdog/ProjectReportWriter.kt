@@ -7,8 +7,9 @@ internal object ProjectReportWriter {
     internal const val WARNING_REASON = "exemptExistingApi exempts errors only."
 
     /**
-     * @param sourcesUpdated whether the fixer rewrote the sources. Then each `fixed` entry is also
-     *   an `exemption` entry, so the report lists it as applied only.
+     * @param sourcesUpdated whether the fixer rewrote the sources. Then each `fixed` entry with an
+     *   annotation is also an `exemption` entry, so the report lists it as applied only. A placeholder
+     *   KDoc fix is in neither list.
      */
     fun write(
         response: FixerResponse,

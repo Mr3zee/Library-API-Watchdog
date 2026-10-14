@@ -46,7 +46,8 @@ dependencies {
 
 ## Notes
 
-- Runs only with Gradle's dependency model. It doesn't run during a direct compiler call.
+- Runs only with the dependency model that the Gradle plugin passes to the compiler. The check
+  has no documented compiler option.
 - Includes nested type arguments, generic bounds, class supertypes, and type alias expansions.
 - Public inline code can need `@PublishedApi internal` signatures in consumer binaries.
 - The check runs for each Android variant. `debugApi` and `freeApi` publish dependencies only for

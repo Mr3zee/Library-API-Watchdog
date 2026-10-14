@@ -17,7 +17,8 @@ declaration has a reason to break the rule of the check, and state the reason on
 The "Exemption" section of each check page names the exemption annotation
 ([example for data classes](./checks/data-class-public-api.md#exemption)).
 
-Every `@Intentionally*` annotation has two parameters:
+Every `@Intentionally*` annotation except
+[`@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility`](#the-dsl-marker-exemption) has two parameters:
 
 | Parameter     | Type              | Default |
 |---------------|-------------------|---------|
@@ -126,10 +127,11 @@ public class ReflectionHelper
 ```
 
 The public API checks skip every declaration with the marked annotation and every declaration
-nested in it. Three checks still run there, because they check every visibility:
+nested in it. Four checks still run there, because they check every visibility:
 - [Exemptions without explanation](./checks/special/exemption-without-explanation.md),
-- [DSL markers with no-op targets](./checks/special/dsl-marker-noop-target.md), and
-- [DSL markers without explicit targets](./checks/special/dsl-marker-without-explicit-targets.md).
+- [DSL markers with no-op targets](./checks/special/dsl-marker-noop-target.md),
+- [DSL markers without explicit targets](./checks/special/dsl-marker-without-explicit-targets.md), and
+- [DSL markers on no-op type positions](./checks/special/dsl-marker-noop-type-position.md).
 
 The marker annotation class itself is public API and stays watched.
 

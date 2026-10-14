@@ -146,7 +146,10 @@ internal object BenchmarkCorpus {
         }
     """.trimIndent() + "\n"
 
-    /** Triggers DSL_MARKER_WITHOUT_EXPLICIT_TARGETS, DSL_MARKER_NOOP_TARGET, and DSL_MARKER_NOOP_TYPE_POSITION. */
+    /**
+     * Triggers DSL_MARKER_WITHOUT_EXPLICIT_TARGETS, DSL_MARKER_NOOP_TARGET, DSL_MARKER_NOOP_TYPE_POSITION,
+     * and KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC.
+     */
     private fun dslFile(i: Int): String = header(i, "RoutesDsl") + """
         /** Legacy DSL marker kept without explicit targets. */
         @DslMarker

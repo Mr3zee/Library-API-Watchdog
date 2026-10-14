@@ -59,7 +59,8 @@ public interface Plugin {
 ## Notes
 
 - Classes whose constructors are all `internal` or `private` aren't reported.
-- `fun interface`s follow the same rules as other interfaces.
+- `fun interface`s follow the same rules as other interfaces. `@SubclassOptInRequired` isn't
+  applicable to a `fun interface`, so exempt it with `@IntentionallyOpen`.
 - [Subclass opt-in without markers](./subclass-opt-in-without-markers.md) reports a markerless `@SubclassOptInRequired` instead.
 - [Exhaustive public API](./exhaustive-public-api.md) reports sealed types.
 - `@PublishedApi internal` types aren't reported.

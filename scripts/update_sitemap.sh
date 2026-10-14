@@ -32,7 +32,8 @@ current_date=$(date +%Y-%m-%d)
 
 temp_file=$(mktemp)
 
-# The XML header, without a closing urlset tag.
+# The first line without its closing urlset tag. Docusaurus writes the sitemap on one line, so
+# the line holds the XML header and every existing entry.
 head -n 1 "$sitemap_file" | sed -En 's/<\/urlset>//p' > "$temp_file"
 
 find "$api_docs_dir" -type f -name "*.html" | while read -r html_file; do

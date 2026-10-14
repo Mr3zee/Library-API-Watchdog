@@ -2,8 +2,8 @@
 
 JMH benchmarks measuring the time and memory allocation cost of watchdog checkers that can run
 against a triggering corpus without failing compilation, both inside a complete compilation and
-in isolation on resolved FIR. They are manual tooling: nothing here runs as part of `check` or
-CI, and the results are reports for humans, not assertions.
+in isolation on resolved FIR. They are manual tooling: the benchmarks don't run as part of `check`
+or CI, and the results are reports for humans, not assertions. CI runs only `benchmarkCorpusAudit`.
 
 ## Running
 
@@ -67,7 +67,8 @@ a real build. Its `mode` parameter selects what is enabled:
 
 - `noPlugin` - the compiler alone.
 - `pluginBaseline` - plugin applied, every configurable diagnostic set to `none`. The
-  non-configurable `ExemptionExplanationChecker` still runs. This is the floor to subtract.
+  always-error `ExemptionExplanationChecker` and `InternalApiTypeExposureChecker` still run. This is
+  the floor to subtract.
 - `allCheckers` - everything enabled at `warning` severity.
 - `<CheckerName>` - a single checker enabled. Its end-to-end cost is this mode minus
   `pluginBaseline`.

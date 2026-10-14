@@ -5,7 +5,8 @@ import org.gradle.api.tasks.UntrackedTask
 
 /**
  * The `exemptExistingApi` task. It exempts every watchdog error in the main Kotlin sources: the
- * matching `@Intentionally*` annotation with `reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`.
+ * matching `@Intentionally*` annotation with `reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`,
+ * or a placeholder KDoc for `UNDOCUMENTED_PUBLIC_API`.
  * Then it writes the [API Watchdog report](https://mr3zee.github.io/Library-API-Watchdog/report).
  * It doesn't exempt warnings. Use it when you adopt the watchdog on a library with a released API.
  *

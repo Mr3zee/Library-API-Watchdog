@@ -173,8 +173,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         registerReportTask(
             EXEMPT_EXISTING_API_TASK_NAME,
             ExemptExistingApiTask::class.java,
-            "Adds the FOR_BACKWARDS_COMPATIBILITY exemption to every declaration with a watchdog " +
-                    "error in the main Kotlin sources and writes the API Watchdog reports",
+            "Exempts every declaration with a watchdog error in the main Kotlin sources, with the " +
+                    "FOR_BACKWARDS_COMPATIBILITY annotation or a placeholder KDoc, and writes the API Watchdog reports",
         )
         val reportTask = registerReportTask(
             GENERATE_REPORT_TASK_NAME,

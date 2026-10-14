@@ -32,7 +32,7 @@ for more details.
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 // !diag[/Cache/] UNDOCUMENTED_PUBLIC_API ["$class","Cache"]
-public class Cache {
+public class Cache(private val capacity: Int) {
     // !diag[/get/] UNDOCUMENTED_PUBLIC_API ["$function","get"]
     public fun get(key: String): String? = store[key]
     // !hide-focused(1:3)
@@ -49,7 +49,7 @@ public class Cache {
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
-public class Cache {
+public class Cache(private val capacity: Int) {
     /**
      * Returns the cached value for [key],
      * or null when nothing is cached under it.

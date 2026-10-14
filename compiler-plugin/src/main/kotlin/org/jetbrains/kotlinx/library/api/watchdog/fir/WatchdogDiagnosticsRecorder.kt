@@ -15,7 +15,7 @@ import org.jetbrains.kotlin.fir.types.FirTypeRef
  * Adds every reported diagnostic to the end of [outputFile] as a tab-separated line: diagnostic
  * name, absolute source file path, start offset, end offset of the source element. The recorder
  * never truncates the file, because several compiler sessions of one build write to it. The
- * caller passes a path that doesn't exist yet.
+ * caller creates an empty file before the compilation.
  */
 class WatchdogDiagnosticsRecorder(private val outputFile: File) {
     fun record(diagnostic: KtDiagnostic, context: DiagnosticContext) {

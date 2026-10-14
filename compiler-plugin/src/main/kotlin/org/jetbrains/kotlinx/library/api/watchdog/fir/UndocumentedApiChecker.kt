@@ -79,6 +79,7 @@ internal class UndocumentedApiChecker(
      * - the class for a primary constructor
      * - the members for a default-named companion
      * - the class for a member property, unless [reportClassProperties] is on
+     * - the overridden or the `expect` declaration for an override or an actualized declaration
      */
     context(context: CheckerContext)
     private fun FirMemberDeclaration.watchedKind(): String? = when {

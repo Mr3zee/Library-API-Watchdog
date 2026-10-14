@@ -28,7 +28,10 @@ public abstract class WatchdogReports @Inject internal constructor(private val o
     @get:Input
     public abstract val html: Property<Boolean>
 
-    /** The HTML report file. Default is `build/reports/api-watchdog/report.html`. */
+    /**
+     * The HTML report file. Default is `build/reports/api-watchdog/report.html`, or
+     * `aggregate-report.html` for the aggregation task.
+     */
     @get:Internal
     public abstract val htmlFile: RegularFileProperty
 
@@ -40,7 +43,10 @@ public abstract class WatchdogReports @Inject internal constructor(private val o
     @get:Input
     public abstract val sarif: Property<Boolean>
 
-    /** The SARIF report file. Default is `build/reports/api-watchdog/report.sarif`. */
+    /**
+     * The SARIF report file. Default is `build/reports/api-watchdog/report.sarif`, or
+     * `aggregate-report.sarif` for the aggregation task.
+     */
     @get:Internal
     public abstract val sarifFile: RegularFileProperty
 

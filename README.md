@@ -54,7 +54,7 @@ It also adds the dependency with the `@Intentionally*` exemption annotations.
 
 Every check reports a compilation error by default, except `UNDOCUMENTED_PUBLIC_API`, which
 reports a warning. The `apiWatchdog` extension changes the severity of a check or turns it off.
-`enabled = false` turns the whole plugin off:
+`enabled = false` turns every check off:
 
 ```kotlin
 import org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity
@@ -83,7 +83,8 @@ Four ways to exempt API from the checks:
   `@InternalAnnotationMarker`. For an annotation from a dependency, use
   `apiWatchdog { internalApiAnnotations.add("com.example.InternalApi") }`.
 - **[One declaration](https://mr3zee.github.io/Library-API-Watchdog/exemptions)**: apply the
-  matching `@Intentionally*` annotation. It must have an `ExemptionReason` and a description.
+  matching `@Intentionally*` annotation with an `ExemptionReason`. A reason other than
+  `FOR_BACKWARDS_COMPATIBILITY` or `API_DESIGN` also needs a description.
 - **[One check on every declaration with a given annotation](https://mr3zee.github.io/Library-API-Watchdog/configuration#annotation-ignore-rules)**:
   use
   `apiWatchdog { ignore(WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS, whenAnnotatedWith = listOf("com.example.GeneratedValueMembers")) }`.
@@ -96,8 +97,9 @@ Four ways to exempt API from the checks:
 ## Adopting on an existing library
 
 A published library can't change its public API, so the first run reports many diagnostics that
-the author can't act on. The `exemptExistingApi` task applies an `@Intentionally*` annotation
-to every declaration with an error. A warning stays:
+the author can't act on. The `exemptExistingApi` task exempts every declaration with an error:
+an `@Intentionally*` annotation, or a placeholder KDoc for `UNDOCUMENTED_PUBLIC_API`. A warning
+stays:
 
 ```bash
 ./gradlew exemptExistingApi
