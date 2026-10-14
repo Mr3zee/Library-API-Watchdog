@@ -1,17 +1,20 @@
-# BCV suggestion
+# Binary compatibility validation suggestion
 
-This is a build-level check performed by the Gradle plugin, not the compiler plugin. The watchdog
-reviews the shape of new API declarations, but it doesn't notice when the API that is already shipped
-changes incompatibly. That part is covered by binary compatibility validation, which compares
-each build against a committed dump of the released API surface.
+The watchdog checks the shape of new API declarations. It doesn't find a change that breaks the
+API that a library has already published. Binary compatibility validation finds such a change,
+because it compares each build with a committed dump of the published API.
 
 ## What happens
 
-The Gradle plugin checks that either the Kotlin Gradle plugin's built-in
-[ABI validation](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html)
-(Kotlin 2.2 or newer) or the standalone
-[Binary Compatibility Validator](https://github.com/Kotlin/binary-compatibility-validator)
-plugin is enabled alongside it. When neither is, the build prints a warning with a setup snippet:
+The Gradle plugin, not the compiler plugin, does this check. After Gradle evaluates the project, the
+plugin logs a warning when neither of these is on:
+
+- The [ABI validation](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html) of
+  the Kotlin Gradle plugin, Kotlin 2.2 or newer.
+- The [Binary Compatibility Validator](https://github.com/Kotlin/binary-compatibility-validator)
+  plugin, for older Kotlin versions.
+
+The warning holds a setup snippet for the Kotlin version of the project:
 
 ```kotlin
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
@@ -22,20 +25,15 @@ kotlin {
 }
 ```
 
-On Kotlin 2.2 and 2.3, write `abiValidation { enabled.set(true) }` instead of the
+On Kotlin 2.2 and 2.3, the snippet has `abiValidation { enabled.set(true) }` instead of the
 `abiValidation()` call.
 
 ## Disable it
 
-Turn off the suggestion through the extension:
+Set `suggestAbiValidation` in the `apiWatchdog` extension. Default is `true`.
 
 ```kotlin
 apiWatchdog {
     suggestAbiValidation = false
 }
 ```
-
-## See also
-
-- [ABI validation in the Kotlin Gradle plugin](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html)
-- [Binary Compatibility Validator (legacy)](https://github.com/Kotlin/binary-compatibility-validator)

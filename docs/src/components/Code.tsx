@@ -27,10 +27,7 @@ import registry from '../../../diagnostics.json';
 import {KeyboardShortcut, useIdeaGenerateShortcut} from './KeyboardShortcut';
 import styles from './Code.module.css';
 
-/**
- * Renders every fenced code block on the site. Code Hike replaces the blocks with this component
- * from the remark plugins configured in docusaurus.config.ts.
- */
+/** Renders every fenced code block. docusaurus.config.ts maps the Code Hike blocks to it. */
 export default function Code({codeblock}: {codeblock: HighlightedCode}): ReactNode {
   const tabbed = hasFocusedCode(codeblock);
 
@@ -106,8 +103,8 @@ function FocusedCodeTabs({codeblock}: {codeblock: HighlightedCode}): ReactNode {
     toolbarTopBeforeViewChange.current = null;
     if (previousTop === null || !toolbarRef.current) return;
 
-    // Every code block changes view together. Counteract the height changes of blocks above the
-    // clicked one so its toolbar stays under the pointer and the page does not jump.
+    // Every code block changes view together, so the blocks above the clicked one change height.
+    // The scroll keeps its toolbar under the pointer.
     const topDelta = toolbarRef.current.getBoundingClientRect().top - previousTop;
     if (Math.abs(topDelta) >= 0.5) window.scrollBy(0, topDelta);
   }, [view]);
@@ -220,8 +217,8 @@ function FocusedHint(): ReactNode {
           side="top"
           sideOffset={6}
         >
-          "Focused" only shows code relevant to the current check showcase,
-          skipping other possible checks, like presence of KDocs.
+          Focused hides the lines that only satisfy other checks, such as KDoc. Full shows the
+          whole sample.
           <Tooltip.Arrow className={styles.tooltipArrow} width={10} height={5} />
         </Tooltip.Content>
       </Tooltip.Portal>
@@ -248,7 +245,7 @@ function usePersistentCodeView(): [CodeView, (view: CodeView) => void] {
     try {
       window.localStorage.setItem(CODE_VIEW_STORAGE_KEY, nextView);
     } catch {
-      // The shared in-memory value still keeps all examples in sync when storage is unavailable.
+      // The browser can block storage. inMemoryCodeView holds the view in that case.
     }
     window.dispatchEvent(new Event(CODE_VIEW_EVENT));
   }, []);
@@ -261,7 +258,7 @@ function readStoredCodeView(): CodeView {
     inMemoryCodeView =
       window.localStorage.getItem(CODE_VIEW_STORAGE_KEY) === 'focused' ? 'focused' : 'full';
   } catch {
-    // Keep the last selected view when storage is unavailable or blocked.
+    // When the browser blocks storage, the last selected view stays.
   }
   return inMemoryCodeView;
 }
@@ -420,16 +417,15 @@ async function copyToClipboard(text: string): Promise<boolean> {
   return copy(text);
 }
 
-/** Turns `// !link[/range/] /route` annotations into links inside code blocks. */
+/** Renders a `// !link[/range/] /route` annotation as a link. */
 const codeLink: AnnotationHandler = {
   name: 'link',
   Inline: ({annotation, children}) => <Link to={annotation.query}>{children}</Link>,
 };
 
 /**
- * Underlines the exact source range reported by the compiler and shows its diagnostics in an
- * IntelliJ-style tooltip. The remark plugin validates the `// !diag[/range/] NAME` annotations.
- * see plugins/remark-code-samples.mjs.
+ * Renders a `// !diag[/range/] NAME` annotation as an underlined range with a tooltip that lists
+ * its diagnostics. plugins/remark-code-samples.mjs validates the annotation.
  */
 const diagnostics: AnnotationHandler = {
   name: 'diag',
@@ -476,8 +472,8 @@ const PARAMETER_REFERENCE = /^\$([A-Za-z][A-Za-z0-9]*)(?:\(([^()]*)\))?$/;
 function Diagnostic({report}: {report: DiagnosticReport}): ReactNode {
   const diagnostic = byName.get(report.name);
   const ideaGenerateShortcut = useIdeaGenerateShortcut();
-  // The remark plugin only produces names it found in the registry, so the fallback is only
-  // reachable if the two ever get out of sync.
+  // plugins/remark-code-samples.mjs rejects an unknown name, so this fallback never runs on a
+  // built site.
   if (!diagnostic) return <span className={styles.diagnosticName}>{report.name}</span>;
 
   const parameters = report.parameters.map((parameter) =>
@@ -555,8 +551,8 @@ function alignTable(table: string): string {
 }
 
 /**
- * Joins source-wrapped lines with a space. An empty line is a paragraph break, and a code line,
- * which starts with four spaces, keeps the line breaks around it.
+ * A copy of `joinTextLines` in plugins/diagnostics.mjs. That module reads the file system, so it
+ * can't run in the browser.
  */
 function joinTextLines(lines: readonly string[]): string {
   return lines.reduce((message, line, index) => {
@@ -594,8 +590,8 @@ function distinctReports(reports: DiagnosticReport[]): DiagnosticReport[] {
 }
 
 /**
- * Code Hike nests annotations that select an identical range. A nested tooltip trigger is hard to
- * use, so collapse those reports into one annotation and list all of them in the same tooltip.
+ * Code Hike nests annotations that select the same range, and a nested tooltip is hard to use.
+ * The reports of one range merge into one annotation and one tooltip.
  */
 function mergeDiagnosticsOnTheSameRange(codeblock: HighlightedCode): HighlightedCode {
   const mergedAnnotations: CodeAnnotation[] = [];

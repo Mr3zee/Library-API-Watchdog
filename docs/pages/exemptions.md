@@ -1,47 +1,41 @@
 # Exemptions and internal API
 
-`library-api-watchdog` gives library authors two ways to opt out of its checks without disabling them in the project:
+Three mechanisms exclude a declaration from a check while the check stays enabled for the project:
 
-- A per-declaration `@Intentionally*` annotation acknowledges that one specific hard-to-evolve shape is a deliberate
-  choice.
-- An annotation like `@InternalMyLibraryApi` removes declarations from
-  consideration because they carry no compatibility guarantees at all, regardless of their visibility,
-  making them internal by the library contract.
-
-Use the first one when the shape itself is the deliberate part of the API. Use the second one
-when a declaration is public only for technical reasons and is not meant to be supported API.
-
-A third option covers one check at a time: an
-[annotation ignore rule](./configuration.md#annotation-ignore-rules) in the `apiWatchdog`
-extension skips a configurable check on every declaration carrying a given annotation. Use it
-when an annotation already guarantees what the check is looking for, such as a code generator
-that provides `equals` and `hashCode` for every annotated class.
+- An `@Intentionally*` annotation exempts one declaration from one check. 
+- An internal API annotation, such as `@InternalMyLibraryApi`, excludes a declaration from every
+  public API check. Use it when a declaration is public only for technical reasons and the library
+  gives no compatibility guarantee for it, whatever its visibility.
+- An [annotation ignore rule](./configuration.md#annotation-ignore-rules) in the `apiWatchdog`
+  extension skips one configurable check on every declaration with a given annotation. Use it when
+  the annotation already guarantees the condition that the check tests. An example is a code
+  generator that adds `equals` and `hashCode` to every annotated class.
 
 ## Exempting a single declaration
 
-Each check has an exemption annotation. It is described in the corresponding "Exemption" section of the check's page
-([Example for data classes](./checks/data-class-public-api.md#exemption)). Applying the
-annotation silences that one check on that one declaration (or, for annotations placed on a type
-parameter or type usage, on that one type).
+The "Exemption" section of each check page names the exemption annotation
+([example for data classes](./checks/data-class-public-api.md#exemption)). The annotation silences
+that check on the annotated declaration. 
 
-**But an exemption is not a bare escape hatch. It has to be explained.**
+Every `@Intentionally*` annotation has two parameters:
 
-Every `@Intentionally*` annotation takes a `reason: ExemptionReason` (default `OTHER`) and a
-`description: String` (empty string by default). Exemptions reasons are divided into two groups:
+| Parameter     | Type              | Default |
+|---------------|-------------------|---------|
+| `description` | `String`          | `""`    |
+| `reason`      | `ExemptionReason` | `OTHER` |
 
-- `FOR_BACKWARDS_COMPATIBILITY` and `API_DESIGN` explain the exemption on their own,
-  so the description is optional.
-- `INTEROP`, `EXTERNAL_CONTRACT`, `IGNORE_JAVA_INTEROP`, and `OTHER` only categorize the exemption -
-  which interop constraint, which external contract, or why this declaration in particular gets
-  to ignore Java callers is not obvious from the entry alone - so a non-empty `description` is
-  required.
+The `reason` decides whether the `description` is required:
 
-A bare `@IntentionallyDataClass` without a description, for example, explains nothing and is rejected by the
-[Exemptions without explanation](./checks/special/exemption-without-explanation.md) check. That check is always an
-error and can't be configured or disabled. It fires on every exemption annotation usage, even on
-non-public declarations, because leaving any exemption unexplained defeats the point of exemptions.
+- `FOR_BACKWARDS_COMPATIBILITY` and `API_DESIGN` explain the exemption on their own. The
+  `description` is optional.
+- `INTEROP`, `EXTERNAL_CONTRACT`, `IGNORE_JAVA_INTEROP`, and `OTHER` only categorize the exemption.
+  The `description` must still explain the exemption.
 
-A well-explained exemption:
+[Exemptions without explanation](./checks/special/exemption-without-explanation.md) reports an
+exemption that breaks this rule. The check is always an error, can't be disabled, and runs on
+declarations of every visibility.
+
+An explained exemption:
 
 ```kotlin
 // !hide-focused
@@ -52,25 +46,25 @@ A well-explained exemption:
     reason = ExemptionReason.INTEROP,
 )
 public data class LegacyConfig(
+    // !hide-focused
     /** The network host that serves RPC requests. */
     public val host: String,
+    // !hide-focused
     /** The TCP port exposed by [host]. */
     public val port: Int,
 )
 ```
 
-When adopting the watchdog on a library whose API has already shipped, the exemptions for the
-existing surface don't have to be written by hand: the Gradle plugin's
-[`exemptExistingApi` task](./existing-libs.md)
-inserts them - with the self-explanatory `FOR_BACKWARDS_COMPATIBILITY` reason - for every
-diagnostic the current sources trigger.
+For a library whose API is already published, the [`exemptExistingApi` task](./existing-libs.md)
+adds the exemption to every reported declaration with the `FOR_BACKWARDS_COMPATIBILITY` reason.
 
-### One Exception
+### The DSL marker exemption
 
-There is one exception: `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` bakes its only accepted reason into
-its name and takes just an optional `description`. This exemption targets [`DSL_MARKER_NOOP_TARGET`](./checks/special/dsl-marker-noop-target.md)
-and [`DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`](./checks/special/dsl-marker-without-explicit-targets.md), and backwards compatibility is the
-only valid reason for a exemption.
+`@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` exempts a DSL marker from
+[DSL markers with no-op targets](./checks/special/dsl-marker-noop-target.md) and
+[DSL markers without explicit targets](./checks/special/dsl-marker-without-explicit-targets.md).
+It has no `reason` parameter, because backwards compatibility is the only valid reason for this
+exemption. Its `description` is optional.
 
 ### All exemption annotations
 
@@ -102,10 +96,9 @@ only valid reason for a exemption.
 
 ## Internal API annotations
 
-Some declarations are public only because the current library's internal structure requires it, 
-not because they are supported API (for example, shared internals). Rather than
-exempting every one of them individually, annotate the library's own internal-API marker annotation
-with `@InternalAnnotationMarker`:
+Some declarations are public only because the library's own structure needs it, for example
+internals that several modules share. Instead of an exemption on each of them, annotate the
+library's internal API annotation with `@InternalAnnotationMarker`:
 
 ```kotlin
 // !hide-focused
@@ -114,26 +107,25 @@ with `@InternalAnnotationMarker`:
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 public annotation class InternalMyLibraryApi
 
-@InternalMyLibraryApi // Not watched, library's internal API
+@InternalMyLibraryApi // Internal API, not watched
 public class ReflectionHelper
 ```
 
-Every declaration carrying the marked annotation is no
-longer watched by the public API checks, and neither is anything nested inside it. Only the
-occurrence-based checks still apply there: exemption annotations must be explained, and DSL
-markers are validated at every visibility.
+The public API checks skip every declaration with the marked annotation and every declaration
+nested in it. Two kinds of checks still run there, because they check every visibility:
+[Exemptions without explanation](./checks/special/exemption-without-explanation.md) and the DSL
+marker checks.
 
-A supported public declaration must not expose one of those internal types in its signature. The
-[`PUBLIC_TYPE_WITH_INTERNAL_API`](./checks/special/public-type-with-internal-api.md) check reports
-that mismatch. Either keep the type behind the implementation boundary or mark the exposing
-declaration as internal API too.
+The marker annotation class itself is public API and stays watched.
 
-The marker annotation class itself is ordinary public API and stays watched like any
-other declaration, so it still needs a KDoc comment and the rest.
+A supported public declaration must not expose an internal API type in its signature.
+[Public types marked as internal API](./checks/special/public-type-with-internal-api.md) reports
+such a signature. Either remove the type from the signature or mark the declaration as internal
+API too.
 
-An internal-API annotation that comes from a dependency can't be annotated with
-`@InternalAnnotationMarker`. List it in the `apiWatchdog` extension by its fully qualified class
-name instead, and it is treated exactly like a marked annotation:
+An annotation class from a dependency can't carry `@InternalAnnotationMarker`. List its fully
+qualified name in `internalApiAnnotations` instead. The plugin then treats it like a marked
+annotation:
 
 ```kotlin
 apiWatchdog {
@@ -141,11 +133,8 @@ apiWatchdog {
 }
 ```
 
-See [Internal API annotations from dependencies](./configuration.md#internal-api-annotations-from-dependencies)
-for details and the matching compiler option.
+## The annotations artifact
 
-## Configuration
-
-Every `@Intentionally*` annotation, `@InternalAnnotationMarker`, and `ExemptionReason` live in the
-`org.jetbrains.kotlinx:kotlin-library-api-watchdog-plugin-annotations` artifact.
-Applying the Gradle plugin adds this library as a dependency automatically - no manual dependency declaration is needed.
+The `@Intentionally*` annotations, `@InternalAnnotationMarker`, and `ExemptionReason` are in
+`org.jetbrains.kotlinx:kotlin-library-api-watchdog-plugin-annotations`. The Gradle plugin adds this
+dependency to the project.

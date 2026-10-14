@@ -160,10 +160,10 @@ function validateExemptions() {
       !exemption.wording.startsWith('If this is intended, apply `@') ||
       !exemption.wording.includes('Intentionally')
     ) {
-      failures.push(`${location}: exemption wording must use the standard opening.`);
+      failures.push(`${location}: exemption wording must start with "If this is intended, apply \`@Intentionally...\`".`);
     }
     if (!diagnostic.message.includes('')) {
-      failures.push(`${name}: diagnostic message needs a separate exemption paragraph.`);
+      failures.push(`${name}: the message in diagnostics.json has no empty line before the exemption paragraph.`);
     }
   }
 
@@ -175,7 +175,7 @@ function readExemptionTable(result, lines, markerIndex, file, section) {
   const header = '| Missing behavior | Individual exemption | Combined exemption |';
   const normalizedHeader = lines[markerIndex + 1]?.replace(/\s+/g, ' ').trim();
   if (normalizedHeader !== header) {
-    parsingFailures.push(`${location}: exemption table has an unexpected header.`);
+    parsingFailures.push(`${location}: exemption table header must be '${header}'.`);
     return;
   }
 

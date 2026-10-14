@@ -1,6 +1,5 @@
 @import '@fontsource-variable/jetbrains-mono';
 
-/* Purple is the documentation site's primary color. */
 :root {
   --ifm-color-primary: #7048e8;
   --ifm-color-primary-dark: #5f34e4;
@@ -26,9 +25,8 @@
 }
 
 /*
- * The palette of the Code Hike "github-from-css" theme, which resolves every colour to one of
- * these variables. The values are the ones github-light and github-dark give the same token
- * scopes, so a single build-time highlighting pass serves both themes.
+ * The palette of the Code Hike "github-from-css" theme. The values are the github-light and
+ * github-dark colors of each token scope.
  */
 :root {
   --ch-1: #6e7781;
@@ -98,16 +96,13 @@
   --watchdog-sample-badge-glyph: #1b1b1d;
 }
 
-/*
- * Code Hike colours the tokens but leaves the block itself to the site, so it gets the same
- * palette as the tokens do.
- */
+/* Code Hike colors only the tokens, so the block takes its colors from the same palette. */
 pre[data-ch] {
   background: var(--ch-16);
   color: var(--ch-4);
 }
 
-/* Keep loose Markdown lists aligned with the spacing of simple, tight lists. */
+/* A loose list has the spacing of a tight list. */
 .theme-doc-markdown li > p:first-child {
   margin-top: 0;
 }
@@ -161,10 +156,9 @@ pre[data-ch] {
 }
 
 /*
- * Don't / Do sample pairs on check pages. Their headings follow the dont/do anchor id
- * convention (#dont, #do, #dont-2, ...), so the styling keys on those ids: a colored badge
- * and heading text, a matching accent edge on the sample right after the heading, and extra
- * space before each Don't so consecutive pairs read as separate examples.
+ * The Don't and Do samples on check pages. The headings have the ids dont, do, dont-2, do-2, and
+ * so on, so the styles key on the id. A heading gets a colored badge and colored text. The sample
+ * after it gets an accent edge.
  */
 .theme-doc-markdown h3[id='dont'],
 .theme-doc-markdown h3[id^='dont-'],
@@ -198,9 +192,8 @@ pre[data-ch] {
 }
 
 /*
- * Each pair after the first (its Don't heading carries a dont-N id) opens with a divider, so
- * consecutive examples don't blur together. When a lead-in paragraph introduces the pair, the
- * divider moves above that paragraph.
+ * A pair after the first (id dont-N) starts with a divider. When a paragraph introduces the pair,
+ * the divider is above that paragraph.
  */
 .theme-doc-markdown h3[id^='dont-'],
 .theme-doc-markdown p:has(+ h3[id^='dont-']) {

@@ -5,8 +5,8 @@ import {remarkCodeSamples} from './plugins/remark-code-samples.mjs';
 import {remarkProjectVersion} from './plugins/remark-project-version.mjs';
 import {variables} from './variables.mjs';
 
-// "github-from-css" resolves every colour to a --ch-* CSS variable (see src/css/custom.css), so
-// one build-time highlighting pass serves both the light and the dark theme.
+// "github-from-css" maps every token color to a --ch-* variable from src/css/custom.css, so one
+// build-time highlighting pass serves the light and the dark theme.
 const codeHike: CodeHikeConfig = {
   components: {code: 'Code'},
   syntaxHighlighting: {theme: 'github-from-css'},
@@ -35,7 +35,7 @@ const config: Config = {
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',
           editUrl: `${variables['repo-tree-path'].replace('/tree/', '/edit/')}/docs/`,
-          // These have to run before the Docusaurus plugins turn code blocks into <Code> elements.
+          // The default Docusaurus plugins turn code blocks into <Code> elements, so these run first.
           beforeDefaultRemarkPlugins: [
             remarkProjectVersion,
             remarkCodeSamples,
@@ -97,7 +97,7 @@ const config: Config = {
       copyright: `Copyright © ${new Date().getFullYear()} JetBrains s.r.o.`,
     },
     prism: {
-      // Code Hike renders every fenced block, so Prism only ever sees the theme defaults.
+      // Code Hike renders every fenced block, so Docusaurus never uses these themes.
       theme: require('prism-react-renderer').themes.github,
       darkTheme: require('prism-react-renderer').themes.dracula,
     },

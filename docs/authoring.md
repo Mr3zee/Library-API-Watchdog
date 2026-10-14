@@ -4,14 +4,13 @@ The reader of every page is a library author. They know Kotlin and don't read th
 `DOCS_GUIDELINE.md` and the `code-doc-writer` skill give the text rules. This page gives what the
 existing pages don't show.
 
-A fact has one page. Another page links to it. The check list in `docs/overview.md` is the source
-of truth for the order and the descriptions in `README.md`.
+A fact has one page. Another page links to it. The check list in `docs/pages/overview.md` is the
+source of truth for the order and the descriptions in `README.md`.
 
 ## Check pages
 
 Copy the shape of an existing check page. The sections, in order: the fact table, `What it
-reports`, `Rationale`, `Notes`, `Exemption`, `Configuration`, `See also`. Omit a section that would be
-empty.
+reports`, `Rationale`, `Notes`, `Exemption`, `Configuration`, `See also`. Omit an empty section.
 
 - The title is the `title` of the diagnostic in `diagnostics.json`.
 - `What it reports` gives the condition and one sample. It names `@PublishedApi internal` when the

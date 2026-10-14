@@ -1,6 +1,6 @@
 # Configuration
 
-Configuration options for `library-api-watchdog`.
+The Gradle plugin, the `apiWatchdog` extension, and the compiler options of `library-api-watchdog`.
 
 ## Apply the Gradle plugin
 
@@ -22,7 +22,7 @@ dependencyResolutionManagement {
 }
 ```
 
-Then apply the plugin:
+Apply the plugin:
 
 ```kotlin build.gradle.kts
 plugins {
@@ -30,9 +30,9 @@ plugins {
 }
 ```
 
-`library-api-watchdog` is a Kotlin compiler plugin. It needs a Gradle
-project that applies the Kotlin plugin and turns on
-[explicit API mode](https://kotlinlang.org/docs/api-guidelines-simplicity.html#use-explicit-api-mode):
+The checks run only in a module with
+[explicit API mode](https://kotlinlang.org/docs/api-guidelines-simplicity.html#use-explicit-api-mode)
+on. Turn it on:
 
 ```kotlin build.gradle.kts
 kotlin {
@@ -40,51 +40,42 @@ kotlin {
 }
 ```
 
-The `-Xexplicit-api` compiler flag, and the `warning` variant of either form, also count. Without
-explicit API mode enabled, `library-api-watchdog` registers no checks at all: there is no public API contract
-to watch. The Gradle plugin prints a build warning when explicit API mode is not enabled.
+`explicitApiWarning()` and the `-Xexplicit-api` compiler flag also count. Without explicit API
+mode the plugin registers no checks.
 
 ## What applying does
 
 Applying the plugin:
 
-- Registers the compiler plugin for every compilation in the project except test compilations:
-  test sources are not published, so they carry no API contract to watch.
-- Adds a dependency on `org.jetbrains.kotlinx:kotlin-library-api-watchdog-plugin-annotations`,
-  a runtime library with the `@Intentionally*` exemption annotations.
-- Warns when explicit API mode is not enabled.
-- Checks whether binary compatibility validation is enabled alongside it, printing a
-  build warning with a setup snippet when missing. 
-  See [Binary compatibility validation suggestion](./abi-validation-suggestion.md) for more details.
+- Registers the compiler plugin for every compilation except test compilations.
+- Adds the `org.jetbrains.kotlinx:kotlin-library-api-watchdog-plugin-annotations` dependency,
+  the library with the `@Intentionally*` exemption annotations.
+- Warns when explicit API mode is off.
+- Warns when binary compatibility validation is off, with a setup snippet.
+  [Binary compatibility validation suggestion](./abi-validation-suggestion.md) gives the details.
 
 ## Errors by default
 
-`library-api-watchdog` is intentionally restrictive by default: every check is enabled and 
-reports a compilation error until configured otherwise. See [The apiWatchdog extension](./configuration.md#the-apiwatchdog-extension)
-for demoting individual checks to warnings or disabling them, and
-[Exemptions and internal API](./exemptions.md) for exempting a single declaration in place instead of
-changing severity project-wide.
+Every check is on and reports a compilation error, except
+[`UNDOCUMENTED_PUBLIC_API`](./checks/undocumented-public-api.md), which reports a warning.
+[The `apiWatchdog` extension](#the-apiwatchdog-extension) changes the severity of a check or
+turns it off. [Exemptions and internal API](./exemptions.md) exempts selected declarations instead.
 
 ## Adding the plugin to existing libraries
 
-When added to an exiting library, chances are that the whole codebase will turn red,
-and most of the declarations reported can't be changed easily without breaking users.
-
-Use the `exemptExistingApi` task to mark existing APIs with `@Intentionally*`
-annotations and `ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`:
+A library with a released API can't change most of the reported declarations. The
+`exemptExistingApi` task adds the matching `@Intentionally*` annotation with
+`ExemptionReason.FOR_BACKWARDS_COMPATIBILITY` to every reported declaration:
 
 ```bash
 ./gradlew exemptExistingApi
 ```
 
-See [Adding the plugin to existing libraries](./existing-libs.md) for more details.
+[Adding the plugin to existing libraries](./existing-libs.md) describes the task.
 
 ## The `apiWatchdog` extension
 
-Every property has a default value. For configurable checks it is `WatchdogSeverity.ERROR`,
-for enabled/disabled switches is it `true` by default.
-
-See the list of configurable properties:
+The sample lists every property. A severity or a switch shows its default value:
 
 ```kotlin build.gradle.kts
 apiWatchdog {
@@ -117,7 +108,7 @@ apiWatchdog {
     // !link[/exhaustivePublicApi/] /checks/exhaustive-public-api
     exhaustivePublicApi = WatchdogSeverity.ERROR
     // !link[/undocumentedPublicApi/] /checks/undocumented-public-api
-    undocumentedPublicApi = WatchdogSeverity.ERROR
+    undocumentedPublicApi = WatchdogSeverity.WARNING
     // !link[/functionTypeAliasPublicApi/] /checks/function-type-alias-public-api
     functionTypeAliasPublicApi = WatchdogSeverity.ERROR
     // !link[/dataClassPublicApi/] /checks/data-class-public-api
@@ -151,8 +142,7 @@ apiWatchdog {
 
     // !link[/javaInterop/] /checks/java-interop/
     javaInterop {
-        // One switch for the whole Java interop group,
-        // it overrides the severities below.
+        // false turns off all six checks, whatever their severities.
         // !link[/enabled/] /checks/java-interop/
         enabled = true
 
@@ -174,19 +164,18 @@ apiWatchdog {
 
 ## Disabling the watchdog
 
-`enabled = false` turns the whole plugin off for the project:
+`enabled = false` turns off every check in the project. The plugin still adds the annotations
+library:
 
 ```kotlin build.gradle.kts
 apiWatchdog {
-    enabled = true // default
+    enabled = false
 }
 ```
 
 ## Annotation ignore rules
 
-Use `ignore` when annotations already guarantee the condition a check is looking for. Name the
-check by its diagnostic name, a constant of the `WatchdogChecks` object, and the annotations by
-their fully qualified class names:
+`ignore` skips a check on every declaration that carries one of the listed annotations:
 
 ```kotlin build.gradle.kts
 import org.jetbrains.kotlinx.library.api.watchdog.WatchdogChecks
@@ -202,19 +191,19 @@ apiWatchdog {
 }
 ```
 
-The diagnostic is ignored only on declarations directly carrying one of those annotations. Repeat
-the call to associate the annotations with several checks. These rules are available for the
-configurable diagnostics in the [Property reference](#property-reference). Always-error safety
-checks can't be ignored by annotation. `WatchdogChecks` lists every diagnostic name as a `const val`,
-so a plain string with the same name is accepted too.
+The rules:
+
+- `ignore` rejects the name of an always-error check.
+- An annotation is its fully qualified class name.
+- The rule applies to the declaration that carries the annotation, not to the declarations
+  nested in it.
+- Multiple `ignore` call can be defined.
 
 ## Internal API annotations from dependencies
 
-Annotating the library's own internal-API annotation with `@InternalAnnotationMarker` is the
-usual way to exclude technical declarations from every check, see
-[Internal API annotations](./exemptions.md#internal-api-annotations). An annotation class that
-comes from a dependency can't be annotated. Name it in `internalApiAnnotations` instead, by its
-fully qualified class name:
+[Internal API annotations](./exemptions.md#internal-api-annotations) describes
+`@InternalAnnotationMarker` on the library's own annotation. An annotation class from a dependency
+can't carry it. List it in `internalApiAnnotations` by its fully qualified class name instead:
 
 ```kotlin
 apiWatchdog {
@@ -222,20 +211,31 @@ apiWatchdog {
 }
 ```
 
-Every listed annotation acts exactly like one whose class carries `@InternalAnnotationMarker`:
-declarations carrying it, and everything nested inside them, are no longer watched, and a
-supported signature exposing a type marked with it is reported by
-[`PUBLIC_TYPE_WITH_INTERNAL_API`](./checks/special/public-type-with-internal-api.md). A nested
-annotation class is named the way Kotlin source names it, with the outer class joined by a dot:
-`com.example.Markers.Internal`.
+A listed annotation works like one that carries `@InternalAnnotationMarker`.
+
+[Without Gradle](#without-gradle) gives the matching compiler option.
 
 ## Exempt non-transitive dependencies
 
 [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md)
-reports every dependency type in a public signature unless consumers receive the dependency
-transitively. When the environment that loads the library supplies a dependency on its own, as a
-Gradle process does for every Gradle plugin, declare it on the `apiWatchdogExemptNonTransitive`
-configuration. The check then accepts its types throughout the module:
+reports a dependency type in a public signature unless consumers get the dependency
+transitively. When the environment that loads the library has the dependency, as a Gradle process
+has the API of every Gradle plugin, exempt the dependency. The check then accepts its types in the
+whole module.
+
+Exempt a dependency in the configuration block of its declaration, where `this` is the
+dependency:
+
+```kotlin build.gradle.kts
+import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency
+
+dependencies {
+    compileOnly(libs.kotlin.gradle.plugin) { exemptNonTransitiveDependency(this) }
+}
+```
+
+Or declare it on the `apiWatchdogExemptNonTransitive` configuration, apart from its own
+declaration:
 
 ```kotlin build.gradle.kts
 dependencies {
@@ -246,23 +246,8 @@ dependencies {
 }
 ```
 
-To avoid naming the dependency twice, record the exemption from the configuration block of the
-declaration that adds it to the compilation. Inside that block, `this` is the dependency:
-
-```kotlin build.gradle.kts
-import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency
-
-dependencies {
-    compileOnly(libs.kotlin.gradle.plugin) { exemptNonTransitiveDependency(this) }
-}
-```
-
-Any dependency notation works, and the version is optional because the exemption resolves
-consistently with the compile classpath. The exemption covers everything the dependency pulls onto
-the compile classpath, so a Kotlin Multiplatform library is covered together with its platform
-artifact. The configuration is a marker only: it adds nothing to the compile classpath. The
-`apiWatchdog` extension exposes it as `exemptNonTransitiveDependencies`, which is the place to
-exempt a whole configuration at once:
+Or exempt a whole configuration through `exemptNonTransitiveDependencies`, the same
+configuration in the `apiWatchdog` extension:
 
 ```kotlin build.gradle.kts
 apiWatchdog {
@@ -272,29 +257,43 @@ apiWatchdog {
 }
 ```
 
-Types from every other non-transitive dependency are still reported, and
-`publicTypesMustBeTransitiveDependencies = false` remains the switch for the whole check.
+The rules:
 
-## Severity semantics
+- Apply the plugin before the `dependencies` block, or `exemptNonTransitiveDependency` fails.
+- Any dependency notation works. The version is optional, because the exemption resolves with
+  the compile classpath.
+- The exemption covers everything the dependency pulls onto the compile classpath, so a Kotlin
+  Multiplatform library is exempt together with its platform artifact.
+- The configuration adds nothing to the compile classpath. The dependency stays declared as
+  `implementation` or `compileOnly`.
+- Every other non-transitive dependency is still reported.
+  `publicTypesMustBeTransitiveDependencies = false` turns off the whole check.
 
-Each check's severity is a `WatchdogSeverity`:
+## Severities
 
-| Value     | Effect                                                                        |
-|-----------|-------------------------------------------------------------------------------|
-| `ERROR`   | Fails the compilation. This is the default for every configurable diagnostic. |
-| `WARNING` | Reported as a compiler warning, the build still succeeds.                     |
-| `NONE`    | The check is disabled entirely.                                               |
+A severity property holds a `WatchdogSeverity`:
 
-[`EXEMPTION_WITHOUT_EXPLANATION`](./checks/special/exemption-without-explanation.md) has no matching property and is always an error.
-[`PUBLIC_TYPE_WITH_INTERNAL_API`](./checks/special/public-type-with-internal-api.md) and
-[`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md) are always errors when
-enabled. Their Gradle properties are `Boolean` whole-check switches rather than severities. See
-[Exemptions and internal API](./exemptions.md). 
+| Value     | Effect                                                                           |
+|-----------|----------------------------------------------------------------------------------|
+| `ERROR`   | Fails the compilation. The default, except for `undocumentedPublicApi`.          |
+| `WARNING` | Reports a compiler warning. The build succeeds. Default for `undocumentedPublicApi`. |
+| `NONE`    | Turns the check off.                                                             |
 
-The [`exemptExistingApi` task](./existing-libs.md) temporarily disables all three
-while collecting diagnostics it can acknowledge automatically.
+Three checks have no severity property:
+
+- [`EXEMPTION_WITHOUT_EXPLANATION`](./checks/special/exemption-without-explanation.md): always an
+  error.
+- [`PUBLIC_TYPE_WITH_INTERNAL_API`](./checks/special/public-type-with-internal-api.md): always an
+  error while on. Turn off with `publicTypeWithInternalApi`.
+- [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md):
+  always an error while on. Turn off with `publicTypesMustBeTransitiveDependencies`.
+
+The [`exemptExistingApi` task](./existing-libs.md) turns all three off while it collects
+diagnostics.
 
 ## Property reference
+
+Each configurable check, its property, and its diagnostic name:
 
 | Check                                                                                                                   | Property                                                | Diagnostic                                   |
 |-------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|----------------------------------------------|
@@ -322,10 +321,10 @@ while collecting diagnostics it can acknowledge automatically.
 
 ### Java interop
 
-These properties live inside the `javaInterop { }` block. They only run in JVM
-compilations, and `javaInterop.enabled` (default `true`) is a single switch for all of them: set
-it to `false` and every one of the six resolves to `NONE`, no matter what its own property says.
-See [Java interop checks](./checks/java-interop/java-interop.md) for more details.
+These properties are in the `javaInterop { }` block. The checks run only in JVM compilations.
+`javaInterop.enabled` (default `true`) is one switch for all six: `false` turns every one off,
+whatever its own severity. [Java interop checks](./checks/java-interop/java-interop.md) describes
+the group.
 
 | Check                                                                                                         | Property                               | Diagnostic                                  |
 |---------------------------------------------------------------------------------------------------------------|----------------------------------------|---------------------------------------------|
@@ -338,32 +337,31 @@ See [Java interop checks](./checks/java-interop/java-interop.md) for more detail
 
 ## Without Gradle
 
-When invoking the compiler directly, configure severities with the repeatable plugin option:
+A direct compiler call configures the plugin with `-P` options of this form:
 
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=<NAME>:<severity>
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:<option>=<value>
 ```
 
-Parameters:
-- `<NAME>` is a diagnostic name. Any value from the [Property reference](./configuration.md#property-reference) is valid.
-- `<severity>` is `error`, `warning`, or `none`.
+| Option                      | Value                                                  | Gradle equivalent             |
+|-----------------------------|--------------------------------------------------------|-------------------------------|
+| `diagnosticSeverity`        | `<NAME>:<severity>`. Repeatable.                       | The severity property.        |
+| `ignoreWhenAnnotated`       | `<NAME>:<annotation class name>`. Repeatable.          | `ignore`                      |
+| `internalApiAnnotation`     | `<annotation class name>`. Repeatable.                 | `internalApiAnnotations`      |
+| `publicTypeWithInternalApi` | `true` or `false`.                                     | `publicTypeWithInternalApi`   |
 
-The [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md) check is not available without Gradle because the
-compiler alone can't distinguish dependencies declared with `api` from those declared with
-`implementation`.
-
-For example, to demote undocumented public API to a warning use the following argument form:
+`<NAME>` is a diagnostic name from the [Property reference](#property-reference). `<severity>` is
+`error`, `warning`, or `none`. Every diagnostic that no option names is an error, including
+[`UNDOCUMENTED_PUBLIC_API`](./checks/undocumented-public-api.md). For example, this option makes
+undocumented public API a warning:
 
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:warning
 ```
 
-The `internalApiAnnotations` property corresponds to the repeatable `internalApiAnnotation` option,
-one fully qualified annotation class name per occurrence:
-
-```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:internalApiAnnotation=com.example.dependency.InternalDependencyApi
-```
+[`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md)
+doesn't run without Gradle, because the compiler gets no information on which dependencies are
+`api` and which are `implementation`.
 
 ## Next steps
 

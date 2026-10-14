@@ -4,18 +4,12 @@ import {fileURLToPath} from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
-/** The shared diagnostics source of truth, also read by the compiler plugin build. */
 export const diagnosticsFile = path.resolve(here, '../../diagnostics.json');
 
 const source = JSON.parse(fs.readFileSync(diagnosticsFile, 'utf8'));
 
-/** Parameter values every diagnostic can use, keyed by name. */
 export const sharedParameterValues = joinParameterValues(source.sharedParameterValues ?? {});
 
-/**
- * Every diagnostic, keyed by name. Its `parameterValues` include the shared values, so a
- * consumer resolves a `$name` reference against one map.
- */
 export const diagnostics = new Map(
   source.diagnostics.map((diagnostic) => [
     diagnostic.name,
@@ -32,8 +26,8 @@ function joinParameterValues(values) {
 }
 
 /**
- * Joins source-wrapped lines with a space. An empty line is a paragraph break, and a code line,
- * which starts with four spaces, keeps the line breaks around it.
+ * Joins the wrapped lines of a message with a space. An empty line and a code line (four leading
+ * spaces) keep the line breaks around them.
  */
 function joinTextLines(lines) {
   return lines.reduce((message, line, index) => {

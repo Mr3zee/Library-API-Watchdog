@@ -19,7 +19,7 @@ const OTHER_GENERATE_SHORTCUT: KeyboardShortcutValue = {
   separator: '+',
 };
 
-/** Returns a hydration-safe shortcut, then selects the visitor's OS in the browser. */
+/** Returns Alt+Insert until hydration, then the shortcut of the visitor's OS. */
 export function useIdeaGenerateShortcut(): KeyboardShortcutValue {
   const [shortcut, setShortcut] = useState(OTHER_GENERATE_SHORTCUT);
   useEffect(() => {

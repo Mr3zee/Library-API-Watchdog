@@ -1,4 +1,3 @@
-// Shared site configuration used by docusaurus.config.ts and sidebars.ts.
 export const variables = {
   product: 'Library API Watchdog',
   'repo-root-path': 'https://github.com/Mr3zee/Library-API-Watchdog',

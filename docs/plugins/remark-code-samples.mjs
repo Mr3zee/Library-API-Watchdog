@@ -1,17 +1,13 @@
-// Prepares the fenced code blocks for Code Hike, which replaces them with the Code component in
-// the plugin that runs right after this one:
+// Prepares the fenced code blocks for Code Hike, which runs right after this plugin:
 //
-//   - Fences with no language become `text`, so the highlighter is not asked for an empty one.
-//   - The inline diagnostic annotations in Kotlin samples,
+//   - A fence without a language becomes `text`, because the highlighter rejects an empty one.
+//   - The plugin validates each `!diag` annotation of a Kotlin sample against diagnostics.json:
 //
 //         // !diag[/Point/] DATA_CLASS_PUBLIC_API ["Point"]
 //         public data class Point(val x: Int, val y: Int)
 //
-//     are validated here, then Code Hike drops the comment and gives the selected range to the
-//     tooltip handler. A name-shaped legacy comment is rejected so diagnostics can't silently
-//     fall back to highlighting a whole line. A parameter is either a name from the sample or a
-//     `$name` reference to a value in diagnostics.json. Wording written as a literal is rejected,
-//     so the docs can't drift from what the compiler prints.
+//     Code Hike then removes the comment and gives the range to the `diagnostics` handler in
+//     src/components/Code.tsx. docs/authoring.md gives the annotation rules.
 import {visit} from 'unist-util-visit';
 import {diagnostics} from './diagnostics.mjs';
 
@@ -21,7 +17,7 @@ const LEGACY_DIAGNOSTIC_COMMENT =
   /^\s*\/\/ ([A-Z][A-Z0-9_]*(?:\s*,\s*[A-Z][A-Z0-9_]*)*)\s*$/;
 const PARAMETER_REFERENCE = /^\$([A-Za-z][A-Za-z0-9]*)(?:\(([^()]*)\))?$/;
 
-/** The annotation name the `diag` handler in src/components/Code.tsx listens for. */
+/** The annotation name of the `diagnostics` handler in src/components/Code.tsx. */
 export const DIAGNOSTIC_ANNOTATION = 'diag';
 
 export function remarkCodeSamples() {
@@ -53,6 +49,7 @@ function validateDiagnosticAnnotations(value, file) {
 
     const legacy = line.match(LEGACY_DIAGNOSTIC_COMMENT);
     if (legacy) {
+      // A name without a range marks the whole line, so it's an error.
       validateNames(legacy[1], file);
       throw new Error(
         `Diagnostic annotation in ${file.path} needs the compiler-reported inline range: ` +
@@ -130,6 +127,7 @@ function validateParameterReference(parameter, diagnostic, file) {
   }
 }
 
+// Wording comes from diagnostics.json only, so a sample can't drift from the compiler output.
 function validateLiteralParameter(parameter, diagnostic, file) {
   const listed = Object.entries(diagnostic.parameterValues).find(([, value]) => value === parameter);
   if (listed !== undefined) {

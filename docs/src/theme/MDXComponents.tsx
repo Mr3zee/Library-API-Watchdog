@@ -51,7 +51,7 @@ function Table(props: ComponentProps<'table'>) {
   );
 }
 
-// Code Hike replaces every fenced code block with <Code />, so it has to be in the MDX scope.
+// Code Hike resolves the `Code` component from the MDX scope.
 export default {
   ...MDXComponents,
   table: Table,

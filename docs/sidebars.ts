@@ -1,7 +1,7 @@
 import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
 import {variables} from './variables.mjs';
 
-// Keep the navigation order explicit so check pages stay alphabetical within their groups.
+// The check pages of each group are in alphabetical order.
 const sidebars: SidebarsConfig = {
   docs: [
     'overview',

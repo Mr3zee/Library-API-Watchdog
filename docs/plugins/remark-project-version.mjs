@@ -17,7 +17,6 @@ const versionTemplates = new Map([
   [kotlinVersionTemplate, kotlinVersion],
 ]);
 
-/** Replaces version templates in code before Code Hike renders it. */
 export function remarkProjectVersion() {
   return (tree) => {
     visit(tree, ['code', 'inlineCode'], (node) => {
