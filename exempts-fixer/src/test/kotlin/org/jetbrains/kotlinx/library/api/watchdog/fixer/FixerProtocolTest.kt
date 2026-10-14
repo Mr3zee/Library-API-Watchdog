@@ -24,7 +24,7 @@ class FixerProtocolTest {
         tempDir.resolve(name).also { Files.writeString(it, content) }
 
     @Test
-    fun requestRoundTripsListsAndValuesWithEqualsSigns() {
+    fun `request round-trips lists and values with equals signs`() {
         val request = FixerRequest.parse(
             file(
                 "request.txt",
@@ -60,7 +60,7 @@ class FixerProtocolTest {
     }
 
     @Test
-    fun requestFixesErrorsOnly() {
+    fun `request fixes errors only`() {
         val request = FixerRequest.parse(
             file(
                 "severities.txt",
@@ -79,7 +79,7 @@ class FixerProtocolTest {
     }
 
     @Test
-    fun requestRejectsMalformedSeverity() {
+    fun `request rejects malformed severity`() {
         assertFailsWith<IllegalArgumentException> {
             FixerRequest.parse(
                 file(
@@ -91,7 +91,7 @@ class FixerProtocolTest {
     }
 
     @Test
-    fun requestRejectsMissingAndDuplicatedSingleKeys() {
+    fun `request rejects missing and duplicated single keys`() {
         assertFailsWith<IllegalArgumentException> {
             FixerRequest.parse(
                 file("missing.txt", "reportFile=/tmp/report\nupdateSources=true")
@@ -108,14 +108,14 @@ class FixerProtocolTest {
     }
 
     @Test
-    fun requestRejectsMalformedLines() {
+    fun `request rejects malformed lines`() {
         assertFailsWith<IllegalArgumentException> {
             FixerRequest.parse(file("malformed.txt", "just some text"))
         }
     }
 
     @Test
-    fun reportParsesAndDeduplicates() {
+    fun `report parses and deduplicates`() {
         val report = file(
             "report.tsv",
             "UNDOCUMENTED_PUBLIC_API\t/p/A.kt\t10\t20\n" +
@@ -133,7 +133,7 @@ class FixerProtocolTest {
     }
 
     @Test
-    fun reportsAreMergedAndDeduplicatedAcrossTargets() {
+    fun `reports are merged and deduplicated across targets`() {
         val jvm = file("jvm.tsv", "UNDOCUMENTED_PUBLIC_API\t/p/A.kt\t10\t20\n")
         val js = file(
             "js.tsv",
@@ -151,18 +151,18 @@ class FixerProtocolTest {
     }
 
     @Test
-    fun missingReportMeansNoDiagnostics() {
+    fun `missing report means no diagnostics`() {
         assertEquals(emptyList(), RecordedDiagnostic.parseReports(listOf(tempDir.resolve("absent.tsv"))))
     }
 
     @Test
-    fun malformedReportLineFailsLoudly() {
+    fun `malformed report line throws`() {
         val report = file("broken.tsv", "UNDOCUMENTED_PUBLIC_API\t/p/A.kt\t10\n")
         assertFailsWith<IllegalArgumentException> { RecordedDiagnostic.parseReports(listOf(report)) }
     }
 
     @Test
-    fun responseSerializesEveryEntryKind() {
+    fun `response serializes every entry kind`() {
         val response = FixerResponse().apply {
             applied += AppliedFix("DATA_CLASS_PUBLIC_API", "IntentionallyDataClass", "/p/A.kt", 3)
             skipped += SkippedDiagnostic("EXEMPTION_WITHOUT_EXPLANATION", "/p/B.kt", 7, "needs a human")
@@ -188,7 +188,7 @@ class FixerProtocolTest {
     }
 
     @Test
-    fun skippedReasonWithLineBreaksStaysOnOneProtocolLine() {
+    fun `skipped reason with line breaks stays on one protocol line`() {
         val response = FixerResponse().apply {
             skipped += SkippedDiagnostic("SOME_DIAGNOSTIC", "/p/B.kt", 7, "line one\nline two")
         }
@@ -203,7 +203,7 @@ class FixerProtocolTest {
     }
 
     @Test
-    fun everyKnownDiagnosticHasAResolution() {
+    fun `every known diagnostic has a resolution`() {
         val expected = setOf(
             "OPEN_API_WITHOUT_SUBCLASS_OPT_IN",
             "SUBCLASS_OPT_IN_WITHOUT_MARKERS",
@@ -251,7 +251,7 @@ class FixerProtocolTest {
     }
 
     @Test
-    fun unknownDiagnosticResolvesToUnfixable() {
+    fun `unknown diagnostic resolves to unfixable`() {
         val resolution = ExemptionRegistry.resolutionFor("NOT_A_DIAGNOSTIC")
         assertContains((resolution as FixResolution.Unfixable).reason, "Unknown diagnostic")
     }

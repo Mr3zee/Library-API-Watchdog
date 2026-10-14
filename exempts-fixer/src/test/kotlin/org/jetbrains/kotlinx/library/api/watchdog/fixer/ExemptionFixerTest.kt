@@ -30,7 +30,7 @@ class ExemptionFixerTest {
         fixer.fix(FILE_PATH, text, diagnostics.toList())
 
     @Test
-    fun annotationGoesBetweenKdocAndDeclaration() {
+    fun `annotation goes between KDoc and declaration`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -62,7 +62,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun warningsStayAndGetTheRewrittenLine() {
+    fun `warnings stay and get the rewritten line`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -98,7 +98,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun aFileWithWarningsOnlyIsNotRewritten() {
+    fun `a file with warnings only isn't rewritten`() {
         @Language("kotlin")
         val text = "package com.example\n\npublic open class Service\n"
 
@@ -114,7 +114,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun reportedLinesIncludeEveryEarlierMultilineInsertion() {
+    fun `reported lines include every earlier multiline insertion`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -152,7 +152,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun inlineInsertionsDoNotShiftReportedLines() {
+    fun `inline insertions don't shift reported lines`() {
         @Language("kotlin")
         val text = """
             package org.jetbrains.kotlinx.library.api.watchdog
@@ -174,7 +174,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun nestedDeclarationKeepsItsIndent() {
+    fun `nested declaration keeps its indent`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -197,7 +197,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun annotationLandsAboveExistingAnnotations() {
+    fun `annotation goes above existing annotations`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -218,7 +218,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun fileFacadeGetsFileAnnotationAbovePackage() {
+    fun `file facade gets file annotation above package`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -246,7 +246,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun fileAnnotationJoinsExistingFileAnnotations() {
+    fun `file annotation joins existing file annotations`() {
         val text = """
             @file:JvmName("Explicit")
 
@@ -268,7 +268,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun existingImportsAreReusedNotDuplicated() {
+    fun `existing imports are reused, not duplicated`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -298,7 +298,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun wildcardImportCoversEverything() {
+    fun `wildcard import covers everything`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -316,7 +316,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun importAliasIsRespected() {
+    fun `import alias is respected`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -332,7 +332,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun conflictingShortNameFallsBackToQualifiedName() {
+    fun `conflicting short name falls back to qualified name`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -352,7 +352,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun samePackageNeedsNoImports() {
+    fun `same package needs no imports`() {
         @Language("kotlin")
         val text = """
             package org.jetbrains.kotlinx.library.api.watchdog
@@ -368,7 +368,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun sameAnnotationIsAppliedOnceForSeveralDiagnostics() {
+    fun `same annotation is applied once for several diagnostics`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -389,7 +389,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun implicitPrimaryConstructorGrowsTheConstructorKeyword() {
+    fun `implicit primary constructor gets the constructor keyword`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -408,7 +408,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun primaryConstructorDiagnosticReportedOnClassNameFindsConstructor() {
+    fun `primary constructor diagnostic reported on class name finds constructor`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -430,7 +430,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun explicitPrimaryConstructorIsAnnotatedInline() {
+    fun `explicit primary constructor is annotated inline`() {
         @Suppress("RedundantConstructorKeyword")
         @Language("kotlin")
         val text = """
@@ -450,7 +450,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun classTypeParameterBoundIsAnnotatedInline() {
+    fun `class type parameter bound is annotated inline`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -469,7 +469,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun constructorValParameterIsAnnotatedInline() {
+    fun `constructor val parameter is annotated inline`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -496,7 +496,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun undocumentedDeclarationGetsAPlaceholderKdoc() {
+    fun `undocumented declaration gets a placeholder KDoc`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -535,7 +535,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun placeholderKdocFollowsCommentsBoundToTheDeclaration() {
+    fun `placeholder KDoc follows comments bound to the declaration`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -554,7 +554,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun alreadyDocumentedDeclarationIsSkipped() {
+    fun `already documented declaration is skipped`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -570,7 +570,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun undocumentedConstructorPropertyGetsAPlaceholderKdoc() {
+    fun `undocumented constructor property gets a placeholder KDoc`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -606,7 +606,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun dslMarkerFixCarriesNoArguments() {
+    fun `DslMarker fix carries no arguments`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -627,7 +627,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun markerlessSubclassOptInIsReplacedByTheExemption() {
+    fun `markerless subclass OptIn is replaced by the exemption`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -660,7 +660,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun markerlessSubclassOptInWithEmptyArgumentsIsReplacedInline() {
+    fun `markerless subclass OptIn with empty arguments is replaced inline`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -678,7 +678,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun markerlessSubclassOptInInsideAnAnnotationListKeepsTheListSyntax() {
+    fun `markerless subclass OptIn inside an annotation list keeps the list syntax`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -697,7 +697,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun markerlessSubclassOptInIsRemovedWhenTheClassIsAlreadyExempt() {
+    fun `markerless subclass OptIn is removed when the class is already exempt`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -730,7 +730,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun markerlessSubclassOptInIsRemovedInlineWhenTheClassIsAlreadyExempt() {
+    fun `markerless subclass OptIn is removed inline when the class is already exempt`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -754,7 +754,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun theReplacedAnnotationStillMakesRoomForOtherExemptions() {
+    fun `the replaced annotation still leaves space for other exemptions`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -786,7 +786,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun allThreeStatefulDiagnosticsCollapseToTheCombinedAnnotation() {
+    fun `all three stateful diagnostics collapse to the combined annotation`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -829,7 +829,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun twoOfThreeStatefulDiagnosticsKeepTheirIndividualAnnotations() {
+    fun `two of three stateful diagnostics keep their individual annotations`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -859,7 +859,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun anExistingIndividualExemptionKeepsTheOthersIndividual() {
+    fun `an existing individual exemption keeps the others individual`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -891,7 +891,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun replacedAnnotationsSurviveCrlfLineEndings() {
+    fun `replaced annotations survive CRLF line endings`() {
         val text = "package com.example\r\n\r\n/** Doc. */\r\n@SubclassOptInRequired\r\npublic interface Plugin\r\n"
 
         val result = fix(text, diagnostic("SUBCLASS_OPT_IN_WITHOUT_MARKERS", text, "@SubclassOptInRequired"))
@@ -905,7 +905,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun unfixableDiagnosticsAreSkippedWithReasons() {
+    fun `unfixable diagnostics are skipped with reasons`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -929,7 +929,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun alreadyAnnotatedTargetIsSkipped() {
+    fun `already annotated target is skipped`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -948,7 +948,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun secondaryConstructorIsAnnotatedInPlace() {
+    fun `secondary constructor is annotated in place`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -984,7 +984,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun diagnosticsOnSeveralConstructorsCollapseToOneClassAnnotation() {
+    fun `diagnostics on several constructors collapse to one class annotation`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -1016,7 +1016,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun doubleWildcardImportsGetAnExplicitImport() {
+    fun `double wildcard imports get an explicit import`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -1036,7 +1036,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun bareCarriageReturnsDoNotSkewOffsets() {
+    fun `bare carriage returns don't shift offsets`() {
         // With an even number of bare `\r`, a miscount of `\r\n` pairs would change the inserted newline.
         val text = "package com.example\r/** Doc. */\rpublic open class Service"
 
@@ -1052,7 +1052,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun mixedLineEndingsArePreservedOutsideInsertions() {
+    fun `mixed line endings are preserved outside insertions`() {
         val text = "package com.example\r\n\r\n/** Doc. */\npublic open class Service\r\n"
 
         val result = fix(text, diagnostic("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", text, "public open class Service"))
@@ -1073,7 +1073,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun crlfLineEndingsSurviveTheFix() {
+    fun `CRLF line endings survive the fix`() {
         val text = "package com.example\r\n\r\n/** Doc. */\r\npublic open class Service\r\n"
 
         val result = fix(text, diagnostic("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", text, "public open class Service"))
@@ -1087,7 +1087,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun staleOffsetIsSkipped() {
+    fun `stale offset is skipped`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -1102,7 +1102,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun propertyWithAccessorLogicIsAnnotatedOnTheProperty() {
+    fun `property with accessor logic is annotated on the property`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -1123,7 +1123,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun companionMembersAreAnnotatedInPlace() {
+    fun `companion members are annotated in place`() {
         @Suppress("MayBeConstant")
         @Language("kotlin")
         val text = """
@@ -1164,7 +1164,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun noPackageDirectiveStillGetsImportsAndFileAnnotation() {
+    fun `no package directive still gets imports and file annotation`() {
         @Language("kotlin")
         val text = """
             /** A top-level function. */
@@ -1187,7 +1187,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun typeAliasAndDataClassAndToStringFixes() {
+    fun `typealias, data class, and toString fixes`() {
         @Language("kotlin")
         val text = """
             package com.example
@@ -1230,7 +1230,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun insertionsAtTheSameOffsetKeepTextOrder() {
+    fun `insertions at the same offset keep text order`() {
         val result = applyEdits(
             "cd",
             listOf(TextEdit(0, "a"), TextEdit(0, "b"), TextEdit(2, "e")),
@@ -1239,7 +1239,7 @@ class ExemptionFixerTest {
     }
 
     @Test
-    fun insertionsAtAReplacementOffsetLandInFrontOfIt() {
+    fun `insertions at a replacement offset go before it`() {
         val result = applyEdits(
             "xd",
             listOf(TextEdit(0, "a"), TextEdit(0, 1, "bc"), TextEdit(2, "e")),

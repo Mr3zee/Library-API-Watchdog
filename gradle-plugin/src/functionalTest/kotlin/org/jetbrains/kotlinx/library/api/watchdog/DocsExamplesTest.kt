@@ -1,4 +1,4 @@
-@file:Suppress("RedundantVisibilityModifier")
+@file:Suppress("RedundantVisibilityModifier", "FunctionName")
 
 package org.jetbrains.kotlinx.library.api.watchdog
 
@@ -28,7 +28,7 @@ import org.junit.Test
  */
 class DocsExamplesTest {
     @Test
-    fun examplesReportExactlyTheirAnnotatedDiagnostics() {
+    fun `examples report exactly their annotated diagnostics`() {
         val samples = documentationSamples()
         val project = jvmProject {
             apiWatchdog {

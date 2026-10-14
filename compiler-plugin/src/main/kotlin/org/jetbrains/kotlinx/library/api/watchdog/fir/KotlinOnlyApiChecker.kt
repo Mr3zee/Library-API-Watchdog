@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.fir.declarations.utils.isOverride
 import org.jetbrains.kotlin.fir.declarations.utils.isSuspend
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
 import org.jetbrains.kotlin.fir.types.coneType
+import org.jetbrains.kotlin.fir.types.contextParameterNumberForFunctionType
 import org.jetbrains.kotlin.fir.types.functionTypeKind
 import org.jetbrains.kotlin.fir.types.isExtensionFunctionType
 import org.jetbrains.kotlin.fir.types.isUnit
@@ -96,6 +97,8 @@ internal class KotlinOnlyApiChecker(
                 sharedShape("suspendFunctionType", name.asString())
             type.isExtensionFunctionType ->
                 sharedShape("extensionFunctionType", name.asString())
+            type.contextParameterNumberForFunctionType > 0 ->
+                sharedShape("contextFunctionType", name.asString())
             type.typeArguments.lastOrNull()?.type?.fullyExpandedType()?.isUnit == true ->
                 sharedShape("unitFunctionType", name.asString())
             else -> null

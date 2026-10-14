@@ -75,7 +75,6 @@ public fun dimensions(): Dimensions = Dimensions(0, 0, 0)
 The check skips:
 
 - Extension receivers on these types.
-- Class context parameters.
 - Overrides.
 - `@PublishedApi internal` declarations.
 

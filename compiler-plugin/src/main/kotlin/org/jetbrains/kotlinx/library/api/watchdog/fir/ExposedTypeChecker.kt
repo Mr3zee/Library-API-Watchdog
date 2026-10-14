@@ -14,7 +14,6 @@ internal abstract class ExposedTypeChecker(
 ) : PublicSignatureTypeChecker<Name>(
     checkExtensionReceivers = false,
     checkClassSupertypes = false,
-    checkClassContextParameters = false,
     checkTypeAliases = false,
     skipOverrides = true,
     exemption = exemption,

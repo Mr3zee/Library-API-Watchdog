@@ -1,4 +1,4 @@
-@file:Suppress("RedundantVisibilityModifier")
+@file:Suppress("RedundantVisibilityModifier", "FunctionName")
 
 package org.jetbrains.kotlinx.library.api.watchdog
 
@@ -47,7 +47,7 @@ import org.junit.Test
 
 class WatchdogProjectTest {
     @Test
-    fun failsWithErrorsOnUnacknowledgedApiByDefault() {
+    fun `fails with errors on unacknowledged API by default`() {
         val project = jvmProject {
             buildScript(REPORT_ALL_WARNINGS_FLAG)
             source(unacknowledgedFile)
@@ -80,7 +80,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun demotedDiagnosticsAreReportedAsWarnings() {
+    fun `demoted diagnostics are reported as warnings`() {
         val project = jvmProject {
             apiWatchdog { severityOfEveryCheck(WARNING) }
             source(unacknowledgedFile)
@@ -91,7 +91,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun severityIsConfiguredPerDiagnostic() {
+    fun `severity is configured per diagnostic`() {
         val project = jvmProject {
             buildScript(REPORT_ALL_WARNINGS_FLAG)
             apiWatchdog {
@@ -107,7 +107,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun disabledJavaInteropGroupSilencesAllItsDiagnostics() {
+    fun `disabled Java interop group silences all its diagnostics`() {
         val project = jvmProject {
             apiWatchdog {
                 javaInterop {
@@ -124,7 +124,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun disabledDiagnosticsAreNotReported() {
+    fun `disabled diagnostics aren't reported`() {
         val project = jvmProject {
             apiWatchdog {
                 severity(
@@ -149,7 +149,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun pokoGeneratedMembersSatisfyTheStatefulClassChecks() {
+    fun `Poko-generated members satisfy the stateful class checks`() {
         val pokoVersion = pokoVersionFor(TEST_COMPILER_VERSION)
         assumeTrue("No Poko release supports Kotlin $TEST_COMPILER_VERSION", pokoVersion != null)
         val project = jvmProject {
@@ -206,7 +206,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun configuredAnnotationsCanIgnoreOneCheck() {
+    fun `configured annotations can ignore one check`() {
         val project = jvmProject {
             apiWatchdog {
                 ignore(
@@ -227,7 +227,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun ignoreRejectsAnAlwaysErrorCheck() {
+    fun `ignore rejects an always-error check`() {
         val project = jvmProject {
             apiWatchdog { ignore(EXEMPTION_WITHOUT_EXPLANATION, "test.GeneratedValueMembers") }
             source(annotationIgnoreFile)
@@ -239,7 +239,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun unexplainedExemptionIsAlwaysAnError() {
+    fun `unexplained exemption is always an error`() {
         // The checker that reads the exemption is off, so the error can't come from it.
         val project = jvmProject {
             apiWatchdog { severity(NONE, MUTABLE_COLLECTION_PUBLIC_API) }
@@ -250,14 +250,14 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun internalApiExposureIsAlwaysAnError() {
+    fun `internal API exposure is always an error`() {
         val project = jvmProject { source(internalApiExposureFile, "internalApiExposure") }
 
         project.buildAndFail("build").assertError("marked as internal API with `@InternalLibApi`")
     }
 
     @Test
-    fun internalApiExposureCheckCanOnlyBeDisabledAsAWhole() {
+    fun `internal API exposure check can only be disabled as a whole`() {
         val project = jvmProject {
             apiWatchdog { publicTypeWithInternalApi = false }
             source(internalApiExposureFile, "internalApiExposure")
@@ -267,7 +267,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun undocumentedClassPropertiesAreSkippedByDefault() {
+    fun `undocumented class properties are skipped by default`() {
         val result = holderProject(reportUndocumentedClassProperties = null).build("build")
 
         result.assertWarnings(UNDOCUMENTED_PUBLIC_API)
@@ -277,7 +277,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun undocumentedClassPropertiesCanBeReported() {
+    fun `undocumented class properties can be reported`() {
         val result = holderProject(reportUndocumentedClassProperties = true).build("build")
 
         result.assertOutputHas("The public property `value` has no `KDoc`")
@@ -308,7 +308,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun acknowledgedApiCompilesWithoutDiagnostics() {
+    fun `acknowledged API compiles without diagnostics`() {
         val project = jvmProject {
             source(
                 acknowledgedFile,
@@ -321,7 +321,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun silentWithoutExplicitApiMode() {
+    fun `silent without explicit API mode`() {
         val project = jvmProject {
             explicitApi = false
             source(unacknowledgedFile)
@@ -331,7 +331,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun disabledWatchdogAddsNoCompilerPluginAndSkipsItsTasks() {
+    fun `disabled watchdog adds no compiler plugin and skips its tasks`() {
         val project = jvmProject {
             explicitApi = false
             apiWatchdog { enabled = false }
@@ -361,7 +361,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun disabledWatchdogKeepsExemptionAnnotationsInMultiplatformProject() {
+    fun `disabled watchdog keeps exemption annotations in a multiplatform project`() {
         val project = kmpProject {
             apiWatchdog { enabled = false }
             source(unacknowledgedFile)
@@ -378,7 +378,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun testSourcesAreNotChecked() {
+    fun `test sources aren't checked`() {
         val project = jvmProject {
             source(cleanMainFile)
             testOnlySource()
@@ -388,7 +388,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun testSourcesAreNotCheckedWhenExplicitApiModeIsForcedOnEveryCompilation() {
+    fun `test sources aren't checked when explicit API mode is forced on every compilation`() {
         val project = jvmProject {
             explicitApi = false
             buildScript(EXPLICIT_API_FLAG)
@@ -400,7 +400,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun multiplatformTestSourcesAreNotChecked() {
+    fun `multiplatform test sources aren't checked`() {
         val project = kmpProject {
             explicitApi = false
             buildScript(EXPLICIT_API_FLAG)
@@ -413,7 +413,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun expectOwnsContractChecksAndExemptions() {
+    fun `expect owns contract checks and exemptions`() {
         val project = kmpProject {
             kotlinFile(
                 "CommonApi",
@@ -462,7 +462,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun jvmChecksReportActualOnceUsingExpectSignature() {
+    fun `JVM checks report actual once with the expect signature`() {
         val project = kmpProject {
             apiWatchdog {
                 severity(WARNING, KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC, DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS)
@@ -501,7 +501,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun implementationChecksHonorExpectExemptions() {
+    fun `implementation checks honor expect exemptions`() {
         val project = kmpProject {
             kotlinFile(
                 "CommonApi",
@@ -559,7 +559,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun compilationsNamedAfterATestVariantAreNotChecked() {
+    fun `compilations named after a test variant aren't checked`() {
         // A local compilation has the shape of the Android names (`debugUnitTest`, `hostTest`)
         // and needs no Android SDK.
         val project = jvmProject {
@@ -582,10 +582,10 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun androidTestSourceCompilationsAreNotChecked() = androidTestSourceCompilationsCase(AGP8)
+    fun `Android test source compilations aren't checked`() = androidTestSourceCompilationsCase(AGP8)
 
     @Test
-    fun androidTestSourceCompilationsAreNotCheckedWithBuiltInKotlin() = androidTestSourceCompilationsCase(AGP9)
+    fun `Android test source compilations aren't checked with built-in Kotlin`() = androidTestSourceCompilationsCase(AGP9)
 
     private fun androidTestSourceCompilationsCase(agp: AgpVersion) {
         val project = androidLibrary(agp) {
@@ -600,13 +600,13 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun multiplatformAndroidTargetMainSourcesAreChecked() = multiplatformAndroidTargetMainSourcesCase(LIBRARY_AGP8)
+    fun `multiplatform Android target main sources are checked`() = multiplatformAndroidTargetMainSourcesCase(LIBRARY_AGP8)
 
     @Test
-    fun multiplatformAndroidTargetMainSourcesAreCheckedOnAgp9() = multiplatformAndroidTargetMainSourcesCase(LIBRARY_AGP9)
+    fun `multiplatform Android target main sources are checked on AGP 9`() = multiplatformAndroidTargetMainSourcesCase(LIBRARY_AGP9)
 
     @Test
-    fun legacyMultiplatformAndroidTargetMainSourcesAreChecked() = multiplatformAndroidTargetMainSourcesCase(LEGACY)
+    fun `legacy multiplatform Android target main sources are checked`() = multiplatformAndroidTargetMainSourcesCase(LEGACY)
 
     private fun multiplatformAndroidTargetMainSourcesCase(target: KmpAndroidTarget) {
         val project = kmpAndroidProject(target) {
@@ -619,13 +619,13 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun multiplatformAndroidTargetTestSourcesAreNotChecked() = multiplatformAndroidTargetTestSourcesCase(LIBRARY_AGP8)
+    fun `multiplatform Android target test sources aren't checked`() = multiplatformAndroidTargetTestSourcesCase(LIBRARY_AGP8)
 
     @Test
-    fun multiplatformAndroidTargetTestSourcesAreNotCheckedOnAgp9() = multiplatformAndroidTargetTestSourcesCase(LIBRARY_AGP9)
+    fun `multiplatform Android target test sources aren't checked on AGP 9`() = multiplatformAndroidTargetTestSourcesCase(LIBRARY_AGP9)
 
     @Test
-    fun legacyMultiplatformAndroidTargetTestSourcesAreNotChecked() = multiplatformAndroidTargetTestSourcesCase(LEGACY)
+    fun `legacy multiplatform Android target test sources aren't checked`() = multiplatformAndroidTargetTestSourcesCase(LEGACY)
 
     private fun multiplatformAndroidTargetTestSourcesCase(target: KmpAndroidTarget) {
         val project = kmpAndroidProject(target) {
@@ -640,7 +640,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun internalAnnotationMarkerExemptsAcrossModules() {
+    fun `internal annotation marker exempts across modules`() {
         val project = jvmProject {
             source(markerConsumerFile, "consumer", imports = listOf("test.lib.InternalLibApi"))
             dependencies(implementation(":lib"))
@@ -658,7 +658,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun configuredInternalApiAnnotationsExemptLikeTheMarker() {
+    fun `configured internal API annotations exempt like the marker`() {
         val project = jvmProject {
             buildScript(REPORT_ALL_WARNINGS_FLAG)
             apiWatchdog { internalApiAnnotations("test.lib.ThirdPartyInternalApi") }
@@ -686,7 +686,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicTypeFromImplementationDependencyIsAnError() {
+    fun `public type from implementation dependency is an error`() {
         val project = jvmProject {
             consumerSource()
             dependencies(implementation(":model"))
@@ -706,7 +706,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicTypeFromApiDependencyIsAccepted() {
+    fun `public type from API dependency is accepted`() {
         val project = jvmProject {
             consumerSource()
             dependencies(api(":model"))
@@ -717,7 +717,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicTypeFromImplementationDependencyIsAcceptedWhenIntentionallyExempted() {
+    fun `public type from implementation dependency is accepted when intentionally exempted`() {
         val project = jvmProject {
             source(exemptedDependencyTypeFile, "Consumer", "test.consumer")
             dependencies(implementation(":model"))
@@ -728,7 +728,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun nonTransitiveDependencyExemptionOnAClassCoversOnlyThatClass() {
+    fun `non-transitive dependency exemption on a class covers only that class`() {
         val project = jvmProject {
             source(partiallyExemptedDependencyTypeFile, "Api", "test.consumer")
             dependencies(implementation(":model"))
@@ -742,7 +742,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicTypeFromImplementationDependencyIsAnErrorInMultiplatformProjects() {
+    fun `public type from implementation dependency is an error in multiplatform projects`() {
         // The JVM target reads a jar and the JS target a klib. `--continue` runs the second
         // compilation after the first one fails.
         val project = kmpProject(JVM_AND_JS_TARGETS) {
@@ -758,7 +758,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicTypeFromApiDependencyIsAcceptedInMultiplatformProjects() {
+    fun `public type from API dependency is accepted in multiplatform projects`() {
         val project = kmpProject(JVM_AND_JS_TARGETS) {
             consumerSource()
             dependencies(api(":model"))
@@ -769,7 +769,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicJavaTypeFromImplementationDependencyIsAnError() {
+    fun `public Java type from implementation dependency is an error`() {
         val project = jvmProject {
             source(exposesJavaDependencyTypeFile, "JavaConsumer", "test.consumer")
             dependencies(implementation(":javaModel"))
@@ -780,7 +780,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicJavaTypeFromApiDependencyIsAccepted() {
+    fun `public Java type from API dependency is accepted`() {
         val project = jvmProject {
             source(exposesJavaDependencyTypeFile, "JavaConsumer", "test.consumer")
             dependencies(api(":javaModel"))
@@ -791,11 +791,11 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicTypeFromImplementationDependencyIsAnErrorInAndroidLibraries() =
+    fun `public type from implementation dependency is an error in Android libraries`() =
         publicTypeFromImplementationDependencyIsAnErrorInAndroidLibrariesCase(AGP8)
 
     @Test
-    fun publicTypeFromImplementationDependencyIsAnErrorInAndroidLibrariesWithBuiltInKotlin() =
+    fun `public type from implementation dependency is an error in Android libraries with built-in Kotlin`() =
         publicTypeFromImplementationDependencyIsAnErrorInAndroidLibrariesCase(AGP9)
 
     private fun publicTypeFromImplementationDependencyIsAnErrorInAndroidLibrariesCase(agp: AgpVersion) {
@@ -809,11 +809,11 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicTypeFromApiDependencyIsAcceptedInAndroidLibraries() =
+    fun `public type from API dependency is accepted in Android libraries`() =
         publicTypeFromApiDependencyIsAcceptedInAndroidLibrariesCase(AGP8)
 
     @Test
-    fun publicTypeFromApiDependencyIsAcceptedInAndroidLibrariesWithBuiltInKotlin() =
+    fun `public type from API dependency is accepted in Android libraries with built-in Kotlin`() =
         publicTypeFromApiDependencyIsAcceptedInAndroidLibrariesCase(AGP9)
 
     private fun publicTypeFromApiDependencyIsAcceptedInAndroidLibrariesCase(agp: AgpVersion) {
@@ -827,10 +827,10 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun androidPlatformTypesAreNotDependenciesInAndroidLibraries() = androidPlatformTypesAreNotDependenciesCase(AGP8)
+    fun `Android platform types aren't dependencies in Android libraries`() = androidPlatformTypesAreNotDependenciesCase(AGP8)
 
     @Test
-    fun androidPlatformTypesAreNotDependenciesInAndroidLibrariesWithBuiltInKotlin() =
+    fun `Android platform types aren't dependencies in Android libraries with built-in Kotlin`() =
         androidPlatformTypesAreNotDependenciesCase(AGP9)
 
     private fun androidPlatformTypesAreNotDependenciesCase(agp: AgpVersion) {
@@ -843,11 +843,11 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicTypeFromImplementationAarProjectDependencyIsAnErrorInAndroidLibraries() =
+    fun `public type from implementation AAR project dependency is an error in Android libraries`() =
         publicTypeFromImplementationAarProjectDependencyIsAnErrorCase(AGP8)
 
     @Test
-    fun publicTypeFromImplementationAarProjectDependencyIsAnErrorInAndroidLibrariesWithBuiltInKotlin() =
+    fun `public type from implementation AAR project dependency is an error in Android libraries with built-in Kotlin`() =
         publicTypeFromImplementationAarProjectDependencyIsAnErrorCase(AGP9)
 
     private fun publicTypeFromImplementationAarProjectDependencyIsAnErrorCase(agp: AgpVersion) {
@@ -861,11 +861,11 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicTypeFromApiAarProjectDependencyIsAcceptedInAndroidLibraries() =
+    fun `public type from API AAR project dependency is accepted in Android libraries`() =
         publicTypeFromApiAarProjectDependencyIsAcceptedCase(AGP8)
 
     @Test
-    fun publicTypeFromApiAarProjectDependencyIsAcceptedInAndroidLibrariesWithBuiltInKotlin() =
+    fun `public type from API AAR project dependency is accepted in Android libraries with built-in Kotlin`() =
         publicTypeFromApiAarProjectDependencyIsAcceptedCase(AGP9)
 
     private fun publicTypeFromApiAarProjectDependencyIsAcceptedCase(agp: AgpVersion) {
@@ -879,11 +879,11 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInInAndroidLibraries() =
+    fun `exempt non-transitive AAR project dependency covers its transitive AARs in Android libraries`() =
         exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInCase(AGP8)
 
     @Test
-    fun exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInInAndroidLibrariesWithBuiltInKotlin() =
+    fun `exempt non-transitive AAR project dependency covers its transitive AARs in Android libraries with built-in Kotlin`() =
         exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInCase(AGP9)
 
     private fun exemptNonTransitiveAarProjectDependencyCoversTheAarsItPullsInCase(agp: AgpVersion) {
@@ -899,11 +899,11 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicTypeFromImplementationExternalAarDependencyIsAnErrorInAndroidLibraries() =
+    fun `public type from implementation external AAR dependency is an error in Android libraries`() =
         publicTypeFromImplementationExternalAarDependencyIsAnErrorCase(AGP8)
 
     @Test
-    fun publicTypeFromImplementationExternalAarDependencyIsAnErrorInAndroidLibrariesWithBuiltInKotlin() =
+    fun `public type from implementation external AAR dependency is an error in Android libraries with built-in Kotlin`() =
         publicTypeFromImplementationExternalAarDependencyIsAnErrorCase(AGP9)
 
     private fun publicTypeFromImplementationExternalAarDependencyIsAnErrorCase(agp: AgpVersion) {
@@ -917,11 +917,11 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicTypeFromApiExternalAarDependencyIsAcceptedInAndroidLibraries() =
+    fun `public type from API external AAR dependency is accepted in Android libraries`() =
         publicTypeFromApiExternalAarDependencyIsAcceptedCase(AGP8)
 
     @Test
-    fun publicTypeFromApiExternalAarDependencyIsAcceptedInAndroidLibrariesWithBuiltInKotlin() =
+    fun `public type from API external AAR dependency is accepted in Android libraries with built-in Kotlin`() =
         publicTypeFromApiExternalAarDependencyIsAcceptedCase(AGP9)
 
     private fun publicTypeFromApiExternalAarDependencyIsAcceptedCase(agp: AgpVersion) {
@@ -934,11 +934,11 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun exemptNonTransitiveExternalAarDependencyIsAcceptedInAndroidLibraries() =
+    fun `exempt non-transitive external AAR dependency is accepted in Android libraries`() =
         exemptNonTransitiveExternalAarDependencyIsAcceptedCase(AGP8)
 
     @Test
-    fun exemptNonTransitiveExternalAarDependencyIsAcceptedInAndroidLibrariesWithBuiltInKotlin() =
+    fun `exempt non-transitive external AAR dependency is accepted in Android libraries with built-in Kotlin`() =
         exemptNonTransitiveExternalAarDependencyIsAcceptedCase(AGP9)
 
     private fun exemptNonTransitiveExternalAarDependencyIsAcceptedCase(agp: AgpVersion) {
@@ -952,11 +952,11 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun multiplatformLibraryIsMatchedThroughItsAndroidVariantInAndroidLibraries() =
+    fun `multiplatform library is matched through its Android variant in Android libraries`() =
         multiplatformLibraryIsMatchedThroughItsAndroidVariantCase(AGP8)
 
     @Test
-    fun multiplatformLibraryIsMatchedThroughItsAndroidVariantInAndroidLibrariesWithBuiltInKotlin() =
+    fun `multiplatform library is matched through its Android variant in Android libraries with built-in Kotlin`() =
         multiplatformLibraryIsMatchedThroughItsAndroidVariantCase(AGP9)
 
     private fun multiplatformLibraryIsMatchedThroughItsAndroidVariantCase(agp: AgpVersion) {
@@ -976,11 +976,11 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun buildTypeApiDependencyIsTransitiveOnlyForItsVariantInAndroidLibraries() =
+    fun `build type API dependency is transitive only for its variant in Android libraries`() =
         buildTypeApiDependencyIsTransitiveOnlyForItsVariantCase(AGP8)
 
     @Test
-    fun buildTypeApiDependencyIsTransitiveOnlyForItsVariantInAndroidLibrariesWithBuiltInKotlin() =
+    fun `build type API dependency is transitive only for its variant in Android libraries with built-in Kotlin`() =
         buildTypeApiDependencyIsTransitiveOnlyForItsVariantCase(AGP9)
 
     private fun buildTypeApiDependencyIsTransitiveOnlyForItsVariantCase(agp: AgpVersion) {
@@ -996,11 +996,11 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun flavorApiDependencyIsTransitiveOnlyForItsFlavorInAndroidLibraries() =
+    fun `flavor API dependency is transitive only for its flavor in Android libraries`() =
         flavorApiDependencyIsTransitiveOnlyForItsFlavorCase(AGP8)
 
     @Test
-    fun flavorApiDependencyIsTransitiveOnlyForItsFlavorInAndroidLibrariesWithBuiltInKotlin() =
+    fun `flavor API dependency is transitive only for its flavor in Android libraries with built-in Kotlin`() =
         flavorApiDependencyIsTransitiveOnlyForItsFlavorCase(AGP9)
 
     private fun flavorApiDependencyIsTransitiveOnlyForItsFlavorCase(agp: AgpVersion) {
@@ -1025,11 +1025,11 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun compileOnlyDependenciesCanBeExemptedAsAWholeInAndroidLibraries() =
+    fun `compileOnly dependencies can be exempted as a whole in Android libraries`() =
         compileOnlyDependenciesCanBeExemptedAsAWholeCase(AGP8)
 
     @Test
-    fun compileOnlyDependenciesCanBeExemptedAsAWholeInAndroidLibrariesWithBuiltInKotlin() =
+    fun `compileOnly dependencies can be exempted as a whole in Android libraries with built-in Kotlin`() =
         compileOnlyDependenciesCanBeExemptedAsAWholeCase(AGP9)
 
     private fun compileOnlyDependenciesCanBeExemptedAsAWholeCase(agp: AgpVersion) {
@@ -1044,15 +1044,15 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargets() =
+    fun `public type from implementation dependency is an error in multiplatform Android targets`() =
         publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsCase(LIBRARY_AGP8)
 
     @Test
-    fun publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsOnAgp9() =
+    fun `public type from implementation dependency is an error in multiplatform Android targets on AGP 9`() =
         publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsCase(LIBRARY_AGP9)
 
     @Test
-    fun publicTypeFromImplementationDependencyIsAnErrorInLegacyMultiplatformAndroidTargets() =
+    fun `public type from implementation dependency is an error in legacy multiplatform Android targets`() =
         publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsCase(LEGACY)
 
     private fun publicTypeFromImplementationDependencyIsAnErrorInMultiplatformAndroidTargetsCase(target: KmpAndroidTarget) {
@@ -1066,15 +1066,15 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargets() =
+    fun `public type from API dependency is accepted in multiplatform Android targets`() =
         publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargetsCase(LIBRARY_AGP8)
 
     @Test
-    fun publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargetsOnAgp9() =
+    fun `public type from API dependency is accepted in multiplatform Android targets on AGP 9`() =
         publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargetsCase(LIBRARY_AGP9)
 
     @Test
-    fun publicTypeFromApiDependencyIsAcceptedInLegacyMultiplatformAndroidTargets() =
+    fun `public type from API dependency is accepted in legacy multiplatform Android targets`() =
         publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargetsCase(LEGACY)
 
     private fun publicTypeFromApiDependencyIsAcceptedInMultiplatformAndroidTargetsCase(target: KmpAndroidTarget) {
@@ -1088,15 +1088,15 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun androidSourceSetApiDependencyIsAcceptedInMultiplatformAndroidTargets() =
+    fun `Android source set API dependency is accepted in multiplatform Android targets`() =
         androidSourceSetDependenciesCase(LIBRARY_AGP8)
 
     @Test
-    fun androidSourceSetApiDependencyIsAcceptedInMultiplatformAndroidTargetsOnAgp9() =
+    fun `Android source set API dependency is accepted in multiplatform Android targets on AGP 9`() =
         androidSourceSetDependenciesCase(LIBRARY_AGP9)
 
     @Test
-    fun androidSourceSetApiDependencyIsAcceptedInLegacyMultiplatformAndroidTargets() =
+    fun `Android source set API dependency is accepted in legacy multiplatform Android targets`() =
         androidSourceSetDependenciesCase(LEGACY)
 
     private fun androidSourceSetDependenciesCase(target: KmpAndroidTarget) {
@@ -1114,15 +1114,15 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun androidPlatformTypesAreNotDependenciesInMultiplatformAndroidTargets() =
+    fun `Android platform types aren't dependencies in multiplatform Android targets`() =
         androidPlatformTypesAreNotDependenciesInMultiplatformCase(LIBRARY_AGP8)
 
     @Test
-    fun androidPlatformTypesAreNotDependenciesInMultiplatformAndroidTargetsOnAgp9() =
+    fun `Android platform types aren't dependencies in multiplatform Android targets on AGP 9`() =
         androidPlatformTypesAreNotDependenciesInMultiplatformCase(LIBRARY_AGP9)
 
     @Test
-    fun androidPlatformTypesAreNotDependenciesInLegacyMultiplatformAndroidTargets() =
+    fun `Android platform types aren't dependencies in legacy multiplatform Android targets`() =
         androidPlatformTypesAreNotDependenciesInMultiplatformCase(LEGACY)
 
     private fun androidPlatformTypesAreNotDependenciesInMultiplatformCase(target: KmpAndroidTarget) {
@@ -1134,15 +1134,15 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun externalAarDependencyIsCheckedAndExemptableInMultiplatformAndroidTargets() =
+    fun `external AAR dependency is checked and exemptable in multiplatform Android targets`() =
         externalAarDependencyInMultiplatformCase(LIBRARY_AGP8)
 
     @Test
-    fun externalAarDependencyIsCheckedAndExemptableInMultiplatformAndroidTargetsOnAgp9() =
+    fun `external AAR dependency is checked and exemptable in multiplatform Android targets on AGP 9`() =
         externalAarDependencyInMultiplatformCase(LIBRARY_AGP9)
 
     @Test
-    fun externalAarDependencyIsCheckedAndExemptableInLegacyMultiplatformAndroidTargets() =
+    fun `external AAR dependency is checked and exemptable in legacy multiplatform Android targets`() =
         externalAarDependencyInMultiplatformCase(LEGACY)
 
     private fun externalAarDependencyInMultiplatformCase(target: KmpAndroidTarget) {
@@ -1161,15 +1161,15 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun multiplatformLibraryIsMatchedThroughItsAndroidVariantInMultiplatformAndroidTargets() =
+    fun `multiplatform library is matched through its Android variant in multiplatform Android targets`() =
         multiplatformLibraryAndroidVariantInMultiplatformCase(LIBRARY_AGP8)
 
     @Test
-    fun multiplatformLibraryIsMatchedThroughItsAndroidVariantInMultiplatformAndroidTargetsOnAgp9() =
+    fun `multiplatform library is matched through its Android variant in multiplatform Android targets on AGP 9`() =
         multiplatformLibraryAndroidVariantInMultiplatformCase(LIBRARY_AGP9)
 
     @Test
-    fun multiplatformLibraryIsMatchedThroughItsAndroidVariantInLegacyMultiplatformAndroidTargets() =
+    fun `multiplatform library is matched through its Android variant in legacy multiplatform Android targets`() =
         multiplatformLibraryAndroidVariantInMultiplatformCase(LEGACY)
 
     private fun multiplatformLibraryAndroidVariantInMultiplatformCase(target: KmpAndroidTarget) {
@@ -1190,7 +1190,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun buildTypeApiDependencyIsTransitiveOnlyForItsVariantInLegacyMultiplatformAndroidTargets() {
+    fun `build type API dependency is transitive only for its variant in legacy multiplatform Android targets`() {
         val project = kmpAndroidProject(LEGACY) {
             consumerSource("androidMain")
             dependencies("debug", api(":model"))
@@ -1203,7 +1203,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicDependencyExposureCheckIsDisabledByTheModuleSwitch() {
+    fun `public dependency exposure check is disabled by the module switch`() {
         val project = jvmProject {
             apiWatchdog { publicTypesMustBeTransitiveDependencies = false }
             consumerSource()
@@ -1215,7 +1215,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicTypeFromExemptNonTransitiveProjectDependencyIsAccepted() {
+    fun `public type from exempt non-transitive project dependency is accepted`() {
         val project = jvmProject {
             buildScript(exemptScript("project(\":model\")"))
             consumerSource()
@@ -1227,7 +1227,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun exemptNonTransitiveDependencyCoversEverythingItPullsIn() {
+    fun `exempt non-transitive dependency covers its transitive dependencies`() {
         val project = jvmProject {
             buildScript(exemptScript("project(\":facade\")"))
             consumerSource()
@@ -1240,7 +1240,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun exemptNonTransitiveDependencyLeavesOtherDependenciesChecked() {
+    fun `exempt non-transitive dependency leaves other dependencies checked`() {
         val project = jvmProject {
             buildScript(exemptScript("project(\":other\")"))
             consumerSource()
@@ -1253,7 +1253,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun exemptNonTransitiveDependenciesExtendFromAWholeConfiguration() {
+    fun `exempt non-transitive dependencies extend from a whole configuration`() {
         val project = jvmProject {
             buildScript(EXEMPT_COMPILE_ONLY_SCRIPT)
             consumerSource()
@@ -1265,7 +1265,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun exemptNonTransitiveModuleDependencyIsResolvedConsistentlyWithTheCompileClasspath() {
+    fun `exempt non-transitive module dependency is resolved consistently with the compile classpath`() {
         // The `available-at` redirect of the module brings the `-jvm` artifact that holds the classes.
         val project = jvmProject {
             buildScript(exemptScript(COROUTINES))
@@ -1277,7 +1277,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun exemptNonTransitiveDependencyFromAVersionCatalog() {
+    fun `exempt non-transitive dependency from a version catalog`() {
         val project = jvmProject {
             buildScript("dependencies { apiWatchdogExemptNonTransitive(libs.coroutines) }")
             versionCatalog(COROUTINES_CATALOG)
@@ -1289,7 +1289,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun publicTypeFromUnexemptedModuleDependencyIsAnError() {
+    fun `public type from unexempted module dependency is an error`() {
         val project = jvmProject {
             source(exposesCoroutinesTypeFile, "Jobs", "test.consumer")
             dependencies(implementation(COROUTINES))
@@ -1304,7 +1304,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun exemptNonTransitiveDependenciesDoNotJoinTheCompileClasspath() {
+    fun `exempt non-transitive dependencies aren't on the compile classpath`() {
         val project = jvmProject {
             buildScript(exemptScript("project(\":model\")"))
             consumerSource()
@@ -1315,7 +1315,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun transitiveDependencyConfigurationsAreNamedAfterTheCompilation() {
+    fun `transitive dependency configurations are named after the compilation`() {
         // KGP renders the missing disambiguation classifier of the JVM target as a literal "null".
         val project = jvmProject {
             buildScript(printWatchdogConfigurationsTask)
@@ -1330,7 +1330,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun transitiveDependencyConfigurationsAreNamedAfterTheTargetInMultiplatformProjects() {
+    fun `transitive dependency configurations are named after the target in multiplatform projects`() {
         val project = kmpProject {
             buildScript(printWatchdogConfigurationsTask)
             source(unacknowledgedFile)
@@ -1342,7 +1342,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun warnsWhenExplicitApiModeIsNotEnabled() {
+    fun `warns when explicit API mode isn't enabled`() {
         val project = jvmProject { explicitApi = false }
 
         val result = project.build("help")
@@ -1351,12 +1351,12 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun explicitApiWarningIsSilentWhenExplicitApiModeIsEnabled() {
+    fun `explicit API warning is silent when explicit API mode is enabled`() {
         jvmProject().build("help").assertOutputLacks("doesn't enable explicit API mode")
     }
 
     @Test
-    fun explicitApiWarningSeesTheRawCompilerFlag() {
+    fun `explicit API warning sees the raw compiler flag`() {
         val project = jvmProject {
             explicitApi = false
             buildScript("""kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=strict") } }""")
@@ -1366,7 +1366,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun explicitApiWarningCanBeSuppressedWithAGradleProperty() {
+    fun `explicit API warning can be suppressed with a Gradle property`() {
         val project = jvmProject { explicitApi = false }
 
         project.build("help", "-Porg.jetbrains.kotlin.library.api-watchdog.suppressExplicitApiWarning=true")
@@ -1374,7 +1374,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun suggestsAbiValidationWhenItIsNotEnabled() {
+    fun `suggests ABI validation when it isn't enabled`() {
         val result = jvmProject().build("help")
 
         result.assertOutputHas("but no binary compatibility validation is enabled")
@@ -1394,7 +1394,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun abiValidationSuggestionCanBeDisabled() {
+    fun `ABI validation suggestion can be disabled`() {
         val project = jvmProject {
             apiWatchdog { suggestAbiValidation = false }
         }
@@ -1403,7 +1403,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun abiValidationSuggestionIsSilentWhenBuiltInAbiValidationIsEnabled() {
+    fun `ABI validation suggestion is silent when built-in ABI validation is enabled`() {
         val abiValidationCall = if (legacyAbiValidationDsl) "abiValidation { enabled.set(true) }" else "abiValidation()"
         val project = jvmProject {
             buildScript(
@@ -1420,7 +1420,7 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun abiValidationSuggestionIsSilentWhenStandaloneValidatorIsApplied() {
+    fun `ABI validation suggestion is silent when standalone validator is applied`() {
         // The buildSrc plugin registers the real plugin id, so the test doesn't fetch the real plugin.
         val project = jvmProject {
             buildScript("""apply(plugin = "org.jetbrains.kotlinx.binary-compatibility-validator")""")

@@ -43,7 +43,6 @@ import org.jetbrains.kotlin.name.Name
 internal abstract class PublicSignatureTypeChecker<Violation : Any>(
     private val checkExtensionReceivers: Boolean = true,
     private val checkClassSupertypes: Boolean = true,
-    private val checkClassContextParameters: Boolean = true,
     private val checkTypeAliases: Boolean = true,
     private val skipOverrides: Boolean = false,
     private val exemption: ClassId? = null,
@@ -185,9 +184,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
                 checkType(it, "supertypeOf", declaration.name, declaration.source)
             }
         }
-        if (checkClassContextParameters) {
-            declaration.contextParameters.forEach { checkParameter(it) }
-        }
+        declaration.contextParameters.forEach { checkParameter(it) }
     }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)

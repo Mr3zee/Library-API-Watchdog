@@ -14,8 +14,8 @@ Functions in the public API with one of these shapes:
 
 - A `suspend` function.
 - An `inline` function with a `reified` type parameter.
-- A value or context parameter with a suspend, receiver, or `Unit`-returning function type.
-  This includes `vararg` element types.
+- A value or context parameter with a suspend function type, a function type with a receiver or
+  context parameters, or a `Unit`-returning function type. This includes `vararg` element types.
 
 ```kotlin
 // !hide-focused
@@ -34,7 +34,8 @@ at runtime. Kotlin function types also expose Java-specific constraints:
 
 - Suspend callbacks get an extra `Continuation` parameter, so a Java lambda must implement the
   coroutine protocol itself.
-- Receiver callbacks take the receiver as an explicit argument.
+- Receiver and context callbacks take the receiver and the context values as explicit leading
+  arguments.
 - `Unit` callbacks must return `Unit.INSTANCE`.
 
 `@JvmSynthetic` hides these functions from Java source. For Java callers, add a blocking or

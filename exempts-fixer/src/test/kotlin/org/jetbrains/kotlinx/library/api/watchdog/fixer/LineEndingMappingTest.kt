@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 
 class LineEndingMappingTest {
     @Test
-    fun lfOnlyTextIsUnchangedAndUsesIdentityOffsets() {
+    fun `LF-only text is unchanged and uses identity offsets`() {
         val text = "first\nsecond\n"
 
         val mapping = LineEndingMapping.of(text)
@@ -19,7 +19,7 @@ class LineEndingMappingTest {
     }
 
     @Test
-    fun mixedLineEndingsAreNormalizedAndOffsetsMapToTheOriginalText() {
+    fun `mixed line endings are normalized and offsets map to the original text`() {
         val mapping = LineEndingMapping.of("a\r\nb\rc\n")
 
         assertEquals("a\nb\nc\n", mapping.normalizedText)
@@ -34,7 +34,7 @@ class LineEndingMappingTest {
     }
 
     @Test
-    fun normalizedNewlineMapsToTheStartOfACrlfPair() {
+    fun `normalized newline maps to the start of a CRLF pair`() {
         val mapping = LineEndingMapping.of("left\r\nright")
         val normalizedNewlineOffset = mapping.normalizedText.indexOf('\n')
 
@@ -44,7 +44,7 @@ class LineEndingMappingTest {
     }
 
     @Test
-    fun crlfIsUsedForInsertionsOnlyWhenItIsStrictlyDominant() {
+    fun `CRLF is used for insertions only when it is strictly dominant`() {
         val cases = listOf(
             "a\r\nb\r\nc\n" to "\r\n",
             "a\r\nb\n" to "\n",

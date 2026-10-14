@@ -14,7 +14,7 @@ class ExemptionScannerTest {
     }
 
     @Test
-    fun findsEveryAppliedAnnotationRegardlessOfReason() {
+    fun `finds every applied annotation regardless of reason`() {
         val text = """
             package example
 
@@ -52,7 +52,7 @@ class ExemptionScannerTest {
     }
 
     @Test
-    fun findsAnnotationsNotUsedByTheAutomaticFixer() {
+    fun `finds annotations not used by the automatic fixer`() {
         val text = """
             package example
 
@@ -77,7 +77,7 @@ class ExemptionScannerTest {
     }
 
     @Test
-    fun findsEveryCurrentIntentionallyAnnotationType() {
+    fun `finds every current Intentionally annotation type`() {
         val annotationNames = listOf(
             "IntentionallyBooleanParameter",
             "IntentionallyDataClass",
@@ -118,7 +118,7 @@ class ExemptionScannerTest {
     }
 
     @Test
-    fun resolvesAliasedImports() {
+    fun `resolves aliased imports`() {
         val text = """
             package example
 
@@ -136,7 +136,7 @@ class ExemptionScannerTest {
     }
 
     @Test
-    fun ignoresSameNamedAnnotationsFromOtherPackages() {
+    fun `ignores same-named annotations from other packages`() {
         val text = """
             package example
 

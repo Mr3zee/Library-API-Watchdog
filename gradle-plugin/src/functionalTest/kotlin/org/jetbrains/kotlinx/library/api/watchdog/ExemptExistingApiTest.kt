@@ -1,8 +1,9 @@
-@file:Suppress("RedundantVisibilityModifier")
+@file:Suppress("RedundantVisibilityModifier", "FunctionName")
 
 package org.jetbrains.kotlinx.library.api.watchdog
 
 import com.autonomousapps.kit.gradle.Dependency.Companion.implementation
+import com.autonomousapps.kit.gradle.Plugin
 import java.io.File
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -10,6 +11,9 @@ import kotlin.test.assertFalse
 import org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import org.intellij.lang.annotations.Language
 import org.jetbrains.kotlin.compiler.plugin.devkit.test.KmpTarget
+import org.jetbrains.kotlin.compiler.plugin.devkit.test.KotlinPlugins
+import org.jetbrains.kotlin.compiler.plugin.devkit.test.TEST_COMPILER_VERSION
+import org.jetbrains.kotlin.compiler.plugin.devkit.test.pluginUnderTestVersion
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.EXEMPTION_WITHOUT_EXPLANATION
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.OPEN_API_WITHOUT_SUBCLASS_OPT_IN
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
@@ -22,7 +26,7 @@ import org.junit.Test
 
 class ExemptExistingApiTest {
     @Test
-    fun exemptTaskReusesTheConfigurationCache() {
+    fun `exempt task reuses the configuration cache`() {
         val project = jvmProject {
             source("/** An existing open API. */\npublic open class ExistingApi", "existingApi")
         }
@@ -36,7 +40,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun fixesEveryFixableDiagnosticAndTheBuildPasses() {
+    fun `fixes every fixable diagnostic and the build passes`() {
         val project = jvmProject {
             buildScript(CONTEXT_PARAMETERS_BUILD_SCRIPT)
             apiWatchdog { severity(ERROR, UNDOCUMENTED_PUBLIC_API) }
@@ -92,7 +96,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun secondRunFindsNothingLeftToExempt() {
+    fun `second run finds nothing left to exempt`() {
         val project = jvmProject {
             buildScript(CONTEXT_PARAMETERS_BUILD_SCRIPT)
             apiWatchdog { severity(ERROR, UNDOCUMENTED_PUBLIC_API) }
@@ -107,7 +111,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun reportIncludesExemptionsThatAlreadyExisted() {
+    fun `report includes exemptions that already existed`() {
         val project = jvmProject {
             source(
                 """
@@ -142,7 +146,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun reportShowsApplicableAnnotationsWithoutUpdatingSources() {
+    fun `report shows applicable annotations and leaves sources unchanged`() {
         val project = jvmProject {
             source("/** A legacy open API. */\npublic open class LegacyApi", "legacyApi")
         }
@@ -159,7 +163,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun reportShowsThePlaceholderKdocWithoutUpdatingSources() {
+    fun `report shows the placeholder KDoc and leaves sources unchanged`() {
         val project = jvmProject {
             apiWatchdog { severity(ERROR, UNDOCUMENTED_PUBLIC_API) }
             source("public class Undocumented", "undocumented")
@@ -177,7 +181,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun sarifReportListsTheDiagnosticsWithRootRelativeLocations() {
+    fun `SARIF report lists the diagnostics with root-relative locations`() {
         val project = jvmProject {
             subproject("lib") {
                 apiWatchdog { severity(WARNING, UNDOCUMENTED_PUBLIC_API) }
@@ -200,7 +204,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun reportsBlockSelectsTheFormatsAndTheFiles() {
+    fun `reports block selects the formats and the files`() {
         val project = jvmProject {
             apiWatchdog { reports { html = false; sarifFile = "scan/watchdog.sarif" } }
             source("/** A legacy open API. */\npublic open class LegacyApi", "legacyApi")
@@ -227,7 +231,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun disabledDiagnosticsAreNotExempted() {
+    fun `disabled diagnostics aren't exempted`() {
         val project = jvmProject {
             apiWatchdog { severity(NONE, UNDOCUMENTED_PUBLIC_API) }
             source("public open class UndocumentedOpen", "legacy")
@@ -242,7 +246,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun warningsStayAndTheReportListsThem() {
+    fun `warnings stay and the report lists them`() {
         val project = jvmProject {
             apiWatchdog { severity(WARNING, OPEN_API_WITHOUT_SUBCLASS_OPT_IN) }
             source("/** A warning-only class. */\npublic open class WarningOnly", "warningOnly")
@@ -264,7 +268,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun theDefaultUndocumentedWarningGetsNoPlaceholderKdoc() {
+    fun `the default undocumented warning gets no placeholder KDoc`() {
         val project = jvmProject { source("public open class UndocumentedOpen", "legacy") }
 
         project.build(EXEMPT_TASK)
@@ -276,7 +280,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun worksWithoutExplicitApiMode() {
+    fun `works without explicit API mode`() {
         // The task adds `-Xexplicit-api=warning` itself.
         val project = jvmProject {
             explicitApi = false
@@ -292,7 +296,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun missingImportsAreAdded() {
+    fun `missing imports are added`() {
         val project = jvmProject {
             source("/** A bare open class. */\npublic open class Bare", "bare", defaultImports = false)
         }
@@ -308,7 +312,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun unfixableDiagnosticsAreReportedForManualAttention() {
+    fun `unfixable diagnostics are reported for manual attention`() {
         val project = jvmProject { source(unfixableFile, "manual") }
 
         project.build(REPORT_TASK).assertTaskOutcome(":$REPORT_TASK", SUCCESS)
@@ -324,7 +328,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun brokenCompilationFailsBeforeTheFixerAndDoesNotTouchSources() {
+    fun `broken compilation fails before the fixer and doesn't touch sources`() {
         val project = jvmProject {
             source("internal fun broken() { thisCallDoesNotResolve() }", "broken")
         }
@@ -338,7 +342,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun unfixableAlwaysErrorDiagnosticsAreDisabledOnlyDuringTheUpdate() {
+    fun `unfixable always-error diagnostics are disabled only during the update`() {
         val project = jvmProject {
             source(alwaysErrorDiagnosticsFile, "alwaysErrors", "test.consumer")
             dependencies(implementation(":model"))
@@ -361,7 +365,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun jsOnlyProjectIsFixedThroughItsRegularCompilation() {
+    fun `JS-only project is fixed through its regular compilation`() {
         val project = kmpProject("js { nodejs() }") {
             source("/** A JS class. */\npublic open class JsOnly", "jsOnly")
         }
@@ -377,7 +381,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun nativeOnlyProjectIsFixedThroughItsRegularCompilation() {
+    fun `native-only project is fixed through its regular compilation`() {
         val native = KmpTarget.NATIVE_HOST
         val project = kmpProject("${native.gradleTargetName}()") {
             source("/** A native class. */\npublic open class NativeOnly", "nativeOnly")
@@ -394,7 +398,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun multiplatformJvmCompilationCoversCommonSources() {
+    fun `multiplatform JVM compilation covers common sources`() {
         val project = kmpProject { source(multiplatformFile, "shared") }
 
         project.build(EXEMPT_TASK).assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
@@ -408,10 +412,10 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun androidLibraryIsFixedThroughBothVariants() = androidLibraryIsFixedThroughBothVariantsCase(AgpVersion.AGP8)
+    fun `Android library is fixed through both variants`() = androidLibraryIsFixedThroughBothVariantsCase(AgpVersion.AGP8)
 
     @Test
-    fun androidLibraryIsFixedThroughBothVariantsOnAgp9() = androidLibraryIsFixedThroughBothVariantsCase(AgpVersion.AGP9)
+    fun `Android library is fixed through both variants on AGP 9`() = androidLibraryIsFixedThroughBothVariantsCase(AgpVersion.AGP9)
 
     private fun androidLibraryIsFixedThroughBothVariantsCase(agp: AgpVersion) {
         val project = androidLibrary(agp) {
@@ -433,13 +437,13 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun multiplatformAndroidTargetIsFixed() = multiplatformAndroidTargetIsFixedCase(KmpAndroidTarget.LIBRARY_AGP8)
+    fun `multiplatform Android target is fixed`() = multiplatformAndroidTargetIsFixedCase(KmpAndroidTarget.LIBRARY_AGP8)
 
     @Test
-    fun multiplatformAndroidTargetIsFixedOnAgp9() = multiplatformAndroidTargetIsFixedCase(KmpAndroidTarget.LIBRARY_AGP9)
+    fun `multiplatform Android target is fixed on AGP 9`() = multiplatformAndroidTargetIsFixedCase(KmpAndroidTarget.LIBRARY_AGP9)
 
     @Test
-    fun legacyMultiplatformAndroidTargetIsFixed() = multiplatformAndroidTargetIsFixedCase(KmpAndroidTarget.LEGACY)
+    fun `legacy multiplatform Android target is fixed`() = multiplatformAndroidTargetIsFixedCase(KmpAndroidTarget.LEGACY)
 
     private fun multiplatformAndroidTargetIsFixedCase(target: KmpAndroidTarget) {
         val project = kmpAndroidProject(target) {
@@ -464,7 +468,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun customJvmCompilationIsFixedAndTestNamedCompilationIsNot() {
+    fun `custom JVM compilation is fixed and test-named compilation isn't`() {
         val project = jvmProject {
             buildScript(
                 """
@@ -492,7 +496,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun customMultiplatformCompilationIsFixed() {
+    fun `custom multiplatform compilation is fixed`() {
         val project = kmpProject("jvm { compilations.create(\"extra\") }") {
             source(openClass("ExtraApi"), "extraApi", sourceSet = "jvmExtra")
         }
@@ -507,7 +511,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun reportTaskCoversTheSameCompilationsAsTheExemptTask() {
+    fun `report task covers the same compilations as the exempt task`() {
         val project = jvmProject {
             buildScript("""sourceSets.create("extra")""")
             source(openClass("ExtraApi"), "extraApi", sourceSet = "extra")
@@ -520,6 +524,234 @@ class ExemptExistingApiTest {
         val report = project.report().readText()
         assertContains(report, "Not applied")
         assertContains(report, "extraApi.kt:")
+    }
+
+    @Test
+    fun `Android flavors and custom build types are fixed`() = androidFlavorsAndCustomBuildTypesCase(AgpVersion.AGP8)
+
+    @Test
+    fun `Android flavors and custom build types are fixed on AGP 9`() = androidFlavorsAndCustomBuildTypesCase(AgpVersion.AGP9)
+
+    private fun androidFlavorsAndCustomBuildTypesCase(agp: AgpVersion) {
+        val project = androidLibrary(agp) {
+            android(
+                """
+                    flavorDimensions += "tier"
+                    productFlavors {
+                        create("free") { dimension = "tier" }
+                        create("paid") { dimension = "tier" }
+                    }
+                    buildTypes { create("staging") }
+                """
+            )
+            source(openClass("MainApi"), "mainApi")
+            source(openClass("FreeApi"), "freeApi", sourceSet = "free")
+            source(openClass("StagingApi"), "stagingApi", sourceSet = "staging")
+            source(openClass("PaidReleaseApi"), "paidReleaseApi", sourceSet = "paidRelease")
+            source(openClass("UnitTestHelper"), "unitTestHelper", sourceSet = "test")
+            source(openClass("DeviceTestHelper"), "deviceTestHelper", sourceSet = "androidTest")
+        }
+        val testFiles = listOf("src/test/kotlin/test/unitTestHelper.kt", "src/androidTest/kotlin/test/deviceTestHelper.kt")
+            .map(project::file)
+        val testTexts = testFiles.map { it.readText() }
+
+        val result = project.build(EXEMPT_TASK)
+
+        result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+        listOf("FreeDebug", "FreeRelease", "FreeStaging", "PaidDebug", "PaidRelease", "PaidStaging").forEach {
+            result.assertTaskOutcome(":compile${it}Kotlin", SUCCESS)
+        }
+        result.assertTaskOutcome(":compileFreeDebugUnitTestKotlin", null)
+        result.assertTaskOutcome(":compileFreeDebugAndroidTestKotlin", null)
+        result.assertOutputHas("4 backwards-compatibility exemption(s) in 4 file(s)")
+        project.assertExempted("src/main/kotlin/test/mainApi.kt", "MainApi")
+        project.assertExempted("src/free/kotlin/test/freeApi.kt", "FreeApi")
+        project.assertExempted("src/staging/kotlin/test/stagingApi.kt", "StagingApi")
+        project.assertExempted("src/paidRelease/kotlin/test/paidReleaseApi.kt", "PaidReleaseApi")
+        assertEquals(testTexts, testFiles.map { it.readText() })
+        assertContains(project.report().readText(), "@IntentionallyOpen (4)")
+
+        project.build("compileFreeStagingKotlin", "compilePaidReleaseKotlin").assertNoWatchdogDiagnostics()
+    }
+
+    @Test
+    fun `disabled Android variant is skipped`() = disabledAndroidVariantIsSkippedCase(AgpVersion.AGP8)
+
+    @Test
+    fun `disabled Android variant is skipped on AGP 9`() = disabledAndroidVariantIsSkippedCase(AgpVersion.AGP9)
+
+    private fun disabledAndroidVariantIsSkippedCase(agp: AgpVersion) {
+        val project = androidLibrary(agp) {
+            buildScript(
+                """
+                    androidComponents {
+                        beforeVariants(selector().withBuildType("release")) { it.enable = false }
+                    }
+                """
+            )
+            source(openClass("AndroidApi"), "androidApi")
+            source(openClass("ReleaseOnlyApi"), "releaseOnlyApi", sourceSet = "release")
+        }
+        val releaseFile = project.file("src/release/kotlin/test/releaseOnlyApi.kt")
+        val releaseText = releaseFile.readText()
+
+        val result = project.build(EXEMPT_TASK)
+
+        result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+        result.assertTaskOutcome(":compileDebugKotlin", SUCCESS)
+        result.assertTaskOutcome(":compileReleaseKotlin", null)
+        project.assertExempted("src/main/kotlin/test/androidApi.kt", "AndroidApi")
+        assertEquals(releaseText, releaseFile.readText())
+    }
+
+    @Test
+    fun `legacy multiplatform Android target flavors are fixed`() {
+        val project = kmpAndroidProject(KmpAndroidTarget.LEGACY) {
+            buildScript(
+                """
+                    android {
+                        flavorDimensions += "tier"
+                        productFlavors {
+                            create("free") { dimension = "tier" }
+                            create("paid") { dimension = "tier" }
+                        }
+                    }
+                """
+            )
+            source(openClass("SharedApi"), "sharedApi")
+            source(openClass("AndroidApi"), "androidApi", sourceSet = "androidMain")
+            source(openClass("FreeApi"), "freeApi", sourceSet = "androidFree")
+            source(openClass("PaidDebugApi"), "paidDebugApi", sourceSet = "androidPaidDebug")
+            source(openClass("UnitTestHelper"), "unitTestHelper", sourceSet = "androidUnitTest")
+        }
+        val testFile = project.file("src/androidUnitTest/kotlin/test/unitTestHelper.kt")
+        val testText = testFile.readText()
+
+        val result = project.build(EXEMPT_TASK)
+
+        result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+        listOf("FreeDebug", "FreeRelease", "PaidDebug", "PaidRelease").forEach {
+            result.assertTaskOutcome(":compile${it}KotlinAndroid", SUCCESS)
+        }
+        result.assertTaskOutcome(":compileFreeDebugUnitTestKotlinAndroid", null)
+        result.assertOutputHas("4 backwards-compatibility exemption(s) in 4 file(s)")
+        project.assertExempted("src/commonMain/kotlin/test/sharedApi.kt", "SharedApi")
+        project.assertExempted("src/androidMain/kotlin/test/androidApi.kt", "AndroidApi")
+        project.assertExempted("src/androidFree/kotlin/test/freeApi.kt", "FreeApi")
+        project.assertExempted("src/androidPaidDebug/kotlin/test/paidDebugApi.kt", "PaidDebugApi")
+        assertEquals(testText, testFile.readText())
+
+        project.build("compilePaidDebugKotlinAndroid").assertNoWatchdogDiagnostics()
+    }
+
+    @Test
+    fun `custom intermediate source set is fixed once`() {
+        val project = kmpProject(
+            """
+                jvm()
+                js { nodejs() }
+                sourceSets {
+                    val jvmAndJs by creating { dependsOn(commonMain.get()) }
+                    jvmMain.get().dependsOn(jvmAndJs)
+                    jsMain.get().dependsOn(jvmAndJs)
+                }
+            """
+        ) {
+            source(openClass("SharedApi"), "sharedApi")
+            source(openClass("JvmAndJsApi"), "jvmAndJsApi", sourceSet = "jvmAndJs")
+            source(openClass("JvmOnlyApi"), "jvmOnlyApi", sourceSet = "jvmMain")
+        }
+
+        val result = project.build(EXEMPT_TASK)
+
+        result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+        result.assertTaskOutcome(":compileKotlinJvm", SUCCESS)
+        result.assertTaskOutcome(":compileKotlinJs", SUCCESS)
+        // Three compilations report the common declaration and two the intermediate one.
+        result.assertOutputHas("3 backwards-compatibility exemption(s) in 3 file(s)")
+        project.assertExempted("src/commonMain/kotlin/test/sharedApi.kt", "SharedApi")
+        project.assertExempted("src/jvmAndJs/kotlin/test/jvmAndJsApi.kt", "JvmAndJsApi")
+        project.assertExempted("src/jvmMain/kotlin/test/jvmOnlyApi.kt", "JvmOnlyApi")
+
+        project.build("compileKotlinJvm", "compileKotlinJs").assertNoWatchdogDiagnostics()
+    }
+
+    @Test
+    fun `custom target name is fixed`() {
+        val project = kmpProject("jvm(\"desktop\")") {
+            source(openClass("DesktopApi"), "desktopApi", sourceSet = "desktopMain")
+        }
+
+        val result = project.build(EXEMPT_TASK)
+
+        result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+        result.assertTaskOutcome(":compileKotlinDesktop", SUCCESS)
+        project.assertExempted("src/desktopMain/kotlin/test/desktopApi.kt", "DesktopApi")
+    }
+
+    @Test
+    fun `test-named multiplatform compilation isn't fixed`() {
+        val project = kmpProject(
+            """
+                jvm {
+                    val main = compilations.getByName("main")
+                    compilations.create("integrationTest") { associateWith(main) }
+                }
+            """
+        ) {
+            source(openClass("SharedApi"), "sharedApi")
+            source(openClass("IntegrationHelper"), "integrationHelper", sourceSet = "jvmIntegrationTest")
+        }
+        val testFile = project.file("src/jvmIntegrationTest/kotlin/test/integrationHelper.kt")
+        val testText = testFile.readText()
+
+        val result = project.build(EXEMPT_TASK)
+
+        result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+        result.assertTaskOutcome(":compileIntegrationTestKotlinJvm", null)
+        project.assertExempted("src/commonMain/kotlin/test/sharedApi.kt", "SharedApi")
+        assertEquals(testText, testFile.readText())
+    }
+
+    @Test
+    fun `test fixtures are fixed`() {
+        val project = jvmProject {
+            plugins(
+                KotlinPlugins.jvm("$TEST_COMPILER_VERSION"),
+                Plugin("java-test-fixtures"),
+                Plugin(WATCHDOG_PLUGIN_ID, pluginUnderTestVersion),
+            )
+            buildScript("kotlin { explicitApi() }")
+            source(openClass("MainApi"), "mainApi")
+            source(openClass("Fixture"), "fixture", sourceSet = "testFixtures")
+            source(openClass("TestHelper"), "testHelper", sourceSet = "test")
+        }
+        val testFile = project.file("src/test/kotlin/test/testHelper.kt")
+        val testText = testFile.readText()
+
+        val result = project.build(EXEMPT_TASK)
+
+        result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+        result.assertTaskOutcome(":compileTestFixturesKotlin", SUCCESS)
+        result.assertTaskOutcome(":compileTestKotlin", null)
+        result.assertOutputHas("2 backwards-compatibility exemption(s) in 2 file(s)")
+        project.assertExempted("src/main/kotlin/test/mainApi.kt", "MainApi")
+        project.assertExempted("src/testFixtures/kotlin/test/fixture.kt", "Fixture")
+        assertEquals(testText, testFile.readText())
+    }
+
+    @Test
+    fun `JVM compilation without Java source set is fixed`() {
+        val project = jvmProject {
+            buildScript("""kotlin.target.compilations.create("benchmark")""")
+            source(openClass("BenchmarkApi"), "benchmarkApi", sourceSet = "benchmark")
+        }
+
+        val result = project.build(EXEMPT_TASK)
+
+        result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+        result.assertTaskOutcome(":compileBenchmarkKotlin", SUCCESS)
+        project.assertExempted("src/benchmark/kotlin/test/benchmarkApi.kt", "BenchmarkApi")
     }
 
     private fun openClass(name: String): String = "/** An existing open API. */\npublic open class $name"

@@ -41,6 +41,21 @@ internal suspend fun awaitImpl(): Int = 1
 
 public inline fun <R> once(block: () -> R): R = block()
 
+public class Scope
+
+@PublishedApi
+internal fun scopedImpl(scope: Scope): Int = 0
+
+context(_: Scope)
+@PublishedApi
+internal fun implicitScopedImpl(): Int = 0
+
+context(scope: Scope)
+public inline fun scoped(): Int = scopedImpl(scope)
+
+context(_: Scope)
+public inline fun implicitlyScoped(): Int = implicitScopedImpl()
+
 public class Vec {
     public operator fun plus(other: Vec): Vec = this
     public operator fun get(index: Int): Int = index

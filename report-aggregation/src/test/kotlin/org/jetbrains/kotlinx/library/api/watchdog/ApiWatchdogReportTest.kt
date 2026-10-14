@@ -10,7 +10,7 @@ import kotlin.test.assertTrue
 
 class ApiWatchdogReportTest {
     @Test
-    fun reportDataRoundTripsEscapedFields() {
+    fun `report data round-trips escaped fields`() {
         val report = ApiWatchdogProjectReport(
             projectPath = ":library",
             projectDirectory = "lib/tabbed\tlibrary",
@@ -35,7 +35,7 @@ class ApiWatchdogReportTest {
     }
 
     @Test
-    fun htmlEscapesProjectAndEntryText() {
+    fun `HTML escapes project and entry text`() {
         val report = ApiWatchdogProjectReport(
             projectPath = ":library<script>",
             projectDirectory = "",
@@ -63,7 +63,7 @@ class ApiWatchdogReportTest {
     }
 
     @Test
-    fun sarifListsOneRuleForEachDiagnosticAndOneResultForEachEntry() {
+    fun `SARIF lists one rule for each diagnostic and one result for each entry`() {
         val library = ApiWatchdogProjectReport(
             projectPath = ":library",
             projectDirectory = "modules/library",
@@ -131,7 +131,7 @@ class ApiWatchdogReportTest {
     }
 
     @Test
-    fun sarifEscapesTextAndHasNoResultsWithoutDiagnostics() {
+    fun `SARIF escapes text and has no results without diagnostics`() {
         val report = ApiWatchdogProjectReport(
             projectPath = ":library",
             projectDirectory = "",

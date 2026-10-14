@@ -38,6 +38,8 @@ public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>raceContextually<!>() {}
 context(block: Config.() -> Int)
 public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>configureContextually<!>() {}
 
+public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>measure<!>(block: context(Config) () -> Int) {}
+
 public fun transformAll(vararg mappers: (Int) -> Int) {}
 
 context(mapper: (Int) -> Int)

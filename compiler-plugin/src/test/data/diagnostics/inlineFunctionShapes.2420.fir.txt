@@ -28,6 +28,27 @@ FILE: inlineFunctionShapes.kt
     public final inline fun <R> once(block: R|() -> R|): R|R| {
         ^once R|<local>/block|.R|SubstitutionOverride<kotlin/Function0.invoke: R|R|>|()
     }
+    public final class Scope : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Scope| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/PublishedApi|() internal final fun scopedImpl(scope: R|foo/bar/Scope|): R|kotlin/Int| {
+        ^scopedImpl Int(0)
+    }
+    context(<unused var>: R|foo/bar/Scope|)
+    @R|kotlin/PublishedApi|() internal final fun implicitScopedImpl(): R|kotlin/Int| {
+        ^implicitScopedImpl Int(0)
+    }
+    context(scope: R|foo/bar/Scope|)
+    public final inline fun scoped(): R|kotlin/Int| {
+        ^scoped R|foo/bar/scopedImpl|(R|<local>/scope|)
+    }
+    context(<unused var>: R|foo/bar/Scope|)
+    public final inline fun implicitlyScoped(): R|kotlin/Int| {
+        ^implicitlyScoped context(R|<local>/<unused var>|) R|foo/bar/implicitScopedImpl|()
+    }
     public final class Vec : R|kotlin/Any| {
         public constructor(): R|foo/bar/Vec| {
             super<R|kotlin/Any|>()

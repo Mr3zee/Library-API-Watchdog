@@ -27,6 +27,13 @@
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic
 
 /kotlinOnlyApi.kt:17:12: error: KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
+    The function `measure` takes a function type with context parameters in the parameter `block`, which a Java lambda gets as explicit leading arguments. Hide it from Java with `@JvmSynthetic`, and add a Java-friendly alternative.
+
+    If this is intended, apply `@IntentionallyKotlinOnlyApi` to the function or an enclosing class.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic
+
+/kotlinOnlyApi.kt:19:12: error: KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
     The function `onEach` takes a `Unit`-returning function type in the parameter `action`, so a Java lambda has to return `Unit.INSTANCE`. Hide it from Java with `@JvmSynthetic`, and add a Java-friendly alternative.
 
     If this is intended, apply `@IntentionallyKotlinOnlyApi` to the function or an enclosing class.

@@ -72,7 +72,6 @@ The check skips:
 
 - The array of a `vararg` parameter. The check still reports mutable element types.
 - Extension receivers, including function-type receivers such as `MutableList<Int>.() -> Unit`.
-- Class context parameters.
 - Overrides.
 - `@PublishedApi internal` declarations.
 

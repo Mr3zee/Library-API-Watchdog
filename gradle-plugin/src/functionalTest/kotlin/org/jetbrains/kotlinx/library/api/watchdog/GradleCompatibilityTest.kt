@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName")
+
 package org.jetbrains.kotlinx.library.api.watchdog
 
 import com.autonomousapps.kit.gradle.Plugin
@@ -13,7 +15,7 @@ import org.junit.Test
 
 class GradleCompatibilityTest {
     @Test
-    fun configurationCacheIsReused() {
+    fun `configuration cache is reused`() {
         val project = jvmProject()
         val arguments = arrayOf("help", "--configuration-cache", "--configuration-cache-problems=fail")
 
@@ -22,7 +24,7 @@ class GradleCompatibilityTest {
     }
 
     @Test
-    fun worksInAnIsolatedSubproject() {
+    fun `works in an isolated subproject`() {
         val project = jvmProject {
             plugins()
             subproject("lib") { source("/** A stable public type. */\npublic class StableApi", "StableApi") }
@@ -32,7 +34,7 @@ class GradleCompatibilityTest {
     }
 
     @Test
-    fun aggregatesDeclaredProjectReportsWithProjectIsolation() {
+    fun `aggregates declared project reports with project isolation`() {
         val project = jvmProject {
             plugins(Plugin("org.jetbrains.kotlin.library.api-watchdog-report-aggregation", pluginUnderTestVersion))
             buildScript(
@@ -79,7 +81,7 @@ class GradleCompatibilityTest {
     }
 
     @Test
-    fun aggregatesEverySubprojectAndSkipsProjectsWithoutTheWatchdog() {
+    fun `aggregates every subproject and skips projects without the watchdog`() {
         val project = jvmProject {
             plugins(Plugin("org.jetbrains.kotlin.library.api-watchdog-report-aggregation", pluginUnderTestVersion))
             buildScript(
@@ -113,7 +115,7 @@ class GradleCompatibilityTest {
     }
 
     @Test
-    fun helpDoesNotRealizePluginOrCompilationTasks() {
+    fun `help doesn't realize plugin or compilation tasks`() {
         val compileMarker = "REALIZED_WATCHDOG_COMPILE_TASK"
         val updateMarker = "REALIZED_WATCHDOG_UPDATE_TASK"
         val project = jvmProject {
@@ -136,7 +138,7 @@ class GradleCompatibilityTest {
     }
 
     @Test
-    fun realizingEveryTaskKeepsConfiguredSeverities() {
+    fun `realized tasks keep configured severities`() {
         // `tasks.all { }` realizes the exemption tasks without a schedule.
         val project = jvmProject {
             buildScript("tasks.all { }")

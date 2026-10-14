@@ -52,7 +52,7 @@ class CompilerPluginTestDataFixerTest {
     }
 
     @Test
-    fun fixesCompilerPluginDiagnosticsTestData() {
+    fun `fixes compiler plugin diagnostics test data`() {
         val diagnosticsDirectory = assertNotNull(
             javaClass.getResource("/diagnostics"),
             "compiler-plugin/src/test/data must be on the exempts-fixer test classpath",

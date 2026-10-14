@@ -14,4 +14,6 @@ public class Config
 
 public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>configure<!>(block: Config.() -> Int) {}
 
+public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>measure<!>(block: context(Config) () -> Int) {}
+
 public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>onEach<!>(action: (Int) -> Unit) {}

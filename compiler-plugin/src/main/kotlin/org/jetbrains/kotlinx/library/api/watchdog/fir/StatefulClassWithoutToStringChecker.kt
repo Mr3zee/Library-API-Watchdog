@@ -110,8 +110,8 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
         var provided = false
         unsubstitutedScope().processFunctionsByName(member.functionName) { function ->
             val original = function.unwrapFakeOverrides()
-            if (original.hasSignatureOf(member) &&
-                original.containingClassLookupTag()?.classId != StandardClassIds.Any
+            if (original.containingClassLookupTag()?.classId != StandardClassIds.Any &&
+                original.hasSignatureOf(member)
             ) {
                 provided = true
             }

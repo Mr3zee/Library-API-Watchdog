@@ -14,7 +14,7 @@ Two tasks write it:
 Both tasks compile every compilation except tests in collection mode:
 
 - The `main` compilation of every target.
-- The `debug` and `release` compilations of an Android library.
+- Every enabled build variant of an Android library, with its product flavors and custom build types.
 - Every custom compilation whose name doesn't end with `Test`.
 
 A declaration that two compilations report gets one row.

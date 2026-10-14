@@ -467,6 +467,10 @@
           "takes a function type with receiver in the parameter `{0}`, which a Java lambda gets as an",
           "explicit first argument"
         ],
+        "contextFunctionType": [
+          "takes a function type with context parameters in the parameter `{0}`, which a Java lambda",
+          "gets as explicit leading arguments"
+        ],
         "unitFunctionType": [
           "takes a `Unit`-returning function type in the parameter `{0}`, so a Java lambda has to return",
           "`Unit.INSTANCE`"

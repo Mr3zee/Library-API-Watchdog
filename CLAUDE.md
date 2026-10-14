@@ -52,10 +52,11 @@ npm run build                       # the site build, fails on a broken link or 
   which match the first paragraph of each message. A new always-error diagnostic goes into `alwaysErrorDiagnostics`.
 - The compiler plugin must not reference `com.intellij` types in bytecode (a field type, a method signature, or a
   class literal), because the jar runs both in the CLI and in the relocated `kotlin-compiler-embeddable` classpath.
-  A reference links in one of them only. A type argument is fine, because erasure removes it. A custom positioning
-  strategy is impossible for the same reason. Its `mark` override never binds in the embeddable compiler, and the
-  default strategy marks the whole declaration. A checker reports on a child source element from
-  `KtSourceElement.getChild` with a `Set` of token types instead.
+  A reference links in one of them only. `IntellijReferencesTest` scans the compiled classes and fails on each
+  one. A type argument is fine, because erasure removes it. A custom positioning strategy is impossible for the
+  same reason. Its `mark` override never binds in the embeddable compiler, and the default strategy marks the
+  whole declaration. A checker reports on a child source element from `KtSourceElement.getChild` with a `Set` of
+  token types instead.
 - The fixer uses K2 PSI entry points only, with unrelocated `com.intellij` imports. Its dependencies are
   compile-only. The Gradle task runs it in a separate JVM with the `kotlin-compiler` artifact of the project's
   Kotlin version.

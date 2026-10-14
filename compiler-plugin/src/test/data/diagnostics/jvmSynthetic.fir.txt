@@ -37,6 +37,8 @@ FILE: jvmSynthetic.kt
     context(block: R|foo/bar/Config.() -> kotlin/Int|)
     public final fun configureContextually(): R|kotlin/Unit| {
     }
+    public final fun measure(block: R|context(foo/bar/Config) () -> kotlin/Int|): R|kotlin/Unit| {
+    }
     public final fun transformAll(vararg mappers: R|kotlin/Array<out (kotlin/Int) -> kotlin/Int>|): R|kotlin/Unit| {
     }
     context(mapper: R|(kotlin/Int) -> kotlin/Int|)
