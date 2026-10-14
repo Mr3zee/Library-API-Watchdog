@@ -3,8 +3,9 @@
 [![Kotlin 2.3.20+](https://img.shields.io/github/actions/workflow/status/Mr3zee/libs-watchdog/compiler-plugin-tests.yml?branch=main&label=Kotlin%202.3.20%2B&logo=kotlin&logoColor=white)](https://github.com/Mr3zee/libs-watchdog/actions/workflows/compiler-plugin-tests.yml)
 [![IntelliJ IDEA 2026.2+](https://img.shields.io/github/actions/workflow/status/Mr3zee/libs-watchdog/compiler-plugin-tests.yml?branch=main&label=IntelliJ%20IDEA%202026.2%2B&logo=intellijidea&logoColor=white)](https://github.com/Mr3zee/libs-watchdog/actions/workflows/compiler-plugin-tests.yml)
 
-A Kotlin K2 compiler plugin that warns library authors about public API declarations that are
-hard to evolve.
+`library-api-watchdog` is a set of compiler checks for library authors. It finds public API
+declarations that are hard to evolve: shapes that can't change later without a breaking change for
+the library's users.
 
 The [documentation](https://mr3zee.github.io/Library-API-Watchdog/) has a page for every check:
 the rationale, examples, exemptions, and configuration. The
@@ -49,21 +50,18 @@ kotlin {
 The checks run only in modules with explicit API mode. Without it the plugin registers no checks,
 and the Gradle plugin reports a warning.
 
-The Gradle plugin registers the compiler plugin for every compilation except test compilations.
-`explicitApi()` reaches the `main` compilations, the metadata compilations, and the Android variants.
-A custom compilation such as `testFixtures` has no checks without the `-Xexplicit-api` flag.
-It also adds the dependency with the `@Intentionally*` exemption annotations.
+The Gradle plugin registers the compiler plugin for every compilation except test compilations
+and adds the dependency with the `@Intentionally*` exemption annotations.
 
 Every check reports a compilation error by default, except `UNDOCUMENTED_PUBLIC_API`, which
-reports a warning. The `apiWatchdog` extension changes the severity of a check or turns it off.
-`enabled = false` turns every check off:
+reports a warning. The `apiWatchdog` extension changes the severity of a check or turns it off:
 
 ```kotlin
 import org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity
 
 apiWatchdog {
-    enabled = false // disable all checks 
-    
+    enabled = false // turns every check off
+
     dataClassPublicApi = WatchdogSeverity.WARNING
     undocumentedPublicApi = WatchdogSeverity.NONE
     
@@ -121,15 +119,7 @@ two formats:
   [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html), for a code
   scanning service.
 
-Both formats are on by default. The `reports` block turns one off:
-
-```kotlin
-apiWatchdog {
-    reports {
-        html = false
-    }
-}
-```
+Both formats are on by default.
 
 The report aggregation plugin combines the reports of several projects:
 
@@ -256,8 +246,7 @@ The Gradle plugin reports these, not the compiler:
 The build gets the compiler-plugin-dev-kit from its
 [Space EAP repository](https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap).
 The dev kit settings plugin gives the Kotlin development repositories, the plugin coordinates,
-and the functional-test publishing. The `kotlin.compiler.plugin.devkit.*` properties in
-`gradle.properties` declare the companion library and the compiler-plugin project.
+and the functional-test publishing.
 
 Tests:
 

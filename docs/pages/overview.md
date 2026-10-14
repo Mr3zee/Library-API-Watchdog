@@ -7,8 +7,9 @@ slug: /
 [![Kotlin 2.3.20+](https://img.shields.io/github/actions/workflow/status/Mr3zee/libs-watchdog/compiler-plugin-tests.yml?branch=main&label=Kotlin%202.3.20%2B&logo=kotlin&logoColor=white)](https://github.com/Mr3zee/libs-watchdog/actions/workflows/compiler-plugin-tests.yml)
 [![IntelliJ IDEA 2026.2+](https://img.shields.io/github/actions/workflow/status/Mr3zee/libs-watchdog/compiler-plugin-tests.yml?branch=main&label=IntelliJ%20IDEA%202026.2%2B&logo=intellijidea&logoColor=white)](https://github.com/Mr3zee/libs-watchdog/actions/workflows/compiler-plugin-tests.yml)
 
-`library-api-watchdog` helps library authors to detect public API declarations
-that are hard to evolve. It runs as a set of compiler checks in the module it is applied to.
+`library-api-watchdog` is a set of compiler checks for library authors. It finds public API
+declarations that are hard to evolve: shapes that can't change later without a breaking change for
+the library's users.
 
 Every check is on by default and reports a compilation error, except
 [Undocumented public API](./checks/undocumented-public-api.md), which reports a warning.
@@ -17,8 +18,8 @@ Every check is on by default and reports a compilation error, except
 
 ## What it looks like
 
-A public data class that hands out a mutable collection, without documentation, triggers three
-diagnostics at once:
+A public data class with a mutable collection property and no KDoc gets three diagnostics at
+once:
 
 :::tip
 Diagnostics in code examples are interactive. Hover over an underlined range to read the
@@ -63,9 +64,13 @@ kotlin {
 }
 ```
 
-The plugin also works for Kotlin/JVM projects. 
+The plugin also works for Kotlin/JVM and Android projects.
 
 See [Configuration](./configuration.md) for more details about the setup and options.
+
+A published library gets many diagnostics on the first run. The `exemptExistingApi` task exempts
+every error in one run. See [Adding the plugin to existing libraries](./existing-libs.md) for more
+details.
 
 ## All checks
 

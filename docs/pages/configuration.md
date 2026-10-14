@@ -41,7 +41,9 @@ kotlin {
 ```
 
 `explicitApiWarning()` and the `-Xexplicit-api` compiler flag also count. Without explicit API
-mode the plugin registers no checks.
+mode the plugin registers no checks. `explicitApi()` reaches the `main` compilations, the metadata
+compilations, and the Android variants. A custom compilation such as `testFixtures` has no checks
+without the `-Xexplicit-api` flag.
 
 ## What applying does
 
