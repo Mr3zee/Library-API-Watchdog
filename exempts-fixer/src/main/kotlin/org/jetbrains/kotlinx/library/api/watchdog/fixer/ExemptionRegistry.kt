@@ -93,14 +93,6 @@ internal object ExemptionRegistry {
 
     val knownDiagnostics: Set<String> get() = resolutions.keys
 
-    /** Each annotation the fixer can add, and whether it takes a `reason` argument. */
-    val exemptionAnnotations: Map<String, Boolean> = resolutions.values
-        .filterIsInstance<FixResolution.Fixable>()
-        .map { it.fix }
-        .filterIsInstance<ExemptionFix>()
-        .associate { it.annotationShortName to it.hasReasonParameter } +
-            combinedExemptions.keys.associateWith { true }
-
     fun annotationFor(diagnostic: String): String? =
         ((resolutions[diagnostic] as? FixResolution.Fixable)?.fix as? ExemptionFix)?.annotationShortName
 
