@@ -74,8 +74,8 @@ npm run build                       # the site build, fails on a broken link or 
    regenerated tests.
 6. The fixer: `ExemptionRegistry`, the expected-names set in `FixerProtocolTest`, and the specimen file of
    `ExemptExistingApiTest`.
-7. The docs: the check page at the `docs` path from `diagnostics.json`, `docs/sidebars.ts`, the page map in
-   `docs/authoring.md`, and the check list in `docs/docs/overview.md`.
+7. The docs: the check page at the `docs` path from `diagnostics.json`, `docs/sidebars.ts`, and the check list in
+   `docs/docs/overview.md`.
 8. The benchmarks in `compiler-plugin/src/benchmark/`, only when the checker can report a warning: a
    `CheckerSubject`, the `@Param` lists of both benchmark classes, and a triggering shape in `BenchmarkCorpus`. Then
    run `benchmarkCorpusAudit`.

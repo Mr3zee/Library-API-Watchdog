@@ -80,8 +80,7 @@ See [Configuration](./configuration.md) for more details.
 ### API surface checks
 
 - [Boolean parameters in public API](./checks/boolean-parameter-public-api.md): Boolean value
-  parameters. An unnamed `true` or `false` argument tells nothing about its meaning at the call
-  site.
+  parameters. An unnamed `true` or `false` argument has no readable meaning at the call site.
 - [Data classes in public API](./checks/data-class-public-api.md): data classes. The generated
   `copy` and `componentN` functions and the constructor expose the exact property list in the
   compiled API.
@@ -97,8 +96,8 @@ See [Configuration](./configuration.md) for more details.
   with a body that does more than delegate. The compiler copies that body, and its bugs, into every
   user binary.
 - [Mutable collections in public API](./checks/mutable-collection-public-api.md): mutable collection
-  types in public signatures. It is unclear whether user-side and library-side mutations affect each
-  other.
+  types in public signatures. The signature doesn't state whether user-side and library-side
+  mutations affect each other.
 - [Nullable Booleans in public API](./checks/nullable-boolean-public-api.md): nullable `Boolean`
   types in public signatures. They model three states but name only two.
 - [Open API without subclass opt-in](./checks/open-api-without-subclass-opt-in.md): open or abstract

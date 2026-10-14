@@ -13,7 +13,8 @@ annotations.
 
 ## Setup
 
-Add the Space EAP repository to `settings.gradle.kts` for plugin and library resolution:
+The plugin and the annotations library are in the Space EAP repository. Add it to
+`settings.gradle.kts`:
 
 ```kotlin
 pluginManagement {
@@ -31,10 +32,9 @@ dependencyResolutionManagement {
 }
 ```
 
-The plugin runs only in modules with
+Apply the plugin and turn on
 [explicit API mode](https://kotlinlang.org/docs/api-guidelines-simplicity.html#use-explicit-api-mode),
-strict or warning. Without it the plugin registers no checks, and the Gradle plugin prints a
-warning.
+strict or warning:
 
 ```kotlin
 plugins {
@@ -46,19 +46,27 @@ kotlin {
 }
 ```
 
+The checks run only in modules with explicit API mode. Without it the plugin registers no checks,
+and the Gradle plugin reports a warning.
+
 The Gradle plugin registers the compiler plugin for every compilation except test compilations.
 It also adds the dependency with the `@Intentionally*` exemption annotations.
 
-Every check reports a compilation error by default. The `apiWatchdog` extension sets a check to a
-warning or disables it:
+Every check reports a compilation error by default, except `UNDOCUMENTED_PUBLIC_API`, which
+reports a warning. The `apiWatchdog` extension changes the severity of a check or turns it off.
+`enabled = false` turns the whole plugin off:
 
 ```kotlin
 import org.jetbrains.kotlinx.library.api.watchdog.WatchdogSeverity
 
 apiWatchdog {
-    undocumentedPublicApi = WatchdogSeverity.WARNING
+    enabled = false // disable all checks 
+    
+    dataClassPublicApi = WatchdogSeverity.WARNING
+    undocumentedPublicApi = WatchdogSeverity.NONE
+    
     javaInterop {
-        enabled = false // A Kotlin-only library turns off the whole Java interop group.
+        enabled = false // Kotlin-only library
     }
 }
 ```
@@ -70,28 +78,26 @@ and the compiler flags for a build without Gradle.
 
 Four ways to exempt API from the checks:
 
-- **Internal API.** Mark the library's internal-API annotation with `@InternalAnnotationMarker`.
-  For an annotation the library can't mark, such as one from a dependency, use
-  `apiWatchdog { internalApiAnnotations.add("com.example.InternalApi") }`. Every check skips
-  the declarations under such an annotation. See
-  [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions).
-- **One declaration.** Apply the matching `@Intentionally*` annotation. It must have an
-  `ExemptionReason` and a description. See
-  [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions).
-- **One check on every declaration with a given annotation.** Use
+- **[Internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions)**: every check
+  skips the declarations under an internal-API annotation. Mark the library's own annotation with
+  `@InternalAnnotationMarker`. For an annotation from a dependency, use
+  `apiWatchdog { internalApiAnnotations.add("com.example.InternalApi") }`.
+- **[One declaration](https://mr3zee.github.io/Library-API-Watchdog/exemptions)**: apply the
+  matching `@Intentionally*` annotation. It must have an `ExemptionReason` and a description.
+- **[One check on every declaration with a given annotation](https://mr3zee.github.io/Library-API-Watchdog/configuration#annotation-ignore-rules)**:
+  use
   `apiWatchdog { ignore(WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS, whenAnnotatedWith = listOf("com.example.GeneratedValueMembers")) }`.
-  Only a configurable check accepts this rule. See
-  [Annotation ignore rules](https://mr3zee.github.io/Library-API-Watchdog/configuration#annotation-ignore-rules).
-- **A dependency that the runtime environment gives.** For example, the Gradle API for a Gradle
-  plugin. Declare it with `compileOnly(libs.host.api) { exemptNonTransitiveDependency(this) }`.
-  `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY` then skips its types in the whole module. See
-  [Exempt non-transitive dependencies](https://mr3zee.github.io/Library-API-Watchdog/configuration#exempt-non-transitive-dependencies).
+  Only a configurable check accepts this rule.
+- **[A dependency that the runtime environment gives](https://mr3zee.github.io/Library-API-Watchdog/configuration#exempt-non-transitive-dependencies)**:
+  for example, the Gradle API for a Gradle plugin. Declare it with
+  `compileOnly(libs.host.api) { exemptNonTransitiveDependency(this) }`.
+  `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY` then accepts its types in the whole module.
 
 ## Adopting on an existing library
 
 A published library can't change its public API, so the first run reports many diagnostics that
 the author can't act on. The `exemptExistingApi` task applies an `@Intentionally*` annotation
-to every such reported declaration:
+to every reported declaration:
 
 ```bash
 ./gradlew exemptExistingApi
@@ -121,7 +127,7 @@ apiWatchdog {
 }
 ```
 
-A multi-project build combines the module reports with the report aggregation plugin:
+The report aggregation plugin combines the reports of several projects:
 
 ```kotlin
 plugins {
@@ -146,8 +152,8 @@ report.
 ### API surface
 
 - [`BOOLEAN_PARAMETER_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/boolean-parameter-public-api) -
-  Boolean value parameters. An unnamed `true` or `false` argument tells nothing about its meaning
-  at the call site.
+  Boolean value parameters. An unnamed `true` or `false` argument has no readable meaning at the
+  call site.
 - [`DATA_CLASS_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/data-class-public-api) -
   data classes. The generated `copy` and `componentN` functions and the constructor expose the
   exact property list in the compiled API.
@@ -164,8 +170,8 @@ report.
   public inline functions with a body that does more than delegate. The compiler copies that
   body, and its bugs, into every user binary.
 - [`MUTABLE_COLLECTION_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/mutable-collection-public-api) -
-  mutable collection types in public signatures. It is unclear whether user-side and
-  library-side mutations affect each other.
+  mutable collection types in public signatures. The signature doesn't state whether user-side
+  and library-side mutations affect each other.
 - [`NULLABLE_BOOLEAN_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/nullable-boolean-public-api) -
   nullable `Boolean` types in public signatures. They model three states but name only two.
 - [`OPEN_API_WITHOUT_SUBCLASS_OPT_IN`](https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in) -
@@ -193,9 +199,9 @@ report.
 
 ### Java interop
 
-These checks run only in JVM compilations. A Kotlin-only library turns off the group with
-`javaInterop { enabled = false }`. See the
-[Java interop checks](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop).
+The [Java interop checks](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop)
+run only in JVM compilations. A Kotlin-only library turns off the group with
+`javaInterop { enabled = false }`.
 
 - [`COMPANION_API_WITHOUT_JVM_STATIC`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-api-without-jvm-static) -
   public companion object functions without `@JvmStatic`. Java callers can use them only through
