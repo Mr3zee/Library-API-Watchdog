@@ -7,6 +7,7 @@ import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlinx.library.api.watchdog.PluginInfo
+import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnostics
 
 /** The system properties that the Gradle `benchmark` task passes to the benchmark JVM. */
 internal object BenchmarkEnv {
@@ -58,6 +59,31 @@ internal fun corpusCompilerArguments(sourceRoot: Path, destination: Path): K2JVM
         noStdlib = true
         noReflect = true
     }
+
+/**
+ * The plugin options of a corpus compilation. Every configurable diagnostic is at `warning` when
+ * [enabledDiagnostics] names it and at `none` otherwise. With [withDependencyPaths] the standard
+ * library is the only transitive dependency.
+ */
+internal fun corpusPluginOptions(enabledDiagnostics: Set<String>, withDependencyPaths: Boolean): List<String> =
+    buildList {
+        for (diagnostic in WatchdogDiagnostics.allDiagnostics) {
+            val severity = if (diagnostic.name in enabledDiagnostics) "warning" else "none"
+            add(pluginOption("diagnosticSeverity", "${diagnostic.name}:$severity"))
+        }
+        if (withDependencyPaths) {
+            val classpath = BenchmarkEnv.corpusClasspath
+            add(pluginOption("compileDependencyPaths", classpath.joinToString(File.pathSeparator)))
+            add(
+                pluginOption(
+                    "transitiveDependencyPaths",
+                    classpath.filter { it.contains("kotlin-stdlib") }.joinToString(File.pathSeparator),
+                ),
+            )
+        }
+    }
+
+internal fun pluginOption(name: String, value: String): String = "plugin:${BenchmarkEnv.pluginId}:$name=$value"
 
 internal fun deleteRecursively(root: Path) {
     val file = root.toFile()

@@ -18,8 +18,6 @@ import org.jetbrains.kotlin.fir.declarations.utils.correspondingValueParameterFr
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
 import org.jetbrains.kotlin.fir.declarations.utils.isSuspend
 import org.jetbrains.kotlin.fir.declarations.utils.modality
-import org.jetbrains.kotlin.fir.expressions.FirAnnotation
-import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.JvmStandardClassIds
@@ -120,11 +118,7 @@ internal class MangledJvmNameChecker(
         // `@JvmExposeBoxed` on the declaration or on an enclosing class generates a boxed variant
         // for Java, but not for an open or abstract member.
         if (modality != Modality.OPEN && modality != Modality.ABSTRACT &&
-            (hasAnnotationOnActualOrExpect(JvmStandardClassIds.JVM_EXPOSE_BOXED_ANNOTATION_CLASS_ID) ||
-                    context.containingDeclarations.any {
-                        it is FirClassSymbol<*> &&
-                                it.hasAnnotationOnActualOrExpect(JvmStandardClassIds.JVM_EXPOSE_BOXED_ANNOTATION_CLASS_ID)
-                    })
+            hasAnnotationOnSelfOrEnclosingClass(JvmStandardClassIds.JVM_EXPOSE_BOXED_ANNOTATION_CLASS_ID)
         ) {
             return false
         }
@@ -133,45 +127,22 @@ internal class MangledJvmNameChecker(
     }
 
     context(context: CheckerContext)
-    private fun FirCallableDeclaration.isExempt(): Boolean {
-        val session = context.session
-        return hasAnnotationOnActualOrExpect(WatchdogClassIds.IntentionallyMangledJvmName) ||
+    private fun FirCallableDeclaration.isExempt(): Boolean =
+        hasAnnotationOnSelfOrEnclosingClass(WatchdogClassIds.IntentionallyMangledJvmName) ||
                 (this as? FirProperty)?.correspondingValueParameterFromPrimaryConstructor
-                    ?.hasAnnotation(WatchdogClassIds.IntentionallyMangledJvmName, session) == true ||
-                context.containingDeclarations.any {
-                    it is FirClassSymbol<*> &&
-                            it.hasAnnotationOnActualOrExpect(WatchdogClassIds.IntentionallyMangledJvmName)
-                }
-    }
+                    ?.hasAnnotation(WatchdogClassIds.IntentionallyMangledJvmName, context.session) == true
 
     /** Whether `@JvmName` or `@JvmSynthetic` is on the accessor, by any of the three annotation sites. */
     context(context: CheckerContext)
     private fun FirProperty.accessorHasJavaFacingName(
         accessor: FirPropertyAccessor?,
         useSiteTarget: AnnotationUseSiteTarget,
-    ): Boolean {
-        val session = context.session
-        if (accessor != null &&
-            (accessor.hasAnnotation(JvmStandardClassIds.Annotations.JvmName, session) ||
-                    accessor.hasAnnotation(JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID, session))
-        ) {
-            return true
-        }
-
-        if (annotations.any { it.useSiteTarget == useSiteTarget && it.isJavaFacingNameAnnotation() }) {
-            return true
-        }
-        return correspondingValueParameterFromPrimaryConstructor
-            ?.resolvedAnnotationsWithClassIds
-            ?.any { it.useSiteTarget == useSiteTarget && it.isJavaFacingNameAnnotation() } == true
-    }
-
-    context(context: CheckerContext)
-    private fun FirAnnotation.isJavaFacingNameAnnotation(): Boolean =
-        toAnnotationClassIdSafe(context.session).let { classId: ClassId? ->
-            classId == JvmStandardClassIds.Annotations.JvmName ||
-                    classId == JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID
-        }
+    ): Boolean =
+        JAVA_FACING_NAME_ANNOTATIONS.any { hasAccessorAnnotation(accessor, useSiteTarget, it) } ||
+                correspondingValueParameterFromPrimaryConstructor?.resolvedAnnotationsWithClassIds?.any {
+                    it.useSiteTarget == useSiteTarget &&
+                            it.toAnnotationClassIdSafe(context.session) in JAVA_FACING_NAME_ANNOTATIONS
+                } == true
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun report(
@@ -207,5 +178,13 @@ internal class MangledJvmNameChecker(
         GETTER("propertyGetterFix", "nonFinalPropertyGetterFix"),
         SETTER("propertySetterFix", "nonFinalPropertySetterFix"),
         GETTER_AND_SETTER("propertyGetterAndSetterFix", "nonFinalPropertyGetterAndSetterFix"),
+    }
+
+    private companion object {
+        /** The annotations that give an accessor a Java-facing name of its own or hide it from Java. */
+        val JAVA_FACING_NAME_ANNOTATIONS: Set<ClassId> = setOf(
+            JvmStandardClassIds.Annotations.JvmName,
+            JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID,
+        )
     }
 }

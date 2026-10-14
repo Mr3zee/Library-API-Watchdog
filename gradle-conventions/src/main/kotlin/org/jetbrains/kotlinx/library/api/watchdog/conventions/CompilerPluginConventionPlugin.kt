@@ -7,20 +7,12 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 class CompilerPluginConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
-            val generateDiagnosticMessages = tasks.register(
-                "generateDiagnosticMessages",
-                GenerateDiagnosticMessages::class.java,
-            ) {
-                description =
-                    "Generates the diagnostic message templates from the shared diagnostics.json."
-                diagnostics.set(
-                    target.isolated.rootProject.projectDirectory.file("diagnostics.json"),
-                )
-                packageName.set("org.jetbrains.kotlinx.library.api.watchdog.fir")
-                outputDirectory.set(
-                    layout.buildDirectory.dir("generated/sources/diagnostics/main/kotlin"),
-                )
-            }
+            val generateDiagnosticMessages = registerDiagnosticsGenerator<GenerateDiagnosticMessages>(
+                name = "generateDiagnosticMessages",
+                description = "Generates the diagnostic message templates from the shared diagnostics.json.",
+                packageName = "org.jetbrains.kotlinx.library.api.watchdog.fir",
+                outputDirectory = "diagnostics/main/kotlin",
+            )
 
             extensions.configure(KotlinMultiplatformExtension::class.java) {
                 sourceSets.named("commonMain").configure {

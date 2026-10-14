@@ -20,7 +20,7 @@ internal object ExemptionFixerRunner {
         kotlinVersion: String,
         execOperations: ExecOperations,
         updateSources: Boolean,
-    ): Map<String, List<String>> {
+    ): FixerResponse {
         val workDirectory = temporaryDirectory.resolve("fixer").apply {
             deleteRecursively()
             mkdirs()
@@ -50,7 +50,7 @@ internal object ExemptionFixerRunner {
             spec.args(requestFile.absolutePath)
             spec.isIgnoreExitValue = true
         }
-        val response = parseResponse(responseFile, execResult.exitValue)
+        val response = readResponse(responseFile, execResult.exitValue)
         response["error"]?.forEach {
             throw GradleException("The exempts fixer failed:\n${it.unescapeFixerNewlines()}")
         }
@@ -59,10 +59,11 @@ internal object ExemptionFixerRunner {
                 "The exempts fixer exited with code ${execResult.exitValue} without reporting an error."
             )
         }
-        return response
+        return FixerResponse.parse(response)
     }
 
-    private fun parseResponse(responseFile: File, exitValue: Int): Map<String, List<String>> {
+    /** The response lines grouped by key. */
+    private fun readResponse(responseFile: File, exitValue: Int): Map<String, List<String>> {
         if (!responseFile.isFile) {
             throw GradleException(
                 "The exempts fixer wrote no response (exit code $exitValue). " +
@@ -122,6 +123,74 @@ internal object ExemptionFixerRunner {
         "org.jetbrains.kotlinx.library.api.watchdog.fixer.ExemptsFixerMain"
     private const val FIXER_MULTI_RELEASE_ID = "org.jetbrains.kotlinx.library.api.watchdog.fixer"
 }
+
+/**
+ * The response of the fixer: a file of `key=value` lines with tab-separated fields. The fixer
+ * writes an absolute source [FixerLocation.path].
+ */
+internal class FixerResponse(
+    /** The diagnostics the fixer can exempt, or did exempt when it rewrote the sources. */
+    val fixed: List<FixedDiagnostic>,
+    /** The diagnostics that need manual attention. */
+    val skipped: List<SkippedDiagnostic>,
+    /** The `@Intentionally*` annotations in the sources. */
+    val exemptions: List<AppliedExemption>,
+    val modifiedFiles: Set<String>,
+) {
+    companion object {
+        val EMPTY: FixerResponse = FixerResponse(emptyList(), emptyList(), emptyList(), emptySet())
+
+        /** [lines] are the response values grouped by key. */
+        fun parse(lines: Map<String, List<String>>): FixerResponse = FixerResponse(
+            fixed = lines["fixed"].orEmpty().map { value ->
+                val (diagnostic, annotation, line, path) = value.split('\t', limit = 4)
+                FixedDiagnostic(diagnostic, annotation.ifEmpty { null }, line, path)
+            },
+            skipped = lines["skipped"].orEmpty().map { value ->
+                val (diagnostic, annotation, line, path, reason) = value.split('\t', limit = 5)
+                SkippedDiagnostic(diagnostic, annotation.ifEmpty { null }, line, path, reason.unescapeFixerNewlines())
+            },
+            exemptions = lines["exemption"].orEmpty().map { value ->
+                val (annotation, line, path) = value.split('\t', limit = 3)
+                AppliedExemption(annotation, line, path)
+            },
+            modifiedFiles = lines["modifiedFile"].orEmpty().toSet(),
+        )
+    }
+}
+
+/** A source file and line of the fixer response. */
+internal interface FixerLocation {
+    val line: String
+    val path: String
+}
+
+/** `path:line` with the path relative to [projectDirectory]. */
+internal fun FixerLocation.location(projectDirectory: File): String =
+    "${File(path).relativeToOrSelf(projectDirectory).path}:$line"
+
+/** A null [annotation] marks a placeholder KDoc. */
+internal class FixedDiagnostic(
+    val diagnostic: String,
+    val annotation: String?,
+    override val line: String,
+    override val path: String,
+) : FixerLocation
+
+/** [annotation] is the exemption of the diagnostic, or null when none exists. */
+internal class SkippedDiagnostic(
+    val diagnostic: String,
+    val annotation: String?,
+    override val line: String,
+    override val path: String,
+    val reason: String,
+) : FixerLocation
+
+internal class AppliedExemption(
+    val annotation: String,
+    override val line: String,
+    override val path: String,
+) : FixerLocation
 
 internal fun String.unescapeFixerNewlines(): String {
     val result = StringBuilder(length)

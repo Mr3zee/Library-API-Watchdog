@@ -1,6 +1,5 @@
 package org.jetbrains.kotlinx.library.api.watchdog
 
-import java.io.File
 import javax.inject.Inject
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
@@ -95,13 +94,13 @@ public abstract class ApiWatchdogReportTask : DefaultTask() {
     protected abstract val noCompilationWarning: String
 
     /** Logs the fixer [response] to the console. The default logs nothing. */
-    protected open fun logResponse(response: Map<String, List<String>>) {}
+    internal open fun logResponse(response: FixerResponse) {}
 
     @TaskAction
     public fun writeReport() {
         val response = if (compilationNames.get().isEmpty()) {
             logger.warn(noCompilationWarning)
-            emptyMap()
+            FixerResponse.EMPTY
         } else {
             ExemptionFixerRunner.run(
                 temporaryDirectory = temporaryDir,
@@ -128,8 +127,4 @@ public abstract class ApiWatchdogReportTask : DefaultTask() {
             logger = logger,
         )
     }
-
-    /** [path] relative to [projectDirectory]. */
-    protected fun relativize(path: String): String =
-        File(path).relativeToOrSelf(projectDirectory.get().asFile).path
 }

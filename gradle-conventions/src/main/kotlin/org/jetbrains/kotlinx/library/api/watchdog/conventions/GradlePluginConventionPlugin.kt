@@ -11,34 +11,18 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 class GradlePluginConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
-            val generateCheckNames = tasks.register(
-                "generateCheckNames",
-                GenerateCheckNames::class.java,
-            ) {
-                description = "Generates the WatchdogChecks diagnostic name constants from the shared diagnostics.json."
-                diagnostics.set(
-                    @Suppress("UnstableApiUsage")
-                    target.isolated.rootProject.projectDirectory.file("diagnostics.json"),
-                )
-                packageName.set("org.jetbrains.kotlinx.library.api.watchdog")
-                outputDirectory.set(
-                    layout.buildDirectory.dir("generated/sources/checkNames/main/kotlin"),
-                )
-            }
-            val generateFunctionalTestDiagnostics = tasks.register(
-                "generateFunctionalTestDiagnostics",
-                GenerateFunctionalTestDiagnostics::class.java,
-            ) {
-                description = "Generates the Diagnostic enum of the functional tests from the shared diagnostics.json."
-                diagnostics.set(
-                    @Suppress("UnstableApiUsage")
-                    target.isolated.rootProject.projectDirectory.file("diagnostics.json"),
-                )
-                packageName.set("org.jetbrains.kotlinx.library.api.watchdog")
-                outputDirectory.set(
-                    layout.buildDirectory.dir("generated/sources/functionalTestDiagnostics/functionalTest/kotlin"),
-                )
-            }
+            val generateCheckNames = registerDiagnosticsGenerator<GenerateCheckNames>(
+                name = "generateCheckNames",
+                description = "Generates the WatchdogChecks diagnostic name constants from the shared diagnostics.json.",
+                packageName = "org.jetbrains.kotlinx.library.api.watchdog",
+                outputDirectory = "checkNames/main/kotlin",
+            )
+            val generateFunctionalTestDiagnostics = registerDiagnosticsGenerator<GenerateFunctionalTestDiagnostics>(
+                name = "generateFunctionalTestDiagnostics",
+                description = "Generates the Diagnostic enum of the functional tests from the shared diagnostics.json.",
+                packageName = "org.jetbrains.kotlinx.library.api.watchdog",
+                outputDirectory = "functionalTestDiagnostics/functionalTest/kotlin",
+            )
             extensions.configure(KotlinProjectExtension::class.java) {
                 sourceSets.named("main").configure {
                     kotlin.srcDir(generateCheckNames)

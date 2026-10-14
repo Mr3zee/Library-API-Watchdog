@@ -15,7 +15,6 @@ import org.jetbrains.kotlin.fir.declarations.utils.isInline
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
 import org.jetbrains.kotlin.fir.declarations.utils.isSuspend
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
-import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.types.functionTypeKind
 import org.jetbrains.kotlin.fir.types.isExtensionFunctionType
@@ -53,12 +52,7 @@ internal class KotlinOnlyApiChecker(
             return
         }
 
-        if (declaration.hasAnnotationOnActualOrExpect(WatchdogClassIds.IntentionallyKotlinOnlyApi) ||
-            context.containingDeclarations.any {
-                it is FirClassSymbol<*> &&
-                        it.hasAnnotationOnActualOrExpect(WatchdogClassIds.IntentionallyKotlinOnlyApi)
-            }
-        ) {
+        if (declaration.hasAnnotationOnSelfOrEnclosingClass(WatchdogClassIds.IntentionallyKotlinOnlyApi)) {
             return
         }
 

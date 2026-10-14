@@ -2,6 +2,7 @@
 
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 import org.jetbrains.kotlinx.library.api.watchdog.conventions.GenerateCheckDescriptions
+import org.jetbrains.kotlinx.library.api.watchdog.conventions.registerDiagnosticsGenerator
 
 plugins {
     kotlin("jvm")
@@ -11,13 +12,13 @@ plugins {
     id("library-api-watchdog.space-publishing-conventions")
 }
 
-val generateCheckDescriptions = tasks.register<GenerateCheckDescriptions>("generateCheckDescriptions") {
-    description = "Generates the WatchdogCheckDescriptions table of the SARIF report from the shared diagnostics.json."
-    @Suppress("UnstableApiUsage")
-    diagnostics.set(isolated.rootProject.projectDirectory.file("diagnostics.json"))
-    packageName.set("org.jetbrains.kotlinx.library.api.watchdog")
+val generateCheckDescriptions = registerDiagnosticsGenerator<GenerateCheckDescriptions>(
+    name = "generateCheckDescriptions",
+    description = "Generates the WatchdogCheckDescriptions table of the SARIF report from the shared diagnostics.json.",
+    packageName = "org.jetbrains.kotlinx.library.api.watchdog",
+    outputDirectory = "checkDescriptions/main/kotlin",
+) {
     toolVersion.set(project.version.toString())
-    outputDirectory.set(layout.buildDirectory.dir("generated/sources/checkDescriptions/main/kotlin"))
 }
 
 kotlin {

@@ -15,7 +15,7 @@ internal object ProjectReportWriter {
      * @param sarifFile the SARIF report, or null when the format is off
      */
     fun write(
-        response: Map<String, List<String>>,
+        response: FixerResponse,
         sourcesUpdated: Boolean,
         severities: Map<String, WatchdogSeverity>,
         projectPath: String,
@@ -26,41 +26,36 @@ internal object ProjectReportWriter {
         reportDataFile: File,
         logger: Logger,
     ) {
-        fun relativize(path: String): String = File(path).relativeToOrSelf(projectDirectory).path
         fun severityOf(diagnostic: String): String =
             (severities[diagnostic] ?: WatchdogSeverity.ERROR).name.lowercase()
 
-        val applied = response["exemption"].orEmpty().map { value ->
-            val (annotation, line, path) = value.split('\t', limit = 3)
-            AppliedExemptionReportEntry(annotation, "${relativize(path)}:$line")
+        val applied = response.exemptions.map { exemption ->
+            AppliedExemptionReportEntry(exemption.annotation, exemption.location(projectDirectory))
         }
         val applicable = if (sourcesUpdated) {
             emptyList()
         } else {
-            response["fixed"].orEmpty().map { value ->
-                val (diagnostic, annotation, line, path) = value.split('\t', limit = 4)
-                // An empty annotation field marks a placeholder KDoc.
+            response.fixed.map { fix ->
                 NotAppliedExemptionReportEntry(
-                    annotation = annotation.ifEmpty { null },
-                    diagnostic = diagnostic,
-                    location = "${relativize(path)}:$line",
-                    reason = if (annotation.isEmpty()) {
+                    annotation = fix.annotation,
+                    diagnostic = fix.diagnostic,
+                    location = fix.location(projectDirectory),
+                    reason = if (fix.annotation == null) {
                         "exemptExistingApi can add a placeholder KDoc."
                     } else {
                         "exemptExistingApi can apply it."
                     },
-                    severity = severityOf(diagnostic),
+                    severity = severityOf(fix.diagnostic),
                 )
             }
         }
-        val skipped = response["skipped"].orEmpty().map { value ->
-            val (diagnostic, annotation, line, path, reason) = value.split('\t', limit = 5)
+        val skipped = response.skipped.map { skip ->
             NotAppliedExemptionReportEntry(
-                annotation = annotation.ifEmpty { null },
-                diagnostic = diagnostic,
-                location = "${relativize(path)}:$line",
-                reason = reason.unescapeFixerNewlines(),
-                severity = severityOf(diagnostic),
+                annotation = skip.annotation,
+                diagnostic = skip.diagnostic,
+                location = skip.location(projectDirectory),
+                reason = skip.reason,
+                severity = severityOf(skip.diagnostic),
             )
         }
         val report = ApiWatchdogProjectReport(

@@ -19,39 +19,33 @@ public abstract class ExemptExistingApiTask : ApiWatchdogReportTask() {
     override val noCompilationWarning: String
         get() = "No main Kotlin compilation found, so there are no watchdog diagnostics to exempt."
 
-    override fun logResponse(response: Map<String, List<String>>) {
+    override fun logResponse(response: FixerResponse) {
+        val projectDirectory = projectDirectory.get().asFile
         var exemptionCount = 0
         var kdocCount = 0
-        response["fixed"].orEmpty().forEach { value ->
-            val (diagnostic, annotation, line, path) = value.split('\t', limit = 4)
-            // An empty annotation field marks a placeholder KDoc.
-            if (annotation.isEmpty()) {
+        response.fixed.forEach { fix ->
+            val location = fix.location(projectDirectory)
+            if (fix.annotation == null) {
                 kdocCount++
-                logger.lifecycle("A placeholder KDoc documents $diagnostic at ${relativize(path)}:$line")
+                logger.lifecycle("A placeholder KDoc documents ${fix.diagnostic} at $location")
             } else {
                 exemptionCount++
-                logger.lifecycle("@$annotation acknowledges $diagnostic at ${relativize(path)}:$line")
+                logger.lifecycle("@${fix.annotation} acknowledges ${fix.diagnostic} at $location")
             }
         }
-        val modifiedFiles = response["modifiedFile"].orEmpty().toSet()
-        val skipped = response["skipped"].orEmpty().map { value ->
-            val (diagnostic, _, line, path, reason) = value.split('\t', limit = 5)
-            Triple(diagnostic, "${relativize(path)}:$line", reason.unescapeFixerNewlines())
-        }
-        skipped.forEach { (diagnostic, location, reason) ->
+        response.skipped.forEach { skip ->
             logger.warn(
-                "$diagnostic at $location needs manual attention: $reason"
+                "${skip.diagnostic} at ${skip.location(projectDirectory)} needs manual attention: ${skip.reason}"
             )
         }
-
-        if (exemptionCount == 0 && kdocCount == 0 && skipped.isEmpty()) {
+        if (exemptionCount == 0 && kdocCount == 0 && response.skipped.isEmpty()) {
             logger.lifecycle("No watchdog diagnostics to exempt.")
         } else {
             logger.lifecycle(
                 "Added $exemptionCount backwards-compatibility exemption(s)" +
                         (if (kdocCount == 0) "" else " and $kdocCount placeholder KDoc(s)") +
-                        " in ${modifiedFiles.size} file(s)." +
-                        if (skipped.isEmpty()) "" else " ${skipped.size} diagnostic(s) need manual attention."
+                        " in ${response.modifiedFiles.size} file(s)." +
+                        if (response.skipped.isEmpty()) "" else " ${response.skipped.size} diagnostic(s) need manual attention."
             )
         }
     }

@@ -1,58 +1,9 @@
 package org.jetbrains.kotlinx.library.api.watchdog.conventions
 
-import groovy.json.JsonSlurper
-import org.gradle.api.DefaultTask
-import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.provider.Property
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.PathSensitive
-import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.TaskAction
+abstract class GenerateDiagnosticMessages : DiagnosticsJsonGeneratorTask() {
+    override val fileName: String get() = "WatchdogDiagnosticMessages.kt"
 
-abstract class GenerateDiagnosticMessages : DefaultTask() {
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.NONE)
-    abstract val diagnostics: RegularFileProperty
-
-    @get:Input
-    abstract val packageName: Property<String>
-
-    @get:OutputDirectory
-    abstract val outputDirectory: DirectoryProperty
-
-    @TaskAction
-    fun generate() {
-        @Suppress("UNCHECKED_CAST")
-        val root = JsonSlurper().parse(diagnostics.get().asFile) as Map<String, Any>
-        val docsBaseUrl = root["docsBaseUrl"] as String
-
-        @Suppress("UNCHECKED_CAST")
-        val entries = root["diagnostics"] as List<Map<String, Any>>
-
-        val packageName = packageName.get()
-        val outputFile = outputDirectory.get().asFile
-            .resolve(packageName.replace('.', '/'))
-            .resolve("WatchdogDiagnosticMessages.kt")
-        outputFile.parentFile.mkdirs()
-        @Suppress("UNCHECKED_CAST")
-        val sharedParameterValues = root["sharedParameterValues"] as Map<String, List<*>>? ?: emptyMap()
-
-        outputFile.writeText(buildString { appendFile(entries, sharedParameterValues, docsBaseUrl, packageName) })
-    }
-
-    private fun StringBuilder.appendFile(
-        entries: List<Map<String, Any>>,
-        sharedParameterValues: Map<String, List<*>>,
-        docsBaseUrl: String,
-        packageName: String,
-    ) {
-        appendLine("// Generated from diagnostics.json. Do not edit.")
-        appendLine()
-        appendLine("package $packageName")
-        appendLine()
+    override fun StringBuilder.appendDeclarations(diagnostics: DiagnosticsJson) {
         appendLine("/**")
         appendLine(" * Message templates of the watchdog diagnostics, generated from the shared")
         appendLine(" * `diagnostics.json` that the documentation website reads too. Templates of diagnostics")
@@ -62,16 +13,16 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
         appendLine("internal object WatchdogDiagnosticMessages {")
         appendLine("    /** Message template per diagnostic name. */")
         appendLine("    val messages: Map<String, String> = mapOf(")
-        for (entry in entries) appendEntry(entry, docsBaseUrl)
+        for (entry in diagnostics.entries) appendEntry(entry)
         appendLine("    )")
         appendLine()
         appendLine("    /** The template of [name], failing loudly when diagnostics.json does not know it. */")
         appendLine("    fun messageFor(name: String): String =")
         appendLine("        messages[name] ?: error(\"No message for the diagnostic '\$name' in diagnostics.json\")")
         appendLine()
-        appendParameterValues(entries)
+        appendParameterValues(diagnostics.entries)
         appendLine()
-        appendSharedParameterValues(sharedParameterValues)
+        appendSharedParameterValues(diagnostics.sharedParameterValues)
         appendLine()
         appendLine("    /**")
         appendLine("     * Resolves a named parameter value of [diagnostic], or a shared one, and fills its own")
@@ -87,72 +38,62 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
         appendLine("}")
     }
 
-    private fun StringBuilder.appendParameterValues(entries: List<Map<String, Any>>) {
+    private fun StringBuilder.appendParameterValues(entries: List<DiagnosticEntry>) {
         appendLine("    /** Named values used as parameters inside diagnostic message templates. */")
         appendLine("    private val parameterValues: Map<String, Map<String, String>> = mapOf(")
         for (entry in entries) {
-            @Suppress("UNCHECKED_CAST")
-            val values = entry["parameterValues"] as Map<String, List<*>>? ?: continue
-            appendLine("        \"${entry["name"]}\" to mapOf(")
+            val values = entry.parameterValues ?: continue
+            appendLine("        \"${entry.name}\" to mapOf(")
             for ((name, lines) in values) appendParameterValue(name, lines, indent = "            ")
             appendLine("        ),")
         }
         appendLine("    )")
     }
 
-    private fun StringBuilder.appendParameterValue(name: String, lines: List<*>, indent: String) {
+    private fun StringBuilder.appendParameterValue(name: String, lines: List<String>, indent: String) {
         appendLine("$indent\"$name\" to")
         val chunks = lines.joinTextLines().plainLinks().wrap()
         for ((index, chunk) in chunks.withIndex()) {
             val tail = if (index == chunks.lastIndex) "," else " +"
-            appendLine("$indent    \"${chunk.escaped()}\"$tail")
+            appendLine("$indent    \"${chunk.escapedForKotlinString()}\"$tail")
         }
     }
 
-    private fun StringBuilder.appendSharedParameterValues(values: Map<String, List<*>>) {
+    private fun StringBuilder.appendSharedParameterValues(values: Map<String, List<String>>) {
         appendLine("    /** Named values every diagnostic can use as a parameter. */")
         appendLine("    private val sharedParameterValues: Map<String, String> = mapOf(")
         for ((name, lines) in values) appendParameterValue(name, lines, indent = "        ")
         appendLine("    )")
     }
 
-    private fun StringBuilder.appendEntry(entry: Map<String, Any>, docsBaseUrl: String) {
-        val name = entry["name"] as String
-        val docsUrl = docsBaseUrl + (entry["docs"] as String)
+    private fun StringBuilder.appendEntry(entry: DiagnosticEntry) {
         val message = buildString {
-            append((entry["message"] as List<*>).joinTextLines())
-            append("\n\nSee more: ").append(docsUrl)
+            append(entry.message.joinTextLines())
+            append("\n\nSee more: ").append(entry.docsUrl)
         }.plainLinks()
         val template = if (PARAMETER.containsMatchIn(message)) message.replace("'", "''") else message
-
-        appendLine("        \"$name\" to")
+        appendLine("        \"${entry.name}\" to")
         val chunks = template.wrap()
         for ((index, chunk) in chunks.withIndex()) {
             val indent = if (index == 0) "            " else "                "
             val tail = if (index == chunks.lastIndex) "," else " +"
-            appendLine("$indent\"${chunk.escaped()}\"$tail")
+            appendLine("$indent\"${chunk.escapedForKotlinString()}\"$tail")
         }
     }
 
     /** The line rules are in the `$comment` of `diagnostics.json`. */
-    private fun List<*>.joinTextLines(): String {
-        val lines = map { it as String }
-        return buildString {
-            for ((index, line) in lines.withIndex()) {
-                if (index > 0) {
-                    val previous = lines[index - 1]
-                    val hardBreak = line.isEmpty() || previous.isEmpty() || line.isCodeLine() || previous.isCodeLine()
-                    append(if (hardBreak) '\n' else ' ')
-                }
-                append(line)
+    private fun List<String>.joinTextLines(): String = buildString {
+        for ((index, line) in this@joinTextLines.withIndex()) {
+            if (index > 0) {
+                val previous = this@joinTextLines[index - 1]
+                val hardBreak = line.isEmpty() || previous.isEmpty() || line.isCodeLine() || previous.isCodeLine()
+                append(if (hardBreak) '\n' else ' ')
             }
+            append(line)
         }
     }
 
     private fun String.isCodeLine(): Boolean = startsWith("    ")
-
-    private fun String.plainLinks(): String =
-        replace(MARKDOWN_LINK) { "${it.groupValues[1]} (${it.groupValues[2]})" }
 
     private fun String.wrap(): List<String> {
         val chunks = mutableListOf<String>()
@@ -170,12 +111,8 @@ abstract class GenerateDiagnosticMessages : DefaultTask() {
         return chunks.mapIndexed { index, text -> if (index == chunks.lastIndex) text else "$text " }
     }
 
-    private fun String.escaped(): String =
-        replace("\\", "\\\\").replace("\n", "\\n").replace("\"", "\\\"").replace("$", "\\$")
-
     private companion object {
         val PARAMETER = Regex("\\{\\d+}")
-        val MARKDOWN_LINK = Regex("\\[([^]]+)]\\(([^)]+)\\)")
         const val MAX_CHUNK_LENGTH = 88
     }
 }

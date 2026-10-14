@@ -15,8 +15,6 @@ public abstract class org/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogRepo
 	public final fun getReports ()Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogReports;
 	public abstract fun getSourceFiles ()Lorg/gradle/api/file/ConfigurableFileCollection;
 	protected abstract fun getUpdatesSources ()Z
-	protected fun logResponse (Ljava/util/Map;)V
-	protected final fun relativize (Ljava/lang/String;)Ljava/lang/String;
 	public final fun reports (Lorg/gradle/api/Action;)V
 	public final fun writeReport ()V
 }
@@ -25,7 +23,6 @@ public abstract class org/jetbrains/kotlinx/library/api/watchdog/ExemptExistingA
 	public fun <init> ()V
 	protected fun getNoCompilationWarning ()Ljava/lang/String;
 	protected fun getUpdatesSources ()Z
-	protected fun logResponse (Ljava/util/Map;)V
 }
 
 public abstract class org/jetbrains/kotlinx/library/api/watchdog/GenerateApiWatchdogReportTask : org/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogReportTask {

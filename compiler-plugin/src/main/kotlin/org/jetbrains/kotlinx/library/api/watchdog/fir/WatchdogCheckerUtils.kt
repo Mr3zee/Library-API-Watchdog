@@ -158,6 +158,18 @@ context(context: CheckerContext)
 internal fun FirDeclaration.hasAnnotationOnActualOrExpect(classId: ClassId): Boolean =
     symbol.hasAnnotationOnActualOrExpect(classId)
 
+/** Whether an enclosing class carries [classId], on the `actual` or the matched `expect`. */
+context(context: CheckerContext)
+internal fun enclosingClassHasAnnotation(classId: ClassId): Boolean =
+    context.containingDeclarations.any {
+        it is FirClassSymbol<*> && it.hasAnnotationOnActualOrExpect(classId)
+    }
+
+/** [hasAnnotationOnActualOrExpect] of the declaration or [enclosingClassHasAnnotation]. */
+context(context: CheckerContext)
+internal fun FirDeclaration.hasAnnotationOnSelfOrEnclosingClass(classId: ClassId): Boolean =
+    hasAnnotationOnActualOrExpect(classId) || enclosingClassHasAnnotation(classId)
+
 context(context: CheckerContext)
 internal fun FirFunction.reportedName(): Name? = when (this) {
     is FirConstructor -> context.containingClassSymbol?.classId?.shortClassName
@@ -280,41 +292,45 @@ internal fun FirCallableDeclaration.isHiddenFromJavaWithJvmSynthetic(): Boolean 
         return hasAnnotation(JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID, session)
     }
 
+    val jvmSynthetic = JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID
     if (isConst || hasJvmFieldAnnotation()) {
         // The backing field is the only Java entry point.
-        return backingField?.hasAnnotation(
-            JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID,
-            session,
-        ) == true || annotations.any {
-            it.useSiteTarget == AnnotationUseSiteTarget.FIELD &&
-                    it.toAnnotationClassIdSafe(session) == JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID
-        }
+        return hasFieldAnnotation(jvmSynthetic)
     }
-    return isAccessorHiddenWithJvmSynthetic(getter, AnnotationUseSiteTarget.PROPERTY_GETTER) &&
-            (!isVar || isAccessorHiddenWithJvmSynthetic(setter, AnnotationUseSiteTarget.PROPERTY_SETTER))
+    return hasAccessorAnnotation(getter, AnnotationUseSiteTarget.PROPERTY_GETTER, jvmSynthetic) &&
+            (!isVar || hasAccessorAnnotation(setter, AnnotationUseSiteTarget.PROPERTY_SETTER, jvmSynthetic))
 }
 
 /** Resolution moves the annotation to the backing field, so both carriers count. */
 context(context: CheckerContext)
 internal fun FirProperty.hasJvmFieldAnnotation(): Boolean =
     hasAnnotation(JvmStandardClassIds.Annotations.JvmField, context.session) ||
-            backingField?.hasAnnotation(JvmStandardClassIds.Annotations.JvmField, context.session) == true ||
-            annotations.any {
-                it.useSiteTarget == AnnotationUseSiteTarget.FIELD &&
-                        it.toAnnotationClassIdSafe(context.session) == JvmStandardClassIds.Annotations.JvmField
-            }
+            hasFieldAnnotation(JvmStandardClassIds.Annotations.JvmField)
 
+/** Whether the annotation is on the backing field or on the property with the `field:` target. */
 context(context: CheckerContext)
-private fun FirProperty.isAccessorHiddenWithJvmSynthetic(
+internal fun FirProperty.hasFieldAnnotation(annotationClassId: ClassId): Boolean =
+    backingField?.hasAnnotation(annotationClassId, context.session) == true ||
+            hasAnnotationWithUseSiteTarget(AnnotationUseSiteTarget.FIELD, annotationClassId)
+
+/**
+ * Whether the annotation is on [accessor] or on the property with [useSiteTarget]. Resolution
+ * moves an accessor annotation onto the accessor or keeps it on the property with the target.
+ */
+context(context: CheckerContext)
+internal fun FirProperty.hasAccessorAnnotation(
     accessor: FirPropertyAccessor?,
     useSiteTarget: AnnotationUseSiteTarget,
-): Boolean {
-    val session = context.session
-    return accessor != null && accessor.hasAnnotation(JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID, session) ||
-            annotations.any {
-                it.useSiteTarget == useSiteTarget &&
-                        it.toAnnotationClassIdSafe(session) == JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID
-            }
+    annotationClassId: ClassId,
+): Boolean = accessor?.hasAnnotation(annotationClassId, context.session) == true ||
+        hasAnnotationWithUseSiteTarget(useSiteTarget, annotationClassId)
+
+context(context: CheckerContext)
+private fun FirProperty.hasAnnotationWithUseSiteTarget(
+    useSiteTarget: AnnotationUseSiteTarget,
+    annotationClassId: ClassId,
+): Boolean = annotations.any {
+    it.useSiteTarget == useSiteTarget && it.toAnnotationClassIdSafe(context.session) == annotationClassId
 }
 
 /**

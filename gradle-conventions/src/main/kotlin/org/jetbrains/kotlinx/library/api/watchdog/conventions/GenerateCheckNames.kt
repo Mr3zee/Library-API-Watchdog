@@ -1,61 +1,20 @@
 package org.jetbrains.kotlinx.library.api.watchdog.conventions
 
-import groovy.json.JsonSlurper
-import org.gradle.api.DefaultTask
-import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.PathSensitive
-import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.Optional
 
-abstract class GenerateCheckNames : DefaultTask() {
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.NONE)
-    abstract val diagnostics: RegularFileProperty
-
-    @get:Input
-    abstract val packageName: Property<String>
-
+abstract class GenerateCheckNames : DiagnosticsJsonGeneratorTask() {
     /** `true` generates an `internal` object without the Gradle usage sample. Default `false`. */
     @get:Input
+    @get:Optional
     abstract val internalVisibility: Property<Boolean>
 
-    @get:OutputDirectory
-    abstract val outputDirectory: DirectoryProperty
+    override val fileName: String get() = "WatchdogChecks.kt"
 
-    @TaskAction
-    fun generate() {
-        @Suppress("UNCHECKED_CAST")
-        val root = JsonSlurper().parse(diagnostics.get().asFile) as Map<String, Any>
-        val docsBaseUrl = root["docsBaseUrl"] as String
-
-        @Suppress("UNCHECKED_CAST")
-        val entries = root["diagnostics"] as List<Map<String, Any>>
-
-        val packageName = packageName.get()
-        val outputFile = outputDirectory.get().asFile
-            .resolve(packageName.replace('.', '/'))
-            .resolve("WatchdogChecks.kt")
-        outputFile.parentFile.mkdirs()
+    override fun StringBuilder.appendDeclarations(diagnostics: DiagnosticsJson) {
         val internal = internalVisibility.getOrElse(false)
-        outputFile.writeText(buildString { appendFile(entries, docsBaseUrl, packageName, internal) })
-    }
-
-    private fun StringBuilder.appendFile(
-        entries: List<Map<String, Any>>,
-        docsBaseUrl: String,
-        packageName: String,
-        internal: Boolean,
-    ) {
         val visibility = if (internal) "internal" else "public"
-        appendLine("// Generated from diagnostics.json. Do not edit.")
-        appendLine()
-        appendLine("package $packageName")
-        appendLine()
         appendLine("/**")
         appendLine(" * The diagnostic names of the watchdog checks, generated from the shared `diagnostics.json`.")
         if (!internal) {
@@ -74,13 +33,10 @@ abstract class GenerateCheckNames : DefaultTask() {
         }
         appendLine(" */")
         appendLine("$visibility object WatchdogChecks {")
-        for ((index, entry) in entries.withIndex()) {
-            val name = entry["name"] as String
-            val title = entry["title"] as String
-            val docsUrl = docsBaseUrl + (entry["docs"] as String)
+        for ((index, entry) in diagnostics.entries.withIndex()) {
             if (index > 0) appendLine()
-            appendLine("    /** [$title]($docsUrl) */")
-            appendLine("    $visibility const val $name: String = \"$name\"")
+            appendLine("    /** [${entry.title}](${entry.docsUrl}) */")
+            appendLine("    $visibility const val ${entry.name}: String = \"${entry.name}\"")
         }
         appendLine("}")
     }

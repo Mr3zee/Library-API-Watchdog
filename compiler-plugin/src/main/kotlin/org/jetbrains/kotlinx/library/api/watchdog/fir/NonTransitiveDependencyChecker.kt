@@ -13,7 +13,6 @@ import org.jetbrains.kotlin.fir.caches.createCache
 import org.jetbrains.kotlin.fir.caches.firCachesFactory
 import org.jetbrains.kotlin.fir.caches.getValue
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
-import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.utils.sourceElement
 import org.jetbrains.kotlin.fir.moduleData
 import org.jetbrains.kotlin.fir.resolve.toClassSymbol
@@ -47,9 +46,8 @@ internal class NonTransitiveDependencyChecker(
     /** An exemption on an enclosing class covers every member, because a Gradle task class mentions environment types in most members. */
     context(context: CheckerContext)
     override fun isDeclarationExempt(declaration: FirDeclaration): Boolean =
-        super.isDeclarationExempt(declaration) || context.containingDeclarations.any {
-            it.hasAnnotation(WatchdogClassIds.IntentionallyNonTransitiveDependency, context.session)
-        }
+        super.isDeclarationExempt(declaration) ||
+                enclosingClassHasAnnotation(WatchdogClassIds.IntentionallyNonTransitiveDependency)
 
     context(context: CheckerContext)
     override fun ConeKotlinType.violatingClassifier(): NonTransitiveType? {

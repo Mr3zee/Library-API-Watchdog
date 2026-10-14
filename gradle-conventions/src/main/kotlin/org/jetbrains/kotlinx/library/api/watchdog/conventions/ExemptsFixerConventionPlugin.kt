@@ -7,19 +7,13 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 class ExemptsFixerConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
-            val generateCheckNames = tasks.register(
-                "generateCheckNames",
-                GenerateCheckNames::class.java,
+            val generateCheckNames = registerDiagnosticsGenerator<GenerateCheckNames>(
+                name = "generateCheckNames",
+                description = "Generates the WatchdogChecks diagnostic name constants from the shared diagnostics.json.",
+                packageName = "org.jetbrains.kotlinx.library.api.watchdog.fixer",
+                outputDirectory = "checkNames/main/kotlin",
             ) {
-                description = "Generates the WatchdogChecks diagnostic name constants from the shared diagnostics.json."
-                diagnostics.set(
-                    target.isolated.rootProject.projectDirectory.file("diagnostics.json"),
-                )
-                packageName.set("org.jetbrains.kotlinx.library.api.watchdog.fixer")
                 internalVisibility.set(true)
-                outputDirectory.set(
-                    layout.buildDirectory.dir("generated/sources/checkNames/main/kotlin"),
-                )
             }
 
             extensions.configure(KotlinMultiplatformExtension::class.java) {

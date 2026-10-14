@@ -1,6 +1,5 @@
 package org.jetbrains.kotlinx.library.api.watchdog.benchmark
 
-import java.io.File
 import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 import org.jetbrains.kotlin.cli.common.ExitCode
@@ -110,44 +109,16 @@ open class WholeCompilationBenchmark {
         return exitCode
     }
 
-    private fun buildPluginOptions(): List<String> {
-        val allConfigurable = WatchdogDiagnostics.allDiagnostics.map { it.name }
-        val enabled: Set<String>
-        val withDependencyPaths: Boolean
-        when (mode) {
-            "pluginBaseline" -> {
-                enabled = emptySet()
-                withDependencyPaths = false
-            }
-            "allCheckers" -> {
-                enabled = allConfigurable.toSet()
-                withDependencyPaths = true
-            }
-            else -> {
-                val subject = CheckerSubjects.byName[mode]
-                    ?: error("Unknown benchmark mode '$mode'. Update CheckerSubjects and the @Param list together.")
-                enabled = subject.configurableDiagnostics.toSet()
-                withDependencyPaths = subject.needsDependencyPaths
-            }
-        }
-        return buildList {
-            for (diagnostic in allConfigurable) {
-                val severity = if (diagnostic in enabled) "warning" else "none"
-                add(option("diagnosticSeverity", "$diagnostic:$severity"))
-            }
-            if (withDependencyPaths) {
-                val classpath = BenchmarkEnv.corpusClasspath
-                add(option("compileDependencyPaths", classpath.joinToString(File.pathSeparator)))
-                add(
-                    option(
-                        "transitiveDependencyPaths",
-                        classpath.filter { it.contains("kotlin-stdlib") }.joinToString(File.pathSeparator),
-                    ),
-                )
-            }
+    private fun buildPluginOptions(): List<String> = when (mode) {
+        "pluginBaseline" -> corpusPluginOptions(enabledDiagnostics = emptySet(), withDependencyPaths = false)
+        "allCheckers" -> corpusPluginOptions(
+            enabledDiagnostics = WatchdogDiagnostics.allDiagnostics.mapTo(hashSetOf()) { it.name },
+            withDependencyPaths = true,
+        )
+        else -> {
+            val subject = CheckerSubjects.byName[mode]
+                ?: error("Unknown benchmark mode '$mode'. Update CheckerSubjects and the @Param list together.")
+            corpusPluginOptions(subject.configurableDiagnostics.toSet(), subject.needsDependencyPaths)
         }
     }
-
-    private fun option(name: String, value: String): String =
-        "plugin:${BenchmarkEnv.pluginId}:$name=$value"
 }

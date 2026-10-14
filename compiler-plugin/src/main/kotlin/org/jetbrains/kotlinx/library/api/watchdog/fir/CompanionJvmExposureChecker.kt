@@ -10,13 +10,9 @@ import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirPropertyAccessor
-import org.jetbrains.kotlin.fir.declarations.hasAnnotation
-import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
 import org.jetbrains.kotlin.fir.declarations.utils.effectiveVisibility
 import org.jetbrains.kotlin.fir.declarations.utils.isCompanion
 import org.jetbrains.kotlin.fir.declarations.utils.isConst
-import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
-import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.JvmStandardClassIds
 import org.jetbrains.kotlin.name.Name
 
@@ -42,11 +38,7 @@ internal class CompanionJvmExposureChecker(
 
     context(context: CheckerContext)
     private fun FirCallableDeclaration.isExempt(): Boolean =
-        hasAnnotationOnActualOrExpect(WatchdogClassIds.IntentionallyNonStaticCompanionApi) ||
-                context.containingDeclarations.any {
-                    it is FirClassSymbol<*> &&
-                            it.hasAnnotationOnActualOrExpect(WatchdogClassIds.IntentionallyNonStaticCompanionApi)
-                }
+        hasAnnotationOnSelfOrEnclosingClass(WatchdogClassIds.IntentionallyNonStaticCompanionApi)
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun checkFunction(declaration: FirNamedFunction, outerClass: Name, companionName: Name) {
@@ -119,14 +111,4 @@ internal class CompanionJvmExposureChecker(
     ): Boolean = accessor != null && accessor.effectiveVisibility.publicApi &&
             !hasAccessorAnnotation(accessor, useSiteTarget, JvmStandardClassIds.Annotations.JvmStatic) &&
             !hasAccessorAnnotation(accessor, useSiteTarget, JvmStandardClassIds.JVM_SYNTHETIC_ANNOTATION_CLASS_ID)
-
-    /** An accessor annotation resolves onto the accessor or stays on the property with a use-site target. */
-    context(context: CheckerContext)
-    private fun FirProperty.hasAccessorAnnotation(
-        accessor: FirPropertyAccessor,
-        useSiteTarget: AnnotationUseSiteTarget,
-        annotationClassId: ClassId,
-    ): Boolean = accessor.hasAnnotation(annotationClassId, context.session) || annotations.any {
-        it.useSiteTarget == useSiteTarget && it.toAnnotationClassIdSafe(context.session) == annotationClassId
-    }
 }

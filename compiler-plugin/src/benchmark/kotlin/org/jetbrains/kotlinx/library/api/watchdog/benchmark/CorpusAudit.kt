@@ -3,7 +3,6 @@
 
 package org.jetbrains.kotlinx.library.api.watchdog.benchmark
 
-import java.io.File
 import java.nio.file.Files
 import kotlin.io.path.readLines
 import org.jetbrains.kotlin.cli.common.ExitCode
@@ -28,21 +27,11 @@ fun main(args: Array<String>) {
         val collector = ErrorSummaryMessageCollector()
         val arguments = corpusCompilerArguments(sourceRoot, outputDir).apply {
             pluginClasspaths = arrayOf(BenchmarkEnv.pluginJar)
-            pluginOptions = buildList {
-                for (diagnostic in WatchdogDiagnostics.allDiagnostics) {
-                    add("plugin:${BenchmarkEnv.pluginId}:diagnosticSeverity=${diagnostic.name}:warning")
-                }
-                val classpath = BenchmarkEnv.corpusClasspath
-                add(
-                    "plugin:${BenchmarkEnv.pluginId}:compileDependencyPaths=" +
-                        classpath.joinToString(File.pathSeparator),
-                )
-                add(
-                    "plugin:${BenchmarkEnv.pluginId}:transitiveDependencyPaths=" +
-                        classpath.filter { it.contains("kotlin-stdlib") }.joinToString(File.pathSeparator),
-                )
-                add("plugin:${BenchmarkEnv.pluginId}:diagnosticsOutputFile=${report.toAbsolutePath()}")
-            }.toTypedArray()
+            val everyDiagnostic = WatchdogDiagnostics.allDiagnostics.mapTo(hashSetOf()) { it.name }
+            pluginOptions = (
+                corpusPluginOptions(everyDiagnostic, withDependencyPaths = true) +
+                    pluginOption("diagnosticsOutputFile", report.toAbsolutePath().toString())
+                ).toTypedArray()
         }
 
         val exitCode = K2JVMCompiler().exec(collector, Services.EMPTY, arguments)
