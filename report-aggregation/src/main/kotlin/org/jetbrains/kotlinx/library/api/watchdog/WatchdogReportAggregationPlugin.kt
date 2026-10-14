@@ -11,6 +11,8 @@ import org.gradle.api.attributes.Usage
  * build. A declared project that doesn't apply the Watchdog adds no report, so the root project
  * can declare every subproject. The `reports` block of the `aggregateApiWatchdogReports` task
  * selects the formats.
+ *
+ * See [Multi-project builds](https://mr3zee.github.io/Library-API-Watchdog/report#multi-project-builds) for more details.
  */
 public class WatchdogReportAggregationPlugin : Plugin<Project> {
     override fun apply(target: Project) {

@@ -39,6 +39,11 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinTargetsContainer
 import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 
+/**
+ * The `org.jetbrains.kotlin.library.api-watchdog` plugin.
+ *
+ * See [Configuration](https://mr3zee.github.io/Library-API-Watchdog/configuration) for more details.
+ */
 @Suppress("unused")
 public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO) {
     private lateinit var collectDiagnosticsForExempts: Property<Boolean>

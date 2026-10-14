@@ -7,7 +7,7 @@ package org.jetbrains.kotlinx.library.api.watchdog
  * reason needs a `description` that names the constraint, or the compiler reports
  * `EXEMPTION_WITHOUT_EXPLANATION`.
  *
- * [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions) explains the validation.
+ * See [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions) for more details.
  */
 public enum class ExemptionReason {
     /** The shape stays for compatibility with existing users. */
@@ -475,7 +475,7 @@ public annotation class IntentionallyWrongDslMarkerTargetsForBackwardsCompatibil
  * Apply it to an annotation that marks declarations which are public for technical reasons but
  * not supported API (see [Shared internals](https://github.com/Kotlin/KEEP/blob/main/proposals/KEEP-0451-shared-internals.md)).
  *
- * [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions) has examples.
+ * See [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions) for more details.
  */
 @Target(AnnotationTarget.ANNOTATION_CLASS)
 @Retention(AnnotationRetention.BINARY)

@@ -20,7 +20,10 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecOperations
 
-/** The base of [ExemptExistingApiTask] and [GenerateApiWatchdogReportTask]. Both write the API Watchdog report. */
+/**
+ * The base of [ExemptExistingApiTask] and [GenerateApiWatchdogReportTask]. Both write the
+ * [API Watchdog report](https://mr3zee.github.io/Library-API-Watchdog/report).
+ */
 public abstract class ApiWatchdogReportTask internal constructor() : DefaultTask() {
     /** The names of the main Kotlin compile tasks. */
     @get:Input

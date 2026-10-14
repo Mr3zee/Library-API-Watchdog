@@ -12,6 +12,8 @@ import org.gradle.api.provider.SetProperty
  * The `apiWatchdog` block: the [enabled] switch and the severity of each configurable diagnostic.
  * Default severity is [WatchdogSeverity.ERROR] unless the property states another.
  *
+ * See [Configuration](https://mr3zee.github.io/Library-API-Watchdog/configuration) for more details.
+ *
  * ```kotlin
  * apiWatchdog {
  *     undocumentedPublicApi = WatchdogSeverity.WARNING
@@ -28,64 +30,145 @@ public open class WatchdogGradleExtension @Inject internal constructor(
     /** Whether the watchdog runs. Default is `true`. */
     public val enabled: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(true)
 
-    /** Severity of `OPEN_API_WITHOUT_SUBCLASS_OPT_IN`: unrestricted external subclassing. */
+    /**
+     * Severity of `OPEN_API_WITHOUT_SUBCLASS_OPT_IN`: unrestricted external subclassing.
+     *
+     * See [Open API without subclass opt-in](https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in) for more details.
+     */
     public val openApiWithoutSubclassOptIn: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `SUBCLASS_OPT_IN_WITHOUT_MARKERS`: `@SubclassOptInRequired` with no markers. */
+    /**
+     * Severity of `SUBCLASS_OPT_IN_WITHOUT_MARKERS`: `@SubclassOptInRequired` with no markers.
+     *
+     * See [Subclass opt-in without markers](https://mr3zee.github.io/Library-API-Watchdog/checks/subclass-opt-in-without-markers) for more details.
+     */
     public val subclassOptInWithoutMarkers: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `EXHAUSTIVE_PUBLIC_API`: exhaustively matchable enums and sealed hierarchies. */
+    /**
+     * Severity of `EXHAUSTIVE_PUBLIC_API`: exhaustively matchable enums and sealed hierarchies.
+     *
+     * See [Exhaustive public API](https://mr3zee.github.io/Library-API-Watchdog/checks/exhaustive-public-api) for more details.
+     */
     public val exhaustivePublicApi: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `UNDOCUMENTED_PUBLIC_API`: public declarations without KDoc. Default is [WatchdogSeverity.WARNING]. */
+    /**
+     * Severity of `UNDOCUMENTED_PUBLIC_API`: public declarations without KDoc. Default is [WatchdogSeverity.WARNING].
+     *
+     * See [Undocumented public API](https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api) for more details.
+     */
     public val undocumentedPublicApi: Property<WatchdogSeverity> = objectFactory.severityProperty(WatchdogSeverity.WARNING)
 
-    /** Severity of `FUNCTION_TYPE_ALIAS_PUBLIC_API`: type aliases that abbreviate function types. */
+    /**
+     * Severity of `FUNCTION_TYPE_ALIAS_PUBLIC_API`: type aliases that abbreviate function types.
+     *
+     * See [Function type aliases in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/function-type-alias-public-api) for more details.
+     */
     public val functionTypeAliasPublicApi: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `DATA_CLASS_PUBLIC_API`: data classes in the public API. */
+    /**
+     * Severity of `DATA_CLASS_PUBLIC_API`: data classes in the public API.
+     *
+     * See [Data classes in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/data-class-public-api) for more details.
+     */
     public val dataClassPublicApi: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `STATEFUL_CLASS_WITHOUT_EQUALS`: stateful classes without an `equals` implementation. */
+    /**
+     * Severity of `STATEFUL_CLASS_WITHOUT_EQUALS`: stateful classes without an `equals` implementation.
+     *
+     * See [Stateful classes without equals, hashCode, and toString](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string) for more details.
+     */
     public val statefulClassWithoutEquals: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `STATEFUL_CLASS_WITHOUT_HASH_CODE`: stateful classes without a `hashCode` implementation. */
+    /**
+     * Severity of `STATEFUL_CLASS_WITHOUT_HASH_CODE`: stateful classes without a `hashCode` implementation.
+     *
+     * See [Stateful classes without equals, hashCode, and toString](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string) for more details.
+     */
     public val statefulClassWithoutHashCode: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `STATEFUL_CLASS_WITHOUT_TO_STRING`: stateful classes without a `toString` implementation. */
+    /**
+     * Severity of `STATEFUL_CLASS_WITHOUT_TO_STRING`: stateful classes without a `toString` implementation.
+     *
+     * See [Stateful classes without equals, hashCode, and toString](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string) for more details.
+     */
     public val statefulClassWithoutToString: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `MUTABLE_COLLECTION_PUBLIC_API`: mutable collections and arrays in public signatures. */
+    /**
+     * Severity of `MUTABLE_COLLECTION_PUBLIC_API`: mutable collections and arrays in public signatures.
+     *
+     * See [Mutable collections in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/mutable-collection-public-api) for more details.
+     */
     public val mutableCollectionPublicApi: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `PAIR_OR_TRIPLE_PUBLIC_API`: `Pair` and `Triple` in public signatures. */
+    /**
+     * Severity of `PAIR_OR_TRIPLE_PUBLIC_API`: `Pair` and `Triple` in public signatures.
+     *
+     * See [Pair and Triple in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/pair-or-triple-public-api) for more details.
+     */
     public val pairOrTriplePublicApi: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `BOOLEAN_PARAMETER_PUBLIC_API`: Boolean parameters of public functions. */
+    /**
+     * Severity of `BOOLEAN_PARAMETER_PUBLIC_API`: Boolean parameters of public functions.
+     *
+     * See [Boolean parameters in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/boolean-parameter-public-api) for more details.
+     */
     public val booleanParameterPublicApi: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `NULLABLE_BOOLEAN_PUBLIC_API`: nullable Booleans in public signatures. */
+    /**
+     * Severity of `NULLABLE_BOOLEAN_PUBLIC_API`: nullable Booleans in public signatures.
+     *
+     * See [Nullable Booleans in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/nullable-boolean-public-api) for more details.
+     */
     public val nullableBooleanPublicApi: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `REQUIRED_PARAMETER_AFTER_OPTIONAL`: required parameters declared after optional ones. */
+    /**
+     * Severity of `REQUIRED_PARAMETER_AFTER_OPTIONAL`: required parameters declared after optional ones.
+     *
+     * See [Required parameters after optional ones](https://mr3zee.github.io/Library-API-Watchdog/checks/required-parameter-after-optional) for more details.
+     */
     public val requiredParameterAfterOptional: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS`: overloads with different positions for shared parameters. */
+    /**
+     * Severity of `INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS`: overloads with different positions for shared parameters.
+     *
+     * See [Inconsistent parameter order in overloads](https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads) for more details.
+     */
     public val inconsistentParameterOrderInOverloads: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `INLINE_FUNCTION_WITH_LOGIC`: inline functions and accessors that do more than delegate. */
+    /**
+     * Severity of `INLINE_FUNCTION_WITH_LOGIC`: inline functions and accessors that do more than delegate.
+     *
+     * See [Inline functions with logic](https://mr3zee.github.io/Library-API-Watchdog/checks/inline-function-with-logic) for more details.
+     */
     public val inlineFunctionWithLogic: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `DSL_MARKER_NOOP_TARGET`: DSL marker targets without scope-control effect. */
+    /**
+     * Severity of `DSL_MARKER_NOOP_TARGET`: DSL marker targets without scope-control effect.
+     *
+     * See [DSL markers with no-op targets](https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target) for more details.
+     */
     public val dslMarkerNoopTarget: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`: DSL markers with the default target set. */
+    /**
+     * Severity of `DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`: DSL markers with the default target set.
+     *
+     * See [DSL markers without explicit targets](https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-without-explicit-targets) for more details.
+     */
     public val dslMarkerWithoutExplicitTargets: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `DSL_MARKER_NOOP_TYPE_POSITION`: DSL markers on type positions without effect. */
+    /**
+     * Severity of `DSL_MARKER_NOOP_TYPE_POSITION`: DSL markers on type positions without effect.
+     *
+     * See [DSL markers on no-op type positions](https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-type-position) for more details.
+     */
     public val dslMarkerNoopTypePosition: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Whether `PUBLIC_TYPE_WITH_INTERNAL_API` runs. Default is `true`. A violation is always an error. */
+    /**
+     * Whether `PUBLIC_TYPE_WITH_INTERNAL_API` runs. Default is `true`. A violation is always an error.
+     *
+     * See [Public types marked as internal API](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api)
+     * for more details.
+     */
     public val publicTypeWithInternalApi: Property<Boolean> =
         objectFactory.property(Boolean::class.java).convention(true)
 
@@ -100,6 +183,8 @@ public open class WatchdogGradleExtension @Inject internal constructor(
      *     internalApiAnnotations.add("com.example.dependency.InternalApi")
      * }
      * ```
+     *
+     * See [Internal API annotations](https://mr3zee.github.io/Library-API-Watchdog/exemptions#internal-api-annotations) for more details.
      */
     public val internalApiAnnotations: SetProperty<String> =
         objectFactory.setProperty(String::class.java).convention(emptySet())
@@ -108,6 +193,9 @@ public open class WatchdogGradleExtension @Inject internal constructor(
      * Whether `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY` runs. Default is `true`. A violation is
      * always an error. To accept the types of selected dependencies, declare them on the
      * `apiWatchdogExemptNonTransitive` configuration instead.
+     *
+     * See [Public types from non-transitive dependencies](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency)
+     * and [Exempting a dependency](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency#exempting-a-dependency) for more details.
      */
     public val publicTypesMustBeTransitiveDependencies: Property<Boolean> =
         objectFactory.property(Boolean::class.java).convention(true)
@@ -117,6 +205,8 @@ public open class WatchdogGradleExtension @Inject internal constructor(
      * [ABI validation](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html)
      * nor the [Binary Compatibility Validator](https://github.com/Kotlin/binary-compatibility-validator)
      * plugin is active. Default is `true`.
+     *
+     * See [Binary compatibility validation suggestion](https://mr3zee.github.io/Library-API-Watchdog/abi-validation-suggestion) for more details.
      */
     public val suggestAbiValidation: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(true)
 
@@ -132,6 +222,8 @@ public open class WatchdogGradleExtension @Inject internal constructor(
     /**
      * The formats of the report that `generateApiWatchdogReport` and `exemptExistingApi` write,
      * see [WatchdogReports]. Both formats are on by default.
+     *
+     * See [The API Watchdog report](https://mr3zee.github.io/Library-API-Watchdog/report) for more details.
      */
     public val reports: WatchdogReports = objectFactory.newInstance(WatchdogReports::class.java)
 
@@ -161,6 +253,8 @@ public open class WatchdogGradleExtension @Inject internal constructor(
      * ```
      *
      * Call it again for another check.
+     *
+     * See [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions) for more details about when to use a rule.
      */
     public fun ignore(check: WatchdogChecks, whenAnnotatedWith: List<String>) {
         require(check in diagnosticSeverities) {
@@ -219,27 +313,53 @@ public open class WatchdogGradleExtension @Inject internal constructor(
  *     }
  * }
  * ```
+ *
+ * See [Java interop checks](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop) for more details.
  */
 public open class WatchdogJavaInteropExtension @Inject internal constructor(objectFactory: ObjectFactory) {
     /** Whether the Java-interop diagnostics run. Default is `true`. `false` wins over the severities. */
     public val enabled: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(true)
 
-    /** Severity of `MANGLED_JVM_NAME_PUBLIC_API`: value classes that mangle public JVM signatures. */
+    /**
+     * Severity of `MANGLED_JVM_NAME_PUBLIC_API`: value classes that mangle public JVM signatures.
+     *
+     * See [Mangled JVM names in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api) for more details.
+     */
     public val mangledJvmNamePublicApi: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`: Kotlin-only shapes visible to Java. */
+    /**
+     * Severity of `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`: Kotlin-only shapes visible to Java.
+     *
+     * See [Kotlin-only API without JvmSynthetic](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic) for more details.
+     */
     public val kotlinOnlyApiWithoutJvmSynthetic: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `COMPANION_API_WITHOUT_JVM_STATIC`: companion functions Java reaches through the instance. */
+    /**
+     * Severity of `COMPANION_API_WITHOUT_JVM_STATIC`: companion functions Java reaches through the instance.
+     *
+     * See [Companion function without JvmStatic](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-api-without-jvm-static) for more details.
+     */
     public val companionApiWithoutJvmStatic: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS`: non-static companion property accessors. */
+    /**
+     * Severity of `COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS`: non-static companion property accessors.
+     *
+     * See [Companion property without static access](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-property-without-static-access) for more details.
+     */
     public val companionPropertyWithoutStaticAccess: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `TOP_LEVEL_API_WITHOUT_JVM_NAME`: file facades that show the file name to Java. */
+    /**
+     * Severity of `TOP_LEVEL_API_WITHOUT_JVM_NAME`: file facades that show the file name to Java.
+     *
+     * See [Top-level API without JvmName](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/top-level-api-without-jvm-name) for more details.
+     */
     public val topLevelApiWithoutJvmName: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS`: defaults that don't exist for Java callers. */
+    /**
+     * Severity of `DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS`: defaults that don't exist for Java callers.
+     *
+     * See [Default parameters without JvmOverloads](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/default-parameters-without-jvm-overloads) for more details.
+     */
     public val defaultParametersWithoutJvmOverloads: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
     internal fun effectiveSeverity(

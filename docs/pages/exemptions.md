@@ -2,23 +2,20 @@
 
 Four mechanisms exclude a declaration from a check while the check stays enabled for the project:
 
-- An [`@Intentionally*` annotation](#exempting-a-single-declaration) exempts one declaration
-  from one check.
-- A [dependency exemption](#exempting-a-dependency) in the build script exempts every use of a
-  dependency's types from [Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md).
-- An [internal API annotation](#internal-api-annotations), such as `@InternalMyLibraryApi`,
-  excludes a declaration from every public API check. Use it when a declaration is public only for
-  technical reasons and the library gives no compatibility guarantee for it.
-- An [annotation ignore rule](./configuration.md#annotation-ignore-rules) in the `apiWatchdog`
-  extension skips one configurable check on every declaration with a given annotation. Use it when
-  the annotation already guarantees the condition that the check tests. An example is a code
-  generator that adds `equals` and `hashCode` to every annotated class.
+| Mechanism                                           | Excludes                                              | From                       |
+|-----------------------------------------------------|-------------------------------------------------------|----------------------------|
+| [Exemption annotation](#exemption-annotations)      | One declaration                                       | One check                  |
+| [Dependency exemption](#dependency-exemptions)      | Every use of a dependency's types in the module       | One check                  |
+| [Internal API annotation](#internal-api-annotations) | One declaration and the declarations nested in it     | Every public API check     |
+| [Annotation ignore rule](#annotation-ignore-rules)  | Every declaration with a given annotation             | One configurable check     |
 
-## Exempting a single declaration
+## Exemption annotations
+
+An `@Intentionally*` annotation exempts one declaration from one check. Use it when the
+declaration has a reason to break the rule of the check, and state the reason on the annotation.
 
 The "Exemption" section of each check page names the exemption annotation
-([example for data classes](./checks/data-class-public-api.md#exemption)). The annotation silences
-that check on the annotated declaration.
+([example for data classes](./checks/data-class-public-api.md#exemption)).
 
 Every `@Intentionally*` annotation has two parameters:
 
@@ -90,11 +87,13 @@ exemption. Its `description` is optional.
 | `@IntentionallyNonTransitiveDependency`                        | [Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md)                                                                                                     |
 | `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` | [DSL markers with no-op targets](./checks/special/dsl-marker-noop-target.md) and [DSL markers without explicit targets](./checks/special/dsl-marker-without-explicit-targets.md)                                    |
 
-## Exempting a dependency
+## Dependency exemptions
 
-[Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md)
-has a second exemption. A dependency declared on the `apiWatchdogExemptNonTransitive` configuration
-is exempt in the whole module:
+A dependency exemption exempts every use of a dependency's types in the module from
+[Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md).
+Use it instead of `@IntentionallyNonTransitiveDependency` on each declaration when the whole module
+exposes the dependency's types. Declare the dependency on the `apiWatchdogExemptNonTransitive`
+configuration:
 
 ```kotlin build.gradle.kts
 dependencies {
@@ -109,9 +108,11 @@ on the check page describes the configuration.
 
 ## Internal API annotations
 
-Some declarations are public only because the library's own structure needs it, for example
-internals that several modules share. Instead of an exemption on each of them, annotate the
-library's internal API annotation with `@InternalAnnotationMarker`:
+An internal API annotation, such as `@InternalMyLibraryApi`, excludes a declaration from every
+public API check. Use it when a declaration is public only for technical reasons and the library
+gives no compatibility guarantee for it.
+
+Annotate the library's internal API annotation with `@InternalAnnotationMarker`:
 
 ```kotlin
 // !hide-focused
@@ -125,14 +126,16 @@ public class ReflectionHelper
 ```
 
 The public API checks skip every declaration with the marked annotation and every declaration
-nested in it. Two kinds of checks still run there, because they check every visibility:
-[Exemptions without explanation](./checks/special/exemption-without-explanation.md) and the DSL
-marker checks.
+nested in it. Three checks still run there, because they check every visibility:
+- [Exemptions without explanation](./checks/special/exemption-without-explanation.md),
+- [DSL markers with no-op targets](./checks/special/dsl-marker-noop-target.md), and
+- [DSL markers without explicit targets](./checks/special/dsl-marker-without-explicit-targets.md).
 
 The marker annotation class itself is public API and stays watched.
 
+A public declaration without the annotation must not use an internal API type in its signature.
 [Public types marked as internal API](./checks/special/public-type-with-internal-api.md) reports
-a supported public signature that exposes an internal API type.
+the declaration as an error.
 
 An annotation class from a dependency can't carry `@InternalAnnotationMarker`. List its fully
 qualified name in `internalApiAnnotations` instead. The plugin then treats it like a marked
@@ -144,7 +147,25 @@ apiWatchdog {
 }
 ```
 
-[Without Gradle](./configuration.md#without-gradle) gives the matching compiler option.
+See [Without Gradle](./configuration.md#without-gradle) for more details about the compiler option.
+
+## Annotation ignore rules
+
+An annotation ignore rule skips one check on every declaration that carries a given annotation.
+Use it when every annotated declaration already satisfies the check.
+
+```kotlin build.gradle.kts
+import org.jetbrains.kotlinx.library.api.watchdog.WatchdogChecks
+
+apiWatchdog {
+    ignore(
+        WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS,
+        whenAnnotatedWith = listOf("com.example.GeneratedValueMembers"),
+    )
+}
+```
+
+A rule works for configurable checks only, not for always-error checks.
 
 ## The annotations artifact
 

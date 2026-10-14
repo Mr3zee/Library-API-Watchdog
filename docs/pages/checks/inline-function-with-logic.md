@@ -278,7 +278,7 @@ public inline fun <R> once(block: () -> R): R {
 }
 ```
 
-See [Lambda parameters and suspend callers](#lambda-parameters-and-suspend-callers) for more details on this case.
+See [Lambda parameters and suspend callers](#lambda-parameters-and-suspend-callers) for more details.
 
 ### A lambda literal with a thin body 
 

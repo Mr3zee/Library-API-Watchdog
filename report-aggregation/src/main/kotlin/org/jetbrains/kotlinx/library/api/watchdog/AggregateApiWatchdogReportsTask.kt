@@ -10,7 +10,11 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 
-/** Combines the API Watchdog reports of the projects declared in `apiWatchdogReports`. */
+/**
+ * Combines the API Watchdog reports of the projects declared in `apiWatchdogReports`.
+ *
+ * See [Multi-project builds](https://mr3zee.github.io/Library-API-Watchdog/report#multi-project-builds) for more details.
+ */
 @CacheableTask
 public abstract class AggregateApiWatchdogReportsTask internal constructor() : DefaultTask() {
     /** The project reports to combine. */

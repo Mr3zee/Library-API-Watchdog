@@ -68,7 +68,7 @@ apiWatchdog {
     publicTypesMustBeTransitiveDependencies = true
     // !link[/publicTypeWithInternalApi/] /checks/special/public-type-with-internal-api
     publicTypeWithInternalApi = true
-    // !link[/internalApiAnnotations/] /configuration#internal-api-annotations-from-dependencies
+    // !link[/internalApiAnnotations/] /configuration#internal-api-annotations
     internalApiAnnotations.add("com.example.dependency.InternalDependencyApi")
     // !link[/ignore/] /configuration#annotation-ignore-rules
     ignore(WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS, whenAnnotatedWith = listOf("com.example.GeneratedValueMembers"))
@@ -169,8 +169,8 @@ apiWatchdog {
 }
 ```
 
-`ignore` doesn't work for always-error checks. [Exemptions and internal API](./exemptions.md) states
-when to use a rule.
+`ignore` doesn't work for always-error checks. See [Exemptions and internal API](./exemptions.md)
+for more details about when to use a rule.
 
 ## Internal API annotations
 
@@ -261,8 +261,9 @@ Each configurable check, its property, and its diagnostic name:
 
 These properties are in the `javaInterop { }` block. The checks run only in JVM compilations.
 `javaInterop.enabled` (default `true`) is one switch for all six: `false` turns every one off,
-whatever its own severity. [Java interop checks](./checks/java-interop/java-interop.md) describes
-the group.
+whatever its own severity. 
+
+See [Java interop checks](./checks/java-interop/java-interop.md) for more details.
 
 | Check                                                                                                         | Property                               | Diagnostic                                  |
 |---------------------------------------------------------------------------------------------------------------|----------------------------------------|---------------------------------------------|

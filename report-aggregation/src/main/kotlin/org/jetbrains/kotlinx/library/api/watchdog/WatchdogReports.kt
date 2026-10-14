@@ -12,7 +12,7 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 
 /**
- * The report formats of the API Watchdog tasks. Each format has a switch and a file:
+ * The formats of the [API Watchdog report](https://mr3zee.github.io/Library-API-Watchdog/report). Each format has a switch and a file:
  *
  * ```kotlin
  * apiWatchdog {

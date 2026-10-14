@@ -4,8 +4,9 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.UntrackedTask
 
 /**
- * The `generateApiWatchdogReport` task. It writes the API Watchdog report of the project: the
- * applied `@Intentionally*` annotations and the diagnostics without one. It changes no source.
+ * The `generateApiWatchdogReport` task. It writes the [API Watchdog report](https://mr3zee.github.io/Library-API-Watchdog/report)
+ * of the project: the applied `@Intentionally*` annotations and the diagnostics without one.
+ * It changes no source.
  */
 @UntrackedTask(because = "Reads the diagnostic reports that the Kotlin compile tasks write")
 public abstract class GenerateApiWatchdogReportTask internal constructor() : ApiWatchdogReportTask() {

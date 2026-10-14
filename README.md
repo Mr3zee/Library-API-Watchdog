@@ -71,7 +71,7 @@ apiWatchdog {
 }
 ```
 
-[Configuration](https://mr3zee.github.io/Library-API-Watchdog/configuration) lists every option
+See [Configuration](https://mr3zee.github.io/Library-API-Watchdog/configuration) for more details about every option
 and the compiler flags for a build without Gradle.
 
 ## Exemptions
@@ -144,8 +144,7 @@ dependencies {
 ./gradlew aggregateApiWatchdogReports
 ```
 
-[The API Watchdog report](https://mr3zee.github.io/Library-API-Watchdog/report) describes the
-report.
+See [The API Watchdog report](https://mr3zee.github.io/Library-API-Watchdog/report) for more details.
 
 ## Checks
 
@@ -285,5 +284,4 @@ Modules:
   projects. Plugin id `org.jetbrains.kotlin.library.api-watchdog-report-aggregation`.
 
 The documentation site is a [Docusaurus](https://docusaurus.io/) project in [docs](docs), built by
-[docs.yml](.github/workflows/docs.yml). [docs/authoring.md](docs/authoring.md) has the page
-template and the rules.
+[docs.yml](.github/workflows/docs.yml). See [docs/authoring.md](docs/authoring.md) for more details.
