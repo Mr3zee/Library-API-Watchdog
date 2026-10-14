@@ -92,7 +92,7 @@ class DocsExamplesTest {
     }
 
     private fun documentationSamples(): List<DocumentationSample> {
-        val docs = findRepositoryRoot().resolve("docs/docs")
+        val docs = findRepositoryRoot().resolve("docs/pages")
         var index = 0
         return docs.walkTopDown()
             .filter { it.isFile && it.extension == "md" }
@@ -137,7 +137,7 @@ class DocsExamplesTest {
     }
 
     private fun findRepositoryRoot(): File = generateSequence(File(System.getProperty("user.dir"))) { it.parentFile }
-        .first { it.resolve("docs/docs").isDirectory && it.resolve("settings.gradle.kts").isFile }
+        .first { it.resolve("docs/pages").isDirectory && it.resolve("settings.gradle.kts").isFile }
 
     private data class CodeBlock(val line: Int, val code: String)
 

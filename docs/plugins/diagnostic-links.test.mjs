@@ -7,7 +7,7 @@ import {fileURLToPath} from 'node:url';
 import {diagnostics} from './diagnostics.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const docsDirectory = path.resolve(here, '../docs');
+const docsDirectory = path.resolve(here, '../pages');
 
 test('every diagnostic name outside its own page or a code block has a check-page link', () => {
   const failures = [];

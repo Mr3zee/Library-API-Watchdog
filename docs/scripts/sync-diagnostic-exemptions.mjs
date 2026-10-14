@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repositoryDirectory = path.resolve(here, '../..');
-const docsDirectory = path.join(repositoryDirectory, 'docs/docs');
+const docsDirectory = path.join(repositoryDirectory, 'docs/pages');
 const diagnosticsFile = path.join(repositoryDirectory, 'diagnostics.json');
 const checkOnly = process.argv.includes('--check');
 

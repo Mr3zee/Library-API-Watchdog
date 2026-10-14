@@ -31,7 +31,7 @@ const config: Config = {
       'classic',
       {
         docs: {
-          path: 'docs',
+          path: 'pages',
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',
           editUrl: `${variables['repo-tree-path'].replace('/tree/', '/edit/')}/docs/`,

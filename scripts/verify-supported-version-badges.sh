@@ -3,7 +3,7 @@
 set -euo pipefail
 
 readonly version_catalog_file='gradle/libs.versions.toml'
-readonly badge_files=('README.md' 'docs/docs/overview.md')
+readonly badge_files=('README.md' 'docs/pages/overview.md')
 
 read_version() {
   local version_name="$1"

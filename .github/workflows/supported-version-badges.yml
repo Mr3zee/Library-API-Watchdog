@@ -7,14 +7,14 @@ on:
     paths:
       - 'gradle/libs.versions.toml'
       - 'README.md'
-      - 'docs/docs/overview.md'
+      - 'docs/pages/overview.md'
       - 'scripts/verify-supported-version-badges.sh'
       - '.github/workflows/supported-version-badges.yml'
   pull_request:
     paths:
       - 'gradle/libs.versions.toml'
       - 'README.md'
-      - 'docs/docs/overview.md'
+      - 'docs/pages/overview.md'
       - 'scripts/verify-supported-version-badges.sh'
       - '.github/workflows/supported-version-badges.yml'
 

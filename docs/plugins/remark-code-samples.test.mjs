@@ -5,7 +5,7 @@ import test from 'node:test';
 import {fileURLToPath} from 'node:url';
 import {remarkCodeSamples} from './remark-code-samples.mjs';
 
-const docsDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../docs');
+const docsDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../pages');
 
 test('validates diagnostic annotations in every documentation code sample', () => {
   for (const file of markdownFiles(docsDirectory)) {

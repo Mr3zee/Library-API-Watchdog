@@ -5,7 +5,7 @@ import test from 'node:test';
 import {fileURLToPath} from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const overview = fs.readFileSync(path.resolve(here, '../docs/overview.md'), 'utf8');
+const overview = fs.readFileSync(path.resolve(here, '../pages/overview.md'), 'utf8');
 const readme = fs.readFileSync(path.resolve(here, '../../README.md'), 'utf8');
 
 const sectionPairs = [
@@ -23,7 +23,7 @@ test('README check order and descriptions match the docs overview', () => {
     assert.deepEqual(
       actual,
       expected,
-      `README section "${readmeHeading}" must match docs/docs/overview.md`,
+      `README section "${readmeHeading}" must match docs/pages/overview.md`,
     );
   }
 });

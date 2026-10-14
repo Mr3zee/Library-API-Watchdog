@@ -4,7 +4,7 @@ set -euo pipefail
 
 readonly properties_file='gradle.properties'
 readonly version_catalog_file='gradle/libs.versions.toml'
-readonly docs_prefix='docs/docs/'
+readonly docs_prefix='docs/pages/'
 readonly docs_version_template='{{libraryApiWatchdogVersion}}'
 readonly kotlin_version_template='{{kotlinVersion}}'
 readonly plugin_usage_pattern='kotlin\("library\.api-watchdog(-report-aggregation)?"\)[[:space:]]+version[[:space:]]+"[^"]+"'
