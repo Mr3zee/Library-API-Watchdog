@@ -245,7 +245,9 @@ class DocsExamplesTest {
         /** The 1-based rendered line of each line of [code], or null for a Code Hike comment. */
         private val renderedLineOf: List<Int?> = buildList {
             var next = 1
-            for (line in lines) add(if (line.isCodeHikeComment()) null else next++)
+            for (line in lines) {
+                add(if (line.isCodeHikeComment()) null else next++)
+            }
         }
 
         private val renderedLines: List<String> = lines.filterNot { it.isCodeHikeComment() }

@@ -468,10 +468,50 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun `custom JVM compilation is fixed and test-named compilation isn't`() {
+    fun `custom JVM compilations have no explicit API mode and aren't fixed`() {
         val project = jvmProject {
             buildScript(
                 """
+                    sourceSets.create("extra")
+                    kotlin.target.compilations.create("benchmark")
+                    kotlin.target.compilations.create("integrationTest") {
+                        associateWith(kotlin.target.compilations.getByName("main"))
+                    }
+                """
+            )
+            source(openClass("MainApi"), "mainApi")
+            source(openClass("ExtraApi"), "extraApi", sourceSet = "extra")
+            source(openClass("BenchmarkApi"), "benchmarkApi", sourceSet = "benchmark")
+            source(openClass("IntegrationHelper"), "integrationHelper", sourceSet = "integrationTest")
+        }
+        val customFiles = listOf(
+            "src/extra/kotlin/test/extraApi.kt",
+            "src/benchmark/kotlin/test/benchmarkApi.kt",
+            "src/integrationTest/kotlin/test/integrationHelper.kt",
+        ).map(project::file)
+        val customTexts = customFiles.map { it.readText() }
+
+        val result = project.build(EXEMPT_TASK)
+
+        result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+        result.assertTaskOutcome(":compileKotlin", SUCCESS)
+        result.assertTaskOutcome(":compileExtraKotlin", null)
+        result.assertTaskOutcome(":compileBenchmarkKotlin", null)
+        result.assertTaskOutcome(":compileIntegrationTestKotlin", null)
+        result.assertOutputHas("1 backwards-compatibility exemption(s) in 1 file(s)")
+        project.assertExempted("src/main/kotlin/test/mainApi.kt", "MainApi")
+        assertEquals(customTexts, customFiles.map { it.readText() })
+
+        project.build("compileExtraKotlin", "compileBenchmarkKotlin").assertNoWatchdogDiagnostics()
+    }
+
+    @Test
+    fun `raw explicit API flag makes custom JVM compilations fixed`() {
+        val project = jvmProject {
+            explicitApi = false
+            buildScript(
+                """
+                    kotlin { compilerOptions.freeCompilerArgs.add("-Xexplicit-api=strict") }
                     sourceSets.create("extra")
                     kotlin.target.compilations.create("integrationTest") {
                         associateWith(kotlin.target.compilations.getByName("main"))
@@ -496,16 +536,21 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun `custom multiplatform compilation is fixed`() {
+    fun `custom multiplatform compilation has no explicit API mode and isn't fixed`() {
         val project = kmpProject("jvm { compilations.create(\"extra\") }") {
+            source(openClass("SharedApi"), "sharedApi")
             source(openClass("ExtraApi"), "extraApi", sourceSet = "jvmExtra")
         }
+        val extraFile = project.file("src/jvmExtra/kotlin/test/extraApi.kt")
+        val extraText = extraFile.readText()
 
         val result = project.build(EXEMPT_TASK)
 
         result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
-        result.assertTaskOutcome(":compileExtraKotlinJvm", SUCCESS)
-        project.assertExempted("src/jvmExtra/kotlin/test/extraApi.kt", "ExtraApi")
+        result.assertTaskOutcome(":compileKotlinJvm", SUCCESS)
+        result.assertTaskOutcome(":compileExtraKotlinJvm", null)
+        project.assertExempted("src/commonMain/kotlin/test/sharedApi.kt", "SharedApi")
+        assertEquals(extraText, extraFile.readText())
 
         project.build("compileExtraKotlinJvm").assertNoWatchdogDiagnostics()
     }
@@ -514,16 +559,19 @@ class ExemptExistingApiTest {
     fun `report task covers the same compilations as the exempt task`() {
         val project = jvmProject {
             buildScript("""sourceSets.create("extra")""")
+            source(openClass("MainApi"), "mainApi")
             source(openClass("ExtraApi"), "extraApi", sourceSet = "extra")
         }
 
         val result = project.build(REPORT_TASK)
 
         result.assertTaskOutcome(":$REPORT_TASK", SUCCESS)
-        result.assertTaskOutcome(":compileExtraKotlin", SUCCESS)
+        result.assertTaskOutcome(":compileKotlin", SUCCESS)
+        result.assertTaskOutcome(":compileExtraKotlin", null)
         val report = project.report().readText()
         assertContains(report, "Not applied")
-        assertContains(report, "extraApi.kt:")
+        assertContains(report, "mainApi.kt:")
+        assertFalse(report.contains("extraApi.kt:"))
     }
 
     @Test
@@ -714,7 +762,7 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun `test fixtures are fixed`() {
+    fun `test fixtures have no explicit API mode and aren't fixed`() {
         val project = jvmProject {
             plugins(
                 KotlinPlugins.jvm("$TEST_COMPILER_VERSION"),
@@ -724,34 +772,18 @@ class ExemptExistingApiTest {
             buildScript("kotlin { explicitApi() }")
             source(openClass("MainApi"), "mainApi")
             source(openClass("Fixture"), "fixture", sourceSet = "testFixtures")
-            source(openClass("TestHelper"), "testHelper", sourceSet = "test")
         }
-        val testFile = project.file("src/test/kotlin/test/testHelper.kt")
-        val testText = testFile.readText()
+        val fixtureFile = project.file("src/testFixtures/kotlin/test/fixture.kt")
+        val fixtureText = fixtureFile.readText()
 
         val result = project.build(EXEMPT_TASK)
 
         result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
-        result.assertTaskOutcome(":compileTestFixturesKotlin", SUCCESS)
-        result.assertTaskOutcome(":compileTestKotlin", null)
-        result.assertOutputHas("2 backwards-compatibility exemption(s) in 2 file(s)")
+        result.assertTaskOutcome(":compileTestFixturesKotlin", null)
         project.assertExempted("src/main/kotlin/test/mainApi.kt", "MainApi")
-        project.assertExempted("src/testFixtures/kotlin/test/fixture.kt", "Fixture")
-        assertEquals(testText, testFile.readText())
-    }
+        assertEquals(fixtureText, fixtureFile.readText())
 
-    @Test
-    fun `JVM compilation without Java source set is fixed`() {
-        val project = jvmProject {
-            buildScript("""kotlin.target.compilations.create("benchmark")""")
-            source(openClass("BenchmarkApi"), "benchmarkApi", sourceSet = "benchmark")
-        }
-
-        val result = project.build(EXEMPT_TASK)
-
-        result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
-        result.assertTaskOutcome(":compileBenchmarkKotlin", SUCCESS)
-        project.assertExempted("src/benchmark/kotlin/test/benchmarkApi.kt", "BenchmarkApi")
+        project.build("compileTestFixturesKotlin").assertNoWatchdogDiagnostics()
     }
 
     private fun openClass(name: String): String = "/** An existing open API. */\npublic open class $name"

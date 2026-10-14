@@ -50,6 +50,8 @@ The checks run only in modules with explicit API mode. Without it the plugin reg
 and the Gradle plugin reports a warning.
 
 The Gradle plugin registers the compiler plugin for every compilation except test compilations.
+`explicitApi()` reaches the `main` compilations, the metadata compilations, and the Android variants.
+A custom compilation such as `testFixtures` has no checks without the `-Xexplicit-api` flag.
 It also adds the dependency with the `@Intentionally*` exemption annotations.
 
 Every check reports a compilation error by default, except `UNDOCUMENTED_PUBLIC_API`, which

@@ -213,9 +213,10 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         kotlinCompilation: KotlinCompilation<*>
     ): Provider<List<SubpluginOption>> {
         val extension = extensions.getByType(WatchdogGradleExtension::class.java)
-        // Every compilation except tests feeds the report and exempt tasks. An Android library has
-        // `debug` and `release` and no `main`, and both compile the main source set.
-        val feedsReport = !kotlinCompilation.isTestCompilation()
+        // Only the compilations the checks run in, so the exempt task annotates nothing that no
+        // build reports.
+        val feedsReport = !kotlinCompilation.isTestCompilation() &&
+                (kotlinCompilation.hasExplicitApiFromExtension() || hasRawExplicitApiFlag())
         val collect = collectDiagnosticsForExempts.map { it && feedsReport }
         val compileDependencies = configurations.named(kotlinCompilation.compileDependencyConfigurationName)
         val transitiveDependencies = transitiveDependenciesFor(kotlinCompilation, compileDependencies)
@@ -560,11 +561,24 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             val kotlin = extensions.findByName("kotlin") as? KotlinBaseExtension ?: return false
             val mode = kotlin.explicitApi
             if (mode != null && mode != ExplicitApiMode.Disabled) return true
-            val compilerOptions = kotlin as? HasConfigurableKotlinCompilerOptions<*> ?: return false
-            return compilerOptions.compilerOptions.freeCompilerArgs.orNull.orEmpty().any {
+            return hasRawExplicitApiFlag()
+        }
+
+        private fun Project.hasRawExplicitApiFlag(): Boolean {
+            val kotlin = extensions.findByName("kotlin") as? HasConfigurableKotlinCompilerOptions<*> ?: return false
+            return kotlin.compilerOptions.freeCompilerArgs.orNull.orEmpty().any {
                 it.startsWith("-Xexplicit-api=") && it != "-Xexplicit-api=disable"
             }
         }
+
+        /**
+         * The rule of `AbstractKotlinCompileConfig.explicitApiMode()` in KGP. Every other
+         * compilation, such as `testFixtures`, gets `ExplicitApiMode.Disabled`.
+         */
+        private fun KotlinCompilation<*>.hasExplicitApiFromExtension(): Boolean =
+            name == KotlinCompilation.MAIN_COMPILATION_NAME ||
+                    target.platformType == KotlinPlatformType.common ||
+                    target.platformType == KotlinPlatformType.androidJvm
 
         private fun Project.hasAbiValidation(): Boolean {
             if (pluginManager.hasPlugin(BCV_PLUGIN_ID)) return true

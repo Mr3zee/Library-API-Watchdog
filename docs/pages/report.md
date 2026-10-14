@@ -11,11 +11,13 @@ Two tasks write it:
 ./gradlew generateApiWatchdogReport
 ```
 
-Both tasks compile every compilation except tests in collection mode:
+Both tasks compile the compilations [the checks run in](./configuration.md#apply-the-gradle-plugin) in
+collection mode, except test compilations:
 
 - The `main` compilation of every target.
 - Every enabled build variant of an Android library, with its product flavors and custom build types.
-- Every custom compilation whose name doesn't end with `Test`.
+- A custom compilation whose name doesn't end with `Test`, only with the `-Xexplicit-api` compiler
+  flag.
 
 A declaration that two compilations report gets one row.
 [Collection mode](./existing-libs.md#collection-mode) lists what collection mode changes.
