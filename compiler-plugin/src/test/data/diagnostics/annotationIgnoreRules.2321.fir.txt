@@ -1,8 +1,8 @@
 FILE: annotation.kt
     package foo.bar
 
-    @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FILE|)) public final annotation class GeneratedEquals : R|kotlin/Annotation| {
-        public constructor(): R|foo/bar/GeneratedEquals| {
+    @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FILE|)) public final annotation class Generated : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/Generated| {
             super<R|kotlin/Any|>()
         }
 
@@ -10,8 +10,8 @@ FILE: annotation.kt
 FILE: classes.kt
     package foo.bar
 
-    @R|foo/bar/GeneratedEquals|() public final class Generated : R|kotlin/Any| {
-        public constructor(value: R|kotlin/Int|): R|foo/bar/Generated| {
+    @R|foo/bar/Generated|() public final class GeneratedState : R|kotlin/Any| {
+        public constructor(value: R|kotlin/Int|): R|foo/bar/GeneratedState| {
             super<R|kotlin/Any|>()
         }
 
@@ -19,7 +19,7 @@ FILE: classes.kt
             public get(): R|kotlin/Int|
 
     }
-    @R|foo/bar/GeneratedEquals|() public final class Outer : R|kotlin/Any| {
+    @R|foo/bar/Generated|() public final class Outer : R|kotlin/Any| {
         public constructor(value: R|kotlin/Int|): R|foo/bar/Outer| {
             super<R|kotlin/Any|>()
         }
@@ -56,7 +56,7 @@ FILE: classes.kt
         public final val value: R|kotlin/Int| = R|<local>/value|
             public get(): R|kotlin/Int|
 
-        @R|foo/bar/GeneratedEquals|() public final class Nested : R|kotlin/Any| {
+        @R|foo/bar/Generated|() public final class Nested : R|kotlin/Any| {
             public constructor(value: R|kotlin/Int|): R|foo/bar/Plain.Nested| {
                 super<R|kotlin/Any|>()
             }
@@ -67,7 +67,7 @@ FILE: classes.kt
         }
 
     }
-    @R|foo/bar/GeneratedEquals|() public open class OpenWithSecondaryConstructor : R|kotlin/Any| {
+    @R|foo/bar/Generated|() public open class OpenWithSecondaryConstructor : R|kotlin/Any| {
         private constructor(): R|foo/bar/OpenWithSecondaryConstructor| {
             super<R|kotlin/Any|>()
         }
@@ -87,14 +87,52 @@ FILE: classes.kt
         }
 
     }
+FILE: enclosingClass.kt
+    package foo.bar
+
+    @R|foo/bar/Generated|() public final class KotlinOnlyHolder : R|kotlin/Any| {
+        public constructor(): R|foo/bar/KotlinOnlyHolder| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final suspend fun covered(): R|kotlin/Int| {
+            ^covered Int(0)
+        }
+
+        public final class Nested : R|kotlin/Any| {
+            public constructor(): R|foo/bar/KotlinOnlyHolder.Nested| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final suspend fun coveredDeeper(): R|kotlin/Int| {
+                ^coveredDeeper Int(0)
+            }
+
+        }
+
+    }
+    public final class PlainHolder : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PlainHolder| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final suspend fun reported(): R|kotlin/Int| {
+            ^reported Int(0)
+        }
+
+        @R|foo/bar/Generated|() public final suspend fun covered(): R|kotlin/Int| {
+            ^covered Int(0)
+        }
+
+    }
 FILE: annotatedFunction.kt
     package foo.bar
 
-    @R|foo/bar/GeneratedEquals|() public final fun annotatedTopLevel(): R|kotlin/Int| {
+    @R|foo/bar/Generated|() public final fun annotatedTopLevel(): R|kotlin/Int| {
         ^annotatedTopLevel Int(0)
     }
 FILE: annotatedFile.kt
-    @FILE:R|foo/bar/GeneratedEquals|()
+    @FILE:R|foo/bar/Generated|()
     package foo.bar
 
     public final fun fileAnnotated(): R|kotlin/Int| {

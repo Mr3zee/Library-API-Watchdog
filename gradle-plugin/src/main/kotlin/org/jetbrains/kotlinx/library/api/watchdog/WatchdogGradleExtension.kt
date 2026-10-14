@@ -142,6 +142,7 @@ public open class WatchdogGradleExtension @Inject internal constructor(
 
     /**
      * Ignores [check] on a declaration that carries one of the [whenAnnotatedWith] annotations.
+     * The rule applies where the `@Intentionally*` annotation of the check applies, an enclosing.
      * [check] must have a severity property in this block or in [javaInterop]. An always-error
      * diagnostic has no severity property, so `ignore` rejects it. An annotation is its fully
      * qualified class name:

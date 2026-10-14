@@ -40,11 +40,14 @@ enum class WatchdogSeverity {
 
 /**
  * A diagnostic with a severity chosen for each compilation. A factory has a fixed severity, so the
- * diagnostic has one factory for each severity under the same name.
+ * diagnostic has one factory for each severity under the same name. [exemptionCoversEnclosingClass]
+ * is `true` when the exemption annotation on a class covers every member, and an annotation
+ * ignore rule has the same scope.
  */
 class ConfigurableWatchdogDiagnostic<out F : AbstractKtDiagnosticFactory>(
     val error: F,
     val warning: F,
+    val exemptionCoversEnclosingClass: Boolean,
 ) {
     val name: String get() = error.name
 
@@ -128,17 +131,18 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     val INLINE_FUNCTION_WITH_LOGIC by configurable2<KtDeclaration, String, Name>(NAME_IDENTIFIER)
 
     /** Parameters: declaration kind, declaration name, value class name, context-specific fix. */
-    val MANGLED_JVM_NAME_PUBLIC_API by configurable4<KtDeclaration, String, Name, Name, String>(NAME_IDENTIFIER)
+    val MANGLED_JVM_NAME_PUBLIC_API by configurable4<KtDeclaration, String, Name, Name, String>(NAME_IDENTIFIER, exemptionCoversEnclosingClass = true)
 
     /** Parameters: the function name, what makes its shape Kotlin-only, in words. */
-    val KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC by configurable2<KtDeclaration, Name, String>(NAME_IDENTIFIER)
+    val KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC by configurable2<KtDeclaration, Name, String>(NAME_IDENTIFIER, exemptionCoversEnclosingClass = true)
 
     /** Parameters: the outer class name, the function name, the companion class name. */
-    val COMPANION_API_WITHOUT_JVM_STATIC by configurable3<KtDeclaration, Name, Name, Name>(NAME_IDENTIFIER)
+    val COMPANION_API_WITHOUT_JVM_STATIC by configurable3<KtDeclaration, Name, Name, Name>(NAME_IDENTIFIER, exemptionCoversEnclosingClass = true)
 
     /** Parameters: companion access path for Java, property, instance accessors in words, context-specific fix. */
     val COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS by configurable4<KtDeclaration, String, Name, String, String>(
         NAME_IDENTIFIER,
+        exemptionCoversEnclosingClass = true,
     )
 
     /** Parameters: facade class name, Java-visible callable kinds of the file. Reported one time for each file. */
@@ -168,12 +172,14 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     override fun getRendererFactory(): BaseDiagnosticRendererFactory = WatchdogErrorMessages
 
     private fun <F : AbstractKtDiagnosticFactory> configurableDiagnostic(
+        exemptionCoversEnclosingClass: Boolean,
         createFactory: (name: String, severity: Severity) -> F,
     ): PropertyDelegateProvider<Any?, ReadOnlyProperty<Any?, ConfigurableWatchdogDiagnostic<F>>> =
         PropertyDelegateProvider { _, property ->
             val diagnostic = ConfigurableWatchdogDiagnostic(
                 error = createFactory(property.name, Severity.ERROR),
                 warning = createFactory(property.name, Severity.WARNING),
+                exemptionCoversEnclosingClass = exemptionCoversEnclosingClass,
             )
             allDiagnostics += diagnostic
             ReadOnlyProperty { _, _ -> diagnostic }
@@ -181,31 +187,36 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
 
     private inline fun <reified P : PsiElement> configurable0(
         positioningStrategy: AbstractSourceElementPositioningStrategy = SourceElementPositioningStrategies.DEFAULT,
-    ) = configurableDiagnostic { name, severity ->
+        exemptionCoversEnclosingClass: Boolean = false,
+    ) = configurableDiagnostic(exemptionCoversEnclosingClass) { name, severity ->
         KtDiagnosticFactory0(name, severity, positioningStrategy, P::class, getRendererFactory())
     }
 
     private inline fun <reified P : PsiElement, A> configurable1(
         positioningStrategy: AbstractSourceElementPositioningStrategy = SourceElementPositioningStrategies.DEFAULT,
-    ) = configurableDiagnostic { name, severity ->
+        exemptionCoversEnclosingClass: Boolean = false,
+    ) = configurableDiagnostic(exemptionCoversEnclosingClass) { name, severity ->
         KtDiagnosticFactory1<A>(name, severity, positioningStrategy, P::class, getRendererFactory())
     }
 
     private inline fun <reified P : PsiElement, A, B> configurable2(
         positioningStrategy: AbstractSourceElementPositioningStrategy = SourceElementPositioningStrategies.DEFAULT,
-    ) = configurableDiagnostic { name, severity ->
+        exemptionCoversEnclosingClass: Boolean = false,
+    ) = configurableDiagnostic(exemptionCoversEnclosingClass) { name, severity ->
         KtDiagnosticFactory2<A, B>(name, severity, positioningStrategy, P::class, getRendererFactory())
     }
 
     private inline fun <reified P : PsiElement, A, B, C> configurable3(
         positioningStrategy: AbstractSourceElementPositioningStrategy = SourceElementPositioningStrategies.DEFAULT,
-    ) = configurableDiagnostic { name, severity ->
+        exemptionCoversEnclosingClass: Boolean = false,
+    ) = configurableDiagnostic(exemptionCoversEnclosingClass) { name, severity ->
         KtDiagnosticFactory3<A, B, C>(name, severity, positioningStrategy, P::class, getRendererFactory())
     }
 
     private inline fun <reified P : PsiElement, A, B, C, D> configurable4(
         positioningStrategy: AbstractSourceElementPositioningStrategy = SourceElementPositioningStrategies.DEFAULT,
-    ) = configurableDiagnostic { name, severity ->
+        exemptionCoversEnclosingClass: Boolean = false,
+    ) = configurableDiagnostic(exemptionCoversEnclosingClass) { name, severity ->
         KtDiagnosticFactory4<A, B, C, D>(name, severity, positioningStrategy, P::class, getRendererFactory())
     }
 }

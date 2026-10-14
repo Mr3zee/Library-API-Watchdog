@@ -187,16 +187,7 @@ apiWatchdog {
 }
 ```
 
-The rules:
-
-- `ignore` rejects an always-error check.
-- An annotation is its fully qualified class name.
-- The rule applies to the declaration that the check runs on. An annotation on a class also
-  covers what the class check reports inside the class, for example on a constructor. A nested
-  class needs its own annotation.
-- [Top-level API without JvmName](./checks/java-interop/top-level-api-without-jvm-name.md) runs
-  on the file, so the annotation goes on the file: `@file:GeneratedValueMembers`.
-- Call `ignore` again for another check.
+`ignore` rejects always-error checks. Otherwise, it works the same as regular exemptions.
 
 ## Internal API annotations from dependencies
 
