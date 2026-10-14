@@ -62,6 +62,7 @@ public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension 
 	public final fun getPairOrTriplePublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun getPublicTypeWithInternalApi ()Lorg/gradle/api/provider/Property;
 	public final fun getPublicTypesMustBeTransitiveDependencies ()Lorg/gradle/api/provider/Property;
+	public final fun getReportUndocumentedClassProperties ()Lorg/gradle/api/provider/Property;
 	public final fun getReports ()Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogReports;
 	public final fun getRequiredParameterAfterOptional ()Lorg/gradle/api/provider/Property;
 	public final fun getStatefulClassWithoutEquals ()Lorg/gradle/api/provider/Property;

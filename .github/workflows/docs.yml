@@ -11,6 +11,12 @@ on:
       - '.github/workflows/docs.yml'
   workflow_dispatch:
 
+# Runs of one branch don't overlap. A newer push cancels the run of a pull request. A run on main
+# isn't cancelled, so a deploy to GitHub Pages never stops half way.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   id-token: write
   pages: write

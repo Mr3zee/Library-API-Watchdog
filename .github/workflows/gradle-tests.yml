@@ -9,6 +9,7 @@ on:
       - 'exempts-fixer/**'
       - 'gradle-plugin/**'
       - 'plugin-annotations/**'
+      - 'report-aggregation/**'
       - 'gradle-conventions/**'
       - 'diagnostics.json'
       - 'build.gradle.kts'
@@ -17,6 +18,26 @@ on:
       - 'gradle/**'
       - 'gradlew'
       - '.github/workflows/gradle-tests.yml'
+  pull_request:
+    paths:
+      - 'compiler-plugin/**'
+      - 'exempts-fixer/**'
+      - 'gradle-plugin/**'
+      - 'plugin-annotations/**'
+      - 'report-aggregation/**'
+      - 'gradle-conventions/**'
+      - 'diagnostics.json'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'gradle.properties'
+      - 'gradle/**'
+      - 'gradlew'
+      - '.github/workflows/gradle-tests.yml'
+
+# A newer push to the same branch cancels the runs of the older pushes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -38,12 +59,41 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
+        with:
+          # The matrix jobs wait for this job. A cache save at its end only delays them.
+          cache-read-only: true
 
       - name: Discover functional test tasks
         id: matrix
         run: |
           tasks="$(./gradlew -q :kotlin-library-api-watchdog-gradle-plugin:printCiFunctionalTestMatrix)"
           echo "tasks=$tasks" >> "$GITHUB_OUTPUT"
+
+  library-checks:
+    name: Report aggregation tests and ABI checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Run report aggregation tests
+        run: ./gradlew :kotlin-library-api-watchdog-report-aggregation:test
+
+      - name: Check the ABI dumps
+        run: |
+          ./gradlew \
+            :kotlin-library-api-watchdog-gradle-plugin:checkKotlinAbi \
+            :kotlin-library-api-watchdog-plugin-annotations:checkKotlinAbi \
+            :kotlin-library-api-watchdog-report-aggregation:checkKotlinAbi
 
   exempts-fixer-tests:
     runs-on: ubuntu-latest

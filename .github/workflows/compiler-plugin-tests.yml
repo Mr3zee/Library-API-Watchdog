@@ -15,6 +15,23 @@ on:
       - 'gradle/**'
       - 'gradlew'
       - '.github/workflows/compiler-plugin-tests.yml'
+  pull_request:
+    paths:
+      - 'compiler-plugin/**'
+      - 'plugin-annotations/**'
+      - 'gradle-conventions/**'
+      - 'diagnostics.json'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'gradle.properties'
+      - 'gradle/**'
+      - 'gradlew'
+      - '.github/workflows/compiler-plugin-tests.yml'
+
+# A newer push to the same branch cancels the runs of the older pushes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
