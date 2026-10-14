@@ -25,7 +25,7 @@
 }
 
 .theme-doc-sidebar-menu {
-  padding-bottom: 2rem;
+  padding-bottom: max(2rem, 30vh);
 }
 
 /*

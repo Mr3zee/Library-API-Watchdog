@@ -24,6 +24,7 @@ import Markdown from 'react-markdown';
 import IconCopy from '@theme/Icon/Copy';
 import IconSuccess from '@theme/Icon/Success';
 import registry from '../../../diagnostics.json';
+import {formatMessage, joinTextLines, resolveParameter} from '../utils/diagnostic-messages.mjs';
 import {KeyboardShortcut, useIdeaGenerateShortcut} from './KeyboardShortcut';
 import styles from './Code.module.css';
 
@@ -465,10 +466,6 @@ type DiagnosticReport = {
   parameters: string[];
 };
 
-type DiagnosticDefinition = (typeof registry.diagnostics)[number];
-
-const PARAMETER_REFERENCE = /^\$([A-Za-z][A-Za-z0-9]*)(?:\(([^()]*)\))?$/;
-
 function Diagnostic({report}: {report: DiagnosticReport}): ReactNode {
   const diagnostic = byName.get(report.name);
   const ideaGenerateShortcut = useIdeaGenerateShortcut();
@@ -477,7 +474,7 @@ function Diagnostic({report}: {report: DiagnosticReport}): ReactNode {
   if (!diagnostic) return <span className={styles.diagnosticName}>{report.name}</span>;
 
   const parameters = report.parameters.map((parameter) =>
-    resolveParameter(diagnostic, parameter, ideaGenerateShortcut.label),
+    resolveParameter(diagnostic, parameter, sharedParameterValues, ideaGenerateShortcut.label),
   );
   if (diagnostic.name === 'INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS') {
     parameters[2] = alignTable(parameters[2]);
@@ -517,54 +514,12 @@ function Diagnostic({report}: {report: DiagnosticReport}): ReactNode {
   );
 }
 
-function resolveParameter(
-  diagnostic: DiagnosticDefinition,
-  parameter: string,
-  ideaGenerateShortcut: string,
-): string {
-  const reference = parameter.match(PARAMETER_REFERENCE);
-  if (!reference) return parameter;
-
-  if (reference[1] === 'ideaGenerateShortcut') return ideaGenerateShortcut;
-
-  const values =
-    'parameterValues' in diagnostic
-      ? (diagnostic.parameterValues as Record<string, readonly string[]>)
-      : undefined;
-  const template = values?.[reference[1]] ?? sharedParameterValues[reference[1]];
-  if (!template) return parameter;
-
-  const arguments_ = reference[2] === undefined ? [] : reference[2].split(',').map((it) => it.trim());
-  return formatMessage(joinTextLines(template), arguments_);
-}
-
-function formatMessage(template: string, parameters: string[]): string {
-  return template.replace(/\{(\d+)\}/g, (_, index: string) => parameters[Number(index)]);
-}
-
 function alignTable(table: string): string {
   const rows = table.trim().split('\n').map((line) => line.trim().split(' | '));
   const widths = rows[0].map((_, column) => Math.max(...rows.map((row) => row[column].length)));
   return rows.map((row) =>
     '    ' + row.map((cell, column) => cell.padEnd(widths[column])).join(' | ').trimEnd(),
   ).join('\n');
-}
-
-/**
- * A copy of `joinTextLines` in plugins/diagnostics.mjs. That module reads the file system, so it
- * can't run in the browser.
- */
-function joinTextLines(lines: readonly string[]): string {
-  return lines.reduce((message, line, index) => {
-    if (index === 0) return line;
-    const previous = lines[index - 1];
-    const hardBreak = line === '' || previous === '' || isCodeLine(line) || isCodeLine(previous);
-    return `${message}${hardBreak ? '\n' : ' '}${line}`;
-  }, '');
-}
-
-function isCodeLine(line: string): boolean {
-  return line.startsWith('    ');
 }
 
 function parseReport(query: string): DiagnosticReport {
