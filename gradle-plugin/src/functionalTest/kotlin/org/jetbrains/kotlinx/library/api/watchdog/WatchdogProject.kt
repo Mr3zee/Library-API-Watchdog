@@ -284,7 +284,7 @@ internal class WatchdogFixture(
     }
 
     private fun BuildScript.Builder.renderRoot() {
-        if (spec.plugins != null) return renderCustom(spec)
+        if (spec.plugins != null) return renderCustom(spec, subprojectKotlinPlugins())
         when (kind) {
             ProjectKind.Jvm -> {
                 plugins(KotlinPlugins.jvm(kotlinVersion), pluginUnderTest)
@@ -314,17 +314,20 @@ internal class WatchdogFixture(
         }
     }
 
-    /** A subproject names the Kotlin plugin version only when the root applies its own plugins. */
+    /**
+     * The root names the Kotlin plugin version, so a subproject never does. Two subprojects with
+     * different plugin sets that both name the version load KGP twice, which KGP 2.5 reports as an
+     * error.
+     */
     private fun BuildScript.Builder.renderSubproject(path: String, module: SubprojectSpec) {
         if (module.plugins != null) return renderCustom(module)
-        val kotlinVersion = testKotlinVersion().takeIf { spec.plugins != null }
         when {
             module.jvm || kind is ProjectKind.Jvm || kind is ProjectKind.KmpAndroid -> {
-                plugins(Plugin("org.jetbrains.kotlin.jvm", kotlinVersion), pluginUnderTest)
+                plugins(Plugin(KOTLIN_JVM_PLUGIN_ID), pluginUnderTest)
                 finish(module, explicitApiBlock())
             }
             kind is ProjectKind.Kmp -> {
-                plugins(Plugin("org.jetbrains.kotlin.multiplatform", kotlinVersion), pluginUnderTest)
+                plugins(Plugin(KOTLIN_MULTIPLATFORM_PLUGIN_ID), pluginUnderTest)
                 finish(module, explicitApiBlock() + kotlinBlock(kind.targets), sourceSetPrefix = "commonMain")
             }
             kind is ProjectKind.AndroidLibrary -> {
@@ -342,9 +345,29 @@ internal class WatchdogFixture(
         }
     }
 
-    private fun BuildScript.Builder.renderCustom(module: ModuleSpec) {
-        plugins(module.plugins.orEmpty())
+    private fun BuildScript.Builder.renderCustom(module: ModuleSpec, extraPlugins: List<Plugin> = emptyList()) {
+        plugins(module.plugins.orEmpty() + extraPlugins)
         finish(module, head = "")
+    }
+
+    /** The `apply false` lines of a root with its own plugins for the Kotlin plugins of its subprojects. */
+    private fun subprojectKotlinPlugins(): List<Plugin> {
+        val rootIds = spec.plugins.orEmpty().map { it.id }
+        return spec.subprojects.values
+            .flatMap { module -> module.kotlinPluginIds() }
+            .distinct()
+            .filter { it !in rootIds }
+            .map { Plugin(it, testKotlinVersion(), apply = false) }
+    }
+
+    private fun SubprojectSpec.kotlinPluginIds(): List<String> {
+        plugins?.let { custom -> return custom.map { it.id }.filter { it in KOTLIN_PLUGIN_IDS } }
+        return when {
+            jvm || kind is ProjectKind.Jvm || kind is ProjectKind.KmpAndroid -> listOf(KOTLIN_JVM_PLUGIN_ID)
+            kind is ProjectKind.Kmp -> listOf(KOTLIN_MULTIPLATFORM_PLUGIN_ID)
+            kind is ProjectKind.AndroidLibrary && kind.agp == AgpVersion.AGP8 -> listOf(KOTLIN_ANDROID_PLUGIN_ID)
+            else -> emptyList()
+        }
     }
 
     private fun BuildScript.Builder.finish(module: ModuleSpec, head: String, sourceSetPrefix: String? = null) {
@@ -392,8 +415,8 @@ internal class WatchdogFixture(
     private fun androidLibraryPlugins(agp: AgpVersion, root: Boolean): Array<Plugin> = buildList {
         add(Plugin("com.android.library", agp.version.takeIf { root }))
         when (agp) {
-            AgpVersion.AGP9 -> if (root) add(Plugin("org.jetbrains.kotlin.jvm", testKotlinVersion(), apply = false))
-            AgpVersion.AGP8 -> add(Plugin("org.jetbrains.kotlin.android", testKotlinVersion().takeIf { root }))
+            AgpVersion.AGP9 -> if (root) add(Plugin(KOTLIN_JVM_PLUGIN_ID, testKotlinVersion(), apply = false))
+            AgpVersion.AGP8 -> add(Plugin(KOTLIN_ANDROID_PLUGIN_ID, testKotlinVersion().takeIf { root }))
         }
         add(pluginUnderTest)
     }.toTypedArray()
@@ -470,6 +493,10 @@ internal class WatchdogFixture(
 
 private const val WATCHDOG_PACKAGE = "org.jetbrains.kotlinx.library.api.watchdog"
 internal const val WATCHDOG_PLUGIN_ID = "org.jetbrains.kotlin.library.api-watchdog"
+internal const val KOTLIN_JVM_PLUGIN_ID = "org.jetbrains.kotlin.jvm"
+internal const val KOTLIN_MULTIPLATFORM_PLUGIN_ID = "org.jetbrains.kotlin.multiplatform"
+internal const val KOTLIN_ANDROID_PLUGIN_ID = "org.jetbrains.kotlin.android"
+private val KOTLIN_PLUGIN_IDS = setOf(KOTLIN_JVM_PLUGIN_ID, KOTLIN_MULTIPLATFORM_PLUGIN_ID, KOTLIN_ANDROID_PLUGIN_ID)
 private const val JVM_TARGET_17 = "compilerOptions { jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17 }"
 
 private val watchdogAnnotationImports: List<String> = listOf(

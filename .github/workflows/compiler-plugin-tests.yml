@@ -59,5 +59,16 @@ jobs:
             ./gradlew :kotlin-library-api-watchdog-compiler-plugin:allTests
           }
 
+      - name: Save test reports
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: test-reports-${{ github.job }}
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Audit benchmark corpus
         run: ./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkCorpusAudit

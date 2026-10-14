@@ -95,6 +95,17 @@ jobs:
             :kotlin-library-api-watchdog-plugin-annotations:checkKotlinAbi \
             :kotlin-library-api-watchdog-report-aggregation:checkKotlinAbi
 
+      - name: Save test reports
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: test-reports-${{ github.job }}
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
   exempts-fixer-tests:
     runs-on: ubuntu-latest
     steps:
@@ -116,6 +127,17 @@ jobs:
             echo "Tests failed; retrying once."
             ./gradlew :kotlin-library-api-watchdog-exempts-fixer:allTests
           }
+
+      - name: Save test reports
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: test-reports-${{ github.job }}
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
 
   gradle-plugin-tests:
     name: Gradle plugin tests (${{ matrix.task }})
@@ -155,3 +177,14 @@ jobs:
             echo "Tests failed; retrying once."
             ./gradlew ":kotlin-library-api-watchdog-gradle-plugin:$FUNCTIONAL_TEST_TASK"
           }
+
+      - name: Save test reports
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: test-reports-${{ github.job }}-${{ matrix.task }}
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 7

@@ -8,7 +8,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.gradle.testkit.runner.TaskOutcome.SUCCESS
-import org.jetbrains.kotlin.compiler.plugin.devkit.test.TEST_COMPILER_VERSION
 import org.jetbrains.kotlin.compiler.plugin.devkit.test.pluginUnderTestVersion
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.OPEN_API_WITHOUT_SUBCLASS_OPT_IN
 import org.junit.Test
@@ -97,7 +96,7 @@ class GradleCompatibilityTest {
             }
             // A Kotlin module without the Watchdog has no report variant.
             subproject("tools") {
-                plugins(Plugin("org.jetbrains.kotlin.jvm", "$TEST_COMPILER_VERSION"))
+                plugins(Plugin("org.jetbrains.kotlin.jvm"))
                 source("/** A tool. */\npublic open class Tool", "Tool")
             }
         }
