@@ -28,7 +28,10 @@ public fun loadModel(): ExternalModel = TODO()
 An `implementation` dependency is absent from the consumer's compile classpath. Consumers can't use
 declarations whose signatures need its types.
 
-### Don't
+### Avoid exposing dependency types
+
+Prefer to keep dependency types out of public API and `@PublishedApi internal` signatures.
+Use your library's own types where possible. Keep the dependency as `implementation`:
 
 ```kotlin build.gradle.kts
 dependencies {
@@ -36,7 +39,10 @@ dependencies {
 }
 ```
 
-### Do
+### Use `api` only when needed
+
+If your public API must expose the dependency's types, declare the dependency as `api` so consumers can
+compile against them:
 
 ```kotlin
 dependencies {
