@@ -39,14 +39,14 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinTargetsContainer
 import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 
-@Suppress("unused") // Loaded by reflection.
+@Suppress("unused")
 public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO) {
     private lateinit var collectDiagnosticsForExempts: Property<Boolean>
     private lateinit var enabled: Property<Boolean>
 
     /**
-     * KGP asks after `afterEvaluate`, so `apiWatchdog.enabled` is final here. A raw
-     * `-Xexplicit-api` flag turns explicit API mode on in test compilations too.
+     * KGP calls it after `afterEvaluate`, so `apiWatchdog.enabled` is final here. A raw
+     * `-Xexplicit-api` flag also applies to test compilations.
      */
     override fun isApplicable(kotlinCompilation: KotlinCompilation<*>): Boolean =
         enabled.get() && !kotlinCompilation.isTestCompilation()
@@ -89,10 +89,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         }
     }
 
-    /**
-     * KGP adds the annotations library only through [applyToCompilation], and a disabled watchdog
-     * never gets there. Sources that carry `@Intentionally*` annotations still have to compile.
-     */
+    /** KGP adds the annotations library only through [applyToCompilation], which a disabled watchdog never reaches. */
     private fun Project.addExemptionAnnotationsWithoutChecks() {
         val kotlin = extensions.findByName("kotlin")
         val compilations = when (kotlin) {
@@ -183,8 +180,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             "Writes the API Watchdog reports: the applied exemptions and the diagnostics without one. " +
                     "Changes no source",
         )
-        // IDE sync and the `tasks` report realize every task, so task realization can't be the
-        // signal.
+        // IDE sync realizes every task, so task realization can't be the signal.
         val exemptsTaskPaths = listOf(EXEMPT_EXISTING_API_TASK_NAME, GENERATE_REPORT_TASK_NAME)
             .map { if (path == ":") ":$it" else "$path:$it" }
         gradle.taskGraph.whenReady { graph ->
@@ -239,7 +235,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             }
             exemptTask.configure { task -> task.addCompilation() }
             reportTask.configure { task ->
-                // Both tasks write the report files. The order lets one build run both.
+                // Both tasks write the same report files.
                 task.mustRunAfter(exemptTask)
                 task.addCompilation()
             }
@@ -322,7 +318,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                         },
                     ),
                 )
-                // The compiler plugin has no option for exempt dependencies. They go into the
+                // The compiler plugin has no option for exempt dependencies, so they go into the
                 // transitive paths.
                 add(
                     SubpluginOption(
@@ -362,8 +358,6 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             val declaration = declarationOf(dependency.requested, configuration) ?: continue
             queue.add(dependency.selected to declaration)
         }
-        // Breadth-first from all declared dependencies together, so a component that two
-        // declarations reach gets the nearest one.
         while (queue.isNotEmpty()) {
             val (component, declaration) = queue.removeFirst()
             if (declarations.putIfAbsent(component.id, declaration) != null) continue
@@ -378,10 +372,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             .joinToString("\t")
     }
 
-    /**
-     * The declaration of [requested] as a tab-separated configuration name and notation, or null
-     * for a selector that is neither a module nor a project.
-     */
+    /** The declaration of [requested] as a tab-separated configuration name and notation. */
     private fun declarationOf(requested: ComponentSelector, configuration: Configuration): String? {
         val notation: String
         val isDeclaredIn: (Dependency) -> Boolean
@@ -428,7 +419,6 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             configuration.incoming.artifacts
         }
 
-    /** The dependencies of the published API elements of the target, resolved like the compile classpath. */
     private fun Project.transitiveDependenciesFor(
         kotlinCompilation: KotlinCompilation<*>,
         compileDependencies: Provider<Configuration>,
@@ -461,9 +451,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
     }
 
     /**
-     * Registers a configuration that resolves with the attributes and the versions of the compile
-     * classpath. The compiler plugin matches dependency files by path, so a conflict-upgraded
-     * version on the compile classpath must resolve to the same jar here.
+     * The compiler plugin matches dependency files by path, so a conflict-upgraded version on the
+     * compile classpath must resolve to the same jar here.
      */
     private fun Project.registerCompilationClasspathView(
         kotlinCompilation: KotlinCompilation<*>,
@@ -518,10 +507,12 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         private const val ANDROID_CLASSES_JAR = "android-classes-jar"
         internal const val EXEMPT_NON_TRANSITIVE_CONFIGURATION_NAME = "apiWatchdogExemptNonTransitive"
 
-        /** Android names a test compilation after its variant, so the suffix is the only common part. */
         private const val TEST_COMPILATION_NAME_SUFFIX = "Test"
 
-        /** Test fixtures are published with the library, so they aren't test compilations. */
+        /**
+         * Android names a test compilation after its variant, so only the suffix is common. Test
+         * fixtures are published with the library, so they aren't test compilations.
+         */
         private fun KotlinCompilation<*>.isTestCompilation(): Boolean =
             name == KotlinCompilation.TEST_COMPILATION_NAME || name.endsWith(TEST_COMPILATION_NAME_SUFFIX)
 
@@ -530,12 +521,11 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         private const val FIXER_ARTIFACT_CONFIGURATION_NAME = "apiWatchdogExemptsFixerArtifact"
         private const val BCV_PLUGIN_ID = "org.jetbrains.kotlinx.binary-compatibility-validator"
 
-        /** The Kotlin Gradle plugin registers these tasks only when its ABI validation is active. */
         private val ABI_VALIDATION_TASK_NAMES = listOf("checkKotlinAbi", "checkLegacyAbi")
 
         private const val DISABLED_TASK_REASON = "apiWatchdog.enabled is true"
 
-        /** An undocumented Gradle property. Set it to `true` when the explicit API detection misjudges a project. */
+        /** Undocumented. `true` silences the warning when the explicit API detection misjudges a project. */
         private const val SUPPRESS_EXPLICIT_API_WARNING_PROPERTY =
             "org.jetbrains.kotlin.library.api-watchdog.suppressExplicitApiWarning"
 

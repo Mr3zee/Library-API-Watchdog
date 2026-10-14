@@ -44,13 +44,11 @@ public abstract class WatchdogReports @Inject internal constructor(private val o
     @get:Internal
     public abstract val sarifFile: RegularFileProperty
 
-    /** [htmlFile] when [html] is `true`, absent otherwise. */
     @get:OutputFile
     @get:Optional
     internal val htmlOutput: Provider<RegularFile>
         get() = html.flatMap { if (it) htmlFile else objectFactory.fileProperty() }
 
-    /** [sarifFile] when [sarif] is `true`, absent otherwise. */
     @get:OutputFile
     @get:Optional
     internal val sarifOutput: Provider<RegularFile>

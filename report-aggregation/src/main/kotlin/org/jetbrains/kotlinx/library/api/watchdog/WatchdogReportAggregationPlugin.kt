@@ -48,7 +48,7 @@ public class WatchdogReportAggregationPlugin : Plugin<Project> {
             task.description =
                 "Combines the API Watchdog reports of the declared projects into one HTML and one SARIF report"
             task.reportDataFiles.from(reportFiles.map { configuration ->
-                // Lenient, so a declared project without the report variant adds no file.
+                // A declared project without the report variant adds no file.
                 configuration.incoming.artifactView { view -> view.lenient(true) }.files
             })
             task.reports.html.convention(true)

@@ -16,7 +16,7 @@ import org.gradle.api.provider.SetProperty
 
 /**
  * The `apiWatchdog` block: the [enabled] switch and the severity of each configurable diagnostic.
- * Default severity is [WatchdogSeverity.ERROR] unless the property says otherwise.
+ * Default severity is [WatchdogSeverity.ERROR]. A property with another default states it.
  *
  * ```kotlin
  * apiWatchdog {
@@ -36,7 +36,6 @@ public open class WatchdogGradleExtension @Inject internal constructor(
      * ```kotlin
      * dependencies {
      *     apiWatchdogExemptNonTransitive("org.jetbrains.kotlin:kotlin-gradle-plugin")
-     *     apiWatchdogExemptNonTransitive(libs.host.api)
      *     apiWatchdogExemptNonTransitive(project(":host-api"))
      * }
      *
@@ -57,17 +56,7 @@ public open class WatchdogGradleExtension @Inject internal constructor(
     private val annotationIgnoreRules: ListProperty<String> =
         objectFactory.listProperty(String::class.java).convention(emptyList())
 
-    /**
-     * Whether the watchdog runs.
-     *
-     * ```kotlin
-     * apiWatchdog {
-     *     enabled = true
-     * }
-     * ```
-     *
-     * Default is `true`.
-     */
+    /** Whether the watchdog runs. Default is `true`. */
     public val enabled: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(true)
 
     /** Severity of `OPEN_API_WITHOUT_SUBCLASS_OPT_IN`: unrestricted external subclassing. */

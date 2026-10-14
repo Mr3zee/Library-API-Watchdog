@@ -5,9 +5,9 @@ import java.net.URI
 
 /**
  * Writes the diagnostics without an exemption as a
- * [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html) log. Each
- * diagnostic is a result of a rule named after it. A location is relative to the root directory
- * of the build, so a code scanning service resolves it against the repository checkout.
+ * [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html) log. A location
+ * is relative to the root directory of the build, so a code scanning service resolves it against
+ * the repository checkout.
  */
 @InternalWatchdogApi
 public object ApiWatchdogSarifReport {
@@ -78,13 +78,11 @@ public object ApiWatchdogSarifReport {
         append(reason)
     }
 
-    /** `path:line` into the path and the line, or the whole text and null without a line. */
     private fun String.splitLocation(): Pair<String, Int?> {
         val line = substringAfterLast(':', "").toIntOrNull()
         return if (line == null) this to null else substringBeforeLast(':') to line
     }
 
-    /** A relative URI reference with `/` separators and percent-encoded characters. */
     private fun String.toUriPath(): String = URI(null, null, replace(File.separatorChar, '/'), null).rawPath
 
     private fun StringBuilder.appendJson(value: Any?, indent: Int) {

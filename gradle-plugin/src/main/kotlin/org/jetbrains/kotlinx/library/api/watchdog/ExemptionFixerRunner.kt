@@ -62,7 +62,6 @@ internal object ExemptionFixerRunner {
         return FixerResponse.parse(response)
     }
 
-    /** The response lines grouped by key. */
     private fun readResponse(responseFile: File, exitValue: Int): Map<String, List<String>> {
         if (!responseFile.isFile) {
             throw GradleException(
@@ -124,10 +123,7 @@ internal object ExemptionFixerRunner {
     private const val FIXER_MULTI_RELEASE_ID = "org.jetbrains.kotlinx.library.api.watchdog.fixer"
 }
 
-/**
- * The response of the fixer: a file of `key=value` lines with tab-separated fields. The fixer
- * writes an absolute source [FixerLocation.path].
- */
+/** The response of the fixer. [FixerLocation.path] is absolute. */
 internal class FixerResponse(
     /** The diagnostics the fixer can exempt, or did exempt when it rewrote the sources. */
     val fixed: List<FixedDiagnostic>,
@@ -140,7 +136,6 @@ internal class FixerResponse(
     companion object {
         val EMPTY: FixerResponse = FixerResponse(emptyList(), emptyList(), emptyList(), emptySet())
 
-        /** [lines] are the response values grouped by key. */
         fun parse(lines: Map<String, List<String>>): FixerResponse = FixerResponse(
             fixed = lines["fixed"].orEmpty().map { value ->
                 val (diagnostic, annotation, line, path) = value.split('\t', limit = 4)
@@ -159,13 +154,11 @@ internal class FixerResponse(
     }
 }
 
-/** A source file and line of the fixer response. */
 internal interface FixerLocation {
     val line: String
     val path: String
 }
 
-/** `path:line` with the path relative to [projectDirectory]. */
 internal fun FixerLocation.location(projectDirectory: File): String =
     "${File(path).relativeToOrSelf(projectDirectory).path}:$line"
 

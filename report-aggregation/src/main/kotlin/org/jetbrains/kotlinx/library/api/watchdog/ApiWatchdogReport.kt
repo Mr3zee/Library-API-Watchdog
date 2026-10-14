@@ -26,8 +26,7 @@ public data class AppliedExemptionReportEntry(
  *
  * @property annotation the annotation that exempts the declaration, or null when none exists
  * @property location `path:line`, relative to the project directory
- * @property reason why the annotation isn't applied
- * @property severity the configured severity of the diagnostic: `error` or `warning`
+ * @property severity `error` or `warning`
  */
 @InternalWatchdogApi
 public data class NotAppliedExemptionReportEntry(
@@ -52,7 +51,6 @@ public data class ApiWatchdogProjectReport(
     public val notApplied: List<NotAppliedExemptionReportEntry>,
 )
 
-/** The file format of a module report. */
 @InternalWatchdogApi
 public object ApiWatchdogReportData {
     private const val VERSION = "2"

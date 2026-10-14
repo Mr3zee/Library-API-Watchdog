@@ -3,16 +3,10 @@ package org.jetbrains.kotlinx.library.api.watchdog
 import java.io.File
 import org.gradle.api.logging.Logger
 
-/** Turns a fixer response into the report files of a project. */
 internal object ProjectReportWriter {
     /**
-     * @param response the fixer response
      * @param sourcesUpdated whether the fixer rewrote the sources. Then the `exemption` entries
      *   hold the applied annotations, so the `fixed` entries aren't listed as not applied.
-     * @param severities the configured severity of each diagnostic. A diagnostic that isn't
-     *   listed is an error.
-     * @param htmlFile the HTML report, or null when the format is off
-     * @param sarifFile the SARIF report, or null when the format is off
      */
     fun write(
         response: FixerResponse,

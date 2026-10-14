@@ -20,33 +20,26 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecOperations
 
-/**
- * A task that runs the exemption fixer on the main Kotlin sources and writes the API Watchdog
- * report. [ExemptExistingApiTask] and [GenerateApiWatchdogReportTask] are its two variants.
- */
+/** The base of [ExemptExistingApiTask] and [GenerateApiWatchdogReportTask]. Both write the API Watchdog report. */
 public abstract class ApiWatchdogReportTask internal constructor() : DefaultTask() {
     /** The names of the main Kotlin compile tasks. */
     @get:Input
     internal abstract val compilationNames: ListProperty<String>
 
-    /** The diagnostic reports of the Kotlin compile tasks. A missing report is empty. */
+    /** A missing report is empty. */
     @get:Internal
     internal abstract val diagnosticReports: ConfigurableFileCollection
 
-    /** The main Kotlin sources. */
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     internal abstract val sourceFiles: ConfigurableFileCollection
 
-    /** The multi-version artifact of the fixer. */
     @get:Classpath
     internal abstract val fixerArtifact: ConfigurableFileCollection
 
-    /** The Kotlin compiler and its runtime dependencies. */
     @get:Classpath
     internal abstract val fixerClasspath: ConfigurableFileCollection
 
-    /** The Kotlin version of the project. */
     @get:Input
     internal abstract val kotlinVersion: Property<String>
 
@@ -54,7 +47,6 @@ public abstract class ApiWatchdogReportTask internal constructor() : DefaultTask
     @get:Internal
     internal abstract val projectDirectory: DirectoryProperty
 
-    /** The project path shown in the report. */
     @get:Input
     internal abstract val projectIdentityPath: Property<String>
 
@@ -65,7 +57,6 @@ public abstract class ApiWatchdogReportTask internal constructor() : DefaultTask
     @get:Input
     internal abstract val projectDirectoryFromRoot: Property<String>
 
-    /** The configured severity of each diagnostic. */
     @get:Input
     internal abstract val diagnosticSeverities: MapProperty<String, WatchdogSeverity>
 
@@ -85,15 +76,12 @@ public abstract class ApiWatchdogReportTask internal constructor() : DefaultTask
     @get:Inject
     internal abstract val execOperations: ExecOperations
 
-    /** Whether the fixer rewrites the sources it analyzes. */
     @get:Internal
     internal abstract val updatesSources: Boolean
 
-    /** The warning when the project has no main Kotlin compilation. */
     @get:Internal
     internal abstract val noCompilationWarning: String
 
-    /** Logs the fixer [response] to the console. The default logs nothing. */
     internal open fun logResponse(response: FixerResponse) {}
 
     @TaskAction
