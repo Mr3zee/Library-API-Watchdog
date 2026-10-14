@@ -1,4 +1,4 @@
-# The API Watchdog report
+# Report generation
 
 The report lists the applied Watchdog annotations of a project and the diagnostics without one.
 Two tasks write it:

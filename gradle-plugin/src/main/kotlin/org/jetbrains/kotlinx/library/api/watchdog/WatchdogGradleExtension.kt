@@ -233,7 +233,7 @@ public open class WatchdogGradleExtension @Inject internal constructor(
      * The formats of the report that `generateApiWatchdogReport` and `exemptExistingApi` write,
      * see [WatchdogReports]. Both formats are on by default.
      *
-     * See [The API Watchdog report](https://mr3zee.github.io/Library-API-Watchdog/report) for more details.
+     * See [Report generation](https://mr3zee.github.io/Library-API-Watchdog/report) for more details.
      */
     public val reports: WatchdogReports = objectFactory.newInstance(WatchdogReports::class.java)
 

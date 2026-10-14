@@ -157,6 +157,6 @@ The [Java interop checks](./checks/java-interop/java-interop.md) run only in JVM
 
 - [Configuration](./configuration.md)
 - [Adding the plugin to existing libraries](./existing-libs.md)
-- [The API Watchdog report](./report.md)
+- [Report generation](./report.md)
 - [Exemptions and internal API](./exemptions.md)
 - [API reference](https://mr3zee.github.io/Library-API-Watchdog/api/)

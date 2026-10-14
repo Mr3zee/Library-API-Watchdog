@@ -139,7 +139,7 @@ dependencies {
 ./gradlew aggregateApiWatchdogReports
 ```
 
-See [The API Watchdog report](https://mr3zee.github.io/Library-API-Watchdog/report) for more details.
+See [Report generation](https://mr3zee.github.io/Library-API-Watchdog/report) for more details.
 
 ## Checks
 
