@@ -68,6 +68,8 @@ apiWatchdog {
     publicTypesMustBeTransitiveDependencies = true
     // !link[/publicTypeWithInternalApi/] /checks/special/public-type-with-internal-api
     publicTypeWithInternalApi = true
+    // !link[/reportUndocumentedClassProperties/] /checks/undocumented-public-api#class-properties
+    reportUndocumentedClassProperties = false
     // !link[/internalApiAnnotations/] /configuration#internal-api-annotations
     internalApiAnnotations.add("com.example.dependency.InternalDependencyApi")
     // !link[/ignore/] /configuration#annotation-ignore-rules
@@ -288,6 +290,7 @@ A direct compiler call configures the plugin with `-P` options of this form:
 | `ignoreWhenAnnotated`       | `<NAME>:<annotation class name>`. Repeatable.          | `ignore`                      |
 | `internalApiAnnotation`     | `<annotation class name>`. Repeatable.                 | `internalApiAnnotations`      |
 | `publicTypeWithInternalApi` | `true` or `false`.                                     | `publicTypeWithInternalApi`   |
+| `reportUndocumentedClassProperties` | `true` or `false`.                             | `reportUndocumentedClassProperties` |
 
 `<NAME>` is a diagnostic name from the [Property reference](#property-reference). `<severity>` is
 `error`, `warning`, or `none`. A diagnostic that no option names has its default severity. One
@@ -298,6 +301,7 @@ value of each option:
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:ignoreWhenAnnotated=STATEFUL_CLASS_WITHOUT_EQUALS:com.example.GeneratedValueMembers
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:internalApiAnnotation=com.example.dependency.InternalDependencyApi
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:publicTypeWithInternalApi=false
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:reportUndocumentedClassProperties=true
 ```
 
 [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md)

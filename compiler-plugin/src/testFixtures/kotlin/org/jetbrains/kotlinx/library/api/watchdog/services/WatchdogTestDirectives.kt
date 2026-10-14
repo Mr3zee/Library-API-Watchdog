@@ -19,6 +19,11 @@ object WatchdogTestDirectives : SimpleDirectivesContainer() {
         description = "Annotation FQ names configured as internal API markers (internalApiAnnotation option)",
     )
 
+    /** `// REPORT_UNDOCUMENTED_CLASS_PROPERTIES` */
+    val REPORT_UNDOCUMENTED_CLASS_PROPERTIES by directive(
+        description = "Member properties of a class without KDoc are reported (reportUndocumentedClassProperties=true)",
+    )
+
     /** `// IGNORE_WHEN_ANNOTATED: STATEFUL_CLASS_WITHOUT_EQUALS:test.Generated`. One `<NAME>:<annotation FQ name>` for each rule. */
     val IGNORE_WHEN_ANNOTATED by stringDirective(
         description = "Annotation ignore rules in the form of the ignoreWhenAnnotated option",
@@ -52,6 +57,10 @@ class WatchdogOptionsConfigurator(testServices: TestServices) : EnvironmentConfi
         val annotations = module.directives[WatchdogTestDirectives.INTERNAL_API_ANNOTATIONS]
         if (annotations.isNotEmpty()) {
             configuration.put(WatchdogConfigurationKeys.INTERNAL_API_ANNOTATIONS, annotations.toSet())
+        }
+
+        if (WatchdogTestDirectives.REPORT_UNDOCUMENTED_CLASS_PROPERTIES in module.directives) {
+            configuration.put(WatchdogConfigurationKeys.REPORT_UNDOCUMENTED_CLASS_PROPERTIES, true)
         }
 
         val ignoreRules = module.directives[WatchdogTestDirectives.IGNORE_WHEN_ANNOTATED]

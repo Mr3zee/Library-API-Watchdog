@@ -313,6 +313,12 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 )
                 add(
                     SubpluginOption(
+                        "reportUndocumentedClassProperties",
+                        lazy { extension.reportUndocumentedClassProperties.get().toString() },
+                    ),
+                )
+                add(
+                    SubpluginOption(
                         "compileDependencyPaths",
                         lazy {
                             if (!checkDependencyExposure.get()) return@lazy ""

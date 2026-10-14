@@ -106,8 +106,8 @@ Check whether inherited implementations include any state that the subclass adds
 | `hashCode`       | `@IntentionallyWithoutHashCode` | `@IntentionallyWithoutEqualsHashCodeOrToString` |
 | `toString`       | `@IntentionallyWithoutToString` | `@IntentionallyWithoutEqualsHashCodeOrToString` |
 
-Use an individual exemption when one behavior is intentional, or the combined exemption when all three are.
-For example, a connection can use identity equality and hashing but still implement a `toString` that shows its state.
+Use the exemptions when the behavior is part of the API design or must stay for backwards compatibility.
+An individual exemption covers one behavior, the combined exemption all three.
 
 ```kotlin
 // !hide-focused
@@ -139,17 +139,17 @@ Add `@Poko` to each class that needs generated `equals`, `hashCode`, and `toStri
 
 ```kotlin
 apiWatchdog {
-    statefulClassWithoutEquals = WatchdogSeverity.WARNING
-    statefulClassWithoutHashCode = WatchdogSeverity.WARNING
-    statefulClassWithoutToString = WatchdogSeverity.WARNING
+    statefulClassWithoutEquals = WatchdogSeverity.ERROR
+    statefulClassWithoutHashCode = WatchdogSeverity.ERROR
+    statefulClassWithoutToString = WatchdogSeverity.ERROR
 }
 ```
 
 For a direct compiler call:
 ```text
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=STATEFUL_CLASS_WITHOUT_EQUALS:warning
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=STATEFUL_CLASS_WITHOUT_HASH_CODE:warning
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=STATEFUL_CLASS_WITHOUT_TO_STRING:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=STATEFUL_CLASS_WITHOUT_EQUALS:error
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=STATEFUL_CLASS_WITHOUT_HASH_CODE:error
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=STATEFUL_CLASS_WITHOUT_TO_STRING:error
 ```
 
 ## See also

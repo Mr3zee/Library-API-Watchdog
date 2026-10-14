@@ -83,7 +83,7 @@ public class Registry {
 If this is intended, apply `@IntentionallyNonStaticCompanionApi` to the property or an
 enclosing class.
 
-Use the exemption when Java callers must use the companion instance.
+Use the exemption when the declaration is part of the API design or must stay for backwards compatibility.
 
 ```kotlin
 // !hide-focused
@@ -107,7 +107,7 @@ public class Registry {
 ```kotlin
 apiWatchdog {
     javaInterop {
-        companionPropertyWithoutStaticAccess = WatchdogSeverity.WARNING
+        companionPropertyWithoutStaticAccess = WatchdogSeverity.ERROR
     }
 }
 ```
@@ -117,5 +117,5 @@ apiWatchdog {
 For a direct compiler call:
 
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS:error
 ```

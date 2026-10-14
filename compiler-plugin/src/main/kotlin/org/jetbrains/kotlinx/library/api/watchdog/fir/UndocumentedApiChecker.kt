@@ -27,6 +27,7 @@ import org.jetbrains.kotlin.name.SpecialNames
  */
 internal class UndocumentedApiChecker(
     severities: WatchdogDiagnosticSeverities,
+    private val reportClassProperties: Boolean,
 ) : FirBasicDeclarationChecker(MppCheckerKind.Common) {
     private val factory = severities[WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API]
 
@@ -73,8 +74,11 @@ internal class UndocumentedApiChecker(
     }
 
     /**
-     * The kind word of `diagnostics.json`, or null when another declaration holds the KDoc: the
-     * class for a primary constructor, the members for a default-named companion.
+     * The kind word of `diagnostics.json`, or null when another declaration can hold the KDoc:
+     *
+     * - the class for a primary constructor
+     * - the members for a default-named companion
+     * - the class for a member property, unless [reportClassProperties] is on
      */
     context(context: CheckerContext)
     private fun FirMemberDeclaration.watchedKind(): String? = when {
@@ -82,7 +86,11 @@ internal class UndocumentedApiChecker(
         this is FirRegularClass -> if (isDefaultNamedCompanion) null else kindParameterValue
         this is FirTypeAlias -> "typeAlias"
         this is FirNamedFunction -> if (isOverride) null else "function"
-        this is FirProperty -> if (isOverride) null else "property"
+        this is FirProperty -> when {
+            isOverride -> null
+            !reportClassProperties && context.containingClassSymbol != null -> null
+            else -> "property"
+        }
         this is FirConstructor -> if (isPrimary) null else "constructor"
         else -> null
     }

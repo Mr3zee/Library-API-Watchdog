@@ -70,7 +70,7 @@ public interface Plugin {
 <!-- diagnostic-exemption-substitution: class or interface => {0} -->
 If this is intended, apply `@IntentionallyOpen` to the class or interface.
 
-Use the exemption when unrestricted subclassing is a stable part of the API contract.
+Use the exemption when the declaration is part of the API design or must stay for backwards compatibility.
 
 ```kotlin
 // !hide-focused
@@ -83,13 +83,13 @@ public open class Widget
 
 ```kotlin
 apiWatchdog {
-    openApiWithoutSubclassOptIn = WatchdogSeverity.WARNING
+    openApiWithoutSubclassOptIn = WatchdogSeverity.ERROR
 }
 ```
 
 For a direct compiler call:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=OPEN_API_WITHOUT_SUBCLASS_OPT_IN:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=OPEN_API_WITHOUT_SUBCLASS_OPT_IN:error
 ```
 
 ## See also

@@ -35,6 +35,10 @@ object WatchdogConfigurationKeys {
     val UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS: CompilerConfigurationKey<Boolean> =
         CompilerConfigurationKey.create("watchdog exempting existing API")
 
+    /** Whether `UNDOCUMENTED_PUBLIC_API` reports the member properties of a class. Default is `false`. */
+    val REPORT_UNDOCUMENTED_CLASS_PROPERTIES: CompilerConfigurationKey<Boolean> =
+        CompilerConfigurationKey.create("watchdog report undocumented class properties")
+
     /** The compile classpath and the subset that consumers get. Only the Gradle plugin has them. */
     val COMPILE_DEPENDENCY_PATHS: CompilerConfigurationKey<Set<String>> =
         CompilerConfigurationKey.create("watchdog compile dependency paths")
@@ -56,6 +60,7 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             INTERNAL_API_ANNOTATION_OPTION,
             PUBLIC_TYPE_WITH_INTERNAL_API_OPTION,
             EXEMPTING_EXISTING_API_OPTION,
+            REPORT_UNDOCUMENTED_CLASS_PROPERTIES_OPTION,
             DIAGNOSTICS_OUTPUT_FILE_OPTION,
             COMPILE_DEPENDENCY_PATHS_OPTION,
             TRANSITIVE_DEPENDENCY_PATHS_OPTION,
@@ -120,6 +125,15 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             allowMultipleOccurrences = false,
         )
 
+        val REPORT_UNDOCUMENTED_CLASS_PROPERTIES_OPTION: CliOption = CliOption(
+            optionName = "reportUndocumentedClassProperties",
+            valueDescription = "<true|false>",
+            description = "Report UNDOCUMENTED_PUBLIC_API on the member properties of a class. " +
+                    "Off by default, because the check doesn't read the @property tags of the class KDoc.",
+            required = false,
+            allowMultipleOccurrences = false,
+        )
+
         val COMPILE_DEPENDENCY_PATHS_OPTION: CliOption = dependencyPathsOption(
             optionName = "compileDependencyPaths",
             description = "Compilation dependency paths used by the public dependency exposure check.",
@@ -176,6 +190,12 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             EXEMPTING_EXISTING_API_OPTION.optionName -> {
                 configuration.put(
                     WatchdogConfigurationKeys.UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS,
+                    parseBoolean(option.optionName, value),
+                )
+            }
+            REPORT_UNDOCUMENTED_CLASS_PROPERTIES_OPTION.optionName -> {
+                configuration.put(
+                    WatchdogConfigurationKeys.REPORT_UNDOCUMENTED_CLASS_PROPERTIES,
                     parseBoolean(option.optionName, value),
                 )
             }

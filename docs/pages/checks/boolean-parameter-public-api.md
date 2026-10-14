@@ -71,7 +71,7 @@ The check skips:
 If this is intended, apply `@IntentionallyBooleanParameter` to the function or
 Boolean parameter.
 
-Use the exemption when the parameter's meaning is unmistakable from the function name.
+Use the exemption when the declaration is part of the API design or must stay for backwards compatibility.
 
 ```kotlin
 // !hide-focused
@@ -87,13 +87,13 @@ public fun setIsVerbose(enabled: Boolean) {}
 
 ```kotlin
 apiWatchdog {
-    booleanParameterPublicApi = WatchdogSeverity.WARNING
+    booleanParameterPublicApi = WatchdogSeverity.ERROR
 }
 ```
 
 For a direct compiler call:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=BOOLEAN_PARAMETER_PUBLIC_API:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=BOOLEAN_PARAMETER_PUBLIC_API:error
 ```
 
 ## See also

@@ -11,6 +11,7 @@ class WatchdogFirExtensionRegistrar internal constructor(
     private val dependencyExposure: DependencyExposureCheckConfiguration? = null,
     private val publicTypeWithInternalApiEnabled: Boolean = true,
     private val exemptingExistingApi: Boolean = false,
+    private val reportUndocumentedClassProperties: Boolean = false,
 ) : FirExtensionRegistrar() {
     override fun ExtensionRegistrarContext.configurePlugin() {
         if (internalApiAnnotations.isNotEmpty()) {
@@ -25,6 +26,7 @@ class WatchdogFirExtensionRegistrar internal constructor(
                 dependencyExposure,
                 publicTypeWithInternalApiEnabled,
                 exemptingExistingApi,
+                reportUndocumentedClassProperties,
             )
         }
     }

@@ -173,6 +173,16 @@ public open class WatchdogGradleExtension @Inject internal constructor(
         objectFactory.property(Boolean::class.java).convention(true)
 
     /**
+     * Whether `UNDOCUMENTED_PUBLIC_API` reports the member properties of a class. Default is `false`,
+     * because the check doesn't read the `@property` tags of the class KDoc.
+     *
+     * See [Undocumented public API](https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api#class-properties)
+     * for more details.
+     */
+    public val reportUndocumentedClassProperties: Property<Boolean> =
+        objectFactory.property(Boolean::class.java).convention(false)
+
+    /**
      * Fully qualified names of annotation classes that mark internal API, besides those that
      * carry `@InternalAnnotationMarker`. The watchdog skips the declarations under such an
      * annotation, and `PUBLIC_TYPE_WITH_INTERNAL_API` reports a public declaration that exposes

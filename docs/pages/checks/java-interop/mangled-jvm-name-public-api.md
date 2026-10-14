@@ -38,8 +38,12 @@ public fun take(id: UserId) { }
 
 ## Rationale
 
-A mangled method name such as `take-<hash>` is invalid in Java source. Constructors with
-value-class parameters become private, with a synthetic constructor that Java sources can't call.
+A mangled JVM method name such as `take-<hash>` is invalid in Java source.
+
+For constructors with value-class parameters, the compiler generates a private constructor and
+a synthetic constructor that Java source can't call.
+
+Use `@JvmName` to give the function a valid name in Java source.
 
 ### Don't
 
@@ -64,6 +68,9 @@ public fun take(id: UserId) { }
 @JvmName("take")
 public fun take(id: UserId) { }
 ```
+
+`@JvmExposeBoxed` generates boxed variants for Java callers alongside the mangled variants.
+Constructors need this annotation because the compiler doesn't accept `@JvmName` on them.
 
 ### Don't {#dont-2}
 
@@ -99,9 +106,6 @@ public class Wallet(
 )
 ```
 
-`@JvmExposeBoxed` generates Java-callable boxed variants alongside the mangled ones. It is the
-only fix for constructors, since the compiler doesn't accept `@JvmName` on them.
-
 ### Don't {#dont-3}
 
 ```kotlin
@@ -128,22 +132,16 @@ public class Ledger {
 }
 ```
 
-For a `val` or `var` members, put the rename on the accessors with `@get:JvmName` and
-`@set:JvmName` instead.
-
 ## Notes
 
 - Rename property accessors with `@get:JvmName` and `@set:JvmName`.
-  The check treats each accessor separately. A rename or `@JvmSynthetic` on one doesn't exempt the other.
-- `@JvmExposeBoxed` adds boxed variants. Apply it to the declaration or an enclosing class.
-  Constructors need this annotation because they don't accept `@JvmName`.
-  Add `@OptIn(ExperimentalStdlibApi::class)`.
-- Open and abstract members support neither `@JvmName` nor boxed variants.
-  If Java needs access, remove the value class from their signature.
-- Value classes inside type arguments, such as `List<UserId>`, don't cause mangling.
-- A top-level function or getter that only returns a value class keeps its JVM name.
+  The check treats each accessor separately. A rename or `@JvmSynthetic` on one accessor doesn't exempt the other.
+- Open and abstract members don't support `@JvmName` or boxed variants.
+  If Java callers need access, remove the value class from the signature.
+- Value classes in type arguments, such as `List<UserId>`, don't cause JVM name mangling.
+- If a top-level function or getter uses a value class only as its return type, its JVM name doesn't change.
 - The check skips members and constructors of the value class itself.
-- `suspend` functions are checked with [Kotlin-only API without JvmSynthetic](./kotlin-only-api-without-jvm-synthetic.md).
+- The plugin checks `suspend` functions with [Kotlin-only API without JvmSynthetic](./kotlin-only-api-without-jvm-synthetic.md).
 - The check skips overrides, `@JvmSynthetic` declarations, and `@PublishedApi internal` declarations.
 
 ## Exemption
@@ -152,7 +150,7 @@ For a `val` or `var` members, put the rename on the accessors with `@get:JvmName
 If this is intended, apply `@IntentionallyMangledJvmName` to the declaration or an
 enclosing class.
 
-Use the exemption when Java access is unnecessary.
+Use the exemption when the declaration is part of the API design or must stay for backwards compatibility.
 
 ```kotlin
 // !hide-focused
@@ -169,7 +167,7 @@ public fun take(id: UserId) { }
 ```kotlin
 apiWatchdog {
     javaInterop {
-        mangledJvmNamePublicApi = WatchdogSeverity.WARNING
+        mangledJvmNamePublicApi = WatchdogSeverity.ERROR
     }
 }
 ```
@@ -177,8 +175,9 @@ apiWatchdog {
 `javaInterop { enabled = false }` disables all [Java interop checks](./java-interop.md).
 
 For a direct compiler call:
+
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=MANGLED_JVM_NAME_PUBLIC_API:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=MANGLED_JVM_NAME_PUBLIC_API:error
 ```
 
 ## See also

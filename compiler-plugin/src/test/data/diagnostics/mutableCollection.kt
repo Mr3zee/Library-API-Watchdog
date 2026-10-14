@@ -1,6 +1,6 @@
 // RUN_PIPELINE_TILL: FRONTEND
 // EXPLICIT_API_MODE: WARNING
-// DIAGNOSTICS: -STATEFUL_CLASS_WITHOUT_EQUALS -STATEFUL_CLASS_WITHOUT_HASH_CODE -STATEFUL_CLASS_WITHOUT_TO_STRING -UNDOCUMENTED_PUBLIC_API -EXEMPTION_WITHOUT_EXPLANATION -OPEN_API_WITHOUT_SUBCLASS_OPT_IN -TOP_LEVEL_API_WITHOUT_JVM_NAME -KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
+// DIAGNOSTICS: -STATEFUL_CLASS_WITHOUT_EQUALS -STATEFUL_CLASS_WITHOUT_HASH_CODE -STATEFUL_CLASS_WITHOUT_TO_STRING -UNDOCUMENTED_PUBLIC_API -EXEMPTION_WITHOUT_EXPLANATION -OPEN_API_WITHOUT_SUBCLASS_OPT_IN -TOP_LEVEL_API_WITHOUT_JVM_NAME -KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC -FUNCTION_TYPE_ALIAS_PUBLIC_API
 
 package foo.bar
 
@@ -40,14 +40,33 @@ public fun schedule(task: <!MUTABLE_COLLECTION_PUBLIC_API!>suspend () -> Mutable
 
 public fun callbackFactory(): <!MUTABLE_COLLECTION_PUBLIC_API!>(MutableList<Int>) -> Unit<!> = {}
 
-// A function-type receiver is reported, unlike an extension receiver: the lambda gets state that
-// the user didn't hold before.
-
-public fun assemble(block: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int>.() -> Unit<!>): List<Int> =
+public fun assemble(block: MutableList<Int>.() -> Unit): List<Int> =
     mutableListOf<Int>().apply(block).toList()
 
-public fun buildInto(@IntentionallyMutableCollection block: MutableList<Int>.() -> Unit): List<Int> =
-    mutableListOf<Int>().apply(block).toList()
+public fun buildInto(@IntentionallyMutableCollection block: (MutableList<Int>) -> Unit): List<Int> =
+    mutableListOf<Int>().also(block).toList()
+
+public fun receiverCallbackFactory(): MutableList<Int>.() -> Unit = {}
+
+public val receiverCallback: MutableList<Int>.() -> Unit = {}
+
+public typealias CollectionBuilder = MutableList<Int>.() -> Unit
+
+public fun aliasedBuilder(block: CollectionBuilder) { }
+
+public fun nestedBuilders(blocks: List<MutableList<Int>.() -> Unit>) { }
+
+public fun nestedReceiverBuilder(block: List<MutableList<Int>>.() -> Unit) { }
+
+public fun suspendBuilder(block: suspend MutableList<Int>.() -> Unit) { }
+
+public fun receiverWithMutableParameter(block: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int>.(MutableList<Int>) -> Unit<!>) { }
+
+public fun receiverWithMutableReturn(block: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int>.() -> MutableList<Int><!>) { }
+
+public fun contextualBuilder(block: context(String) MutableList<Int>.() -> Unit) { }
+
+public fun mutableContextBuilder(block: <!MUTABLE_COLLECTION_PUBLIC_API!>context(MutableList<Int>) MutableList<Int>.() -> Unit<!>) { }
 
 public fun onEachBatch(action: (@IntentionallyMutableCollection MutableList<Int>) -> Unit) { }
 

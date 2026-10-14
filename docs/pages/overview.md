@@ -17,7 +17,7 @@ Every check is on by default and reports a compilation error, except
 
 ## What it looks like
 
-A public data class that hands out a mutable collection, without documentation, triggers four
+A public data class that hands out a mutable collection, without documentation, triggers three
 diagnostics at once:
 
 :::tip
@@ -29,7 +29,6 @@ diagnostic and follow its link to the full documentation.
 // !diag[/Config/] DATA_CLASS_PUBLIC_API ["Config"]
 // !diag[/Config/] UNDOCUMENTED_PUBLIC_API ["$class","Config"]
 public data class Config(
-    // !diag[/tags/] UNDOCUMENTED_PUBLIC_API ["$property","tags"]
     // !diag[/MutableList<String>/] MUTABLE_COLLECTION_PUBLIC_API ["$property","tags","MutableList","$returnTypeFix"]
     public val tags: MutableList<String>
 )

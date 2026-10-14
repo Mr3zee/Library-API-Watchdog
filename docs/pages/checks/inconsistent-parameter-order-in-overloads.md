@@ -160,7 +160,7 @@ The comparisons have these limits:
 If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function
 or constructor.
 
-Use the exemption when an existing overload's parameter order must stay for source compatibility.
+Use the exemption when the declaration is part of the API design or must stay for backwards compatibility.
 The annotation removes that overload from all comparisons.
 
 ```kotlin
@@ -183,13 +183,13 @@ public fun draw(y: Int, x: Int, scale: Double) { }
 
 ```kotlin
 apiWatchdog {
-    inconsistentParameterOrderInOverloads = WatchdogSeverity.WARNING
+    inconsistentParameterOrderInOverloads = WatchdogSeverity.ERROR
 }
 ```
 
 For a direct compiler call:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS:error
 ```
 
 ## See also

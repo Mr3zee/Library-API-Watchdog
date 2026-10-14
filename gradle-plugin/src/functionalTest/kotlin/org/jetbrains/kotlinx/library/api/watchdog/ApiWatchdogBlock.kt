@@ -13,6 +13,8 @@ class ApiWatchdogBlock internal constructor() {
 
     var publicTypesMustBeTransitiveDependencies: Boolean? = null
 
+    var reportUndocumentedClassProperties: Boolean? = null
+
     /** A Java-interop diagnostic goes into the `javaInterop { }` group. */
     fun severity(severity: Severity, vararg diagnostics: Diagnostic) {
         for (diagnostic in diagnostics) {
@@ -63,6 +65,7 @@ class ApiWatchdogBlock internal constructor() {
         publicTypesMustBeTransitiveDependencies?.let {
             appendLine("    publicTypesMustBeTransitiveDependencies = $it")
         }
+        reportUndocumentedClassProperties?.let { appendLine("    reportUndocumentedClassProperties = $it") }
         lines.forEach { appendLine("    $it") }
         if (javaInterop.isNotEmpty) {
             appendLine("    javaInterop {")

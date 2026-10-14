@@ -85,7 +85,7 @@ internal object CheckerSubjects {
         ) { ofClass(DslMarkerTargetsChecker(severities)) },
 
         CheckerSubject("UndocumentedApiChecker", listOf("UNDOCUMENTED_PUBLIC_API")) { environment ->
-            ofBasic(UndocumentedApiChecker(severities))
+            ofBasic(UndocumentedApiChecker(severities, reportClassProperties = true))
         },
         CheckerSubject("ExemptionExplanationChecker", emptyList()) {
             IsolatedCheckers(

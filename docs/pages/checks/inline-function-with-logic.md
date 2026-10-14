@@ -10,10 +10,10 @@
 ## What it reports
 
 An inline function or property accessor in the public API or declared as `@PublishedApi internal`
-whose body exceeds the [thin-wrapper](#permitted-thin-wrapper-operations) limits.
-The body must have at most one statement, apart from an optional `contract { ... }`,
-and use only the [permitted operations](#permitted-thin-wrapper-operations).
-Parameter defaults must use the same permitted operations.
+whose body isn't a thin wrapper.
+A thin wrapper has at most one statement after an optional `contract { ... }` call,
+and the statement uses only the [accepted operations](#accepted-operations).
+Parameter defaults must meet the same limits.
 
 ```kotlin
 // !hide-focused
@@ -37,18 +37,16 @@ public inline fun <reified T : Any> decodePayload(payload: String): T {
 
 The compiler copies inline bodies into caller binaries.
 A new library version doesn't replace those copies until callers recompile.
-Move the logic to a non-inline `@PublishedApi internal` function.
-Compiled callers then run the implementation from the library version at runtime.
+Move the logic to a non-inline `@PublishedApi internal` function and call it from the inline wrapper.
+Compiled callers then run the implementation of the library version on their runtime classpath.
 
-Example of how the problem can appear:
+How the problem appears:
 
-1. `analytics-sdk` is compiled against version **1.0** of `metrics-sdk` and calls an inline function.
-2. The inline body from **1.0** `metrics-sdk` is copied into the published `analytics-sdk` binary.
-3. An application later resolves version **1.1** of `metrics-sdk`, which contains a fix in the inline body,
-   without getting a recompiled `analytics-sdk`.
-4. The SDK still executes its private copy of the **1.0** `metrics-sdk` logic. Updating `metrics-sdk` version can't
-   fix it.
-
+1. `analytics-sdk` compiles against `metrics-sdk` **1.0** and calls its inline function.
+2. The published `analytics-sdk` binary holds a copy of the **1.0** inline body.
+3. An application depends on the published `analytics-sdk` and resolves `metrics-sdk` **1.1**,
+   which fixes the inline body.
+4. `analytics-sdk` still runs its copy of the **1.0** body. A new `metrics-sdk` version can't fix it.
 
 ### Don't
 
@@ -96,26 +94,30 @@ public inline fun <reified T : Any> resolveService(): T =
 
 ## Notes
 
-## Permitted thin-wrapper operations
+A thin wrapper has one of these body forms:
 
-These constructs are not permitted, because they put library-authored behavior into the caller
-binary:
+- An expression body.
+- A block with one statement, with or without `return`.
+- An empty body.
 
-- Control flow, `throw`, string templates, local declarations, object expressions, null-safe
-  calls, Elvis expressions, `!!`, and multiple statements.
-- Operators of built-in types, such as `Int`, `Boolean`, `String`, and arrays, in any syntax.
-  `x + 1`, `x.plus(1)`, `!flag`, `a == b`, and `array[0]` all compile to instructions in the
-  caller binary.
-- Calls to and references to inline functions and inline properties of your library. The
-  compiler copies their bodies through the wrapper.
+Accepted operations can nest. Each receiver and argument must be an accepted operation too.
 
-The standard library is stable, so a call to a standard library function, inline or not, is a
-regular call. `println(message)`, `text.toInt()`, and `value.let { it }` are permitted.
+The check rejects these operations because they copy library behavior into caller binaries:
 
-Instead, thin wrappers are permitted. A thin wrapper has at most one statement:
-an expression body, a single explicit `return`, or an empty body.
-An optional `contract` call before the statement doesn't count.
-The statement can combine any of the following operations, nested freely into one expression, and nothing else.
+- Branches, loops, and `try` expressions.
+- `throw`, string templates, local declarations, and object expressions.
+- Null-safe calls, Elvis expressions, and `!!`.
+- Equality expressions such as `a == b`, for every type.
+- Operator and infix members of built-in types such as `Int`, `Boolean`, `String`, and arrays,
+  in any syntax: `x + 1`, `x.plus(1)`, `!flag`, and `array[0]`.
+- Calls, property accesses, and callable references to inline declarations outside the standard library.
+  The compiler copies their bodies through the wrapper.
+
+The check accepts standard library functions and properties, inline or not,
+such as `println(message)`, `text.toInt()`, and `value.let { it }`.
+Built-in operators and infix members stay rejected.
+
+## Accepted operations
 
 ### Calls to non-inline functions and constructors
 
@@ -137,20 +139,6 @@ public inline fun record(name: String, value: Long) {
 // !hide-focused
 @file:JvmName("Metrics")
 
-@PublishedApi
-internal fun snapshotImpl(): Map<String, Long> = emptyMap()
-
-// !hide-focused
-/** Returns a snapshot of everything recorded so far. */
-public inline fun snapshot(): Map<String, Long> {
-    return snapshotImpl()
-}
-```
-
-```kotlin
-// !hide-focused
-@file:JvmName("Metrics")
-
 // !hide-focused
 /** Creates a builder for a metric label starting with [prefix]. */
 public inline fun labelBuilder(prefix: String): StringBuilder {
@@ -158,7 +146,14 @@ public inline fun labelBuilder(prefix: String): StringBuilder {
 }
 ```
 
-### Pass values as arguments
+### Values and arguments
+
+A wrapper can use these values:
+
+- Parameter reads and `this` references.
+- Literals, including negative numbers and `null`.
+- Object, companion object, and enum entry references.
+- Vararg spreads such as `*values`.
 
 ```kotlin
 // !hide-focused
@@ -190,6 +185,9 @@ public inline fun recordAll(vararg values: Long) {
 
 ### Property access through non-inline accessors
 
+Outside the standard library, a property read must use a non-inline getter
+and a property assignment must use a non-inline setter.
+
 ```kotlin
 // !hide-focused
 @file:JvmName("Metrics")
@@ -208,6 +206,9 @@ public inline var limit: Int
 
 ### Callable references
 
+Outside the standard library, a callable reference must target a non-inline function
+or a property with a non-inline getter.
+
 ```kotlin
 // !hide-focused
 @file:JvmName("Metrics")
@@ -221,7 +222,7 @@ public inline val flushAction: () -> Unit
     get() = ::flushImpl
 ```
 
-### Reified class references, type checks, and casts
+### Class references, type checks, and casts
 
 ```kotlin
 // !hide-focused
@@ -248,7 +249,10 @@ public inline fun <reified T : Any> decode(payload: String): T =
 public inline fun <reified T : Any> holds(value: Any?): Boolean = value is T
 ```
 
-### Direct invocation of the wrapper's own function parameter
+### Calls to the wrapper's own function parameter
+
+The caller writes the lambda body, so it is caller logic.
+The compiler copies it into the caller binary in any case.
 
 ```kotlin
 // !hide-focused(1:6)
@@ -270,9 +274,10 @@ public inline fun <R> once(block: () -> R): R {
 
 See [Lambda parameters and suspend callers](#lambda-parameters-and-suspend-callers) for more details.
 
-### A lambda literal with a thin body
+### Lambda literals with a thin body
 
-A lambda literal here is `{ action() }` - the `action` parameter passed to `scheduleFlushImpl`:
+The compiler copies a lambda body into caller binaries too.
+So each lambda or anonymous function body, nested or not, must meet the same limits as the wrapper.
 
 ```kotlin
 // !hide-focused
@@ -289,44 +294,7 @@ public inline fun afterFlush(crossinline action: () -> Unit) {
 }
 ```
 
-Kotlin copies `{ action() }` into every caller. This is safe because the lambda only calls the user's `action`.
-The library's behavior stays in `scheduleFlushImpl`, where a library update can fix it.
-
-The same rule applies to lambdas inside other lambdas:
-
-```kotlin
-// !hide-focused
-@file:JvmName("Forms")
-
-// !hide-focused
-/** Application context */
-public class Context { /* ... */ }
-
-@PublishedApi
-internal fun withApplicationContext(body: Context.() -> Unit) { /* ... */ }
-
-@PublishedApi
-internal fun addCallbackImpl(key: String, provider: () -> Unit) { /* ... */ }
-
-// !hide-focused(1:2)
-/** Add an application callback with an access to the Context */
-@JvmSynthetic
-public inline fun addCallback(
-    key: String, 
-    crossinline callback: Context.() -> Unit,
-) {
-    addCallbackImpl(key) { 
-        withApplicationContext { 
-            callback() 
-        } 
-    }
-}
-```
-
-Kotlin copies both lambda bodies into every caller. Keep them simple and put library behavior in
-regular functions such as `withApplicationContext` and `addCallbackImpl`.
-
-This, for example, won't pass the check:
+This lambda has two statements, so the check reports `addCallback`:
 
 ```kotlin
 // !hide-focused(1:10)
@@ -356,13 +324,11 @@ public inline fun addCallback(
 }
 ```
 
-The lambda passed to `addCallbackImpl` contains two statements. Kotlin copies both into every
-caller, so the check reports `addCallback`. Put the logging in a regular function instead.
+Move the logging to a non-inline function.
 
 ### User-defined operators and infix functions
 
-A user-defined operator or infix function is a regular call. Only operators of built-in types are
-instructions in the caller binary.
+Outside the standard library, the operator or infix function must be non-inline.
 
 ```kotlin
 // !hide-focused
@@ -383,16 +349,9 @@ public inline fun sum(a: Vector, b: Vector): Vector = a + b
 
 ## Lambda parameters and suspend callers
 
-Directly invoking the wrapper's own lambda parameter,
-like `once` [here](#direct-invocation-of-the-wrappers-own-function-parameter), is permitted.
-The lambda body is written by the caller and is compiled into the caller binary in any case, so it is caller
-logic rather than library logic.
-
-However, in-place invocation is also why the `inline` modifier is useful for builder APIs. An inlined lambda
-runs in the caller's context, so a caller inside a suspend function can call suspend functions in
-the lambda even though the lambda type is not `suspend`.
-
-Take this example of a builder API:
+An in-place lambda runs in the caller's context.
+So a suspend caller can call suspend functions in it even though the lambda type isn't `suspend`.
+This is what makes `inline` useful for builder APIs:
 
 ```kotlin
 // !hide-focused
@@ -434,7 +393,7 @@ public inline fun buildParameters(
 ): Parameters = ParametersBuilder().apply(builder).build()
 ```
 
-And then a user code that calls it:
+A suspend caller:
 
 ```kotlin
 private suspend fun fetchToken(): String = "token"
@@ -449,8 +408,7 @@ private suspend fun authorizedQuery(): Parameters = buildParameters {
 <!-- diagnostic-exemption: INLINE_FUNCTION_WITH_LOGIC -->
 If this is intended, apply `@IntentionallyInlinedLogic` to the declaration.
 
-Use the exemption when callers need suspend calls or non-local returns inside an in-place lambda.
-Minimize the exempted body because every operation becomes part of caller binaries.
+Use the exemption when the declaration is part of the API design or must stay for backwards compatibility.
 
 ```kotlin
 // !hide-focused
@@ -480,13 +438,13 @@ public inline fun <R> traced(name: String, block: () -> R): R {
 
 ```kotlin
 apiWatchdog {
-    inlineFunctionWithLogic = WatchdogSeverity.WARNING
+    inlineFunctionWithLogic = WatchdogSeverity.ERROR
 }
 ```
 
 For a direct compiler call:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=INLINE_FUNCTION_WITH_LOGIC:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=INLINE_FUNCTION_WITH_LOGIC:error
 ```
 
 ## See also

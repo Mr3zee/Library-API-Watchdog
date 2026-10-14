@@ -91,13 +91,13 @@ The annotation has no `reason` parameter. Its `description` is optional.
 
 ```kotlin
 apiWatchdog {
-    dslMarkerNoopTarget = WatchdogSeverity.WARNING
+    dslMarkerNoopTarget = WatchdogSeverity.ERROR
 }
 ```
 
 For a direct compiler call:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=DSL_MARKER_NOOP_TARGET:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=DSL_MARKER_NOOP_TARGET:error
 ```
 
 ## See also

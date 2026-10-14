@@ -84,13 +84,13 @@ The check applies to declarations of any visibility. It skips:
 
 ```kotlin
 apiWatchdog {
-    dslMarkerNoopTypePosition = WatchdogSeverity.WARNING
+    dslMarkerNoopTypePosition = WatchdogSeverity.ERROR
 }
 ```
 
 For a direct compiler call:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=DSL_MARKER_NOOP_TYPE_POSITION:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=DSL_MARKER_NOOP_TYPE_POSITION:error
 ```
 
 ## See also

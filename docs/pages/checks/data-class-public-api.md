@@ -27,21 +27,20 @@ public data class Point(
 
 ## Rationale
 
-The check is about what `data` adds on top of a regular public class. The compiler generates three
-additional API surfaces from the primary-constructor property list:
+A data class exposes its primary constructor properties through these generated members:
 
-- a positional `copy` function whose parameters and defaults mirror the constructor,
-- one positional `componentN` function per property, which is what destructuring compiles to,
-- `equals`, `hashCode`, and `toString` defined over exactly that ordered list.
+- `copy`: One parameter for each property, in declaration order.
+- `componentN`: One function for each property, in declaration order.
+- `equals`, `hashCode`, and `toString`
 
-A regular class has none of this surface unless you choose to write it,
-and what you write you can shape and evolve.
+Data classes can define `equals`, `hashCode`, and `toString`, or inherit final implementations.
+Kotlin still generates `copy` and `componentN`.
 
-The three surfaces come as a package that can't be split. A tool like
-[Poko](https://github.com/drewhamilton/Poko) only generates `equals`, `hashCode`, and
-`toString` and leaves `copy` and `componentN` out, giving you a better control.
+In a regular class, you choose which members to declare.
+[Poko](https://github.com/drewhamilton/Poko) generates `equals`, `hashCode`, and `toString`
+without `copy` or `componentN`.
 
-In user code, the following public API becomes available:
+Callers can use the generated API:
 
 ```kotlin
 // !hide-focused
@@ -64,11 +63,12 @@ private fun clientCode() {
 }
 ```
 
-The generated members also carry behavior a regular class never acquires silently: 
-- The `copy` function is shallow.
-- A mutable primary property can change `hashCode` while the instance sits in a hash-based
-  collection. 
-- A state declared in the class body is excluded from all the generated members:
+The generated members also have these behaviors:
+
+- The `copy` function is shallow, so the copy shares references to objects stored in properties.
+- A change to a primary constructor property can change the instance's hash code.
+  This can prevent lookup in hash-based collections.
+- The generated members exclude properties declared in the class body:
 
   ```kotlin
   // !hide-focused
@@ -85,14 +85,13 @@ The generated members also carry behavior a regular class never acquires silentl
   }
   ```
 
-  Two sessions created a day apart still compare equal and print identically, and `copy` quietly
-  resets `createdAt`. On a regular class each of these behaviors exists only if you wrote it.
+  Sessions with the same `value` compare equal and have the same string representation, even if their `createdAt` values differ.
+  A call to `copy` initializes `createdAt` again.
 
-### The workaround negates the convenience
+### Compatibility overloads {#the-workaround-negates-the-convenience}
 
-The signature breaks can be patched by hand. Keeping existing compiled callers of `Region`
-linking after `offsetX` is appended means replaying the previous shape in the class body: a
-secondary constructor with the old parameter list and a `copy` overload with the old signature.
+If `Region` gains an `offsetX` property, existing compiled callers still need the old constructor and `copy` signatures.
+The secondary constructor and `copy` overload below restore calls that pass both `width` and `height`.
 
 ```kotlin
 // !hide-focused
@@ -119,11 +118,11 @@ public data class Region(
 }
 ```
 
-Compiled callers link again, but is the data class worth it now? The `data` modifier was chosen so
-that exactly these members would not have to be written by hand.
+On the JVM, compiled calls that omit `copy` arguments use `copy$default`.
+This example doesn't restore that method's old signature.
 
-From the Kotlin library authors' guide on
-[avoiding data classes in your API](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#avoid-using-data-classes-in-your-api):
+From the Kotlin library authors' guide,
+[Avoid using data classes in your API](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#avoid-using-data-classes-in-your-api):
 
 > It's possible to work around these issues by manually writing a secondary constructor and
 > overriding the `copy` method. However, the effort involved negates the convenience of using a
@@ -172,7 +171,7 @@ public class Coordinates(
 <!-- diagnostic-exemption: DATA_CLASS_PUBLIC_API -->
 If this is intended, apply `@IntentionallyDataClass` to the class.
 
-Use the exemption when `copy` and positional destructuring are stable parts of the API contract.
+Use the exemption when the declaration is part of the API design or must stay for backwards compatibility.
 
 ```kotlin
 // !hide-focused
@@ -188,20 +187,17 @@ public data class Coordinates(
 )
 ```
 
-Removing `data` from an already-published class breaks source and binary compatibility.
-For that case, use `ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`.
-
 ## Configuration
 
 ```kotlin
 apiWatchdog {
-    dataClassPublicApi = WatchdogSeverity.WARNING
+    dataClassPublicApi = WatchdogSeverity.ERROR
 }
 ```
 
 For a direct compiler call:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=DATA_CLASS_PUBLIC_API:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=DATA_CLASS_PUBLIC_API:error
 ```
 
 ## See also

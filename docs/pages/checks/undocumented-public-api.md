@@ -64,7 +64,9 @@ public class Cache {
 
 ## Notes
 
-- For the check to pass, each property needs its own KDoc. Class KDoc tags, including `@property` and `@param` are valid options to document properties, but this can't be checked by a compiler plugin. This is the reason this check is a warning.
+- A member property of a class, an interface, or an object isn't reported by default, because the
+  check doesn't read the `@property` and `@param` tags of the class KDoc.
+  [Class properties](#class-properties) turns the property part of the check on.
 - Overrides and `actual` declarations aren't reported.
 - The check skips default-named companion objects and checks their members and named companions.
 - Enum entries, primary constructors, and compiler-generated members aren't reported.
@@ -91,13 +93,30 @@ Replace each placeholder with the declaration's contract.
 
 ```kotlin
 apiWatchdog {
-    undocumentedPublicApi = WatchdogSeverity.ERROR
+    undocumentedPublicApi = WatchdogSeverity.WARNING
 }
 ```
 
 For a direct compiler call:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:error
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:warning
+```
+
+### Class properties
+
+`reportUndocumentedClassProperties` is `false` by default: the check skips every member property
+of a class, an interface, and an object, and reports a top-level property. Set it to `true` when
+each property must carry its own KDoc:
+
+```kotlin
+apiWatchdog {
+    reportUndocumentedClassProperties = true
+}
+```
+
+For a direct compiler call:
+```
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:reportUndocumentedClassProperties=true
 ```
 
 ## See also

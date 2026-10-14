@@ -25,6 +25,7 @@ import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.KOTLIN_ONLY_API_WIT
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.MUTABLE_COLLECTION_PUBLIC_API
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.NULLABLE_BOOLEAN_PUBLIC_API
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.OPEN_API_WITHOUT_SUBCLASS_OPT_IN
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.TOP_LEVEL_API_WITHOUT_JVM_NAME
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PAIR_OR_TRIPLE_PUBLIC_API
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PUBLIC_TYPE_WITH_INTERNAL_API
@@ -202,6 +203,47 @@ class WatchdogProjectTest {
         }
 
         project.build("build").assertNotReported(PUBLIC_TYPE_WITH_INTERNAL_API)
+    }
+
+    @Test
+    fun undocumentedClassPropertiesAreSkippedByDefault() {
+        val result = holderProject(reportUndocumentedClassProperties = null).build("build")
+
+        result.assertWarnings(UNDOCUMENTED_PUBLIC_API)
+        result.assertOutputHas("The public function `undocumentedFunction` has no `KDoc`")
+        result.assertOutputHas("The public property `undocumentedTopLevelProperty` has no `KDoc`")
+        result.assertOutputLacks("`value` has no `KDoc`")
+    }
+
+    @Test
+    fun undocumentedClassPropertiesCanBeReported() {
+        val result = holderProject(reportUndocumentedClassProperties = true).build("build")
+
+        result.assertOutputHas("The public property `value` has no `KDoc`")
+    }
+
+    private fun holderProject(reportUndocumentedClassProperties: Boolean?) = jvmProject {
+        apiWatchdog {
+            this.reportUndocumentedClassProperties = reportUndocumentedClassProperties
+            severity(NONE, OPEN_API_WITHOUT_SUBCLASS_OPT_IN, TOP_LEVEL_API_WITHOUT_JVM_NAME)
+        }
+        source(
+            """
+            /**
+             * Documented.
+             *
+             * @property value Documented through the class KDoc.
+             */
+            public interface Holder {
+                public val value: Int
+
+                public fun undocumentedFunction(): Int
+            }
+
+            public val undocumentedTopLevelProperty: Int = 0
+            """,
+            "holder",
+        )
     }
 
     @Test

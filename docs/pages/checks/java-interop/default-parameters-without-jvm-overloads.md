@@ -80,7 +80,7 @@ The check excludes:
 If this is intended, apply `@IntentionallyWithoutJvmOverloads` to the function or
 constructor.
 
-Use the exemption when Java callers must pass every argument or use another API.
+Use the exemption when the declaration is part of the API design or must stay for backwards compatibility.
 
 ```kotlin
 // !hide-focused
@@ -112,7 +112,7 @@ public fun connect(
 ```kotlin
 apiWatchdog {
     javaInterop {
-        defaultParametersWithoutJvmOverloads = WatchdogSeverity.WARNING
+        defaultParametersWithoutJvmOverloads = WatchdogSeverity.ERROR
     }
 }
 ```
@@ -121,5 +121,5 @@ apiWatchdog {
 
 For a direct compiler call:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS:error
 ```

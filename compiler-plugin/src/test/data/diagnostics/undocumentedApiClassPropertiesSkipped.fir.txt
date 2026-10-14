@@ -1,0 +1,55 @@
+FILE: undocumentedApiClassPropertiesSkipped.kt
+    package foo.bar
+
+    public final val undocumentedTopLevelProperty: R|kotlin/Int| = Int(0)
+        public get(): R|kotlin/Int|
+    public final val R|kotlin/String|.undocumentedTopLevelExtension: R|kotlin/Int|
+        public get(): R|kotlin/Int| {
+            ^ this@R|foo/bar/undocumentedTopLevelExtension|.R|kotlin/String.length|
+        }
+    public final class DocumentedThroughClassKDocTags : R|kotlin/Any| {
+        public constructor(fromConstructor: R|kotlin/Int|): R|foo/bar/DocumentedThroughClassKDocTags| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val fromConstructor: R|kotlin/Int| = R|<local>/fromConstructor|
+            public get(): R|kotlin/Int|
+
+        public final val fromBody: R|kotlin/Int| = Int(0)
+            public get(): R|kotlin/Int|
+
+        public final val R|kotlin/String|.memberExtension: R|kotlin/Int|
+            public get(): R|kotlin/Int| {
+                ^ this@R|foo/bar/DocumentedThroughClassKDocTags.memberExtension|.R|kotlin/String.length|
+            }
+
+        public final fun undocumentedFunction(): R|kotlin/Unit| {
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/DocumentedThroughClassKDocTags.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final val companionProperty: R|kotlin/Int| = Int(0)
+                public get(): R|kotlin/Int|
+
+        }
+
+    }
+    public abstract interface DocumentedContract : R|kotlin/Any| {
+        public abstract val abstractProperty: R|kotlin/Int|
+            public get(): R|kotlin/Int|
+
+        public abstract fun undocumentedMember(): R|kotlin/Int|
+
+    }
+    public final object DocumentedObject : R|kotlin/Any| {
+        private constructor(): R|foo/bar/DocumentedObject| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val objectProperty: R|kotlin/Int| = Int(0)
+            public get(): R|kotlin/Int|
+
+    }

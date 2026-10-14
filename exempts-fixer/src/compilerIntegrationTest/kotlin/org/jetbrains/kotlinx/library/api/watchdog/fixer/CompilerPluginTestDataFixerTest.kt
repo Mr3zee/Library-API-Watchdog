@@ -270,10 +270,18 @@ private class FixedOutputDiagnosticRunner : DevKitTest(
     fun run(filePath: String) = runTest(filePath)
 }
 
-/** A copy of the directive of the compiler plugin, whose test fixtures aren't on this classpath. */
+/** A copy of the directives of the compiler plugin, whose test fixtures aren't on this classpath. */
 private object WatchdogTestDirectives : SimpleDirectivesContainer() {
     val INTERNAL_API_ANNOTATIONS by stringDirective(
         description = "Annotation FQ names configured as internal API markers (internalApiAnnotation option)",
+    )
+
+    val IGNORE_WHEN_ANNOTATED by stringDirective(
+        description = "Annotation ignore rules in the form of the ignoreWhenAnnotated option",
+    )
+
+    val REPORT_UNDOCUMENTED_CLASS_PROPERTIES by directive(
+        description = "Member properties of a class without KDoc are reported (reportUndocumentedClassProperties=true)",
     )
 }
 
@@ -285,6 +293,17 @@ private class WatchdogOptionsConfigurator(testServices: TestServices) : Environm
         val annotations = module.directives[WatchdogTestDirectives.INTERNAL_API_ANNOTATIONS]
         if (annotations.isNotEmpty()) {
             configuration.put(WatchdogConfigurationKeys.INTERNAL_API_ANNOTATIONS, annotations.toSet())
+        }
+        val ignoreRules = module.directives[WatchdogTestDirectives.IGNORE_WHEN_ANNOTATED]
+        if (ignoreRules.isNotEmpty()) {
+            configuration.put(
+                WatchdogConfigurationKeys.ANNOTATION_IGNORE_RULES,
+                ignoreRules.groupBy({ it.substringBefore(':') }, { it.substringAfter(':') })
+                    .mapValues { (_, annotations) -> annotations.toSet() },
+            )
+        }
+        if (WatchdogTestDirectives.REPORT_UNDOCUMENTED_CLASS_PROPERTIES in module.directives) {
+            configuration.put(WatchdogConfigurationKeys.REPORT_UNDOCUMENTED_CLASS_PROPERTIES, true)
         }
     }
 }

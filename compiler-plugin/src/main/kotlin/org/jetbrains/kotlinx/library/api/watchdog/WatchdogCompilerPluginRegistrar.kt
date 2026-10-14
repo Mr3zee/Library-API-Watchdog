@@ -26,6 +26,8 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
             configuration[WatchdogConfigurationKeys.PUBLIC_TYPE_WITH_INTERNAL_API_ENABLED, true]
         val exemptingExistingApi =
             configuration[WatchdogConfigurationKeys.UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS, false]
+        val reportUndocumentedClassProperties =
+            configuration[WatchdogConfigurationKeys.REPORT_UNDOCUMENTED_CLASS_PROPERTIES, false]
         val dependencyExposure = configuration[WatchdogConfigurationKeys.COMPILE_DEPENDENCY_PATHS]
             ?.let { compileDependencies ->
                 DependencyExposureCheckConfiguration(
@@ -45,6 +47,7 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
                 dependencyExposure = dependencyExposure,
                 publicTypeWithInternalApiEnabled = publicTypeWithInternalApiEnabled,
                 exemptingExistingApi = exemptingExistingApi,
+                reportUndocumentedClassProperties = reportUndocumentedClassProperties,
             ),
         )
     }

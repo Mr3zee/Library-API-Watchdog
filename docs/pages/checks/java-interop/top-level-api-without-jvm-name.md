@@ -56,7 +56,7 @@ public fun connect(): Int = 0
 <!-- diagnostic-exemption: TOP_LEVEL_API_WITHOUT_JVM_NAME -->
 If this is intended, apply `@file:IntentionallyDefaultFacadeName` to the file.
 
-Use the exemption to keep a published facade name.
+Use the exemption when the declaration is part of the API design or must stay for backwards compatibility.
 
 ```kotlin
 @file:IntentionallyDefaultFacadeName(
@@ -76,7 +76,7 @@ public fun connect(): Int = 0
 ```kotlin
 apiWatchdog {
     javaInterop {
-        topLevelApiWithoutJvmName = WatchdogSeverity.WARNING
+        topLevelApiWithoutJvmName = WatchdogSeverity.ERROR
     }
 }
 ```
@@ -85,7 +85,7 @@ apiWatchdog {
 
 For a direct compiler call:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=TOP_LEVEL_API_WITHOUT_JVM_NAME:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=TOP_LEVEL_API_WITHOUT_JVM_NAME:error
 ```
 
 ## See also

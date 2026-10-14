@@ -75,13 +75,13 @@ The [`exemptExistingApi`](../existing-libs.md) task makes this replacement.
 
 ```kotlin
 apiWatchdog {
-    subclassOptInWithoutMarkers = WatchdogSeverity.WARNING
+    subclassOptInWithoutMarkers = WatchdogSeverity.ERROR
 }
 ```
 
 For a direct compiler call:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=SUBCLASS_OPT_IN_WITHOUT_MARKERS:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=SUBCLASS_OPT_IN_WITHOUT_MARKERS:error
 ```
 
 ## See also

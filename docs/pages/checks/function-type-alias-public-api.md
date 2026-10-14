@@ -57,7 +57,7 @@ public fun interface Callback {
 <!-- diagnostic-exemption: FUNCTION_TYPE_ALIAS_PUBLIC_API -->
 If this is intended, apply `@IntentionallyFunctionTypeAlias` to the type alias.
 
-Use the exemption when the expanded function type is part of the API contract.
+Use the exemption when the declaration is part of the API design or must stay for backwards compatibility.
 
 ```kotlin
 // !hide-focused
@@ -70,13 +70,13 @@ public typealias Callback = (Int) -> Unit
 
 ```kotlin
 apiWatchdog {
-    functionTypeAliasPublicApi = WatchdogSeverity.WARNING
+    functionTypeAliasPublicApi = WatchdogSeverity.ERROR
 }
 ```
 
 For a direct compiler call:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=FUNCTION_TYPE_ALIAS_PUBLIC_API:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=FUNCTION_TYPE_ALIAS_PUBLIC_API:error
 ```
 
 ## See also

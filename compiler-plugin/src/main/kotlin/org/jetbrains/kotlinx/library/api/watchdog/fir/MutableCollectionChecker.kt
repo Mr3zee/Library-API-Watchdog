@@ -11,6 +11,8 @@ import org.jetbrains.kotlin.fir.resolve.toClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
+import org.jetbrains.kotlin.fir.types.contextParameterNumberForFunctionType
+import org.jetbrains.kotlin.fir.types.isExtensionFunctionType
 import org.jetbrains.kotlin.fir.types.type
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
@@ -31,6 +33,10 @@ internal class MutableCollectionChecker(
         val classId = type.lookupTag.classId
         return classId.shortClassName.takeIf { classId.isMutableCollectionLike(type) }
     }
+
+    context(context: CheckerContext)
+    override fun ConeKotlinType.shouldCheckTypeArgument(index: Int): Boolean =
+        !isExtensionFunctionType || index != contextParameterNumberForFunctionType
 
     /** A `vararg` parameter gets a copy of the array, so only the element type can leak a mutable collection. */
     context(context: CheckerContext, reporter: DiagnosticReporter)

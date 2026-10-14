@@ -57,8 +57,8 @@ const HIDE_FOCUSED_ANNOTATION = 'hide-focused';
 const CODE_VIEW_STORAGE_KEY = 'library-api-watchdog-code-view';
 const CODE_VIEW_EVENT = 'library-api-watchdog-code-view-change';
 
-type CodeView = 'full' | 'focused';
-let inMemoryCodeView: CodeView = 'full';
+type CodeView = 'focused' | 'full';
+let inMemoryCodeView: CodeView = 'focused';
 
 function CodePre({
   codeblock,
@@ -116,14 +116,6 @@ function FocusedCodeTabs({codeblock}: {codeblock: HighlightedCode}): ReactNode {
           <div aria-label="Code detail" className={styles.codeTabs} role="tablist">
             <CodeTab
               controls={`${tabId}-panel`}
-              id={`${tabId}-full`}
-              onSelect={() => selectView('full')}
-              selected={view === 'full'}
-            >
-              Full
-            </CodeTab>
-            <CodeTab
-              controls={`${tabId}-panel`}
               id={`${tabId}-focused`}
               onSelect={() => selectView('focused')}
               selected={view === 'focused'}
@@ -131,6 +123,14 @@ function FocusedCodeTabs({codeblock}: {codeblock: HighlightedCode}): ReactNode {
               Focused
             </CodeTab>
             <FocusedHint />
+            <CodeTab
+              controls={`${tabId}-panel`}
+              id={`${tabId}-full`}
+              onSelect={() => selectView('full')}
+              selected={view === 'full'}
+            >
+              Full
+            </CodeTab>
           </div>
           {codeblock.meta && <span className={styles.tabbedFilename}>{codeblock.meta}</span>}
         </div>
@@ -227,7 +227,7 @@ function FocusedHint(): ReactNode {
 }
 
 function usePersistentCodeView(): [CodeView, (view: CodeView) => void] {
-  const [view, setView] = useState<CodeView>('full');
+  const [view, setView] = useState<CodeView>('focused');
 
   useEffect(() => {
     const update = () => setView(readStoredCodeView());
@@ -256,7 +256,7 @@ function usePersistentCodeView(): [CodeView, (view: CodeView) => void] {
 function readStoredCodeView(): CodeView {
   try {
     inMemoryCodeView =
-      window.localStorage.getItem(CODE_VIEW_STORAGE_KEY) === 'focused' ? 'focused' : 'full';
+      window.localStorage.getItem(CODE_VIEW_STORAGE_KEY) === 'full' ? 'full' : 'focused';
   } catch {
     // When the browser blocks storage, the last selected view stays.
   }

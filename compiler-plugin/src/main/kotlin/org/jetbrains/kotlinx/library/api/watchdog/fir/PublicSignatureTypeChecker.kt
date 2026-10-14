@@ -99,6 +99,9 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
     context(context: CheckerContext)
     protected open fun ConeKotlinType.typeAfterClassifier(): ConeKotlinType? = null
 
+    context(context: CheckerContext)
+    protected open fun ConeKotlinType.shouldCheckTypeArgument(index: Int): Boolean = true
+
     context(context: CheckerContext, reporter: DiagnosticReporter)
     protected open fun findVarargViolation(parameterType: ConeKotlinType): Violation? =
         parameterType.findViolation()
@@ -277,7 +280,8 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
             afterClassifier.findViolation(visitedTypes)?.let { return it }
         }
 
-        for (argument in classifierType.typeArguments) {
+        for ((index, argument) in classifierType.typeArguments.withIndex()) {
+            if (!classifierType.shouldCheckTypeArgument(index)) continue
             val argumentType = argument.type ?: continue
             if (visitedTypes == null) {
                 visitedTypes = mutableSetOf(type)

@@ -32,6 +32,7 @@ class WatchdogFirCheckers internal constructor(
     dependencyExposure: DependencyExposureCheckConfiguration? = null,
     publicTypeWithInternalApiEnabled: Boolean = true,
     exemptingExistingApi: Boolean = false,
+    reportUndocumentedClassProperties: Boolean = false,
 ) : FirAdditionalCheckersExtension(session) {
     private val enabled =
         session.languageVersionSettings.getFlag(AnalysisFlags.explicitApiMode) != ExplicitApiMode.DISABLED
@@ -65,7 +66,7 @@ class WatchdogFirCheckers internal constructor(
         ).excludingConfiguredAnnotations().recorded()
 
         override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> = setOfNotNull(
-            UndocumentedApiChecker(severities)
+            UndocumentedApiChecker(severities, reportUndocumentedClassProperties)
                 .unlessDisabled(WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API),
             ExemptionExplanationChecker.declarationChecker
                 .takeIf { enabled && !exemptingExistingApi },

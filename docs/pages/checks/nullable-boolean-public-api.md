@@ -87,7 +87,7 @@ The check skips:
 If this is intended, apply `@IntentionallyNullableBoolean` to the declaration,
 parameter, or type usage.
 
-Use the exemption when `null` has a defined meaning in the API contract.
+Use the exemption when the declaration is part of the API design or must stay for backwards compatibility.
 
 ```kotlin
 // !hide-focused
@@ -103,13 +103,13 @@ public fun connectionState(): Boolean? = null
 
 ```kotlin
 apiWatchdog {
-    nullableBooleanPublicApi = WatchdogSeverity.WARNING
+    nullableBooleanPublicApi = WatchdogSeverity.ERROR
 }
 ```
 
 For a direct compiler call:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=NULLABLE_BOOLEAN_PUBLIC_API:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=NULLABLE_BOOLEAN_PUBLIC_API:error
 ```
 
 ## See also

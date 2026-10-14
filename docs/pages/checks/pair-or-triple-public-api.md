@@ -84,7 +84,7 @@ The check skips:
 If this is intended, apply `@IntentionallyPairOrTriple` to the declaration,
 parameter, or type usage.
 
-Use the exemption when the tuple's component meanings and order are part of a fixed API contract.
+Use the exemption when the declaration is part of the API design or must stay for backwards compatibility.
 
 ```kotlin
 // !hide-focused
@@ -100,13 +100,13 @@ public fun dimensions(): Triple<Int, Int, Int> = Triple(0, 0, 0)
 
 ```kotlin
 apiWatchdog {
-    pairOrTriplePublicApi = WatchdogSeverity.WARNING
+    pairOrTriplePublicApi = WatchdogSeverity.ERROR
 }
 ```
 
 For a direct compiler call:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=PAIR_OR_TRIPLE_PUBLIC_API:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=PAIR_OR_TRIPLE_PUBLIC_API:error
 ```
 
 ## See also

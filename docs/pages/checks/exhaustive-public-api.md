@@ -131,7 +131,7 @@ public interface Event {
 <!-- diagnostic-exemption-substitution: enum or sealed hierarchy => {0} -->
 If this is intended, apply `@IntentionallyExhaustive` to the enum or sealed hierarchy.
 
-Use the exemption when the set of entries or subtypes is a stable part of the API contract.
+Use the exemption when the declaration is part of the API design or must stay for backwards compatibility.
 
 ```kotlin
 // !hide-focused
@@ -158,13 +158,13 @@ public enum class LogLevel {
 
 ```kotlin
 apiWatchdog {
-    exhaustivePublicApi = WatchdogSeverity.WARNING
+    exhaustivePublicApi = WatchdogSeverity.ERROR
 }
 ```
 
 For a direct compiler call:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=EXHAUSTIVE_PUBLIC_API:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=EXHAUSTIVE_PUBLIC_API:error
 ```
 
 ## See also

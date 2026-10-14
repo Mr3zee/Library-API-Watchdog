@@ -71,7 +71,7 @@ public class Holder(
 The check skips:
 
 - The array of a `vararg` parameter. The check still reports mutable element types.
-- Extension receivers on these types. The check still reports function-type receivers such as `MutableList<Int>.() -> Unit`.
+- Extension receivers, including function-type receivers such as `MutableList<Int>.() -> Unit`.
 - Overrides.
 - `@PublishedApi internal` declarations.
 
@@ -83,7 +83,7 @@ A read-only type can still refer to a mutable collection. Copy input collections
 If this is intended, apply `@IntentionallyMutableCollection` to the declaration,
 parameter, or type usage.
 
-Use the exemption when shared mutation is part of the API contract.
+Use the exemption when the declaration is part of the API design or must stay for backwards compatibility.
 
 ```kotlin
 // !hide-focused
@@ -106,13 +106,13 @@ public class Holder(
 
 ```kotlin
 apiWatchdog {
-    mutableCollectionPublicApi = WatchdogSeverity.WARNING
+    mutableCollectionPublicApi = WatchdogSeverity.ERROR
 }
 ```
 
 For a direct compiler call:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=MUTABLE_COLLECTION_PUBLIC_API:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=MUTABLE_COLLECTION_PUBLIC_API:error
 ```
 
 ## See also

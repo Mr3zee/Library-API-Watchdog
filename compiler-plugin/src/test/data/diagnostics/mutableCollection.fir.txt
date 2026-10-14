@@ -60,8 +60,36 @@ FILE: mutableCollection.kt
     public final fun assemble(block: R|kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit|): R|kotlin/collections/List<kotlin/Int>| {
         ^assemble R|kotlin/collections/mutableListOf|<R|kotlin/Int|>().R|kotlin/apply|<R|kotlin/collections/MutableList<kotlin/Int>|>(R|<local>/block|).R|kotlin/collections/toList|<R|kotlin/Int|>()
     }
-    public final fun buildInto(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() block: R|kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit|): R|kotlin/collections/List<kotlin/Int>| {
-        ^buildInto R|kotlin/collections/mutableListOf|<R|kotlin/Int|>().R|kotlin/apply|<R|kotlin/collections/MutableList<kotlin/Int>|>(R|<local>/block|).R|kotlin/collections/toList|<R|kotlin/Int|>()
+    public final fun buildInto(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() block: R|(kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit|): R|kotlin/collections/List<kotlin/Int>| {
+        ^buildInto R|kotlin/collections/mutableListOf|<R|kotlin/Int|>().R|kotlin/also|<R|kotlin/collections/MutableList<kotlin/Int>|>(R|<local>/block|).R|kotlin/collections/toList|<R|kotlin/Int|>()
+    }
+    public final fun receiverCallbackFactory(): R|kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit| {
+        ^receiverCallbackFactory fun R|kotlin/collections/MutableList<kotlin/Int>|.<anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+            ^ Unit
+        }
+
+    }
+    public final val receiverCallback: R|kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit| = fun R|kotlin/collections/MutableList<kotlin/Int>|.<anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+        ^ Unit
+    }
+
+        public get(): R|kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit|
+    public final typealias CollectionBuilder = R|kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit|
+    public final fun aliasedBuilder(block: R|{foo/bar/CollectionBuilder=} kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun nestedBuilders(blocks: R|kotlin/collections/List<kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit>|): R|kotlin/Unit| {
+    }
+    public final fun nestedReceiverBuilder(block: R|kotlin/collections/List<kotlin/collections/MutableList<kotlin/Int>>.() -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun suspendBuilder(block: R|suspend kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun receiverWithMutableParameter(block: R|kotlin/collections/MutableList<kotlin/Int>.(kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun receiverWithMutableReturn(block: R|kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit| {
+    }
+    public final fun contextualBuilder(block: R|context(kotlin/String) kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun mutableContextBuilder(block: R|context(kotlin/collections/MutableList<kotlin/Int>) kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit|): R|kotlin/Unit| {
     }
     public final fun onEachBatch(action: R|(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|()  kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit|): R|kotlin/Unit| {
     }

@@ -137,7 +137,7 @@ public fun onEach(action: Action) { }
 If this is intended, apply `@IntentionallyKotlinOnlyApi` to the function or an
 enclosing class.
 
-Use the exemption when Java sources must see the Kotlin-only function.
+Use the exemption when the declaration is part of the API design or must stay for backwards compatibility.
 
 ```kotlin
 // !hide-focused
@@ -154,7 +154,7 @@ public fun onEach(action: (Int) -> Unit) { }
 ```kotlin
 apiWatchdog {
     javaInterop {
-        kotlinOnlyApiWithoutJvmSynthetic = WatchdogSeverity.WARNING
+        kotlinOnlyApiWithoutJvmSynthetic = WatchdogSeverity.ERROR
     }
 }
 ```
@@ -163,7 +163,7 @@ apiWatchdog {
 
 For a direct compiler call:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC:error
 ```
 
 ## See also

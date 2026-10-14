@@ -70,7 +70,7 @@ It doesn't apply to reflection types such as `KFunction` or to earlier parameter
 If this is intended, apply `@IntentionallyRequiredParameterAfterOptional` to the
 function or constructor.
 
-Use the exemption when an existing parameter order must stay for source compatibility.
+Use the exemption when the declaration is part of the API design or must stay for backwards compatibility.
 
 ```kotlin
 // !hide-focused
@@ -92,13 +92,13 @@ public fun connect(retries: Int = 3, host: String) { }
 
 ```kotlin
 apiWatchdog {
-    requiredParameterAfterOptional = WatchdogSeverity.WARNING
+    requiredParameterAfterOptional = WatchdogSeverity.ERROR
 }
 ```
 
 For a direct compiler call:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=REQUIRED_PARAMETER_AFTER_OPTIONAL:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=REQUIRED_PARAMETER_AFTER_OPTIONAL:error
 ```
 
 ## See also
