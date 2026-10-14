@@ -1,0 +1,307 @@
+/inconsistentParameterOrderInOverloadGroups.kt:7:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  drawGroup(x: Int, y: Int)
+        Overload 1:     drawGroup(x: Int, y: Int, scale: Double)
+        Overload 2:     drawGroup(y: Int, x: Int, color: Long)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Overload 1 | Overload 2
+        x         | 1st           | 1st        | 2nd
+        y         | 2nd           | 2nd        | 1st
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:9:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  drawGroup(x: Int, y: Int, scale: Double)
+        Overload 1:     drawGroup(x: Int, y: Int)
+        Overload 2:     drawGroup(y: Int, x: Int, color: Long)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Overload 1 | Overload 2
+        x         | 1st           | 1st        | 2nd
+        y         | 2nd           | 2nd        | 1st
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:11:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  drawGroup(y: Int, x: Int, color: Long)
+        Overload 1:     drawGroup(x: Int, y: Int)
+        Overload 2:     drawGroup(x: Int, y: Int, scale: Double)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Overload 1 | Overload 2
+        y         | 1st           | 2nd        | 2nd
+        x         | 2nd           | 1st        | 1st
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:13:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  rotateGroup(first: Int, second: Int, third: Int)
+        Overload 1:     rotateGroup(third: Int, first: Int, second: Int, padding: Long)
+        Overload 2:     rotateGroup(second: Int, third: Int, first: Int, padding: Double)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Overload 1 | Overload 2
+        first     | 1st           | 2nd        | 3rd
+        second    | 2nd           | 3rd        | 1st
+        third     | 3rd           | 1st        | 2nd
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:15:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  rotateGroup(third: Int, first: Int, second: Int, padding: Long)
+        Overload 1:     rotateGroup(first: Int, second: Int, third: Int)
+        Overload 2:     rotateGroup(second: Int, third: Int, first: Int, padding: Double)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Overload 1 | Overload 2
+        third     | 1st           | 3rd        | 2nd
+        first     | 2nd           | 1st        | 3rd
+        second    | 3rd           | 2nd        | 1st
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:17:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  rotateGroup(second: Int, third: Int, first: Int, padding: Double)
+        Overload 1:     rotateGroup(first: Int, second: Int, third: Int)
+        Overload 2:     rotateGroup(third: Int, first: Int, second: Int, padding: Long)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Overload 1 | Overload 2
+        second    | 1st           | 2nd        | 3rd
+        third     | 2nd           | 3rd        | 1st
+        first     | 3rd           | 1st        | 2nd
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:19:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  insertGroup(sourcePath: String, destinationPath: String)
+        Overload 1:     insertGroup(sourcePath: String, mode: Int, destinationPath: String)
+        Overload 2:     insertGroup(sourcePath: String, mode: Int, flags: Int, destinationPath: String)
+        Overload 3:     insertGroup(sourcePath: String, destinationPath: String, suffix: Double)
+
+    Shared parameters with different positions:
+
+        Parameter       | This overload | Overload 1 | Overload 2 | Overload 3
+        destinationPath | 2nd           | 3rd        | 4th        | 2nd
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:21:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  insertGroup(sourcePath: String, mode: Int, destinationPath: String)
+        Overload 1:     insertGroup(sourcePath: String, destinationPath: String)
+        Overload 2:     insertGroup(sourcePath: String, mode: Int, flags: Int, destinationPath: String)
+        Overload 3:     insertGroup(sourcePath: String, destinationPath: String, suffix: Double)
+
+    Shared parameters with different positions:
+
+        Parameter       | This overload | Overload 1 | Overload 2 | Overload 3
+        destinationPath | 3rd           | 2nd        | 4th        | 2nd
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:23:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  insertGroup(sourcePath: String, mode: Int, flags: Int, destinationPath: String)
+        Overload 1:     insertGroup(sourcePath: String, destinationPath: String)
+        Overload 2:     insertGroup(sourcePath: String, mode: Int, destinationPath: String)
+        Overload 3:     insertGroup(sourcePath: String, destinationPath: String, suffix: Double)
+
+    Shared parameters with different positions:
+
+        Parameter       | This overload | Overload 1 | Overload 2 | Overload 3
+        destinationPath | 4th           | 2nd        | 3rd        | 2nd
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:25:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  insertGroup(sourcePath: String, destinationPath: String, suffix: Double)
+        Overload 1:     insertGroup(sourcePath: String, destinationPath: String)
+        Overload 2:     insertGroup(sourcePath: String, mode: Int, destinationPath: String)
+        Overload 3:     insertGroup(sourcePath: String, mode: Int, flags: Int, destinationPath: String)
+
+    Shared parameters with different positions:
+
+        Parameter       | This overload | Overload 1 | Overload 2 | Overload 3
+        destinationPath | 2nd           | 2nd        | 3rd        | 4th
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:27:14: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  ConstructorGroup(width: Int, height: Int)
+        Overload 1:     ConstructorGroup(height: Int, width: Int, scale: Double)
+        Overload 2:     ConstructorGroup(width: Int, scale: Long, height: Int)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Overload 1 | Overload 2
+        width     | 1st           | 2nd        | 1st
+        height    | 2nd           | 1st        | 3rd
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the constructor.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:28:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  ConstructorGroup(height: Int, width: Int, scale: Double)
+        Overload 1:     ConstructorGroup(width: Int, height: Int)
+        Overload 2:     ConstructorGroup(width: Int, scale: Long, height: Int)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Overload 1 | Overload 2
+        height    | 1st           | 2nd        | 3rd
+        width     | 2nd           | 1st        | 1st
+        scale     | 3rd           | absent     | 2nd
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the constructor.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:30:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  ConstructorGroup(width: Int, scale: Long, height: Int)
+        Overload 1:     ConstructorGroup(width: Int, height: Int)
+        Overload 2:     ConstructorGroup(height: Int, width: Int, scale: Double)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Overload 1 | Overload 2
+        width     | 1st           | 1st        | 2nd
+        scale     | 2nd           | absent     | 3rd
+        height    | 3rd           | 2nd        | 1st
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the constructor.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:39:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  ordinalPositions(p1: Int, p2: Int, p3: Int, p4: Int, p5: Int, p6: Int, p7: Int, p8: Int, p9: Int, p10: Int, p11: Int, p12: Int, p13: Int)
+        Other overload: ordinalPositions(p13: Int, p12: Int, p11: Int, p10: Int, p9: Int, p8: Int, p7: Int, p6: Int, p5: Int, p4: Int, p3: Int, p2: Int, p1: Int, extra: String)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Other overload
+        p1        | 1st           | 13th
+        p2        | 2nd           | 12th
+        p3        | 3rd           | 11th
+        p4        | 4th           | 10th
+        p5        | 5th           | 9th
+        p6        | 6th           | 8th
+        p8        | 8th           | 6th
+        p9        | 9th           | 5th
+        p10       | 10th          | 4th
+        p11       | 11th          | 3rd
+        p12       | 12th          | 2nd
+        p13       | 13th          | 1st
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:44:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  ordinalPositions(p13: Int, p12: Int, p11: Int, p10: Int, p9: Int, p8: Int, p7: Int, p6: Int, p5: Int, p4: Int, p3: Int, p2: Int, p1: Int, extra: String)
+        Other overload: ordinalPositions(p1: Int, p2: Int, p3: Int, p4: Int, p5: Int, p6: Int, p7: Int, p8: Int, p9: Int, p10: Int, p11: Int, p12: Int, p13: Int)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Other overload
+        p13       | 1st           | 13th
+        p12       | 2nd           | 12th
+        p11       | 3rd           | 11th
+        p10       | 4th           | 10th
+        p9        | 5th           | 9th
+        p8        | 6th           | 8th
+        p6        | 8th           | 6th
+        p5        | 9th           | 5th
+        p4        | 10th          | 4th
+        p3        | 11th          | 3rd
+        p2        | 12th          | 2nd
+        p1        | 13th          | 1st
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads

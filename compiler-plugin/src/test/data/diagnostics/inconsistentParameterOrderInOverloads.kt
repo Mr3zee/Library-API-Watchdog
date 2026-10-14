@@ -33,9 +33,33 @@ public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>arrange<!>(
     scale: Double,
 ) {}
 
-public fun align(first: Int, separator: String, second: Int) {}
+public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>align<!>(first: Int, separator: String, second: Int) {}
 
-public fun align(prefix: String, first: Long, second: Long, suffix: Double) {}
+public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>align<!>(prefix: String, first: Long, second: Long, suffix: Double) {}
+
+public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>insertMiddle<!>(a: Int, b: Int) {}
+
+public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>insertMiddle<!>(a: Int, c: Int, b: Int) {}
+
+public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>insertFirst<!>(a: Int, b: Int) {}
+
+public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>insertFirst<!>(c: Int, a: Int, b: Int) {}
+
+public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>rotate<!>(a: Int, b: Int, c: Int) {}
+
+public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>rotate<!>(c: Int, a: Int, b: Int, d: Int) {}
+
+public fun replaceExtra(a: Int, separator: String, b: Int) {}
+
+public fun replaceExtra(a: Long, padding: Double, b: Long) {}
+
+public fun convert(value: Int) {}
+
+public fun convert(radix: Int, value: String) {}
+
+public class <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>MiddleConstructor<!>(a: Int, b: Int) {
+    public <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>constructor<!>(a: Int, c: Int, b: Int) : this(a, b)
+}
 
 public fun log(message: String) {}
 
@@ -65,6 +89,10 @@ public interface Shape {
 
 public class Widget : Shape {
     public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>place<!>(y: Int, x: Int, scale: Double) {}
+}
+
+public class MiddleWidget : Shape {
+    public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>place<!>(x: Int, scale: Double, y: Int) {}
 }
 
 // An override isn't reported.
@@ -109,6 +137,8 @@ public class Grid {
 
 public fun Grid.<!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>fill<!>(endIndex: Int, startIndex: Int, color: Long) {}
 
+public fun Grid.<!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>fill<!>(startIndex: Int, color: Double, endIndex: Int) {}
+
 public fun Widget.<!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>place<!>(y: Int, x: Int, alpha: Long) {}
 
 public typealias Board = Grid
@@ -117,7 +147,7 @@ public fun Board?.<!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>fill<!>(endIndex:
 
 public fun <T : Shape> T.<!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>place<!>(y: Int, x: Int, tint: Int) {}
 
-public fun <T> T.fill(endIndex: Int, startIndex: Int, gamma: Int) {}
+public fun <T> T.<!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>fill<!>(endIndex: Int, startIndex: Int, gamma: Int) {}
 
 // FILE: extensions.kt
 

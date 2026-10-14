@@ -9,6 +9,7 @@ import java.net.URI
  * diagnostic is a result of a rule named after it. A location is relative to the root directory
  * of the build, so a code scanning service resolves it against the repository checkout.
  */
+@InternalWatchdogApi
 public object ApiWatchdogSarifReport {
     public fun write(reports: List<ApiWatchdogProjectReport>, output: File) {
         val entries = reports.sortedBy { it.projectPath }

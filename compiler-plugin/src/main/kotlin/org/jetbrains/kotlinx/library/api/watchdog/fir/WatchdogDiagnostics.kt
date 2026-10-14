@@ -108,8 +108,8 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     /** Parameters: the parameter name, the callable name, and the callable kind. */
     val REQUIRED_PARAMETER_AFTER_OPTIONAL by configurable3<KtParameter, Name, Name, String>(NAME_IDENTIFIER)
 
-    /** Parameters: the two swapped parameter names, the callable name, and the callable kind. */
-    val INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS by configurable4<KtDeclaration, Name, Name, Name, String>(
+    /** Parameters: this signature, the other signatures, the differing positions, and the callable kind. */
+    val INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS by configurable4<KtDeclaration, String, String, String, String>(
         CALLABLE_NAME_OR_CONSTRUCTOR_KEYWORD,
     )
 
@@ -278,9 +278,9 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         )
         map.put(
             diagnostic = WatchdogDiagnostics.INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS,
-            rendererA = NAME,
-            rendererB = NAME,
-            rendererC = NAME,
+            rendererA = STRING,
+            rendererB = STRING,
+            rendererC = STRING,
             rendererD = STRING,
         )
         map.put(

@@ -2,14 +2,20 @@ package org.jetbrains.kotlinx.library.api.watchdog
 
 import java.io.File
 
+@InternalWatchdogApi
 public const val API_WATCHDOG_REPORT_USAGE: String =
     "library-api-watchdog-report"
+
+@InternalWatchdogApi
 public const val API_WATCHDOG_REPORT_ELEMENTS_CONFIGURATION: String =
     "apiWatchdogReportElements"
+
+@InternalWatchdogApi
 public const val API_WATCHDOG_REPORTS_CONFIGURATION: String =
     "apiWatchdogReports"
 
 /** An `@Intentionally*` annotation in the sources. [location] is `path:line`, relative to the project directory. */
+@InternalWatchdogApi
 public data class AppliedExemptionReportEntry(
     public val annotation: String,
     public val location: String,
@@ -23,6 +29,7 @@ public data class AppliedExemptionReportEntry(
  * @property reason why the annotation isn't applied
  * @property severity the configured severity of the diagnostic: `error` or `warning`
  */
+@InternalWatchdogApi
 public data class NotAppliedExemptionReportEntry(
     public val annotation: String?,
     public val diagnostic: String,
@@ -37,6 +44,7 @@ public data class NotAppliedExemptionReportEntry(
  * @property projectDirectory the project directory relative to the root directory of the build,
  *   with `/` separators. Empty for the root project.
  */
+@InternalWatchdogApi
 public data class ApiWatchdogProjectReport(
     public val projectPath: String,
     public val projectDirectory: String,
@@ -45,6 +53,7 @@ public data class ApiWatchdogProjectReport(
 )
 
 /** The file format of a module report. */
+@InternalWatchdogApi
 public object ApiWatchdogReportData {
     private const val VERSION = "2"
 
@@ -152,6 +161,7 @@ public object ApiWatchdogReportData {
     }
 }
 
+@InternalWatchdogApi
 public object ApiWatchdogHtmlReport {
     public fun write(
         reports: List<ApiWatchdogProjectReport>,

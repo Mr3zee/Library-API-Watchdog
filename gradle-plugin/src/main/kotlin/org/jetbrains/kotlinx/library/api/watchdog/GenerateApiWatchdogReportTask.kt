@@ -8,7 +8,7 @@ import org.gradle.api.tasks.UntrackedTask
  * applied `@Intentionally*` annotations and the diagnostics without one. It changes no source.
  */
 @UntrackedTask(because = "Reads the diagnostic reports that the Kotlin compile tasks write")
-public abstract class GenerateApiWatchdogReportTask : ApiWatchdogReportTask() {
+public abstract class GenerateApiWatchdogReportTask internal constructor() : ApiWatchdogReportTask() {
     @get:Internal
     override val updatesSources: Boolean
         get() = false

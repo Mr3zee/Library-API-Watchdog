@@ -10,7 +10,7 @@ import org.gradle.api.tasks.UntrackedTask
  * adopt the watchdog on a library with a released API.
  */
 @UntrackedTask(because = "Rewrites the Kotlin sources it analyzes")
-public abstract class ExemptExistingApiTask : ApiWatchdogReportTask() {
+public abstract class ExemptExistingApiTask internal constructor() : ApiWatchdogReportTask() {
     @get:Internal
     override val updatesSources: Boolean
         get() = true

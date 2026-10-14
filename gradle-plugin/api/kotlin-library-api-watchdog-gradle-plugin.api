@@ -1,34 +1,12 @@
 public abstract class org/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogReportTask : org/gradle/api/DefaultTask {
-	public fun <init> ()V
-	public abstract fun getCompilationNames ()Lorg/gradle/api/provider/ListProperty;
-	public abstract fun getDiagnosticReports ()Lorg/gradle/api/file/ConfigurableFileCollection;
-	public abstract fun getDiagnosticSeverities ()Lorg/gradle/api/provider/MapProperty;
-	protected abstract fun getExecOperations ()Lorg/gradle/process/ExecOperations;
-	public abstract fun getFixerArtifact ()Lorg/gradle/api/file/ConfigurableFileCollection;
-	public abstract fun getFixerClasspath ()Lorg/gradle/api/file/ConfigurableFileCollection;
-	public abstract fun getKotlinVersion ()Lorg/gradle/api/provider/Property;
-	protected abstract fun getNoCompilationWarning ()Ljava/lang/String;
-	public abstract fun getProjectDirectory ()Lorg/gradle/api/file/DirectoryProperty;
-	public abstract fun getProjectDirectoryFromRoot ()Lorg/gradle/api/provider/Property;
-	public abstract fun getProjectIdentityPath ()Lorg/gradle/api/provider/Property;
-	public abstract fun getReportDataFile ()Lorg/gradle/api/file/RegularFileProperty;
 	public final fun getReports ()Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogReports;
-	public abstract fun getSourceFiles ()Lorg/gradle/api/file/ConfigurableFileCollection;
-	protected abstract fun getUpdatesSources ()Z
 	public final fun reports (Lorg/gradle/api/Action;)V
-	public final fun writeReport ()V
 }
 
 public abstract class org/jetbrains/kotlinx/library/api/watchdog/ExemptExistingApiTask : org/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogReportTask {
-	public fun <init> ()V
-	protected fun getNoCompilationWarning ()Ljava/lang/String;
-	protected fun getUpdatesSources ()Z
 }
 
 public abstract class org/jetbrains/kotlinx/library/api/watchdog/GenerateApiWatchdogReportTask : org/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogReportTask {
-	public fun <init> ()V
-	protected fun getNoCompilationWarning ()Ljava/lang/String;
-	protected fun getUpdatesSources ()Z
 }
 
 public final class org/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks {
@@ -64,7 +42,6 @@ public final class org/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks {
 }
 
 public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension {
-	public fun <init> (Lorg/gradle/api/NamedDomainObjectProvider;Lorg/gradle/api/model/ObjectFactory;)V
 	public final fun getBooleanParameterPublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun getDataClassPublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun getDslMarkerNoopTarget ()Lorg/gradle/api/provider/Property;
@@ -102,7 +79,6 @@ public final class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExte
 }
 
 public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogJavaInteropExtension {
-	public fun <init> (Lorg/gradle/api/model/ObjectFactory;)V
 	public final fun getCompanionApiWithoutJvmStatic ()Lorg/gradle/api/provider/Property;
 	public final fun getCompanionPropertyWithoutStaticAccess ()Lorg/gradle/api/provider/Property;
 	public final fun getDefaultParametersWithoutJvmOverloads ()Lorg/gradle/api/provider/Property;

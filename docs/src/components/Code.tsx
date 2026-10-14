@@ -483,6 +483,9 @@ function Diagnostic({report}: {report: DiagnosticReport}): ReactNode {
   const parameters = report.parameters.map((parameter) =>
     resolveParameter(diagnostic, parameter, ideaGenerateShortcut.label),
   );
+  if (diagnostic.name === 'INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS') {
+    parameters[2] = alignTable(parameters[2]);
+  }
   const message = formatMessage(joinTextLines(diagnostic.message), parameters);
   const trailer = 'messageTrailer' in diagnostic ? diagnostic.messageTrailer : undefined;
   return (
@@ -541,6 +544,14 @@ function resolveParameter(
 
 function formatMessage(template: string, parameters: string[]): string {
   return template.replace(/\{(\d+)\}/g, (_, index: string) => parameters[Number(index)]);
+}
+
+function alignTable(table: string): string {
+  const rows = table.trim().split('\n').map((line) => line.trim().split(' | '));
+  const widths = rows[0].map((_, column) => Math.max(...rows.map((row) => row[column].length)));
+  return rows.map((row) =>
+    '    ' + row.map((cell, column) => cell.padEnd(widths[column])).join(' | ').trimEnd(),
+  ).join('\n');
 }
 
 /**

@@ -294,11 +294,54 @@
       "title": "Inconsistent parameter order in overloads",
       "docs": "checks/inconsistent-parameter-order-in-overloads",
       "message": [
-        "The parameters `{0}` and `{1}` of `{2}` appear in the opposite relative order in another overload.",
-        "Use the same relative order in every overload.",
+        "Shared parameters have different positions in these overloads:",
+        "",
+        "    This overload:  {0}",
+        "{1}",
+        "",
+        "Shared parameters with different positions:",
+        "",
+        "{2}",
+        "",
+        "Use the same positions for shared parameters, and append extra parameters after them.",
         "",
         "If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the {3}."
-      ]
+      ],
+      "parameterValues": {
+        "numberedOverload": [
+          "Overload {0}"
+        ],
+        "overloadSignature": [
+          "    {0}{1}"
+        ],
+        "absentParameter": [
+          "absent"
+        ],
+        "positionTableHeader": [
+          "Parameter | This overload | Other overload"
+        ],
+        "parameterPosition": [
+          "    Parameter | This overload | Other overload",
+          "    {0} | {1} | {2}"
+        ],
+        "twoParameterOverload": [
+          "{0}({1}, {2})"
+        ],
+        "threeParameterOverload": [
+          "{0}({1}, {2}, {3})"
+        ],
+        "otherTwoParameterOverload": [
+          "    Other overload: {0}({1}, {2})"
+        ],
+        "otherThreeParameterOverload": [
+          "    Other overload: {0}({1}, {2}, {3})"
+        ],
+        "twoParameterPositions": [
+          "    Parameter | This overload | Other overload",
+          "    {0} | {1} | {2}",
+          "    {3} | {4} | {5}"
+        ]
+      }
     },
     {
       "name": "BOOLEAN_PARAMETER_PUBLIC_API",

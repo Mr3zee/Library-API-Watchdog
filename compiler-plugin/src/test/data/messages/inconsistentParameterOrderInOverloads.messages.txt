@@ -1,27 +1,221 @@
 /inconsistentParameterOrderInOverloads.kt:7:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
-    The parameters `x` and `y` of `draw` appear in the opposite relative order in another overload. Use the same relative order in every overload.
+    Shared parameters have different positions in these overloads:
+
+        This overload:  draw(x: Int, y: Int)
+        Other overload: draw(y: Int, x: Int, scale: Double)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Other overload
+        x         | 1st           | 2nd
+        y         | 2nd           | 1st
+
+    Use the same positions for shared parameters, and append extra parameters after them.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
 
 /inconsistentParameterOrderInOverloads.kt:9:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
-    The parameters `y` and `x` of `draw` appear in the opposite relative order in another overload. Use the same relative order in every overload.
+    Shared parameters have different positions in these overloads:
+
+        This overload:  draw(y: Int, x: Int, scale: Double)
+        Other overload: draw(x: Int, y: Int)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Other overload
+        y         | 1st           | 2nd
+        x         | 2nd           | 1st
+
+    Use the same positions for shared parameters, and append extra parameters after them.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
 
 /inconsistentParameterOrderInOverloads.kt:11:14: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
-    The parameters `width` and `height` of `Rect` appear in the opposite relative order in another overload. Use the same relative order in every overload.
+    Shared parameters have different positions in these overloads:
+
+        This overload:  Rect(width: Int, height: Int)
+        Other overload: Rect(height: Int, width: Int, scale: Double)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Other overload
+        width     | 1st           | 2nd
+        height    | 2nd           | 1st
+
+    Use the same positions for shared parameters, and append extra parameters after them.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the constructor.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
 
 /inconsistentParameterOrderInOverloads.kt:12:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
-    The parameters `height` and `width` of `Rect` appear in the opposite relative order in another overload. Use the same relative order in every overload.
+    Shared parameters have different positions in these overloads:
+
+        This overload:  Rect(height: Int, width: Int, scale: Double)
+        Other overload: Rect(width: Int, height: Int)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Other overload
+        height    | 1st           | 2nd
+        width     | 2nd           | 1st
+
+    Use the same positions for shared parameters, and append extra parameters after them.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the constructor.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloads.kt:15:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  insertMiddle(a: Int, b: Int)
+        Other overload: insertMiddle(a: Int, c: Int, b: Int)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Other overload
+        b         | 2nd           | 3rd
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloads.kt:17:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  insertMiddle(a: Int, c: Int, b: Int)
+        Other overload: insertMiddle(a: Int, b: Int)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Other overload
+        b         | 3rd           | 2nd
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloads.kt:19:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  rotate(a: Int, b: Int, c: Int)
+        Other overload: rotate(c: Int, a: Int, b: Int, d: Int)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Other overload
+        a         | 1st           | 2nd
+        b         | 2nd           | 3rd
+        c         | 3rd           | 1st
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloads.kt:21:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  rotate(c: Int, a: Int, b: Int, d: Int)
+        Other overload: rotate(a: Int, b: Int, c: Int)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Other overload
+        c         | 1st           | 3rd
+        a         | 2nd           | 1st
+        b         | 3rd           | 2nd
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloads.kt:23:14: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  MiddleConstructor(a: Int, b: Int)
+        Other overload: MiddleConstructor(a: Int, c: Int, b: Int)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Other overload
+        b         | 2nd           | 3rd
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the constructor.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloads.kt:24:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  MiddleConstructor(a: Int, c: Int, b: Int)
+        Other overload: MiddleConstructor(a: Int, b: Int)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Other overload
+        b         | 3rd           | 2nd
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the constructor.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloads.kt:27:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  scramble(a: Int, b: String, c: Long, d: Double, e: Char, f: Float)
+        Other overload: scramble(e: Char, c: Long, a: Int, extra: Short, f: Float, b: String, d: Double)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Other overload
+        a         | 1st           | 3rd
+        b         | 2nd           | 6th
+        c         | 3rd           | 2nd
+        d         | 4th           | 7th
+        e         | 5th           | 1st
+        f         | 6th           | 5th
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloads.kt:29:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  scramble(e: Char, c: Long, a: Int, extra: Short, f: Float, b: String, d: Double)
+        Other overload: scramble(a: Int, b: String, c: Long, d: Double, e: Char, f: Float)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Other overload
+        e         | 1st           | 5th
+        c         | 2nd           | 3rd
+        a         | 3rd           | 1st
+        f         | 5th           | 6th
+        b         | 6th           | 2nd
+        d         | 7th           | 4th
+
+    Use the same positions for shared parameters, and append extra parameters after them.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads

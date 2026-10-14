@@ -25,7 +25,7 @@ import org.gradle.api.provider.SetProperty
  * }
  * ```
  */
-public open class WatchdogGradleExtension @Inject constructor(
+public open class WatchdogGradleExtension @Inject internal constructor(
     /**
      * The `apiWatchdogExemptNonTransitive` configuration. `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`
      * accepts the types of its dependencies in public signatures although the module doesn't
@@ -112,7 +112,7 @@ public open class WatchdogGradleExtension @Inject constructor(
     /** Severity of `REQUIRED_PARAMETER_AFTER_OPTIONAL`: required parameters declared after optional ones. */
     public val requiredParameterAfterOptional: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
-    /** Severity of `INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS`: overloads disagreeing on shared parameter order. */
+    /** Severity of `INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS`: overloads with different positions for shared parameters. */
     public val inconsistentParameterOrderInOverloads: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
     /** Severity of `INLINE_FUNCTION_WITH_LOGIC`: inline functions and accessors doing more than delegating. */
@@ -184,7 +184,9 @@ public open class WatchdogGradleExtension @Inject constructor(
 
     /**
      * Ignores [check] on a declaration that carries one of the [whenAnnotatedWith] annotations.
-     * [WatchdogChecks] holds the check names. An annotation is its fully qualified class name:
+     * [check] is a name from [WatchdogChecks] that has a severity property in this block or in
+     * [javaInterop]. An always-error diagnostic has no severity property, so `ignore` rejects
+     * its name. An annotation is its fully qualified class name:
      *
      * ```kotlin
      * import org.jetbrains.kotlinx.library.api.watchdog.WatchdogChecks
@@ -200,7 +202,7 @@ public open class WatchdogGradleExtension @Inject constructor(
      * }
      * ```
      *
-     * Call it again for another check. An always-error diagnostic has no ignore rule.
+     * Call it again for another check.
      */
     public fun ignore(check: String, whenAnnotatedWith: List<String>) {
         val knownChecks = diagnosticSeverities.keys
@@ -293,7 +295,7 @@ public fun DependencyHandler.exemptNonTransitiveDependency(dependency: Dependenc
  * }
  * ```
  */
-public open class WatchdogJavaInteropExtension @Inject constructor(objectFactory: ObjectFactory) {
+public open class WatchdogJavaInteropExtension @Inject internal constructor(objectFactory: ObjectFactory) {
     /** Whether the Java-interop diagnostics run. Default is `true`. `false` wins over the severities. */
     public val enabled: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(true)
 

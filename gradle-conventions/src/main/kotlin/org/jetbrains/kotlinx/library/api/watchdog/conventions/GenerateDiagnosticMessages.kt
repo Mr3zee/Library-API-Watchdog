@@ -95,20 +95,17 @@ abstract class GenerateDiagnosticMessages : DiagnosticsJsonGeneratorTask() {
 
     private fun String.isCodeLine(): Boolean = startsWith("    ")
 
-    private fun String.wrap(): List<String> {
-        val chunks = mutableListOf<String>()
-        val leadingSpaces = takeWhile { it == ' ' }
-        val chunk = StringBuilder(leadingSpaces)
-        for ((index, word) in substring(leadingSpaces.length).split(' ').withIndex()) {
-            if (index > 0 && chunk.length + word.length > MAX_CHUNK_LENGTH) {
-                chunks += chunk.toString()
-                chunk.clear()
-            }
-            if (index > 0 && chunk.isNotEmpty()) chunk.append(' ')
-            chunk.append(word)
+    private fun String.wrap(): List<String> = buildList {
+        var remaining = this@wrap
+        while (remaining.length > MAX_CHUNK_LENGTH) {
+            val splitAt = remaining.lastIndexOf(' ', MAX_CHUNK_LENGTH)
+                .takeIf { it >= 0 }
+                ?: remaining.indexOf(' ', MAX_CHUNK_LENGTH)
+            if (splitAt < 0) break
+            add(remaining.substring(0, splitAt + 1))
+            remaining = remaining.substring(splitAt + 1)
         }
-        chunks += chunk.toString()
-        return chunks.mapIndexed { index, text -> if (index == chunks.lastIndex) text else "$text " }
+        add(remaining)
     }
 
     private companion object {

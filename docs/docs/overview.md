@@ -90,7 +90,7 @@ See [Configuration](./configuration.md) for more details.
   function types. The alias isn't in the compiled API, so the type can't evolve into a richer
   abstraction later.
 - [Inconsistent parameter order in overloads](./checks/inconsistent-parameter-order-in-overloads.md):
-  overloads whose same-named parameters are in a different relative order. A caller can swap the
+  overloads whose same-named parameters occupy different positions. A caller can swap the
   arguments and get no error.
 - [Inline functions with logic](./checks/inline-function-with-logic.md): public inline functions
   with a body that does more than delegate. The compiler copies that body, and its bugs, into every

@@ -12,7 +12,7 @@ import org.gradle.api.tasks.TaskAction
 
 /** Combines the report variants declared in `apiWatchdogReports`. */
 @CacheableTask
-public abstract class AggregateApiWatchdogReportsTask : DefaultTask() {
+public abstract class AggregateApiWatchdogReportsTask internal constructor() : DefaultTask() {
     /** The module reports to combine. */
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.NONE)
@@ -28,7 +28,7 @@ public abstract class AggregateApiWatchdogReportsTask : DefaultTask() {
     }
 
     @TaskAction
-    public fun generateReport() {
+    internal fun generateReport() {
         val reports = reportDataFiles.files
             .sortedBy { it.absolutePath }
             .map(ApiWatchdogReportData::read)

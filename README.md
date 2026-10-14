@@ -164,7 +164,7 @@ report.
   type aliases of function types. The alias isn't in the compiled API, so the type can't evolve
   into a richer abstraction later.
 - [`INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS`](https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads) -
-  overloads whose same-named parameters are in a different relative order. A caller can swap
+  overloads whose same-named parameters occupy different positions. A caller can swap
   the arguments and get no error.
 - [`INLINE_FUNCTION_WITH_LOGIC`](https://mr3zee.github.io/Library-API-Watchdog/checks/inline-function-with-logic) -
   public inline functions with a body that does more than delegate. The compiler copies that

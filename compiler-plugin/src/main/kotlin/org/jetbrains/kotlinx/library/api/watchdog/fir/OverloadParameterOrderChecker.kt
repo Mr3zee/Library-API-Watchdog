@@ -10,7 +10,6 @@ import org.jetbrains.kotlin.fir.analysis.checkers.unsubstitutedScope
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
-import org.jetbrains.kotlin.fir.declarations.FirValueParameter
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
@@ -21,12 +20,12 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirConstructorSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
 import org.jetbrains.kotlin.fir.types.coneType
+import org.jetbrains.kotlin.fir.types.renderReadable
 import org.jetbrains.kotlin.fir.unwrapFakeOverrides
 import org.jetbrains.kotlin.name.Name
 
 /**
- * Reports an overload whose shared parameter names have a different relative order than in a
- * sibling. Context parameters aren't compared, because the call site doesn't pass them.
+ * Context parameters aren't compared, because the call site doesn't pass them.
  */
 internal class OverloadParameterOrderChecker(
     private val severities: WatchdogDiagnosticSeverities,
@@ -51,9 +50,8 @@ internal class OverloadParameterOrderChecker(
         }
 
         val callableName = declaration.reportedName() ?: return
-        var reported = false
+        val siblings = mutableListOf<FirFunctionSymbol<*>>()
         declaration.forEachOverloadSibling siblings@{ sibling ->
-            if (reported) return@siblings
             if (sibling == declaration.symbol) {
                 return@siblings
             }
@@ -62,14 +60,9 @@ internal class OverloadParameterOrderChecker(
                 return@siblings
             }
 
-            reported = reportSwappedPair(
-                declaration,
-                factory,
-                callableName,
-                other = sibling.valueParameterSymbols,
-                current = ownParameters,
-            )
+            if (sibling !in siblings) siblings += sibling
         }
+        reportDifferentPositions(declaration, factory, callableName, siblings)
     }
 
     /**
@@ -123,41 +116,88 @@ internal class OverloadParameterOrderChecker(
         }
     }
 
-    /** Reports the first swapped pair of shared names and returns true. */
     context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun reportSwappedPair(
+    private fun reportDifferentPositions(
         declaration: FirFunction,
-        factory: KtDiagnosticFactory4<Name, Name, Name, String>,
+        factory: KtDiagnosticFactory4<String, String, String, String>,
         callableName: Name,
-        other: List<FirValueParameterSymbol>,
-        current: List<FirValueParameter>,
-    ): Boolean {
-        for (i in current.indices) {
-            val firstName = current[i].name
-            val firstOtherIndex = other.indexOfFirst { it.name == firstName }
-            if (firstOtherIndex < 0) continue
+        siblings: List<FirFunctionSymbol<*>>,
+    ) {
+        val current = declaration.symbol.valueParameterSymbols
+        val others = siblings.mapNotNull { sibling ->
+            val positions = sibling.valueParameterSymbols.withIndex().associate { it.value.name to it.index }
+            if (current.count { it.name in positions } < 2) return@mapNotNull null
+            sibling to positions
+        }
+        if (others.isEmpty()) return
 
-            for (j in i + 1 until current.size) {
-                val secondName = current[j].name
-                val secondOtherIndex = other.indexOfFirst { it.name == secondName }
-                if (secondOtherIndex in 0..<firstOtherIndex) {
-                    reporter.reportOn(
-                        source = declaration.source,
-                        factory = factory,
-                        a = firstName,
-                        b = secondName,
-                        c = callableName,
-                        d = WatchdogDiagnosticMessages.parameterValueFor(
-                            factory.name,
-                            if (declaration is FirConstructor) "constructor" else "function",
-                        ),
-                    )
-                    return true
+        val changes = current.mapIndexedNotNull { index, parameter ->
+            if (others.none { (_, positions) ->
+                    val otherIndex = positions[parameter.name]
+                    otherIndex != null && otherIndex != index
                 }
+            ) return@mapIndexedNotNull null
+            listOf(
+                parameter.name.asString(),
+                (index + 1).ordinalPosition(),
+            ) + others.map { (_, positions) ->
+                positions[parameter.name]?.let { (it + 1).ordinalPosition() }
+                    ?: WatchdogDiagnosticMessages.parameterValueFor(factory.name, "absentParameter")
             }
         }
-        return false
+        if (changes.isEmpty()) return
+
+        val header = WatchdogDiagnosticMessages.parameterValueFor(factory.name, "positionTableHeader")
+            .split(" | ")
+        val labels = others.indices.map { index ->
+            if (others.size == 1) header[2] else WatchdogDiagnosticMessages.parameterValueFor(
+                factory.name, "numberedOverload", (index + 1).toString(),
+            )
+        }
+        reporter.reportOn(
+            source = declaration.source,
+            factory = factory,
+            a = current.signature(callableName),
+            b = others.zip(labels).joinToString("\n") { (other, label) ->
+                WatchdogDiagnosticMessages.parameterValueFor(
+                    factory.name, "overloadSignature", "$label: ".padEnd(16),
+                    other.first.valueParameterSymbols.signature(callableName),
+                )
+            },
+            c = (listOf(header.take(2) + labels) + changes).alignedTable(),
+            d = WatchdogDiagnosticMessages.parameterValueFor(
+                factory.name,
+                if (declaration is FirConstructor) "constructor" else "function",
+            ),
+        )
     }
+
+    private fun Int.ordinalPosition(): String {
+        val suffix = if (this % 100 in 11..13) {
+            "th"
+        } else {
+            when (this % 10) {
+                1 -> "st"
+                2 -> "nd"
+                3 -> "rd"
+                else -> "th"
+            }
+        }
+        return "$this$suffix"
+    }
+
+    private fun List<List<String>>.alignedTable(): String {
+        val widths = first().indices.map { column -> maxOf { row -> row[column].length } }
+        return joinToString("\n") { row ->
+            "    " + row.mapIndexed { column, cell -> cell.padEnd(widths[column]) }
+                .joinToString(" | ").trimEnd()
+        }
+    }
+
+    private fun List<FirValueParameterSymbol>.signature(callableName: Name): String =
+        joinToString(prefix = "$callableName(", postfix = ")") {
+            "${it.name}: ${it.resolvedReturnType.renderReadable()}"
+        }
 
     context(context: CheckerContext)
     private fun FirBasedSymbol<*>.isExempt(): Boolean =

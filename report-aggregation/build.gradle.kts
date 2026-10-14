@@ -23,7 +23,14 @@ val generateCheckDescriptions = registerDiagnosticsGenerator<GenerateCheckDescri
 
 kotlin {
     explicitApi()
-    abiValidation()
+    compilerOptions.optIn.add("org.jetbrains.kotlinx.library.api.watchdog.InternalWatchdogApi")
+    abiValidation {
+        filters {
+            exclude {
+                annotatedWith.add("org.jetbrains.kotlinx.library.api.watchdog.InternalWatchdogApi")
+            }
+        }
+    }
 
     sourceSets.main {
         kotlin.srcDir(generateCheckDescriptions)

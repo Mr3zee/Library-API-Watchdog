@@ -23,7 +23,7 @@ import org.gradle.api.tasks.OutputFile
  * }
  * ```
  */
-public abstract class WatchdogReports @Inject constructor(private val objectFactory: ObjectFactory) {
+public abstract class WatchdogReports @Inject internal constructor(private val objectFactory: ObjectFactory) {
     /** Whether the task writes the HTML report for a person. Default is `true`. */
     @get:Input
     public abstract val html: Property<Boolean>
@@ -47,12 +47,12 @@ public abstract class WatchdogReports @Inject constructor(private val objectFact
     /** [htmlFile] when [html] is `true`, absent otherwise. */
     @get:OutputFile
     @get:Optional
-    public val htmlOutput: Provider<RegularFile>
+    internal val htmlOutput: Provider<RegularFile>
         get() = html.flatMap { if (it) htmlFile else objectFactory.fileProperty() }
 
     /** [sarifFile] when [sarif] is `true`, absent otherwise. */
     @get:OutputFile
     @get:Optional
-    public val sarifOutput: Provider<RegularFile>
+    internal val sarifOutput: Provider<RegularFile>
         get() = sarif.flatMap { if (it) sarifFile else objectFactory.fileProperty() }
 }

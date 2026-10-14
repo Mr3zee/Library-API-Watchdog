@@ -14,6 +14,7 @@ val devKitVersion = providers.systemProperty("devkitVersion").get()
 
 kotlin {
     explicitApi()
+    compilerOptions.optIn.add("org.jetbrains.kotlinx.library.api.watchdog.InternalWatchdogApi")
 
     abiValidation()
 }

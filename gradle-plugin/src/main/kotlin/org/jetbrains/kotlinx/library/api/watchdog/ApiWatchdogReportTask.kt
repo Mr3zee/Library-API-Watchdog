@@ -24,50 +24,50 @@ import org.gradle.process.ExecOperations
  * A task that runs the exemption fixer on the main Kotlin sources and writes the API Watchdog
  * report. [ExemptExistingApiTask] and [GenerateApiWatchdogReportTask] are its two variants.
  */
-public abstract class ApiWatchdogReportTask : DefaultTask() {
+public abstract class ApiWatchdogReportTask internal constructor() : DefaultTask() {
     /** The names of the main Kotlin compile tasks. */
     @get:Input
-    public abstract val compilationNames: ListProperty<String>
+    internal abstract val compilationNames: ListProperty<String>
 
     /** The diagnostic reports of the Kotlin compile tasks. A missing report is empty. */
     @get:Internal
-    public abstract val diagnosticReports: ConfigurableFileCollection
+    internal abstract val diagnosticReports: ConfigurableFileCollection
 
-    /** The main Kotlin sources. The report lists their applied annotations. */
+    /** The main Kotlin sources. */
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
-    public abstract val sourceFiles: ConfigurableFileCollection
+    internal abstract val sourceFiles: ConfigurableFileCollection
 
     /** The multi-version artifact of the fixer. */
     @get:Classpath
-    public abstract val fixerArtifact: ConfigurableFileCollection
+    internal abstract val fixerArtifact: ConfigurableFileCollection
 
     /** The Kotlin compiler and its runtime dependencies. */
     @get:Classpath
-    public abstract val fixerClasspath: ConfigurableFileCollection
+    internal abstract val fixerClasspath: ConfigurableFileCollection
 
-    /** The Kotlin version of the project. It selects the fixer overlay. */
+    /** The Kotlin version of the project. */
     @get:Input
-    public abstract val kotlinVersion: Property<String>
+    internal abstract val kotlinVersion: Property<String>
 
     /** The directory that source paths in the console output and in the report are relative to. */
     @get:Internal
-    public abstract val projectDirectory: DirectoryProperty
+    internal abstract val projectDirectory: DirectoryProperty
 
     /** The project path shown in the report. */
     @get:Input
-    public abstract val projectIdentityPath: Property<String>
+    internal abstract val projectIdentityPath: Property<String>
 
     /**
      * The project directory relative to the root directory of the build, with `/` separators.
      * The SARIF report prefixes it to every source path.
      */
     @get:Input
-    public abstract val projectDirectoryFromRoot: Property<String>
+    internal abstract val projectDirectoryFromRoot: Property<String>
 
-    /** The configured severity of each diagnostic. The SARIF report uses it as the result level. */
+    /** The configured severity of each diagnostic. */
     @get:Input
-    public abstract val diagnosticSeverities: MapProperty<String, WatchdogSeverity>
+    internal abstract val diagnosticSeverities: MapProperty<String, WatchdogSeverity>
 
     /** The report formats. Default: the `reports` block of the `apiWatchdog` extension. */
     @get:Nested
@@ -75,7 +75,7 @@ public abstract class ApiWatchdogReportTask : DefaultTask() {
 
     /** The report data that the aggregation plugin reads. */
     @get:OutputFile
-    public abstract val reportDataFile: RegularFileProperty
+    internal abstract val reportDataFile: RegularFileProperty
 
     /** Configures [reports]. */
     public fun reports(action: Action<WatchdogReports>) {
@@ -83,21 +83,21 @@ public abstract class ApiWatchdogReportTask : DefaultTask() {
     }
 
     @get:Inject
-    protected abstract val execOperations: ExecOperations
+    internal abstract val execOperations: ExecOperations
 
     /** Whether the fixer rewrites the sources it analyzes. */
     @get:Internal
-    protected abstract val updatesSources: Boolean
+    internal abstract val updatesSources: Boolean
 
     /** The warning when the project has no main Kotlin compilation. */
     @get:Internal
-    protected abstract val noCompilationWarning: String
+    internal abstract val noCompilationWarning: String
 
     /** Logs the fixer [response] to the console. The default logs nothing. */
     internal open fun logResponse(response: FixerResponse) {}
 
     @TaskAction
-    public fun writeReport() {
+    internal fun writeReport() {
         val response = if (compilationNames.get().isEmpty()) {
             logger.warn(noCompilationWarning)
             FixerResponse.EMPTY
@@ -121,8 +121,8 @@ public abstract class ApiWatchdogReportTask : DefaultTask() {
             projectPath = projectIdentityPath.get(),
             projectDirectory = projectDirectory.get().asFile,
             projectDirectoryFromRoot = projectDirectoryFromRoot.get(),
-            htmlFile = reports.htmlOutput.orNull?.asFile,
-            sarifFile = reports.sarifOutput.orNull?.asFile,
+            htmlFile = if (reports.html.get()) reports.htmlFile.get().asFile else null,
+            sarifFile = if (reports.sarif.get()) reports.sarifFile.get().asFile else null,
             reportDataFile = reportDataFile.get().asFile,
             logger = logger,
         )
