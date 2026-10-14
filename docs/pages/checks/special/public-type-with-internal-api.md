@@ -1,8 +1,5 @@
 # Public types marked as internal API
 
-`PUBLIC_TYPE_WITH_INTERNAL_API` reports types marked with an internal API annotation when a
-supported public signature exposes them.
-
 |                  |                                                       |
 |------------------|-------------------------------------------------------|
 | Diagnostic       | `PUBLIC_TYPE_WITH_INTERNAL_API`                       |
@@ -10,11 +7,10 @@ supported public signature exposes them.
 | Gradle property  | [`publicTypeWithInternalApi`](../../configuration.md) |
 | Exemption        | none                                                  |
 
-An annotation whose class carries [`@InternalAnnotationMarker`](../../exemptions.md#internal-api-annotations), or
-whose name is listed in [`internalApiAnnotations`](../../configuration.md#internal-api-annotations),
-says that its declarations have no supported compatibility contract. Exposing one of those declarations from the public API makes
-the contract contradictory: users have to name and use an explicitly unsupported type to call the
-supported declaration.
+## What it reports
+
+Reports a type marked with an [internal API
+annotation](../../exemptions.md#internal-api-annotations) in a public API signature:
 
 ```kotlin
 // !hide-focused
@@ -35,7 +31,12 @@ public class InternalModel
 public fun loadModel(): InternalModel = InternalModel()
 ```
 
-Keep the internal type behind the implementation boundary and expose a supported type instead:
+## Rationale
+
+Callers must use the types in a supported declaration's signature. An internal API type has no
+supported compatibility contract, so changes can break those callers.
+
+Expose a supported type instead:
 
 ```kotlin
 // !hide-focused
@@ -50,7 +51,16 @@ public class Model
 public fun loadModel(): Model = Model()
 ```
 
-If the whole declaration is technical API, mark it with the library's internal annotation too:
+## Notes
+
+- The check skips `@PublishedApi internal` signatures.
+- An internal API annotation on an enclosing class also marks its nested types.
+- Type aliases don't hide internal API annotations on the alias or its expanded type.
+
+## Exemption
+
+This check has no exemption annotation. If the exposing declaration is also internal API, mark it
+with the internal API annotation:
 
 ```kotlin
 // !hide-focused
@@ -66,20 +76,9 @@ public class InternalModel
 public fun loadInternalModel(): InternalModel = InternalModel()
 ```
 
-There is no `@Intentionally*` exemption: either remove the internal type from the supported
-signature or mark the exposing declaration as internal API as well.
-
-## Notes
-
-- `@PublishedApi internal` declarations are not reported because library users can't name them as
-  source API, so exposing an internal type in their signatures does not create a supported source
-  contract even though public inline code can use their binary shape.
-
 ## Configuration
 
-The mismatch between a supported declaration and an explicitly unsupported signature type is
-always an error while the check is enabled. It can't be demoted to a warning. Disable the whole
-check only when the library deliberately permits this mismatch:
+`publicTypeWithInternalApi` is `true` by default. The check can't report warnings. To disable it:
 
 ```kotlin
 apiWatchdog {
@@ -87,7 +86,7 @@ apiWatchdog {
 }
 ```
 
-With direct compiler invocation:
+For a direct compiler call:
 
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:publicTypeWithInternalApi=false

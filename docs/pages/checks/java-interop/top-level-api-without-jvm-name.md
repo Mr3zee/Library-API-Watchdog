@@ -1,8 +1,5 @@
 # Top-level API without JvmName
 
-`TOP_LEVEL_API_WITHOUT_JVM_NAME` reports a file whose public top-level functions or properties
-compile into a file facade class without an explicit `@file:JvmName`.
-
 |                  |                                                          |
 |------------------|----------------------------------------------------------|
 | Diagnostic       | `TOP_LEVEL_API_WITHOUT_JVM_NAME`                         |
@@ -13,10 +10,8 @@ compile into a file facade class without an explicit `@file:JvmName`.
 
 ## What it reports
 
-Kotlin files with top-level properties or functions in the public API or declared as
-`@PublishedApi internal` that can be called from Java bytecode.
-
-The diagnostic fires once per file.
+Files without `@file:JvmName` that have a Java-visible top-level function or property in the
+public API or declared as `@PublishedApi internal`. The check reports one diagnostic for each file.
 
 ```kotlin Health.kt
 // !hide-focused
@@ -27,13 +22,8 @@ public fun ping(): Int = 0
 
 ## Rationale
 
-The derived facade name reads as an implementation detail at Java call sites (`HealthKt.ping()`
-instead of something Java-idiomatic), and it is tied to a fact Kotlin callers never see: the file
-name. Renaming the file silently renames the facade and breaks Java sources and binaries compiled
-against it. See Kotlin's
-[Java-to-Kotlin interop guide](https://kotlinlang.org/docs/java-to-kotlin-interop.html#package-level-functions)
-for how top-level declarations actually compile.
-
+Without `@file:JvmName`, the facade name depends on the file name. A file rename breaks
+Java source calls and existing binaries that reference the facade.
 
 ### Don't
 
@@ -42,10 +32,6 @@ for how top-level declarations actually compile.
 /** Connects to the network. */
 // !diag[/connect/] TOP_LEVEL_API_WITHOUT_JVM_NAME ["NetworkKt","$functions"]
 public fun connect(): Int = 0
-
-// !hide-focused
-/** Disconnects from the network. */
-public fun disconnect(): Int = 0
 ```
 
 ### Do
@@ -56,26 +42,21 @@ public fun disconnect(): Int = 0
 // !hide-focused
 /** Connects to the network. */
 public fun connect(): Int = 0
-
-// !hide-focused
-/** Disconnects from the network. */
-public fun disconnect(): Int = 0
 ```
-
 
 ## Notes
 
-- Files exposing only classifiers - classes, objects, type aliases - produce no facade worth
-  naming.
-- Files where every top-level callable is hidden from Java with `@JvmSynthetic` are not reported.
-- Non-JVM compilations never register this check at all.
-- `@PublishedApi internal` callables are included because public inline bodies can copy calls to
-  their file facade into user binaries, where renaming that facade can break binary linkage.
+- The check skips files with only classes, objects, or type aliases.
+- The check skips files with no Java-visible top-level callable.
+- The check includes `@PublishedApi internal` callables because public inline bodies can copy facade
+  references into user binaries.
 
 ## Exemption
 
 <!-- diagnostic-exemption: TOP_LEVEL_API_WITHOUT_JVM_NAME -->
 If this is intended, apply `@file:IntentionallyDefaultFacadeName` to the file.
+
+Use the exemption to keep a published facade name.
 
 ```kotlin
 @file:IntentionallyDefaultFacadeName(
@@ -88,10 +69,6 @@ import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName
 // !hide-focused
 /** Connects to the network. */
 public fun connect(): Int = 0
-
-// !hide-focused
-/** Disconnects from the network. */
-public fun disconnect(): Int = 0
 ```
 
 ## Configuration
@@ -104,10 +81,9 @@ apiWatchdog {
 }
 ```
 
-The property lives inside the `javaInterop { }` block. `javaInterop { enabled = false }` turns off
-this check along with the rest of the [Java interop checks](./java-interop.md) group.
+`javaInterop { enabled = false }` disables all [Java interop checks](./java-interop.md).
 
-With direct compiler invocation:
+For a direct compiler call:
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=TOP_LEVEL_API_WITHOUT_JVM_NAME:warning
 ```

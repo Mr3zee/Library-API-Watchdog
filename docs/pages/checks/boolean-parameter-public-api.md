@@ -1,7 +1,5 @@
 # Boolean parameters in public API
 
-`BOOLEAN_PARAMETER_PUBLIC_API` reports Boolean value parameters of public functions.
-
 |                  |                                                      |
 |------------------|------------------------------------------------------|
 | Diagnostic       | `BOOLEAN_PARAMETER_PUBLIC_API`                       |
@@ -11,8 +9,8 @@
 
 ## What it reports
 
-Every value parameter, and every context parameter, of a function in the public API whose type is
-`Boolean`, including the declared element type of a `vararg` parameter.
+`Boolean` and `Boolean?` value and context parameters of functions in the public API.
+For a `vararg` parameter, the check uses its element type. Type aliases don't exempt a parameter.
 
 ```kotlin
 // !hide-focused
@@ -26,11 +24,8 @@ public fun doWork(optimizeForSpeed: Boolean) {}
 
 ## Rationale
 
-At the call site, a positional `true`/`false` argument reads as noise: `resize(true)` says nothing
-about what `true` does. Users can't be forced to use named arguments yet, so the meaning depends on
-whoever reads the call site remembering the parameter name. See the
-[Kotlin API guidelines on avoiding Boolean arguments](https://kotlinlang.org/docs/api-guidelines-readability.html#avoid-using-the-boolean-type-as-an-argument).
-
+A positional call such as `setLogging(true)` doesn't show what the Boolean controls.
+Separate operations or a domain type make the call readable.
 
 ### Don't
 
@@ -59,30 +54,16 @@ public fun enableLogging() {}
 public fun disableLogging() {}
 ```
 
-
 ## Notes
 
-- A nullable `Boolean?` parameter is still a positional flag, just a three-state one, so it is
-  reported the same way. It is also reported in [Nullable Booleans in public API](./nullable-boolean-public-api.md).
-- A type alias to `Boolean` doesn't change what users pass and is still reported.
-- A `Boolean` context parameter is reported too, and it hides the flag even better than a
-  positional argument: the caller writes nothing at the call site, and the value is picked up
-  from whatever `Boolean` happens to be in scope there.
+The check skips:
 
-  ```kotlin
-  // !diag[/verbose/] BOOLEAN_PARAMETER_PUBLIC_API ["logLine","verbose"]
-  context(verbose: Boolean)
-  public fun logLine(message: String) {}
-  ```
+- Overrides.
+- Constructors and factory functions named after their return type, such as `fun Widget(visible: Boolean): Widget`.
+- Legacy context receivers.
+- `@PublishedApi internal` functions.
 
-  Legacy context receivers are not reported.
-- Overrides are not reported: their signature is fixed by the overridden declaration, which is
-  reported instead.
-- Constructors, and constructor functions - factory functions named after the type they create,
-  such as `fun Widget(visible: Boolean): Widget` - are not reported.
-- `Boolean` return types and `Boolean` properties are not arguments and are not reported.
-- `@PublishedApi internal` functions are not reported because library users can't call them in
-  source.
+[Nullable Booleans in public API](./nullable-boolean-public-api.md) also reports `Boolean?` parameters.
 
 ## Exemption
 
@@ -110,7 +91,7 @@ apiWatchdog {
 }
 ```
 
-With direct compiler invocation:
+For a direct compiler call:
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=BOOLEAN_PARAMETER_PUBLIC_API:warning
 ```

@@ -1,8 +1,5 @@
 # Open API without subclass opt-in
 
-`OPEN_API_WITHOUT_SUBCLASS_OPT_IN` reports public open or abstract classes and interfaces that
-can be subclassed outside the library without any restriction.
-
 |                  |                                                      |
 |------------------|------------------------------------------------------|
 | Diagnostic       | `OPEN_API_WITHOUT_SUBCLASS_OPT_IN`                   |
@@ -12,8 +9,8 @@ can be subclassed outside the library without any restriction.
 
 ## What it reports
 
-An `open` or `abstract` class with at least one public or protected constructor,
-or a non-sealed interface in the public API.
+An `open` or `abstract` class in the public API with a constructor that external subclasses can call,
+or a non-sealed interface, without `@SubclassOptInRequired`.
 
 ```kotlin
 // !hide-focused
@@ -24,30 +21,10 @@ public open class Component
 
 ## Rationale
 
-Once external code subclasses a type, the library can no longer freely add abstract members,
-change existing members' signatures, or tighten invariants without breaking those subclasses.
-Unrestricted open API is one of the classic ways a
-[public declaration becomes hard to evolve](https://kotlinlang.org/docs/api-guidelines-predictability.html#prevent-unwanted-and-invalid-extensions).
-
+A new abstract member or a changed member signature can break external subclasses.
+For an unstable subclass contract, use `@SubclassOptInRequired`.
 
 ### Don't
-
-```kotlin
-// !hide-focused
-/** Base type for UI elements rendered by an application. */
-// !diag[/Widget/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["$class","Widget","$classFix"]
-public open class Widget
-```
-
-### Do
-
-```kotlin
-// !hide-focused
-/** A UI widget whose internal constructor prevents external subclasses. */
-public open class Widget internal constructor()
-```
-
-### Don't {#dont-2}
 
 ```kotlin
 // !hide-focused
@@ -60,7 +37,7 @@ public interface Plugin {
 }
 ```
 
-### Do {#do-2}
+### Do
 
 ```kotlin
 
@@ -79,24 +56,13 @@ public interface Plugin {
 }
 ```
 
-`@SubclassOptInRequired` requires external subclasses to opt in to the explicitly unstable contract.
-
-
 ## Notes
 
-- A `@SubclassOptInRequired` annotation with no marker classes gates nothing. It is reported by
-  the separate [`SUBCLASS_OPT_IN_WITHOUT_MARKERS`](./subclass-opt-in-without-markers.md) check
-  instead of this one.
-- A class whose constructors are all `internal` or `private` can't be subclassed outside the
-  library, so it is never reported, even if it is `open` or `abstract`.
-- A class with a `public` primary constructor is reported once, on the class name. A class
-  without one is reported on every `public` or `protected` constructor separately, since each of
-  them permits external subclassing on its own.
-- `fun interface`s are checked like any other interface.
-- Sealed interfaces are not reported here. They are covered by
-  [`EXHAUSTIVE_PUBLIC_API`](./exhaustive-public-api.md) instead.
-- `@PublishedApi internal` types are not reported by either diagnostic because library users can't
-  subclass them in Kotlin source.
+- Classes whose constructors are all `internal` or `private` aren't reported.
+- `fun interface`s follow the same rules as other interfaces.
+- [Subclass opt-in without markers](./subclass-opt-in-without-markers.md) reports a markerless `@SubclassOptInRequired` instead.
+- [Exhaustive public API](./exhaustive-public-api.md) reports sealed types.
+- `@PublishedApi internal` types aren't reported.
 
 ## Exemption
 
@@ -104,11 +70,11 @@ public interface Plugin {
 <!-- diagnostic-exemption-substitution: class or interface => {0} -->
 If this is intended, apply `@IntentionallyOpen` to the class or interface.
 
-Use the exemption when unrestricted subclassing is an intended, stable part of the contract:
+Use the exemption when unrestricted subclassing is a stable part of the API contract.
 
 ```kotlin
 // !hide-focused
-/** A UI widget deliberately open to external subclasses. */
+/** A UI widget open to external subclasses. */
 @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public open class Widget
 ```
@@ -121,14 +87,14 @@ apiWatchdog {
 }
 ```
 
-With direct compiler invocation:
+For a direct compiler call:
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=OPEN_API_WITHOUT_SUBCLASS_OPT_IN:warning
 ```
 
 ## See also
 
-- [Subclass opt-in without markers](./subclass-opt-in-without-markers.md)
+- [Require opt-in to extend an API](./subclass-opt-in-without-markers.md)
 - [Exhaustive public API](./exhaustive-public-api.md)
 - [Kotlin API guidelines: prevent unwanted and invalid extensions](https://kotlinlang.org/docs/api-guidelines-predictability.html#prevent-unwanted-and-invalid-extensions)
 - [`SubclassOptInRequired`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-subclass-opt-in-required/)

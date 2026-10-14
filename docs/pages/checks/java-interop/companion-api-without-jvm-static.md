@@ -1,9 +1,5 @@
 # Companion function without JvmStatic
 
-`COMPANION_API_WITHOUT_JVM_STATIC` reports public companion object functions that compile to an
-instance method on the nested `Companion` class instead of a static entry point on the outer
-class.
-
 |                  |                                                              |
 |------------------|--------------------------------------------------------------|
 | Diagnostic       | `COMPANION_API_WITHOUT_JVM_STATIC`                           |
@@ -14,8 +10,8 @@ class.
 
 ## What it reports
 
-Flags a function in the public API declared directly in a companion object - of a class or an
-interface - that carries neither `@JvmStatic` nor `@JvmSynthetic`.
+Functions in the public API declared directly in a class or interface companion object without
+`@JvmStatic` or `@JvmSynthetic`.
 
 ```kotlin
 // !hide-focused
@@ -34,12 +30,8 @@ public class ServiceFactory {
 
 ## Rationale
 
-A companion function without `@JvmStatic` compiles only as an instance method on the generated
-`Companion` class, so Java code must call `ServiceFactory.Companion.create(...)` for what looks, from
-Kotlin, like a plain static factory or utility.
-`@JvmStatic` additionally compiles a static `ServiceFactory.create(...)` entry point for Java, without
-changing how Kotlin resolves the same call. See the Kotlin guide on
-[static methods](https://kotlinlang.org/docs/java-to-kotlin-interop.html#static-methods).
+Without `@JvmStatic`, Java callers must write `Registry.Companion.create()` instead of
+`Registry.create()`.
 
 ### Don't
 
@@ -77,23 +69,18 @@ public class Registry {
 
 ## Notes
 
-- `suspend` companion functions are also reported because `@JvmStatic` can add an outer-class
-  entry point. Their `Continuation` parameter is still awkward for Java, so the
-  [`KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`](./kotlin-only-api-without-jvm-synthetic.md) check
-  also reports them. Hiding them with `@JvmSynthetic` usually resolves both diagnostics.
-- Overrides are reported because `@JvmStatic` can add a static entry point without changing the
-  implemented function contract.
-- Interface companions compile the same way and are checked identically to class companions.
-- `@JvmSynthetic` members are hidden from Java on purpose and are not reported.
-- Non-JVM compilations never register this check at all.
-- `@PublishedApi internal` functions are not reported because their public bytecode entries are
-  binary implementation details rather than supported Java source API.
+- The check includes overrides.
+- `suspend` functions are also reported by [Kotlin-only API without JvmSynthetic](./kotlin-only-api-without-jvm-synthetic.md).
+  `@JvmSynthetic` resolves both diagnostics.
+- The check skips `@PublishedApi internal` functions.
 
 ## Exemption
 
 <!-- diagnostic-exemption: COMPANION_API_WITHOUT_JVM_STATIC -->
 If this is intended, apply `@IntentionallyNonStaticCompanionApi` to the function or an
 enclosing class.
+
+Use the exemption when Java callers must use the companion instance.
 
 ```kotlin
 // !hide-focused
@@ -112,9 +99,6 @@ public class Registry {
 }
 ```
 
-The same annotation also acknowledges
-[`COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS`](./companion-property-without-static-access.md).
-
 ## Configuration
 
 ```kotlin
@@ -125,10 +109,9 @@ apiWatchdog {
 }
 ```
 
-The property lives inside the `javaInterop { }` block. `javaInterop { enabled = false }` turns off
-this check along with the rest of the [Java interop checks](./java-interop.md) group.
+`javaInterop { enabled = false }` disables all [Java interop checks](./java-interop.md).
 
-With direct compiler invocation:
+For a direct compiler call:
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=COMPANION_API_WITHOUT_JVM_STATIC:warning
 ```

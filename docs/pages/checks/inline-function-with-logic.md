@@ -1,8 +1,5 @@
 # Inline functions with logic
 
-`INLINE_FUNCTION_WITH_LOGIC` reports public inline functions and inline property accessors whose
-body does more than a thin delegation.
-
 |                  |                                                  |
 |------------------|--------------------------------------------------|
 | Diagnostic       | `INLINE_FUNCTION_WITH_LOGIC`                     |
@@ -12,12 +9,11 @@ body does more than a thin delegation.
 
 ## What it reports
 
-Inline functions and property accessors in the public API, and `@PublishedApi internal` ones, are
-reported unless their body is a thin wrapper. A thin wrapper contains at most one statement,
-besides an optional contract, and uses only the
-[permitted operations](#permitted-thin-wrapper-operations). The compiler also copies the default
-value of each parameter into the call sites that omit the argument, so a default value must use
-only the permitted operations too.
+An inline function or property accessor in the public API or declared as `@PublishedApi internal`
+whose body exceeds the [thin-wrapper](#permitted-thin-wrapper-operations) limits.
+The body must have at most one statement, apart from an optional `contract { ... }`,
+and use only the [permitted operations](#permitted-thin-wrapper-operations).
+Parameter defaults must use the same permitted operations.
 
 ```kotlin
 // !hide-focused
@@ -39,24 +35,20 @@ public inline fun <reified T : Any> decodePayload(payload: String): T {
 
 ## Rationale
 
-The compiler copies an inline function's body into every call site at compile time. Once a user
-compiles against a library version, that copy and any bug in it are in the user's binary
-until that binary is recompiled. A regular function call instead runs the implementation from the
-library version present at runtime. See the Kotlin library authors' guide on
-[`@PublishedApi` considerations](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#considerations-for-using-the-publishedapi-annotation).
+The compiler copies inline bodies into caller binaries.
+A new library version doesn't replace those copies until callers recompile.
+Move the logic to a non-inline `@PublishedApi internal` function.
+Compiled callers then run the implementation from the library version at runtime.
 
-The problem is easy to illustrate through a transitive dependency:
+Example of how the problem can appear:
 
-1. `analytics-sdk` is compiled against version 1.0 of your library and calls an inline function.
-2. The inline body from 1.0 is copied into the published `analytics-sdk` binary.
-3. An application later resolves version 1.1 of your library, which contains an important fix,
+1. `analytics-sdk` is compiled against version **1.0** of `metrics-sdk` and calls an inline function.
+2. The inline body from **1.0** `metrics-sdk` is copied into the published `analytics-sdk` binary.
+3. An application later resolves version **1.1** of `metrics-sdk`, which contains a fix in the inline body,
    without getting a recompiled `analytics-sdk`.
-4. The SDK still executes its private copy of the 1.0 logic. Updating your library's version can't
+4. The SDK still executes its private copy of the **1.0** `metrics-sdk` logic. Updating `metrics-sdk` version can't
    fix it.
 
-Keep the actual logic in a non-inline `@PublishedApi internal`. The tiny public inline wrapper
-still provides reified types or in-place lambdas, but precompiled callers contain only a normal
-call to this delegate. When version 1.1 replaces the library, that call reaches the fixed delegate.
 
 ### Don't
 
@@ -102,9 +94,7 @@ public inline fun <reified T : Any> resolveService(): T =
     resolveServiceImpl(T::class)
 ```
 
-Do not mark `resolveServiceImpl` as `inline`. If both functions are inline, the compiler follows
-the call and copies the delegate body too. The diagnostic reports both the inline delegate and the
-wrapper that calls it.
+## Notes
 
 ## Permitted thin-wrapper operations
 
@@ -122,9 +112,9 @@ binary:
 The standard library is stable, so a call to a standard library function, inline or not, is a
 regular call. `println(message)`, `text.toInt()`, and `value.let { it }` are permitted.
 
-Instead, thin wrappers are permitted. A thin wrapper has at most one statement: 
-an expression body, a single explicit `return`, or an empty body. 
-An optional `contract` call before the statement doesn't count. 
+Instead, thin wrappers are permitted. A thin wrapper has at most one statement:
+an expression body, a single explicit `return`, or an empty body.
+An optional `contract` call before the statement doesn't count.
 The statement can combine any of the following operations, nested freely into one expression, and nothing else.
 
 ### Calls to non-inline functions and constructors
@@ -198,7 +188,7 @@ public inline fun recordAll(vararg values: Long) {
 }
 ```
 
-### Property access through non-inline accessors 
+### Property access through non-inline accessors
 
 ```kotlin
 // !hide-focused
@@ -216,7 +206,7 @@ public inline var limit: Int
     }
 ```
 
-### Callable references 
+### Callable references
 
 ```kotlin
 // !hide-focused
@@ -231,7 +221,7 @@ public inline val flushAction: () -> Unit
     get() = ::flushImpl
 ```
 
-### Reified class references, type checks, and casts 
+### Reified class references, type checks, and casts
 
 ```kotlin
 // !hide-focused
@@ -280,7 +270,7 @@ public inline fun <R> once(block: () -> R): R {
 
 See [Lambda parameters and suspend callers](#lambda-parameters-and-suspend-callers) for more details.
 
-### A lambda literal with a thin body 
+### A lambda literal with a thin body
 
 A lambda literal here is `{ action() }` - the `action` parameter passed to `scheduleFlushImpl`:
 
@@ -299,7 +289,7 @@ public inline fun afterFlush(crossinline action: () -> Unit) {
 }
 ```
 
-Kotlin copies `{ action() }` into every caller. This is safe because the lambda only calls the user's `action`. 
+Kotlin copies `{ action() }` into every caller. This is safe because the lambda only calls the user's `action`.
 The library's behavior stays in `scheduleFlushImpl`, where a library update can fix it.
 
 The same rule applies to lambdas inside other lambdas:
@@ -393,8 +383,8 @@ public inline fun sum(a: Vector, b: Vector): Vector = a + b
 
 ## Lambda parameters and suspend callers
 
-Directly invoking the wrapper's own lambda parameter, 
-like `once` [here](#direct-invocation-of-the-wrappers-own-function-parameter), is permitted. 
+Directly invoking the wrapper's own lambda parameter,
+like `once` [here](#direct-invocation-of-the-wrappers-own-function-parameter), is permitted.
 The lambda body is written by the caller and is compiled into the caller binary in any case, so it is caller
 logic rather than library logic.
 
@@ -454,35 +444,13 @@ private suspend fun authorizedQuery(): Parameters = buildParameters {
 }
 ```
 
-`apply` is a standard library function and `builder` is caller code, so `buildParameters` is a
-thin wrapper. The lambda still runs in place, so `authorizedQuery` can call `fetchToken` from it.
-
-When the wrapper needs control flow around the in-place call, for example a `try`/`finally` block,
-there is no thin rewrite. Passing the lambda to a regular helper function requires `noinline`.
-Calling it from another lambda requires `crossinline`. In both cases, callers can no longer call
-suspend functions inside the lambda. Such a wrapper is a trade-off:
-
-- Keep it inline and apply [`@IntentionallyInlinedLogic`](#exemption) when callers rely on suspend
-  calls or non-local returns inside the lambda. Keep the exempted body minimal: every operation in
-  it ends up in caller binaries.
-- Drop the `inline` modifier when in-place execution is not worth it. A regular
-  function keeps its logic in the library binary and is not checked at all, but callers can no
-  longer call suspend functions inside the lambda.
-
-## Notes
-
-- A contract declared with `contract { ... }` doesn't count as a statement.
-- `@PublishedApi internal` inline functions and accessors are checked exactly like public ones
-  because a public inline wrapper can call them and transitively inline their bodies into user
-  binaries.
-
 ## Exemption
 
 <!-- diagnostic-exemption: INLINE_FUNCTION_WITH_LOGIC -->
 If this is intended, apply `@IntentionallyInlinedLogic` to the declaration.
 
-Use the exemption when a lambda must run in place for non-local returns or suspend calls, such as
-the builder above, or when a hot path must not pay for an extra call:
+Use the exemption when callers need suspend calls or non-local returns inside an in-place lambda.
+Minimize the exempted body because every operation becomes part of caller binaries.
 
 ```kotlin
 // !hide-focused
@@ -516,7 +484,7 @@ apiWatchdog {
 }
 ```
 
-With direct compiler invocation:
+For a direct compiler call:
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=INLINE_FUNCTION_WITH_LOGIC:warning
 ```

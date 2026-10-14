@@ -1,8 +1,5 @@
 # DSL markers on no-op type positions
 
-`DSL_MARKER_NOOP_TYPE_POSITION` reports a `@DslMarker` annotation written directly on a named
-value's type where it has no effect on scope control.
-
 |                  |                                                       |
 |------------------|-------------------------------------------------------|
 | Diagnostic       | `DSL_MARKER_NOOP_TYPE_POSITION`                       |
@@ -12,8 +9,12 @@ value's type where it has no effect on scope control.
 
 ## What it reports
 
-A `@DslMarker` directly on a regular parameter, function return, property, or local variable type
-marks a value that is accessed by name at that declaration, so it restricts nothing there.
+Reports a DSL marker directly on these types:
+
+- A regular parameter type.
+- A function return type.
+- A property type.
+- A local variable type.
 
 ```kotlin
 // !hide-focused
@@ -39,15 +40,10 @@ public class Branch
 public fun append(branch: @BranchDsl Branch) { }
 ```
 
-Unlike the API-surface checks, this one also fires on non-public and even internal declarations: an
-inert marker misleads the library's own authors just as much as its users.
-
 ## Rationale
 
-A marker in a no-op position gives none of the protection `@DslMarker` exists for: inside a nested
-builder lambda, an outer builder's members stay implicitly callable, so code can silently call the
-wrong scope's functions. See the Kotlin guide on [scope control for DSL markers](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker).
-
+[DSL scope control](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker)
+restricts implicit receivers. A marker on a named value doesn't prevent calls to an outer receiver.
 
 ### Don't
 
@@ -75,48 +71,14 @@ public class Tag
 public fun configure(block: Tag.() -> Unit): String = ""
 ```
 
-
-
-### Don't {#dont-2}
-
-```kotlin
-// !hide-focused
-@file:JvmName("Trees")
-
-// !hide-focused
-/** Adds [tag] to the current tree. */
-// !diag[/@TreeDsl/] DSL_MARKER_NOOP_TYPE_POSITION ["TreeDsl","$parameterType"]
-public fun process(tag: @TreeDsl Tag) { }
-```
-
-### Do {#do-2}
-
-```kotlin
-// !hide-focused
-@file:JvmName("Trees")
-
-// no scope control needed for a named value
-// !hide-focused
-/** Adds [tag] to the current tree. */
-public fun process(tag: Tag) { }
-```
-
 ## Notes
 
-- A context parameter is an implicit value, so a marker on its type is effective and not
-  reported: when a nearer implicit value carries the same marker, the parameter is hidden
-  from context resolution.
-- Markers on supertypes, type parameter bounds, and type alias expansions are effective carriers
-  and are not reported: `class Div : @TreeDsl Tag()`, `typealias MarkedTag = @TreeDsl Tag`.
-- Markers nested inside type arguments are deliberately accepted. Generic substitution can expose
-  the annotated type later: `tags.first()` from a `List<@TreeDsl Tag>` has the annotated type, and
-  the marker becomes effective if that value is then used as an implicit receiver (inside the `with` function, for example).
+The check applies to declarations of any visibility. It skips:
 
-## Exemption
-
-There is no `@Intentionally*` annotation for this diagnostic: a marker on a no-op type position
-should normally be moved to an effective position (a receiver, a context parameter, or a supertype)
-or removed.
+- Function types with a receiver or context parameters.
+- Receiver and context parameter types, supertypes, type parameter bounds, and type alias
+  expansions.
+- Nested type arguments, such as `List<@TreeDsl Tag>`.
 
 ## Configuration
 
@@ -126,7 +88,7 @@ apiWatchdog {
 }
 ```
 
-With direct compiler invocation:
+For a direct compiler call:
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=DSL_MARKER_NOOP_TYPE_POSITION:warning
 ```

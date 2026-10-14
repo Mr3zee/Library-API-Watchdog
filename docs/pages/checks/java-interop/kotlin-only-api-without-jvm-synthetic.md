@@ -1,8 +1,5 @@
 # Kotlin-only API without JvmSynthetic
 
-`KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC` reports public functions whose shape only Kotlin callers
-can use idiomatically, while the function still lands in the API surface Java sources see.
-
 |                  |                                                              |
 |------------------|--------------------------------------------------------------|
 | Diagnostic       | `KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC`                      |
@@ -13,11 +10,12 @@ can use idiomatically, while the function still lands in the API surface Java so
 
 ## What it reports
 
-Three function shapes in the public API trigger it:
-- A `suspend` function (Java sees a trailing `Continuation` parameter it can't provide idiomatically)
-- An `inline` function with a `reified` type parameter (calling the compiled method from Java fails at runtime)
-- A function taking a Kotlin-specific function type as a value or context parameter - a suspend
-  function type, a function type with receiver, or a `Unit`-returning function type
+Functions in the public API with one of these shapes:
+
+- A `suspend` function.
+- An `inline` function with a `reified` type parameter.
+- A value or context parameter with a suspend, receiver, or `Unit`-returning function type.
+  This includes `vararg` element types.
 
 ```kotlin
 // !hide-focused
@@ -31,11 +29,15 @@ public suspend fun load(key: String) { }
 
 ## Rationale
 
-A Kotlin-only shape still compiles a method Java sources can see and try to call, even though
-Java can't use it the way Kotlin callers do, or can't use it at all. Leaving it pollutes Java-visible APIs and,
-for a `reified` type parameter, produces a call that compiles in Java but fails at runtime. See Kotlin's
-[Java-to-Kotlin interop guide](https://kotlinlang.org/docs/java-to-kotlin-interop.html) for how
-these shapes actually compile.
+Java sees an extra `Continuation` parameter on suspend functions. Calls to reified functions fail
+at runtime. Kotlin function types also expose Java-specific constraints:
+
+- Suspend callbacks can't be Java lambdas.
+- Receiver callbacks take the receiver as an explicit argument.
+- `Unit` callbacks must return `Unit.INSTANCE`.
+
+`@JvmSynthetic` hides these functions from Java source. For Java callers, add a blocking or
+`CompletableFuture` alternative for suspend functions, or a `fun interface` for callbacks.
 
 ### Don't
 
@@ -123,23 +125,11 @@ public fun onEach(action: Action) { }
 
 ## Notes
 
-- `@JvmSynthetic` hides the Kotlin-only member from Java entirely.
-- A `suspend` function can instead ship alongside a blocking or `CompletableFuture`-returning bridge for Java callers.
-- A `fun interface` parameter gives Java a lambda-friendly type instead of a Kotlin function type.
-- Context parameters become ordinary parameters in the JVM method. Kotlin-specific function types
-  in those positions are therefore reported just like Kotlin-specific value-parameter types.
-- Abstract and interface members are not reported: `@JvmSynthetic` can't hide a member that
-  implementations must provide.
-- Overrides are not reported: their shape is fixed by the overridden declaration, which is
-  reported instead.
-- Constructors are not reported: `@JvmSynthetic` doesn't apply to them.
-- A non-suspend signature mangled by a value class is reported by
-  [`MANGLED_JVM_NAME_PUBLIC_API`](./mangled-jvm-name-public-api.md) instead. Suspend functions stay
-  with this check even when their signature is also mangled.
-- `@JvmSynthetic` declarations are hidden from Java on purpose and are not reported.
-- Non-JVM compilations never register this check at all.
-- `@PublishedApi internal` functions are not reported because their public bytecode entries are
-  binary implementation details rather than supported Java source API.
+- The check skips abstract functions, interface members, overrides, constructors, and members of value classes.
+- The check skips `@JvmSynthetic` and `@PublishedApi internal` functions.
+- Non-suspend functions with a mangled signature belong to
+  [Mangled JVM names in public API](./mangled-jvm-name-public-api.md).
+  Suspend functions stay with this check even when the compiler mangles their signature.
 
 ## Exemption
 
@@ -147,12 +137,14 @@ public fun onEach(action: Action) { }
 If this is intended, apply `@IntentionallyKotlinOnlyApi` to the function or an
 enclosing class.
 
+Use the exemption when Java sources must see the Kotlin-only function.
+
 ```kotlin
 // !hide-focused
 @file:JvmName("KotlinOnly")
 
 // !hide-focused
-/** Invokes [action] through a deliberately Kotlin-only API. */
+/** Calls [action] for each value. */
 @IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)
 public fun onEach(action: (Int) -> Unit) { }
 ```
@@ -167,10 +159,9 @@ apiWatchdog {
 }
 ```
 
-The property lives inside the `javaInterop { }` block. `javaInterop { enabled = false }` turns off
-this check along with the rest of the [Java interop checks](./java-interop.md) group.
+`javaInterop { enabled = false }` disables all [Java interop checks](./java-interop.md).
 
-With direct compiler invocation:
+For a direct compiler call:
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC:warning
 ```

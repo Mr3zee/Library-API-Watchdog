@@ -1,7 +1,5 @@
 # Mutable collections in public API
 
-`MUTABLE_COLLECTION_PUBLIC_API` reports mutable collection and array types in public signatures.
-
 |                  |                                                       |
 |------------------|-------------------------------------------------------|
 | Diagnostic       | `MUTABLE_COLLECTION_PUBLIC_API`                       |
@@ -11,18 +9,16 @@
 
 ## What it reports
 
-Flags declarations in the public API that expose a mutable collection type (any of the
-`kotlin.collections` mutable interfaces):
- - `MutableList`
- - `MutableSet` 
- - `MutableMap`
- - `MutableCollection`
- - `MutableIterable`
- - `MutableIterator`,
- - `MutableListIterator`
- - `MutableMap.MutableEntry` 
- - A classifier implementing one of them (`ArrayList`, a hand-written `MutableList` subtype, etc.)
- - An array (`Array`, `IntArray`, etc.) 
+Mutable types in public API return types, property types, value and context parameters, and type parameter bounds.
+The check includes nested type arguments and expanded type aliases.
+
+It reports:
+
+- `MutableList`, `MutableSet`, and `MutableMap`.
+- `MutableCollection`, `MutableIterable`, `MutableIterator`, and `MutableListIterator`.
+- `MutableMap.MutableEntry`.
+- Implementations of these interfaces, such as `ArrayList`.
+- `Array` and primitive or unsigned array types.
 
 ```kotlin
 // !hide-focused
@@ -32,19 +28,12 @@ Flags declarations in the public API that expose a mutable collection type (any 
 /** Returns a caller-owned list of pending job names. */
 // !diag[/MutableList<String>/] MUTABLE_COLLECTION_PUBLIC_API ["$function","produce","MutableList","$returnTypeFix"]
 public fun produce(): MutableList<String> = mutableListOf()
-
-// !hide-focused
-/** Returns batches that callers may edit in place. */
-// !diag[/List<MutableList<Int>>/] MUTABLE_COLLECTION_PUBLIC_API ["$function","nested","MutableList","$returnTypeFix"]
-public fun nested(): List<MutableList<Int>> = emptyList()
 ```
 
 ## Rationale
 
-A mutable return type or property lets users mutate a collection they don't own. A mutable
-parameter lets the library mutate an argument the user still holds. Either way, once a mutable
-collection crosses the API boundary, it is unclear which mutations are safe. See the Kotlin guide on
-[avoiding exposing mutable state](https://kotlinlang.org/docs/api-guidelines-predictability.html#avoid-exposing-mutable-state).
+A mutable signature doesn't state who owns the collection or whose state a mutation changes.
+Use read-only types unless mutation is part of the contract.
 
 ### Don't
 
@@ -66,66 +55,27 @@ public class Holder(
 
 ```kotlin
 // !hide-focused
-/** Captures the values scheduled at construction time. */
+/** Gives read-only access to scheduled values. */
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Holder(
     // !hide-focused
-    /** Immutable snapshot of the scheduled values. */
+    /** Scheduled values. */
     public val items: List<Int>,
 )
 ```
 
-### Don't {#dont-2}
-
-```kotlin
-// !hide-focused
-@file:JvmName("Collections")
-
-// !hide-focused
-/** Removes all scheduled item IDs from [items]. */
-// !diag[/MutableSet<Int>/] MUTABLE_COLLECTION_PUBLIC_API ["$parameter","items","MutableSet","$parameterFix"]
-public fun consume(items: MutableSet<Int>) { 
-    items.add(1)
-}
-```
-
-### Do {#do-2}
-
-```kotlin
-// !hide-focused
-@file:JvmName("Collections")
-
-// !hide-focused
-/** Reads scheduled item IDs from [items]. */
-public fun consume(items: Set<Int>) {
-    items.toMutableSet()
-    // proceed with mutations
-}
-```
-
-
 ## Notes
 
-- `vararg` parameters are not reported - the compiler already passes a defensive copy of
-  the array. But a mutable element type is still reported (`vararg groups: MutableList<Int>`).
-- Extension receivers are not reported because the caller already has the collection. Builder
-  lambda receivers are reported because the library gives a mutable collection to caller code:
+The check skips:
 
-  ```kotlin
-  // Extension receiver: not reported.
-  public fun MutableList<Int>.snapshot(): List<Int> = toList()
+- The array of a `vararg` parameter. The check still reports mutable element types.
+- Extension receivers on these types. The check still reports function-type receivers such as `MutableList<Int>.() -> Unit`.
+- Overrides.
+- `@PublishedApi internal` declarations.
 
-  // Builder lambda receiver: reported.
-  // !diag[/MutableList<Int>\.\(\) -> Unit/] MUTABLE_COLLECTION_PUBLIC_API ["$parameter","block","MutableList","$parameterFix"]
-  public fun build(block: MutableList<Int>.() -> Unit): List<Int> =
-      mutableListOf<Int>().apply(block).toList()
-  ```
-- Overrides are not reported: their signature is fixed by the overridden declaration, which is
-  reported instead.
-- `@PublishedApi internal` declarations are not reported because their types do not cross the
-  supported source API boundary.
+A read-only type can still refer to a mutable collection. Copy input collections when callers must not change stored values.
 
 ## Exemption
 
@@ -133,14 +83,14 @@ public fun consume(items: Set<Int>) {
 If this is intended, apply `@IntentionallyMutableCollection` to the declaration,
 parameter, or type usage.
 
-Use the exemption when sharing the mutable collection is a deliberate part of the API contract.
+Use the exemption when shared mutation is part of the API contract.
 
 ```kotlin
 // !hide-focused
 @file:JvmName("Collections")
 
 // !hide-focused
-/** Exposes the values scheduled for processing as a deliberately shared collection. */
+/** Exposes a shared collection of scheduled values. */
 // !hide-focused
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
@@ -150,15 +100,6 @@ public class Holder(
     @IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)
     public val items: MutableList<Int>,
 )
-
-// !hide-focused
-/** Removes all scheduled item IDs from [items]. */
-public fun consume(
-    @IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)
-    items: MutableSet<Int>,
-) {
-    items.clear()
-}
 ```
 
 ## Configuration
@@ -169,7 +110,7 @@ apiWatchdog {
 }
 ```
 
-With direct compiler invocation:
+For a direct compiler call:
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=MUTABLE_COLLECTION_PUBLIC_API:warning
 ```

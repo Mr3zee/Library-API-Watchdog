@@ -1,8 +1,5 @@
 # Data classes in public API
 
-`DATA_CLASS_PUBLIC_API` reports public data classes, whose generated members expose their
-constructor property list as part of the compiled API.
-
 |                  |                                               |
 |------------------|-----------------------------------------------|
 | Diagnostic       | `DATA_CLASS_PUBLIC_API`                       |
@@ -12,7 +9,7 @@ constructor property list as part of the compiled API.
 
 ## What it reports
 
-Any `data class` in the public API or declared as `@PublishedApi internal`.
+A `data class` in the public API or declared as `@PublishedApi internal`.
 
 ```kotlin
 // !hide-focused
@@ -167,30 +164,15 @@ public class Coordinates(
 
 ## Notes
 
-- `data object`s are not reported: with no constructor properties, none of `copy`, `componentN`, or a
-  per-instance constructor are generated.
-- A non-public primary constructor with non-public properties shrinks the generated public surface,
-  but equality, hashing, and string output stay observable behavior, and older Kotlin versions
-  still generate a public `copy` for a non-public constructor.
-- `@PublishedApi internal` data classes are reported because their generated constructors, `copy`,
-  and `componentN` functions belong to the binary API available to public inline functions.
-
-Upcoming Kotlin features provide additional options when designing and evolving classes in public
-APIs:
-
-- Use [version overloading](https://github.com/Kotlin/KEEP/blob/main/proposals/KEEP-0431-version-overloading.md)
-  when appending a constructor property with a default value. It can keep earlier constructor callable.
-- When becomes available, consider [multi-field value classes](https://github.com/Kotlin/KEEP/blob/main/proposals/KEEP-0454-better-immutability-value-classes-MFVC.md)
-  for new types that represent genuine values and need structural equality without `copy` or
-  positional `componentN` functions.
+- `data object`s aren't reported.
+- A non-public primary constructor or non-public properties don't exempt a data class.
 
 ## Exemption
 
 <!-- diagnostic-exemption: DATA_CLASS_PUBLIC_API -->
 If this is intended, apply `@IntentionallyDataClass` to the class.
 
-Use the exemption when the data class is deliberate, stable part of the contract with
-`copy` and positional destructuring being intended API rather than incidental compiler output.
+Use the exemption when `copy` and positional destructuring are stable parts of the API contract.
 
 ```kotlin
 // !hide-focused
@@ -206,9 +188,8 @@ public data class Coordinates(
 )
 ```
 
-For an already-published data class, removing `data` is itself a source- and binary-incompatible
-change. Use `ExemptionReason.FOR_BACKWARDS_COMPATIBILITY` when keeping the data class is a
-compatibility decision rather than a design choice.
+Removing `data` from an already-published class breaks source and binary compatibility.
+For that case, use `ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`.
 
 ## Configuration
 
@@ -218,7 +199,7 @@ apiWatchdog {
 }
 ```
 
-With direct compiler invocation:
+For a direct compiler call:
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=DATA_CLASS_PUBLIC_API:warning
 ```

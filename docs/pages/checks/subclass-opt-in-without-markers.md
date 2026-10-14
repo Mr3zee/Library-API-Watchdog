@@ -1,8 +1,5 @@
 # Subclass opt-in without markers
 
-`SUBCLASS_OPT_IN_WITHOUT_MARKERS` reports `@SubclassOptInRequired` annotations that list no
-marker classes.
-
 |                  |                                                                                  |
 |------------------|----------------------------------------------------------------------------------|
 | Diagnostic       | `SUBCLASS_OPT_IN_WITHOUT_MARKERS`                                                |
@@ -12,10 +9,8 @@ marker classes.
 
 ## What it reports
 
-For an open class or interface in the public API, `markerClass` is a vararg parameter, so
-`@SubclassOptInRequired` compiles fine with zero arguments. The annotation restricts nothing in
-this case: the class or interface stays open to external subclassing exactly as if it was
-unannotated.
+A markerless `@SubclassOptInRequired` on a class or interface in the public API
+that external classes can subclass.
 
 ```kotlin
 // !hide-focused
@@ -27,14 +22,8 @@ public abstract class ExtensionPoint
 
 ## Rationale
 
-`@SubclassOptInRequired` exists so a library can add abstract members or otherwise change a
-contract later, because every external subclasser had to explicitly opt in to that instability
-first. An annotation with no marker doesn't protect against this. Any external class can
-extend the type without acknowledging anything, so the library keeps the evolution risk it meant
-to opt out of. See the
-[opt-in requirements guide](https://kotlinlang.org/docs/opt-in-requirements.html#require-opt-in-to-extend-api)
-for the intended pattern.
-
+Without a marker class, `@SubclassOptInRequired` doesn't restrict subclassing.
+External subclasses can depend on the API without an opt-in to future changes.
 
 ### Don't
 
@@ -62,19 +51,14 @@ public abstract class Connector
 
 ## Notes
 
-- A class or interface that is not open to external subclassing in the first place (a final
-  class, a class whose constructors are all internal or private, or a sealed interface) is
-  outside the scope of this check regardless of what `@SubclassOptInRequired` lists.
-- Multiple marker classes are allowed, and each further constrains who may subclass.
+- Final classes, classes whose constructors are all `internal` or `private`, and sealed types aren't reported.
+- The annotation can list more than one marker class.
+- `@PublishedApi internal` types aren't reported.
 
 ## Exemption
 
-There is no `@Intentionally*` annotation for this diagnostic: an unmarkered
-`@SubclassOptInRequired` never restricts anything, so keeping it as-is is never a valid design
-choice. Fix it by listing at least one marker class in `@SubclassOptInRequired`.
-
-To exempt this check for binary compatibility reasons, replace the `@SubclassOptInRequired` with
-`@IntentionallyOpen`:
+This check has no exemption annotation.
+To keep unrestricted subclassing for compatibility, replace `@SubclassOptInRequired` with `@IntentionallyOpen`:
 
 ```kotlin
 // !hide-focused
@@ -85,8 +69,7 @@ To exempt this check for binary compatibility reasons, replace the `@SubclassOpt
 public abstract class Connector
 ```
 
-[`exemptExistingApi`](../existing-libs.md) performs exactly this replacement: it
-drops the markerless `@SubclassOptInRequired` and puts `@IntentionallyOpen` in its place.
+The [`exemptExistingApi`](../existing-libs.md) task makes this replacement.
 
 ## Configuration
 
@@ -96,7 +79,7 @@ apiWatchdog {
 }
 ```
 
-With direct compiler invocation:
+For a direct compiler call:
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=SUBCLASS_OPT_IN_WITHOUT_MARKERS:warning
 ```

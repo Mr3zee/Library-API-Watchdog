@@ -1,8 +1,5 @@
 # Inconsistent parameter order in overloads
 
-`INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS` reports two overloads of the same public callable
-whose same-named parameters occupy different positions.
-
 |                  |                                                                |
 |------------------|----------------------------------------------------------------|
 | Diagnostic       | `INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS`                    |
@@ -12,17 +9,10 @@ whose same-named parameters occupy different positions.
 
 ## What it reports
 
-For each pair of overloads in the public API that share at least two parameter names, the check
-compares the positions of those names. It reports swaps and extra parameters inserted before
-or between shared parameters. Extra parameters at the end are allowed.
+Public API overloads that share at least two parameter names but put them at different positions.
+The check reports swaps and extra parameters before or between shared parameters. Extra parameters at the end aren't reported.
 
-The diagnostic shows every overload that shares at least two parameter names with this declaration.
-Its table has a column for each overload and a row for each shared parameter whose position differs.
-If an overload lacks a parameter in a row, its cell contains `absent`.
-Positions start at 1. "This overload" is the declaration with the diagnostic.
-
-No overload defines the required order. Align the shared parameter positions across the group
-to clear the reports.
+Align shared parameter positions across the overload group.
 
 ```kotlin
 // !hide-focused
@@ -41,15 +31,8 @@ public fun move(x: Int, scale: Double, y: Int) { }
 
 ## Rationale
 
-Callers often reuse the parameter order of one overload in another. An overload that expects
-`y, x` instead of `x, y` can bind positional arguments to the wrong parameters. If their types
-match, the mistake still compiles.
-
-An extra parameter between shared parameters also changes their positions. For `move(x, y)`
-and `move(x, scale, y)`, move `scale` after `y` to give both overloads the same shared positions.
-The Kotlin library authors' guide recommends
-[consistent parameter order, naming, and usage](https://kotlinlang.org/docs/api-guidelines-consistency.html#preserve-parameter-order-naming-and-usage).
-
+Callers can reuse one overload's argument order in another and pass values to the wrong parameters.
+If the parameter types match, the mistake still compiles.
 
 ### Don't
 
@@ -161,19 +144,14 @@ public fun Grid.fill(
 
 ## Notes
 
-- Overloads that share fewer than two parameter names are never reported. Single-argument
-  conversion overloads such as `BigDecimal(value: Int)` and `BigDecimal(value: String)` stay silent.
-- The check compares same-named members of one class, including inherited members. It compares
-  top-level functions in one package and constructors of one class.
-- A class member isn't compared against a same-named top-level function. Declarations from
-  dependencies aren't compared.
-- For an inherited pair, only the subtype's declaration gets a diagnostic. The supertype can't
-  see the subtype's overload. For an extension and a receiver member, only the extension gets
-  a diagnostic.
-- Overrides never get a diagnostic because inherited API fixes their parameter order. Other
-  overloads still use an override as a comparison reference.
-- `@PublishedApi internal` overloads are neither reported nor used as comparison references because
-  library users can't call them in source.
+The comparisons have these limits:
+
+- Members of one class, including inherited members, share a group. Only the subtype's declaration reports an inherited mismatch.
+- Top-level functions in one package share a group. Constructors of one class share a group.
+- An extension also compares against its receiver's members. Only the extension reports that mismatch.
+- Ordinary top-level functions don't compare against class members. Declarations from dependencies aren't checked.
+- Overrides don't get diagnostics but are used in comparisons.
+- `@PublishedApi internal` overloads aren't used in comparisons.
 
 ## Exemption
 
@@ -182,9 +160,8 @@ public fun Grid.fill(
 If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function
 or constructor.
 
-Use it for an overload whose parameter positions must differ, such as an old overload needed
-for source compatibility. The annotation removes the overload from comparison with other
-declarations, so newer overloads can use consistent positions.
+Use the exemption when an existing overload's parameter order must stay for source compatibility.
+The annotation removes that overload from all comparisons.
 
 ```kotlin
 // !hide-focused
@@ -210,7 +187,7 @@ apiWatchdog {
 }
 ```
 
-With direct compiler invocation:
+For a direct compiler call:
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS:warning
 ```

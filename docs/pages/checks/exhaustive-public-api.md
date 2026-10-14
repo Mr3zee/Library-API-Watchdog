@@ -1,8 +1,5 @@
 # Exhaustive public API
 
-`EXHAUSTIVE_PUBLIC_API` reports public enums and sealed hierarchies, which users can match
-exhaustively with a `when` expression.
-
 |                  |                                                |
 |------------------|------------------------------------------------|
 | Diagnostic       | `EXHAUSTIVE_PUBLIC_API`                        |
@@ -12,7 +9,7 @@ exhaustively with a `when` expression.
 
 ## What it reports
 
-The check reports every `enum class`, `sealed class`, and `sealed interface` in the public API.
+An `enum class`, `sealed class`, or `sealed interface` in the public API.
 
 ```kotlin
 // !hide-focused
@@ -32,13 +29,8 @@ public enum class Status {
 
 ## Rationale
 
-A user can write a `when` over an enum or a sealed hierarchy without an `else` branch and have
-the compiler check exhaustiveness for them. That is convenient, but it also means the user code
-depends on today's exact set of entries or subtypes. Adding a new enum entry or a new subtype
-later makes every such `when` at every call site stop compiling: a source-incompatible change the
-library author did not think of as breaking. See the
-[Kotlin API guidelines on preventing unwanted extensions](https://kotlinlang.org/docs/api-guidelines-predictability.html#prevent-unwanted-and-invalid-extensions).
-
+Users can match an enum or sealed hierarchy without an `else` branch.
+A new entry or subtype then makes those expressions fail to compile.
 
 ### Don't
 
@@ -129,11 +121,9 @@ public interface Event {
 
 ## Notes
 
-- A non-final member of a sealed hierarchy (an `abstract` or `sealed` subclass)
-  is itself unrestricted. Subclassable API and is reported separately by
-  [Open API without subclass opt-in](./open-api-without-subclass-opt-in.md).
-- `@PublishedApi internal` types are not reported because library users can't name and match them
-  in source.
+- Open and abstract subclasses of a sealed hierarchy can also need subclass opt-in.
+  See [Open API without subclass opt-in](./open-api-without-subclass-opt-in.md) for more details.
+- `@PublishedApi internal` types aren't reported.
 
 ## Exemption
 
@@ -141,8 +131,7 @@ public interface Event {
 <!-- diagnostic-exemption-substitution: enum or sealed hierarchy => {0} -->
 If this is intended, apply `@IntentionallyExhaustive` to the enum or sealed hierarchy.
 
-Use the exemption when a fixed set of entries or subtypes is a deliberate, stable part of the
-contract:
+Use the exemption when the set of entries or subtypes is a stable part of the API contract.
 
 ```kotlin
 // !hide-focused
@@ -173,7 +162,7 @@ apiWatchdog {
 }
 ```
 
-With direct compiler invocation:
+For a direct compiler call:
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=EXHAUSTIVE_PUBLIC_API:warning
 ```

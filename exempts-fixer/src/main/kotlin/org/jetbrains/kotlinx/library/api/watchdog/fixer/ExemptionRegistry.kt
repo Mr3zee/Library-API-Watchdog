@@ -22,7 +22,6 @@ internal sealed interface Fix {
 
     val targetStrategy: TargetStrategy
 }
-
 internal class ExemptionFix(
     val annotationShortName: String,
     override val targetStrategy: TargetStrategy,

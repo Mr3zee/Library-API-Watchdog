@@ -1,7 +1,5 @@
 # Function type aliases in public API
 
-`FUNCTION_TYPE_ALIAS_PUBLIC_API` reports public type aliases that expand to a function type.
-
 |                  |                                                       |
 |------------------|-------------------------------------------------------|
 | Diagnostic       | `FUNCTION_TYPE_ALIAS_PUBLIC_API`                      |
@@ -11,7 +9,7 @@
 
 ## What it reports
 
-A type alias in the public API whose expanded type is a function type.
+A type alias in the public API that expands to a function type.
 
 ```kotlin
 // !hide-focused
@@ -22,14 +20,8 @@ public typealias ProgressHandler = (Int) -> Unit
 
 ## Rationale
 
-A type alias is not a real type: it is erased at compile time, so a user compiled against
-`Callback` really binds to `(Int) -> Unit`. The alias can never grow a second member, a default
-implementation, or additional constraints. The only way to change the shape later is a breaking
-change to the bare function type. A
-[`fun interface`](https://kotlinlang.org/docs/fun-interfaces.html#functional-interfaces-vs-type-aliases)
-keeps the same lambda call-site ergonomics (SAM conversion) behind a real type that can
-be extended from or can new default members without breaking binary compatibility.
-
+Compiled callers use the expanded function type, so a signature change breaks compatibility.
+A `fun interface` gives the callback a named type that can have additional members or hierarchy.
 
 ### Don't
 
@@ -54,52 +46,22 @@ public fun interface Callback {
 }
 ```
 
-
-
-### Don't {#dont-2}
-
-```kotlin
-// !hide-focused
-/** Represents an operation that may suspend. */
-// !diag[/SuspendAction/] FUNCTION_TYPE_ALIAS_PUBLIC_API ["SuspendAction"]
-public typealias SuspendAction = suspend () -> Unit
-```
-
-### Do {#do-2}
-
-```kotlin
-// !hide-focused
-/** Represents an operation that may suspend. */
-// !hide-focused
-@IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
-public fun interface SuspendAction {
-    // !hide-focused
-    /** Executes the operation. */
-    public suspend fun invoke()
-}
-```
-
-
 ## Notes
 
-- Nullable and receiver variants are caught the same way: `public typealias Some = ((String) -> Boolean)?` and
-  `public typealias Some = StringBuilder.() -> Unit` are both function types under the alias.
-- A function type nested inside another type, such as `List<(Int) -> Unit>`, doesn't trigger the
-  check, only the type an alias directly expands to counts.
-- Aliases for reflection function types (`KFunction1`, `KSuspendFunction2`, ...) are not
-  reported: a `fun interface` can't replace them.
-- `@PublishedApi` itself can't target a type alias, but an alias nested inside a
-  `@PublishedApi internal` class is not reported: library users can't name it in source, and an
-  alias contributes no binary declaration of its own.
+- Function types nested in another type, such as `List<(Int) -> Unit>`, aren't reported.
+- Reflection function types, such as `KFunction1` and `KSuspendFunction2`, aren't reported.
+- Aliases inside a `@PublishedApi internal` class aren't reported.
 
 ## Exemption
 
 <!-- diagnostic-exemption: FUNCTION_TYPE_ALIAS_PUBLIC_API -->
 If this is intended, apply `@IntentionallyFunctionTypeAlias` to the type alias.
 
+Use the exemption when the expanded function type is part of the API contract.
+
 ```kotlin
 // !hide-focused
-/** Receives completed work percentages through a deliberately bare function shape. */
+/** Receives completed work percentages through a function type. */
 @IntentionallyFunctionTypeAlias(reason = ExemptionReason.API_DESIGN)
 public typealias Callback = (Int) -> Unit
 ```
@@ -112,13 +74,13 @@ apiWatchdog {
 }
 ```
 
-With direct compiler invocation:
+For a direct compiler call:
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=FUNCTION_TYPE_ALIAS_PUBLIC_API:warning
 ```
 
 ## See also
 
-- [Functional interfaces vs. type aliases](https://kotlinlang.org/docs/fun-interfaces.html#functional-interfaces-vs-type-aliases)
+- [Functional interfaces and type aliases](https://kotlinlang.org/docs/fun-interfaces.html#functional-interfaces-vs-type-aliases)
 - [Exemptions and internal API](../exemptions.md)
 - [Data classes in public API](./data-class-public-api.md)

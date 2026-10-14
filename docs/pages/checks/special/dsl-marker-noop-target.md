@@ -1,8 +1,5 @@
 # DSL markers with no-op targets
 
-`DSL_MARKER_NOOP_TARGET` reports an explicit `@Target` entry on a `@DslMarker` annotation that
-names a target the marker has no effect on.
-
 |                  |                                                                                       |
 |------------------|---------------------------------------------------------------------------------------|
 | Diagnostic       | `DSL_MARKER_NOOP_TARGET`                                                              |
@@ -12,8 +9,12 @@ names a target the marker has no effect on.
 
 ## What it reports
 
-The check only looks at `@DslMarker`-annotated annotation classes that declare an explicit `@Target`
-with noop targets.
+Reports each explicit `@Target` entry on a `@DslMarker` annotation outside this set:
+
+- `CLASS`.
+- `ANNOTATION_CLASS`.
+- `TYPE`.
+- `TYPEALIAS`.
 
 ```kotlin
 // !hide-focused
@@ -26,15 +27,9 @@ public annotation class MyDsl
 
 ## Rationale
 
-`@DslMarker` exists to make [type-safe builder](https://kotlinlang.org/docs/type-safe-builders.html)
-receivers unambiguous by hiding outer receivers from an inner scope. That mechanism only looks at
-the marker's placement on a class, a type, or a type alias.
-It misleads callers into thinking annotating a function or a property also
-scopes something, and it misleads the marker's author into thinking the surface is narrower than
-it is. See the
-[DSL marker design note](https://github.com/Kotlin/KEEP/blob/main/notes/0005-dsl-marker.md) and the
-Kotlin docs on [scope control with `@DslMarker`](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker).
-
+[DSL scope control](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker)
+ignores markers on functions and properties. Such targets let callers apply markers that don't
+restrict outer receivers.
 
 ### Don't
 
@@ -67,17 +62,11 @@ public annotation class KtorDsl
 public annotation class KtorDsl
 ```
 
-
 ## Notes
 
-- `ANNOTATION_CLASS` is also effective because it is a classifier declaration, like `CLASS`.
-- Marker visibility is irrelevant: an `internal` or `private` marker is still applied across the
-  library's - possibly public - DSL classes, so markers of any visibility are checked.
-- A plain annotation class without `@DslMarker` is outside the scope of this check, regardless of
-  its `@Target`.
-- A marker without an explicit `@Target` is covered by the separate, related
-  [`DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`](./dsl-marker-without-explicit-targets.md), because the
-  default target set has its own no-op entries plus forbids `TYPE`/`TYPEALIAS`.
+- The check applies to markers of any visibility.
+- For missing or empty targets, [DSL markers without explicit
+  targets](./dsl-marker-without-explicit-targets.md) applies.
 
 ## Exemption
 
@@ -85,8 +74,7 @@ public annotation class KtorDsl
 If this is intended, apply
 `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker.
 
-Use the exemption when the marker already shipped with a no-op target and narrowing `@Target`
-would reject existing user code:
+Use the exemption if a narrower target set on a published marker rejects existing user code:
 
 ```kotlin
 // !hide-focused
@@ -97,10 +85,7 @@ would reject existing user code:
 public annotation class KtorDsl
 ```
 
-Wrong marker targets are never good API design, so this annotation bakes its only accepted
-reason - backwards compatibility - into its name: it takes no `reason` parameter, just an
-optional `description` for extra context. New DSL markers should declare effective
-targets instead of reaching for this exemption.
+The annotation has no `reason` parameter. Its `description` is optional.
 
 ## Configuration
 
@@ -110,7 +95,7 @@ apiWatchdog {
 }
 ```
 
-With direct compiler invocation:
+For a direct compiler call:
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=DSL_MARKER_NOOP_TARGET:warning
 ```

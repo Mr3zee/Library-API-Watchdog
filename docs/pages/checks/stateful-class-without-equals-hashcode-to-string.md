@@ -1,35 +1,20 @@
 # Stateful classes without equals, hashCode, and toString
 
-Three diagnostics report public stateful classes that rely on the implementations of
-`equals`, `hashCode`, and `toString` from `kotlin.Any`.
+| Diagnostic | Gradle property | Exemption |
+|------------|-----------------|-----------|
+| `STATEFUL_CLASS_WITHOUT_EQUALS` | [`statefulClassWithoutEquals`](../configuration.md) | [`@IntentionallyWithoutEquals`](../exemptions.md) |
+| `STATEFUL_CLASS_WITHOUT_HASH_CODE` | [`statefulClassWithoutHashCode`](../configuration.md) | [`@IntentionallyWithoutHashCode`](../exemptions.md) |
+| `STATEFUL_CLASS_WITHOUT_TO_STRING` | [`statefulClassWithoutToString`](../configuration.md) | [`@IntentionallyWithoutToString`](../exemptions.md) |
 
-|                  |                                                                             |
-|------------------|-----------------------------------------------------------------------------|
-| Diagnostic       | `STATEFUL_CLASS_WITHOUT_EQUALS`                                             |
-| Default severity | Error                                                                       |
-| Gradle property  | [`statefulClassWithoutEquals`](../configuration.md)                         |
-| Exemption        | [`@IntentionallyWithoutEquals`](../exemptions.md) or the combined exemption |
-
-|                  |                                                                               |
-|------------------|-------------------------------------------------------------------------------|
-| Diagnostic       | `STATEFUL_CLASS_WITHOUT_HASH_CODE`                                            |
-| Default severity | Error                                                                         |
-| Gradle property  | [`statefulClassWithoutHashCode`](../configuration.md)                         |
-| Exemption        | [`@IntentionallyWithoutHashCode`](../exemptions.md) or the combined exemption |
-
-|                  |                                                                               |
-|------------------|-------------------------------------------------------------------------------|
-| Diagnostic       | `STATEFUL_CLASS_WITHOUT_TO_STRING`                                            |
-| Default severity | Error                                                                         |
-| Gradle property  | [`statefulClassWithoutToString`](../configuration.md)                         |
-| Exemption        | [`@IntentionallyWithoutToString`](../exemptions.md) or the combined exemption |
+Default severity: error for all three checks.
 
 Combined exemption: [`@IntentionallyWithoutEqualsHashCodeOrToString`](../exemptions.md)
 
 ## What they report
 
-The checks flag a regular class in the public API that has at least one property storing its value
-in a backing field and that doesn't declare or inherit the corresponding implementation:
+Regular classes in the public API with at least one non-delegated backing-field property.
+Each check reports a missing implementation of its member, independently of the other two.
+A supertype's implementation counts unless it comes from `kotlin.Any`.
 
 ```kotlin
 // !hide-focused
@@ -44,24 +29,13 @@ public class Endpoint(
 )
 ```
 
-Each member is checked independently. A class that implements `toString` but not `equals` and
-`hashCode`, for example, receives the first two diagnostics.
-
 ## Rationale
 
-State usually gives instances their meaning. Identity equality treats two instances with the same
-state as different values. Identity hashing carries that behavior into sets and map keys. An
-instance that only prints as `Connection@1a2b3c4d` reveals nothing in a log line, exception message,
-or debugger view.
+Default equality and hashing use object identity, so equal state doesn't make two instances equal.
+The default `toString` doesn't show the state in logs or debuggers.
 
-Generate all three members together so they use the same state. [Poko](#poko) does this for Kotlin
-classes without exposing the `copy` and `componentN` API of a data class. In IntelliJ IDEA, press
-<IdeaGenerateShortcut /> or choose `Code | Generate` to generate the methods without another
-library.
-
-See the Kotlin library authors' guidelines on
-[providing a toString method for stateful types](https://kotlinlang.org/docs/api-guidelines-debuggability.html#provide-a-tostring-method-for-stateful-types).
-
+[Poko](#poko) generates all three members without a data class's `copy` and `componentN` functions.
+In IntelliJ IDEA, use <IdeaGenerateShortcut /> or `Code | Generate` to generate the methods.
 
 ### Don't
 
@@ -114,18 +88,14 @@ public class Connection(
 
 ## Notes
 
-- An implementation inherited from any supertype other than `kotlin.Any` counts as provided, so a
-  subclass that adds its own state is not reported for that member. Whether the inherited behavior
-  should include the new state is left to the author.
-- Data and value classes get compiler-generated implementations and are not reported here. Data
-  classes are reported by [`DATA_CLASS_PUBLIC_API`](./data-class-public-api.md) instead.
-- Enum entries, objects (including companion objects), interfaces, and annotation classes are not
-  reported. Enums and singleton objects have deliberate identity semantics, while interfaces and
-  annotation classes can't hold backing fields.
-- A delegated property stores its value in the delegate, not in a backing field, so it doesn't
-  make a class stateful on its own.
-- `@PublishedApi internal` classes are not reported because library users can't reference them in
-  source.
+The checks skip:
+
+- Data and value classes.
+- Enums, objects, interfaces, and annotation classes.
+- Classes with only delegated properties or properties without backing fields.
+- `@PublishedApi internal` classes.
+
+Check whether inherited implementations include any state that the subclass adds.
 
 ## Exemptions
 
@@ -136,8 +106,8 @@ public class Connection(
 | `hashCode`       | `@IntentionallyWithoutHashCode` | `@IntentionallyWithoutEqualsHashCodeOrToString` |
 | `toString`       | `@IntentionallyWithoutToString` | `@IntentionallyWithoutEqualsHashCodeOrToString` |
 
-Apply the individual exemption to acknowledge one behavior, or the combined exemption to
-acknowledge all three inherited implementations:
+Use an individual exemption when one behavior is intentional, or the combined exemption when all three are.
+For example, a connection can use identity equality and hashing but still implement a `toString` that shows its state.
 
 ```kotlin
 // !hide-focused
@@ -149,9 +119,6 @@ public class Connection(
     public val host: String,
 )
 ```
-
-Choose the individual exemptions when only some behaviors are intentional. For example, a class can
-acknowledge identity equality and hashing while still providing a safe `toString`.
 
 ## Configuration
 
@@ -166,7 +133,7 @@ plugins {
 }
 ```
 
-Annotate each class whose `equals`, `hashCode`, and `toString` should be generated with `@Poko`.
+Add `@Poko` to each class that needs generated `equals`, `hashCode`, and `toString`.
 
 ### Check severity
 
@@ -178,8 +145,7 @@ apiWatchdog {
 }
 ```
 
-With direct compiler invocation:
-
+For a direct compiler call:
 ```text
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=STATEFUL_CLASS_WITHOUT_EQUALS:warning
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=STATEFUL_CLASS_WITHOUT_HASH_CODE:warning
@@ -188,5 +154,6 @@ With direct compiler invocation:
 
 ## See also
 
+- [Kotlin library authors' guidelines for toString ](https://kotlinlang.org/docs/api-guidelines-debuggability.html#provide-a-tostring-method-for-stateful-types)
 - [Data classes in public API](./data-class-public-api.md)
 - [Exemptions and internal API](../exemptions.md)

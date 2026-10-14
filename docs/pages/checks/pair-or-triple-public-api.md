@@ -1,8 +1,5 @@
 # Pair and Triple in public API
 
-`PAIR_OR_TRIPLE_PUBLIC_API` reports the tuple types `Pair` and `Triple` in publicly visible
-signatures.
-
 |                  |                                                  |
 |------------------|--------------------------------------------------|
 | Diagnostic       | `PAIR_OR_TRIPLE_PUBLIC_API`                      |
@@ -12,9 +9,11 @@ signatures.
 
 ## What it reports
 
-The check reports `Pair` and `Triple` in return types, property types, parameter types, and type
-parameter bounds in the public API, including their type arguments (like
-`List<Pair<Int, String>>`):
+`Pair` or `Triple` in these parts of the public API, including nested type arguments and expanded type aliases:
+
+- Function return types and property types.
+- Value and context parameter types, including constructor parameters.
+- Type parameter bounds.
 
 ```kotlin
 // !hide-focused
@@ -28,13 +27,8 @@ public fun locate(): Pair<Int, Int> = 0 to 0
 
 ## Rationale
 
-`Pair` and `Triple` name their components `first`/`second`/`third`, so a call site reading
-`point.first` or destructuring `val (a, b) = point` learns nothing about what the values mean.
-Worse, the shape is fixed: it can't grow a fourth component or rename a component without
-breaking every user in a source-incompatible way, while a purpose-built class can add an
-optional property with a default value. See the
-[Kotlin API guidelines on object-oriented design for data and state](https://kotlinlang.org/docs/api-guidelines-consistency.html#use-object-oriented-design-for-data-and-state).
-
+`first`, `second`, and `third` don't name the components' meanings.
+A domain class names each component and can add properties while its return type stays the same.
 
 ### Don't
 
@@ -76,96 +70,13 @@ public class Dimensions(
 public fun dimensions(): Dimensions = Dimensions(0, 0, 0)
 ```
 
-### Don't {#dont-2}
-
-```kotlin
-// !hide-focused
-/** Attaches content to an unnamed coordinate pair. */
-// !hide-focused
-// !link[/@Poko/] https://github.com/drewhamilton/Poko
-@Poko
-public class Anchor(
-    // !hide-focused
-    /** Horizontal and vertical anchor coordinates. */
-    // !diag[/Pair<Int, Int>/] PAIR_OR_TRIPLE_PUBLIC_API ["$property","position","Pair","$pairComponents"]
-    public val position: Pair<Int, Int>,
-)
-```
-
-### Do {#do-2}
-
-```kotlin
-// !hide-focused
-/** A position in Cartesian coordinate space. */
-// !hide-focused
-// !link[/@Poko/] https://github.com/drewhamilton/Poko
-@Poko
-public class Point(
-    // !hide-focused
-    /** Distance from the vertical axis. */
-    public val x: Int,
-    // !hide-focused
-    /** Distance from the horizontal axis. */
-    public val y: Int,
-)
-
-// !hide-focused
-/** Attaches content to a point in Cartesian space. */
-// !hide-focused
-// !link[/@Poko/] https://github.com/drewhamilton/Poko
-@Poko
-public class Anchor(
-    // !hide-focused
-    /** Point at which the content is anchored. */
-    public val position: Point,
-)
-```
-
-### Don't {#dont-3}
-
-```kotlin
-// !hide-focused
-@file:JvmName("Geometry")
-
-// !hide-focused
-/** Returns unnamed edges. */
-// !diag[/List<Pair<Int, Int>>/] PAIR_OR_TRIPLE_PUBLIC_API ["$function","edges","Pair","$pairComponents"]
-public fun edges(): List<Pair<Int, Int>> = emptyList()
-```
-
-### Do {#do-3}
-
-```kotlin
-// !hide-focused
-@file:JvmName("Geometry")
-
-// !hide-focused
-/** A position in Cartesian coordinate space. */
-// !hide-focused(1:8)
-// !link[/@Poko/] https://github.com/drewhamilton/Poko
-@Poko
-public class Point(
-  /** Distance from the vertical axis. */
-  public val x: Int,
-  /** Distance from the horizontal axis. */
-  public val y: Int,
-)
-
-// !hide-focused
-/** Returns edges. */
-public fun edges(): List<Point> = emptyList()
-```
-
 ## Notes
 
-- A tuple type parameter bound (`<T : Pair<Int, Int>>`) is reported too: it constrains every
-  instantiation to the tuple shape, exposing it just like a direct mention.
-- Extension receivers are not reported: `fun Pair<Int, Int>.manhattanLength(): Int` serves a
-  value the user already holds instead of handing out a new tuple.
-- Overrides are not reported: their signature is fixed by the overridden declaration, which is
-  reported instead.
-- `@PublishedApi internal` declarations are not reported because their tuple types do not cross the
-  supported source API boundary.
+The check skips:
+
+- Extension receivers on these types.
+- Overrides.
+- `@PublishedApi internal` declarations.
 
 ## Exemption
 
@@ -173,12 +84,14 @@ public fun edges(): List<Point> = emptyList()
 If this is intended, apply `@IntentionallyPairOrTriple` to the declaration,
 parameter, or type usage.
 
+Use the exemption when the tuple's component meanings and order are part of a fixed API contract.
+
 ```kotlin
 // !hide-focused
 @file:JvmName("Geometry")
 
 // !hide-focused
-/** Returns deliberately unnamed dimensions. */
+/** Returns dimensions as a tuple. */
 @IntentionallyPairOrTriple(reason = ExemptionReason.API_DESIGN)
 public fun dimensions(): Triple<Int, Int, Int> = Triple(0, 0, 0)
 ```
@@ -191,7 +104,7 @@ apiWatchdog {
 }
 ```
 
-With direct compiler invocation:
+For a direct compiler call:
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=PAIR_OR_TRIPLE_PUBLIC_API:warning
 ```

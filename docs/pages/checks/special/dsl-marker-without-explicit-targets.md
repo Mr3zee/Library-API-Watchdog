@@ -1,8 +1,5 @@
 # DSL markers without explicit targets
 
-`DSL_MARKER_WITHOUT_EXPLICIT_TARGETS` reports a `@DslMarker` annotation class that declares no
-explicit annotation targets, either because `@Target` is absent or because it is empty.
-
 |                  |                                                                                       |
 |------------------|---------------------------------------------------------------------------------------|
 | Diagnostic       | `DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`                                                 |
@@ -12,8 +9,7 @@ explicit annotation targets, either because `@Target` is absent or because it is
 
 ## What it reports
 
-Any annotation class annotated with `@DslMarker` that has no `@Target` of its own or declares
-an empty `@Target()`:
+Reports a `@DslMarker` annotation class without `@Target`, or with an empty `@Target()`:
 
 ```kotlin
 // !hide-focused
@@ -32,14 +28,9 @@ public annotation class EmptyTargetsDsl
 
 ## Rationale
 
-[DSL marker scope control](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker)
-only reacts to a marker found on a classifier declaration (`CLASS`, `ANNOTATION_CLASS`), a type
-usage (`TYPE`), or a type alias (`TYPEALIAS`). The default target set includes `CLASS`, but omits
-`TYPE` and `TYPEALIAS` while allowing parameters, properties, functions, and other positions where
-the marker has no effect. An empty target set is worse: the marker can't be applied anywhere.
-An explicit, non-empty target set makes the effective placements available without advertising
-ineffective ones.
-
+The default targets omit `TYPE` and `TYPEALIAS` and let callers apply markers with no [DSL scope
+effect](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker). An empty
+target set prevents every usage.
 
 ### Don't
 
@@ -64,23 +55,13 @@ public annotation class HtmlDsl
     AnnotationTarget.TYPEALIAS,
 )
 public annotation class HtmlDsl
-
-// A narrower, still-effective subset is fine too
-// !hide-focused
-/** Marks Ktor DSL receivers. */
-@DslMarker
-@Target(AnnotationTarget.CLASS)
-public annotation class KtorDsl
 ```
-
 
 ## Notes
 
-- `ANNOTATION_CLASS` is also effective because it is a classifier declaration, like `CLASS`.
-- A marker with an explicit `@Target` that lists no-op targets is covered by the separate
-  [`DSL_MARKER_NOOP_TARGET`](./dsl-marker-noop-target.md) check instead.
-- A plain annotation class without `@DslMarker` is outside the scope of this check, regardless of
-  its `@Target`.
+- The check applies to markers of any visibility.
+- The check accepts any non-empty subset of `CLASS`, `ANNOTATION_CLASS`, `TYPE`, and `TYPEALIAS`.
+- [DSL markers with no-op targets](./dsl-marker-noop-target.md) checks explicit ineffective targets.
 
 ## Exemption
 
@@ -88,8 +69,7 @@ public annotation class KtorDsl
 If this is intended, apply
 `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker.
 
-Use the exemption when the marker is already published and adding a `@Target` would reject existing
-user code:
+Use the exemption if an explicit target set on a published marker rejects existing user code:
 
 ```kotlin
 // !hide-focused
@@ -101,10 +81,7 @@ user code:
 public annotation class HtmlDsl
 ```
 
-Wrong marker targets are never good API design, so this annotation bakes its only accepted
-reason - backwards compatibility - into its name: it takes no `reason` parameter, just an
-optional `description` for extra context. New DSL markers should declare effective
-targets instead of reaching for this exemption.
+The annotation has no `reason` parameter. Its `description` is optional.
 
 ## Configuration
 
@@ -114,7 +91,7 @@ apiWatchdog {
 }
 ```
 
-With direct compiler invocation:
+For a direct compiler call:
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=DSL_MARKER_WITHOUT_EXPLICIT_TARGETS:warning
 ```
