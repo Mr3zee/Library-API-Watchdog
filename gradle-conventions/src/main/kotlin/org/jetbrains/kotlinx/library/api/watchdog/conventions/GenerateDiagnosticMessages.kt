@@ -5,12 +5,23 @@ abstract class GenerateDiagnosticMessages : DiagnosticsJsonGeneratorTask() {
 
     override fun StringBuilder.appendDeclarations(diagnostics: DiagnosticsJson) {
         appendLine("/**")
-        appendLine(" * Message templates of the watchdog diagnostics, generated from the shared")
-        appendLine(" * `diagnostics.json` that the documentation website reads too. Templates of diagnostics")
-        appendLine(" * with parameters are rendered through `java.text.MessageFormat`, so their single quotes")
-        appendLine(" * arrive here already doubled.")
+        appendLine(" * Message templates and default severities of the watchdog diagnostics, generated from")
+        appendLine(" * the shared `diagnostics.json` that the documentation website reads too. Templates of")
+        appendLine(" * diagnostics with parameters are rendered through `java.text.MessageFormat`, so their")
+        appendLine(" * single quotes arrive here already doubled.")
         appendLine(" */")
         appendLine("internal object WatchdogDiagnosticMessages {")
+        appendLine("    /** The diagnostics that are a warning when no option names them. Every other one is an error. */")
+        appendLine("    private val warningByDefault: Set<String> = setOf(")
+        for (entry in diagnostics.entries) {
+            if (entry.defaultSeverity == "warning") appendLine("        \"${entry.name}\",")
+        }
+        appendLine("    )")
+        appendLine()
+        appendLine("    /** The severity of [name] when no option names it. */")
+        appendLine("    fun defaultSeverityFor(name: String): WatchdogSeverity =")
+        appendLine("        if (name in warningByDefault) WatchdogSeverity.WARNING else WatchdogSeverity.ERROR")
+        appendLine()
         appendLine("    /** Message template per diagnostic name. */")
         appendLine("    val messages: Map<String, String> = mapOf(")
         for (entry in diagnostics.entries) appendEntry(entry)

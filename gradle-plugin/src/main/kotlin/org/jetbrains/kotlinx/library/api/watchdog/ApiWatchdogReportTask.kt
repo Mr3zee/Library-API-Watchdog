@@ -96,6 +96,7 @@ public abstract class ApiWatchdogReportTask internal constructor() : DefaultTask
                 sourceFiles = sourceFiles.files,
                 fixerArtifact = fixerArtifact,
                 fixerClasspath = fixerClasspath,
+                diagnosticSeverities = diagnosticSeverities.get(),
                 kotlinVersion = kotlinVersion.get(),
                 execOperations = execOperations,
                 updateSources = updatesSources,

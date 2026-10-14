@@ -1,0 +1,102 @@
+FILE: annotation.kt
+    package foo.bar
+
+    @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FILE|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FILE|)]) public final annotation class GeneratedEquals : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/GeneratedEquals| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+FILE: classes.kt
+    package foo.bar
+
+    @R|foo/bar/GeneratedEquals|() public final class Generated : R|kotlin/Any| {
+        public constructor(value: R|kotlin/Int|): R|foo/bar/Generated| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val value: R|kotlin/Int| = R|<local>/value|
+            public get(): R|kotlin/Int|
+
+    }
+    @R|foo/bar/GeneratedEquals|() public final class Outer : R|kotlin/Any| {
+        public constructor(value: R|kotlin/Int|): R|foo/bar/Outer| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val value: R|kotlin/Int| = R|<local>/value|
+            public get(): R|kotlin/Int|
+
+        public final class Nested : R|kotlin/Any| {
+            public constructor(value: R|kotlin/Int|): R|foo/bar/Outer.Nested| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final val value: R|kotlin/Int| = R|<local>/value|
+                public get(): R|kotlin/Int|
+
+        }
+
+        public final inner class Inner : R|kotlin/Any| {
+            public foo/bar/Outer.constructor(value: R|kotlin/Int|): R|foo/bar/Outer.Inner| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final val value: R|kotlin/Int| = R|<local>/value|
+                public get(): R|kotlin/Int|
+
+        }
+
+    }
+    public final class Plain : R|kotlin/Any| {
+        public constructor(value: R|kotlin/Int|): R|foo/bar/Plain| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val value: R|kotlin/Int| = R|<local>/value|
+            public get(): R|kotlin/Int|
+
+        @R|foo/bar/GeneratedEquals|() public final class Nested : R|kotlin/Any| {
+            public constructor(value: R|kotlin/Int|): R|foo/bar/Plain.Nested| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final val value: R|kotlin/Int| = R|<local>/value|
+                public get(): R|kotlin/Int|
+
+        }
+
+    }
+    @R|foo/bar/GeneratedEquals|() public open class OpenWithSecondaryConstructor : R|kotlin/Any| {
+        private constructor(): R|foo/bar/OpenWithSecondaryConstructor| {
+            super<R|kotlin/Any|>()
+        }
+
+        public constructor(value: R|kotlin/Int|): R|foo/bar/OpenWithSecondaryConstructor| {
+            this<R|foo/bar/OpenWithSecondaryConstructor|>()
+        }
+
+    }
+    public open class OpenPlain : R|kotlin/Any| {
+        private constructor(): R|foo/bar/OpenPlain| {
+            super<R|kotlin/Any|>()
+        }
+
+        public constructor(value: R|kotlin/Int|): R|foo/bar/OpenPlain| {
+            this<R|foo/bar/OpenPlain|>()
+        }
+
+    }
+FILE: annotatedFunction.kt
+    package foo.bar
+
+    @R|foo/bar/GeneratedEquals|() public final fun annotatedTopLevel(): R|kotlin/Int| {
+        ^annotatedTopLevel Int(0)
+    }
+FILE: annotatedFile.kt
+    @FILE:R|foo/bar/GeneratedEquals|()
+    package foo.bar
+
+    public final fun fileAnnotated(): R|kotlin/Int| {
+        ^fileAnnotated Int(0)
+    }

@@ -2,7 +2,7 @@
 
 A change to the public API of a published library breaks its users. So the first run of the
 Watchdog reports many diagnostics that the author can't act on. The `exemptExistingApi` task
-acknowledges all of them in one run:
+acknowledges every error in one run:
 
 ```bash
 ./gradlew exemptExistingApi
@@ -12,10 +12,15 @@ Run it on a clean working tree. The task edits the source files.
 
 ## What the task changes
 
-The task compiles the main sources of every target and edits every reported declaration. Each
-declaration gets the `@Intentionally*` annotation of its diagnostic with
-`ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`. The annotation goes below the KDoc and above the
-other annotations of the declaration. The task adds the imports.
+The task compiles the main sources of every target and edits every declaration with a diagnostic
+whose configured severity is `ERROR`. Each declaration gets the `@Intentionally*` annotation of its
+diagnostic with `ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`. The annotation goes below the KDoc
+and above the other annotations of the declaration. The task adds the imports.
+
+A diagnostic with the `WARNING` severity stays in the sources. The console prints the count, and
+the [report](./report.md) lists each one. To exempt a check that is a warning, set it to
+`WatchdogSeverity.ERROR` in `apiWatchdog` for the run. [`UNDOCUMENTED_PUBLIC_API`](./checks/undocumented-public-api.md)
+is a warning by default, so the task adds no placeholder KDoc without this setting.
 
 Three diagnostics get a different fix:
 
@@ -52,8 +57,9 @@ When neither task is in the task graph, the compilations run as configured. Coll
 three things:
 
 - Explicit API mode is `warning`.
-- Every enabled configurable check reports a warning. `ERROR` and `WARNING` give the same result.
-  A check set to `NONE` in `apiWatchdog` records nothing and gets no exemption.
+- Every enabled configurable check reports a warning, so the compilation passes. The configured
+  severity still decides the fix: `exemptExistingApi` exempts a check set to `ERROR` and leaves a
+  check set to `WARNING`. A check set to `NONE` in `apiWatchdog` records nothing.
 - The three always-error checks are off, because `FOR_BACKWARDS_COMPATIBILITY` isn't a reason for
   them:
   - [`EXEMPTION_WITHOUT_EXPLANATION`](./checks/special/exemption-without-explanation.md): only the

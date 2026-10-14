@@ -32,6 +32,8 @@ class FixerProtocolTest {
                     reportFile=/project/build/reports/jvm=main.tsv
                     reportFile=/project/build/reports/js=main.tsv
                     sourceFile=/project/src/commonMain/kotlin/Common.kt
+                    diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:warning
+                    diagnosticSeverity=DATA_CLASS_PUBLIC_API:error
                     updateSources=false
                     responseFile=/tmp/response.txt
                 """.trimIndent(),
@@ -49,8 +51,43 @@ class FixerProtocolTest {
             listOf(Paths.get("/project/src/commonMain/kotlin/Common.kt")),
             request.sourceFiles,
         )
+        assertEquals(
+            mapOf("UNDOCUMENTED_PUBLIC_API" to "warning", "DATA_CLASS_PUBLIC_API" to "error"),
+            request.diagnosticSeverities,
+        )
         assertEquals(false, request.updateSources)
         assertEquals(Paths.get("/tmp/response.txt"), request.responseFile)
+    }
+
+    @Test
+    fun requestFixesErrorsOnly() {
+        val request = FixerRequest.parse(
+            file(
+                "severities.txt",
+                """
+                    diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:warning
+                    diagnosticSeverity=DATA_CLASS_PUBLIC_API:error
+                    updateSources=true
+                    responseFile=/tmp/response.txt
+                """.trimIndent(),
+            )
+        )
+
+        assertEquals(false, request.fixes("UNDOCUMENTED_PUBLIC_API"))
+        assertEquals(true, request.fixes("DATA_CLASS_PUBLIC_API"))
+        assertEquals(true, request.fixes("EXEMPTION_WITHOUT_EXPLANATION"))
+    }
+
+    @Test
+    fun requestRejectsMalformedSeverity() {
+        assertFailsWith<IllegalArgumentException> {
+            FixerRequest.parse(
+                file(
+                    "badSeverity.txt",
+                    "diagnosticSeverity=UNDOCUMENTED_PUBLIC_API\nupdateSources=true\nresponseFile=/tmp/a",
+                )
+            )
+        }
     }
 
     @Test
@@ -129,6 +166,7 @@ class FixerProtocolTest {
         val response = FixerResponse().apply {
             applied += AppliedFix("DATA_CLASS_PUBLIC_API", "IntentionallyDataClass", "/p/A.kt", 3)
             skipped += SkippedDiagnostic("EXEMPTION_WITHOUT_EXPLANATION", "/p/B.kt", 7, "needs a human")
+            warnings += WarningDiagnostic("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", "/p/C.kt", 4)
             exemptions += AppliedExemption("IntentionallyDataClass", "/p/A.kt", 2)
             modifiedFiles += "/p/A.kt"
         }
@@ -141,6 +179,7 @@ class FixerProtocolTest {
             listOf(
                 "fixed=DATA_CLASS_PUBLIC_API\tIntentionallyDataClass\t3\t/p/A.kt",
                 "skipped=EXEMPTION_WITHOUT_EXPLANATION\t\t7\t/p/B.kt\tneeds a human",
+                "warning=OPEN_API_WITHOUT_SUBCLASS_OPT_IN\tIntentionallyOpen\t4\t/p/C.kt",
                 "exemption=IntentionallyDataClass\t2\t/p/A.kt",
                 "modifiedFile=/p/A.kt",
             ),

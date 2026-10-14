@@ -8,7 +8,7 @@ their artifacts are not available transitively to consumers.
 | Diagnostic       | `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`                        |
 | Default severity | Always an error                                                     |
 | Gradle property  | [`publicTypesMustBeTransitiveDependencies`](../../configuration.md) |
-| Module exemption | [`exemptNonTransitiveDependency(this)`](#exempting-a-dependency)    |
+| Module exemption | [`apiWatchdogExemptNonTransitive`](#exempting-a-dependency)         |
 | Exemption        | [`@IntentionallyNonTransitiveDependency`](../../exemptions.md)      |
 
 Library consumers must be able to resolve every type in the public API and in
@@ -52,44 +52,27 @@ dependencies at all.
 ## Exempting a dependency
 
 When the environment that loads the library supplies a dependency on its own, its types are safe
-in the public API even though nothing publishes them. Exempt such a dependency in the
-configuration block of its declaration, and the check accepts its types everywhere in the module
-without a per-declaration exemption. Inside that block, `this` is the dependency being declared:
-
-```kotlin build.gradle.kts
-import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency
-
-dependencies {
-    compileOnly("com.example:models:1.0") { exemptNonTransitiveDependency(this) }
-}
-```
-
-The diagnostic prints this snippet for the declaration that pulls the type in.
-
-A dependency can also be declared on the `apiWatchdogExemptNonTransitive` configuration, apart
-from its own declaration. Any dependency notation works, including a version catalog entry, a
-project, and `gradleApi()`. The version is optional, the compile classpath's is used:
+in the public API even though nothing publishes them. Declare such a dependency on the
+`apiWatchdogExemptNonTransitive` configuration, next to its own declaration, and the check accepts
+its types everywhere in the module without a per-declaration exemption. Any dependency notation
+works, including a version catalog entry, a project, and `gradleApi()`. The version is optional,
+the compile classpath's is used:
 
 ```kotlin build.gradle.kts
 dependencies {
     compileOnly("com.example:models:1.0")
-
     apiWatchdogExemptNonTransitive("com.example:models")
-    apiWatchdogExemptNonTransitive(libs.host.api)
-    apiWatchdogExemptNonTransitive(project(":host-api"))
 }
 ```
 
 The exemption covers the named dependency and everything it pulls onto the compile classpath, so
 a Kotlin Multiplatform library is exempt together with its platform artifact. To exempt everything
-in a configuration, such as every `compileOnly` dependency of a Gradle plugin, extend from it
-through the `apiWatchdog` extension:
+in a configuration, such as every `compileOnly` dependency of a Gradle plugin, extend
+`apiWatchdogExemptNonTransitive` from it:
 
 ```kotlin build.gradle.kts
-apiWatchdog {
-    exemptNonTransitiveDependencies {
-        extendsFrom(configurations.compileOnly.get())
-    }
+configurations.apiWatchdogExemptNonTransitive {
+    extendsFrom(configurations.compileOnly.get())
 }
 ```
 

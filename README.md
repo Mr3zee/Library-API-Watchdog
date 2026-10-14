@@ -89,15 +89,15 @@ Four ways to exempt API from the checks:
   `apiWatchdog { ignore(WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS, whenAnnotatedWith = listOf("com.example.GeneratedValueMembers")) }`.
   Only a configurable check accepts this rule.
 - **[A dependency that the runtime environment gives](https://mr3zee.github.io/Library-API-Watchdog/configuration#exempt-non-transitive-dependencies)**:
-  for example, the Gradle API for a Gradle plugin. Declare it with
-  `compileOnly(libs.host.api) { exemptNonTransitiveDependency(this) }`.
+  for example, the Gradle API for a Gradle plugin. Declare it on the
+  `apiWatchdogExemptNonTransitive` configuration: `apiWatchdogExemptNonTransitive(libs.host.api)`.
   `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY` then accepts its types in the whole module.
 
 ## Adopting on an existing library
 
 A published library can't change its public API, so the first run reports many diagnostics that
 the author can't act on. The `exemptExistingApi` task applies an `@Intentionally*` annotation
-to every reported declaration:
+to every declaration with an error. A warning stays:
 
 ```bash
 ./gradlew exemptExistingApi

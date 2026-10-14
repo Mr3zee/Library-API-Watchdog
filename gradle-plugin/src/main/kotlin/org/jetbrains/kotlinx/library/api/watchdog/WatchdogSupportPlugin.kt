@@ -52,18 +52,15 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         enabled.get() && !kotlinCompilation.isTestCompilation()
 
     override fun apply(target: Project) {
-        val exemptNonTransitiveDependencies = target.configurations.register(
-            EXEMPT_NON_TRANSITIVE_CONFIGURATION_NAME,
-        ) { configuration ->
+        target.configurations.register(EXEMPT_NON_TRANSITIVE_CONFIGURATION_NAME) { configuration ->
             configuration.isCanBeConsumed = false
             configuration.isCanBeResolved = false
             configuration.description = "Dependencies whose types the public API can expose " +
-                    "although they aren't published transitively, see apiWatchdog.exemptNonTransitiveDependencies"
+                    "although they aren't published transitively"
         }
         val extension = target.extensions.create(
             "apiWatchdog",
             WatchdogGradleExtension::class.java,
-            exemptNonTransitiveDependencies,
         )
         enabled = extension.enabled
         extension.reports.html.convention(true)
@@ -91,8 +88,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
 
     /** KGP adds the annotations library only through [applyToCompilation], which a disabled watchdog never reaches. */
     private fun Project.addExemptionAnnotationsWithoutChecks() {
-        val kotlin = extensions.findByName("kotlin")
-        val compilations = when (kotlin) {
+        val compilations = when (val kotlin = extensions.findByName("kotlin")) {
             is KotlinJvmExtension -> kotlin.target.compilations
             is KotlinAndroidExtension -> kotlin.target.compilations
             is KotlinTargetsContainer -> kotlin.targets.flatMap { it.compilations }
@@ -118,7 +114,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             .relativeToOrSelf(rootDirectory).invariantSeparatorsPath
         val diagnosticSeverities = extension.diagnosticSeverities.entries.fold(
             objects.mapProperty(String::class.java, WatchdogSeverity::class.java),
-        ) { map, (diagnostic, severity) -> map.apply { put(diagnostic, severity) } }
+        ) { map, (diagnostic, severity) -> map.apply { put(diagnostic.name, severity) } }
         val fixerDependency = dependencyHandler.create(
             "${info.artifact.groupId}:$FIXER_ARTIFACT_ID:${info.artifact.version}",
         )
@@ -172,7 +168,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             EXEMPT_EXISTING_API_TASK_NAME,
             ExemptExistingApiTask::class.java,
             "Adds the FOR_BACKWARDS_COMPATIBILITY exemption to every declaration with a watchdog " +
-                    "diagnostic in the main Kotlin sources and writes the API Watchdog reports",
+                    "error in the main Kotlin sources and writes the API Watchdog reports",
         )
         val reportTask = registerReportTask(
             GENERATE_REPORT_TASK_NAME,
@@ -281,7 +277,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                                 } else {
                                     configured
                                 }
-                                "$diagnostic:${effective.name.lowercase()}"
+                                "${diagnostic.name}:${effective.name.lowercase()}"
                             },
                         ),
                     )

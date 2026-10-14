@@ -65,7 +65,7 @@ turns it off. [Exemptions and internal API](./exemptions.md) exempts selected de
 
 A library with a released API can't change most of the reported declarations. The
 `exemptExistingApi` task adds the matching `@Intentionally*` annotation with
-`ExemptionReason.FOR_BACKWARDS_COMPATIBILITY` to every reported declaration:
+`ExemptionReason.FOR_BACKWARDS_COMPATIBILITY` to every declaration with an error:
 
 ```bash
 ./gradlew exemptExistingApi
@@ -85,10 +85,6 @@ apiWatchdog {
     suggestAbiValidation = true
     // !link[/publicTypesMustBeTransitiveDependencies/] /checks/special/public-type-from-non-transitive-dependency
     publicTypesMustBeTransitiveDependencies = true
-    // !link[/exemptNonTransitiveDependencies/] /configuration#exempt-non-transitive-dependencies
-    exemptNonTransitiveDependencies {
-        extendsFrom(configurations.compileOnly.get())
-    }
     // !link[/publicTypeWithInternalApi/] /checks/special/public-type-with-internal-api
     publicTypeWithInternalApi = true
     // !link[/internalApiAnnotations/] /configuration#internal-api-annotations-from-dependencies
@@ -193,11 +189,14 @@ apiWatchdog {
 
 The rules:
 
-- `ignore` rejects the name of an always-error check.
+- `ignore` rejects an always-error check.
 - An annotation is its fully qualified class name.
-- The rule applies to the declaration that carries the annotation, not to the declarations
-  nested in it.
-- Multiple `ignore` call can be defined.
+- The rule applies to the declaration that the check runs on. An annotation on a class also
+  covers what the class check reports inside the class, for example on a constructor. A nested
+  class needs its own annotation.
+- [Top-level API without JvmName](./checks/java-interop/top-level-api-without-jvm-name.md) runs
+  on the file, so the annotation goes on the file: `@file:GeneratedValueMembers`.
+- Call `ignore` again for another check.
 
 ## Internal API annotations from dependencies
 
@@ -223,18 +222,7 @@ transitively. When the environment that loads the library has the dependency, as
 has the API of every Gradle plugin, exempt the dependency. The check then accepts its types in the
 whole module.
 
-Exempt a dependency in the configuration block of its declaration, where `this` is the
-dependency:
-
-```kotlin build.gradle.kts
-import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency
-
-dependencies {
-    compileOnly(libs.kotlin.gradle.plugin) { exemptNonTransitiveDependency(this) }
-}
-```
-
-Or declare it on the `apiWatchdogExemptNonTransitive` configuration, apart from its own
+Declare the dependency on the `apiWatchdogExemptNonTransitive` configuration, next to its own
 declaration:
 
 ```kotlin build.gradle.kts
@@ -246,20 +234,16 @@ dependencies {
 }
 ```
 
-Or exempt a whole configuration through `exemptNonTransitiveDependencies`, the same
-configuration in the `apiWatchdog` extension:
+To exempt a whole configuration, extend `apiWatchdogExemptNonTransitive` from it:
 
 ```kotlin build.gradle.kts
-apiWatchdog {
-    exemptNonTransitiveDependencies {
-        extendsFrom(configurations.compileOnly.get())
-    }
+configurations.apiWatchdogExemptNonTransitive {
+    extendsFrom(configurations.compileOnly.get())
 }
 ```
 
 The rules:
 
-- Apply the plugin before the `dependencies` block, or `exemptNonTransitiveDependency` fails.
 - Any dependency notation works. The version is optional, because the exemption resolves with
   the compile classpath.
 - The exemption covers everything the dependency pulls onto the compile classpath, so a Kotlin
@@ -351,12 +335,12 @@ A direct compiler call configures the plugin with `-P` options of this form:
 | `publicTypeWithInternalApi` | `true` or `false`.                                     | `publicTypeWithInternalApi`   |
 
 `<NAME>` is a diagnostic name from the [Property reference](#property-reference). `<severity>` is
-`error`, `warning`, or `none`. Every diagnostic that no option names is an error, including
-[`UNDOCUMENTED_PUBLIC_API`](./checks/undocumented-public-api.md). For example, this option makes
-undocumented public API a warning:
+`error`, `warning`, or `none`. Every diagnostic that no option names has its default severity:
+an error, except [`UNDOCUMENTED_PUBLIC_API`](./checks/undocumented-public-api.md), which is a
+warning. For example, this option makes undocumented public API an error:
 
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:error
 ```
 
 [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md)

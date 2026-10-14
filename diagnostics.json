@@ -7,6 +7,8 @@
     "  name: matches the property in WatchdogDiagnostics.",
     "  title: the H1 of the check page.",
     "  docs: the check page path under docsBaseUrl, without an extension.",
+    "  defaultSeverity: 'error' or 'warning'. The severity when no option names the diagnostic. Absent",
+    "    means 'error'.",
     "  message: the template, in Markdown. Adjacent lines join with a space. An empty line is a",
     "    paragraph break. A line that starts with four spaces is a code line and keeps its line breaks.",
     "  parameterValues: named values for parameters that are wording, not a name from the code:",
@@ -126,6 +128,7 @@
       "name": "UNDOCUMENTED_PUBLIC_API",
       "title": "Undocumented public API",
       "docs": "checks/undocumented-public-api",
+      "defaultSeverity": "warning",
       "message": [
         "The public {0} `{1}` has no `KDoc`. Document the behavior users can rely on.",
         "",
@@ -571,7 +574,7 @@
       "message": [
         "The {0} `{1}` publicly exposes `{2}`, but the dependency with that type isn't published transitively",
         "to consumers. Declare the dependency with `api` instead. If the environment that loads the library",
-        "supplies the dependency, add the exemption to its declaration:",
+        "supplies the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:",
         "",
         "{3}",
         "",
@@ -580,12 +583,9 @@
       ],
       "parameterValues": {
         "exemptDeclaration": [
-          "    import org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency",
-          "",
           "    dependencies {",
-          "        {0}({1}) {",
-          "            exemptNonTransitiveDependency(this)",
-          "        }",
+          "        {0}({1})",
+          "        apiWatchdogExemptNonTransitive({1})",
           "    }"
         ]
       }

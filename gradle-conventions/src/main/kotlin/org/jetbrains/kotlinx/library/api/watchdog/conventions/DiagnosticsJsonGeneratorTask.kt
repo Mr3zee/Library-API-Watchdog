@@ -49,12 +49,21 @@ class DiagnosticEntry internal constructor(json: Map<String, Any>, docsBaseUrl: 
     val docs: String = json["docs"] as String
     val docsUrl: String = docsBaseUrl + docs
 
+    /** `error` or `warning`: the severity when no option names the diagnostic. */
+    val defaultSeverity: String = (json["defaultSeverity"] as String?) ?: "error"
+
     /** The message lines. The line rules are in the `$comment` of `diagnostics.json`. */
     val message: List<String> = (json["message"] as List<*>).map { it as String }
 
     /** Named values used as parameters inside the message template, or null. */
     val parameterValues: Map<String, List<String>>? =
         json["parameterValues"]?.asTextLinesByName()
+
+    init {
+        require(defaultSeverity == "error" || defaultSeverity == "warning") {
+            "The defaultSeverity of $name must be 'error' or 'warning', not '$defaultSeverity'"
+        }
+    }
 }
 
 private fun Any?.asTextLinesByName(): Map<String, List<String>> {

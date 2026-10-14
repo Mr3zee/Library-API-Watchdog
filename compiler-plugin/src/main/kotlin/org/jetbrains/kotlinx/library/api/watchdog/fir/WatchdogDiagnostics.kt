@@ -55,10 +55,15 @@ class ConfigurableWatchdogDiagnostic<out F : AbstractKtDiagnosticFactory>(
     }
 }
 
-/** Severity overrides keyed by diagnostic name. An unlisted diagnostic is an error. */
+/**
+ * Severity overrides keyed by diagnostic name. An unlisted diagnostic has the `defaultSeverity`
+ * of its `diagnostics.json` entry.
+ */
 class WatchdogDiagnosticSeverities(private val overrides: Map<String, WatchdogSeverity>) {
     operator fun <F : AbstractKtDiagnosticFactory> get(diagnostic: ConfigurableWatchdogDiagnostic<F>): F? =
-        diagnostic.withSeverity(overrides[diagnostic.name] ?: WatchdogSeverity.ERROR)
+        diagnostic.withSeverity(
+            overrides[diagnostic.name] ?: WatchdogDiagnosticMessages.defaultSeverityFor(diagnostic.name),
+        )
 
     fun isEnabled(diagnostic: ConfigurableWatchdogDiagnostic<*>): Boolean = this[diagnostic] != null
 

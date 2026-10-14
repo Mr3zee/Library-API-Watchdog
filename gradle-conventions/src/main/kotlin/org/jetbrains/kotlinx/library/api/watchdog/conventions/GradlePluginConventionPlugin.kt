@@ -13,7 +13,7 @@ class GradlePluginConventionPlugin : Plugin<Project> {
         with(target) {
             val generateCheckNames = registerDiagnosticsGenerator<GenerateCheckNames>(
                 name = "generateCheckNames",
-                description = "Generates the WatchdogChecks diagnostic name constants from the shared diagnostics.json.",
+                description = "Generates the WatchdogChecks enum from the shared diagnostics.json.",
                 packageName = "org.jetbrains.kotlinx.library.api.watchdog",
                 outputDirectory = "checkNames/main/kotlin",
             )

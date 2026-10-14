@@ -15,6 +15,7 @@ import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.OPEN_API_WITHOUT_SU
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PUBLIC_TYPE_WITH_INTERNAL_API
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.UNDOCUMENTED_PUBLIC_API
+import org.jetbrains.kotlinx.library.api.watchdog.Severity.ERROR
 import org.jetbrains.kotlinx.library.api.watchdog.Severity.NONE
 import org.jetbrains.kotlinx.library.api.watchdog.Severity.WARNING
 import org.junit.Test
@@ -31,13 +32,14 @@ class ExemptExistingApiTest {
 
         val second = project.build(*arguments)
         second.assertOutputHas("Configuration cache entry reused.")
-        second.assertOutputHas("No watchdog diagnostics to exempt.")
+        second.assertOutputHas("No watchdog errors to exempt.")
     }
 
     @Test
     fun fixesEveryFixableDiagnosticAndTheBuildPasses() {
         val project = jvmProject {
             buildScript(CONTEXT_PARAMETERS_BUILD_SCRIPT)
+            apiWatchdog { severity(ERROR, UNDOCUMENTED_PUBLIC_API) }
             source(fixableFile, "legacy")
         }
 
@@ -93,13 +95,14 @@ class ExemptExistingApiTest {
     fun secondRunFindsNothingLeftToExempt() {
         val project = jvmProject {
             buildScript(CONTEXT_PARAMETERS_BUILD_SCRIPT)
+            apiWatchdog { severity(ERROR, UNDOCUMENTED_PUBLIC_API) }
             source(fixableFile, "legacy")
         }
 
         project.build(EXEMPT_TASK)
         val fixedOnce = project.mainSource("legacy").readText()
 
-        project.build(EXEMPT_TASK).assertOutputHas("No watchdog diagnostics to exempt.")
+        project.build(EXEMPT_TASK).assertOutputHas("No watchdog errors to exempt.")
         assertEquals(fixedOnce, project.mainSource("legacy").readText())
     }
 
@@ -157,7 +160,10 @@ class ExemptExistingApiTest {
 
     @Test
     fun reportShowsThePlaceholderKdocWithoutUpdatingSources() {
-        val project = jvmProject { source("public class Undocumented", "undocumented") }
+        val project = jvmProject {
+            apiWatchdog { severity(ERROR, UNDOCUMENTED_PUBLIC_API) }
+            source("public class Undocumented", "undocumented")
+        }
         val sourceFile = project.mainSource("undocumented")
         val original = sourceFile.readText()
 
@@ -236,18 +242,37 @@ class ExemptExistingApiTest {
     }
 
     @Test
-    fun demotedWarningsAreExemptedAllTheSame() {
+    fun warningsStayAndTheReportListsThem() {
         val project = jvmProject {
             apiWatchdog { severity(WARNING, OPEN_API_WITHOUT_SUBCLASS_OPT_IN) }
             source("/** A warning-only class. */\npublic open class WarningOnly", "warningOnly")
         }
+        val sourceFile = project.mainSource("warningOnly")
+        val original = sourceFile.readText()
+
+        val result = project.build(EXEMPT_TASK)
+
+        result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+        result.assertOutputHas("No watchdog errors to exempt.")
+        result.assertOutputHas("1 warning(s) stay, because the task exempts errors only.")
+        result.assertOutputLacks("needs manual attention")
+        assertEquals(original, sourceFile.readText())
+        val report = project.report().readText()
+        assertContains(report, "Not applied")
+        assertContains(report, "@IntentionallyOpen (1)")
+        assertContains(report, "exemptExistingApi exempts errors only.")
+    }
+
+    @Test
+    fun theDefaultUndocumentedWarningGetsNoPlaceholderKdoc() {
+        val project = jvmProject { source("public open class UndocumentedOpen", "legacy") }
 
         project.build(EXEMPT_TASK)
 
-        assertContains(
-            project.mainSource("warningOnly").readText(),
-            "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic open class WarningOnly",
-        )
+        val fixedText = project.mainSource("legacy").readText()
+        assertFalse(fixedText.contains(PLACEHOLDER_KDOC))
+        assertContains(fixedText, "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)")
+        assertContains(project.report().readText(), "exemptExistingApi exempts errors only.")
     }
 
     @Test
@@ -325,7 +350,7 @@ class ExemptExistingApiTest {
         val updateResult = project.build(EXEMPT_TASK)
 
         updateResult.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
-        updateResult.assertOutputHas("No watchdog diagnostics to exempt.")
+        updateResult.assertOutputHas("No watchdog errors to exempt.")
         assertEquals(original, sourceFile.readText())
 
         project.buildAndFail("compileKotlin").assertErrors(

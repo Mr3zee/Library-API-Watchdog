@@ -28,23 +28,30 @@ internal class FileFixResult(
     val newText: String?,
     val applied: List<AppliedFix>,
     val skipped: List<SkippedDiagnostic>,
+    val warnings: List<WarningDiagnostic> = emptyList(),
     internal val edits: List<TextEdit> = emptyList(),
 )
 
 /** Adds the fix of [ExemptionRegistry] for each diagnostic recorded in one file. */
 internal class ExemptionFixer(private val parser: KotlinFileParser) {
 
+    /**
+     * @param fixes whether the fixer fixes the named diagnostic. A diagnostic it doesn't fix goes
+     *   into [FileFixResult.warnings].
+     */
     fun fix(
         filePath: String,
         originalText: String,
         diagnostics: List<RecordedDiagnostic>,
         rewriteLocations: Boolean = true,
+        fixes: (String) -> Boolean = { true },
     ): FileFixResult {
         val mapping = LineEndingMapping.of(originalText)
         val text = mapping.normalizedText
         val ktFile = parser.parse(Paths.get(filePath).fileName.toString(), text)
 
         val skipped = mutableListOf<PlannedSkip>()
+        val warnings = mutableListOf<PlannedWarning>()
         val plannedFixes = mutableMapOf<FixTarget, MutableMap<String, PlannedFix>>()
 
         for ((name, _, recordedStartOffset) in diagnostics.sortedWith(compareBy({ it.startOffset }, { it.name }))) {
@@ -53,6 +60,11 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
 
             fun skip(reason: String) {
                 skipped += PlannedSkip(name, sourceOffset, reason)
+            }
+
+            if (!fixes(name)) {
+                warnings += PlannedWarning(name, sourceOffset)
+                continue
             }
 
             val fix = when (val resolution = ExemptionRegistry.resolutionFor(name)) {
@@ -93,6 +105,7 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
                 newText = null,
                 applied = emptyList(),
                 skipped = skipped.map { it.toDiagnostic(filePath, locations) },
+                warnings = warnings.map { it.toDiagnostic(filePath, locations) },
             )
         }
 
@@ -132,6 +145,7 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
                 }
             },
             skipped = skipped.map { it.toDiagnostic(filePath, locations) },
+            warnings = warnings.map { it.toDiagnostic(filePath, locations) },
             edits = rawEdits,
         )
     }
@@ -165,6 +179,11 @@ private fun MutableMap<String, PlannedFix>.collapseCombinedExemptions() {
 private class PlannedSkip(val diagnostic: String, val sourceOffset: Int, val reason: String) {
     fun toDiagnostic(filePath: String, locations: RewrittenLocations) =
         SkippedDiagnostic(diagnostic, filePath, locations.lineAt(sourceOffset), reason)
+}
+
+private class PlannedWarning(val diagnostic: String, val sourceOffset: Int) {
+    fun toDiagnostic(filePath: String, locations: RewrittenLocations) =
+        WarningDiagnostic(diagnostic, filePath, locations.lineAt(sourceOffset))
 }
 
 private class RewrittenLocations(

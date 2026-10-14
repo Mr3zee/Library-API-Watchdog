@@ -2,12 +2,6 @@ package org.jetbrains.kotlinx.library.api.watchdog
 
 import javax.inject.Inject
 import org.gradle.api.Action
-import org.gradle.api.GradleException
-import org.gradle.api.NamedDomainObjectProvider
-import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.Dependency
-import org.gradle.api.artifacts.UnknownConfigurationException
-import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -26,31 +20,6 @@ import org.gradle.api.provider.SetProperty
  * ```
  */
 public open class WatchdogGradleExtension @Inject internal constructor(
-    /**
-     * The `apiWatchdogExemptNonTransitive` configuration. `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`
-     * accepts the types of its dependencies in public signatures although the module doesn't
-     * publish them transitively. Use it when the environment that loads the library already has
-     * the dependency: a Gradle plugin, an IDE plugin, or a library whose host application includes
-     * a framework.
-     *
-     * ```kotlin
-     * dependencies {
-     *     apiWatchdogExemptNonTransitive("org.jetbrains.kotlin:kotlin-gradle-plugin")
-     *     apiWatchdogExemptNonTransitive(project(":host-api"))
-     * }
-     *
-     * apiWatchdog {
-     *     exemptNonTransitiveDependencies {
-     *         extendsFrom(configurations.compileOnly.get())
-     *     }
-     * }
-     * ```
-     *
-     * A version is optional. Everything a listed dependency pulls onto the compile classpath is
-     * exempt with it. The configuration adds nothing to the compile classpath, so the dependency
-     * itself stays declared as `implementation` or `compileOnly`.
-     */
-    public val exemptNonTransitiveDependencies: NamedDomainObjectProvider<Configuration>,
     objectFactory: ObjectFactory,
 ) {
     private val annotationIgnoreRules: ListProperty<String> =
@@ -137,8 +106,8 @@ public open class WatchdogGradleExtension @Inject internal constructor(
 
     /**
      * Whether `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY` runs. Default is `true`. A violation is
-     * always an error. To accept the types of selected dependencies, declare them on
-     * [exemptNonTransitiveDependencies] instead.
+     * always an error. To accept the types of selected dependencies, declare them on the
+     * `apiWatchdogExemptNonTransitive` configuration instead.
      */
     public val publicTypesMustBeTransitiveDependencies: Property<Boolean> =
         objectFactory.property(Boolean::class.java).convention(true)
@@ -173,9 +142,9 @@ public open class WatchdogGradleExtension @Inject internal constructor(
 
     /**
      * Ignores [check] on a declaration that carries one of the [whenAnnotatedWith] annotations.
-     * [check] is a name from [WatchdogChecks] that has a severity property in this block or in
-     * [javaInterop]. An always-error diagnostic has no severity property, so `ignore` rejects
-     * its name. An annotation is its fully qualified class name:
+     * [check] must have a severity property in this block or in [javaInterop]. An always-error
+     * diagnostic has no severity property, so `ignore` rejects it. An annotation is its fully
+     * qualified class name:
      *
      * ```kotlin
      * import org.jetbrains.kotlinx.library.api.watchdog.WatchdogChecks
@@ -193,10 +162,9 @@ public open class WatchdogGradleExtension @Inject internal constructor(
      *
      * Call it again for another check.
      */
-    public fun ignore(check: String, whenAnnotatedWith: List<String>) {
-        val knownChecks = diagnosticSeverities.keys
-        require(check in knownChecks) {
-            "Unknown API Watchdog check '$check'. Known configurable checks: ${knownChecks.joinToString()}"
+    public fun ignore(check: WatchdogChecks, whenAnnotatedWith: List<String>) {
+        require(check in diagnosticSeverities) {
+            "API Watchdog check '$check' is always an error and accepts no ignore rule"
         }
         require(whenAnnotatedWith.isNotEmpty()) {
             "API Watchdog check '$check' needs at least one annotation name"
@@ -205,13 +173,13 @@ public open class WatchdogGradleExtension @Inject internal constructor(
             require(annotationName.isNotBlank() && ':' !in annotationName) {
                 "The annotation name must be a non-blank fully qualified class name: '$annotationName'"
             }
-            annotationIgnoreRules.add("$check:$annotationName")
+            annotationIgnoreRules.add("${check.name}:$annotationName")
         }
     }
 
     internal fun annotationIgnoreRules(): Provider<List<String>> = annotationIgnoreRules
 
-    internal val diagnosticSeverities: Map<String, Provider<WatchdogSeverity>> = mapOf(
+    internal val diagnosticSeverities: Map<WatchdogChecks, Provider<WatchdogSeverity>> = mapOf(
         WatchdogChecks.OPEN_API_WITHOUT_SUBCLASS_OPT_IN to openApiWithoutSubclassOptIn,
         WatchdogChecks.SUBCLASS_OPT_IN_WITHOUT_MARKERS to subclassOptInWithoutMarkers,
         WatchdogChecks.EXHAUSTIVE_PUBLIC_API to exhaustivePublicApi,
@@ -238,38 +206,6 @@ public open class WatchdogGradleExtension @Inject internal constructor(
         WatchdogChecks.DSL_MARKER_WITHOUT_EXPLICIT_TARGETS to dslMarkerWithoutExplicitTargets,
         WatchdogChecks.DSL_MARKER_NOOP_TYPE_POSITION to dslMarkerNoopTypePosition,
     )
-}
-
-/**
- * Exempts [dependency] from `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`. Call it in the
- * configuration block of the dependency:
- *
- * ```kotlin
- * dependencies {
- *     compileOnly(libs.host.api) { exemptNonTransitiveDependency(this) }
- *     implementation(project(":host-api")) { exemptNonTransitiveDependency(this) }
- * }
- * ```
- *
- * The effect is the same as a second declaration of the dependency on
- * [WatchdogGradleExtension.exemptNonTransitiveDependencies]. Apply the watchdog plugin before
- * the `dependencies` block.
- */
-public fun DependencyHandler.exemptNonTransitiveDependency(dependency: Dependency) {
-    try {
-        add(WatchdogSupportPlugin.EXEMPT_NON_TRANSITIVE_CONFIGURATION_NAME, dependency)
-    } catch (e: UnknownConfigurationException) {
-        throw GradleException(
-            """
-            Apply the watchdog plugin before you call exemptNonTransitiveDependency.
-
-              plugins {
-                  id("${PluginInfo.PLUGIN_ID}")
-              }
-            """.trimIndent(),
-            e,
-        )
-    }
 }
 
 /**

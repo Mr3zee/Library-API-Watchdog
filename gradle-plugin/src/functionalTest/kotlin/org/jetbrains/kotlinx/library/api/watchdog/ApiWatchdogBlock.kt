@@ -35,12 +35,6 @@ class ApiWatchdogBlock internal constructor() {
         annotations.forEach { lines += "internalApiAnnotations.add(\"$it\")" }
     }
 
-    fun exemptNonTransitiveDependencies(script: String) {
-        lines += "exemptNonTransitiveDependencies {"
-        lines += script.trimIndent().prependIndent("    ")
-        lines += "}"
-    }
-
     fun javaInterop(block: JavaInteropBlock.() -> Unit) {
         javaInterop.block()
     }

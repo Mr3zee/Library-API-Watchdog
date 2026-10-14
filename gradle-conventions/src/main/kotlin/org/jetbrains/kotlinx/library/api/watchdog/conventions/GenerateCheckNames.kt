@@ -5,7 +5,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 
 abstract class GenerateCheckNames : DiagnosticsJsonGeneratorTask() {
-    /** `true` generates an `internal` object without the Gradle usage sample. Default `false`. */
+    /** `true` generates an `internal` enum without the Gradle usage sample. Default `false`. */
     @get:Input
     @get:Optional
     abstract val internalVisibility: Property<Boolean>
@@ -16,9 +16,9 @@ abstract class GenerateCheckNames : DiagnosticsJsonGeneratorTask() {
         val internal = internalVisibility.getOrElse(false)
         val visibility = if (internal) "internal" else "public"
         appendLine("/**")
-        appendLine(" * The diagnostic names of the watchdog checks, generated from the shared `diagnostics.json`.")
+        appendLine(" * The watchdog checks, generated from the shared `diagnostics.json`. The entry name is the diagnostic name.")
         if (!internal) {
-            appendLine(" * Pass them to [WatchdogGradleExtension.ignore] instead of spelling a name out:")
+            appendLine(" * Pass one to [WatchdogGradleExtension.ignore]:")
             appendLine(" *")
             appendLine(" * ```kotlin")
             appendLine(" * import org.jetbrains.kotlinx.library.api.watchdog.WatchdogChecks")
@@ -29,14 +29,14 @@ abstract class GenerateCheckNames : DiagnosticsJsonGeneratorTask() {
             appendLine(" * ```")
             appendLine(" *")
             appendLine(" * Every check is listed, including the always-error checks that accept no ignore rules.")
-            appendLine(" * [WatchdogGradleExtension.ignore] rejects those by name.")
+            appendLine(" * [WatchdogGradleExtension.ignore] rejects those.")
         }
         appendLine(" */")
-        appendLine("$visibility object WatchdogChecks {")
+        appendLine("$visibility enum class WatchdogChecks {")
         for ((index, entry) in diagnostics.entries.withIndex()) {
             if (index > 0) appendLine()
             appendLine("    /** [${entry.title}](${entry.docsUrl}) */")
-            appendLine("    $visibility const val ${entry.name}: String = \"${entry.name}\"")
+            appendLine("    ${entry.name},")
         }
         appendLine("}")
     }

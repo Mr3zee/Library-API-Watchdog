@@ -9,36 +9,38 @@ public abstract class org/jetbrains/kotlinx/library/api/watchdog/ExemptExistingA
 public abstract class org/jetbrains/kotlinx/library/api/watchdog/GenerateApiWatchdogReportTask : org/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogReportTask {
 }
 
-public final class org/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks {
-	public static final field BOOLEAN_PARAMETER_PUBLIC_API Ljava/lang/String;
-	public static final field COMPANION_API_WITHOUT_JVM_STATIC Ljava/lang/String;
-	public static final field COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS Ljava/lang/String;
-	public static final field DATA_CLASS_PUBLIC_API Ljava/lang/String;
-	public static final field DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS Ljava/lang/String;
-	public static final field DSL_MARKER_NOOP_TARGET Ljava/lang/String;
-	public static final field DSL_MARKER_NOOP_TYPE_POSITION Ljava/lang/String;
-	public static final field DSL_MARKER_WITHOUT_EXPLICIT_TARGETS Ljava/lang/String;
-	public static final field EXEMPTION_WITHOUT_EXPLANATION Ljava/lang/String;
-	public static final field EXHAUSTIVE_PUBLIC_API Ljava/lang/String;
-	public static final field FUNCTION_TYPE_ALIAS_PUBLIC_API Ljava/lang/String;
-	public static final field INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS Ljava/lang/String;
-	public static final field INLINE_FUNCTION_WITH_LOGIC Ljava/lang/String;
-	public static final field INSTANCE Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
-	public static final field KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC Ljava/lang/String;
-	public static final field MANGLED_JVM_NAME_PUBLIC_API Ljava/lang/String;
-	public static final field MUTABLE_COLLECTION_PUBLIC_API Ljava/lang/String;
-	public static final field NULLABLE_BOOLEAN_PUBLIC_API Ljava/lang/String;
-	public static final field OPEN_API_WITHOUT_SUBCLASS_OPT_IN Ljava/lang/String;
-	public static final field PAIR_OR_TRIPLE_PUBLIC_API Ljava/lang/String;
-	public static final field PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY Ljava/lang/String;
-	public static final field PUBLIC_TYPE_WITH_INTERNAL_API Ljava/lang/String;
-	public static final field REQUIRED_PARAMETER_AFTER_OPTIONAL Ljava/lang/String;
-	public static final field STATEFUL_CLASS_WITHOUT_EQUALS Ljava/lang/String;
-	public static final field STATEFUL_CLASS_WITHOUT_HASH_CODE Ljava/lang/String;
-	public static final field STATEFUL_CLASS_WITHOUT_TO_STRING Ljava/lang/String;
-	public static final field SUBCLASS_OPT_IN_WITHOUT_MARKERS Ljava/lang/String;
-	public static final field TOP_LEVEL_API_WITHOUT_JVM_NAME Ljava/lang/String;
-	public static final field UNDOCUMENTED_PUBLIC_API Ljava/lang/String;
+public final class org/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks : java/lang/Enum {
+	public static final field BOOLEAN_PARAMETER_PUBLIC_API Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field COMPANION_API_WITHOUT_JVM_STATIC Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field DATA_CLASS_PUBLIC_API Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field DSL_MARKER_NOOP_TARGET Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field DSL_MARKER_NOOP_TYPE_POSITION Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field DSL_MARKER_WITHOUT_EXPLICIT_TARGETS Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field EXEMPTION_WITHOUT_EXPLANATION Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field EXHAUSTIVE_PUBLIC_API Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field FUNCTION_TYPE_ALIAS_PUBLIC_API Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field INLINE_FUNCTION_WITH_LOGIC Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field MANGLED_JVM_NAME_PUBLIC_API Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field MUTABLE_COLLECTION_PUBLIC_API Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field NULLABLE_BOOLEAN_PUBLIC_API Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field OPEN_API_WITHOUT_SUBCLASS_OPT_IN Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field PAIR_OR_TRIPLE_PUBLIC_API Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field PUBLIC_TYPE_WITH_INTERNAL_API Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field REQUIRED_PARAMETER_AFTER_OPTIONAL Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field STATEFUL_CLASS_WITHOUT_EQUALS Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field STATEFUL_CLASS_WITHOUT_HASH_CODE Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field STATEFUL_CLASS_WITHOUT_TO_STRING Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field SUBCLASS_OPT_IN_WITHOUT_MARKERS Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field TOP_LEVEL_API_WITHOUT_JVM_NAME Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field UNDOCUMENTED_PUBLIC_API Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static fun values ()[Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
 }
 
 public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension {
@@ -48,7 +50,6 @@ public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension 
 	public final fun getDslMarkerNoopTypePosition ()Lorg/gradle/api/provider/Property;
 	public final fun getDslMarkerWithoutExplicitTargets ()Lorg/gradle/api/provider/Property;
 	public final fun getEnabled ()Lorg/gradle/api/provider/Property;
-	public final fun getExemptNonTransitiveDependencies ()Lorg/gradle/api/NamedDomainObjectProvider;
 	public final fun getExhaustivePublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun getFunctionTypeAliasPublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun getInconsistentParameterOrderInOverloads ()Lorg/gradle/api/provider/Property;
@@ -69,13 +70,9 @@ public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension 
 	public final fun getSubclassOptInWithoutMarkers ()Lorg/gradle/api/provider/Property;
 	public final fun getSuggestAbiValidation ()Lorg/gradle/api/provider/Property;
 	public final fun getUndocumentedPublicApi ()Lorg/gradle/api/provider/Property;
-	public final fun ignore (Ljava/lang/String;Ljava/util/List;)V
+	public final fun ignore (Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;Ljava/util/List;)V
 	public final fun javaInterop (Lorg/gradle/api/Action;)V
 	public final fun reports (Lorg/gradle/api/Action;)V
-}
-
-public final class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtensionKt {
-	public static final fun exemptNonTransitiveDependency (Lorg/gradle/api/artifacts/dsl/DependencyHandler;Lorg/gradle/api/artifacts/Dependency;)V
 }
 
 public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogJavaInteropExtension {

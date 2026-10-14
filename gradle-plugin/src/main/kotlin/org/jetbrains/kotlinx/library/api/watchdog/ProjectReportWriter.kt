@@ -4,6 +4,8 @@ import java.io.File
 import org.gradle.api.logging.Logger
 
 internal object ProjectReportWriter {
+    internal const val WARNING_REASON = "exemptExistingApi exempts errors only."
+
     /**
      * @param sourcesUpdated whether the fixer rewrote the sources. Then the `exemption` entries
      *   hold the applied annotations, so the `fixed` entries aren't listed as not applied.
@@ -52,11 +54,24 @@ internal object ProjectReportWriter {
                 severity = severityOf(skip.diagnostic),
             )
         }
+        val warnings = response.warnings.map { warning ->
+            NotAppliedExemptionReportEntry(
+                annotation = warning.annotation,
+                diagnostic = warning.diagnostic,
+                location = warning.location(projectDirectory),
+                reason = WARNING_REASON,
+                severity = severityOf(warning.diagnostic),
+            )
+        }
         val report = ApiWatchdogProjectReport(
             projectPath = projectPath,
             projectDirectory = projectDirectoryFromRoot,
             applied = applied,
-            notApplied = applicable + skipped,
+            notApplied = buildList {
+                addAll(applicable)
+                addAll(skipped)
+                addAll(warnings)
+            },
         )
         ApiWatchdogReportData.write(report, reportDataFile)
         if (htmlFile != null) {

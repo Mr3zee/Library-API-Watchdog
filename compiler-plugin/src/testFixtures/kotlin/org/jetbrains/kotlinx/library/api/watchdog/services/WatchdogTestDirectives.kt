@@ -19,6 +19,11 @@ object WatchdogTestDirectives : SimpleDirectivesContainer() {
         description = "Annotation FQ names configured as internal API markers (internalApiAnnotation option)",
     )
 
+    /** `// IGNORE_WHEN_ANNOTATED: STATEFUL_CLASS_WITHOUT_EQUALS:test.Generated`. One `<NAME>:<annotation FQ name>` for each rule. */
+    val IGNORE_WHEN_ANNOTATED by stringDirective(
+        description = "Annotation ignore rules in the form of the ignoreWhenAnnotated option",
+    )
+
     /**
      * `// COMPILE_DEPENDENCY_PATHS: nonTransitiveDependency.deps/models`. A root is a directory
      * with one `.class` file for each class. The checker looks the class up by path, so an empty
@@ -47,6 +52,15 @@ class WatchdogOptionsConfigurator(testServices: TestServices) : EnvironmentConfi
         val annotations = module.directives[WatchdogTestDirectives.INTERNAL_API_ANNOTATIONS]
         if (annotations.isNotEmpty()) {
             configuration.put(WatchdogConfigurationKeys.INTERNAL_API_ANNOTATIONS, annotations.toSet())
+        }
+
+        val ignoreRules = module.directives[WatchdogTestDirectives.IGNORE_WHEN_ANNOTATED]
+        if (ignoreRules.isNotEmpty()) {
+            configuration.put(
+                WatchdogConfigurationKeys.ANNOTATION_IGNORE_RULES,
+                ignoreRules.groupBy({ it.substringBefore(':') }, { it.substringAfter(':') })
+                    .mapValues { (_, annotations) -> annotations.toSet() },
+            )
         }
 
         val compileRoots = module.directives[WatchdogTestDirectives.COMPILE_DEPENDENCY_PATHS]

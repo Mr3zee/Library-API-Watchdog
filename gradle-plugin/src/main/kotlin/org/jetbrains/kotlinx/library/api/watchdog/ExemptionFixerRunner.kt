@@ -17,6 +17,7 @@ internal object ExemptionFixerRunner {
         sourceFiles: Collection<File>,
         fixerArtifact: FileCollection,
         fixerClasspath: FileCollection,
+        diagnosticSeverities: Map<String, WatchdogSeverity>,
         kotlinVersion: String,
         execOperations: ExecOperations,
         updateSources: Boolean,
@@ -40,6 +41,11 @@ internal object ExemptionFixerRunner {
                 .filter { it.isFile && it.extension == "kt" }
                 .sortedBy(File::getAbsolutePath)
                 .forEach { appendLine("sourceFile=${it.absolutePath}") }
+            diagnosticSeverities.entries
+                .sortedBy { it.key }
+                .forEach { (diagnostic, severity) ->
+                    appendLine("diagnosticSeverity=$diagnostic:${severity.name.lowercase()}")
+                }
             appendLine("updateSources=$updateSources")
             appendLine("responseFile=${responseFile.absolutePath}")
         })
@@ -125,16 +131,14 @@ internal object ExemptionFixerRunner {
 
 /** The response of the fixer. [FixerLocation.path] is absolute. */
 internal class FixerResponse(
-    /** The diagnostics the fixer can exempt, or did exempt when it rewrote the sources. */
     val fixed: List<FixedDiagnostic>,
-    /** The diagnostics that need manual attention. */
     val skipped: List<SkippedDiagnostic>,
-    /** The `@Intentionally*` annotations in the sources. */
+    val warnings: List<WarningDiagnostic>,
     val exemptions: List<AppliedExemption>,
     val modifiedFiles: Set<String>,
 ) {
     companion object {
-        val EMPTY: FixerResponse = FixerResponse(emptyList(), emptyList(), emptyList(), emptySet())
+        val EMPTY: FixerResponse = FixerResponse(emptyList(), emptyList(), emptyList(), emptyList(), emptySet())
 
         fun parse(lines: Map<String, List<String>>): FixerResponse = FixerResponse(
             fixed = lines["fixed"].orEmpty().map { value ->
@@ -144,6 +148,10 @@ internal class FixerResponse(
             skipped = lines["skipped"].orEmpty().map { value ->
                 val (diagnostic, annotation, line, path, reason) = value.split('\t', limit = 5)
                 SkippedDiagnostic(diagnostic, annotation.ifEmpty { null }, line, path, reason.unescapeFixerNewlines())
+            },
+            warnings = lines["warning"].orEmpty().map { value ->
+                val (diagnostic, annotation, line, path) = value.split('\t', limit = 4)
+                WarningDiagnostic(diagnostic, annotation.ifEmpty { null }, line, path)
             },
             exemptions = lines["exemption"].orEmpty().map { value ->
                 val (annotation, line, path) = value.split('\t', limit = 3)
@@ -177,6 +185,13 @@ internal class SkippedDiagnostic(
     override val line: String,
     override val path: String,
     val reason: String,
+) : FixerLocation
+
+internal class WarningDiagnostic(
+    val diagnostic: String,
+    val annotation: String?,
+    override val line: String,
+    override val path: String,
 ) : FixerLocation
 
 internal class AppliedExemption(

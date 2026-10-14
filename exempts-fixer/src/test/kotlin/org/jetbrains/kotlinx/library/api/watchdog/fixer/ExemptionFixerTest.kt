@@ -62,6 +62,58 @@ class ExemptionFixerTest {
     }
 
     @Test
+    fun warningsStayAndGetTheRewrittenLine() {
+        @Language("kotlin")
+        val text = """
+            package com.example
+
+            public open class Service
+
+            public data class Point(val x: Int)
+        """.trimIndent()
+
+        val result = fixer.fix(
+            FILE_PATH,
+            text,
+            listOf(
+                diagnostic("UNDOCUMENTED_PUBLIC_API", text, "public open class Service"),
+                diagnostic("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", text, "public open class Service"),
+                diagnostic("DATA_CLASS_PUBLIC_API", text, "public data class Point"),
+            ),
+            fixes = { it != "UNDOCUMENTED_PUBLIC_API" && it != "DATA_CLASS_PUBLIC_API" },
+        )
+
+        val newText = result.newText!!
+        assertFalse("TODO: Provide kDocs" in newText)
+        assertFalse("IntentionallyDataClass" in newText)
+        assertContains(newText, "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic open class Service")
+        assertEquals(
+            listOf(
+                WarningDiagnostic("UNDOCUMENTED_PUBLIC_API", FILE_PATH, lineOf(newText, "public open class Service")),
+                WarningDiagnostic("DATA_CLASS_PUBLIC_API", FILE_PATH, lineOf(newText, "public data class Point")),
+            ),
+            result.warnings,
+        )
+        assertEquals(emptyList(), result.skipped)
+    }
+
+    @Test
+    fun aFileWithWarningsOnlyIsNotRewritten() {
+        @Language("kotlin")
+        val text = "package com.example\n\npublic open class Service\n"
+
+        val result = fixer.fix(
+            FILE_PATH,
+            text,
+            listOf(diagnostic("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", text, "public open class Service")),
+            fixes = { false },
+        )
+
+        assertNull(result.newText)
+        assertEquals(listOf(WarningDiagnostic("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", FILE_PATH, 3)), result.warnings)
+    }
+
+    @Test
     fun reportedLinesIncludeEveryEarlierMultilineInsertion() {
         @Language("kotlin")
         val text = """

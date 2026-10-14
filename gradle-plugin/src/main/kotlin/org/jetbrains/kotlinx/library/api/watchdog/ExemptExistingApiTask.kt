@@ -6,8 +6,8 @@ import org.gradle.api.tasks.UntrackedTask
 /**
  * The `exemptExistingApi` task. It adds the matching `@Intentionally*` annotation with
  * `reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY` to every declaration with a watchdog
- * diagnostic in the main Kotlin sources, then writes the API Watchdog report. Use it when you
- * adopt the watchdog on a library with a released API.
+ * error in the main Kotlin sources, then writes the API Watchdog report. A diagnostic with the
+ * `WARNING` severity stays. Use the task when you adopt the watchdog on a library with a released API.
  */
 @UntrackedTask(because = "Rewrites the Kotlin sources it analyzes")
 public abstract class ExemptExistingApiTask internal constructor() : ApiWatchdogReportTask() {
@@ -39,13 +39,19 @@ public abstract class ExemptExistingApiTask internal constructor() : ApiWatchdog
             )
         }
         if (exemptionCount == 0 && kdocCount == 0 && response.skipped.isEmpty()) {
-            logger.lifecycle("No watchdog diagnostics to exempt.")
+            logger.lifecycle("No watchdog errors to exempt.")
         } else {
             logger.lifecycle(
                 "Added $exemptionCount backwards-compatibility exemption(s)" +
                         (if (kdocCount == 0) "" else " and $kdocCount placeholder KDoc(s)") +
                         " in ${response.modifiedFiles.size} file(s)." +
                         if (response.skipped.isEmpty()) "" else " ${response.skipped.size} diagnostic(s) need manual attention."
+            )
+        }
+        if (response.warnings.isNotEmpty()) {
+            logger.lifecycle(
+                "${response.warnings.size} warning(s) stay, because the task exempts errors only. " +
+                        "Check out the report for the full list."
             )
         }
     }

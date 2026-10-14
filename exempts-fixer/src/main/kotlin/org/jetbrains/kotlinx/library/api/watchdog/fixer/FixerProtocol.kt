@@ -36,14 +36,19 @@ internal class FixerRequest(
     val reportFiles: List<Path>,
     /** The files to scan for exemptions. */
     val sourceFiles: List<Path>,
+    val diagnosticSeverities: Map<String, String>,
     val updateSources: Boolean,
     val responseFile: Path,
 ) {
+    fun fixes(diagnostic: String): Boolean = (diagnosticSeverities[diagnostic] ?: ERROR_SEVERITY) == ERROR_SEVERITY
+
     companion object {
         const val REPORT_FILE = "reportFile"
         const val SOURCE_FILE = "sourceFile"
+        const val DIAGNOSTIC_SEVERITY = "diagnosticSeverity"
         const val UPDATE_SOURCES = "updateSources"
         const val RESPONSE_FILE = "responseFile"
+        const val ERROR_SEVERITY = "error"
 
         fun parse(file: Path): FixerRequest {
             val values = mutableMapOf<String, MutableList<String>>()
@@ -61,6 +66,13 @@ internal class FixerRequest(
             return FixerRequest(
                 reportFiles = values[REPORT_FILE].orEmpty().map(Paths::get),
                 sourceFiles = values[SOURCE_FILE].orEmpty().map(Paths::get),
+                diagnosticSeverities = values[DIAGNOSTIC_SEVERITY].orEmpty().associate { entry ->
+                    val separator = entry.lastIndexOf(':')
+                    require(separator > 0 && separator < entry.lastIndex) {
+                        "Malformed '$DIAGNOSTIC_SEVERITY' entry in the fixer request: '$entry'"
+                    }
+                    entry.substring(0, separator) to entry.substring(separator + 1)
+                },
                 updateSources = single(UPDATE_SOURCES).toBooleanStrict(),
                 responseFile = Paths.get(single(RESPONSE_FILE)),
             )
@@ -83,6 +95,13 @@ internal data class SkippedDiagnostic(
     val reason: String,
 )
 
+/** The fixer leaves them untouched. */
+internal data class WarningDiagnostic(
+    val diagnostic: String,
+    val filePath: String,
+    val line: Int,
+)
+
 internal data class AppliedExemption(
     val annotation: String,
     val filePath: String,
@@ -93,6 +112,7 @@ internal data class AppliedExemption(
 internal class FixerResponse {
     val applied = mutableListOf<AppliedFix>()
     val skipped = mutableListOf<SkippedDiagnostic>()
+    val warnings = mutableListOf<WarningDiagnostic>()
     val exemptions = mutableListOf<AppliedExemption>()
     val modifiedFiles = mutableListOf<String>()
     var error: String? = null
@@ -110,6 +130,10 @@ internal class FixerResponse {
                     "$SKIPPED=${it.diagnostic}\t$annotation\t${it.line}\t${it.filePath}\t${it.reason.escapeNewlines()}"
                 )
             }
+            warnings.forEach {
+                val annotation = ExemptionRegistry.annotationFor(it.diagnostic).orEmpty()
+                appendLine("$WARNING=${it.diagnostic}\t$annotation\t${it.line}\t${it.filePath}")
+            }
             exemptions.forEach {
                 appendLine("$EXEMPTION=${it.annotation}\t${it.line}\t${it.filePath}")
             }
@@ -126,6 +150,7 @@ internal class FixerResponse {
     companion object {
         const val FIXED = "fixed"
         const val SKIPPED = "skipped"
+        const val WARNING = "warning"
         const val EXEMPTION = "exemption"
         const val MODIFIED_FILE = "modifiedFile"
         const val ERROR = "error"

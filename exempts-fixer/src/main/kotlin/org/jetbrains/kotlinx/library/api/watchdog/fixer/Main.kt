@@ -44,9 +44,11 @@ private fun run(request: FixerRequest, response: FixerResponse) {
                 Files.readString(file),
                 diagnostics,
                 rewriteLocations = request.updateSources,
+                fixes = request::fixes,
             )
             response.applied += fixResult.applied
             response.skipped += fixResult.skipped
+            response.warnings += fixResult.warnings
             if (request.updateSources && fixResult.newText != null) {
                 Files.writeString(file, fixResult.newText)
                 response.modifiedFiles += filePath

@@ -418,12 +418,14 @@ public annotation class IntentionallyWithoutJvmOverloads(
  * Gradle plugin is the common case: it compiles against `gradleApi()` and runs inside Gradle.
  * Name the environment in [description].
  *
- * To exempt every type of the dependency, mark its declaration in the build script instead
+ * To exempt every type of the dependency, declare it on the `apiWatchdogExemptNonTransitive`
+ * configuration instead
  * ([Exempting a dependency](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency#exempting-a-dependency)):
  *
  * ```kotlin
- * implementation("com.example:models") {
- *     exemptNonTransitiveDependency(this)
+ * dependencies {
+ *     implementation("com.example:models:1.0.0")
+ *     apiWatchdogExemptNonTransitive("com.example:models")
  * }
  * ```
  *

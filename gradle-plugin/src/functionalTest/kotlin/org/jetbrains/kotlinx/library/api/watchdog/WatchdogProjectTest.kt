@@ -165,6 +165,18 @@ class WatchdogProjectTest {
     }
 
     @Test
+    fun ignoreRejectsAnAlwaysErrorCheck() {
+        val project = jvmProject {
+            apiWatchdog { ignore(EXEMPTION_WITHOUT_EXPLANATION, "test.GeneratedValueMembers") }
+            source(annotationIgnoreFile)
+        }
+
+        project.buildAndFail("build").assertOutputHas(
+            "API Watchdog check 'EXEMPTION_WITHOUT_EXPLANATION' is always an error and accepts no ignore rule"
+        )
+    }
+
+    @Test
     fun unexplainedExemptionIsAlwaysAnError() {
         // The checker that reads the exemption is off, so the error can't come from it.
         val project = jvmProject {
@@ -581,7 +593,7 @@ class WatchdogProjectTest {
         val result = project.buildAndFail("build")
         result.assertNonTransitiveExposureReported("test.model.ExternalModel")
         result.assertOutputHas(
-            "        implementation(project(\":model\")) {\n            exemptNonTransitiveDependency(this)\n        }"
+            "        implementation(project(\":model\"))\n        apiWatchdogExemptNonTransitive(project(\":model\"))"
         )
         result.assertError("The type alias `ExternalModels` publicly exposes")
         result.assertError("The supertype of `Consumer` publicly exposes")
@@ -919,7 +931,7 @@ class WatchdogProjectTest {
 
     private fun compileOnlyDependenciesCanBeExemptedAsAWholeCase(agp: AgpVersion) {
         val project = androidLibrary(agp) {
-            apiWatchdog { exemptNonTransitiveDependencies("extendsFrom(configurations.compileOnly.get())") }
+            buildScript(EXEMPT_COMPILE_ONLY_SCRIPT)
             consumerSource()
             dependencies(compileOnly(":model"))
             modelSubproject(jvm = true)
@@ -1140,7 +1152,7 @@ class WatchdogProjectTest {
     @Test
     fun exemptNonTransitiveDependenciesExtendFromAWholeConfiguration() {
         val project = jvmProject {
-            apiWatchdog { exemptNonTransitiveDependencies("extendsFrom(configurations.compileOnly.get())") }
+            buildScript(EXEMPT_COMPILE_ONLY_SCRIPT)
             consumerSource()
             dependencies(compileOnly(":model"))
             modelSubproject()
@@ -1174,32 +1186,6 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun exemptNonTransitiveDependencyFromTheDependencyDeclaration() {
-        // A version catalog dependency is a provider, so the exemption exists only after the
-        // compile classpath realizes its dependencies.
-        val project = jvmProject {
-            imports(EXEMPT_IMPORT)
-            buildScript("dependencies { implementation(libs.coroutines) { exemptNonTransitiveDependency(this) } }")
-            versionCatalog(COROUTINES_CATALOG)
-            source(exposesCoroutinesTypeFile, "Jobs", "test.consumer")
-        }
-
-        project.build("build").assertNoNonTransitiveExposureReported()
-    }
-
-    @Test
-    fun exemptNonTransitiveDependencyFromAProjectDependencyDeclaration() {
-        val project = jvmProject {
-            imports(EXEMPT_IMPORT)
-            buildScript("dependencies { implementation(project(\":model\")) { exemptNonTransitiveDependency(this) } }")
-            consumerSource()
-            modelSubproject()
-        }
-
-        project.build("build").assertNoNonTransitiveExposureReported()
-    }
-
-    @Test
     fun publicTypeFromUnexemptedModuleDependencyIsAnError() {
         val project = jvmProject {
             source(exposesCoroutinesTypeFile, "Jobs", "test.consumer")
@@ -1210,7 +1196,7 @@ class WatchdogProjectTest {
         result.assertNonTransitiveExposureReported("kotlinx.coroutines.Job")
         // The snippet names the declared dependency, not the platform artifact that holds the type.
         result.assertOutputHas(
-            "        implementation(\"$COROUTINES\") {\n            exemptNonTransitiveDependency(this)\n        }"
+            "        implementation(\"$COROUTINES\")\n        apiWatchdogExemptNonTransitive(\"$COROUTINES\")"
         )
     }
 
@@ -1426,7 +1412,8 @@ private const val DEFAULT_FACADE_NAME_FILE_ANNOTATION =
     "@file:org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName(" +
             "reason = org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason.API_DESIGN)"
 
-private const val EXEMPT_IMPORT = "org.jetbrains.kotlinx.library.api.watchdog.exemptNonTransitiveDependency"
+private const val EXEMPT_COMPILE_ONLY_SCRIPT =
+    "configurations.apiWatchdogExemptNonTransitive { extendsFrom(configurations.compileOnly.get()) }"
 
 private const val COROUTINES = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
 

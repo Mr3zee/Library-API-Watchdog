@@ -1,8 +1,10 @@
 # Exemptions and internal API
 
-Three mechanisms exclude a declaration from a check while the check stays enabled for the project:
+Four mechanisms exclude a declaration from a check while the check stays enabled for the project:
 
-- An `@Intentionally*` annotation exempts one declaration from one check. 
+- An `@Intentionally*` annotation exempts one declaration from one check.
+- A [dependency exemption](#exempting-a-dependency) in the build script exempts every use of a
+  dependency's types from [Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md).
 - An internal API annotation, such as `@InternalMyLibraryApi`, excludes a declaration from every
   public API check. Use it when a declaration is public only for technical reasons and the library
   gives no compatibility guarantee for it, whatever its visibility.
@@ -15,7 +17,7 @@ Three mechanisms exclude a declaration from a check while the check stays enable
 
 The "Exemption" section of each check page names the exemption annotation
 ([example for data classes](./checks/data-class-public-api.md#exemption)). The annotation silences
-that check on the annotated declaration. 
+that check on the annotated declaration.
 
 Every `@Intentionally*` annotation has two parameters:
 
@@ -56,7 +58,7 @@ public data class LegacyConfig(
 ```
 
 For a library whose API is already published, the [`exemptExistingApi` task](./existing-libs.md)
-adds the exemption to every reported declaration with the `FOR_BACKWARDS_COMPATIBILITY` reason.
+adds the exemption to every declaration with an error, with the `FOR_BACKWARDS_COMPATIBILITY` reason.
 
 ### The DSL marker exemption
 
@@ -93,6 +95,28 @@ exemption. Its `description` is optional.
 | `@IntentionallyWithoutJvmOverloads`                            | [Default parameters without JvmOverloads](./checks/java-interop/default-parameters-without-jvm-overloads.md)                                                                                                        |
 | `@IntentionallyNonTransitiveDependency`                        | [Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md)                                                                                                     |
 | `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` | [DSL markers with no-op targets](./checks/special/dsl-marker-noop-target.md) and [DSL markers without explicit targets](./checks/special/dsl-marker-without-explicit-targets.md)                                    |
+
+## Exempting a dependency
+
+// TODO should be a brief reference to the page like "oh these is one more style of exemptions"
+
+[Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md)
+reports a type from an `implementation` or `compileOnly` dependency in a public signature. Some
+environments supply the dependency on their own, as a Gradle process supplies the Gradle API to a
+Gradle plugin. Declare such a dependency on the `apiWatchdogExemptNonTransitive` configuration
+instead of an exemption on each declaration, and the check accepts its types in the whole module:
+
+```kotlin build.gradle.kts
+dependencies {
+    compileOnly("com.example:models:1.0")
+
+    apiWatchdogExemptNonTransitive("com.example:models")
+}
+```
+
+The exemption covers the dependency and everything it pulls onto the compile classpath.
+[Exempt non-transitive dependencies](./configuration.md#exempt-non-transitive-dependencies) in the
+configuration reference has the rules.
 
 ## Internal API annotations
 

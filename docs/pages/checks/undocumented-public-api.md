@@ -5,7 +5,7 @@
 |                  |                                                  |
 |------------------|--------------------------------------------------|
 | Diagnostic       | `UNDOCUMENTED_PUBLIC_API`                        |
-| Default severity | Error                                            |
+| Default severity | Warning                                          |
 | Gradle property  | [`undocumentedPublicApi`](../configuration.md)   |
 | Exemption        | [`@IntentionallyUndocumented`](../exemptions.md) |
 
@@ -126,20 +126,21 @@ If this is intended, apply `@IntentionallyUndocumented` to the declaration.
 ```
 
 The [`exemptExistingApi`](../existing-libs.md) task never applies this
-annotation. Documentation can be added without breaking anyone, so the task inserts the
-placeholder KDoc `TODO: Provide kDocs for this declaration` instead, for the author to replace.
+annotation. Documentation breaks no user, so the task inserts the placeholder KDoc
+`TODO: Provide kDocs for this declaration` instead, for the author to replace. The task does this
+only when the check is set to `WatchdogSeverity.ERROR`.
 
 ## Configuration
 
 ```kotlin
 apiWatchdog {
-    undocumentedPublicApi = WatchdogSeverity.WARNING
+    undocumentedPublicApi = WatchdogSeverity.ERROR
 }
 ```
 
 With direct compiler invocation:
 ```
--P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:warning
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:error
 ```
 
 ## See also
