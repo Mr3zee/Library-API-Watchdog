@@ -17,7 +17,7 @@ These six checks run only in JVM compilations. Use them for libraries that suppo
 
 For a library without Java callers, disable the group:
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     javaInterop {
         enabled = false
@@ -38,4 +38,4 @@ See [Exemptions and internal API](../../exemptions.md) for more details about ex
 
 ## See also
 
-- [Kotlin's Java-to-Kotlin interop guide](https://kotlinlang.org/docs/java-to-kotlin-interop.html)
+- [Calling Kotlin from Java](https://kotlinlang.org/docs/java-to-kotlin-interop.html)

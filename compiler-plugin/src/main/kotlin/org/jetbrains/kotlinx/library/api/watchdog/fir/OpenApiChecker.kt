@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.fir.declarations.constructors
 import org.jetbrains.kotlin.fir.declarations.findArgumentByName
 import org.jetbrains.kotlin.fir.declarations.getAnnotationByClassId
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
+import org.jetbrains.kotlin.fir.declarations.utils.isFun
 import org.jetbrains.kotlin.fir.declarations.utils.modality
 import org.jetbrains.kotlin.fir.declarations.utils.visibility
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
@@ -85,7 +86,12 @@ internal class OpenApiChecker(
         )
         val fix = WatchdogDiagnosticMessages.parameterValueFor(
             diagnostic = diagnostic,
-            value = if (declaration.classKind == ClassKind.CLASS) "classFix" else "interfaceFix",
+            value = when {
+                declaration.classKind == ClassKind.CLASS -> "classFix"
+                // The compiler rejects `@SubclassOptInRequired` on a `fun interface`.
+                declaration.isFun -> "funInterfaceFix"
+                else -> "interfaceFix"
+            },
         )
         val hasPublicPrimaryConstructor = constructors.any {
             it.isPrimary && it.visibility == Visibilities.Public

@@ -82,6 +82,9 @@
         ],
         "interfaceFix": [
           "Apply `@SubclassOptInRequired`."
+        ],
+        "funInterfaceFix": [
+          "Users implement a `fun interface` with a lambda. `@SubclassOptInRequired` isn't applicable to it, so acknowledge the external implementations with `@IntentionallyOpen`."
         ]
       },
       "message": [
@@ -457,7 +460,8 @@
           "declares a `reified` type parameter, so a call from Java fails at runtime"
         ],
         "suspendFunctionType": [
-          "takes a `suspend` function type in the parameter `{0}`, which a Java lambda can't implement"
+          "takes a `suspend` function type in the parameter `{0}`, which Java sees with an extra",
+          "`Continuation` parameter"
         ],
         "extensionFunctionType": [
           "takes a function type with receiver in the parameter `{0}`, which a Java lambda gets as an",

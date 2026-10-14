@@ -181,7 +181,7 @@ public fun draw(y: Int, x: Int, scale: Double) { }
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     inconsistentParameterOrderInOverloads = WatchdogSeverity.ERROR
 }

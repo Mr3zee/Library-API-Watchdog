@@ -9,7 +9,7 @@
 
 ## What it reports
 
-Reports a `@DslMarker` annotation class without `@Target`, or with an empty `@Target()`:
+A `@DslMarker` annotation class without `@Target`, or with an empty `@Target()`:
 
 ```kotlin
 // !hide-focused
@@ -85,7 +85,7 @@ The annotation has no `reason` parameter. Its `description` is optional.
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     dslMarkerWithoutExplicitTargets = WatchdogSeverity.ERROR
 }

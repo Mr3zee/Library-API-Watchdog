@@ -59,8 +59,30 @@ public interface Plugin {
 ## Notes
 
 - Classes whose constructors are all `internal` or `private` aren't reported.
-- `fun interface`s follow the same rules as other interfaces. `@SubclassOptInRequired` isn't
-  applicable to a `fun interface`, so exempt it with `@IntentionallyOpen`.
+- Users implement a `fun interface` with a lambda, so external implementations are its purpose.
+  `@SubclassOptInRequired` isn't applicable to a `fun interface`, and the compiler rejects it.
+  The check reports the `fun interface` anyway. The open contract must be an explicit decision
+  of the author, so acknowledge the external implementations with `@IntentionallyOpen`.
+
+  ```kotlin
+  // !hide-focused
+  /** Receives one event. */
+  // !diag[/Listener/] OPEN_API_WITHOUT_SUBCLASS_OPT_IN ["$interface","Listener","$funInterfaceFix"]
+  public fun interface Listener {
+      // !hide-focused
+      /** Handles the event. */
+      public fun onEvent()
+  }
+
+  // !hide-focused
+  /** Receives one event. */
+  @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
+  public fun interface AcknowledgedListener {
+      // !hide-focused
+      /** Handles the event. */
+      public fun onEvent()
+  }
+  ```
 - [Subclass opt-in without markers](./subclass-opt-in-without-markers.md) reports a markerless `@SubclassOptInRequired` instead.
 - [Exhaustive public API](./exhaustive-public-api.md) reports sealed types.
 - `@PublishedApi internal` types aren't reported.
@@ -82,7 +104,7 @@ public open class Widget
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     openApiWithoutSubclassOptIn = WatchdogSeverity.ERROR
 }
@@ -95,7 +117,8 @@ For a direct compiler call:
 
 ## See also
 
-- [Require opt-in to extend an API](./subclass-opt-in-without-markers.md)
+- [Subclass opt-in without markers](./subclass-opt-in-without-markers.md)
 - [Exhaustive public API](./exhaustive-public-api.md)
-- [Kotlin API guidelines: prevent unwanted and invalid extensions](https://kotlinlang.org/docs/api-guidelines-predictability.html#prevent-unwanted-and-invalid-extensions)
+- [Prevent unwanted and invalid extensions](https://kotlinlang.org/docs/api-guidelines-predictability.html#prevent-unwanted-and-invalid-extensions)
 - [`SubclassOptInRequired`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-subclass-opt-in-required/)
+- [Exemptions and internal API](../exemptions.md)

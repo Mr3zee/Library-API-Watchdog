@@ -13,6 +13,7 @@ import org.jetbrains.kotlin.fir.declarations.FirPropertyAccessor
 import org.jetbrains.kotlin.fir.declarations.utils.effectiveVisibility
 import org.jetbrains.kotlin.fir.declarations.utils.isCompanion
 import org.jetbrains.kotlin.fir.declarations.utils.isConst
+import org.jetbrains.kotlin.fir.declarations.utils.isLateInit
 import org.jetbrains.kotlin.name.JvmStandardClassIds
 import org.jetbrains.kotlin.name.Name
 
@@ -71,6 +72,11 @@ internal class CompanionJvmExposureChecker(
         if (declaration.isConst || declaration.hasJvmFieldAnnotation() ||
             declaration.hasAnnotationOnActualOrExpect(JvmStandardClassIds.Annotations.JvmStatic)
         ) {
+            return
+        }
+        // The backing field of a `lateinit` property is a static field on the outer class with the
+        // visibility of the setter.
+        if (declaration.isLateInit && declaration.setter?.effectiveVisibility?.publicApi == true) {
             return
         }
 

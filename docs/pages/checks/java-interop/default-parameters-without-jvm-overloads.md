@@ -109,7 +109,7 @@ public fun connect(
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     javaInterop {
         defaultParametersWithoutJvmOverloads = WatchdogSeverity.ERROR

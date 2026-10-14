@@ -101,7 +101,7 @@ public class Registry {
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     javaInterop {
         companionApiWithoutJvmStatic = WatchdogSeverity.ERROR

@@ -12,7 +12,7 @@ Run it on a clean working tree. The task edits the source files.
 
 ## What the task changes
 
-The task compiles the `main` compilation of every target and edits every declaration with a diagnostic
+The task compiles every compilation except tests and edits every declaration with a diagnostic
 whose configured severity is `ERROR`. Each declaration gets the `@Intentionally*` annotation of its
 diagnostic with `ExemptionReason.FOR_BACKWARDS_COMPATIBILITY`. The annotation goes below the KDoc
 and above the other annotations of the declaration. The task adds the imports.
@@ -51,7 +51,8 @@ A second run adds nothing, because an exempted declaration reports no diagnostic
 
 ## Collection mode
 
-`exemptExistingApi` and `generateApiWatchdogReport` compile the main sources in collection mode.
+`exemptExistingApi` and `generateApiWatchdogReport` compile every compilation except tests in
+collection mode. [The report page](./report.md) lists the compilations.
 When neither task is in the task graph, the compilations run as configured. Collection mode changes
 three things:
 

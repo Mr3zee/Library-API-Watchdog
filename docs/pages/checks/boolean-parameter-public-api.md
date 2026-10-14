@@ -85,7 +85,7 @@ public fun setIsVerbose(enabled: Boolean) {}
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     booleanParameterPublicApi = WatchdogSeverity.ERROR
 }

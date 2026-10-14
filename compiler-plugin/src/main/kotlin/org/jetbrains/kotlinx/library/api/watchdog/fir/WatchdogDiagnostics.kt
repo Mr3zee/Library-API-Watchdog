@@ -3,6 +3,7 @@ package org.jetbrains.kotlinx.library.api.watchdog.fir
 import com.intellij.psi.PsiElement
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KClass
 import org.jetbrains.kotlin.diagnostics.AbstractKtDiagnosticFactory
 import org.jetbrains.kotlin.diagnostics.AbstractSourceElementPositioningStrategy
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactory0
@@ -117,9 +118,7 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     val REQUIRED_PARAMETER_AFTER_OPTIONAL by configurable3<KtParameter, Name, Name, String>(NAME_IDENTIFIER)
 
     /** Parameters: this signature, the other signatures, the differing positions, and the callable kind. */
-    val INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS by configurable4<KtDeclaration, String, String, String, String>(
-        CALLABLE_NAME_OR_CONSTRUCTOR_KEYWORD,
-    )
+    val INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS by configurable4<String, String, String, String>(PSI_ELEMENT)
 
     /** Parameters: the function name, the parameter name. */
     val BOOLEAN_PARAMETER_PUBLIC_API by configurable2<KtParameter, Name, Name>(NAME_IDENTIFIER)
@@ -216,10 +215,26 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     private inline fun <reified P : PsiElement, A, B, C, D> configurable4(
         positioningStrategy: AbstractSourceElementPositioningStrategy = SourceElementPositioningStrategies.DEFAULT,
         exemptionCoversEnclosingClass: Boolean = false,
+    ) = configurable4<A, B, C, D>(P::class, positioningStrategy, exemptionCoversEnclosingClass)
+
+    private fun <A, B, C, D> configurable4(
+        psiType: KClass<*>,
+        positioningStrategy: AbstractSourceElementPositioningStrategy = SourceElementPositioningStrategies.DEFAULT,
+        exemptionCoversEnclosingClass: Boolean = false,
     ) = configurableDiagnostic(exemptionCoversEnclosingClass) { name, severity ->
-        KtDiagnosticFactory4<A, B, C, D>(name, severity, positioningStrategy, P::class, getRendererFactory())
+        KtDiagnosticFactory4<A, B, C, D>(name, severity, positioningStrategy, psiType, getRendererFactory())
     }
 }
+
+/**
+ * `PsiElement`, for a diagnostic on a token. A class literal puts `com.intellij` in the bytecode,
+ * which links in the CLI or in `kotlin-compiler-embeddable` only, so the lookup searches the
+ * supertypes of [KtElement].
+ */
+private val PSI_ELEMENT: KClass<*> =
+    generateSequence(listOf<Class<*>>(KtElement::class.java)) { level ->
+        level.flatMap { it.interfaces.asList() }.takeIf { it.isNotEmpty() }
+    }.flatten().first { it.simpleName == "PsiElement" }.kotlin
 
 /** The message texts come from `diagnostics.json` through the generated [WatchdogDiagnosticMessages]. */
 private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {

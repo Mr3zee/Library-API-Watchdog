@@ -334,10 +334,10 @@ Outside the standard library, the operator or infix function must be non-inline.
 // !hide-focused
 @file:JvmName("Vectors")
 
-// !hide-focused(1:4)
+// !hide-focused
 /** A two-dimensional vector. */
-@IntentionallyWithoutEqualsHashCodeOrToString(reason = ExemptionReason.API_DESIGN)
 public class Vector {
+    // !hide-focused
     /** Adds [other] to this vector. */
     public operator fun plus(other: Vector): Vector = this
 }
@@ -436,7 +436,7 @@ public inline fun <R> traced(name: String, block: () -> R): R {
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     inlineFunctionWithLogic = WatchdogSeverity.ERROR
 }
@@ -449,5 +449,5 @@ For a direct compiler call:
 
 ## See also
 
-- [`@PublishedApi` considerations](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#considerations-for-using-the-publishedapi-annotation)
+- [Considerations for using the `@PublishedApi` annotation](https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html#considerations-for-using-the-publishedapi-annotation)
 - [Exemptions and internal API](../exemptions.md)

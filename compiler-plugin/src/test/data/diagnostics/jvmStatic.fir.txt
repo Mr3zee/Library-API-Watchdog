@@ -74,6 +74,10 @@ FILE: jvmStatic.kt
                 public get(): R|kotlin/String|
                 public set(value: R|kotlin/String|): R|kotlin/Unit|
 
+            public final lateinit var lateReadOnly: R|kotlin/String|
+                public get(): R|kotlin/String|
+                private set(value: R|kotlin/String|): R|kotlin/Unit|
+
             public final val R|kotlin/String|.qualified: R|kotlin/String|
                 public get(): R|kotlin/String| {
                     ^ this@R|foo/bar/Registry.Companion.qualified|

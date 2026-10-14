@@ -7,12 +7,15 @@ abstract class GenerateFunctionalTestDiagnostics : DiagnosticsJsonGeneratorTask(
         appendLine("/**")
         appendLine(" * [template] is the first paragraph of the message, with its `{n}` placeholders.")
         appendLine(" * [javaInterop] is true for a check of the `javaInterop { }` group of the Gradle extension.")
+        appendLine(" * [parameterValues] holds the named parameter values as the compiler renders them, the")
+        appendLine(" * shared values included.")
         appendLine(" */")
         appendLine("enum class Diagnostic(")
         appendLine("    val title: String,")
         appendLine("    val docsUrl: String,")
         appendLine("    val template: String,")
         appendLine("    val javaInterop: Boolean,")
+        appendLine("    val parameterValues: Map<String, String>,")
         appendLine(") {")
         for (entry in diagnostics.entries) {
             val template = entry.message.firstParagraph().plainLinks()
@@ -22,6 +25,13 @@ abstract class GenerateFunctionalTestDiagnostics : DiagnosticsJsonGeneratorTask(
             appendLine("        docsUrl = \"${entry.docsUrl}\",")
             appendLine("        template = \"${template.escapedForKotlinString()}\",")
             appendLine("        javaInterop = ${entry.docs.startsWith(JAVA_INTEROP_DOCS)},")
+            appendLine("        parameterValues = mapOf(")
+            val values = diagnostics.sharedParameterValues + entry.parameterValues.orEmpty()
+            for ((name, lines) in values) {
+                val value = lines.joinTextLines().plainLinks().escapedForKotlinString()
+                appendLine("            \"$name\" to \"$value\",")
+            }
+            appendLine("        ),")
             appendLine("    ),")
         }
         appendLine("}")

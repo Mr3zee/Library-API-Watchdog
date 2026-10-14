@@ -6,6 +6,7 @@ import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.fir.SessionHolder
+import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
@@ -13,6 +14,7 @@ import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirMemberDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
+import org.jetbrains.kotlin.fir.declarations.utils.modality
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirPropertyAccessor
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
@@ -283,6 +285,25 @@ internal fun FirNamedFunction.mangledValueClassInSignature(): Name? =
         ?: contextParameters.firstNotNullOfOrNull { it.returnTypeRef.coneType.mangledValueClass() }
         ?: valueParameters.firstNotNullOfOrNull { it.returnTypeRef.coneType.mangledValueClass() }
         ?: returnValueClassIfMember()
+
+/**
+ * Whether `@JvmExposeBoxed` on the declaration or on an enclosing class generates a boxed variant
+ * for Java. It doesn't for an open or abstract member.
+ */
+context(context: CheckerContext)
+internal fun FirCallableDeclaration.hasEffectiveJvmExposeBoxed(): Boolean =
+    modality != Modality.OPEN && modality != Modality.ABSTRACT &&
+            hasAnnotationOnSelfOrEnclosingClass(JvmStandardClassIds.JVM_EXPOSE_BOXED_ANNOTATION_CLASS_ID)
+
+/**
+ * Whether Java sees a mangled name: a value class in the signature, and neither `@JvmName` nor an
+ * effective `@JvmExposeBoxed` gives the function a Java-facing name.
+ */
+context(context: CheckerContext)
+internal fun FirNamedFunction.hasMangledJvmName(): Boolean =
+    mangledValueClassInSignature() != null &&
+            !hasAnnotationOnActualOrExpect(JvmStandardClassIds.Annotations.JvmName) &&
+            !hasEffectiveJvmExposeBoxed()
 
 /** `@JvmSynthetic` hides a property when it hides every Java entry point of it. */
 context(context: CheckerContext)

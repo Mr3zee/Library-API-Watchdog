@@ -13,7 +13,10 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome.FAILED
 import org.gradle.testkit.runner.TaskOutcome.SKIPPED
 import org.intellij.lang.annotations.Language
+import org.jetbrains.kotlin.compiler.plugin.devkit.test.KotlinPlugins
 import org.jetbrains.kotlin.compiler.plugin.devkit.test.TEST_COMPILER_VERSION
+import org.jetbrains.kotlin.compiler.plugin.devkit.test.pluginUnderTestVersion
+import org.jetbrains.kotlin.tooling.core.KotlinToolingVersion
 import org.jetbrains.kotlinx.library.api.watchdog.AgpVersion.AGP8
 import org.jetbrains.kotlinx.library.api.watchdog.AgpVersion.AGP9
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.BOOLEAN_PARAMETER_PUBLIC_API
@@ -39,6 +42,7 @@ import org.jetbrains.kotlinx.library.api.watchdog.KmpAndroidTarget.LIBRARY_AGP9
 import org.jetbrains.kotlinx.library.api.watchdog.Severity.ERROR
 import org.jetbrains.kotlinx.library.api.watchdog.Severity.NONE
 import org.jetbrains.kotlinx.library.api.watchdog.Severity.WARNING
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 
 class WatchdogProjectTest {
@@ -142,6 +146,63 @@ class WatchdogProjectTest {
             STATEFUL_CLASS_WITHOUT_HASH_CODE,
             STATEFUL_CLASS_WITHOUT_TO_STRING,
         )
+    }
+
+    @Test
+    fun pokoGeneratedMembersSatisfyTheStatefulClassChecks() {
+        val pokoVersion = pokoVersionFor(TEST_COMPILER_VERSION)
+        assumeTrue("No Poko release supports Kotlin $TEST_COMPILER_VERSION", pokoVersion != null)
+        val project = jvmProject {
+            plugins(
+                KotlinPlugins.jvm("$TEST_COMPILER_VERSION"),
+                Plugin(WATCHDOG_PLUGIN_ID, pluginUnderTestVersion),
+                Plugin("dev.drewhamilton.poko", pokoVersion),
+            )
+            buildScript("kotlin { explicitApi() }")
+            source(
+                """
+                    /** A connection. */
+                    @Poko
+                    public class Connection(
+                        /** The host. */
+                        public val host: String,
+                    )
+
+                    /** A connection that prints its state. */
+                    @Poko.ToString
+                    public class PrintedConnection(
+                        /** The host. */
+                        public val host: String,
+                    )
+
+                    /** A connection that compares its state. */
+                    @Poko.EqualsAndHashCode
+                    public class ComparedConnection(
+                        /** The host. */
+                        public val host: String,
+                    )
+                """,
+                "Connections",
+                imports = listOf("dev.drewhamilton.poko.Poko"),
+                fileAnnotation = "@file:OptIn(dev.drewhamilton.poko.IndependentFunctionsSupport::class)",
+            )
+        }
+
+        val result = project.buildAndFail("build")
+        result.assertErrors(
+            STATEFUL_CLASS_WITHOUT_EQUALS,
+            STATEFUL_CLASS_WITHOUT_HASH_CODE,
+            STATEFUL_CLASS_WITHOUT_TO_STRING,
+        )
+        assertFalse(result.hasStatefulDiagnostic("Connection", "an `equals`"), result.output)
+        assertFalse(result.hasStatefulDiagnostic("Connection", "a `hashCode`"), result.output)
+        assertFalse(result.hasStatefulDiagnostic("Connection", "a `toString`"), result.output)
+        assertTrue(result.hasStatefulDiagnostic("PrintedConnection", "an `equals`"), result.output)
+        assertTrue(result.hasStatefulDiagnostic("PrintedConnection", "a `hashCode`"), result.output)
+        assertFalse(result.hasStatefulDiagnostic("PrintedConnection", "a `toString`"), result.output)
+        assertFalse(result.hasStatefulDiagnostic("ComparedConnection", "an `equals`"), result.output)
+        assertFalse(result.hasStatefulDiagnostic("ComparedConnection", "a `hashCode`"), result.output)
+        assertTrue(result.hasStatefulDiagnostic("ComparedConnection", "a `toString`"), result.output)
     }
 
     @Test
@@ -1433,6 +1494,14 @@ class WatchdogProjectTest {
     private fun exemptScript(dependency: String): String {
         val notation = if (dependency.startsWith("project(")) dependency else "\"${dependency.substringBeforeLast(':')}\""
         return "dependencies { apiWatchdogExemptNonTransitive($notation) }"
+    }
+
+    /** The Poko release for a Kotlin version, from the compatibility table of the Poko README. */
+    private fun pokoVersionFor(kotlin: KotlinToolingVersion): String? = when {
+        kotlin.major != 2 -> null
+        kotlin.minor == 3 && kotlin.patch >= 20 -> "0.22.1"
+        kotlin.minor == 4 -> "0.23.2"
+        else -> null
     }
 
     private fun ideaGenerateShortcut(): String =

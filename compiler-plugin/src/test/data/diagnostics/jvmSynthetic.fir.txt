@@ -111,6 +111,12 @@ FILE: jvmSynthetic.kt
     public final suspend fun fetchUser(id: R|foo/bar/UserId|): R|foo/bar/UserId| {
         ^fetchUser R|<local>/id|
     }
+    public final fun onUserEach(id: R|foo/bar/UserId|, action: R|(kotlin/Int) -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    @R|kotlin/jvm/JvmName|(name = String(onUserEachNamed) [evaluated = String(onUserEachNamed)]) public final fun onUserEachNamed(id: R|foo/bar/UserId|, action: R|(kotlin/Int) -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    @R|kotlin/OptIn|(markerClass = vararg(<getClass>(Q|kotlin/ExperimentalStdlibApi|)) [evaluated = vararg(<getClass>(Q|kotlin/ExperimentalStdlibApi|))]) @R|kotlin/jvm/JvmExposeBoxed|() public final fun onUserEachBoxed(id: R|foo/bar/UserId|, action: R|(kotlin/Int) -> kotlin/Unit|): R|kotlin/Unit| {
+    }
     @R|kotlin/jvm/JvmInline|() public final value class Wrapped : R|kotlin/Any| {
         public constructor(raw: R|kotlin/String|): R|foo/bar/Wrapped| {
             super<R|kotlin/Any|>()

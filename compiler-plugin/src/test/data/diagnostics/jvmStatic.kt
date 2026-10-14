@@ -46,7 +46,10 @@ public class Registry {
 
         public val <!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>delegated<!>: String by lazy { "lazy" }
 
-        public lateinit var <!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>late<!>: String
+        public lateinit var late: String
+
+        public lateinit var <!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>lateReadOnly<!>: String
+            private set
 
         public val String.<!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>qualified<!>: String get() = this
 

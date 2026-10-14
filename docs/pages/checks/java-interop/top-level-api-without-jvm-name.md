@@ -73,7 +73,7 @@ public fun connect(): Int = 0
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     javaInterop {
         topLevelApiWithoutJvmName = WatchdogSeverity.ERROR
@@ -90,6 +90,6 @@ For a direct compiler call:
 
 ## See also
 
-- [Kotlin's Java-to-Kotlin interop guide: package-level functions](https://kotlinlang.org/docs/java-to-kotlin-interop.html#package-level-functions)
+- [Package-level functions](https://kotlinlang.org/docs/java-to-kotlin-interop.html#package-level-functions)
 - [Java interop checks](./java-interop.md)
 - [Exemptions and internal API](../../exemptions.md)

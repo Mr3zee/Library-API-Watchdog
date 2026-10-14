@@ -16,5 +16,5 @@ public abstract class GenerateApiWatchdogReportTask internal constructor() : Api
 
     @get:Internal
     override val noCompilationWarning: String
-        get() = "No main Kotlin compilation found, so the API Watchdog report is empty."
+        get() = "No Kotlin compilation except tests found, so the API Watchdog report is empty."
 }

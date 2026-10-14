@@ -84,20 +84,6 @@ abstract class GenerateDiagnosticMessages : DiagnosticsJsonGeneratorTask() {
         }
     }
 
-    /** The line rules are in the `$comment` of `diagnostics.json`. */
-    private fun List<String>.joinTextLines(): String = buildString {
-        for ((index, line) in this@joinTextLines.withIndex()) {
-            if (index > 0) {
-                val previous = this@joinTextLines[index - 1]
-                val hardBreak = line.isEmpty() || previous.isEmpty() || line.isCodeLine() || previous.isCodeLine()
-                append(if (hardBreak) '\n' else ' ')
-            }
-            append(line)
-        }
-    }
-
-    private fun String.isCodeLine(): Boolean = startsWith("    ")
-
     private fun String.wrap(): List<String> = buildList {
         var remaining = this@wrap
         while (remaining.length > MAX_CHUNK_LENGTH) {

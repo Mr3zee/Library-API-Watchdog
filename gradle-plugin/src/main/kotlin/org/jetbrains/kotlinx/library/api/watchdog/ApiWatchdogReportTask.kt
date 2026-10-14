@@ -25,7 +25,7 @@ import org.gradle.process.ExecOperations
  * [API Watchdog report](https://mr3zee.github.io/Library-API-Watchdog/report).
  */
 public abstract class ApiWatchdogReportTask internal constructor() : DefaultTask() {
-    /** The names of the main Kotlin compile tasks. */
+    /** The names of the Kotlin compile tasks of every compilation except tests. */
     @get:Input
     internal abstract val compilationNames: ListProperty<String>
 

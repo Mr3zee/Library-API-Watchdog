@@ -232,6 +232,7 @@ class FixerProtocolTest {
             "DSL_MARKER_WITHOUT_EXPLICIT_TARGETS",
             "DSL_MARKER_NOOP_TYPE_POSITION",
             "PUBLIC_TYPE_WITH_INTERNAL_API",
+            "PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY",
         )
         assertEquals(expected, ExemptionRegistry.knownDiagnostics)
 
@@ -243,6 +244,7 @@ class FixerProtocolTest {
                 "EXEMPTION_WITHOUT_EXPLANATION",
                 "DSL_MARKER_NOOP_TYPE_POSITION",
                 "PUBLIC_TYPE_WITH_INTERNAL_API",
+                "PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY",
             ),
             unfixable.toSet(),
         )

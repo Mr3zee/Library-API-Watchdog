@@ -1,11 +1,13 @@
 package org.jetbrains.kotlinx.library.api.watchdog.fir
 
+import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactory4
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFunctionChecker
+import org.jetbrains.kotlin.fir.analysis.getChild
 import org.jetbrains.kotlin.fir.analysis.checkers.unsubstitutedScope
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirFunction
@@ -22,6 +24,8 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
 import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.types.renderReadable
 import org.jetbrains.kotlin.fir.unwrapFakeOverrides
+import org.jetbrains.kotlin.lexer.KtToken
+import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.Name
 
 /**
@@ -155,7 +159,7 @@ internal class OverloadParameterOrderChecker(
             )
         }
         reporter.reportOn(
-            source = declaration.source,
+            source = declaration.nameSource(),
             factory = factory,
             a = current.signature(callableName),
             b = others.zip(labels).joinToString("\n") { (other, label) ->
@@ -170,6 +174,22 @@ internal class OverloadParameterOrderChecker(
                 if (declaration is FirConstructor) "constructor" else "function",
             ),
         )
+    }
+
+    /**
+     * The callable name, the `constructor` keyword, or the class name for a primary constructor
+     * without the keyword. A positioning strategy can't select these tokens. Its `mark` override
+     * has `com.intellij` types in its signature, so it never binds in `kotlin-compiler-embeddable`.
+     */
+    context(context: CheckerContext)
+    private fun FirFunction.nameSource(): KtSourceElement? {
+        val source = source ?: return null
+        if (this !is FirConstructor) {
+            return source.getChild(IDENTIFIER_TOKENS, depth = 1) ?: source
+        }
+        return source.getChild(CONSTRUCTOR_KEYWORD_TOKENS, depth = 1)
+            ?: context.containingClassSymbol?.source?.getChild(IDENTIFIER_TOKENS, depth = 1)
+            ?: source
     }
 
     private fun Int.ordinalPosition(): String {
@@ -202,4 +222,9 @@ internal class OverloadParameterOrderChecker(
     context(context: CheckerContext)
     private fun FirBasedSymbol<*>.isExempt(): Boolean =
         hasAnnotation(WatchdogClassIds.IntentionallyInconsistentParameterOrder, context.session)
+
+    private companion object {
+        private val IDENTIFIER_TOKENS: Set<KtToken> = setOf(KtTokens.IDENTIFIER)
+        private val CONSTRUCTOR_KEYWORD_TOKENS: Set<KtToken> = setOf(KtTokens.CONSTRUCTOR_KEYWORD)
+    }
 }

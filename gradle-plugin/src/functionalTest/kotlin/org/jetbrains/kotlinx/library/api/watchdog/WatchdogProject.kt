@@ -469,7 +469,7 @@ internal class WatchdogFixture(
 }
 
 private const val WATCHDOG_PACKAGE = "org.jetbrains.kotlinx.library.api.watchdog"
-private const val WATCHDOG_PLUGIN_ID = "org.jetbrains.kotlin.library.api-watchdog"
+internal const val WATCHDOG_PLUGIN_ID = "org.jetbrains.kotlin.library.api-watchdog"
 private const val JVM_TARGET_17 = "compilerOptions { jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17 }"
 
 private val watchdogAnnotationImports: List<String> = listOf(

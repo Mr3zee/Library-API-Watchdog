@@ -11,9 +11,14 @@ Two tasks write it:
 ./gradlew generateApiWatchdogReport
 ```
 
-Both tasks compile the `main` compilation of every target in collection mode. An Android library
-has no `main` compilation, so the tasks skip it. [Collection mode](./existing-libs.md#collection-mode)
-lists what collection mode changes.
+Both tasks compile every compilation except tests in collection mode:
+
+- The `main` compilation of every target.
+- The `debug` and `release` compilations of an Android library.
+- Every custom compilation whose name doesn't end with `Test`.
+
+A declaration that two compilations report gets one row.
+[Collection mode](./existing-libs.md#collection-mode) lists what collection mode changes.
 
 ## Formats
 
@@ -26,8 +31,8 @@ Each task writes the report in two formats. Both are on by default:
 
 The HTML page has two sections:
 
-- **Applied annotations**: every Watchdog `@Intentionally*` annotation in the main Kotlin sources,
-  grouped by annotation.
+- **Applied annotations**: every Watchdog `@Intentionally*` annotation in the Kotlin sources of those
+  compilations, grouped by annotation.
 - **Not applied**: the diagnostics without an annotation, grouped by the annotation they need, or
   under **No automatic annotation** when no such annotation exists. Each row gives the reason the
   task didn't apply the annotation.

@@ -91,6 +91,17 @@ public value class UserId(public val raw: String)
 
 public suspend fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>fetchUser<!>(id: UserId): UserId = id
 
+public fun onUserEach(id: UserId, action: (Int) -> Unit) {}
+
+// `@JvmName` or `@JvmExposeBoxed` resolves the mangling, so the Kotlin-only shape is reported here.
+
+@JvmName("onUserEachNamed")
+public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>onUserEachNamed<!>(id: UserId, action: (Int) -> Unit) {}
+
+@OptIn(ExperimentalStdlibApi::class)
+@JvmExposeBoxed
+public fun <!KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC!>onUserEachBoxed<!>(id: UserId, action: (Int) -> Unit) {}
+
 @JvmInline
 public value class Wrapped(public val raw: String) {
     public suspend fun refresh(): String = raw

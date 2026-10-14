@@ -32,7 +32,8 @@ public suspend fun load(key: String) { }
 Java sees an extra `Continuation` parameter on suspend functions. Calls to reified functions fail
 at runtime. Kotlin function types also expose Java-specific constraints:
 
-- Suspend callbacks can't be Java lambdas.
+- Suspend callbacks get an extra `Continuation` parameter, so a Java lambda must implement the
+  coroutine protocol itself.
 - Receiver callbacks take the receiver as an explicit argument.
 - `Unit` callbacks must return `Unit.INSTANCE`.
 
@@ -128,7 +129,8 @@ public fun onEach(action: Action) { }
 - The check skips abstract functions, interface members, overrides, constructors, and members of value classes.
 - The check skips `@JvmSynthetic` and `@PublishedApi internal` functions.
 - Non-suspend functions with a mangled signature belong to
-  [Mangled JVM names in public API](./mangled-jvm-name-public-api.md).
+  [Mangled JVM names in public API](./mangled-jvm-name-public-api.md). When `@JvmName` or
+  `@JvmExposeBoxed` resolves the mangling, this check reports the Kotlin-only shape.
   Suspend functions stay with this check even when the compiler mangles their signature.
 
 ## Exemption
@@ -151,7 +153,7 @@ public fun onEach(action: (Int) -> Unit) { }
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     javaInterop {
         kotlinOnlyApiWithoutJvmSynthetic = WatchdogSeverity.ERROR
@@ -168,7 +170,7 @@ For a direct compiler call:
 
 ## See also
 
-- [Java-to-Kotlin interop guide](https://kotlinlang.org/docs/java-to-kotlin-interop.html)
+- [Calling Kotlin from Java](https://kotlinlang.org/docs/java-to-kotlin-interop.html)
 - [Java interop checks](./java-interop.md)
 - [Mangled JVM names in public API](./mangled-jvm-name-public-api.md)
 - [Exemptions and internal API](../../exemptions.md)

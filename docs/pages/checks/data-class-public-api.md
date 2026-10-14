@@ -88,7 +88,7 @@ The generated members also have these behaviors:
   Sessions with the same `value` compare equal and have the same string representation, even if their `createdAt` values differ.
   A call to `copy` initializes `createdAt` again.
 
-### Compatibility overloads {#the-workaround-negates-the-convenience}
+### Compatibility overloads
 
 If `Region` gains an `offsetX` property, existing compiled callers still need the old constructor and `copy` signatures.
 The secondary constructor and `copy` overload below restore calls that pass both `width` and `height`.
@@ -189,7 +189,7 @@ public data class Coordinates(
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     dataClassPublicApi = WatchdogSeverity.ERROR
 }

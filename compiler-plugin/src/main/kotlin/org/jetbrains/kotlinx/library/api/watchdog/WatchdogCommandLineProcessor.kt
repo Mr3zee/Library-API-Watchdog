@@ -101,9 +101,11 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             optionName = "diagnosticsOutputFile",
             valueDescription = "<path>",
             description = "Append every reported watchdog diagnostic to the given file as a " +
-                    "tab-separated line: diagnostic name, source file path, start offset, " +
-                    "end offset. Meant for tooling. The Gradle plugin's " +
-                    "exemptExistingApi and generateApiWatchdogReport tasks consume it.",
+                    "tab-separated line: diagnostic name, source file path, start and end " +
+                    "offset of the source element, start and end offset of the reported " +
+                    "range, then one field for each message parameter. Meant for tooling. " +
+                    "The Gradle plugin's exemptExistingApi and generateApiWatchdogReport " +
+                    "tasks consume it.",
             required = false,
             // The blank placeholder of the Gradle plugin can meet a path from other tooling.
             allowMultipleOccurrences = true,

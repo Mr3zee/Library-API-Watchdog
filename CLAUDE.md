@@ -46,12 +46,16 @@ npm run build                       # the site build, fails on a broken link or 
   and the `Diagnostic` enum of the Gradle plugin's functional tests from it. The docs build fails on a diagnostic
   name that `diagnostics.json` doesn't list or a range that matches no sample line. `DocsExamplesTest` in the
   Gradle functional tests compiles every docs sample and checks that the compiler reports exactly the annotated
-  diagnostics.
+  diagnostics, at the annotated ranges, with the annotated parameters.
 - The Gradle functional tests describe a build with the DSL in `WatchdogProject.kt` (`jvmProject`, `kmpProject`,
   `androidLibrary`, `kmpAndroidProject`) and check output with the `BuildResult` assertions in `BuildAssertions.kt`,
   which match the first paragraph of each message. A new always-error diagnostic goes into `alwaysErrorDiagnostics`.
-- `WatchdogDiagnosticsRecorder` must not reference `com.intellij` types in bytecode, because the jar runs both in the
-  CLI and in the relocated `kotlin-compiler-embeddable` classpath.
+- The compiler plugin must not reference `com.intellij` types in bytecode (a field type, a method signature, or a
+  class literal), because the jar runs both in the CLI and in the relocated `kotlin-compiler-embeddable` classpath.
+  A reference links in one of them only. A type argument is fine, because erasure removes it. A custom positioning
+  strategy is impossible for the same reason. Its `mark` override never binds in the embeddable compiler, and the
+  default strategy marks the whole declaration. A checker reports on a child source element from
+  `KtSourceElement.getChild` with a `Set` of token types instead.
 - The fixer uses K2 PSI entry points only, with unrelocated `com.intellij` imports. Its dependencies are
   compile-only. The Gradle task runs it in a separate JVM with the `kotlin-compiler` artifact of the project's
   Kotlin version.

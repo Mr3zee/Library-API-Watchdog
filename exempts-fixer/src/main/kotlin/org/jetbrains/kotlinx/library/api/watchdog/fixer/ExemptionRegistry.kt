@@ -79,6 +79,7 @@ internal object ExemptionRegistry {
         WatchdogChecks.EXEMPTION_WITHOUT_EXPLANATION.name to FixResolution.Unfixable("The existing exemption needs a reason or description only its author can write"),
         WatchdogChecks.DSL_MARKER_NOOP_TYPE_POSITION.name to FixResolution.Unfixable("No exemption annotation exists. Move the DSL marker to an effective position or remove it"),
         WatchdogChecks.PUBLIC_TYPE_WITH_INTERNAL_API.name to FixResolution.Unfixable("Remove the internal type from the public signature or mark the exposing declaration as internal API"),
+        WatchdogChecks.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY.name to FixResolution.Unfixable("Declare the dependency with `api`, or exempt it on the `apiWatchdogExemptNonTransitive` configuration"),
     )
 
     /** A declaration that collects every part of a group gets the combined annotation instead. */

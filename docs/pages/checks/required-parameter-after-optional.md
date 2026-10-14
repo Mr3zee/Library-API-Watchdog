@@ -90,7 +90,7 @@ public fun connect(retries: Int = 3, host: String) { }
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     requiredParameterAfterOptional = WatchdogSeverity.ERROR
 }

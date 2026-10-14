@@ -20,7 +20,7 @@
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in
 
 /openApi.kt:13:22: error: OPEN_API_WITHOUT_SUBCLASS_OPT_IN
-    The interface `FunInterface` can be subclassed outside the library. Apply `@SubclassOptInRequired`.
+    The interface `FunInterface` can be subclassed outside the library. Users implement a `fun interface` with a lambda. `@SubclassOptInRequired` isn't applicable to it, so acknowledge the external implementations with `@IntentionallyOpen`.
 
     If this is intended, apply `@IntentionallyOpen` to the interface.
 

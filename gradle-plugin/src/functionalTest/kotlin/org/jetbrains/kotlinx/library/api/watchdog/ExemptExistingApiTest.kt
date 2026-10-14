@@ -407,6 +407,130 @@ class ExemptExistingApiTest {
         project.build("compileKotlinJvm").assertNoWatchdogDiagnostics()
     }
 
+    @Test
+    fun androidLibraryIsFixedThroughBothVariants() = androidLibraryIsFixedThroughBothVariantsCase(AgpVersion.AGP8)
+
+    @Test
+    fun androidLibraryIsFixedThroughBothVariantsOnAgp9() = androidLibraryIsFixedThroughBothVariantsCase(AgpVersion.AGP9)
+
+    private fun androidLibraryIsFixedThroughBothVariantsCase(agp: AgpVersion) {
+        val project = androidLibrary(agp) {
+            source(openClass("AndroidApi"), "androidApi")
+            source(openClass("DebugOnlyApi"), "debugOnlyApi", sourceSet = "debug")
+        }
+
+        val result = project.build(EXEMPT_TASK)
+
+        result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+        result.assertTaskOutcome(":compileDebugKotlin", SUCCESS)
+        result.assertTaskOutcome(":compileReleaseKotlin", SUCCESS)
+        result.assertOutputHas("2 backwards-compatibility exemption(s)")
+        project.assertExempted("src/main/kotlin/test/androidApi.kt", "AndroidApi")
+        project.assertExempted("src/debug/kotlin/test/debugOnlyApi.kt", "DebugOnlyApi")
+        assertContains(project.report().readText(), "@IntentionallyOpen (2)")
+
+        project.build("compileDebugKotlin", "compileReleaseKotlin").assertNoWatchdogDiagnostics()
+    }
+
+    @Test
+    fun multiplatformAndroidTargetIsFixed() = multiplatformAndroidTargetIsFixedCase(KmpAndroidTarget.LIBRARY_AGP8)
+
+    @Test
+    fun multiplatformAndroidTargetIsFixedOnAgp9() = multiplatformAndroidTargetIsFixedCase(KmpAndroidTarget.LIBRARY_AGP9)
+
+    @Test
+    fun legacyMultiplatformAndroidTargetIsFixed() = multiplatformAndroidTargetIsFixedCase(KmpAndroidTarget.LEGACY)
+
+    private fun multiplatformAndroidTargetIsFixedCase(target: KmpAndroidTarget) {
+        val project = kmpAndroidProject(target) {
+            source(openClass("SharedApi"), "sharedApi")
+            source(openClass("AndroidOnlyApi"), "androidOnlyApi", sourceSet = "androidMain")
+        }
+
+        val result = project.build(EXEMPT_TASK)
+
+        result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+        result.assertTaskOutcome(":compileKotlinJvm", SUCCESS)
+        result.assertTaskOutcome(":${target.mainCompileTask}", SUCCESS)
+        if (target == KmpAndroidTarget.LEGACY) {
+            result.assertTaskOutcome(":compileReleaseKotlinAndroid", SUCCESS)
+        }
+        // The JVM and Android compilations both report the common declaration. It gets one exemption.
+        result.assertOutputHas("2 backwards-compatibility exemption(s)")
+        project.assertExempted("src/commonMain/kotlin/test/sharedApi.kt", "SharedApi")
+        project.assertExempted("src/androidMain/kotlin/test/androidOnlyApi.kt", "AndroidOnlyApi")
+
+        project.build(target.mainCompileTask).assertNoWatchdogDiagnostics()
+    }
+
+    @Test
+    fun customJvmCompilationIsFixedAndTestNamedCompilationIsNot() {
+        val project = jvmProject {
+            buildScript(
+                """
+                    sourceSets.create("extra")
+                    kotlin.target.compilations.create("integrationTest") {
+                        associateWith(kotlin.target.compilations.getByName("main"))
+                    }
+                """
+            )
+            source(openClass("ExtraApi"), "extraApi", sourceSet = "extra")
+            source(openClass("IntegrationHelper"), "integrationHelper", sourceSet = "integrationTest")
+        }
+        val integrationFile = project.file("src/integrationTest/kotlin/test/integrationHelper.kt")
+        val integrationText = integrationFile.readText()
+
+        val result = project.build(EXEMPT_TASK)
+
+        result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+        result.assertTaskOutcome(":compileExtraKotlin", SUCCESS)
+        result.assertTaskOutcome(":compileIntegrationTestKotlin", null)
+        project.assertExempted("src/extra/kotlin/test/extraApi.kt", "ExtraApi")
+        assertEquals(integrationText, integrationFile.readText())
+
+        project.build("compileExtraKotlin").assertNoWatchdogDiagnostics()
+    }
+
+    @Test
+    fun customMultiplatformCompilationIsFixed() {
+        val project = kmpProject("jvm { compilations.create(\"extra\") }") {
+            source(openClass("ExtraApi"), "extraApi", sourceSet = "jvmExtra")
+        }
+
+        val result = project.build(EXEMPT_TASK)
+
+        result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+        result.assertTaskOutcome(":compileExtraKotlinJvm", SUCCESS)
+        project.assertExempted("src/jvmExtra/kotlin/test/extraApi.kt", "ExtraApi")
+
+        project.build("compileExtraKotlinJvm").assertNoWatchdogDiagnostics()
+    }
+
+    @Test
+    fun reportTaskCoversTheSameCompilationsAsTheExemptTask() {
+        val project = jvmProject {
+            buildScript("""sourceSets.create("extra")""")
+            source(openClass("ExtraApi"), "extraApi", sourceSet = "extra")
+        }
+
+        val result = project.build(REPORT_TASK)
+
+        result.assertTaskOutcome(":$REPORT_TASK", SUCCESS)
+        result.assertTaskOutcome(":compileExtraKotlin", SUCCESS)
+        val report = project.report().readText()
+        assertContains(report, "Not applied")
+        assertContains(report, "extraApi.kt:")
+    }
+
+    private fun openClass(name: String): String = "/** An existing open API. */\npublic open class $name"
+
+    private fun WatchdogBuild.assertExempted(path: String, className: String) {
+        assertContains(
+            file(path).readText(),
+            "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic open class $className",
+        )
+    }
+
     private fun WatchdogBuild.mainSource(fileNameWithoutExtension: String): File =
         file("src/main/kotlin/test/$fileNameWithoutExtension.kt")
 

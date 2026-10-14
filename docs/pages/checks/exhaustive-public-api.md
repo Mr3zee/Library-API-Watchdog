@@ -156,7 +156,7 @@ public enum class LogLevel {
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     exhaustivePublicApi = WatchdogSeverity.ERROR
 }

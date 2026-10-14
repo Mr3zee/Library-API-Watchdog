@@ -38,6 +38,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinTargetsContainer
 import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompileTool
 
 /**
  * The `org.jetbrains.kotlin.library.api-watchdog` plugin.
@@ -173,7 +174,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         registerReportTask(
             EXEMPT_EXISTING_API_TASK_NAME,
             ExemptExistingApiTask::class.java,
-            "Exempts every declaration with a watchdog error in the main Kotlin sources, with the " +
+            "Exempts every declaration with a watchdog error in the Kotlin sources of every compilation " +
+                    "except tests, with the " +
                     "FOR_BACKWARDS_COMPATIBILITY annotation or a placeholder KDoc, and writes the API Watchdog reports",
         )
         val reportTask = registerReportTask(
@@ -211,8 +213,10 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         kotlinCompilation: KotlinCompilation<*>
     ): Provider<List<SubpluginOption>> {
         val extension = extensions.getByType(WatchdogGradleExtension::class.java)
-        val isMain = kotlinCompilation.name == KotlinCompilation.MAIN_COMPILATION_NAME
-        val collect = collectDiagnosticsForExempts.map { it && isMain }
+        // Every compilation except tests feeds the report and exempt tasks. An Android library has
+        // `debug` and `release` and no `main`, and both compile the main source set.
+        val feedsReport = !kotlinCompilation.isTestCompilation()
+        val collect = collectDiagnosticsForExempts.map { it && feedsReport }
         val compileDependencies = configurations.named(kotlinCompilation.compileDependencyConfigurationName)
         val transitiveDependencies = transitiveDependenciesFor(kotlinCompilation, compileDependencies)
         val exemptNonTransitiveDependencies = exemptNonTransitiveDependenciesFor(kotlinCompilation, compileDependencies)
@@ -220,7 +224,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             "reports/api-watchdog/diagnostics/${kotlinCompilation.compileKotlinTaskName}.tsv"
         )
 
-        if (isMain) {
+        if (feedsReport) {
             val exemptTask = tasks.named(
                 EXEMPT_EXISTING_API_TASK_NAME,
                 ExemptExistingApiTask::class.java,
@@ -232,6 +236,10 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             fun ApiWatchdogReportTask.addCompilation() {
                 compilationNames.add(kotlinCompilation.compileKotlinTaskName)
                 sourceFiles.from(kotlinCompilation.allKotlinSourceSets.map { it.kotlin })
+                // The built-in Kotlin of AGP 9 registers no Kotlin source set on the compilation.
+                sourceFiles.from(kotlinCompilation.compileTaskProvider.map { task ->
+                    (task as? KotlinCompileTool)?.sources ?: objects.fileCollection()
+                })
                 diagnosticReports.from(reportFile)
                 dependsOn(kotlinCompilation.compileTaskProvider)
             }

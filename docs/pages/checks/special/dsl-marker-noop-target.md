@@ -9,7 +9,7 @@
 
 ## What it reports
 
-Reports each explicit `@Target` entry on a `@DslMarker` annotation outside this set:
+Each explicit `@Target` entry on a `@DslMarker` annotation outside this set:
 
 - `CLASS`.
 - `ANNOTATION_CLASS`.
@@ -89,7 +89,7 @@ The annotation has no `reason` parameter. Its `description` is optional.
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     dslMarkerNoopTarget = WatchdogSeverity.ERROR
 }
@@ -102,7 +102,7 @@ For a direct compiler call:
 
 ## See also
 
-- [Scope control with @DslMarker](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker)
+- [Scope control: @DslMarker](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker)
 - [DSL marker design note](https://github.com/Kotlin/KEEP/blob/main/notes/0005-dsl-marker.md)
 - [DSL markers without explicit targets](./dsl-marker-without-explicit-targets.md)
 - [Exemptions and internal API](../../exemptions.md)

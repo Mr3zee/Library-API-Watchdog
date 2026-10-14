@@ -13,7 +13,7 @@
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic
 
 /kotlinOnlyApi.kt:11:12: error: KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
-    The function `race` takes a `suspend` function type in the parameter `work`, which a Java lambda can't implement. Hide it from Java with `@JvmSynthetic`, and add a Java-friendly alternative.
+    The function `race` takes a `suspend` function type in the parameter `work`, which Java sees with an extra `Continuation` parameter. Hide it from Java with `@JvmSynthetic`, and add a Java-friendly alternative.
 
     If this is intended, apply `@IntentionallyKotlinOnlyApi` to the function or an enclosing class.
 

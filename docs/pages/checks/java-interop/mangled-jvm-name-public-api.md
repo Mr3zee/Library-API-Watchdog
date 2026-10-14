@@ -164,7 +164,7 @@ public fun take(id: UserId) { }
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     javaInterop {
         mangledJvmNamePublicApi = WatchdogSeverity.ERROR
@@ -175,14 +175,13 @@ apiWatchdog {
 `javaInterop { enabled = false }` disables all [Java interop checks](./java-interop.md).
 
 For a direct compiler call:
-
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=MANGLED_JVM_NAME_PUBLIC_API:error
 ```
 
 ## See also
 
-- [Inline value classes and mangling](https://kotlinlang.org/docs/java-to-kotlin-interop.html#inline-value-classes)
+- [Inline value classes](https://kotlinlang.org/docs/java-to-kotlin-interop.html#inline-value-classes)
 - [Java interop checks](./java-interop.md)
 - [Kotlin-only API without JvmSynthetic](./kotlin-only-api-without-jvm-synthetic.md)
 - [Exemptions and internal API](../../exemptions.md)

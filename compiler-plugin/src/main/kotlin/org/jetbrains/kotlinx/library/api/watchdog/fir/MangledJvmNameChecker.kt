@@ -115,11 +115,7 @@ internal class MangledJvmNameChecker(
             return false
         }
 
-        // `@JvmExposeBoxed` on the declaration or on an enclosing class generates a boxed variant
-        // for Java, but not for an open or abstract member.
-        if (modality != Modality.OPEN && modality != Modality.ABSTRACT &&
-            hasAnnotationOnSelfOrEnclosingClass(JvmStandardClassIds.JVM_EXPOSE_BOXED_ANNOTATION_CLASS_ID)
-        ) {
+        if (hasEffectiveJvmExposeBoxed()) {
             return false
         }
 

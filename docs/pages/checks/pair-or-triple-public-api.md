@@ -75,6 +75,7 @@ public fun dimensions(): Dimensions = Dimensions(0, 0, 0)
 The check skips:
 
 - Extension receivers on these types.
+- Class context parameters.
 - Overrides.
 - `@PublishedApi internal` declarations.
 
@@ -98,7 +99,7 @@ public fun dimensions(): Triple<Int, Int, Int> = Triple(0, 0, 0)
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     pairOrTriplePublicApi = WatchdogSeverity.ERROR
 }

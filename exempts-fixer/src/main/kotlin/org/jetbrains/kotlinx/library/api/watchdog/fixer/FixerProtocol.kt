@@ -5,8 +5,9 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 /**
- * One line of the `diagnosticsOutputFile` of the compiler plugin: the diagnostic name, the
- * absolute file path, the start offset, and the end offset, separated by tabs.
+ * The first four tab-separated fields of a `diagnosticsOutputFile` line of the compiler plugin:
+ * the diagnostic name, the absolute file path, the start offset, and the end offset of the
+ * source element. The fixer ignores the fields after them.
  */
 internal data class RecordedDiagnostic(
     val name: String,
@@ -23,7 +24,7 @@ internal data class RecordedDiagnostic(
             .filter { it.isNotBlank() }
             .map { line ->
                 val parts = line.split('\t')
-                require(parts.size == 4) { "Malformed diagnostics report line: '$line'" }
+                require(parts.size >= 4) { "Malformed diagnostics report line: '$line'" }
                 RecordedDiagnostic(parts[0], parts[1], parts[2].toInt(), parts[3].toInt())
             }
             .distinct()

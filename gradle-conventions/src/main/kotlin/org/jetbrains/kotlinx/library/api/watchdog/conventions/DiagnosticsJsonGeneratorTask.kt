@@ -64,6 +64,20 @@ private fun Any?.asTextLinesByName(): Map<String, List<String>> {
     return values.mapValues { (_, lines) -> lines.map { it as String } }
 }
 
+/** The line rules are in the `$comment` of `diagnostics.json`. */
+fun List<String>.joinTextLines(): String = buildString {
+    for ((index, line) in this@joinTextLines.withIndex()) {
+        if (index > 0) {
+            val previous = this@joinTextLines[index - 1]
+            val hardBreak = line.isEmpty() || previous.isEmpty() || line.isCodeLine() || previous.isCodeLine()
+            append(if (hardBreak) '\n' else ' ')
+        }
+        append(line)
+    }
+}
+
+private fun String.isCodeLine(): Boolean = startsWith("    ")
+
 private val MARKDOWN_LINK = Regex("\\[([^]]+)]\\(([^)]+)\\)")
 
 /** `[text](url)` as `text (url)`. */

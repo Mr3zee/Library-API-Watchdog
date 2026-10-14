@@ -47,8 +47,9 @@ internal class KotlinOnlyApiChecker(
             return
         }
 
-        // MangledJvmNameChecker reports a mangled function, unless it is suspend.
-        if (!declaration.isSuspend && declaration.mangledValueClassInSignature() != null) {
+        // MangledJvmNameChecker reports a mangled function, unless it is suspend. `@JvmName` or
+        // `@JvmExposeBoxed` resolves the mangling, and then this check reports the Kotlin-only shape.
+        if (!declaration.isSuspend && declaration.hasMangledJvmName()) {
             return
         }
 

@@ -10,10 +10,10 @@
 
 ## What it reports
 
-Reports dependency types in public API and `@PublishedApi internal` signatures when consumers don't
+Dependency types in public API and `@PublishedApi internal` signatures when consumers don't
 get the dependency transitively:
 
-```kotlin Library.kt
+```kotlin
 // !hide-focused
 @file:JvmName("Library")
 
@@ -66,7 +66,7 @@ the dependency](#exempting-a-dependency) for the whole module.
 
 For selected declarations, use the annotation and name the host in `description`:
 
-```kotlin Library.kt
+```kotlin
 // !hide-focused
 @file:JvmName("Library")
 
@@ -86,7 +86,7 @@ On a class, the annotation covers every nested declaration.
 `publicTypesMustBeTransitiveDependencies` is `true` by default. The check can't report warnings. To
 disable it for the module:
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     publicTypesMustBeTransitiveDependencies = false
 }

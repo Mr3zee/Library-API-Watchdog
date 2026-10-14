@@ -137,7 +137,7 @@ Add `@Poko` to each class that needs generated `equals`, `hashCode`, and `toStri
 
 ### Check severity
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     statefulClassWithoutEquals = WatchdogSeverity.ERROR
     statefulClassWithoutHashCode = WatchdogSeverity.ERROR
@@ -146,7 +146,7 @@ apiWatchdog {
 ```
 
 For a direct compiler call:
-```text
+```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=STATEFUL_CLASS_WITHOUT_EQUALS:error
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=STATEFUL_CLASS_WITHOUT_HASH_CODE:error
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=STATEFUL_CLASS_WITHOUT_TO_STRING:error
@@ -154,6 +154,6 @@ For a direct compiler call:
 
 ## See also
 
-- [Kotlin library authors' guidelines for toString ](https://kotlinlang.org/docs/api-guidelines-debuggability.html#provide-a-tostring-method-for-stateful-types)
+- [Provide a toString method for stateful types](https://kotlinlang.org/docs/api-guidelines-debuggability.html#provide-a-tostring-method-for-stateful-types)
 - [Data classes in public API](./data-class-public-api.md)
 - [Exemptions and internal API](../exemptions.md)

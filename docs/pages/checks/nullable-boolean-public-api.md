@@ -77,6 +77,7 @@ public fun connectionState(): ConnectionState = ConnectionState.UNKNOWN
 The check skips:
 
 - Extension receivers on `Boolean?` type.
+- Class context parameters.
 - Overrides.
 - Java platform types.
 - `@PublishedApi internal` declarations.
@@ -101,7 +102,7 @@ public fun connectionState(): Boolean? = null
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     nullableBooleanPublicApi = WatchdogSeverity.ERROR
 }

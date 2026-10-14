@@ -91,7 +91,7 @@ Replace each placeholder with the declaration's contract.
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     undocumentedPublicApi = WatchdogSeverity.WARNING
 }
@@ -108,7 +108,7 @@ For a direct compiler call:
 of a class, an interface, and an object, and reports a top-level property. Set it to `true` when
 each property must carry its own KDoc:
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     reportUndocumentedClassProperties = true
 }
@@ -121,5 +121,5 @@ For a direct compiler call:
 
 ## See also
 
-- [Kotlin API guidelines: thoroughly document your API](https://kotlinlang.org/docs/api-guidelines-informative-documentation.html#thoroughly-document-your-api)
+- [Thoroughly document your API](https://kotlinlang.org/docs/api-guidelines-informative-documentation.html#thoroughly-document-your-api)
 - [Exemptions and internal API](../exemptions.md)

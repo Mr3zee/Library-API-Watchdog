@@ -15,7 +15,10 @@ import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
 import org.jetbrains.kotlin.fir.declarations.utils.hasBackingField
 import org.jetbrains.kotlin.fir.declarations.utils.isData
 import org.jetbrains.kotlin.fir.declarations.utils.isInlineOrValue
+import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
+import org.jetbrains.kotlin.fir.types.isNullableAny
+import org.jetbrains.kotlin.fir.types.upperBoundIfFlexible
 import org.jetbrains.kotlin.fir.unwrapFakeOverrides
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
@@ -97,16 +100,17 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
         )
     }
 
-    /** Whether the class declares or inherits [member] from a class other than `kotlin.Any`. */
+    /**
+     * Whether the class declares or inherits [member] from a class other than `kotlin.Any`.
+     * The signature decides, not the `override` modifier, because a compiler plugin such as
+     * Poko generates the member in FIR without the modifier.
+     */
     context(context: CheckerContext)
     private fun FirRegularClass.provides(member: GeneratedMember): Boolean {
         var provided = false
         unsubstitutedScope().processFunctionsByName(member.functionName) { function ->
             val original = function.unwrapFakeOverrides()
-            if (original.valueParameterSymbols.size == member.valueParameterCount &&
-                original.contextParameterSymbols.isEmpty() &&
-                original.receiverParameterSymbol == null &&
-                original.resolvedStatus.isOverride &&
+            if (original.hasSignatureOf(member) &&
                 original.containingClassLookupTag()?.classId != StandardClassIds.Any
             ) {
                 provided = true
@@ -115,13 +119,20 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
         return provided
     }
 
-    private enum class GeneratedMember(
-        val functionName: Name,
-        val valueParameterCount: Int,
-    ) {
-        EQUALS(OperatorNameConventions.EQUALS, 1),
-        HASH_CODE(OperatorNameConventions.HASH_CODE, 0),
-        TO_STRING(OperatorNameConventions.TO_STRING, 0),
+    private fun FirNamedFunctionSymbol.hasSignatureOf(member: GeneratedMember): Boolean {
+        if (contextParameterSymbols.isNotEmpty() || receiverParameterSymbol != null) return false
+        val parameters = valueParameterSymbols
+        return when (member) {
+            GeneratedMember.EQUALS ->
+                parameters.size == 1 && parameters.single().resolvedReturnType.upperBoundIfFlexible().isNullableAny
+            GeneratedMember.HASH_CODE, GeneratedMember.TO_STRING -> parameters.isEmpty()
+        }
+    }
+
+    private enum class GeneratedMember(val functionName: Name) {
+        EQUALS(OperatorNameConventions.EQUALS),
+        HASH_CODE(OperatorNameConventions.HASH_CODE),
+        TO_STRING(OperatorNameConventions.TO_STRING),
     }
 }
 

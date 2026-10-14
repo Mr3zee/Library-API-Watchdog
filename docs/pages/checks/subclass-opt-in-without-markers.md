@@ -54,26 +54,13 @@ public abstract class Connector
 - Final classes, classes whose constructors are all `internal` or `private`, and sealed types aren't reported.
 - The annotation can list more than one marker class.
 - `@PublishedApi internal` types aren't reported.
-
-## Exemption
-
-This check has no exemption annotation.
-To keep unrestricted subclassing for compatibility, replace `@SubclassOptInRequired` with `@IntentionallyOpen`:
-
-```kotlin
-// !hide-focused
-/** A connector kept unrestricted for compatibility. */
-@IntentionallyOpen(
-    reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY,
-)
-public abstract class Connector
-```
-
-The [`exemptExistingApi`](../existing-libs.md) task makes this replacement.
+- To keep unrestricted subclassing for compatibility, replace `@SubclassOptInRequired` with
+  [`@IntentionallyOpen`](./open-api-without-subclass-opt-in.md#exemption).
+  The [`exemptExistingApi`](../existing-libs.md) task makes this replacement.
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     subclassOptInWithoutMarkers = WatchdogSeverity.ERROR
 }
@@ -88,3 +75,4 @@ For a direct compiler call:
 
 - [Require opt-in to extend an API](https://kotlinlang.org/docs/opt-in-requirements.html#require-opt-in-to-extend-api)
 - [Open API without subclass opt-in](./open-api-without-subclass-opt-in.md)
+- [Exemptions and internal API](../exemptions.md)

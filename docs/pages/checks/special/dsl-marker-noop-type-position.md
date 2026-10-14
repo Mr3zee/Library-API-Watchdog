@@ -9,7 +9,7 @@
 
 ## What it reports
 
-Reports a DSL marker directly on these types:
+A DSL marker directly on one of these types:
 
 - A regular parameter type.
 - A function return type.
@@ -82,7 +82,7 @@ The check applies to declarations of any visibility. It skips:
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     dslMarkerNoopTypePosition = WatchdogSeverity.ERROR
 }
@@ -95,6 +95,6 @@ For a direct compiler call:
 
 ## See also
 
-- [Scope control for DSL markers](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker)
+- [Scope control: @DslMarker](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker)
 - [DSL markers with no-op targets](./dsl-marker-noop-target.md)
 - [DSL markers without explicit targets](./dsl-marker-without-explicit-targets.md)

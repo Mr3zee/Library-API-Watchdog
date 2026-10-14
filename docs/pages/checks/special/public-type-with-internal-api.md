@@ -9,7 +9,7 @@
 
 ## What it reports
 
-Reports a type marked with an [internal API
+A type marked with an [internal API
 annotation](../../exemptions.md#internal-api-annotations) in a public API signature:
 
 ```kotlin
@@ -56,38 +56,19 @@ public fun loadModel(): Model = Model()
 - The check skips `@PublishedApi internal` signatures.
 - An internal API annotation on an enclosing class also marks its nested types.
 - Type aliases don't hide internal API annotations on the alias or its expanded type.
-
-## Exemption
-
-This check has no exemption annotation. If the exposing declaration is also internal API, mark it
-with the internal API annotation:
-
-```kotlin
-// !hide-focused
-/** Marks declarations that are public only for technical reasons. */
-@InternalAnnotationMarker
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-public annotation class InternalLibApi
-
-@InternalLibApi
-public class InternalModel
-
-@InternalLibApi
-public fun loadInternalModel(): InternalModel = InternalModel()
-```
+- If the exposing declaration is also internal API, mark it with the internal API annotation.
 
 ## Configuration
 
 `publicTypeWithInternalApi` is `true` by default. The check can't report warnings. To disable it:
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     publicTypeWithInternalApi = false
 }
 ```
 
 For a direct compiler call:
-
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:publicTypeWithInternalApi=false
 ```

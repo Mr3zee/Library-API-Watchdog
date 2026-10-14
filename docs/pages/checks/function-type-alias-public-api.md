@@ -68,7 +68,7 @@ public typealias Callback = (Int) -> Unit
 
 ## Configuration
 
-```kotlin
+```kotlin build.gradle.kts
 apiWatchdog {
     functionTypeAliasPublicApi = WatchdogSeverity.ERROR
 }
@@ -81,6 +81,6 @@ For a direct compiler call:
 
 ## See also
 
-- [Functional interfaces and type aliases](https://kotlinlang.org/docs/fun-interfaces.html#functional-interfaces-vs-type-aliases)
-- [Exemptions and internal API](../exemptions.md)
+- [Functional interfaces vs. type aliases](https://kotlinlang.org/docs/fun-interfaces.html#functional-interfaces-vs-type-aliases)
 - [Data classes in public API](./data-class-public-api.md)
+- [Exemptions and internal API](../exemptions.md)
