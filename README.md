@@ -278,4 +278,4 @@ Modules:
   projects. Plugin id `org.jetbrains.kotlin.library.api-watchdog-report-aggregation`.
 
 The documentation site is a [Docusaurus](https://docusaurus.io/) project in [docs](docs), built by
-[docs.yml](.github/workflows/docs.yml). See [docs/authoring.md](docs/authoring.md) for more details.
+[docs.yml](.github/workflows/docs.yml). 
