@@ -35,7 +35,9 @@ private fun run(request: FixerRequest, response: FixerResponse) {
             val file = Paths.get(filePath)
             if (!Files.isRegularFile(file)) {
                 diagnostics.forEach {
-                    response.skipped += SkippedDiagnostic(it.name, filePath, 0, "the source file no longer exists")
+                    response.skipped += SkippedDiagnostic(
+                        it.name, filePath, 0, "the source file no longer exists", it.messageParameters,
+                    )
                 }
                 continue
             }

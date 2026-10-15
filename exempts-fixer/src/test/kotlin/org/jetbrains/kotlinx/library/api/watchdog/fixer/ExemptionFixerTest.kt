@@ -30,6 +30,77 @@ class ExemptionFixerTest {
         fixer.fix(FILE_PATH, text, diagnostics.toList())
 
     @Test
+    fun `message parameters follow fixes skips and warnings after source edits`() {
+        val text = "package test\n\npublic open class Api\n"
+        val result = fixer.fix(
+            FILE_PATH,
+            text,
+            listOf(
+                diagnostic("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", text, "public open class Api")
+                    .copy(messageParameters = listOf("class", "Api", "Use opt-in.")),
+                diagnostic("UNDOCUMENTED_PUBLIC_API", text, "public open class Api")
+                    .copy(messageParameters = listOf("class", "Api")),
+                diagnostic("UNKNOWN_CHECK", text, "public open class Api")
+                    .copy(messageParameters = listOf("unknown")),
+            ),
+            fixes = { it != "UNDOCUMENTED_PUBLIC_API" },
+        )
+        assertEquals(listOf("class", "Api", "Use opt-in."), result.applied.single().messageParameters)
+        assertEquals(listOf("class", "Api"), result.warnings.single().messageParameters)
+        assertEquals(listOf("unknown"), result.skipped.single().messageParameters)
+        assertTrue(result.warnings.single().line > 3)
+    }
+
+    @Test
+    fun `reported name ranges follow source edits with each line ending`() {
+        for (newline in listOf("\n", "\r\n", "\r")) {
+            val text = "package test\n\npublic open class Api\n".replace("\n", newline)
+            val diagnostics = listOf("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", "UNDOCUMENTED_PUBLIC_API", "UNKNOWN_CHECK").map { name ->
+                diagnostic(name, text, "public open class Api").copy(
+                    reportedStartOffset = text.indexOf("Api"),
+                    reportedEndOffset = text.indexOf("Api") + 3,
+                )
+            }
+            val result = fixer.fix(FILE_PATH, text, diagnostics, fixes = { it != "UNDOCUMENTED_PUBLIC_API" })
+            val rewrittenLine = lineOf(result.newText!!.replace("\r\n", "\n").replace('\r', '\n'), "public open class Api")
+            val expected = DiagnosticSourceRange(rewrittenLine, 19, rewrittenLine, 22)
+            assertEquals(expected, result.applied.single().sourceRange, "applied, newline=$newline")
+            assertEquals(expected, result.warnings.single().sourceRange, "warning, newline=$newline")
+            assertEquals(expected, result.skipped.single().sourceRange, "skipped, newline=$newline")
+
+            val readOnly = fixer.fix(FILE_PATH, text, diagnostics, rewriteLocations = false, fixes = { it != "UNDOCUMENTED_PUBLIC_API" })
+            assertEquals(DiagnosticSourceRange(3, 19, 3, 22), readOnly.applied.single().sourceRange)
+            assertEquals(DiagnosticSourceRange(3, 19, 3, 22), readOnly.warnings.single().sourceRange)
+        }
+    }
+
+    @Test
+    fun `reported range can span multiple lines`() {
+        val text = "package test\n\npublic fun configure(\n    enabled: Boolean,\n    name: String,\n) = Unit\n"
+        val recorded = diagnostic("UNKNOWN_CHECK", text, "public fun configure").copy(
+            reportedStartOffset = text.indexOf("enabled"),
+            reportedEndOffset = text.indexOf("String") + 6,
+        )
+        val result = fix(text, recorded)
+        assertEquals(DiagnosticSourceRange(4, 5, 5, 17), result.skipped.single().sourceRange)
+    }
+
+    @Test
+    fun `empty invalid and replaced reported ranges have no source highlight`() {
+        val text = "package test\n\n@SubclassOptInRequired\npublic open class Api\n"
+        val annotation = text.indexOf("@SubclassOptInRequired")
+        val recorded = diagnostic("SUBCLASS_OPT_IN_WITHOUT_MARKERS", text, "@SubclassOptInRequired").copy(
+            reportedStartOffset = annotation,
+            reportedEndOffset = annotation + "@SubclassOptInRequired".length,
+        )
+        assertNull(fix(text, recorded).applied.single().sourceRange)
+        for ((start, end) in listOf(annotation to annotation, -1 to annotation, annotation to text.length + 1)) {
+            val invalid = recorded.copy(name = "UNKNOWN_CHECK", reportedStartOffset = start, reportedEndOffset = end)
+            assertNull(fix(text, invalid).skipped.single().sourceRange)
+        }
+    }
+
+    @Test
     fun `annotation goes between KDoc and declaration`() {
         @Language("kotlin")
         val text = """

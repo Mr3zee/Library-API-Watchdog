@@ -88,6 +88,21 @@ jobs:
       - name: Run report aggregation tests
         run: ./gradlew :kotlin-library-api-watchdog-report-aggregation:test
 
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: report-aggregation/package-lock.json
+
+      - name: Install report test dependencies
+        working-directory: report-aggregation
+        run: npm ci --ignore-scripts
+
+      - name: Test report JavaScript
+        working-directory: report-aggregation
+        run: npm test
+
       - name: Check the ABI dumps
         run: |
           ./gradlew \

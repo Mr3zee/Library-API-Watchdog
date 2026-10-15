@@ -27,6 +27,8 @@ public data class AppliedExemptionReportEntry(
  * @property annotation the annotation that exempts the declaration, or null when none exists
  * @property location `path:line`, relative to the project directory
  * @property severity `error` or `warning`
+ * @property messageParameters the compiler's rendered arguments for the diagnostic message template
+ * @property autoFixAvailable whether `exemptExistingApi` can apply a fix at this location
  */
 @InternalWatchdogApi
 public data class NotAppliedExemptionReportEntry(
@@ -35,6 +37,24 @@ public data class NotAppliedExemptionReportEntry(
     public val location: String,
     public val reason: String,
     public val severity: String,
+    public val messageParameters: List<String> = emptyList(),
+    public val sourceRange: ApiWatchdogSourceRange? = null,
+    public val autoFixAvailable: Boolean = false,
+)
+
+/** One-based source positions with an exclusive end. */
+@InternalWatchdogApi
+public data class ApiWatchdogSourceRange(
+    public val startLine: Int,
+    public val startColumn: Int,
+    public val endLine: Int,
+    public val endColumn: Int,
+)
+
+@InternalWatchdogApi
+public data class ApiWatchdogSourceSnippet(
+    public val startLine: Int,
+    public val code: String,
 )
 
 /**
@@ -42,6 +62,7 @@ public data class NotAppliedExemptionReportEntry(
  *
  * @property projectDirectory the project directory relative to the root directory of the build,
  *   with `/` separators. Empty for the root project.
+ * @property sourceSnippets source context by `path:line`
  */
 @InternalWatchdogApi
 public data class ApiWatchdogProjectReport(
@@ -49,11 +70,12 @@ public data class ApiWatchdogProjectReport(
     public val projectDirectory: String,
     public val applied: List<AppliedExemptionReportEntry>,
     public val notApplied: List<NotAppliedExemptionReportEntry>,
+    public val sourceSnippets: Map<String, ApiWatchdogSourceSnippet> = emptyMap(),
 )
 
 @InternalWatchdogApi
 public object ApiWatchdogReportData {
-    private const val VERSION = "2"
+    private const val VERSION = "6"
 
     public fun write(report: ApiWatchdogProjectReport, file: File) {
         file.parentFile.mkdirs()
@@ -66,14 +88,25 @@ public object ApiWatchdogReportData {
             }
             report.notApplied.forEach { entry ->
                 appendLine(
-                    listOf(
+                    (listOf(
                         "notApplied",
                         entry.annotation.orEmpty(),
                         entry.diagnostic,
                         entry.location,
                         entry.reason,
                         entry.severity,
-                    ).joinToString("\t") { it.escapeField() }
+                        entry.sourceRange?.startLine?.toString().orEmpty(),
+                        entry.sourceRange?.startColumn?.toString().orEmpty(),
+                        entry.sourceRange?.endLine?.toString().orEmpty(),
+                        entry.sourceRange?.endColumn?.toString().orEmpty(),
+                        entry.autoFixAvailable.toString(),
+                    ) + entry.messageParameters).joinToString("\t") { it.escapeField() }
+                )
+            }
+            report.sourceSnippets.toSortedMap().forEach { (location, snippet) ->
+                appendLine(
+                    listOf("source", location, snippet.startLine.toString(), snippet.code)
+                        .joinToString("\t") { it.escapeField() }
                 )
             }
         })
@@ -81,14 +114,19 @@ public object ApiWatchdogReportData {
 
     public fun read(file: File): ApiWatchdogProjectReport {
         var projectPath: String? = null
+        var version: String? = null
         var projectDirectory: String? = null
         val applied = mutableListOf<AppliedExemptionReportEntry>()
         val notApplied = mutableListOf<NotAppliedExemptionReportEntry>()
+        val sourceSnippets = mutableMapOf<String, ApiWatchdogSourceSnippet>()
         file.readLines().filter(String::isNotBlank).forEachIndexed { index, line ->
             val fields = line.split('\t').map { it.unescapeField() }
             when (fields.first()) {
-                "version" -> require(fields == listOf("version", VERSION)) {
-                    "Unsupported API Watchdog report version in $file"
+                "version" -> {
+                    require(fields.size == 2 && fields[1] in setOf("2", "3", "4", "5", VERSION)) {
+                        "Unsupported API Watchdog report version in $file"
+                    }
+                    version = fields[1]
                 }
                 "project" -> {
                     require(fields.size == 2) { "Malformed project entry in $file:${index + 1}" }
@@ -103,14 +141,32 @@ public object ApiWatchdogReportData {
                     applied += AppliedExemptionReportEntry(fields[1], fields[2])
                 }
                 "notApplied" -> {
-                    require(fields.size == 6) { "Malformed not-applied entry in $file:${index + 1}" }
+                    val parameterStart = when (version) {
+                        VERSION -> 11
+                        "5" -> 10
+                        else -> 6
+                    }
+                    require(fields.size >= parameterStart) { "Malformed not-applied entry in $file:${index + 1}" }
                     notApplied += NotAppliedExemptionReportEntry(
                         annotation = fields[1].ifEmpty { null },
                         diagnostic = fields[2],
                         location = fields[3],
                         reason = fields[4],
                         severity = fields[5],
+                        messageParameters = fields.drop(parameterStart),
+                        sourceRange = if (parameterStart >= 10 && fields[6].isNotEmpty()) {
+                            ApiWatchdogSourceRange(fields[6].toInt(), fields[7].toInt(), fields[8].toInt(), fields[9].toInt())
+                        } else null,
+                        autoFixAvailable = if (version == VERSION) fields[10].toBooleanStrict() else {
+                            fields[1].isNotEmpty() || fields[2] == "UNDOCUMENTED_PUBLIC_API"
+                        },
                     )
+                }
+                "source" -> {
+                    require(fields.size == 4) { "Malformed source entry in $file:${index + 1}" }
+                    val startLine = fields[2].toIntOrNull()
+                    require(startLine != null && startLine > 0) { "Invalid source line in $file:${index + 1}" }
+                    sourceSnippets[fields[1]] = ApiWatchdogSourceSnippet(startLine, fields[3])
                 }
                 else -> error("Unknown API Watchdog report entry in $file:${index + 1}")
             }
@@ -120,6 +176,7 @@ public object ApiWatchdogReportData {
             projectDirectory = requireNotNull(projectDirectory) { "No directory entry in $file" },
             applied = applied,
             notApplied = notApplied,
+            sourceSnippets = sourceSnippets,
         )
     }
 
@@ -155,97 +212,6 @@ public object ApiWatchdogReportData {
                 append(character)
             }
             index++
-        }
-    }
-}
-
-@InternalWatchdogApi
-public object ApiWatchdogHtmlReport {
-    public fun write(
-        reports: List<ApiWatchdogProjectReport>,
-        output: File,
-        aggregate: Boolean,
-    ) {
-        val sortedReports = reports.sortedBy { it.projectPath }
-        val applied = sortedReports.flatMap { report -> report.applied.map { report.projectPath to it } }
-        val notApplied = sortedReports.flatMap { report -> report.notApplied.map { report.projectPath to it } }
-        output.parentFile.mkdirs()
-        output.writeText(buildString {
-            appendLine("<!doctype html>")
-            appendLine("<html lang=\"en\"><head><meta charset=\"utf-8\">")
-            appendLine("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">")
-            appendLine("<title>API Watchdog report</title>")
-            appendLine("""
-                <style>
-                :root{color-scheme:light dark;font-family:system-ui,sans-serif}body{max-width:1100px;margin:0 auto;padding:2rem}
-                h1{margin-bottom:.25rem}.summary{display:flex;gap:1rem;margin:1.5rem 0}.count{border:1px solid #8885;border-radius:.6rem;padding:.8rem 1rem}
-                details{border:1px solid #8885;border-radius:.6rem;margin:.7rem 0;padding:.7rem 1rem}summary{cursor:pointer;font-weight:650}
-                table{border-collapse:collapse;width:100%;margin-top:.8rem}th,td{text-align:left;vertical-align:top;padding:.45rem;border-top:1px solid #8884}
-                code{overflow-wrap:anywhere}.muted{opacity:.72}.empty{border:1px dashed #8888;border-radius:.6rem;padding:1rem}
-                </style>
-            """.trimIndent())
-            appendLine("</head><body>")
-            appendLine("<h1>API Watchdog report</h1>")
-            val scope = if (aggregate) {
-                "Aggregate report for ${sortedReports.size} project(s)"
-            } else {
-                "Project ${sortedReports.singleOrNull()?.projectPath.orEmpty()}"
-            }
-            appendLine("<p class=\"muted\">${scope.escapeHtml()}</p>")
-            appendLine("<div class=\"summary\"><div class=\"count\"><strong>${applied.size}</strong><br>Applied</div>")
-            appendLine("<div class=\"count\"><strong>${notApplied.size}</strong><br>Not applied</div></div>")
-            appendLine("<h2>Applied annotations</h2>")
-            if (applied.isEmpty()) {
-                appendLine("<p class=\"empty\">No Watchdog @Intentionally* annotations found.</p>")
-            } else {
-                applied.groupBy { it.second.annotation }.toSortedMap().forEach { (annotation, entries) ->
-                    appendLine("<details open><summary>@${annotation.escapeHtml()} (${entries.size})</summary>")
-                    appendLine("<table><thead><tr>${projectHeader(aggregate)}<th>Location</th></tr></thead><tbody>")
-                    entries.sortedWith(compareBy({ it.first }, { it.second.location })).forEach { (project, entry) ->
-                        appendLine("<tr>${projectCell(project, aggregate)}<td><code>${entry.location.escapeHtml()}</code></td></tr>")
-                    }
-                    appendLine("</tbody></table></details>")
-                }
-            }
-            appendLine("<h2>Not applied</h2>")
-            if (notApplied.isEmpty()) {
-                appendLine("<p class=\"empty\">Every recorded diagnostic was acknowledged automatically.</p>")
-            } else {
-                notApplied.groupBy { it.second.annotation }.toSortedMap(nullsFirst()).forEach { (annotation, entries) ->
-                    val group = annotation?.let { "@$it" } ?: "No automatic annotation"
-                    appendLine("<details open><summary>${group.escapeHtml()} (${entries.size})</summary>")
-                    appendLine("<table><thead><tr>${projectHeader(aggregate)}<th>Diagnostic</th><th>Location</th><th>Reason</th></tr></thead><tbody>")
-                    entries.sortedWith(compareBy({ it.first }, { it.second.location }, { it.second.diagnostic }))
-                        .forEach { (project, entry) ->
-                            appendLine(
-                                "<tr>${projectCell(project, aggregate)}<td><code>${entry.diagnostic.escapeHtml()}</code></td>" +
-                                        "<td><code>${entry.location.escapeHtml()}</code></td><td>${entry.reason.escapeHtml()}</td></tr>"
-                            )
-                        }
-                    appendLine("</tbody></table></details>")
-                }
-            }
-            appendLine("</body></html>")
-        })
-    }
-
-    private fun projectHeader(aggregate: Boolean): String = if (aggregate) "<th>Project</th>" else ""
-
-    private fun projectCell(project: String, aggregate: Boolean): String =
-        if (aggregate) "<td><code>${project.escapeHtml()}</code></td>" else ""
-
-    private fun String.escapeHtml(): String = buildString(length) {
-        for (character in this@escapeHtml) {
-            append(
-                when (character) {
-                    '&' -> "&amp;"
-                    '<' -> "&lt;"
-                    '>' -> "&gt;"
-                    '"' -> "&quot;"
-                    '\'' -> "&#39;"
-                    else -> character
-                }
-            )
         }
     }
 }

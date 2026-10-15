@@ -1,0 +1,139 @@
+:root {
+    color-scheme: light;
+    font-family: system-ui, sans-serif;
+    color: #27282c;
+    background: #fff;
+    line-height: 1.5;
+}
+
+body {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 32px 24px;
+}
+[hidden] { display: none !important; }
+
+h1 { margin: 0; font-size: 28px; font-weight: 600; }
+h2 { margin: 32px 0 12px; padding-bottom: 8px; border-bottom: 1px solid #dfe1e5; font-size: 21px; font-weight: 600; }
+p { margin: 6px 0; }
+a { color: #7044c1; text-underline-offset: 3px; }
+a:hover { color: #512da8; }
+a:focus-visible, summary:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid #7f52ff; outline-offset: 3px; }
+.scope, .project, .source-unavailable, .empty, footer { color: #65676e; }
+.scope { margin-top: 4px; }
+.totals { display: flex; flex-wrap: wrap; gap: 4px 24px; margin: 20px 0; padding: 0; list-style: none; }
+.report-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin: 24px 0; }
+.report-controls label { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; }
+select, button { padding: 5px 8px; border: 1px solid #c7c9cf; border-radius: 2px; background: #fff; color: #27282c; font: inherit; }
+select { min-width: 0; max-width: 100%; }
+button { font-size: 13px; cursor: pointer; }
+button:disabled { color: #74777e; cursor: default; }
+#filter-summary { font-size: 13px; color: #65676e; }
+details { margin: 12px 0; border-bottom: 1px solid #e8e8ec; }
+summary { padding: 8px 0; cursor: pointer; font-weight: 600; overflow-wrap: anywhere; }
+.group-title { margin-right: 12px; }
+.group-title a { color: inherit; text-decoration: none; }
+.group-title a:hover { text-decoration: underline; }
+.group-annotation { margin-right: 8px; color: #65676e; font-weight: 400; font-size: 12px; }
+.group-count { color: #65676e; font-size: 12px; font-weight: 400; }
+.finding-heading { margin-bottom: 8px; font-weight: 600; overflow-wrap: anywhere; }
+.report-section[data-view="diagnostic"] .finding-heading { display: none; }
+.tree-children { margin: 0; padding-left: 20px; list-style: none; border-left: 1px solid #e8e8ec; }
+.directory-tree > .tree-children { padding-left: 0; border: 0; }
+.tree-branch { border: 0; margin: 0; }
+.tree-branch > summary { padding: 5px 0; font-weight: 400; }
+.tree-name { font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace; font-size: 13px; }
+.tree-file > summary { font-weight: 600; }
+.filter-empty { color: #65676e; }
+.findings { margin: 0; padding: 0 0 0 20px; list-style: none; }
+.finding { padding: 12px 0 20px; }
+.finding + .finding { border-top: 1px solid #e8e8ec; }
+.project { font-size: 13px; }
+.location { overflow-wrap: anywhere; }
+.check { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.severity { font-size: 13px; font-weight: 600; }
+.error { color: #b3261e; }
+.warning { color: #806000; }
+.fix-status { padding: 1px 6px; border: 1px solid #dfe1e5; font-size: 12px; color: #65676e; }
+.fix-status.applied { color: #28613b; background: #edf7ef; border-color: #b9d8c2; }
+.fix-status.not-fixed { color: #315783; background: #eef3fb; border-color: #c0cee3; }
+.fix-status.unfixable { color: #914731; background: #fcf0ea; border-color: #e5c5b7; }
+.diagnostic-message { margin: 8px 0; border: 0; overflow-wrap: anywhere; }
+.diagnostic-message > summary { padding: 0; font-size: 13px; font-weight: 400; color: #65676e; }
+.diagnostic-message[open] > summary { margin-bottom: 8px; }
+.diagnostic-message p + p { margin-top: 12px; }
+.diagnostic-message :not(pre) > code { background: #f1f2f4; padding: 1px 3px; }
+.reason { white-space: pre-line; }
+.source-unavailable { font-size: 13px; }
+code, pre { font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace; font-size: 13px; }
+pre {
+    position: relative;
+    margin: 12px 0 0;
+    padding: 12px 16px;
+    overflow: auto;
+    border: 1px solid #dfe1e5;
+    background: #f7f8fa;
+    line-height: 1.65;
+    tab-size: 4;
+    white-space: pre;
+}
+pre > code { display: block; position: relative; white-space: inherit; }
+.token.comment, .token.prolog, .token.doctype { color: #73767d; }
+.token.keyword, .token.boolean { color: #0033b3; }
+.token.string, .token.char { color: #067d17; }
+.token.number { color: #1750eb; }
+.token.annotation, .token.annotation .punctuation { color: #8c6500; }
+.token.function { color: #00627a; }
+.token.operator, .token.punctuation { color: #393b40; }
+.token.interpolation { color: #27282c; }
+.reported-element {
+    text-decoration-line: underline;
+    text-decoration-style: wavy;
+    text-decoration-skip-ink: none;
+    text-underline-offset: 3px;
+}
+.reported-error { text-decoration-color: #b3261e; background: #b3261e0d; }
+.reported-warning { text-decoration-color: #9a6700; text-decoration-thickness: 1px; background: #fff0b3; }
+
+/* PrismJS line-numbers and line-highlight layout (MIT). */
+pre.line-numbers { padding-left: 4.5em; counter-reset: linenumber; }
+.line-numbers-rows {
+    position: absolute;
+    pointer-events: none;
+    top: 0;
+    left: -4.5em;
+    width: 3.5em;
+    border-right: 1px solid #dfe1e5;
+    user-select: none;
+}
+.line-numbers-rows > span { display: block; counter-increment: linenumber; }
+.line-numbers-rows > span::before { content: counter(linenumber); display: block; padding-right: .8em; color: #74777e; text-align: right; }
+.line-highlight {
+    box-sizing: border-box;
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-top: 12px;
+    background: #7f52ff0d;
+    border-left: 2px solid #7f52ff;
+    pointer-events: none;
+    line-height: inherit;
+    white-space: pre;
+}
+pre[data-severity="error"] .line-highlight { background: #b3261e08; border-left-color: #b3261e; }
+pre[data-severity="warning"] .line-highlight { background: #ffc1070a; border-left-color: #9a6700; }
+
+footer { margin-top: 32px; padding-top: 12px; border-top: 1px solid #dfe1e5; font-size: 12px; }
+@media (max-width: 600px) {
+    body { padding: 20px 12px; }
+    .findings { padding-left: 8px; }
+    .tree-children { padding-left: 12px; }
+    .report-controls label { max-width: 100%; }
+}
+@media print {
+    body { max-width: none; padding: 0; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+    .line-highlight { print-color-adjust: exact; }
+    .report-controls { display: none; }
+    .fix-status { print-color-adjust: exact; }
+}

@@ -142,16 +142,19 @@ internal class FixerResponse(
 
         fun parse(lines: Map<String, List<String>>): FixerResponse = FixerResponse(
             fixed = lines["fixed"].orEmpty().map { value ->
-                val (diagnostic, annotation, line, path) = value.split('\t', limit = 4)
-                FixedDiagnostic(diagnostic, annotation.ifEmpty { null }, line, path)
+                val fields = value.split('\t').map { it.unescapeFixerNewlines() }
+                val (diagnostic, annotation, line, path) = fields
+                FixedDiagnostic(diagnostic, annotation.ifEmpty { null }, line, path, fields.drop(8), fields.sourceRange(4))
             },
             skipped = lines["skipped"].orEmpty().map { value ->
-                val (diagnostic, annotation, line, path, reason) = value.split('\t', limit = 5)
-                SkippedDiagnostic(diagnostic, annotation.ifEmpty { null }, line, path, reason.unescapeFixerNewlines())
+                val fields = value.split('\t').map { it.unescapeFixerNewlines() }
+                val (diagnostic, annotation, line, path, reason) = fields
+                SkippedDiagnostic(diagnostic, annotation.ifEmpty { null }, line, path, reason, fields.drop(9), fields.sourceRange(5))
             },
             warnings = lines["warning"].orEmpty().map { value ->
-                val (diagnostic, annotation, line, path) = value.split('\t', limit = 4)
-                WarningDiagnostic(diagnostic, annotation.ifEmpty { null }, line, path)
+                val fields = value.split('\t').map { it.unescapeFixerNewlines() }
+                val (diagnostic, annotation, line, path) = fields
+                WarningDiagnostic(diagnostic, annotation.ifEmpty { null }, line, path, fields.drop(8), fields.sourceRange(4))
             },
             exemptions = lines["exemption"].orEmpty().map { value ->
                 val (annotation, line, path) = value.split('\t', limit = 3)
@@ -162,9 +165,15 @@ internal class FixerResponse(
     }
 }
 
+private fun List<String>.sourceRange(start: Int): ApiWatchdogSourceRange? =
+    if (getOrNull(start).isNullOrEmpty()) null else {
+        ApiWatchdogSourceRange(this[start].toInt(), this[start + 1].toInt(), this[start + 2].toInt(), this[start + 3].toInt())
+    }
+
 internal interface FixerLocation {
     val line: String
     val path: String
+    val sourceRange: ApiWatchdogSourceRange? get() = null
 }
 
 internal fun FixerLocation.location(projectDirectory: File): String =
@@ -176,6 +185,8 @@ internal class FixedDiagnostic(
     val annotation: String?,
     override val line: String,
     override val path: String,
+    val messageParameters: List<String>,
+    override val sourceRange: ApiWatchdogSourceRange?,
 ) : FixerLocation
 
 /** [annotation] is the exemption of the diagnostic, or null when none exists. */
@@ -185,6 +196,8 @@ internal class SkippedDiagnostic(
     override val line: String,
     override val path: String,
     val reason: String,
+    val messageParameters: List<String>,
+    override val sourceRange: ApiWatchdogSourceRange?,
 ) : FixerLocation
 
 internal class WarningDiagnostic(
@@ -192,6 +205,8 @@ internal class WarningDiagnostic(
     val annotation: String?,
     override val line: String,
     override val path: String,
+    val messageParameters: List<String>,
+    override val sourceRange: ApiWatchdogSourceRange?,
 ) : FixerLocation
 
 internal class AppliedExemption(
@@ -208,6 +223,7 @@ internal fun String.unescapeFixerNewlines(): String {
         if (character == '\\' && index + 1 < length) {
             index++
             when (this[index]) {
+                't' -> result.append('\t')
                 'n' -> result.append('\n')
                 'r' -> result.append('\r')
                 else -> result.append(this[index])

@@ -87,10 +87,12 @@ class ExemptExistingApiTest {
         // The report lists the exemptions the task has just applied.
         val report = project.report().readText()
         assertContains(report, "Applied annotations")
-        assertContains(report, "@IntentionallyDataClass (1)")
-        assertContains(report, "@IntentionallyOpen (3)")
+        assertReportGroup(report, "IntentionallyDataClass", 1)
+        assertReportGroup(report, "IntentionallyOpen", 3)
         assertContains(report, "legacy.kt:")
-        assertContains(report, "Every recorded diagnostic was acknowledged automatically.")
+        assertContains(report, "No diagnostics without an exemption.")
+        assertContains(report, "class=\"language-kotlin\"")
+        assertContains(report, "public open class")
 
         project.build("build").assertNoWatchdogDiagnostics()
     }
@@ -139,16 +141,28 @@ class ExemptExistingApiTest {
         assertEquals(original, sourceFile.readText())
         val report = project.report().readText()
         assertContains(report, "Applied annotations")
-        assertContains(report, "@IntentionallyOpen (1)")
-        assertContains(report, "@IntentionallyUndocumented (1)")
-        assertContains(report, "@IntentionallyWithoutEqualsHashCodeOrToString (1)")
+        assertReportGroup(report, "IntentionallyOpen", 1)
+        assertReportGroup(report, "IntentionallyUndocumented", 1)
+        assertReportGroup(report, "IntentionallyWithoutEqualsHashCodeOrToString", 1)
         assertContains(report, "existingApi.kt:")
     }
 
     @Test
     fun `report shows applicable annotations and leaves sources unchanged`() {
         val project = jvmProject {
-            source("/** A legacy open API. */\npublic open class LegacyApi", "legacyApi")
+            source(
+                """
+                    /** A legacy open API. */
+                    @Suppress(
+                        "unused",
+                        "DEPRECATION",
+                        "UNCHECKED_CAST",
+                        "NOTHING_TO_INLINE",
+                    )
+                    public open class LegacyApi
+                """.trimIndent(),
+                "legacyApi",
+            )
         }
         val sourceFile = project.mainSource("legacyApi")
         val original = sourceFile.readText()
@@ -158,8 +172,16 @@ class ExemptExistingApiTest {
         assertEquals(original, sourceFile.readText())
         val report = project.report().readText()
         assertContains(report, "Not applied")
-        assertContains(report, "@IntentionallyOpen (1)")
+        assertReportGroup(report, "IntentionallyOpen", 1, Diagnostic.OPEN_API_WITHOUT_SUBCLASS_OPT_IN)
+        assertContains(report, "class=\"fix-status not-fixed\">Wasn't auto-fixed</span>")
         assertContains(report, "exemptExistingApi can apply it.")
+        assertContains(report, "<code class=\"language-kotlin\">")
+        assertContains(report, "public open class LegacyApi")
+        assertContains(report, "data-line=\"")
+        assertContains(report, "The class <code>LegacyApi</code> can be subclassed outside the library.")
+        assertContains(report, "Apply <code>@SubclassOptInRequired</code>")
+        assertContains(report, "<details class=\"diagnostic-message\"><summary>Diagnostic message</summary>")
+        assertReportedElement(report, "LegacyApi", "error")
     }
 
     @Test
@@ -175,9 +197,12 @@ class ExemptExistingApiTest {
 
         assertEquals(original, sourceFile.readText())
         val report = project.report().readText()
-        assertContains(report, "No automatic annotation (1)")
+        assertReportGroup(report, "IntentionallyUndocumented", 1, Diagnostic.UNDOCUMENTED_PUBLIC_API)
+        assertContains(report, "class=\"fix-status not-fixed\">Wasn't auto-fixed</span>")
+        assertFalse(report.contains("No automatic annotation"))
         assertContains(report, "UNDOCUMENTED_PUBLIC_API")
         assertContains(report, "exemptExistingApi can add a placeholder KDoc.")
+        assertContains(report, "The public class <code>Undocumented</code> has no <code>KDoc</code>.")
     }
 
     @Test
@@ -227,7 +252,7 @@ class ExemptExistingApiTest {
         sarifOff.build(EXEMPT_TASK).assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
 
         assertFalse(sarifOff.file("build/reports/api-watchdog/report.sarif").exists(), "SARIF report is off")
-        assertContains(sarifOff.report().readText(), "@IntentionallyOpen (1)")
+        assertReportGroup(sarifOff.report().readText(), "IntentionallyOpen", 1)
     }
 
     @Test
@@ -263,8 +288,10 @@ class ExemptExistingApiTest {
         assertEquals(original, sourceFile.readText())
         val report = project.report().readText()
         assertContains(report, "Not applied")
-        assertContains(report, "@IntentionallyOpen (1)")
+        assertReportGroup(report, "IntentionallyOpen", 1, Diagnostic.OPEN_API_WITHOUT_SUBCLASS_OPT_IN)
+        assertContains(report, "class=\"fix-status not-fixed\">Wasn't auto-fixed</span>")
         assertContains(report, "exemptExistingApi exempts errors only.")
+        assertReportedElement(report, "WarningOnly", "warning")
     }
 
     @Test
@@ -277,6 +304,7 @@ class ExemptExistingApiTest {
         assertFalse(fixedText.contains(PLACEHOLDER_KDOC))
         assertContains(fixedText, "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)")
         assertContains(project.report().readText(), "exemptExistingApi exempts errors only.")
+        assertContains(project.report().readText(), "class=\"fix-status not-fixed\">Wasn't auto-fixed</span>")
     }
 
     @Test
@@ -318,8 +346,9 @@ class ExemptExistingApiTest {
         project.build(REPORT_TASK).assertTaskOutcome(":$REPORT_TASK", SUCCESS)
         val report = project.report().readText()
         assertContains(report, "Not applied")
-        assertContains(report, "No automatic annotation")
-        assertContains(report, "DSL_MARKER_NOOP_TYPE_POSITION")
+        assertReportGroup(report, null, 1, Diagnostic.DSL_MARKER_NOOP_TYPE_POSITION)
+        assertContains(report, "class=\"fix-status unfixable\">Can't be auto-fixed</span>")
+        assertFalse(report.contains("No automatic annotation"))
 
         val result = project.build(EXEMPT_TASK)
 
@@ -431,7 +460,7 @@ class ExemptExistingApiTest {
         result.assertOutputHas("2 backwards-compatibility exemption(s)")
         project.assertExempted("src/main/kotlin/test/androidApi.kt", "AndroidApi")
         project.assertExempted("src/debug/kotlin/test/debugOnlyApi.kt", "DebugOnlyApi")
-        assertContains(project.report().readText(), "@IntentionallyOpen (2)")
+        assertReportGroup(project.report().readText(), "IntentionallyOpen", 2)
 
         project.build("compileDebugKotlin", "compileReleaseKotlin").assertNoWatchdogDiagnostics()
     }
@@ -617,7 +646,7 @@ class ExemptExistingApiTest {
         project.assertExempted("src/staging/kotlin/test/stagingApi.kt", "StagingApi")
         project.assertExempted("src/paidRelease/kotlin/test/paidReleaseApi.kt", "PaidReleaseApi")
         assertEquals(testTexts, testFiles.map { it.readText() })
-        assertContains(project.report().readText(), "@IntentionallyOpen (4)")
+        assertReportGroup(project.report().readText(), "IntentionallyOpen", 4)
 
         project.build("compileFreeStagingKotlin", "compilePaidReleaseKotlin").assertNoWatchdogDiagnostics()
     }

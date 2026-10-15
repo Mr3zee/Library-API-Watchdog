@@ -5,15 +5,18 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 /**
- * The first four tab-separated fields of a `diagnosticsOutputFile` line of the compiler plugin:
- * the diagnostic name, the absolute file path, the start offset, and the end offset of the
- * source element. The fixer ignores the fields after them.
+ * A recorded compiler diagnostic. The first four fields identify the source element. Fields five
+ * and six hold the reported range. The remaining fields hold message parameters with escaped
+ * tabs, newlines, and backslashes.
  */
 internal data class RecordedDiagnostic(
     val name: String,
     val filePath: String,
     val startOffset: Int,
     val endOffset: Int,
+    val messageParameters: List<String> = emptyList(),
+    val reportedStartOffset: Int? = null,
+    val reportedEndOffset: Int? = null,
 ) {
     companion object {
         /** A multiplatform build reports a common source file for each target, so the result has no duplicates. */
@@ -25,9 +28,13 @@ internal data class RecordedDiagnostic(
             .map { line ->
                 val parts = line.split('\t')
                 require(parts.size >= 4) { "Malformed diagnostics report line: '$line'" }
-                RecordedDiagnostic(parts[0], parts[1], parts[2].toInt(), parts[3].toInt())
+                RecordedDiagnostic(
+                    parts[0], parts[1], parts[2].toInt(), parts[3].toInt(),
+                    parts.drop(6).map { it.unescapeField() },
+                    parts.getOrNull(4)?.toInt(), parts.getOrNull(5)?.toInt(),
+                )
             }
-            .distinct()
+            .distinctBy { it.copy(messageParameters = emptyList()) }
             .toList()
     }
 }
@@ -87,6 +94,8 @@ internal data class AppliedFix(
     val annotation: String?,
     val filePath: String,
     val line: Int,
+    val messageParameters: List<String> = emptyList(),
+    val sourceRange: DiagnosticSourceRange? = null,
 )
 
 internal data class SkippedDiagnostic(
@@ -94,6 +103,8 @@ internal data class SkippedDiagnostic(
     val filePath: String,
     val line: Int,
     val reason: String,
+    val messageParameters: List<String> = emptyList(),
+    val sourceRange: DiagnosticSourceRange? = null,
 )
 
 /** The fixer leaves them untouched. */
@@ -101,6 +112,15 @@ internal data class WarningDiagnostic(
     val diagnostic: String,
     val filePath: String,
     val line: Int,
+    val messageParameters: List<String> = emptyList(),
+    val sourceRange: DiagnosticSourceRange? = null,
+)
+
+internal data class DiagnosticSourceRange(
+    val startLine: Int,
+    val startColumn: Int,
+    val endLine: Int,
+    val endColumn: Int,
 )
 
 internal data class AppliedExemption(
@@ -122,18 +142,21 @@ internal class FixerResponse {
         file.parent?.let { Files.createDirectories(it) }
         Files.writeString(file, buildString {
             applied.forEach {
-                appendLine("$FIXED=${it.diagnostic}\t${it.annotation.orEmpty()}\t${it.line}\t${it.filePath}")
+                appendDiagnostic(
+                    FIXED, listOf(it.diagnostic, it.annotation.orEmpty(), it.line.toString(), it.filePath), it.messageParameters, it.sourceRange,
+                )
             }
             skipped.forEach {
-                // The reason is free text, so the writer escapes its line breaks. Tabs are fine in a last field.
                 val annotation = ExemptionRegistry.annotationFor(it.diagnostic).orEmpty()
-                appendLine(
-                    "$SKIPPED=${it.diagnostic}\t$annotation\t${it.line}\t${it.filePath}\t${it.reason.escapeNewlines()}"
+                appendDiagnostic(
+                    SKIPPED, listOf(it.diagnostic, annotation, it.line.toString(), it.filePath, it.reason), it.messageParameters, it.sourceRange,
                 )
             }
             warnings.forEach {
                 val annotation = ExemptionRegistry.annotationFor(it.diagnostic).orEmpty()
-                appendLine("$WARNING=${it.diagnostic}\t$annotation\t${it.line}\t${it.filePath}")
+                appendDiagnostic(
+                    WARNING, listOf(it.diagnostic, annotation, it.line.toString(), it.filePath), it.messageParameters, it.sourceRange,
+                )
             }
             exemptions.forEach {
                 appendLine("$EXEMPTION=${it.annotation}\t${it.line}\t${it.filePath}")
@@ -143,10 +166,23 @@ internal class FixerResponse {
         })
     }
 
+    private fun StringBuilder.appendDiagnostic(
+        kind: String,
+        fields: List<String>,
+        parameters: List<String>,
+        sourceRange: DiagnosticSourceRange?,
+    ) {
+        append(kind).append('=')
+        val range = listOf(sourceRange?.startLine, sourceRange?.startColumn, sourceRange?.endLine, sourceRange?.endColumn)
+        appendLine((fields + range.map { it?.toString().orEmpty() } + parameters).joinToString("\t") { it.escapeField() })
+    }
+
     private fun String.escapeNewlines() =
         replace("\\", "\\\\")
         .replace("\n", "\\n")
         .replace("\r", "\\r")
+
+    private fun String.escapeField() = escapeNewlines().replace("\t", "\\t")
 
     companion object {
         const val FIXED = "fixed"
@@ -155,5 +191,24 @@ internal class FixerResponse {
         const val EXEMPTION = "exemption"
         const val MODIFIED_FILE = "modifiedFile"
         const val ERROR = "error"
+    }
+}
+
+private fun String.unescapeField(): String = buildString {
+    var index = 0
+    while (index < this@unescapeField.length) {
+        val character = this@unescapeField[index++]
+        if (character == '\\' && index < this@unescapeField.length) {
+            append(
+                when (val escaped = this@unescapeField[index++]) {
+                    't' -> '\t'
+                    'n' -> '\n'
+                    'r' -> '\r'
+                    else -> escaped
+                }
+            )
+        } else {
+            append(character)
+        }
     }
 }

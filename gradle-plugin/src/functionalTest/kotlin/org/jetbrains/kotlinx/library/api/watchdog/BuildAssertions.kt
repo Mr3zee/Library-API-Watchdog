@@ -90,6 +90,34 @@ fun BuildResult.assertTaskOutcome(path: String, outcome: TaskOutcome?) {
     assertEquals(outcome, task(path)?.outcome, "Unexpected outcome of $path:\n$output")
 }
 
+fun assertReportedElement(html: String, text: String, severity: String) {
+    val snippets = Regex(
+        """<pre[^>]*data-severity="$severity" data-range-start="(\d+)" data-range-end="(\d+)"><code class="language-kotlin">(.*?)</code>""",
+        RegexOption.DOT_MATCHES_ALL,
+    ).findAll(html)
+    val highlighted = snippets.map { match ->
+        val (start, end, encoded) = match.destructured
+        val code = encoded.replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"")
+            .replace("&#39;", "'").replace("&amp;", "&")
+        code.substring(start.toInt(), end.toInt())
+    }.toList()
+    assertTrue(text in highlighted, "Expected $severity highlight on '$text', found $highlighted")
+}
+
+fun assertReportGroup(html: String, annotation: String?, count: Int, diagnostic: Diagnostic? = null) {
+    val pattern = Regex(
+        """<details class="diagnostic-group"[^>]*data-annotation="${Regex.escape(annotation.orEmpty())}"[^>]*><summary>(.*?)</summary>""",
+        RegexOption.DOT_MATCHES_ALL,
+    )
+    val headers = pattern.findAll(html).map { it.groupValues[1] }.toList()
+    assertTrue(
+        headers.any { header ->
+            "class=\"group-count\">($count)</span>" in header && (diagnostic == null || diagnostic.title in header)
+        },
+        "Expected a report group for $annotation with $count entries and diagnostic $diagnostic. Found $headers",
+    )
+}
+
 private fun BuildResult.assertReported(severityPrefix: String, diagnostic: Diagnostic) {
     assertTrue(
         output.lineSequence().any { it.hasSeverity(severityPrefix) && diagnostic.pattern.containsMatchIn(it) },

@@ -1,6 +1,7 @@
 package org.jetbrains.kotlinx.library.api.watchdog
 
 import java.io.File
+import java.io.IOException
 import org.gradle.api.logging.Logger
 
 internal object ProjectReportWriter {
@@ -43,6 +44,9 @@ internal object ProjectReportWriter {
                         "exemptExistingApi can apply it."
                     },
                     severity = severityOf(fix.diagnostic),
+                    messageParameters = fix.messageParameters,
+                    sourceRange = fix.sourceRange,
+                    autoFixAvailable = true,
                 )
             }
         }
@@ -53,6 +57,8 @@ internal object ProjectReportWriter {
                 location = skip.location(projectDirectory),
                 reason = skip.reason,
                 severity = severityOf(skip.diagnostic),
+                messageParameters = skip.messageParameters,
+                sourceRange = skip.sourceRange,
             )
         }
         val warnings = response.warnings.map { warning ->
@@ -62,6 +68,9 @@ internal object ProjectReportWriter {
                 location = warning.location(projectDirectory),
                 reason = WARNING_REASON,
                 severity = severityOf(warning.diagnostic),
+                messageParameters = warning.messageParameters,
+                sourceRange = warning.sourceRange,
+                autoFixAvailable = warning.annotation != null || warning.diagnostic == "UNDOCUMENTED_PUBLIC_API",
             )
         }
         val report = ApiWatchdogProjectReport(
@@ -73,15 +82,53 @@ internal object ProjectReportWriter {
                 addAll(skipped)
                 addAll(warnings)
             },
+            sourceSnippets = sourceSnippets(response, projectDirectory),
         )
         ApiWatchdogReportData.write(report, reportDataFile)
         if (htmlFile != null) {
             ApiWatchdogHtmlReport.write(listOf(report), htmlFile, aggregate = false)
-            logger.lifecycle("API Watchdog report: $htmlFile")
+            logger.lifecycle("API Watchdog report: ${htmlFile.toPath().toUri()}")
         }
         if (sarifFile != null) {
             ApiWatchdogSarifReport.write(listOf(report), sarifFile)
-            logger.lifecycle("API Watchdog SARIF report: $sarifFile")
+            logger.lifecycle("API Watchdog SARIF report: ${sarifFile.toPath().toUri()}")
+        }
+    }
+
+    private fun sourceSnippets(
+        response: FixerResponse,
+        projectDirectory: File,
+    ): Map<String, ApiWatchdogSourceSnippet> {
+        val sources = mutableMapOf<String, List<String>>()
+        val locations = buildList {
+            addAll(response.exemptions)
+            addAll(response.fixed)
+            addAll(response.skipped)
+            addAll(response.warnings)
+        }
+        return buildMap {
+            locations.groupBy { it.location(projectDirectory) }.forEach { (key, entries) ->
+                val location = entries.first()
+                val line = location.line.toIntOrNull() ?: return@forEach
+                val lines = sources.getOrPut(location.path) {
+                    try {
+                        File(location.path).readLines()
+                    } catch (_: IOException) {
+                        emptyList()
+                    }
+                }
+                if (line !in 1..lines.size) return@forEach
+                val firstLine = entries.minOf { it.sourceRange?.startLine ?: line }
+                val lastLine = entries.maxOf { entry ->
+                    entry.sourceRange?.let { it.endLine - if (it.endColumn == 1) 1 else 0 } ?: line
+                }
+                val start = (firstLine - 4).coerceIn(0, lines.lastIndex)
+                val end = (lastLine + 3).coerceIn(start + 1, lines.size)
+                put(
+                    key,
+                    ApiWatchdogSourceSnippet(start + 1, lines.subList(start, end).joinToString("\n")),
+                )
+            }
         }
     }
 }

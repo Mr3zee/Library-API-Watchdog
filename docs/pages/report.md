@@ -19,7 +19,7 @@ collection mode, except test compilations:
 - A custom compilation whose name doesn't end with `Test`, only with the `-Xexplicit-api` compiler
   flag.
 
-A declaration that two compilations report gets one row.
+A declaration that two compilations report gets one entry.
 [Collection mode](./existing-libs.md#collection-mode) lists what collection mode changes.
 
 ## Formats
@@ -34,10 +34,10 @@ Each task writes the report in two formats. Both are on by default:
 The HTML page has two sections:
 
 - **Applied annotations**: every Watchdog `@Intentionally*` annotation in the Kotlin sources of those
-  compilations, grouped by annotation.
-- **Not applied**: the diagnostics without an annotation, grouped by the annotation they need, or
-  under **No automatic annotation** when no such annotation exists. Each row gives the reason the
-  task didn't apply the annotation.
+  compilations.
+- **Not applied**: the diagnostics without an annotation.
+  Each entry gives the severity, a link to the check page, the diagnostic message, and the reason
+  the task didn't apply a fix. A tag marks each entry as **Wasn't auto-fixed** or **Can't be auto-fixed**.
 
 The SARIF file follows [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html).
 It holds the **Not applied** diagnostics only:
@@ -100,8 +100,7 @@ Then run:
 
 The task runs `generateApiWatchdogReport` in each declared subproject with the Watchdog and combines
 the results into `build/reports/api-watchdog/aggregate-report.html` and `aggregate-report.sarif`
-in the root project. The header of the HTML report counts the subprojects. Each row names its
-subproject.
+in the root project.
 
 The `reports` block of the task selects the aggregate formats:
 

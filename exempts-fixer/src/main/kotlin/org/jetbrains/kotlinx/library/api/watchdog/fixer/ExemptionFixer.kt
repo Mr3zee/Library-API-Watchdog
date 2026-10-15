@@ -54,16 +54,17 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
         val warnings = mutableListOf<PlannedWarning>()
         val plannedFixes = mutableMapOf<FixTarget, MutableMap<String, PlannedFix>>()
 
-        for ((name, _, recordedStartOffset) in diagnostics.sortedWith(compareBy({ it.startOffset }, { it.name }))) {
-            val sourceOffset = recordedStartOffset.coerceAtLeast(0)
+        for (diagnostic in diagnostics.sortedWith(compareBy({ it.startOffset }, { it.name }))) {
+            val name = diagnostic.name
+            val sourceOffset = diagnostic.startOffset.coerceAtLeast(0)
             val startOffset = mapping.toNormalizedOffset(sourceOffset)
 
             fun skip(reason: String) {
-                skipped += PlannedSkip(name, sourceOffset, reason)
+                skipped += PlannedSkip(diagnostic, sourceOffset, reason)
             }
 
             if (!fixes(name)) {
-                warnings += PlannedWarning(name, sourceOffset)
+                warnings += PlannedWarning(diagnostic, sourceOffset)
                 continue
             }
 
@@ -95,7 +96,7 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
 
             plannedFixes.getOrPut(target) { mutableMapOf() }
                 .getOrPut(fix.id) { PlannedFix(fix) }
-                .reports.getOrPut(name) { sourceOffset }
+                .reports.getOrPut(name) { diagnostic }
         }
         plannedFixes.values.forEach { it.collapseCombinedExemptions() }
 
@@ -135,12 +136,14 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
         return FileFixResult(
             newText = newText,
             applied = applied.flatMap { planned ->
-                planned.reports.map { (diagnostic, sourceOffset) ->
+                planned.reports.values.map { recorded ->
                     AppliedFix(
-                        diagnostic,
+                        recorded.name,
                         (planned.fix as? ExemptionFix)?.annotationShortName,
                         filePath,
-                        locations.lineAt(sourceOffset),
+                        locations.lineAt(recorded.startOffset),
+                        recorded.messageParameters,
+                        locations.rangeOf(recorded),
                     )
                 }
             },
@@ -152,8 +155,7 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
 }
 
 private class PlannedFix(val fix: Fix) {
-    /** The first recorded offset of each diagnostic name. */
-    val reports: MutableMap<String, Int> = linkedMapOf()
+    val reports: MutableMap<String, RecordedDiagnostic> = linkedMapOf()
 }
 
 private fun Fix.describe(): String = when (this) {
@@ -169,21 +171,25 @@ private fun MutableMap<String, PlannedFix>.collapseCombinedExemptions() {
             ExemptionFix(combined, individual.first().fix.targetStrategy, hasReasonParameter = true)
         )
         individual.forEach { planned ->
-            planned.reports.forEach { (diagnostic, offset) -> merged.reports.getOrPut(diagnostic) { offset } }
+            planned.reports.forEach { (name, diagnostic) -> merged.reports.getOrPut(name) { diagnostic } }
         }
         parts.forEach { remove(it) }
         put(combined, merged)
     }
 }
 
-private class PlannedSkip(val diagnostic: String, val sourceOffset: Int, val reason: String) {
+private class PlannedSkip(val diagnostic: RecordedDiagnostic, val sourceOffset: Int, val reason: String) {
     fun toDiagnostic(filePath: String, locations: RewrittenLocations) =
-        SkippedDiagnostic(diagnostic, filePath, locations.lineAt(sourceOffset), reason)
+        SkippedDiagnostic(
+            diagnostic.name, filePath, locations.lineAt(sourceOffset), reason, diagnostic.messageParameters, locations.rangeOf(diagnostic),
+        )
 }
 
-private class PlannedWarning(val diagnostic: String, val sourceOffset: Int) {
+private class PlannedWarning(val diagnostic: RecordedDiagnostic, val sourceOffset: Int) {
     fun toDiagnostic(filePath: String, locations: RewrittenLocations) =
-        WarningDiagnostic(diagnostic, filePath, locations.lineAt(sourceOffset))
+        WarningDiagnostic(
+            diagnostic.name, filePath, locations.lineAt(sourceOffset), diagnostic.messageParameters, locations.rangeOf(diagnostic),
+        )
 }
 
 private class RewrittenLocations(
@@ -194,14 +200,37 @@ private class RewrittenLocations(
     private val rewrittenMapping = LineEndingMapping.of(rewrittenText)
 
     fun lineAt(sourceOffset: Int): Int {
+        val normalizedOffset = normalizedOffsetAt(sourceOffset)
+        return rewrittenMapping.normalizedText.take(normalizedOffset).count { it == '\n' } + 1
+    }
+
+    fun rangeOf(diagnostic: RecordedDiagnostic): DiagnosticSourceRange? {
+        val start = diagnostic.reportedStartOffset ?: return null
+        val end = diagnostic.reportedEndOffset ?: return null
+        if (start < 0 || end <= start || end > originalText.length) return null
+        if (edits.any { it.offset < it.endOffset && it.offset < end && it.endOffset > start }) return null
+        val normalizedStart = normalizedOffsetAt(start)
+        val normalizedEnd = normalizedOffsetAt(end, includeInsertionsAtOffset = false)
+        val text = rewrittenMapping.normalizedText
+        return DiagnosticSourceRange(
+            text.take(normalizedStart).count { it == '\n' } + 1,
+            normalizedStart - text.lastIndexOf('\n', normalizedStart - 1),
+            text.take(normalizedEnd).count { it == '\n' } + 1,
+            normalizedEnd - text.lastIndexOf('\n', normalizedEnd - 1),
+        )
+    }
+
+    private fun normalizedOffsetAt(sourceOffset: Int, includeInsertionsAtOffset: Boolean = true): Int {
         val boundedOffset = sourceOffset.coerceIn(0, originalText.length)
         val rewrittenOffset = boundedOffset + edits.sumOf { edit ->
             // An edit that ends at the offset is in front of the token. An edit that covers the
             // offset replaced the token on the same line, so it doesn't move the line.
-            if (edit.endOffset <= boundedOffset) edit.lengthDelta else 0
+            if (edit.endOffset < boundedOffset || edit.endOffset == boundedOffset &&
+                (includeInsertionsAtOffset || edit.offset < edit.endOffset)
+            ) edit.lengthDelta else 0
         }
-        val normalizedOffset = rewrittenMapping.toNormalizedOffset(rewrittenOffset.coerceAtLeast(0))
-        return rewrittenMapping.normalizedText.take(normalizedOffset).count { it == '\n' } + 1
+        return rewrittenMapping.toNormalizedOffset(rewrittenOffset.coerceAtLeast(0))
+            .coerceAtMost(rewrittenMapping.normalizedText.length)
     }
 }
 

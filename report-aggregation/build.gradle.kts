@@ -14,7 +14,7 @@ plugins {
 
 val generateCheckDescriptions = registerDiagnosticsGenerator<GenerateCheckDescriptions>(
     name = "generateCheckDescriptions",
-    description = "Generates the WatchdogCheckDescriptions table of the SARIF report from diagnostics.json.",
+    description = "Generates the report check descriptions and message templates from diagnostics.json.",
     packageName = "org.jetbrains.kotlinx.library.api.watchdog",
     outputDirectory = "checkDescriptions/main/kotlin",
 ) {
@@ -38,11 +38,16 @@ kotlin {
 }
 
 dependencies {
+    implementation(libs.commonmark)
     testImplementation(kotlin("test-junit5"))
+    testImplementation(libs.jsoup)
 }
 
 tasks.test {
     useJUnitPlatform()
+    val htmlReportFixtures = layout.buildDirectory.dir("html-report-fixtures")
+    systemProperty("htmlReportFixtures", htmlReportFixtures.get().asFile.absolutePath)
+    outputs.dir(htmlReportFixtures)
 }
 
 gradlePlugin {

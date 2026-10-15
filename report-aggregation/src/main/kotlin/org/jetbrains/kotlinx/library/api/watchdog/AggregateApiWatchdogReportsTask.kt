@@ -39,11 +39,11 @@ public abstract class AggregateApiWatchdogReportsTask internal constructor() : D
             .distinctBy { it.projectPath }
         this.reports.htmlOutput.orNull?.asFile?.let { file ->
             ApiWatchdogHtmlReport.write(reports, file, aggregate = true)
-            logger.lifecycle("Aggregate API Watchdog report: $file")
+            logger.lifecycle("Aggregate API Watchdog report: ${file.toPath().toUri()}")
         }
         this.reports.sarifOutput.orNull?.asFile?.let { file ->
             ApiWatchdogSarifReport.write(reports, file)
-            logger.lifecycle("Aggregate API Watchdog SARIF report: $file")
+            logger.lifecycle("Aggregate API Watchdog SARIF report: ${file.toPath().toUri()}")
         }
     }
 }

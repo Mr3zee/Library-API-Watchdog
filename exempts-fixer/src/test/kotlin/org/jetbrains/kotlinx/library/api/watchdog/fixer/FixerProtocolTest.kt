@@ -9,6 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class FixerProtocolTest {
     private val tempDir = Files.createTempDirectory("fixer-protocol-test")
@@ -133,6 +134,21 @@ class FixerProtocolTest {
     }
 
     @Test
+    fun `report decodes message parameters after the reported range`() {
+        val report = file(
+            "parameters.tsv",
+            "UNDOCUMENTED_PUBLIC_API\t/p/A.kt\t10\t20\t12\t18\tfunction\tline\\tone\\nline\\rtwo\\\\tail\t\n",
+        )
+        val diagnostic = RecordedDiagnostic.parseReports(listOf(report)).single()
+        assertEquals(12, diagnostic.reportedStartOffset)
+        assertEquals(18, diagnostic.reportedEndOffset)
+        assertEquals(
+            listOf("function", "line\tone\nline\rtwo\\tail", ""),
+            diagnostic.messageParameters,
+        )
+    }
+
+    @Test
     fun `reports are merged and deduplicated across targets`() {
         val jvm = file("jvm.tsv", "UNDOCUMENTED_PUBLIC_API\t/p/A.kt\t10\t20\n")
         val js = file(
@@ -177,9 +193,9 @@ class FixerProtocolTest {
         val lines = Files.readAllLines(target).filter { it.isNotBlank() }
         assertEquals(
             listOf(
-                "fixed=DATA_CLASS_PUBLIC_API\tIntentionallyDataClass\t3\t/p/A.kt",
-                "skipped=EXEMPTION_WITHOUT_EXPLANATION\t\t7\t/p/B.kt\tneeds a human",
-                "warning=OPEN_API_WITHOUT_SUBCLASS_OPT_IN\tIntentionallyOpen\t4\t/p/C.kt",
+                "fixed=DATA_CLASS_PUBLIC_API\tIntentionallyDataClass\t3\t/p/A.kt\t\t\t\t",
+                "skipped=EXEMPTION_WITHOUT_EXPLANATION\t\t7\t/p/B.kt\tneeds a human\t\t\t\t",
+                "warning=OPEN_API_WITHOUT_SUBCLASS_OPT_IN\tIntentionallyOpen\t4\t/p/C.kt\t\t\t\t",
                 "exemption=IntentionallyDataClass\t2\t/p/A.kt",
                 "modifiedFile=/p/A.kt",
             ),
@@ -197,9 +213,26 @@ class FixerProtocolTest {
         response.writeTo(target)
 
         assertEquals(
-            listOf("skipped=SOME_DIAGNOSTIC\t\t7\t/p/B.kt\tline one\\nline two"),
+            listOf("skipped=SOME_DIAGNOSTIC\t\t7\t/p/B.kt\tline one\\nline two\t\t\t\t"),
             Files.readAllLines(target).filter { it.isNotBlank() },
         )
+    }
+
+    @Test
+    fun `response escapes message parameters for fixes skips and warnings`() {
+        val response = FixerResponse().apply {
+            val parameters = listOf("class", "Name\twith\nline\\tail")
+            val range = DiagnosticSourceRange(3, 19, 3, 23)
+            applied += AppliedFix("DATA_CLASS_PUBLIC_API", "IntentionallyDataClass", "/p/A.kt", 3, parameters, range)
+            skipped += SkippedDiagnostic("UNKNOWN", "/p/B.kt", 7, "Manual\tfix.", parameters, range)
+            warnings += WarningDiagnostic("UNDOCUMENTED_PUBLIC_API", "/p/C.kt", 4, parameters, range)
+        }
+        val target = tempDir.resolve("parameters.txt")
+        response.writeTo(target)
+        val lines = Files.readAllLines(target)
+        assertEquals(3, lines.size)
+        lines.forEach { assertTrue(it.endsWith("\t3\t19\t3\t23\tclass\tName\\twith\\nline\\\\tail")) }
+        assertContains(lines[1], "Manual\\tfix.")
     }
 
     @Test

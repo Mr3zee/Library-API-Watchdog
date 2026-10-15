@@ -10,7 +10,7 @@ abstract class GenerateCheckDescriptions : DiagnosticsJsonGeneratorTask() {
     override val fileName: String get() = "WatchdogCheckDescriptions.kt"
 
     override fun StringBuilder.appendDeclarations(diagnostics: DiagnosticsJson) {
-        appendLine("internal class WatchdogCheckDescription(val title: String, val docsUrl: String)")
+        appendLine("internal class WatchdogCheckDescription(val title: String, val docsUrl: String, val message: String)")
         appendLine()
         appendLine("/** The check descriptions by diagnostic name. */")
         appendLine("internal object WatchdogCheckDescriptions {")
@@ -22,7 +22,22 @@ abstract class GenerateCheckDescriptions : DiagnosticsJsonGeneratorTask() {
         for (entry in diagnostics.entries) {
             val title = entry.title.escapedForKotlinString()
             val docsUrl = entry.docsUrl.escapedForKotlinString()
-            appendLine("        \"${entry.name}\" to WatchdogCheckDescription(\"$title\", \"$docsUrl\"),")
+            val message = entry.message.joinTextLines().escapedForKotlinString()
+            appendLine("        \"${entry.name}\" to WatchdogCheckDescription(\"$title\", \"$docsUrl\", \"$message\"),")
+        }
+        appendLine("    )")
+        appendLine()
+        appendLine("    val diagnosticsByAnnotation: Map<String, List<String>> = mapOf(")
+        val annotations = linkedMapOf<String, MutableList<String>>()
+        for (entry in diagnostics.entries) {
+            Regex("Intentionally[A-Za-z0-9]+").findAll(entry.message.joinToString("\n"))
+                .map { it.value }.distinct().forEach { annotation ->
+                    annotations.getOrPut(annotation) { mutableListOf() }.add(entry.name)
+                }
+        }
+        annotations.forEach { (annotation, names) ->
+            val values = names.joinToString(", ") { "\"${it.escapedForKotlinString()}\"" }
+            appendLine("        \"$annotation\" to listOf($values),")
         }
         appendLine("    )")
         appendLine("}")
