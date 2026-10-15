@@ -22,7 +22,7 @@ abstract class GenerateFunctionalTestDiagnostics : DiagnosticsJsonGeneratorTask(
             appendLine("    /** [${entry.title}](${entry.docsUrl}) */")
             appendLine("    ${entry.name}(")
             appendLine("        title = \"${entry.title.escapedForKotlinString()}\",")
-            appendLine("        docsUrl = \"${entry.docsUrl}\",")
+            appendLine("        docsUrl = \"${entry.docsUrl.escapedForKotlinString()}\",")
             appendLine("        template = \"${template.escapedForKotlinString()}\",")
             appendLine("        javaInterop = ${entry.docs.startsWith(JAVA_INTEROP_DOCS)},")
             appendLine("        parameterValues = mapOf(")

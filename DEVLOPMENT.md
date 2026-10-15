@@ -1,5 +1,30 @@
 # Development and releases
 
+## Build scans and cache
+
+The root build and its `gradle-conventions` included build use [JetBrains Develocity](https://ge.jetbrains.com/) for build scans and the remote build cache.
+CI publishes scans for authenticated builds. Local scans are disabled by default.
+
+To enable local scans, copy `local.properties.template` to `local.properties` and set `develocity.buildScan.enabled=true`.
+
+Use `--scan` or `--no-scan` to override this setting for one build.
+CI waits for scan uploads before each Gradle command exits.
+
+To authenticate locally, run:
+
+```bash
+./gradlew provisionDevelocityAccessKey
+```
+
+Gradle stores the key in `~/.gradle/develocity/keys.properties`.
+The same key authenticates scan uploads and remote cache access.
+
+For GitHub Actions, add the repository secret `DEVELOCITY_ACCESS_KEY` with the value `ge.jetbrains.com=<access-key>`.
+The key needs permission to publish scans and read and write the build cache.
+
+Local builds and pull requests only read the remote cache.
+CI on `main` sets `DEVELOCITY_CACHE_PUSH=true` to write cache entries.
+
 ## Version
 
 `gradle.properties` sets the library version. To change the build, README examples, and website package versions, run:

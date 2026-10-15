@@ -42,6 +42,9 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  DEVELOCITY_CACHE_PUSH: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+
 jobs:
   functional-test-matrix:
     runs-on: ubuntu-latest
@@ -60,6 +63,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
         with:
+          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
           # The matrix jobs wait for this job. A cache save at its end only delays them.
           cache-read-only: true
 
@@ -70,7 +74,7 @@ jobs:
           echo "tasks=$tasks" >> "$GITHUB_OUTPUT"
 
   library-checks:
-    name: Report aggregation tests and ABI checks
+    name: Unit tests and ABI checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -84,9 +88,15 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
+        with:
+          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
-      - name: Run report aggregation tests
-        run: ./gradlew :kotlin-library-api-watchdog-report-aggregation:test
+      - name: Run unit tests
+        run: |
+          ./gradlew \
+            :gradle-conventions:test \
+            :kotlin-library-api-watchdog-gradle-plugin:test \
+            :kotlin-library-api-watchdog-report-aggregation:test
 
       - name: Set up Node
         uses: actions/setup-node@v6
@@ -135,6 +145,8 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
+        with:
+          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
       - name: Run exempts fixer tests
         run: |
@@ -183,6 +195,8 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
+        with:
+          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
       - name: Run Gradle plugin tests
         env:

@@ -8,6 +8,9 @@ on:
 permissions:
   contents: read
 
+env:
+  DEVELOCITY_CACHE_PUSH: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+
 jobs:
   publish:
     # Only a macOS host can publish the Apple annotation variants.
@@ -24,6 +27,8 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
+        with:
+          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
       - name: Calculate development version
         id: version

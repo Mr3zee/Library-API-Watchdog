@@ -65,7 +65,11 @@ internal object ExemptionFixerRunner {
                 "The exempts fixer exited with code ${execResult.exitValue} without reporting an error."
             )
         }
-        return FixerResponse.parse(response)
+        return try {
+            FixerResponse.parse(response)
+        } catch (failure: IllegalArgumentException) {
+            throw GradleException("The exempts fixer wrote a malformed response.", failure)
+        }
     }
 
     private fun readResponse(responseFile: File, exitValue: Int): Map<String, List<String>> {
@@ -77,6 +81,11 @@ internal object ExemptionFixerRunner {
         }
         return responseFile.readLines()
             .filter { it.isNotBlank() }
+            .onEach { line ->
+                if (line.indexOf('=') <= 0) {
+                    throw GradleException("The exempts fixer wrote a malformed response: expected a key=value entry.")
+                }
+            }
             .groupBy(keySelector = { it.substringBefore('=') }, valueTransform = { it.substringAfter('=') })
     }
 
@@ -142,22 +151,24 @@ internal class FixerResponse(
 
         fun parse(lines: Map<String, List<String>>): FixerResponse = FixerResponse(
             fixed = lines["fixed"].orEmpty().map { value ->
-                val fields = value.split('\t').map { it.unescapeFixerNewlines() }
+                val fields = value.responseFields("fixed", 8)
                 val (diagnostic, annotation, line, path) = fields
                 FixedDiagnostic(diagnostic, annotation.ifEmpty { null }, line, path, fields.drop(8), fields.sourceRange(4))
             },
             skipped = lines["skipped"].orEmpty().map { value ->
-                val fields = value.split('\t').map { it.unescapeFixerNewlines() }
+                val fields = value.responseFields("skipped", 9)
                 val (diagnostic, annotation, line, path, reason) = fields
                 SkippedDiagnostic(diagnostic, annotation.ifEmpty { null }, line, path, reason, fields.drop(9), fields.sourceRange(5))
             },
             warnings = lines["warning"].orEmpty().map { value ->
-                val fields = value.split('\t').map { it.unescapeFixerNewlines() }
+                val fields = value.responseFields("warning", 8)
                 val (diagnostic, annotation, line, path) = fields
                 WarningDiagnostic(diagnostic, annotation.ifEmpty { null }, line, path, fields.drop(8), fields.sourceRange(4))
             },
             exemptions = lines["exemption"].orEmpty().map { value ->
-                val (annotation, line, path) = value.split('\t', limit = 3)
+                val fields = value.split('\t', limit = 3)
+                require(fields.size == 3) { "An 'exemption' entry needs three fields." }
+                val (annotation, line, path) = fields
                 AppliedExemption(annotation, line, path)
             },
             modifiedFiles = lines["modifiedFile"].orEmpty().toSet(),
@@ -165,10 +176,19 @@ internal class FixerResponse(
     }
 }
 
-private fun List<String>.sourceRange(start: Int): ApiWatchdogSourceRange? =
-    if (getOrNull(start).isNullOrEmpty()) null else {
-        ApiWatchdogSourceRange(this[start].toInt(), this[start + 1].toInt(), this[start + 2].toInt(), this[start + 3].toInt())
+private fun String.responseFields(kind: String, minimumSize: Int): List<String> =
+    split('\t').map { it.unescapeFixerNewlines() }.also { fields ->
+        require(fields.size >= minimumSize) { "A '$kind' entry needs at least $minimumSize fields." }
     }
+
+private fun List<String>.sourceRange(start: Int): ApiWatchdogSourceRange? {
+    val coordinates = subList(start, start + 4)
+    if (coordinates.all(String::isEmpty)) return null
+    require(coordinates.none(String::isEmpty)) { "A source range needs four coordinates." }
+    return ApiWatchdogSourceRange(
+        coordinates[0].toInt(), coordinates[1].toInt(), coordinates[2].toInt(), coordinates[3].toInt(),
+    )
+}
 
 internal interface FixerLocation {
     val line: String

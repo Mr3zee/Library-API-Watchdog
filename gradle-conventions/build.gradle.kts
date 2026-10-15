@@ -10,6 +10,7 @@ dependencies {
         "org.jetbrains.kotlin.compiler.plugin.devkit:plugins:${providers.systemProperty("devkitVersion").get()}",
     )
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlin.get()}")
+    testImplementation(kotlin("test-junit"))
 }
 
 gradlePlugin {

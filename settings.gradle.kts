@@ -1,7 +1,7 @@
 pluginManagement {
     val devKitVersion = providers.systemProperty("devkitVersion")
 
-    includeBuild("gradle-conventions")
+    includeBuild("gradle/settings-conventions")
 
     plugins {
         kotlin("compiler.plugin.devkit") version devKitVersion.get()
@@ -21,7 +21,16 @@ pluginManagement {
     }
 }
 
-plugins { kotlin("compiler.plugin.devkit") }
+plugins {
+    kotlin("compiler.plugin.devkit")
+    id("library-api-watchdog.develocity-conventions")
+    // Work around DevKit settings plugin classloader conflicts with the configuration cache.
+    // https://github.com/gradle/gradle/issues/32622
+    // This version must match libs.versions.kotlin.
+    kotlin("multiplatform") version "2.4.0" apply false
+}
+
+includeBuild("gradle-conventions")
 
 gradle.lifecycle.beforeProject {
     providers.environmentVariable("LIBRARY_VERSION").orNull?.let { libraryVersion ->

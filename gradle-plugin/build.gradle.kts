@@ -24,6 +24,7 @@ kotlin {
 dependencies {
     implementation("org.jetbrains.kotlin.compiler.plugin.devkit:version-resolution:$devKitVersion")
     implementation(project(":kotlin-library-api-watchdog-report-aggregation"))
+    testImplementation(kotlin("test-junit"))
 }
 
 pluginDevKit {

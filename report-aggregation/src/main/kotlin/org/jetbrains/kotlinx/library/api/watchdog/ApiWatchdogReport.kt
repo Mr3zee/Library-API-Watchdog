@@ -124,12 +124,13 @@ public object ApiWatchdogReportData {
         val applied = mutableListOf<AppliedExemptionReportEntry>()
         val notApplied = mutableListOf<NotAppliedExemptionReportEntry>()
         val sourceSnippets = mutableMapOf<String, ApiWatchdogSourceSnippet>()
-        file.readLines().filter(String::isNotBlank).forEachIndexed { index, line ->
+        file.readLines().forEachIndexed { index, line ->
+            if (line.isBlank()) return@forEachIndexed
             val fields = line.split('\t').map { it.unescapeField() }
             when (fields.first()) {
                 "version" -> {
                     require(fields.size == 2 && fields[1] in setOf("2", "3", "4", "5", VERSION)) {
-                        "Unsupported API Watchdog report version in $file"
+                        "Unsupported API Watchdog report version in $file:${index + 1}. Use version 2, 3, 4, 5, or $VERSION."
                     }
                     version = fields[1]
                 }
@@ -146,12 +147,36 @@ public object ApiWatchdogReportData {
                     applied += AppliedExemptionReportEntry(fields[1], fields[2])
                 }
                 "notApplied" -> {
+                    requireNotNull(version) {
+                        "No version entry before notApplied in $file:${index + 1}. Add the version before report data."
+                    }
                     val parameterStart = when (version) {
                         VERSION -> 11
                         "5" -> 10
                         else -> 6
                     }
                     require(fields.size >= parameterStart) { "Malformed not-applied entry in $file:${index + 1}" }
+                    val sourceRange = if (parameterStart >= 10) {
+                        val coordinates = fields.subList(6, 10)
+                        if (coordinates.all(String::isEmpty)) null else {
+                            val error = "Invalid source range in $file:${index + 1}. " +
+                                "Use four positive coordinates with the end at or after the start."
+                            val values = coordinates.map { coordinate ->
+                                requireNotNull(coordinate.toIntOrNull()?.takeIf { it > 0 }) { error }
+                            }
+                            val range = ApiWatchdogSourceRange(values[0], values[1], values[2], values[3])
+                            require(range.endLine > range.startLine ||
+                                range.endLine == range.startLine && range.endColumn >= range.startColumn) { error }
+                            range
+                        }
+                    } else null
+                    val autoFixAvailable = if (version == VERSION) {
+                        requireNotNull(fields[10].toBooleanStrictOrNull()) {
+                            "Invalid auto-fix flag in $file:${index + 1}. Use true or false."
+                        }
+                    } else {
+                        fields[1].isNotEmpty() || fields[2] == "UNDOCUMENTED_PUBLIC_API"
+                    }
                     notApplied += NotAppliedExemptionReportEntry(
                         annotation = fields[1].ifEmpty { null },
                         diagnostic = fields[2],
@@ -159,23 +184,22 @@ public object ApiWatchdogReportData {
                         reason = fields[4],
                         severity = fields[5],
                         messageParameters = fields.drop(parameterStart),
-                        sourceRange = if (parameterStart >= 10 && fields[6].isNotEmpty()) {
-                            ApiWatchdogSourceRange(fields[6].toInt(), fields[7].toInt(), fields[8].toInt(), fields[9].toInt())
-                        } else null,
-                        autoFixAvailable = if (version == VERSION) fields[10].toBooleanStrict() else {
-                            fields[1].isNotEmpty() || fields[2] == "UNDOCUMENTED_PUBLIC_API"
-                        },
+                        sourceRange = sourceRange,
+                        autoFixAvailable = autoFixAvailable,
                     )
                 }
                 "source" -> {
                     require(fields.size == 4) { "Malformed source entry in $file:${index + 1}" }
                     val startLine = fields[2].toIntOrNull()
-                    require(startLine != null && startLine > 0) { "Invalid source line in $file:${index + 1}" }
+                    require(startLine != null && startLine > 0) {
+                        "Invalid source line in $file:${index + 1}. Use a positive integer."
+                    }
                     sourceSnippets[fields[1]] = ApiWatchdogSourceSnippet(startLine, fields[3])
                 }
                 else -> error("Unknown API Watchdog report entry in $file:${index + 1}")
             }
         }
+        requireNotNull(version) { "No version entry in $file. Add a supported version before report data." }
         return ApiWatchdogProjectReport(
             projectPath = requireNotNull(projectPath) { "No project entry in $file" },
             projectDirectory = requireNotNull(projectDirectory) { "No directory entry in $file" },

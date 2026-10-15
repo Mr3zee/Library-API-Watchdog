@@ -85,7 +85,7 @@ fun String.plainLinks(): String =
     replace(MARKDOWN_LINK) { "${it.groupValues[1]} (${it.groupValues[2]})" }
 
 fun String.escapedForKotlinString(): String =
-    replace("\\", "\\\\").replace("\n", "\\n").replace("\"", "\\\"").replace("$", "\\$")
+    replace("\\", "\\\\").replace("\r", "\\r").replace("\n", "\\n").replace("\"", "\\\"").replace("$", "\\$")
 
 abstract class DiagnosticsJsonGeneratorTask : DefaultTask() {
     @get:InputFile
