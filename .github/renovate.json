@@ -1,0 +1,56 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "enabledManagers": ["gradle", "gradle-wrapper", "npm", "github-actions", "custom.regex"],
+  "automerge": false,
+  "rebaseWhen": "behind-base-branch",
+  "packageRules": [
+    {
+      "matchPackageNames": ["/^org\\.jetbrains\\.kotlin[.:]/"],
+      "groupName": "Kotlin",
+      "separateMajorMinor": false
+    },
+    {
+      "matchPackageNames": ["org.jetbrains.kotlin.compiler.plugin.devkit:plugins"],
+      "ignoreUnstable": false
+    },
+    {
+      "matchPackageNames": ["/^@docusaurus\\//"],
+      "groupName": "Docusaurus"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "GitHub Actions"
+    },
+    {
+      "matchDepNames": ["agp8"],
+      "allowedVersions": "/^8\\./"
+    },
+    {
+      "matchDepNames": ["agp9"],
+      "allowedVersions": "/^9\\./"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^gradle\\.properties$/"],
+      "matchStrings": ["(?:^|\\n)systemProp\\.devkitVersion=(?<currentValue>[^\\s]+)"],
+      "datasourceTemplate": "maven",
+      "packageNameTemplate": "org.jetbrains.kotlin.compiler.plugin.devkit:plugins",
+      "registryUrlTemplate": "https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap",
+      "versioningTemplate": "maven"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^gradle/libs\\.versions\\.toml$/"],
+      "matchStrings": ["(?:^|\\n)agp(?<major>[89])\\s*=\\s*\"(?<currentValue>[^\"]+)\""],
+      "datasourceTemplate": "maven",
+      "depNameTemplate": "agp{{{major}}}",
+      "packageNameTemplate": "com.android.tools.build:gradle",
+      "registryUrlTemplate": "https://dl.google.com/dl/android/maven2",
+      "versioningTemplate": "maven"
+    }
+  ]
+}

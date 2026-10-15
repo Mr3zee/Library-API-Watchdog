@@ -44,6 +44,25 @@ LIBRARY_VERSION=0.2.0-dev-1 ./gradlew assemble
 The override takes precedence over `-Pversion` and changes no source file.
 An empty or invalid value fails the build.
 
+## Dependency updates
+
+Renovate reads [.github/renovate.json](.github/renovate.json).
+To activate it, install the [Renovate GitHub App](https://github.com/apps/renovate) for this repository and merge the configuration into `main`.
+
+Renovate opens pull requests for Gradle, npm, and GitHub Actions updates. Automatic merging is disabled.
+Renovate groups Kotlin and compiler-plugin-dev-kit updates for compatibility review.
+Docusaurus packages also share one pull request.
+
+Custom managers track `systemProp.devkitVersion` and the Android Gradle plugin test versions in the version catalog.
+The `agp8` entry stays on version 8, and `agp9` stays on version 9.
+The minimum supported Kotlin and IntelliJ IDEA versions remain manual compatibility decisions.
+
+To validate the configuration:
+
+```bash
+npm exec --yes --package=node@24 --package=renovate@44.164.6 -- renovate-config-validator --strict --no-global .github/renovate.json
+```
+
 ## Changelog
 
 Edit [CHANGELOG.md](CHANGELOG.md), then generate the website page:
