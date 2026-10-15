@@ -8,6 +8,8 @@ plugins {
     id("library-api-watchdog.dokka-conventions")
     id("library-api-watchdog.gradle-plugin-conventions")
     id("library-api-watchdog.space-publishing-conventions")
+    id("library-api-watchdog.plugin-portal-publishing-conventions")
+    id("library-api-watchdog.maven-central-publishing-conventions")
 }
 
 val devKitVersion = providers.systemProperty("devkitVersion").get()

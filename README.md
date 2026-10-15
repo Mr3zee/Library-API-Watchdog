@@ -85,7 +85,7 @@ Four ways to exempt API from the checks:
   `apiWatchdog { internalApiAnnotations.add("com.example.InternalApi") }`.
 - **[One declaration](https://mr3zee.github.io/Library-API-Watchdog/exemptions)**: apply the
   matching `@Intentionally*` annotation with an `ExemptionReason`. A reason other than
-  `FOR_BACKWARDS_COMPATIBILITY` or `API_DESIGN` also needs a description.
+  `FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`, or `FOR_DEPRECATION` also needs a description.
 - **[One check on every declaration with a given annotation](https://mr3zee.github.io/Library-API-Watchdog/configuration#annotation-ignore-rules)**:
   use
   `apiWatchdog { ignore(WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS, whenAnnotatedWith = listOf("com.example.GeneratedValueMembers")) }`.
@@ -278,4 +278,6 @@ Modules:
   projects. Plugin id `org.jetbrains.kotlin.library.api-watchdog-report-aggregation`.
 
 The documentation site is a [Docusaurus](https://docusaurus.io/) project in [docs](docs), built by
-[docs.yml](.github/workflows/docs.yml). 
+[docs.yml](.github/workflows/docs.yml).
+
+See [Development and releases](DEVLOPMENT.md) for version updates, changelog edits, and release publication.

@@ -11,7 +11,7 @@ shadow = "9.6.0"
 agp8 = "8.13.0"
 agp9 = "9.2.1"
 commonmark = "0.24.0"
-jsoup = "1.22.2"
+jsoup = "1.23.2"
 
 [libraries]
 commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }

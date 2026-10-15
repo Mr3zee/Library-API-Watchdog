@@ -39,7 +39,7 @@ jobs:
 
       - name: Publish development build to Space
         env:
-          DEVELOPMENT_VERSION: ${{ steps.version.outputs.value }}
+          LIBRARY_VERSION: ${{ steps.version.outputs.value }}
           KOTLIN_LIBRARY_SPACE_USERNAME: ${{ secrets.KOTLIN_LIBRARY_SPACE_USERNAME }}
           KOTLIN_LIBRARY_SPACE_PASSWORD: ${{ secrets.KOTLIN_LIBRARY_SPACE_PASSWORD }}
-        run: ./gradlew "-Pversion=$DEVELOPMENT_VERSION" publishAllPublicationsToSpaceRepository
+        run: ./gradlew publishAllPublicationsToSpaceRepository

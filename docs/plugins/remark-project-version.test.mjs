@@ -6,8 +6,28 @@ import {
   kotlinVersionTemplate,
   projectVersion,
   projectVersionTemplate,
+  readProjectVersion,
   remarkProjectVersion,
 } from './remark-project-version.mjs';
+
+test('uses LIBRARY_VERSION for website samples and rejects invalid overrides', () => {
+  assert.equal(readProjectVersion({LIBRARY_VERSION: '9.8.7-dev-1'}), '9.8.7-dev-1');
+  for (const version of ['', ' ', '1.2', '1.2.3\n', '1.2.3\nX=value']) {
+    assert.throws(() => readProjectVersion({LIBRARY_VERSION: version}));
+  }
+});
+
+test('uses explicit versions from the loader options', () => {
+  const tree = {
+    type: 'root',
+    children: [{
+      type: 'code',
+      value: `${projectVersionTemplate} ${kotlinVersionTemplate}`,
+    }],
+  };
+  remarkProjectVersion({libraryVersion: '9.8.7', kotlin: '9.0.0'})(tree);
+  assert.equal(tree.children[0].value, '9.8.7 9.0.0');
+});
 
 test('replaces project and Kotlin version templates in code', () => {
   const tree = {

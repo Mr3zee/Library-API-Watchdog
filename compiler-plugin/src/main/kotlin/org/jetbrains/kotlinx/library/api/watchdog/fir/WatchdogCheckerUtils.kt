@@ -370,8 +370,11 @@ private val descriptionParameter = Name.identifier("description")
 private val otherReason = Name.identifier("OTHER")
 
 /** The reasons that explain an exemption without a description. */
-private val backwardsCompatibilityReason = Name.identifier("FOR_BACKWARDS_COMPATIBILITY")
-private val apiDesignReason = Name.identifier("API_DESIGN")
+private val selfExplanatoryReasons = setOf(
+    Name.identifier("FOR_BACKWARDS_COMPATIBILITY"),
+    Name.identifier("API_DESIGN"),
+    Name.identifier("FOR_DEPRECATION"),
+)
 
 /**
  * The reason that doesn't explain this exemption, [otherReason] when the argument is absent, or
@@ -386,7 +389,7 @@ internal fun FirAnnotation.unexplainedExemptionReason(): Name? {
         // An argument that resolves to no enum entry is already a compilation error.
         reasonArgument.extractEnumValueArgumentInfo()?.enumEntryName ?: return null
     }
-    if (reason == backwardsCompatibilityReason || reason == apiDesignReason) {
+    if (reason in selfExplanatoryReasons) {
         return null
     }
 

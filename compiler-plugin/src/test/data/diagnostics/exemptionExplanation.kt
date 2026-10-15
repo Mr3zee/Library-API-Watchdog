@@ -51,13 +51,16 @@ public open class PositionalEmptyDescription
 <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyOpen(description = "   ")<!>
 public open class BlankDescription
 
-// Only API_DESIGN and FOR_BACKWARDS_COMPATIBILITY explain an exemption without a description.
+// Only API_DESIGN, FOR_BACKWARDS_COMPATIBILITY, and FOR_DEPRECATION explain an exemption without a description.
 
 @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public open class ReasonExplainedExemption
 
 @IntentionallyOpen("", ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)
 public open class PositionalReasonExemption
+
+@IntentionallyOpen(reason = ExemptionReason.FOR_DEPRECATION)
+public open class DeprecationReasonExemption
 
 @IntentionallyOpen(description = "extension point for custom transports")
 public open class DescriptionExplainedExemption

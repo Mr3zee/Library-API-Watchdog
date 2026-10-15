@@ -8,6 +8,7 @@ plugins {
     id("library-api-watchdog.dokka-conventions")
     `maven-publish`
     id("library-api-watchdog.space-publishing-conventions")
+    id("library-api-watchdog.maven-central-publishing-conventions")
 }
 
 kotlin {

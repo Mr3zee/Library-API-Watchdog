@@ -25,8 +25,8 @@ Every `@Intentionally*` annotation except
 | `description` | `String`          | `""`    |
 | `reason`      | `ExemptionReason` | `OTHER` |
 
-`FOR_BACKWARDS_COMPATIBILITY` and `API_DESIGN` explain the exemption on their own. Every other
-reason needs a `description`, or
+`FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`, and `FOR_DEPRECATION` explain the exemption on their
+own. Every other reason needs a `description`, or
 [Exemptions without explanation](./checks/special/exemption-without-explanation.md) reports the
 annotation.
 

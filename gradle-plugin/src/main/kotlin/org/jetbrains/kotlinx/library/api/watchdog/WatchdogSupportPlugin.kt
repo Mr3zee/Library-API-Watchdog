@@ -203,6 +203,10 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 Category.CATEGORY_ATTRIBUTE,
                 objects.named(Category::class.java, Category.DOCUMENTATION),
             )
+            configuration.attributes.attribute(
+                API_WATCHDOG_REPORT_ROOT_DIRECTORY_ATTRIBUTE,
+                rootDirectory.absolutePath,
+            )
             configuration.outgoing.artifact(reportTask.flatMap { it.reportDataFile }) { artifact ->
                 artifact.builtBy(reportTask)
             }

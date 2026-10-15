@@ -10,6 +10,7 @@ const sidebars: SidebarsConfig = {
     'report',
     'exemptions',
     'abi-validation-suggestion',
+    'changelog',
     {
       type: 'category',
       label: 'Checks',

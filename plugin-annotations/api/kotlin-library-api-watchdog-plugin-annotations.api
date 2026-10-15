@@ -2,6 +2,7 @@ public final class org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason : 
 	public static final field API_DESIGN Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 	public static final field EXTERNAL_CONTRACT Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 	public static final field FOR_BACKWARDS_COMPATIBILITY Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
+	public static final field FOR_DEPRECATION Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 	public static final field IGNORE_JAVA_INTEROP Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 	public static final field INTEROP Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 	public static final field OTHER Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;

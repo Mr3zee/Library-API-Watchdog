@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+    implementation("com.vanniktech:gradle-maven-publish-plugin:0.37.0")
+    implementation("com.gradle.publish:plugin-publish-plugin:2.2.1")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:${libs.versions.dokka.get()}")
     implementation(
         "org.jetbrains.kotlin.compiler.plugin.devkit:plugins:${providers.systemProperty("devkitVersion").get()}",
@@ -47,6 +49,16 @@ gradlePlugin {
         register("spacePublishingConventions") {
             id = "library-api-watchdog.space-publishing-conventions"
             implementationClass = "org.jetbrains.kotlinx.library.api.watchdog.conventions.SpacePublishingConventionPlugin"
+        }
+        register("mavenCentralPublishingConventions") {
+            id = "library-api-watchdog.maven-central-publishing-conventions"
+            implementationClass =
+                "org.jetbrains.kotlinx.library.api.watchdog.conventions.MavenCentralPublishingConventionPlugin"
+        }
+        register("pluginPortalPublishingConventions") {
+            id = "library-api-watchdog.plugin-portal-publishing-conventions"
+            implementationClass =
+                "org.jetbrains.kotlinx.library.api.watchdog.conventions.PluginPortalPublishingConventionPlugin"
         }
     }
 }

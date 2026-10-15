@@ -23,6 +23,15 @@ pluginManagement {
 
 plugins { kotlin("compiler.plugin.devkit") }
 
+gradle.lifecycle.beforeProject {
+    providers.environmentVariable("LIBRARY_VERSION").orNull?.let { libraryVersion ->
+        require(libraryVersion.matches(Regex("\\d+\\.\\d+\\.\\d+(?:[.-][0-9A-Za-z]+)*"))) {
+            "Invalid LIBRARY_VERSION. Use MAJOR.MINOR.PATCH with an optional alphanumeric suffix."
+        }
+        version = libraryVersion
+    }
+}
+
 dependencyResolutionManagement {
     @Suppress("UnstableApiUsage")
     repositories {

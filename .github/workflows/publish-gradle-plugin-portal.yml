@@ -1,0 +1,69 @@
+name: Publish to Gradle Plugin Portal
+
+on:
+  workflow_dispatch:
+    inputs:
+      library_version:
+        description: Library version override (blank uses gradle.properties)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-gradle-plugin-portal
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Check publication credentials
+        env:
+          GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY }}
+          GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET }}
+        run: ./scripts/check-publication-env.sh gradle-plugin-portal
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Resolve publication version
+        env:
+          REQUESTED_VERSION: ${{ inputs.library_version }}
+        run: |
+          source scripts/lib/project-version.sh
+          version="${REQUESTED_VERSION:-$(read_source_version)}"
+          validate_library_version "$version"
+          if [[ "$version" == *-SNAPSHOT ]]; then
+            echo 'Release publication needs a version without -SNAPSHOT.' >&2
+            exit 1
+          fi
+          echo "LIBRARY_VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Check release metadata
+        run: |
+          ./scripts/verify-version-alignment.sh
+          node docs/scripts/sync-changelog.mjs --check
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          cache-disabled: true
+
+      - name: Publish Gradle plugins
+        env:
+          GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY }}
+          GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET }}
+        run: ./gradlew publishPlugins --no-configuration-cache

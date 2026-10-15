@@ -1,9 +1,12 @@
 package org.jetbrains.kotlinx.library.api.watchdog
 
+import java.io.File
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.PathSensitive
@@ -22,6 +25,10 @@ public abstract class AggregateApiWatchdogReportsTask internal constructor() : D
     @get:PathSensitive(PathSensitivity.NONE)
     public abstract val reportDataFiles: ConfigurableFileCollection
 
+    @get:Input
+    internal val projectDirectoryPrefixes: MapProperty<String, String> =
+        project.objects.mapProperty(String::class.java, String::class.java).convention(emptyMap())
+
     /** The report formats. Default files are `build/reports/api-watchdog/aggregate-report.html` and `.sarif`. */
     @get:Nested
     public val reports: WatchdogReports = project.objects.newInstance(WatchdogReports::class.java)
@@ -33,10 +40,17 @@ public abstract class AggregateApiWatchdogReportsTask internal constructor() : D
 
     @TaskAction
     internal fun generateReport() {
+        val prefixes = projectDirectoryPrefixes.getOrElse(emptyMap())
         val reports = reportDataFiles.files
             .sortedBy { it.absolutePath }
             .map(ApiWatchdogReportData::read)
             .distinctBy { it.projectPath }
+            .map { report ->
+                val prefix = prefixes[report.projectPath].orEmpty()
+                if (prefix.isEmpty()) report else report.copy(
+                    projectDirectory = File(prefix).resolve(report.projectDirectory).normalize().invariantSeparatorsPath,
+                )
+            }
         this.reports.htmlOutput.orNull?.asFile?.let { file ->
             ApiWatchdogHtmlReport.write(reports, file, aggregate = true)
             logger.lifecycle("Aggregate API Watchdog report: ${file.toPath().toUri()}")

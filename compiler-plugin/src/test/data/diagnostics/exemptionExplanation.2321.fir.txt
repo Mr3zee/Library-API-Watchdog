@@ -94,6 +94,12 @@ FILE: exemptionExplanation.kt
         }
 
     }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.FOR_DEPRECATION|) public open class DeprecationReasonExemption : R|kotlin/Any| {
+        public constructor(): R|foo/bar/DeprecationReasonExemption| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
     @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|(description = String(extension point for custom transports)) public open class DescriptionExplainedExemption : R|kotlin/Any| {
         public constructor(): R|foo/bar/DescriptionExplainedExemption| {
             super<R|kotlin/Any|>()

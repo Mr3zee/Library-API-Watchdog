@@ -1,0 +1,74 @@
+name: Publish to Maven Central
+
+on:
+  workflow_dispatch:
+    inputs:
+      library_version:
+        description: Library version override (blank uses gradle.properties)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-maven-central
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    # Apple annotation variants need macOS.
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Check publication credentials
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_CENTRAL_SIGNING_PASSWORD }}
+        run: ./scripts/check-publication-env.sh maven-central
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Resolve publication version
+        env:
+          REQUESTED_VERSION: ${{ inputs.library_version }}
+        run: |
+          source scripts/lib/project-version.sh
+          version="${REQUESTED_VERSION:-$(read_source_version)}"
+          validate_library_version "$version"
+          if [[ "$version" == *-SNAPSHOT ]]; then
+            echo 'Release publication needs a version without -SNAPSHOT.' >&2
+            exit 1
+          fi
+          echo "LIBRARY_VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Check release metadata
+        run: |
+          ./scripts/verify-version-alignment.sh
+          node docs/scripts/sync-changelog.mjs --check
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          cache-disabled: true
+
+      - name: Upload Maven Central draft
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_CENTRAL_SIGNING_PASSWORD }}
+        run: ./gradlew publishToMavenCentral --no-configuration-cache

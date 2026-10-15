@@ -605,7 +605,7 @@
       "message": [
         "The `@{0}` exemption doesn't explain why it is applied: the reason `{1}` is generic, and the",
         "`description` is empty. Pass a self-explanatory reason (`FOR_BACKWARDS_COMPATIBILITY`,",
-        "`API_DESIGN`), or explain the exemption in the `description`."
+        "`API_DESIGN`, `FOR_DEPRECATION`), or explain the exemption in the `description`."
       ]
     },
     {

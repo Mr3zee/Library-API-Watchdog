@@ -10,7 +10,7 @@
 ## What it reports
 
 An `@Intentionally*` exemption with a `reason` parameter and a blank `description`, unless
-the reason is `FOR_BACKWARDS_COMPATIBILITY` or `API_DESIGN`.
+the reason is `FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`, or `FOR_DEPRECATION`.
 
 `OTHER` is the default reason. A whitespace-only `description` counts as blank.
 

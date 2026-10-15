@@ -19,11 +19,13 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecOperations
+import org.gradle.work.DisableCachingByDefault
 
 /**
  * The base of [ExemptExistingApiTask] and [GenerateApiWatchdogReportTask]. Both write the
  * [API Watchdog report](https://mr3zee.github.io/Library-API-Watchdog/report).
  */
+@DisableCachingByDefault(because = "Reads diagnostic reports that Kotlin compile tasks don't declare as outputs")
 public abstract class ApiWatchdogReportTask internal constructor() : DefaultTask() {
     /** The names of the Kotlin compile tasks of every compilation except tests. */
     @get:Input

@@ -112,3 +112,37 @@ tasks.aggregateApiWatchdogReports {
     }
 }
 ```
+
+## Included builds
+
+The aggregation plugin can also combine reports from included builds. Apply the Watchdog plugin to
+each included project whose report you need.
+
+Include the build in the settings of the build that generates the aggregate report:
+
+```kotlin settings.gradle.kts
+includeBuild("libraries") {
+    name = "shared-libraries"
+}
+```
+
+Declare each included project by its module coordinates in `apiWatchdogReports`.
+For projects with `group = "com.example"` and names `library-core` and `library-client`:
+
+```kotlin build.gradle.kts
+plugins {
+    kotlin("library.api-watchdog-report-aggregation") version "{{libraryApiWatchdogVersion}}"
+}
+
+dependencies {
+    apiWatchdogReports("com.example:library-core")
+    apiWatchdogReports("com.example:library-client")
+}
+```
+
+Use the project's `group` and name, even when `includeBuild` sets a different build name.
+The `subprojects` loop selects projects from the current build only, so declare included projects separately.
+
+Run `aggregateApiWatchdogReports` from the build that applies the aggregation plugin.
+
+For SARIF uploads, the source paths must resolve from the code scanning service's checkout root.

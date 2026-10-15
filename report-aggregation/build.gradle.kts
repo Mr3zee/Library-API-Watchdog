@@ -10,6 +10,8 @@ plugins {
     `java-gradle-plugin`
     `maven-publish`
     id("library-api-watchdog.space-publishing-conventions")
+    id("library-api-watchdog.plugin-portal-publishing-conventions")
+    id("library-api-watchdog.maven-central-publishing-conventions")
 }
 
 val generateCheckDescriptions = registerDiagnosticsGenerator<GenerateCheckDescriptions>(

@@ -8,7 +8,9 @@
     "build": "docusaurus build",
     "serve": "docusaurus serve",
     "clear": "docusaurus clear",
-    "test": "node --test plugins/*.test.mjs",
+    "test": "node --test plugins/*.test.mjs ../scripts/*.test.mjs",
+    "sync:changelog": "node scripts/sync-changelog.mjs",
+    "check:changelog": "node scripts/sync-changelog.mjs --check",
     "sync:diagnostic-exemptions": "node scripts/sync-diagnostic-exemptions.mjs",
     "check:diagnostic-exemptions": "node scripts/sync-diagnostic-exemptions.mjs --check",
     "typecheck": "tsc --noEmit"

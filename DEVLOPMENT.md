@@ -1,0 +1,66 @@
+# Development and releases
+
+## Version
+
+`gradle.properties` sets the library version. To change the build, README examples, and website package versions, run:
+
+```bash
+./scripts/update-version.sh 0.2.0
+./scripts/verify-version-alignment.sh
+```
+
+The website code samples read the library version from `gradle.properties`.
+`LIBRARY_VERSION` overrides that version in every Gradle project, generated plugin coordinates, reports, and website code samples:
+
+```bash
+LIBRARY_VERSION=0.2.0-dev-1 ./gradlew assemble
+```
+
+The override takes precedence over `-Pversion` and changes no source file.
+An empty or invalid value fails the build.
+
+## Changelog
+
+Edit [CHANGELOG.md](CHANGELOG.md), then generate the website page:
+
+```bash
+cd docs
+npm run sync:changelog
+```
+
+CI checks that the website changelog matches the root file.
+The version script leaves historical changelog entries and dependency versions unchanged.
+
+## Release publication
+
+Run [Publish to Maven Central](.github/workflows/publish-maven-central.yml) or
+[Publish to Gradle Plugin Portal](.github/workflows/publish-gradle-plugin-portal.yml) with the GitHub Actions **Run workflow** button.
+The optional `library_version` input overrides the source version for that run.
+Both workflows fail when a credential is absent or blank.
+
+Configure these repository secrets:
+
+| Target | Secret | Value |
+|---|---|---|
+| Maven Central | `MAVEN_CENTRAL_USERNAME` | Central Portal token username |
+| Maven Central | `MAVEN_CENTRAL_PASSWORD` | Central Portal token password |
+| Maven Central | `MAVEN_CENTRAL_SIGNING_KEY` | ASCII-armored private PGP key |
+| Maven Central | `MAVEN_CENTRAL_SIGNING_PASSWORD` | Private key password |
+| Gradle Plugin Portal | `GRADLE_PUBLISH_KEY` | Portal API key |
+| Gradle Plugin Portal | `GRADLE_PUBLISH_SECRET` | Portal API secret |
+
+The Maven Central workflow uploads all modules, including the annotation platform variants, as a draft deployment.
+Approve it in [Central Portal](https://central.sonatype.com/publishing/deployments) before the Plugin Portal run.
+The Plugin Portal workflow publishes the watchdog and report aggregation plugins.
+Plugin Portal has no draft deployment mode. A successful run submits both plugin versions for publication.
+
+For a local Maven Central upload, set the environment variables below, then run `./gradlew publishToMavenCentral`:
+
+| Environment variable | Repository secret |
+|---|---|
+| `ORG_GRADLE_PROJECT_mavenCentralUsername` | `MAVEN_CENTRAL_USERNAME` |
+| `ORG_GRADLE_PROJECT_mavenCentralPassword` | `MAVEN_CENTRAL_PASSWORD` |
+| `ORG_GRADLE_PROJECT_signingInMemoryKey` | `MAVEN_CENTRAL_SIGNING_KEY` |
+| `ORG_GRADLE_PROJECT_signingInMemoryKeyPassword` | `MAVEN_CENTRAL_SIGNING_PASSWORD` |
+
+For a local Plugin Portal upload, set `GRADLE_PUBLISH_KEY` and `GRADLE_PUBLISH_SECRET`, then run `./gradlew publishPlugins`.

@@ -3,6 +3,7 @@ plugins {
     id("library-api-watchdog.devkit-versions-conventions")
     id("library-api-watchdog.exempts-fixer-conventions")
     id("library-api-watchdog.space-publishing-conventions")
+    id("library-api-watchdog.maven-central-publishing-conventions")
 }
 
 val devKitVersion = providers.systemProperty("devkitVersion").get()

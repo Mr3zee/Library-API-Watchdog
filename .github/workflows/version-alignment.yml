@@ -10,6 +10,10 @@ on:
       - 'README.md'
       - 'docs/**'
       - 'scripts/verify-version-alignment.sh'
+      - 'scripts/update-version.sh'
+      - 'scripts/lib/project-version.sh'
+      - 'scripts/release-tooling.test.mjs'
+      - 'scripts/check-publication-env.sh'
       - '.github/workflows/version-alignment.yml'
   pull_request:
     paths:
@@ -18,6 +22,10 @@ on:
       - 'README.md'
       - 'docs/**'
       - 'scripts/verify-version-alignment.sh'
+      - 'scripts/update-version.sh'
+      - 'scripts/lib/project-version.sh'
+      - 'scripts/release-tooling.test.mjs'
+      - 'scripts/check-publication-env.sh'
       - '.github/workflows/version-alignment.yml'
 
 permissions:
@@ -29,6 +37,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Test release tooling
+        run: node --test scripts/*.test.mjs
 
       - name: Verify version alignment
         run: ./scripts/verify-version-alignment.sh

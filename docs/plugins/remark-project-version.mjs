@@ -12,12 +12,11 @@ export const projectVersion = readProjectVersion();
 export const kotlinVersionTemplate = '{{kotlinVersion}}';
 export const kotlinVersion = readKotlinVersion();
 
-const versionTemplates = new Map([
-  [projectVersionTemplate, projectVersion],
-  [kotlinVersionTemplate, kotlinVersion],
-]);
-
-export function remarkProjectVersion() {
+export function remarkProjectVersion({libraryVersion = projectVersion, kotlin = kotlinVersion} = {}) {
+  const versionTemplates = new Map([
+    [projectVersionTemplate, libraryVersion],
+    [kotlinVersionTemplate, kotlin],
+  ]);
   return (tree) => {
     visit(tree, ['code', 'inlineCode'], (node) => {
       for (const [template, version] of versionTemplates) {
@@ -27,13 +26,20 @@ export function remarkProjectVersion() {
   };
 }
 
-function readProjectVersion() {
-  const properties = fs.readFileSync(propertiesFile, 'utf8');
-  const versions = [...properties.matchAll(/^version=(.+)$/gm)].map((match) => match[1].trim());
-  if (versions.length !== 1 || versions[0].length === 0) {
-    throw new Error(`Expected exactly one non-empty version property in ${propertiesFile}.`);
+export function readProjectVersion(environment = process.env) {
+  let version = environment.LIBRARY_VERSION;
+  if (version === undefined) {
+    const properties = fs.readFileSync(propertiesFile, 'utf8');
+    const versions = [...properties.matchAll(/^version=(.*)$/gm)];
+    if (versions.length !== 1) {
+      throw new Error(`Expected exactly one version property in ${propertiesFile}.`);
+    }
+    version = versions[0][1].trim();
   }
-  return versions[0];
+  if (version.trim() !== version || !/^\d+\.\d+\.\d+(?:[.-][0-9A-Za-z]+)*$/.test(version)) {
+    throw new Error('Invalid library version. Use MAJOR.MINOR.PATCH with an optional alphanumeric suffix.');
+  }
+  return version;
 }
 
 function readKotlinVersion() {

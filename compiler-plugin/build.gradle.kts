@@ -6,6 +6,7 @@ plugins {
     id("library-api-watchdog.benchmark-conventions")
     id("library-api-watchdog.compiler-plugin-conventions")
     id("library-api-watchdog.space-publishing-conventions")
+    id("library-api-watchdog.maven-central-publishing-conventions")
 }
 
 pluginDevKit {

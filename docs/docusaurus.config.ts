@@ -2,7 +2,7 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import {remarkCodeHike, type CodeHikeConfig} from 'codehike/mdx';
 import {remarkCodeSamples} from './plugins/remark-code-samples.mjs';
-import {remarkProjectVersion} from './plugins/remark-project-version.mjs';
+import {kotlinVersion, projectVersion, remarkProjectVersion} from './plugins/remark-project-version.mjs';
 import {variables} from './variables.mjs';
 
 // "github-from-css" maps every token color to a --ch-* variable from src/css/custom.css, so one
@@ -37,7 +37,8 @@ const config: Config = {
           editUrl: `${variables['repo-tree-path'].replace('/tree/', '/edit/')}/docs/`,
           // The default Docusaurus plugins turn code blocks into <Code> elements, so these run first.
           beforeDefaultRemarkPlugins: [
-            remarkProjectVersion,
+            // The values in the loader options invalidate cached samples when either version changes.
+            [remarkProjectVersion, {libraryVersion: projectVersion, kotlin: kotlinVersion}],
             remarkCodeSamples,
             [remarkCodeHike, codeHike],
           ],
@@ -63,6 +64,11 @@ const config: Config = {
         src: 'img/logo.svg',
       },
       items: [
+        {
+          to: '/changelog',
+          label: 'Changelog',
+          position: 'right',
+        },
         {
           href: `${variables.host}/Library-API-Watchdog/api/`,
           label: 'API Reference',
@@ -91,6 +97,7 @@ const config: Config = {
           items: [
             {label: 'API Reference', href: `${variables.host}/Library-API-Watchdog/api/`},
             {label: 'GitHub', href: variables['repo-root-path']},
+            {label: 'License', href: `${variables['repo-root-path']}/blob/main/LICENSE`},
           ],
         },
       ],

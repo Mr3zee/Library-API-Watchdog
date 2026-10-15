@@ -1,6 +1,7 @@
 package org.jetbrains.kotlinx.library.api.watchdog
 
 import java.io.File
+import org.gradle.api.attributes.Attribute
 
 @InternalWatchdogApi
 public const val API_WATCHDOG_REPORT_USAGE: String =
@@ -13,6 +14,10 @@ public const val API_WATCHDOG_REPORT_ELEMENTS_CONFIGURATION: String =
 @InternalWatchdogApi
 public const val API_WATCHDOG_REPORTS_CONFIGURATION: String =
     "apiWatchdogReports"
+
+@InternalWatchdogApi
+public val API_WATCHDOG_REPORT_ROOT_DIRECTORY_ATTRIBUTE: Attribute<String> =
+    Attribute.of("org.jetbrains.kotlinx.library.api.watchdog.report-root-directory", String::class.java)
 
 /** An `@Intentionally*` annotation in the sources. [location] is `path:line`, relative to the project directory. */
 @InternalWatchdogApi

@@ -3,8 +3,8 @@ package org.jetbrains.kotlinx.library.api.watchdog
 /**
  * Why an exemption annotation is applied.
  *
- * [FOR_BACKWARDS_COMPATIBILITY] and [API_DESIGN] explain an exemption on their own. Every other
- * reason needs a `description` that names the constraint, or the compiler reports
+ * [FOR_BACKWARDS_COMPATIBILITY], [API_DESIGN], and [FOR_DEPRECATION] explain an exemption on their
+ * own. Every other reason needs a `description` that names the constraint, or the compiler reports
  * `EXEMPTION_WITHOUT_EXPLANATION`.
  *
  * See [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions) for more details.
@@ -15,6 +15,9 @@ public enum class ExemptionReason {
 
     /** The shape is part of the API design. */
     API_DESIGN,
+
+    /** The declaration is deprecated or soon to be deprecated, so no evolution is planned for it. */
+    FOR_DEPRECATION,
 
     /**
      * Interoperability with another language, platform, or framework needs the shape. Name it in

@@ -8,6 +8,12 @@ on:
     paths:
       - 'docs/**'
       - 'diagnostics.json'
+      - 'CHANGELOG.md'
+      - 'gradle.properties'
+      - 'scripts/lib/project-version.sh'
+      - 'scripts/update-version.sh'
+      - 'scripts/check-publication-env.sh'
+      - 'scripts/release-tooling.test.mjs'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
 
@@ -59,6 +65,10 @@ jobs:
       - name: Check diagnostic exemption wording
         working-directory: docs
         run: npm run check:diagnostic-exemptions
+
+      - name: Check changelog synchronization
+        working-directory: docs
+        run: npm run check:changelog
 
       # Docusaurus fails on a broken link or anchor, so this is the docs check as well.
       - name: Build the docs website

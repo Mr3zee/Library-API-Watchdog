@@ -219,6 +219,7 @@ final enum class org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason : ko
     enum entry API_DESIGN // org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason.API_DESIGN|null[0]
     enum entry EXTERNAL_CONTRACT // org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason.EXTERNAL_CONTRACT|null[0]
     enum entry FOR_BACKWARDS_COMPATIBILITY // org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|null[0]
+    enum entry FOR_DEPRECATION // org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason.FOR_DEPRECATION|null[0]
     enum entry IGNORE_JAVA_INTEROP // org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason.IGNORE_JAVA_INTEROP|null[0]
     enum entry INTEROP // org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason.INTEROP|null[0]
     enum entry OTHER // org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason.OTHER|null[0]
