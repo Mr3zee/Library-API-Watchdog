@@ -37,9 +37,3 @@ kotlin {
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 }
-
-// The diagnostic test runner of the dev kit doesn't link against the test framework of the
-// 2.5.20 dev builds: https://github.com/Kotlin/compiler-plugin-dev-kit/issues/63
-pluginDevKit.testAgainst
-    .matching { it.version.toString().startsWith("2.5.20-dev") }
-    .configureEach { testTask.configure { enabled = false } }
