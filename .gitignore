@@ -8,3 +8,4 @@ build/
 local.properties
 node_modules/
 .docusaurus/
+.intellijPlatform
