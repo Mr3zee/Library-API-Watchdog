@@ -8,7 +8,7 @@ dokka = "2.2.0"
 # https://github.com/GradleUp/shadow
 shadow = "9.6.0"
 # https://developer.android.com/build/releases/gradle-plugin
-agp8 = "8.13.0"
+agp8 = "8.13.2"
 agp9 = "9.2.1"
 commonmark = "0.24.0"
 jsoup = "1.23.2"
