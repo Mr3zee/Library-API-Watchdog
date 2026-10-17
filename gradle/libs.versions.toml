@@ -1,6 +1,6 @@
 [versions]
 # https://github.com/JetBrains/kotlin
-kotlin = "2.4.0"
+kotlin = "2.5.0-saturn-677"
 kotlinCliMin = "2.3.20"
 kotlinIdeMin = "262"
 # https://github.com/Kotlin/dokka
