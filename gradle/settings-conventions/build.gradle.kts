@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation("com.gradle:develocity-gradle-plugin:4.3.3")
+    implementation("com.gradle:develocity-gradle-plugin:4.6.0")
 }
 
 gradlePlugin {
