@@ -27,7 +27,7 @@ plugins {
     // Work around DevKit settings plugin classloader conflicts with the configuration cache.
     // https://github.com/gradle/gradle/issues/32622
     // This version must match libs.versions.kotlin.
-    kotlin("multiplatform") version "2.4.0" apply false
+    kotlin("multiplatform") version "2.5.0-saturn-677" apply false
 }
 
 includeBuild("gradle-conventions")
