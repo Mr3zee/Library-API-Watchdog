@@ -2,12 +2,14 @@ package org.jetbrains.kotlinx.library.api.watchdog
 
 import java.io.File
 import java.net.URLEncoder
+import java.util.Base64
 
 @InternalWatchdogApi
 public object ApiWatchdogHtmlReport {
     private val stylesheet by lazy { resource("report.css") }
     private val highlighter by lazy { resource("prism-kotlin.js") }
     private val reportScript by lazy { resource("report.js") }
+    private val favicon by lazy { Base64.getEncoder().encodeToString(resource("favicon.svg").toByteArray(Charsets.UTF_8)) }
 
     public fun write(
         reports: List<ApiWatchdogProjectReport>,
@@ -33,6 +35,7 @@ public object ApiWatchdogHtmlReport {
             appendLine("<html lang=\"en\"><head><meta charset=\"utf-8\">")
             appendLine("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">")
             appendLine("<title>API Watchdog report</title>")
+            appendLine("<link rel=\"icon\" type=\"image/svg+xml\" href=\"data:image/svg+xml;base64,$favicon\">")
             appendLine("<style>$stylesheet</style>")
             appendLine("</head><body><main>")
             appendLine("<h1>API Watchdog report</h1>")

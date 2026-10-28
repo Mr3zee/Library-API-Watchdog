@@ -4,6 +4,7 @@ import java.io.File
 import java.io.IOException
 import java.lang.reflect.InvocationTargetException
 import java.nio.file.Files
+import java.util.Base64
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import kotlin.test.Test
@@ -30,6 +31,17 @@ class ApiWatchdogHtmlReportTest {
         project: String = ":library",
         directory: String = "modules/library",
     ) = ApiWatchdogProjectReport(project, directory, applied, entries, snippets)
+
+    @Test
+    fun `report embeds the repository logo as an SVG favicon`() {
+        val icon = assertNotNull(render(listOf(report())).selectFirst("head > link[rel=icon]"))
+        assertEquals("image/svg+xml", icon.attr("type"))
+        val href = icon.attr("href")
+        assertTrue(href.startsWith("data:image/svg+xml;base64,"), href)
+        val svg = Base64.getDecoder().decode(href.substringAfter("base64,")).toString(Charsets.UTF_8)
+        assertEquals(File("../assets/logo.svg").readText(), svg)
+        assertTrue(svg.trimEnd().endsWith("</svg>"))
+    }
 
     @Test
     fun `project reports show their scope without aggregate paths or project labels`() {

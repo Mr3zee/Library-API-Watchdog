@@ -45,6 +45,14 @@ dependencies {
     testImplementation(libs.jsoup)
 }
 
+tasks.processResources {
+    // The HTML report embeds the repository logo as its favicon.
+    from(rootProject.file("assets/logo.svg")) {
+        into("org/jetbrains/kotlinx/library/api/watchdog")
+        rename { "favicon.svg" }
+    }
+}
+
 tasks.test {
     useJUnitPlatform()
     val htmlReportFixtures = layout.buildDirectory.dir("html-report-fixtures")
