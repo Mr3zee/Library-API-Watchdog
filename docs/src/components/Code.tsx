@@ -123,7 +123,6 @@ function FocusedCodeTabs({codeblock}: {codeblock: HighlightedCode}): ReactNode {
             >
               Focused
             </CodeTab>
-            <FocusedHint />
             <CodeTab
               controls={`${tabId}-panel`}
               id={`${tabId}-full`}
@@ -134,6 +133,7 @@ function FocusedCodeTabs({codeblock}: {codeblock: HighlightedCode}): ReactNode {
             </CodeTab>
           </div>
           {codeblock.meta && <span className={styles.tabbedFilename}>{codeblock.meta}</span>}
+          <FocusedHint />
         </div>
         <div
           aria-labelledby={`${tabId}-${view}`}

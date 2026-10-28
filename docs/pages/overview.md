@@ -44,7 +44,6 @@ The fixed version has KDoc, a read-only collection, and a plain class.
 // !link[/@Poko/] https://github.com/drewhamilton/Poko
 @Poko
 public class Config(
-    // !hide-focused
     /** Labels attached to this configuration. */
     public val tags: List<String>,
 )

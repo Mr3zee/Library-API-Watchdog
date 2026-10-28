@@ -57,7 +57,6 @@
   display: flex;
   min-width: 0;
   align-items: center;
-  margin-left: auto;
   padding: 0.3rem 0.65rem;
   font-family: var(--ifm-font-family-monospace);
   font-size: var(--ifm-code-font-size);
@@ -69,6 +68,7 @@
 .codeTabs {
   display: flex;
   align-items: stretch;
+  margin-right: auto;
 }
 
 .codeTab {
@@ -104,7 +104,7 @@
   align-self: center;
   width: 1.1rem;
   height: 1.1rem;
-  margin: 0 0.55rem 0 0.05rem;
+  margin: 0 0.65rem 0 0;
   border: var(--ifm-global-border-width) solid var(--ifm-color-emphasis-500);
   border-radius: 50%;
   color: var(--ifm-color-emphasis-700);
@@ -151,6 +151,7 @@
   }
 
   .tabbedFilename {
+    order: 1;
     width: 100%;
     border-bottom: var(--ifm-global-border-width) solid var(--ifm-color-emphasis-300);
   }
