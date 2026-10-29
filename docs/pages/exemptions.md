@@ -58,7 +58,7 @@ For a published API, the [`exemptExistingApi` task](./existing-libs.md) adds the
 `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` exempts a DSL marker from
 [DSL markers with no-op targets](./checks/special/dsl-marker-noop-target.md) and
 [DSL markers without explicit targets](./checks/special/dsl-marker-without-explicit-targets.md).
-It has no `reason` parameter, because backwards compatibility is the only valid reason for this
+It doesn't have a `reason` parameter, because backwards compatibility is the only valid reason for this
 exemption. Its `description` is optional.
 
 ### All exemption annotations
@@ -112,7 +112,7 @@ on the check page describes the configuration.
 
 An internal API annotation, such as `@InternalMyLibraryApi`, excludes a declaration from every
 public API check. Use it when a declaration is public only for technical reasons and the library
-gives no compatibility guarantee for it.
+doesn't give a compatibility guarantee for it.
 
 Annotate the library's internal API annotation with `@InternalAnnotationMarker`:
 

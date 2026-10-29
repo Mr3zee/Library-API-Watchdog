@@ -27,11 +27,11 @@
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in
 
 /openApi.kt:17:1: error: SUBCLASS_OPT_IN_WITHOUT_MARKERS
-    `@SubclassOptInRequired` on `MarkerlessClass` lists no marker classes, so any external class can subclass it. Pass at least one opt-in marker class or remove the annotation.
+    `@SubclassOptInRequired` on `MarkerlessClass` doesn't list any marker classes, so any external class can subclass it. Pass at least one opt-in marker class or remove the annotation.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/subclass-opt-in-without-markers
 
 /openApi.kt:20:1: error: SUBCLASS_OPT_IN_WITHOUT_MARKERS
-    `@SubclassOptInRequired` on `MarkerlessInterface` lists no marker classes, so any external class can subclass it. Pass at least one opt-in marker class or remove the annotation.
+    `@SubclassOptInRequired` on `MarkerlessInterface` doesn't list any marker classes, so any external class can subclass it. Pass at least one opt-in marker class or remove the annotation.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/subclass-opt-in-without-markers

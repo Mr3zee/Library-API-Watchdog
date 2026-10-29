@@ -56,7 +56,7 @@ while IFS= read -r usage; do
   source="${location_and_source#*:}"
 
   if [[ ! "$source" =~ $version_value_pattern ]]; then
-    echo "Could not read the version at $file:$line_number" >&2
+    echo "Can't read the version at $file:$line_number" >&2
     failures=1
     continue
   fi
@@ -94,7 +94,7 @@ while IFS= read -r usage; do
   source="${location_and_source#*:}"
 
   if [[ ! "$source" =~ $version_value_pattern ]]; then
-    echo "Could not read the Kotlin version at $file:$line_number" >&2
+    echo "Can't read the Kotlin version at $file:$line_number" >&2
     failures=1
     continue
   fi
@@ -125,7 +125,7 @@ while IFS= read -r usage; do
   source="${location_and_source#*:}"
 
   if [[ ! "$source" =~ $kotlin_reference_value_pattern ]]; then
-    echo "Could not read the Kotlin version reference at $file:$line_number" >&2
+    echo "Can't read the Kotlin version reference at $file:$line_number" >&2
     failures=1
     continue
   fi

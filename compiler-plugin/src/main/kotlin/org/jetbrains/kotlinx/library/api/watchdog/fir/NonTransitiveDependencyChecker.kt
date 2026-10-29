@@ -71,7 +71,7 @@ internal class NonTransitiveDependencyChecker(
         )
     }
 
-    /** A direct compiler invocation passes no declarations, so the snippet then names the classpath entry. */
+    /** A direct compiler invocation doesn't pass any declarations, so the snippet then names the classpath entry. */
     private fun exemptionSnippet(origin: Path): String {
         val declaration = dependencyDeclarations[origin]
             ?: DependencyDeclaration("implementation", "\"<the dependency of ${origin.fileName}>\"")
@@ -114,7 +114,7 @@ private class DependencyExposureIndex(
         }
 
         // A project artifact is a jar in one configuration and a classes directory in another,
-        // and a Java class has no Kotlin container source.
+        // and a Java class doesn't have a Kotlin container source.
         return classification.getValue(symbol.classId)
     }
 

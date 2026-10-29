@@ -76,7 +76,7 @@
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target
 
 /dslMarkerTargets.kt:30:25: error: DSL_MARKER_WITHOUT_EXPLICIT_TARGETS
-    The DSL marker `DefaultTargetsDsl` declares no `@Target`. The default targets lack `TYPE` and `TYPEALIAS` and include targets a DSL marker has no effect on. Declare `@Target(AnnotationTarget.CLASS, AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPEALIAS)` or a subset of it.
+    The DSL marker `DefaultTargetsDsl` doesn't declare a `@Target`. The default targets lack `TYPE` and `TYPEALIAS` and include targets a DSL marker doesn't have any effect on. Declare `@Target(AnnotationTarget.CLASS, AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPEALIAS)` or a subset of it.
 
     If this is intended, apply `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL marker.
 

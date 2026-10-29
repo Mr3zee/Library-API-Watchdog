@@ -21,7 +21,7 @@ public data class MarkedData(val x: Int)
 
 public class RegularClass(public val x: Int)
 
-// A data object has no constructor properties, `copy`, or `componentN`.
+// A data object doesn't have constructor properties, `copy`, or `componentN`.
 public data object DataObject
 
 internal data class InternalData(val x: Int)

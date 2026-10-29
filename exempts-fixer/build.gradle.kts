@@ -37,7 +37,7 @@ kotlin {
     pluginDevKit.testAgainst.configureEach { test { dependsOn(compilerIntegrationTest) } }
 }
 
-// The tests need no generated runners. The `GenerateTestsTask` type of the dev kit is internal,
+// The tests don't need generated runners. The `GenerateTestsTask` type of the dev kit is internal,
 // so the name selects the tasks: https://github.com/Kotlin/compiler-plugin-dev-kit/issues/62.
 tasks.matching { it.name.startsWith("generateTests") }.configureEach { enabled = false }
 

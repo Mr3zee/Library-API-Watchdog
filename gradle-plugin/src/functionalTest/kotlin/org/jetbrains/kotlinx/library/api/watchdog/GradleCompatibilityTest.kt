@@ -103,7 +103,7 @@ class GradleCompatibilityTest {
             subproject("dataApi") {
                 source("/** A data API. */\npublic data class DataApi(public val value: Int)", "DataApi")
             }
-            // A Kotlin module without the Watchdog has no report variant.
+            // A Kotlin module without the Watchdog doesn't have a report variant.
             subproject("tools") {
                 plugins(Plugin("org.jetbrains.kotlin.jvm"))
                 source("/** A tool. */\npublic open class Tool", "Tool")

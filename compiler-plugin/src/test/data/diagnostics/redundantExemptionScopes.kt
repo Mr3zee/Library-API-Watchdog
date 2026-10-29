@@ -106,7 +106,7 @@ public class Registry {
 }
 
 public fun compute(): Int {
-    @IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)
+    <!REDUNDANT_EXEMPTION!>@IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)<!>
     data class Point(val x: Int)
     return Point(1).x
 }

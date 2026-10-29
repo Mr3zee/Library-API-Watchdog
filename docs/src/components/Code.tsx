@@ -435,7 +435,10 @@ const diagnostics: AnnotationHandler = {
     return (
       <Tooltip.Root>
         <Tooltip.Trigger asChild>
-          <span className={styles.diagnosticTrigger} tabIndex={0}>
+          <span
+            className={clsx(styles.diagnosticTrigger, reports.every(isWarning) && styles.warning)}
+            tabIndex={0}
+          >
             {children}
           </span>
         </Tooltip.Trigger>
@@ -466,6 +469,10 @@ type DiagnosticReport = {
   parameters: string[];
 };
 
+function isWarning(report: DiagnosticReport): boolean {
+  return byName.get(report.name)?.defaultSeverity === 'warning';
+}
+
 function Diagnostic({report}: {report: DiagnosticReport}): ReactNode {
   const diagnostic = byName.get(report.name);
   const ideaGenerateShortcut = useIdeaGenerateShortcut();
@@ -482,8 +489,8 @@ function Diagnostic({report}: {report: DiagnosticReport}): ReactNode {
   const message = formatMessage(joinTextLines(diagnostic.message), parameters);
   const trailer = 'messageTrailer' in diagnostic ? diagnostic.messageTrailer : undefined;
   return (
-    <div className={styles.diagnostic}>
-      <span className={styles.errorIcon} aria-hidden="true">
+    <div className={clsx(styles.diagnostic, isWarning(report) && styles.warning)}>
+      <span className={styles.diagnosticIcon} aria-hidden="true">
         !
       </span>
       <div className={styles.diagnosticText}>

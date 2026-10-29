@@ -75,7 +75,7 @@ internal object ExemptionFixerRunner {
     private fun readResponse(responseFile: File, exitValue: Int): Map<String, List<String>> {
         if (!responseFile.isFile) {
             throw GradleException(
-                "The exempts fixer wrote no response (exit code $exitValue). " +
+                "The exempts fixer didn't write a response (exit code $exitValue). " +
                         "The process output above has the cause."
             )
         }

@@ -37,7 +37,7 @@ import org.openjdk.jmh.infra.Blackhole
 
 /**
  * One pass over the resolved FIR of the corpus with one checker for each operation. The `none`
- * value runs the pass with no checker and is the baseline to subtract.
+ * value runs the pass without a checker and is the baseline to subtract.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)

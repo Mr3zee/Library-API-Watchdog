@@ -38,10 +38,21 @@ class WatchdogFirCheckers internal constructor(
         session.languageVersionSettings.getFlag(AnalysisFlags.explicitApiMode) != ExplicitApiMode.DISABLED
 
     override val declarationCheckers: DeclarationCheckers = object : DeclarationCheckers() {
-        private fun <C : Any> C.unlessDisabled(vararg diagnostics: ConfigurableWatchdogDiagnostic<*>): C? =
-            takeIf { enabled && diagnostics.any(severities::isEnabled) }
-
         private fun <C : Any> C.onlyOnJvm(): C? = takeIf { session.moduleData.platform.isJvm() }
+
+        private fun <C : Any> partition(vararg entries: Toggled<C>?): Partition<C> {
+            val active = mutableSetOf<C>()
+            val disabled = mutableListOf<ExemptingChecker>()
+            if (enabled) {
+                for (entry in entries.filterNotNull()) {
+                    when {
+                        entry.diagnostics.any(severities::isEnabled) -> active += entry.checker
+                        entry.checker is ExemptingChecker -> disabled += entry.checker
+                    }
+                }
+            }
+            return Partition(active, disabled)
+        }
 
         private fun <D : FirDeclaration> Set<FirDeclarationChecker<D>>.recorded(): Set<FirDeclarationChecker<D>> =
             if (recorder == null) this else mapTo(mutableSetOf()) { RecordingDeclarationChecker(it, recorder) }
@@ -52,98 +63,133 @@ class WatchdogFirCheckers internal constructor(
                 AnnotationExcludingDeclarationChecker(it, annotationBasedExclusions)
             }
 
-        private fun <D : FirDeclaration> Set<FirDeclarationChecker<D>>.probingRedundantExemptions():
-                Set<FirDeclarationChecker<D>> {
+        private fun <D : FirDeclaration> Set<FirDeclarationChecker<D>>.probingRedundantExemptions(
+            disabled: List<ExemptingChecker>,
+        ): Set<FirDeclarationChecker<D>> {
             val (exempting, plain) = partition { it is ExemptingChecker }
             return buildSet {
                 addAll(plain)
-                if (exempting.isNotEmpty()) add(RedundantExemptionProbingChecker(exempting))
+                if (exempting.isNotEmpty() || disabled.isNotEmpty()) {
+                    add(RedundantExemptionProbingChecker(exempting, disabled))
+                }
             }
         }
 
-        private fun <D : FirDeclaration> Set<FirDeclarationChecker<D>>.wrapped(): Set<FirDeclarationChecker<D>> =
-            probingRedundantExemptions().excludingConfiguredAnnotations().recorded()
+        private fun <D : FirDeclaration> Set<FirDeclarationChecker<D>>.wrapped(
+            disabled: List<ExemptingChecker>,
+        ): Set<FirDeclarationChecker<D>> =
+            probingRedundantExemptions(disabled).excludingConfiguredAnnotations().recorded()
 
-        private val plainBasicDeclarationCheckers: Set<FirBasicDeclarationChecker> = setOfNotNull(
+        private val basic = partition<FirBasicDeclarationChecker>(
             UndocumentedApiChecker(severities, reportUndocumentedClassProperties)
-                .unlessDisabled(WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API),
+                .toggledBy(WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API),
+            MutableCollectionChecker(session, severities)
+                .toggledBy(WatchdogDiagnostics.MUTABLE_COLLECTION_PUBLIC_API),
+            PairOrTripleChecker(severities)
+                .toggledBy(WatchdogDiagnostics.PAIR_OR_TRIPLE_PUBLIC_API),
+            NullableBooleanChecker(severities)
+                .toggledBy(WatchdogDiagnostics.NULLABLE_BOOLEAN_PUBLIC_API),
+        )
+
+        private val plainBasicDeclarationCheckers: Set<FirBasicDeclarationChecker> = basic.active + setOfNotNull(
             ExemptionExplanationChecker.declarationChecker
                 .takeIf { enabled && !exemptingExistingApi },
-            MutableCollectionChecker(session, severities)
-                .unlessDisabled(WatchdogDiagnostics.MUTABLE_COLLECTION_PUBLIC_API),
-            PairOrTripleChecker(severities)
-                .unlessDisabled(WatchdogDiagnostics.PAIR_OR_TRIPLE_PUBLIC_API),
-            NullableBooleanChecker(severities)
-                .unlessDisabled(WatchdogDiagnostics.NULLABLE_BOOLEAN_PUBLIC_API),
             InternalApiTypeExposureChecker()
                 .takeIf { enabled && publicTypeWithInternalApiEnabled && !exemptingExistingApi },
             dependencyExposure?.let { NonTransitiveDependencyChecker(session, it) }
                 ?.takeIf { enabled && !exemptingExistingApi },
         )
 
-        private val plainFunctionCheckers: Set<FirFunctionChecker> = setOfNotNull(
+        private val functions = partition<FirFunctionChecker>(
             BooleanParameterChecker(severities)
-                .unlessDisabled(WatchdogDiagnostics.BOOLEAN_PARAMETER_PUBLIC_API),
+                .toggledBy(WatchdogDiagnostics.BOOLEAN_PARAMETER_PUBLIC_API),
             RequiredParameterAfterOptionalChecker(severities)
-                .unlessDisabled(WatchdogDiagnostics.REQUIRED_PARAMETER_AFTER_OPTIONAL),
+                .toggledBy(WatchdogDiagnostics.REQUIRED_PARAMETER_AFTER_OPTIONAL),
             OverloadParameterOrderChecker(severities)
-                .unlessDisabled(WatchdogDiagnostics.INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS),
+                .toggledBy(WatchdogDiagnostics.INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS),
             KotlinOnlyApiChecker(severities)
                 .onlyOnJvm()
-                ?.unlessDisabled(WatchdogDiagnostics.KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC),
+                ?.toggledBy(WatchdogDiagnostics.KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC),
             JvmOverloadsChecker(severities)
                 .onlyOnJvm()
-                ?.unlessDisabled(WatchdogDiagnostics.DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS),
+                ?.toggledBy(WatchdogDiagnostics.DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS),
         )
 
-        private val plainCallableDeclarationCheckers: Set<FirCallableDeclarationChecker> = setOfNotNull(
-            DslMarkerTypePositionChecker(severities).unlessDisabled(WatchdogDiagnostics.DSL_MARKER_NOOP_TYPE_POSITION),
+        private val callables = partition<FirCallableDeclarationChecker>(
+            DslMarkerTypePositionChecker(severities)
+                .toggledBy(WatchdogDiagnostics.DSL_MARKER_NOOP_TYPE_POSITION),
             InlineFunctionLogicChecker(severities)
-                .unlessDisabled(WatchdogDiagnostics.INLINE_FUNCTION_WITH_LOGIC),
+                .toggledBy(WatchdogDiagnostics.INLINE_FUNCTION_WITH_LOGIC),
             MangledJvmNameChecker(severities)
                 .onlyOnJvm()
-                ?.unlessDisabled(WatchdogDiagnostics.MANGLED_JVM_NAME_PUBLIC_API),
+                ?.toggledBy(WatchdogDiagnostics.MANGLED_JVM_NAME_PUBLIC_API),
             CompanionJvmExposureChecker(severities)
                 .onlyOnJvm()
-                ?.unlessDisabled(
+                ?.toggledBy(
                     WatchdogDiagnostics.COMPANION_API_WITHOUT_JVM_STATIC,
                     WatchdogDiagnostics.COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS,
                 ),
         )
 
-        override val classCheckers: Set<FirClassChecker> = setOfNotNull(
+        private val classes = partition<FirClassChecker>(
             OpenApiChecker(severities)
-                .unlessDisabled(WatchdogDiagnostics.OPEN_API_WITHOUT_SUBCLASS_OPT_IN, WatchdogDiagnostics.SUBCLASS_OPT_IN_WITHOUT_MARKERS),
+                .toggledBy(WatchdogDiagnostics.OPEN_API_WITHOUT_SUBCLASS_OPT_IN, WatchdogDiagnostics.SUBCLASS_OPT_IN_WITHOUT_MARKERS),
             ExhaustiveApiChecker(severities)
-                .unlessDisabled(WatchdogDiagnostics.EXHAUSTIVE_PUBLIC_API),
+                .toggledBy(WatchdogDiagnostics.EXHAUSTIVE_PUBLIC_API),
             DataClassChecker(severities)
-                .unlessDisabled(WatchdogDiagnostics.DATA_CLASS_PUBLIC_API),
+                .toggledBy(WatchdogDiagnostics.DATA_CLASS_PUBLIC_API),
             StatefulClassWithoutGeneratedMembersChecker(severities)
-                .unlessDisabled(WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_EQUALS, WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_HASH_CODE, WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_TO_STRING,),
+                .toggledBy(
+                    WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_EQUALS,
+                    WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_HASH_CODE,
+                    WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_TO_STRING,
+                ),
             DslMarkerTargetsChecker(severities)
-                .unlessDisabled(WatchdogDiagnostics.DSL_MARKER_NOOP_TARGET, WatchdogDiagnostics.DSL_MARKER_WITHOUT_EXPLICIT_TARGETS),
-            EnclosingExemptionRedundancyChecker(
-                plainBasicDeclarationCheckers,
-                plainFunctionCheckers,
-                plainCallableDeclarationCheckers,
-            ).takeIf { enabled },
-        ).wrapped()
+                .toggledBy(WatchdogDiagnostics.DSL_MARKER_NOOP_TARGET, WatchdogDiagnostics.DSL_MARKER_WITHOUT_EXPLICIT_TARGETS),
+        )
 
-        override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> = plainBasicDeclarationCheckers.wrapped()
-
-        override val functionCheckers: Set<FirFunctionChecker> = plainFunctionCheckers.wrapped()
-
-        override val fileCheckers: Set<FirFileChecker> = setOfNotNull(
+        private val files = partition<FirFileChecker>(
             TopLevelJvmNameChecker(severities)
                 .onlyOnJvm()
-                ?.unlessDisabled(WatchdogDiagnostics.TOP_LEVEL_API_WITHOUT_JVM_NAME),
-        ).wrapped()
+                ?.toggledBy(WatchdogDiagnostics.TOP_LEVEL_API_WITHOUT_JVM_NAME),
+        )
 
-        override val typeAliasCheckers: Set<FirTypeAliasChecker> = setOfNotNull(
-            FunctionTypeAliasChecker(severities).unlessDisabled(WatchdogDiagnostics.FUNCTION_TYPE_ALIAS_PUBLIC_API),
-        ).wrapped()
+        private val typeAliases = partition<FirTypeAliasChecker>(
+            FunctionTypeAliasChecker(severities)
+                .toggledBy(WatchdogDiagnostics.FUNCTION_TYPE_ALIAS_PUBLIC_API),
+        )
 
-        override val callableDeclarationCheckers: Set<FirCallableDeclarationChecker> = plainCallableDeclarationCheckers.wrapped()
+        private val enclosingExemptionProbes = EnclosingExemptionProbes(
+            plainBasicDeclarationCheckers,
+            functions.active,
+            callables.active,
+            basic.disabled + functions.disabled + callables.disabled,
+        )
+
+        override val classCheckers: Set<FirClassChecker> = (classes.active + setOfNotNull(
+            EnclosingExemptionRedundancyChecker(enclosingExemptionProbes).takeIf { enabled },
+        )).wrapped(classes.disabled)
+
+        override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> = (plainBasicDeclarationCheckers + setOfNotNull(
+            ExpectExemptionRedundancyChecker(
+                basicCheckers = plainBasicDeclarationCheckers,
+                functionCheckers = functions.active,
+                callableCheckers = callables.active,
+                classCheckers = classes.active,
+                typeAliasCheckers = typeAliases.active,
+                disabled = basic.disabled + functions.disabled + callables.disabled + classes.disabled + typeAliases.disabled,
+                enclosing = enclosingExemptionProbes,
+            ).takeIf { enabled },
+        )).wrapped(basic.disabled)
+
+        override val functionCheckers: Set<FirFunctionChecker> = functions.active.wrapped(functions.disabled)
+
+        override val fileCheckers: Set<FirFileChecker> = files.active.wrapped(files.disabled)
+
+        override val typeAliasCheckers: Set<FirTypeAliasChecker> = typeAliases.active.wrapped(typeAliases.disabled)
+
+        override val callableDeclarationCheckers: Set<FirCallableDeclarationChecker> =
+            callables.active.wrapped(callables.disabled)
     }
 
     override val typeCheckers: TypeCheckers = object : TypeCheckers() {
@@ -157,3 +203,10 @@ class WatchdogFirCheckers internal constructor(
         }
     }
 }
+
+private class Toggled<out C : Any>(val checker: C, val diagnostics: List<ConfigurableWatchdogDiagnostic<*>>)
+
+private class Partition<C : Any>(val active: Set<C>, val disabled: List<ExemptingChecker>)
+
+private fun <C : Any> C.toggledBy(vararg diagnostics: ConfigurableWatchdogDiagnostic<*>): Toggled<C> =
+    Toggled(this, diagnostics.toList())

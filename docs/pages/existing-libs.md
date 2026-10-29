@@ -20,14 +20,14 @@ and above the other annotations of the declaration. The task adds the imports.
 A diagnostic with the `WARNING` severity stays in the sources. The console prints the count, and
 the [report](./report.md) lists each one. To exempt a check that is a warning, set it to
 `WatchdogSeverity.ERROR` in `apiWatchdog` for the run. [`UNDOCUMENTED_PUBLIC_API`](./checks/undocumented-public-api.md)
-is a warning by default, so the task adds no placeholder KDoc without this setting.
+is a warning by default, so the task doesn't add placeholder KDoc without this setting.
 
 Three diagnostics get a different fix:
 
 - [`UNDOCUMENTED_PUBLIC_API`](./checks/undocumented-public-api.md): a placeholder KDoc instead of
-  `@IntentionallyUndocumented`, because documentation breaks no user.
+  `@IntentionallyUndocumented`, because documentation doesn't break any user.
 - [`SUBCLASS_OPT_IN_WITHOUT_MARKERS`](./checks/subclass-opt-in-without-markers.md): a markerless
-  `@SubclassOptInRequired` restricts no subclass, so the task replaces it with
+  `@SubclassOptInRequired` doesn't restrict any subclass, so the task replaces it with
   [`@IntentionallyOpen`](./checks/open-api-without-subclass-opt-in.md). The class stays open to everyone.
 - [`DSL_MARKER_NOOP_TYPE_POSITION`](./checks/special/dsl-marker-noop-type-position.md): no exemption
   annotation exists. The task reports the diagnostic as a warning. Move or remove the marker by hand.
@@ -47,7 +47,7 @@ diagnostics that need manual attention. The console prints the same list as warn
 Review the diff and commit it. The checks then report only the API that you add later. For a new
 declaration, fix the shape or pick the exemption reason by hand.
 
-A second run doesn't add anything, because an exempted declaration reports no diagnostic.
+A second run doesn't add anything, because an exempted declaration doesn't report a diagnostic.
 
 ## Collection mode
 
@@ -67,7 +67,7 @@ three things:
   - [`PUBLIC_TYPE_WITH_INTERNAL_API`](./checks/special/public-type-with-internal-api.md): the
     internal type has to leave the signature.
   - [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md):
-    declare the dependency with `api` in the build script. This breaks no consumer.
+    declare the dependency with `api` in the build script. This doesn't break any consumer.
 
 `exemptExistingApi` removes a [redundant exemption](./checks/special/redundant-exemption.md), and
 `generateApiWatchdogReport` tags it as redundant.

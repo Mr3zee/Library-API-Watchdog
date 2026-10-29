@@ -29,6 +29,7 @@ import org.jetbrains.kotlin.test.services.KotlinTestInfo
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlinx.library.api.watchdog.WatchdogComponentRegistrar
 import org.jetbrains.kotlinx.library.api.watchdog.WatchdogConfigurationKeys
+import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogSeverity
 import org.opentest4j.AssertionFailedError
 
 private val PATH_SEPARATOR = File.pathSeparator
@@ -148,7 +149,7 @@ class CompilerPluginTestDataFixerTest {
         }
         assertTrue(
             remainingByNameAndLine.values.all { it == 0 },
-            "Could not map skipped diagnostics back to source markers: $remainingByNameAndLine",
+            "Can't map skipped diagnostics back to source markers: $remainingByNameAndLine",
         )
         return remaining
     }
@@ -286,6 +287,10 @@ private object WatchdogTestDirectives : SimpleDirectivesContainer() {
     val REPORT_UNDOCUMENTED_CLASS_PROPERTIES by directive(
         description = "Member properties of a class without KDoc are reported (reportUndocumentedClassProperties=true)",
     )
+
+    val DIAGNOSTIC_SEVERITIES by stringDirective(
+        description = "Severity overrides in the form of the diagnosticSeverity option",
+    )
 }
 
 private class WatchdogOptionsConfigurator(testServices: TestServices) : EnvironmentConfigurator(testServices) {
@@ -307,6 +312,13 @@ private class WatchdogOptionsConfigurator(testServices: TestServices) : Environm
         }
         if (WatchdogTestDirectives.REPORT_UNDOCUMENTED_CLASS_PROPERTIES in module.directives) {
             configuration.put(WatchdogConfigurationKeys.REPORT_UNDOCUMENTED_CLASS_PROPERTIES, true)
+        }
+        val severities = module.directives[WatchdogTestDirectives.DIAGNOSTIC_SEVERITIES]
+        if (severities.isNotEmpty()) {
+            configuration.put(
+                WatchdogConfigurationKeys.DIAGNOSTIC_SEVERITIES,
+                severities.associate { it.substringBefore(':') to WatchdogSeverity.valueOf(it.substringAfter(':').uppercase()) },
+            )
         }
     }
 }

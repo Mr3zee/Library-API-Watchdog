@@ -438,7 +438,7 @@ private fun PlannedFix.annotationText(imports: ImportResolver, useSite: String =
     "@$useSite${annotationCall(imports)}"
 
 private val PlannedFix.exemption: ExemptionFix
-    get() = fix as? ExemptionFix ?: error("${fix.id} is not an exemption annotation")
+    get() = fix as? ExemptionFix ?: error("${fix.id} isn't an exemption annotation")
 
 private fun PlannedFix.annotationCall(imports: ImportResolver): String {
     val fix = exemption
@@ -523,7 +523,7 @@ private fun PsiElement.resolveDocumentedTarget(): FixTarget? {
 private fun PsiElement.resolveCallableTarget(): FixTarget? {
     for (candidate in ancestorsWithSelf()) {
         when (candidate) {
-            // A type parameter of a class has no enclosing callable, so the annotation goes inline.
+            // A type parameter of a class doesn't have an enclosing callable, so the annotation goes inline.
             is KtTypeParameter -> return FixTarget.InlineBefore(candidate)
             is KtParameter -> if (candidate.hasValOrVar()) return FixTarget.InlineBefore(candidate)
             is KtPropertyAccessor -> return FixTarget.BeforeDeclaration(candidate.property)

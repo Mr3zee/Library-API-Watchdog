@@ -2,7 +2,6 @@ package org.jetbrains.kotlinx.library.api.watchdog.fir
 
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.KtRealSourceElementKind
-import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.KtDiagnostic
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticWithSource
@@ -17,9 +16,11 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirCallableDeclara
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirClassChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirDeclarationChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFunctionChecker
+import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirTypeAliasChecker
 import org.jetbrains.kotlin.fir.declarations.DirectDeclarationsAccess
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirClass
+import org.jetbrains.kotlin.fir.declarations.FirClassLikeDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirFile
@@ -33,14 +34,21 @@ import org.jetbrains.kotlin.fir.declarations.FirTypeAlias
 import org.jetbrains.kotlin.fir.declarations.FirTypeParameter
 import org.jetbrains.kotlin.fir.declarations.FirTypeParameterRef
 import org.jetbrains.kotlin.fir.declarations.FirValueParameter
+import org.jetbrains.kotlin.fir.declarations.getSingleMatchedExpectForActualOrNull
 import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
 import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
 import org.jetbrains.kotlin.fir.declarations.utils.correspondingValueParameterFromPrimaryConstructor
-import org.jetbrains.kotlin.fir.declarations.utils.visibility
+import org.jetbrains.kotlin.fir.declarations.utils.isActual
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
 import org.jetbrains.kotlin.fir.resolve.getContainingClassSymbol
+import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
+import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
+import org.jetbrains.kotlin.fir.symbols.SymbolInternals
+import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
 import org.jetbrains.kotlin.fir.symbols.lazyResolveToPhase
 import org.jetbrains.kotlin.fir.types.FirTypeRef
@@ -58,10 +66,16 @@ internal interface ExemptingChecker {
     val readsExemptionOnSiblings: Boolean get() = false
 }
 
-/** A cache across visits can hold FIR declarations and their sessions on IDE pooled threads. */
+/**
+ * [disabled] holds the exempting checkers of the same category that `NONE` turns off. An exemption
+ * that only they read is redundant.
+ *
+ * A cache across visits can hold FIR declarations and their sessions on IDE pooled threads.
+ */
 internal class RedundantExemptionProbingChecker<D : FirDeclaration>(
     private val delegates: List<FirDeclarationChecker<D>>,
-) : FirDeclarationChecker<D>(delegates.first().mppKind) {
+    private val disabled: List<ExemptingChecker> = emptyList(),
+) : FirDeclarationChecker<D>(delegates.firstOrNull()?.mppKind ?: MppCheckerKind.Common) {
     init {
         require(delegates.all { it is ExemptingChecker && it.mppKind == mppKind }) {
             "Every delegate is an ExemptingChecker of the same MppCheckerKind"
@@ -72,41 +86,34 @@ internal class RedundantExemptionProbingChecker<D : FirDeclaration>(
     override fun check(declaration: D) {
         delegates.forEach { it.check(declaration) }
 
-        if (!declaration.isProbed()) return
+        // The actuals of an expect declaration are visible from the platform session only.
+        if (declaration.isExpectedDeclaration() || !declaration.hasProbedShape()) return
         val candidates = declaration.exemptionCandidates(allExemptions)
         if (candidates.isEmpty()) return
 
-        for (delegate in delegates) {
-            val exempting = delegate as ExemptingChecker
-            val own = candidates.filter { it.isReadBy(exempting, declaration) }
-            if (own.isEmpty()) continue
-
-            val baseline = delegate.probedDiagnostics(declaration)
-            for (candidate in own) {
-                val ignored = own.filter { it === candidate || candidate.covers(it) }.map { it.annotation }
-                val ignoredEverywhere = if (exempting.readsExemptionOnSiblings) setOf(candidate.classId) else emptySet()
-                if (delegate.probedDiagnostics(declaration, ignored, ignoredEverywhere).all { it in baseline }) {
-                    reportRedundantExemption(candidate.annotation, candidate.kind)
-                }
+        val baselines = HashMap<FirDeclarationChecker<D>, Set<ReportedDiagnosticKey>>()
+        for (candidate in candidates) {
+            val readers = delegates.filter { candidate.isReadBy(it as ExemptingChecker, declaration) }
+            if (readers.isEmpty() && disabled.none { candidate.isReadBy(it, declaration) }) continue
+            val needed = readers.any { reader ->
+                val baseline = baselines.getOrPut(reader) { reader.probedDiagnostics(declaration) }
+                reader.needs(declaration, candidate, candidates, baseline)
             }
+            if (!needed) reportRedundantExemption(candidate.annotation, candidate.kind)
         }
     }
-
-    private fun ExemptionCandidate.isReadBy(exempting: ExemptingChecker, declaration: FirDeclaration): Boolean =
-        classId in exempting.exemptions &&
-                !(declaration is FirRegularClass && rank == 0 && classId in exempting.enclosingClassExemptions)
-
-    private fun ExemptionCandidate.covers(other: ExemptionCandidate): Boolean =
-        other.rank > rank && (group == null || group === other.group) && classId == other.classId
 }
 
-/** Class checkers run before member checkers, so this checker probes members itself. */
-internal class EnclosingExemptionRedundancyChecker(
+/** The member checkers that read a class-level exemption, by exemption. */
+internal class EnclosingExemptionProbes(
     basicCheckers: Collection<FirBasicDeclarationChecker>,
     functionCheckers: Collection<FirFunctionChecker>,
     callableCheckers: Collection<FirCallableDeclarationChecker>,
-) : FirClassChecker(MppCheckerKind.Common) {
-    private class Probe(val checker: FirDeclarationChecker<FirDeclaration>, val accepts: (FirDeclaration) -> Boolean)
+    disabled: Collection<ExemptingChecker>,
+) {
+    class Probe(val checker: FirDeclarationChecker<FirDeclaration>, val accepts: (FirDeclaration) -> Boolean)
+
+    class ClassExemption(val annotation: FirAnnotation, val classId: ClassId, val probes: List<Probe>)
 
     private val probesByExemption: Map<ClassId, List<Probe>> = buildMap<ClassId, MutableList<Probe>> {
         fun <D : FirDeclaration> register(checkers: Collection<FirDeclarationChecker<D>>, accepts: (FirDeclaration) -> Boolean) {
@@ -122,62 +129,64 @@ internal class EnclosingExemptionRedundancyChecker(
         register(callableCheckers) { it is FirCallableDeclaration }
     }
 
-    context(context: CheckerContext, reporter: DiagnosticReporter)
-    override fun check(declaration: FirClass) {
-        if (probesByExemption.isEmpty() || declaration !is FirRegularClass || !declaration.isProbed()) return
+    private val disabledExemptions: Set<ClassId> = disabled.flatMapTo(hashSetOf()) { it.enclosingClassExemptions }
 
+    val isEmpty: Boolean get() = probesByExemption.isEmpty() && disabledExemptions.isEmpty()
+
+    /** The class-level exemptions of [declaration]. An exemption without probes belongs to a check that is off. */
+    context(context: CheckerContext)
+    fun classExemptions(declaration: FirRegularClass): List<ClassExemption> = buildList {
         for (annotation in declaration.annotations) {
             if (annotation.source?.kind != KtRealSourceElementKind) continue
             val classId = annotation.toAnnotationClassIdSafe(context.session) ?: continue
-            val probes = probesByExemption[classId] ?: continue
-            val ignored = buildList {
-                add(annotation)
-                declaration.collectNestedExemptions(classId, this)
-            }
-            if (!isNeeded(declaration, ignored, probes)) {
-                reportRedundantExemption(annotation, "classAndMembers")
+            val probes = probesByExemption[classId]
+            if (probes != null) {
+                add(ClassExemption(annotation, classId, probes))
+            } else if (classId in disabledExemptions) {
+                add(ClassExemption(annotation, classId, emptyList()))
             }
         }
     }
 
     @OptIn(DirectDeclarationsAccess::class)
     context(context: CheckerContext)
-    private fun FirRegularClass.collectNestedExemptions(classId: ClassId, into: MutableList<FirAnnotation>) {
-        for (member in declarations) {
+    fun collectNestedExemptions(declaration: FirRegularClass, classId: ClassId, into: MutableList<FirAnnotation>) {
+        for (member in declaration.declarations) {
             // The IDE can visit a class before its members resolve.
             member.symbol.lazyResolveToPhase(FirResolvePhase.BODY_RESOLVE)
             member.exemptionCandidates(setOf(classId)).mapTo(into) { it.annotation }
             if (member is FirRegularClass) {
                 member.annotations.filterTo(into) { it.toAnnotationClassIdSafe(context.session) == classId }
-                member.collectNestedExemptions(classId, into)
+                collectNestedExemptions(member, classId, into)
             }
         }
     }
 
+    /** [actual] marks a probe of an `actual` class. */
     context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun isNeeded(declaration: FirRegularClass, ignored: List<FirAnnotation>, probes: List<Probe>): Boolean {
-        if (probes.any { it.reportsNew(declaration, ignored) }) return true
+    fun isNeeded(declaration: FirRegularClass, ignored: List<FirAnnotation>, probes: List<Probe>, actual: Boolean = false): Boolean {
+        if (probes.any { it.reportsNew(declaration, ignored, actual) }) return true
         val provider = context as? CheckerContextForProvider ?: return true
         return provider.withDeclaration(declaration) { inner ->
-            context(inner, reporter) { membersNeed(declaration, ignored, probes) }
+            context(inner, reporter) { membersNeed(declaration, ignored, probes, actual) }
         }
     }
 
     @OptIn(DirectDeclarationsAccess::class)
     context(context: CheckerContextForProvider, reporter: DiagnosticReporter)
-    private fun membersNeed(declaration: FirRegularClass, ignored: List<FirAnnotation>, probes: List<Probe>): Boolean {
+    private fun membersNeed(declaration: FirRegularClass, ignored: List<FirAnnotation>, probes: List<Probe>, actual: Boolean): Boolean {
         for (member in declaration.declarations) {
             val needed = when (member) {
                 is FirRegularClass -> {
                     member.symbol.lazyResolveToPhase(FirResolvePhase.BODY_RESOLVE)
-                    probes.any { it.reportsNew(member, ignored) } ||
+                    probes.any { it.reportsNew(member, ignored, actual) } ||
                             context.withDeclaration(member) { inner ->
-                                context(inner, reporter) { membersNeed(member, ignored, probes) }
+                                context(inner, reporter) { membersNeed(member, ignored, probes, actual) }
                             }
                 }
                 is FirConstructor, is FirNamedFunction, is FirProperty -> {
                     member.symbol.lazyResolveToPhase(FirResolvePhase.BODY_RESOLVE)
-                    probes.any { it.reportsNew(member, ignored) }
+                    probes.any { it.reportsNew(member, ignored, actual) }
                 }
                 else -> false
             }
@@ -187,23 +196,195 @@ internal class EnclosingExemptionRedundancyChecker(
     }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun Probe.reportsNew(declaration: FirDeclaration, ignored: List<FirAnnotation>): Boolean {
+    private fun Probe.reportsNew(declaration: FirDeclaration, ignored: List<FirAnnotation>, actual: Boolean): Boolean {
         if (!accepts(declaration)) return false
-        val baseline = checker.probedDiagnostics(declaration)
-        return checker.probedDiagnostics(declaration, ignored).any { it !in baseline }
+        val baseline = checker.probedDiagnostics(declaration, actual = actual)
+        return checker.probedDiagnostics(declaration, ignored, actual = actual).any { it !in baseline }
+    }
+}
+
+/** Class checkers run before member checkers, so this checker probes members itself. */
+internal class EnclosingExemptionRedundancyChecker(
+    private val probes: EnclosingExemptionProbes,
+) : FirClassChecker(MppCheckerKind.Common) {
+    context(context: CheckerContext, reporter: DiagnosticReporter)
+    override fun check(declaration: FirClass) {
+        if (probes.isEmpty || declaration !is FirRegularClass) return
+        if (declaration.isExpectedDeclaration() || !declaration.hasProbedShape()) return
+
+        for (exemption in probes.classExemptions(declaration)) {
+            if (exemption.probes.isNotEmpty()) {
+                val ignored = buildList {
+                    add(exemption.annotation)
+                    probes.collectNestedExemptions(declaration, exemption.classId, this)
+                }
+                if (probes.isNeeded(declaration, ignored, exemption.probes)) continue
+            }
+            reportRedundantExemption(exemption.annotation, "classAndMembers")
+        }
+    }
+}
+
+/**
+ * Judges the exemptions of `expect` declarations. A check that reports on the `actual` declaration
+ * reads them through the `actual`. So the checker runs in the platform session, where the symbol
+ * provider finds the `actual` declarations to probe. Without a visible `actual`, the exemption stays.
+ *
+ * When the `actual` duplicates an exemption of the `expect`, the duplicate is the redundant one.
+ */
+internal class ExpectExemptionRedundancyChecker(
+    basicCheckers: Collection<FirBasicDeclarationChecker>,
+    functionCheckers: Collection<FirFunctionChecker>,
+    callableCheckers: Collection<FirCallableDeclarationChecker>,
+    classCheckers: Collection<FirClassChecker>,
+    typeAliasCheckers: Collection<FirTypeAliasChecker>,
+    private val disabled: Collection<ExemptingChecker>,
+    private val enclosing: EnclosingExemptionProbes,
+) : FirBasicDeclarationChecker(MppCheckerKind.Platform) {
+    private val probes: List<EnclosingExemptionProbes.Probe> = buildList {
+        fun <D : FirDeclaration> register(checkers: Collection<FirDeclarationChecker<D>>, accepts: (FirDeclaration) -> Boolean) {
+            for (checker in checkers) {
+                if (checker !is ExemptingChecker) continue
+                @Suppress("UNCHECKED_CAST")
+                add(EnclosingExemptionProbes.Probe(checker as FirDeclarationChecker<FirDeclaration>, accepts))
+            }
+        }
+        register(basicCheckers) { true }
+        register(functionCheckers) { it is FirFunction }
+        register(callableCheckers) { it is FirCallableDeclaration }
+        register(classCheckers) { it is FirClass }
+        register(typeAliasCheckers) { it is FirTypeAlias }
     }
 
-    /** The outer context gets `dropDeclaration`, as in the diagnostics visitor. */
-    private inline fun <R> CheckerContextForProvider.withDeclaration(
-        declaration: FirDeclaration,
-        block: (CheckerContextForProvider) -> R,
-    ): R {
-        val inner = addDeclaration(declaration)
-        try {
-            return block(inner)
-        } finally {
-            dropDeclaration()
+    context(context: CheckerContext, reporter: DiagnosticReporter)
+    override fun check(declaration: FirDeclaration) {
+        if (declaration !is FirMemberDeclaration || !declaration.isExpectedDeclaration() || !declaration.hasProbedShape()) {
+            return
         }
+        val candidates = declaration.exemptionCandidates(allExemptions)
+        val classExemptions = (declaration as? FirRegularClass)?.let { enclosing.classExemptions(it) }.orEmpty()
+        if (candidates.isEmpty() && classExemptions.isEmpty()) return
+
+        val actuals: List<FirDeclaration>? by lazy { declaration.findActuals() }
+
+        val baselines = HashMap<FirDeclarationChecker<FirDeclaration>, Set<ReportedDiagnosticKey>>()
+        for (candidate in candidates) {
+            val readers = probes.filter {
+                it.accepts(declaration) && candidate.isReadBy(it.checker as ExemptingChecker, declaration)
+            }
+            if (readers.isEmpty()) {
+                if (disabled.any { candidate.isReadBy(it, declaration) }) {
+                    reportRedundantExemption(candidate.annotation, candidate.kind)
+                }
+                continue
+            }
+            val neededOnExpect = readers.any { reader ->
+                val baseline = baselines.getOrPut(reader.checker) { reader.checker.probedDiagnostics(declaration) }
+                reader.checker.needs(declaration, candidate, candidates, baseline)
+            }
+            if (neededOnExpect) continue
+            val actualDeclarations = actuals ?: continue
+            val neededOnActual = actualDeclarations.any { actual ->
+                readers.any { it.accepts(actual) && it.checker.needsOnActual(actual, candidate) }
+            }
+            if (!neededOnActual) reportRedundantExemption(candidate.annotation, candidate.kind)
+        }
+
+        if (declaration !is FirRegularClass) return
+        for (exemption in classExemptions) {
+            if (exemption.probes.isEmpty()) {
+                reportRedundantExemption(exemption.annotation, "classAndMembers")
+                continue
+            }
+            val actualClasses = actuals?.filterIsInstance<FirRegularClass>() ?: continue
+            val ignored = buildList {
+                add(exemption.annotation)
+                enclosing.collectNestedExemptions(declaration, exemption.classId, this)
+                for (actualClass in actualClasses) {
+                    actualClass.annotations.filterTo(this) {
+                        it.toAnnotationClassIdSafe(context.session) == exemption.classId
+                    }
+                    enclosing.collectNestedExemptions(actualClass, exemption.classId, this)
+                }
+            }
+            if (enclosing.isNeeded(declaration, ignored, exemption.probes)) continue
+            if (actualClasses.any { enclosing.isNeeded(it, ignored, exemption.probes, actual = true) }) continue
+            reportRedundantExemption(exemption.annotation, "classAndMembers")
+        }
+    }
+
+    /** Whether [actual] needs [candidate] from its `expect` when its own duplicates of the exemption are gone. */
+    @OptIn(SymbolInternals::class)
+    context(context: CheckerContext, reporter: DiagnosticReporter)
+    private fun FirDeclarationChecker<FirDeclaration>.needsOnActual(actual: FirDeclaration, candidate: ExemptionCandidate): Boolean {
+        actual.symbol.lazyResolveToPhase(FirResolvePhase.BODY_RESOLVE)
+        val ignored = buildList {
+            add(candidate.annotation)
+            actual.exemptionCandidates(setOf(candidate.classId)).mapTo(this) { it.annotation }
+        }
+        val ignoredEverywhere = if ((this as ExemptingChecker).readsExemptionOnSiblings) setOf(candidate.classId) else emptySet()
+        val containingClass = (actual as? FirCallableDeclaration)?.getContainingClassSymbol()?.fir as? FirRegularClass
+        val provider = context as? CheckerContextForProvider
+        if (containingClass == null || provider == null) {
+            return probedDiagnostics(actual, ignored, ignoredEverywhere, actual = true)
+                .any { it !in probedDiagnostics(actual, actual = true) }
+        }
+        return provider.withDeclaration(containingClass) { inner ->
+            context(inner, reporter) {
+                probedDiagnostics(actual, ignored, ignoredEverywhere, actual = true)
+                    .any { it !in probedDiagnostics(actual, actual = true) }
+            }
+        }
+    }
+
+    /** The `actual` declarations that the session's symbol provider matches to this `expect`, or null without one. */
+    @OptIn(DirectDeclarationsAccess::class, SymbolInternals::class)
+    context(context: CheckerContext)
+    private fun FirMemberDeclaration.findActuals(): List<FirDeclaration>? {
+        val provider = context.session.symbolProvider
+        val found: List<FirBasedSymbol<*>> = when (this) {
+            is FirClassLikeDeclaration -> listOfNotNull(provider.getClassLikeSymbolByClassId(symbol.classId))
+            is FirCallableDeclaration -> {
+                val containingClass = getContainingClassSymbol()
+                if (containingClass == null) {
+                    val callableId = symbol.callableId ?: return null
+                    provider.getTopLevelCallableSymbols(callableId.packageName, callableId.callableName)
+                } else {
+                    val actualClass = provider.getClassLikeSymbolByClassId(containingClass.classId) as? FirRegularClassSymbol
+                        ?: return null
+                    if (!actualClass.isActualOf(containingClass)) return null
+                    actualClass.fir.declarations.map { it.symbol }
+                }
+            }
+            else -> return null
+        }
+        return found.filter { it.isActualOf(symbol) }.map { it.fir }.takeIf { it.isNotEmpty() }
+    }
+
+    @OptIn(SymbolInternals::class)
+    private fun FirBasedSymbol<*>.isActualOf(expect: FirBasedSymbol<*>): Boolean {
+        val isActual = when (this) {
+            is FirClassLikeSymbol<*> -> isActual
+            is FirCallableSymbol<*> -> isActual
+            else -> false
+        }
+        if (!isActual) return false
+        lazyResolveToPhase(FirResolvePhase.EXPECT_ACTUAL_MATCHING)
+        val matched = getSingleMatchedExpectForActualOrNull() ?: return false
+        return matched == expect || matched.fir === expect.fir
+    }
+}
+
+/** The outer context gets `dropDeclaration`, as in the diagnostics visitor. */
+private inline fun <R> CheckerContextForProvider.withDeclaration(
+    declaration: FirDeclaration,
+    block: (CheckerContextForProvider) -> R,
+): R {
+    val inner = addDeclaration(declaration)
+    try {
+        return block(inner)
+    } finally {
+        dropDeclaration()
     }
 }
 
@@ -219,15 +400,29 @@ private fun <D : FirDeclaration> FirDeclarationChecker<D>.probedDiagnostics(
     declaration: D,
     ignored: List<FirAnnotation> = emptyList(),
     ignoredEverywhere: Set<ClassId> = emptySet(),
+    actual: Boolean = false,
 ): Set<ReportedDiagnosticKey> {
     val reported = hashSetOf<ReportedDiagnosticKey>()
     val collecting = delegatingDiagnosticReporter(reporter) { diagnostic, _ ->
         if (diagnostic != null) reported += diagnostic.key()
     }
-    ExemptionProbe.probing(ignored, ignoredEverywhere) {
+    ExemptionProbe.probing(ignored, ignoredEverywhere, actual) {
         context(context, collecting) { check(declaration) }
     }
     return reported
+}
+
+/** Whether this checker reports less on [declaration] without [candidate] and the candidates it covers. */
+context(context: CheckerContext, reporter: DiagnosticReporter)
+private fun <D : FirDeclaration> FirDeclarationChecker<D>.needs(
+    declaration: D,
+    candidate: ExemptionCandidate,
+    candidates: List<ExemptionCandidate>,
+    baseline: Set<ReportedDiagnosticKey>,
+): Boolean {
+    val ignored = candidates.filter { it === candidate || candidate.covers(it) }.map { it.annotation }
+    val ignoredEverywhere = if ((this as ExemptingChecker).readsExemptionOnSiblings) setOf(candidate.classId) else emptySet()
+    return probedDiagnostics(declaration, ignored, ignoredEverywhere).any { it !in baseline }
 }
 
 context(context: CheckerContext, reporter: DiagnosticReporter)
@@ -241,23 +436,16 @@ private fun reportRedundantExemption(annotation: FirAnnotation, kind: String) {
     )
 }
 
-context(context: CheckerContext)
-private fun FirDeclaration.isProbed(): Boolean {
+private fun FirDeclaration.hasProbedShape(): Boolean {
     if (this is FirFile) return true
     if (this !is FirRegularClass && this !is FirNamedFunction && this !is FirConstructor &&
         this !is FirProperty && this !is FirTypeAlias
     ) {
         return false
     }
-
     val sourceKind = source?.kind
     // Constructor properties own their parameter's exemptions.
-    if (sourceKind != KtRealSourceElementKind && sourceKind != KtFakeSourceElementKind.PropertyFromParameter) {
-        return false
-    }
-
-    if ((this as? FirMemberDeclaration)?.visibility == Visibilities.Local) return false
-    return !isExpectedDeclaration() && !isActualizedDeclaration()
+    return sourceKind == KtRealSourceElementKind || sourceKind == KtFakeSourceElementKind.PropertyFromParameter
 }
 
 /**
@@ -271,6 +459,14 @@ private class ExemptionCandidate(
     val rank: Int,
     val group: Any?,
 )
+
+/** A class-level exemption that covers the members belongs to [EnclosingExemptionProbes]. */
+private fun ExemptionCandidate.isReadBy(exempting: ExemptingChecker, declaration: FirDeclaration): Boolean =
+    classId in exempting.exemptions &&
+            !(declaration is FirRegularClass && rank == 0 && classId in exempting.enclosingClassExemptions)
+
+private fun ExemptionCandidate.covers(other: ExemptionCandidate): Boolean =
+    other.rank > rank && (group == null || group === other.group) && classId == other.classId
 
 private val allExemptions: Set<ClassId> =
     WatchdogClassIds.exemptionAnnotations + WatchdogClassIds.IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility

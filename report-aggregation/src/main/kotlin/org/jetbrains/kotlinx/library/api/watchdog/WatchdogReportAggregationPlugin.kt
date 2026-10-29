@@ -16,7 +16,7 @@ import org.gradle.api.attributes.Usage
  * - Declare included projects by their module coordinates, `group:name`.
  * - Select formats in the `reports` block of `aggregateApiWatchdogReports`.
  *
- * Projects without the Watchdog plugin add no report.
+ * Projects without the Watchdog plugin don't add a report.
  * Source paths are relative to this build's root directory.
  *
  * See [Multi-project builds](https://mr3zee.github.io/Library-API-Watchdog/report#multi-project-builds) and

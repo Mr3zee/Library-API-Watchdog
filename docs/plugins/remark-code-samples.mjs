@@ -49,7 +49,7 @@ function validateDiagnosticAnnotations(value, file) {
 
     const legacy = line.match(LEGACY_DIAGNOSTIC_COMMENT);
     if (legacy) {
-      // A name without a range marks the whole line, so it's an error.
+      // A name without a range marks the whole line, so it is an error.
       validateNames(legacy[1], file);
       throw new Error(
         `Diagnostic annotation in ${file.path} needs the compiler-reported inline range: ` +
@@ -156,6 +156,6 @@ function validateRange(pattern, flags, renderedLines, renderedLineIndex, file) {
     ? renderedLines.slice(renderedLineIndex)
     : renderedLines.slice(renderedLineIndex, renderedLineIndex + 1);
   if (!candidates.some((line) => expression.test(line))) {
-    throw new Error(`Diagnostic range /${pattern}/${flags} matches no code in ${file.path}.`);
+    throw new Error(`Diagnostic range /${pattern}/${flags} doesn't match any code in ${file.path}.`);
   }
 }

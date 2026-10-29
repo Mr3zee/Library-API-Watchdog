@@ -106,7 +106,7 @@ internal object ExemptionRegistry {
         if (diagnostic == WatchdogChecks.REDUNDANT_EXEMPTION.name) messageParameters.firstOrNull() else annotationFor(diagnostic)
 
     fun resolutionFor(diagnostic: String): FixResolution = resolutions[diagnostic] ?: FixResolution.Unfixable(
-        "Unknown diagnostic. This fixer version has no exemption for it"
+        "Unknown diagnostic. This fixer version doesn't have an exemption for it"
     )
 
     private fun fixable(

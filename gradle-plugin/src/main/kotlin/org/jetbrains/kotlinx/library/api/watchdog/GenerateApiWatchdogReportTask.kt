@@ -6,7 +6,7 @@ import org.gradle.api.tasks.UntrackedTask
 /**
  * The `generateApiWatchdogReport` task. It writes the [API Watchdog report](https://mr3zee.github.io/Library-API-Watchdog/report)
  * of the project: the applied `@Intentionally*` annotations and the diagnostics without one.
- * It changes no source.
+ * It doesn't change any source.
  */
 @UntrackedTask(because = "Reads the diagnostic reports that the Kotlin compile tasks write")
 public abstract class GenerateApiWatchdogReportTask internal constructor() : ApiWatchdogReportTask() {
@@ -16,5 +16,5 @@ public abstract class GenerateApiWatchdogReportTask internal constructor() : Api
 
     @get:Internal
     override val noCompilationWarning: String
-        get() = "The project has no Kotlin compilation except tests, so the API Watchdog report is empty."
+        get() = "The project doesn't have a Kotlin compilation except tests, so the API Watchdog report is empty."
 }

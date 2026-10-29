@@ -22,7 +22,7 @@ import org.jetbrains.kotlin.fir.types.contextParameterTypes
 import org.jetbrains.kotlin.fir.types.receiverType
 import org.jetbrains.kotlin.name.StandardClassIds
 
-/** Checks every visibility, because a marker on a private type has no effect either. */
+/** Checks every visibility, because a marker on a private type doesn't have any effect either. */
 internal class DslMarkerTypePositionChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirCallableDeclarationChecker(MppCheckerKind.Common) {

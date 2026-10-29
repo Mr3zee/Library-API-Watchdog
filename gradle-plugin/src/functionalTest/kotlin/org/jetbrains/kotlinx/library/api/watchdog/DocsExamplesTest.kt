@@ -79,7 +79,7 @@ class DocsExamplesTest {
         assertEquals(emptyList(), unexpectedCompilerErrors, unexpectedCompilerErrors.joinToString("\n"))
 
         val report = project.file(REPORT_FILE)
-        assertTrue(report.isFile, "The compiler wrote no docs diagnostics report:\n${result.output}")
+        assertTrue(report.isFile, "The compiler didn't write a docs diagnostics report:\n${result.output}")
         val pokoSamples = samples.filter { "@Poko" in it.code }.mapTo(mutableSetOf(), DocumentationSample::directory)
         val recordedBySample = report.readLines()
             .filter(String::isNotBlank)
@@ -292,7 +292,7 @@ class DocsExamplesTest {
                     found = found || matches.isNotEmpty()
                     if (found && 'g' !in flags) break
                 }
-                require(found) { "Diagnostic range /$pattern/$flags matches no code in $location" }
+                require(found) { "Diagnostic range /$pattern/$flags doesn't match any code in $location" }
             }
         }
 

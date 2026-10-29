@@ -9,8 +9,39 @@ FILE: common.kt
             public get(): R|kotlin/Int|
 
     }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDataClass|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final expect class Record : R|kotlin/Any| {
+        public expect constructor(value: R|kotlin/Int|): R|foo/bar/Record|
+
+        public final expect val value: R|kotlin/Int|
+            public get(): R|kotlin/Int|
+
+    }
     @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final expect fun blocking(): R|kotlin/Int|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final expect suspend fun fetch(): R|kotlin/Int|
+    public final expect suspend fun pull(): R|kotlin/Int|
     @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final expect fun count(n: R|kotlin/Int|): R|kotlin/Unit|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final expect fun flag(on: R|kotlin/Boolean|): R|kotlin/Unit|
+    public final expect fun flagged(on: R|kotlin/Boolean|): R|kotlin/Unit|
+    public final expect class Service : R|kotlin/Any| {
+        public expect constructor(): R|foo/bar/Service|
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final expect suspend fun run(): R|kotlin/Unit|
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final expect fun stop(): R|kotlin/Unit|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final expect class Suspending : R|kotlin/Any| {
+        public expect constructor(): R|foo/bar/Suspending|
+
+        public final expect suspend fun go(): R|kotlin/Unit|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final expect class Blocking : R|kotlin/Any| {
+        public expect constructor(): R|foo/bar/Blocking|
+
+        public final expect fun go(): R|kotlin/Unit|
+
+    }
 Module: jvm
 FILE: jvm.kt
     package foo.bar
@@ -24,10 +55,63 @@ FILE: jvm.kt
             public get(): R|kotlin/Int|
 
     }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDataClass|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final actual data class Record : R|kotlin/Any| {
+        public actual constructor(value: R|kotlin/Int|): R|foo/bar/Record| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual val value: R|kotlin/Int| = R|<local>/value|
+            public get(): R|kotlin/Int|
+
+        public final operator fun component1(): R|kotlin/Int|
+
+        public final fun copy(value: R|kotlin/Int| = this@R|foo/bar/Record|.R|foo/bar/Record.value|): R|foo/bar/Record|
+
+    }
     @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final actual fun blocking(): R|kotlin/Int| {
         ^blocking Int(1)
     }
+    public final actual suspend fun fetch(): R|kotlin/Int| {
+        ^fetch Int(1)
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final actual suspend fun pull(): R|kotlin/Int| {
+        ^pull Int(1)
+    }
     public final actual fun count(n: R|kotlin/Int|): R|kotlin/Unit| {
     }
+    public final actual fun flag(on: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final actual fun flagged(on: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
     @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final fun platformCount(n: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final actual class Service : R|kotlin/Any| {
+        public actual constructor(): R|foo/bar/Service| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual suspend fun run(): R|kotlin/Unit| {
+        }
+
+        public final actual fun stop(): R|kotlin/Unit| {
+        }
+
+    }
+    public final actual class Suspending : R|kotlin/Any| {
+        public actual constructor(): R|foo/bar/Suspending| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual suspend fun go(): R|kotlin/Unit| {
+        }
+
+    }
+    public final actual class Blocking : R|kotlin/Any| {
+        public actual constructor(): R|foo/bar/Blocking| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual fun go(): R|kotlin/Unit| {
+        }
+
     }

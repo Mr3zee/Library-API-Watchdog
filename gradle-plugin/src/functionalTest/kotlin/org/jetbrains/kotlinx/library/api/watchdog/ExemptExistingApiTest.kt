@@ -202,7 +202,7 @@ class ExemptExistingApiTest {
         assertFalse(report.contains("No automatic annotation"))
         assertContains(report, "UNDOCUMENTED_PUBLIC_API")
         assertContains(report, "exemptExistingApi can add a placeholder KDoc.")
-        assertContains(report, "The public class <code>Undocumented</code> has no <code>KDoc</code>.")
+        assertContains(report, "The public class <code>Undocumented</code> doesn't have <code>KDoc</code>.")
     }
 
     @Test
@@ -859,7 +859,7 @@ private val fixableFile = """
         public fun undocumentedMember() {}
     }
 
-    /** A base class whose subclass opt-in lists no markers and so doesn't restrict anything. */
+    /** A base class whose subclass opt-in doesn't list any markers and so doesn't restrict anything. */
     @SubclassOptInRequired
     public open class UnmarkedOptIn
 
@@ -916,7 +916,7 @@ private val fixableFile = """
     @Suppress("NOTHING_TO_INLINE")
     public inline fun squared(value: Int): Int = value * value
 
-    /** A DSL marker with a target on which it has no effect. */
+    /** A DSL marker with a target on which it doesn't have any effect. */
     @DslMarker
     @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
     public annotation class NoopTargetDsl

@@ -47,7 +47,7 @@ public fun connect(): Int = 0
 ## Notes
 
 - The check skips files with only classes, objects, or type aliases.
-- The check skips files with no Java-visible top-level callable.
+- The check skips files without a Java-visible top-level callable.
 - The check includes `@PublishedApi internal` callables because public inline bodies can copy facade
   references into user binaries.
 

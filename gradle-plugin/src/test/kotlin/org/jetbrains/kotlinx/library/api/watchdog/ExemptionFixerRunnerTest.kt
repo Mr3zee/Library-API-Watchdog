@@ -29,7 +29,7 @@ class ExemptionFixerRunnerTest {
                 runFixer(exitValue = exitValue)
             }
             assertEquals(
-                "The exempts fixer wrote no response (exit code $exitValue). The process output above has the cause.",
+                "The exempts fixer didn't write a response (exit code $exitValue). The process output above has the cause.",
                 failure.message,
             )
         }

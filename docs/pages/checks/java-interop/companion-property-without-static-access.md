@@ -71,11 +71,11 @@ public class Registry {
 
 - The check treats the getter and setter separately. A `var` with only `@get:JvmStatic` still reports its setter.
   Add `@set:JvmStatic`, hide it with `@set:JvmSynthetic`, or make it non-public.
-- A private or internal setter needs no static access.
+- A private or internal setter doesn't need static access.
 - The check skips `const val`, `@JvmField`, and `lateinit var` with a public setter, which expose static fields.
   A `lateinit var` with a non-public setter still reports its getter.
   For custom accessors, delegates, properties without a backing field, and overrides, use `@JvmStatic`.
-- The check skips properties with no Java-visible accessors.
+- The check skips properties without Java-visible accessors.
 - The check skips `@PublishedApi internal` properties.
 
 ## Exemption

@@ -3,7 +3,7 @@
 The report lists the applied Watchdog annotations of a project and the diagnostics without one.
 Two tasks write it:
 
-- `generateApiWatchdogReport` changes no source.
+- `generateApiWatchdogReport` doesn't change any source.
 - [`exemptExistingApi`](./existing-libs.md) writes it after it changes the sources, so the applied
   section holds the new annotations.
 

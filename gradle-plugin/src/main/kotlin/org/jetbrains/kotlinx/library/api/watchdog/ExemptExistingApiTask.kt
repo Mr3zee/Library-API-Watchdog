@@ -20,7 +20,7 @@ public abstract class ExemptExistingApiTask internal constructor() : ApiWatchdog
 
     @get:Internal
     override val noCompilationWarning: String
-        get() = "The project has no Kotlin compilation except tests, so the task has no watchdog diagnostics to exempt."
+        get() = "The project doesn't have a Kotlin compilation except tests, so the task doesn't have any watchdog diagnostics to exempt."
 
     override fun logResponse(response: FixerResponse) {
         val projectDirectory = projectDirectory.get().asFile

@@ -18,7 +18,7 @@ import org.jetbrains.kotlin.fir.expressions.unwrapAndFlattenArgument
 import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.name.ClassId
 
-/** Checks every visibility, because a marker on a private annotation class has no effect either. */
+/** Checks every visibility, because a marker on a private annotation class doesn't have any effect either. */
 internal class DslMarkerTargetsChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirClassChecker(MppCheckerKind.Common), ExemptingChecker {

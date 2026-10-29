@@ -112,7 +112,7 @@ abstract class DiagnosticsJsonGeneratorTask : DefaultTask() {
             .resolve(fileName)
         outputFile.parentFile.mkdirs()
         outputFile.writeText(buildString {
-            appendLine("// Generated from diagnostics.json. Do not edit.")
+            appendLine("// Generated from diagnostics.json. Don't edit.")
             appendLine()
             appendLine("package $packageName")
             appendLine()

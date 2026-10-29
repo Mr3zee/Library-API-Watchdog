@@ -19,7 +19,7 @@ Every check is on by default and reports a compilation error, except
 
 ## What it looks like
 
-A public data class with a mutable collection property and no KDoc gets three diagnostics at
+A public data class with a mutable collection property and without KDoc gets three diagnostics at
 once:
 
 :::tip
@@ -77,7 +77,7 @@ details.
 ### API surface checks
 
 - [Boolean parameters in public API](./checks/boolean-parameter-public-api.md): Boolean value
-  parameters. An unnamed `true` or `false` argument has no readable meaning at the call site.
+  parameters. An unnamed `true` or `false` argument doesn't have a readable meaning at the call site.
 - [Data classes in public API](./checks/data-class-public-api.md): data classes. The generated
   `copy` and `componentN` functions and the constructor expose the exact property list in the
   compiled API.
@@ -88,7 +88,7 @@ details.
   abstraction later.
 - [Inconsistent parameter order in overloads](./checks/inconsistent-parameter-order-in-overloads.md):
   overloads whose same-named parameters occupy different positions. A caller can swap the
-  arguments and get no error.
+  arguments and don't get an error.
 - [Inline functions with logic](./checks/inline-function-with-logic.md): public inline functions
   with a body that does more than delegate. The compiler copies that body, and its bugs, into every
   user binary.
@@ -100,14 +100,14 @@ details.
 - [Open API without subclass opt-in](./checks/open-api-without-subclass-opt-in.md): open or abstract
   classes and interfaces that any outside code can subclass without restriction.
 - [Pair and Triple in public API](./checks/pair-or-triple-public-api.md): the tuple types `Pair` and
-  `Triple`. They carry no domain meaning, and their fixed shape can't evolve.
+  `Triple`. They don't carry any domain meaning, and their fixed shape can't evolve.
 - [Required parameters after optional ones](./checks/required-parameter-after-optional.md): required
   parameters after an optional one. A positional call must restate the earlier defaults.
 - [Stateful classes without equals, hashCode, and toString](./checks/stateful-class-without-equals-hashcode-to-string.md):
   classes with a backing-field property that don't declare or inherit `equals`, `hashCode`, and
   `toString`. Instances compare by reference and render as an opaque default in logs and debuggers.
 - [Subclass opt-in without markers](./checks/subclass-opt-in-without-markers.md):
-  `@SubclassOptInRequired` annotations that list no marker classes. They don't restrict subclassing.
+  `@SubclassOptInRequired` annotations that don't list any marker classes. They don't restrict subclassing.
 - [Undocumented public API](./checks/undocumented-public-api.md): public declarations without KDoc.
 - [Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md):
   dependency types in public signatures that consumers don't get transitively.
@@ -133,18 +133,18 @@ The [Java interop checks](./checks/java-interop/java-interop.md) run only in JVM
   API with a value class in the signature. The compiler mangles the JVM name, so Java sources can't
   call it.
 - [Top-level API without JvmName](./checks/java-interop/top-level-api-without-jvm-name.md): files
-  with public top-level declarations and no `@file:JvmName`. The facade `*Kt` class is named after
+  with public top-level declarations and without `@file:JvmName`. The facade `*Kt` class is named after
   the file, so a file rename breaks Java binary compatibility.
 
 ### DSL marker checks
 
 - [DSL markers with no-op targets](./checks/special/dsl-marker-noop-target.md): `@DslMarker`
-  annotation targets on which the marker has no effect. They give a false sense of scope control.
+  annotation targets on which the marker doesn't have any effect. They give a false sense of scope control.
 - [DSL markers without explicit targets](./checks/special/dsl-marker-without-explicit-targets.md):
   `@DslMarker` annotations without an explicit `@Target`. The default target set has mostly targets
-  on which the marker has no effect.
+  on which the marker doesn't have any effect.
 - [DSL markers on no-op type positions](./checks/special/dsl-marker-noop-type-position.md): DSL
-  markers on type positions where they have no effect on scope control.
+  markers on type positions where they don't affect scope control.
 
 ### Meaningful exemptions
 

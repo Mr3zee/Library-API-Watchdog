@@ -57,7 +57,7 @@ benchmark (or `none` for the traversal baseline). `profile.corpusFiles` defaults
 JFR captures only the measurement iterations, after JMH warmup. Recordings are written under
 `build/reports/profile/<benchmark-id>/profile-<yyyyMMdd-HHmmss-SSS>.jfr`. Open them in IntelliJ
 IDEA or JDK Mission Control to inspect CPU samples, allocation samples, locks, and GC activity. The
-task uses the JDK's built-in recorder and needs no platform-specific profiler installation.
+task uses the JDK's built-in recorder and doesn't need a platform-specific profiler installation.
 
 ## The two benchmarks
 

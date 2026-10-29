@@ -19,7 +19,7 @@ internal data class RecordedDiagnostic(
     val reportedEndOffset: Int? = null,
 ) {
     companion object {
-        /** A multiplatform build reports a common source file for each target, so the result has no duplicates. */
+        /** A multiplatform build reports a common source file for each target, so the result doesn't have duplicates. */
         fun parseReports(reportFiles: List<Path>): List<RecordedDiagnostic> = reportFiles
             .asSequence()
             .filter { Files.isRegularFile(it) }

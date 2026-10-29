@@ -46,7 +46,7 @@ test('every diagnostic name outside its own page or a code block has a check-pag
             });
             if (checkPageAlreadyLinked) continue;
 
-            failures.push(`${location}: ${diagnostic.name} is not a link`);
+            failures.push(`${location}: ${diagnostic.name} isn't a link`);
             continue;
           }
 

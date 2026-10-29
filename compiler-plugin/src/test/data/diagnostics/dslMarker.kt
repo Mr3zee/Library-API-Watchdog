@@ -63,7 +63,7 @@ private fun annotationReceiverDslScope(
     }
 }
 
-// The name of the exemption is its reason, so a bare usage needs no description.
+// The name of the exemption is its reason, so a bare usage doesn't need a description.
 
 @IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility
 @DslMarker

@@ -85,7 +85,7 @@ Use the exemption if a narrower target set on a published marker rejects existin
 public annotation class KtorDsl
 ```
 
-The annotation has no `reason` parameter. Its `description` is optional.
+The annotation doesn't have a `reason` parameter. Its `description` is optional.
 
 ## Configuration
 

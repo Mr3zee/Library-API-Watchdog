@@ -70,7 +70,7 @@ class WatchdogProjectTest {
         result.assertError("has its getter on the nested companion class")
         result.assertError("Java-visible top-level functions")
         result.assertError("declares the `FUNCTION` annotation target")
-        result.assertError("has no effect on this parameter type")
+        result.assertError("doesn't have any effect on this parameter type")
         result.assertError(
             "parameter `first` publicly exposes `test.InternalModel`, but that type is marked " +
                     "as internal API with `@InternalLibApi`",
@@ -236,7 +236,7 @@ class WatchdogProjectTest {
         }
 
         project.buildAndFail("build").assertOutputHas(
-            "API Watchdog check 'EXEMPTION_WITHOUT_EXPLANATION' is always an error and accepts no ignore rule"
+            "API Watchdog check 'EXEMPTION_WITHOUT_EXPLANATION' is always an error and doesn't accept an ignore rule"
         )
     }
 
@@ -273,16 +273,16 @@ class WatchdogProjectTest {
         val result = holderProject(reportUndocumentedClassProperties = null).build("build")
 
         result.assertWarnings(UNDOCUMENTED_PUBLIC_API)
-        result.assertOutputHas("The public function `undocumentedFunction` has no `KDoc`")
-        result.assertOutputHas("The public property `undocumentedTopLevelProperty` has no `KDoc`")
-        result.assertOutputLacks("`value` has no `KDoc`")
+        result.assertOutputHas("The public function `undocumentedFunction` doesn't have `KDoc`")
+        result.assertOutputHas("The public property `undocumentedTopLevelProperty` doesn't have `KDoc`")
+        result.assertOutputLacks("`value` doesn't have `KDoc`")
     }
 
     @Test
     fun `undocumented class properties can be reported`() {
         val result = holderProject(reportUndocumentedClassProperties = true).build("build")
 
-        result.assertOutputHas("The public property `value` has no `KDoc`")
+        result.assertOutputHas("The public property `value` doesn't have `KDoc`")
     }
 
     private fun holderProject(reportUndocumentedClassProperties: Boolean?) = jvmProject {
@@ -592,7 +592,7 @@ class WatchdogProjectTest {
     @Test
     fun `compilations named after a test variant aren't checked`() {
         // A local compilation has the shape of the Android names (`debugUnitTest`, `hostTest`)
-        // and needs no Android SDK.
+        // and doesn't need an Android SDK.
         val project = jvmProject {
             explicitApi = false
             buildScript(
@@ -679,7 +679,7 @@ class WatchdogProjectTest {
         }
 
         val result = project.build("build")
-        result.assertWarning("`WatchedClass` has no `KDoc`")
+        result.assertWarning("`WatchedClass` doesn't have `KDoc`")
         result.assertOutputLacks("InternalOpenClass")
         result.assertOutputLacks("memberOfInternal")
         result.assertOutputLacks("InternalEnum")
@@ -703,7 +703,7 @@ class WatchdogProjectTest {
         }
 
         val result = project.buildAndFail("build")
-        result.assertWarning("`WatchedClass` has no `KDoc`")
+        result.assertWarning("`WatchedClass` doesn't have `KDoc`")
         result.assertError(
             "publicly exposes `test.lib.ThirdPartyInternalType`, but that type is marked as internal API " +
                     "with `@ThirdPartyInternalApi`",
@@ -1495,7 +1495,7 @@ class WatchdogProjectTest {
         source(testOnlyFile(className), className, sourceSet = sourceSet)
     }
 
-    /** [unexemptedTestOnlyFile] in any source set. It needs no annotations dependency. */
+    /** [unexemptedTestOnlyFile] in any source set. It doesn't need an annotations dependency. */
     private fun ModuleSpec.unexemptedOpenClassSource(sourceSet: String, className: String = "TestOnlyHelper") {
         source(unexemptedTestOnlyFile(className), className, sourceSet = sourceSet, defaultImports = false)
     }
@@ -1601,7 +1601,7 @@ private val singleModuleDiagnostics: List<Diagnostic> =
 private val unacknowledgedFile = """
     public open class UnprotectedOpenClass
 
-    /** A base class whose subclass opt-in lists no markers and so doesn't restrict anything. */
+    /** A base class whose subclass opt-in doesn't list any markers and so doesn't restrict anything. */
     @SubclassOptInRequired
     public open class UnmarkedOptIn
 
@@ -1647,7 +1647,7 @@ private val unacknowledgedFile = """
     @Suppress("NOTHING_TO_INLINE")
     public inline fun squared(value: Int): Int = value * value
 
-    /** A DSL marker with a target on which it has no effect. */
+    /** A DSL marker with a target on which it doesn't have any effect. */
     @DslMarker
     @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
     public annotation class NoopTargetDsl
@@ -1719,13 +1719,13 @@ private val annotationIgnoreFile = """
     @AlternateGeneratedValueMembers
     public class AlternateGeneratedState(public val value: Int)
 
-    /** State with no generated value members. */
+    /** State without generated value members. */
     public class RegularState(public val value: Int)
 """.trimIndent()
 
 @Language("kotlin")
 private val markerLibraryFile = """
-    /** Flags declarations that are public for technical reasons but are not supported API. */
+    /** Flags declarations that are public for technical reasons but aren't supported API. */
     @InternalAnnotationMarker
     @Target(
         AnnotationTarget.CLASS,

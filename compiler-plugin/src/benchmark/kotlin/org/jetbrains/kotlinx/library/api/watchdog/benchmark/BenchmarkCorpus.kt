@@ -155,12 +155,12 @@ internal object BenchmarkCorpus {
         @DslMarker
         public annotation class LooseDsl$i
 
-        /** Marker whose function target has no DSL effect. */
+        /** Marker whose function target doesn't have a DSL effect. */
         @DslMarker
         @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
         public annotation class MixedDsl$i
 
-        /** Names the current route scope. The marker on the return type has no effect. */
+        /** Names the current route scope. The marker on the return type doesn't have any effect. */
         public fun label$i(): @BenchDsl String = "routes"
 
         /** Mutable scope collecting route definitions. */
@@ -205,7 +205,7 @@ internal object BenchmarkCorpus {
             FANCY,
         }
 
-        /** Formats a label. The default parameter is not mirrored for Java callers. */
+        /** Formats a label. The default parameter isn't mirrored for Java callers. */
         public fun formatLabel$i(value: String, mode: LabelMode$i = LabelMode$i.PLAIN): String =
             if (mode == LabelMode$i.FANCY) "[" + value + "]" else value
 

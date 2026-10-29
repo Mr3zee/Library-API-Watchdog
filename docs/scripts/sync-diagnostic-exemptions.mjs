@@ -163,7 +163,7 @@ function validateExemptions() {
       failures.push(`${location}: exemption wording must start with "If this is intended, apply \`@Intentionally...\`".`);
     }
     if (!diagnostic.message.includes('')) {
-      failures.push(`${name}: the message in diagnostics.json has no empty line before the exemption paragraph.`);
+      failures.push(`${name}: the message in diagnostics.json doesn't have an empty line before the exemption paragraph.`);
     }
   }
 
@@ -206,7 +206,7 @@ function readExemptionTable(result, lines, markerIndex, file, section) {
     });
     rowCount += 1;
   }
-  if (rowCount === 0) parsingFailures.push(`${location}: exemption table has no diagnostic rows.`);
+  if (rowCount === 0) parsingFailures.push(`${location}: exemption table doesn't have any diagnostic rows.`);
 }
 
 function addExemption(result, name, exemption) {

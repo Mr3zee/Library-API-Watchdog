@@ -108,7 +108,7 @@ public fun explainedTypeUse(): @IntentionallyMutableCollection(reason = Exemptio
 private fun privateBareTypeUse(): <!EXEMPTION_WITHOUT_EXPLANATION, REDUNDANT_EXEMPTION!>@IntentionallyMutableCollection<!> MutableList<Int> = mutableListOf()
 
 public fun localBareTypeUse(): Unit {
-    val items: <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyMutableCollection<!> MutableList<Int> = mutableListOf()
+    val items: <!EXEMPTION_WITHOUT_EXPLANATION, REDUNDANT_EXEMPTION!>@IntentionallyMutableCollection<!> MutableList<Int> = mutableListOf()
     items.clear()
 }
 

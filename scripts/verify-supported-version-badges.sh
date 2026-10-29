@@ -33,11 +33,11 @@ readonly idea_label="label=IntelliJ%20IDEA%20${idea_version}%2B"
 
 for badge_file in "${badge_files[@]}"; do
   grep -Fq "$kotlin_badge" "$badge_file" || {
-    echo "$badge_file does not contain the current Kotlin badge: $kotlin_badge" >&2
+    echo "$badge_file doesn't contain the current Kotlin badge: $kotlin_badge" >&2
     exit 1
   }
   grep -Fq "$idea_badge" "$badge_file" || {
-    echo "$badge_file does not contain the current IntelliJ IDEA badge: $idea_badge" >&2
+    echo "$badge_file doesn't contain the current IntelliJ IDEA badge: $idea_badge" >&2
     exit 1
   }
   grep -Fq "$kotlin_label" "$badge_file" || {

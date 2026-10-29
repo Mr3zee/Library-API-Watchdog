@@ -19,7 +19,7 @@ A `@DslMarker` annotation class without `@Target`, or with an empty `@Target()`:
 public annotation class DefaultTargetsDsl
 
 // !hide-focused
-/** Marks no declarations because its target set is empty. */
+/** Doesn't mark any declaration because its target set is empty. */
 @DslMarker
 @Target()
 // !diag[/EmptyTargetsDsl/] DSL_MARKER_WITHOUT_EXPLICIT_TARGETS ["EmptyTargetsDsl"]
@@ -28,7 +28,7 @@ public annotation class EmptyTargetsDsl
 
 ## Rationale
 
-The default targets omit `TYPE` and `TYPEALIAS` and let callers apply markers with no [DSL scope
+The default targets omit `TYPE` and `TYPEALIAS` and let callers apply markers without a [DSL scope
 effect](https://kotlinlang.org/docs/type-safe-builders.html#scope-control-dslmarker). An empty
 target set prevents every usage.
 
@@ -81,7 +81,7 @@ Use the exemption if an explicit target set on a published marker rejects existi
 public annotation class HtmlDsl
 ```
 
-The annotation has no `reason` parameter. Its `description` is optional.
+The annotation doesn't have a `reason` parameter. Its `description` is optional.
 
 ## Configuration
 

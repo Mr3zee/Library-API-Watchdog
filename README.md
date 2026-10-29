@@ -48,7 +48,7 @@ kotlin {
 }
 ```
 
-The checks run only in modules with explicit API mode. Without it the plugin registers no checks,
+The checks run only in modules with explicit API mode. Without it the plugin doesn't register any checks,
 and the Gradle plugin reports a warning.
 
 The Gradle plugin registers the compiler plugin for every compilation except test compilations
@@ -112,7 +112,7 @@ describes the task.
 ## Reports
 
 The `exemptExistingApi` task and the `generateApiWatchdogReport` task write a report to
-`build/reports/api-watchdog/`. `generateApiWatchdogReport` changes no source file. The report has
+`build/reports/api-watchdog/`. `generateApiWatchdogReport` doesn't change any source file. The report has
 two formats:
 
 - `report.html`: every applied `@Intentionally*` annotation and the diagnostics without one.
@@ -146,7 +146,7 @@ See [Report generation](https://mr3zee.github.io/Library-API-Watchdog/report) fo
 ### API surface
 
 - [`BOOLEAN_PARAMETER_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/boolean-parameter-public-api) -
-  Boolean value parameters. An unnamed `true` or `false` argument has no readable meaning at the
+  Boolean value parameters. An unnamed `true` or `false` argument doesn't have a readable meaning at the
   call site.
 - [`DATA_CLASS_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/data-class-public-api) -
   data classes. The generated `copy` and `componentN` functions and the constructor expose the
@@ -159,7 +159,7 @@ See [Report generation](https://mr3zee.github.io/Library-API-Watchdog/report) fo
   into a richer abstraction later.
 - [`INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS`](https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads) -
   overloads whose same-named parameters occupy different positions. A caller can swap
-  the arguments and get no error.
+  the arguments and don't get an error.
 - [`INLINE_FUNCTION_WITH_LOGIC`](https://mr3zee.github.io/Library-API-Watchdog/checks/inline-function-with-logic) -
   public inline functions with a body that does more than delegate. The compiler copies that
   body, and its bugs, into every user binary.
@@ -172,7 +172,7 @@ See [Report generation](https://mr3zee.github.io/Library-API-Watchdog/report) fo
   open or abstract classes and interfaces that any outside code can subclass without
   restriction.
 - [`PAIR_OR_TRIPLE_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/pair-or-triple-public-api) -
-  the tuple types `Pair` and `Triple`. They carry no domain meaning, and their fixed shape can't
+  the tuple types `Pair` and `Triple`. They don't carry any domain meaning, and their fixed shape can't
   evolve.
 - [`REQUIRED_PARAMETER_AFTER_OPTIONAL`](https://mr3zee.github.io/Library-API-Watchdog/checks/required-parameter-after-optional) -
   required parameters after an optional one. A positional call must restate the earlier
@@ -182,7 +182,7 @@ See [Report generation](https://mr3zee.github.io/Library-API-Watchdog/report) fo
   `toString`. Instances compare by reference and render as an opaque default in logs and
   debuggers.
 - [`SUBCLASS_OPT_IN_WITHOUT_MARKERS`](https://mr3zee.github.io/Library-API-Watchdog/checks/subclass-opt-in-without-markers) -
-  `@SubclassOptInRequired` annotations that list no marker classes. They don't restrict
+  `@SubclassOptInRequired` annotations that don't list any marker classes. They don't restrict
   subclassing.
 - [`UNDOCUMENTED_PUBLIC_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api) -
   public declarations without KDoc.
@@ -212,19 +212,19 @@ run only in JVM compilations. A Kotlin-only library turns off the group with
   public API with a value class in the signature. The compiler mangles the JVM name, so Java
   sources can't call it.
 - [`TOP_LEVEL_API_WITHOUT_JVM_NAME`](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/top-level-api-without-jvm-name) -
-  files with public top-level declarations and no `@file:JvmName`. The facade `*Kt` class is
+  files with public top-level declarations and without `@file:JvmName`. The facade `*Kt` class is
   named after the file, so a file rename breaks Java binary compatibility.
 
 ### DSL markers
 
 - [`DSL_MARKER_NOOP_TARGET`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target) -
-  `@DslMarker` annotation targets on which the marker has no effect. They give a false sense of
+  `@DslMarker` annotation targets on which the marker doesn't have any effect. They give a false sense of
   scope control.
 - [`DSL_MARKER_WITHOUT_EXPLICIT_TARGETS`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-without-explicit-targets) -
   `@DslMarker` annotations without an explicit `@Target`. The default target set has mostly
-  targets on which the marker has no effect.
+  targets on which the marker doesn't have any effect.
 - [`DSL_MARKER_NOOP_TYPE_POSITION`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-type-position) -
-  DSL markers on type positions where they have no effect on scope control.
+  DSL markers on type positions where they don't affect scope control.
 
 ### Exemption hygiene
 
@@ -239,7 +239,7 @@ run only in JVM compilations. A Kotlin-only library turns off the group with
 The Gradle plugin reports these, not the compiler:
 
 - [Explicit API mode warning](https://mr3zee.github.io/Library-API-Watchdog/configuration) -
-  explicit API mode is off, so the watchdog registers no checks.
+  explicit API mode is off, so the watchdog doesn't register any checks.
 - [Binary compatibility validation suggestion](https://mr3zee.github.io/Library-API-Watchdog/abi-validation-suggestion) -
   neither the ABI validation of the Kotlin Gradle plugin nor the Binary Compatibility Validator
   plugin is on.

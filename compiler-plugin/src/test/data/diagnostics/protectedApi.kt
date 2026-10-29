@@ -15,7 +15,7 @@ public value class UserId(
     public val value: String,
 )
 
-/** Marks declarations that have no supported API contract. */
+/** Marks declarations that don't have a supported API contract. */
 @InternalAnnotationMarker
 @Target(AnnotationTarget.CLASS)
 public annotation class InternalApi
@@ -100,10 +100,10 @@ public open class ProtectedApi {
     protected class CompanionHost {
         /** Protected-effective companion API. */
         public companion object {
-            /** Has no static Java entry point. */
+            /** Doesn't have a static Java entry point. */
             public fun <!COMPANION_API_WITHOUT_JVM_STATIC!>create<!>(): CompanionHost = CompanionHost()
 
-            /** Has no static Java accessor. */
+            /** Doesn't have a static Java accessor. */
             public val <!COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS!>instanceValue<!>: Int = 1
         }
     }

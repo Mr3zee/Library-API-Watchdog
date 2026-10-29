@@ -141,10 +141,11 @@ internal fun FirDeclaration.isActualizedDeclaration(): Boolean =
             context.containingDeclarations.lastOrNull { it is FirCallableSymbol<*> }
                 ?.let { (it as FirCallableSymbol<*>).isActual } == true
 
+/** A probe of an `actual` declaration runs with its `expect` class in the context, so the context doesn't count then. */
 context(context: CheckerContext)
 internal fun FirDeclaration.isExpectedDeclaration(): Boolean =
     (this as? FirMemberDeclaration)?.isExpect == true ||
-            context.containingDeclarations.any { symbol ->
+            !ExemptionProbe.probingActual && context.containingDeclarations.any { symbol ->
                 when (symbol) {
                     is FirCallableSymbol<*> -> symbol.isExpect
                     is FirClassLikeSymbol<*> -> symbol.isExpect
@@ -153,17 +154,22 @@ internal fun FirDeclaration.isExpectedDeclaration(): Boolean =
             }
 
 internal object ExemptionProbe {
-    private class Ignored(val annotations: List<FirAnnotation>, val classIds: Set<ClassId>)
+    private class Ignored(val annotations: List<FirAnnotation>, val classIds: Set<ClassId>, val actual: Boolean)
 
     private val ignored = ThreadLocal<Ignored?>()
 
-    /** Probes enable disabled diagnostics to avoid false redundancy reports. */
-    val everyDiagnosticEnabled: Boolean get() = ignored.get() != null
+    /** Whether the probed declaration is an `actual` or one of its members. */
+    val probingActual: Boolean get() = ignored.get()?.actual == true
 
     /** Ignores [annotations] individually and [classIds] on every declaration during [block]. */
-    fun <R> probing(annotations: List<FirAnnotation> = emptyList(), classIds: Set<ClassId> = emptySet(), block: () -> R): R {
+    fun <R> probing(
+        annotations: List<FirAnnotation> = emptyList(),
+        classIds: Set<ClassId> = emptySet(),
+        actual: Boolean = false,
+        block: () -> R,
+    ): R {
         val previous = ignored.get()
-        ignored.set(Ignored(annotations, classIds))
+        ignored.set(Ignored(annotations, classIds, actual))
         try {
             return block()
         } finally {
@@ -432,7 +438,7 @@ internal fun FirAnnotation.unexplainedExemptionReason(): Name? {
     val reason = if (reasonArgument == null) {
         otherReason
     } else {
-        // An argument that resolves to no enum entry is already a compilation error.
+        // An argument that doesn't resolve to an enum entry is already a compilation error.
         reasonArgument.extractEnumValueArgumentInfo()?.enumEntryName ?: return null
     }
     if (reason in selfExplanatoryReasons) {

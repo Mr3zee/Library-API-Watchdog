@@ -779,7 +779,7 @@ class ExemptionFixerTest {
         val text = """
             package com.example
 
-            // A line comment is not KDoc.
+            // A line comment isn't KDoc.
             /* Neither is a block comment. */
             public class Commented
         """.trimIndent()
@@ -788,7 +788,7 @@ class ExemptionFixerTest {
 
         assertContains(
             result.newText!!,
-            "// A line comment is not KDoc.\n/* Neither is a block comment. */\n$PLACEHOLDER_KDOC\npublic class Commented",
+            "// A line comment isn't KDoc.\n/* Neither is a block comment. */\n$PLACEHOLDER_KDOC\npublic class Commented",
         )
     }
 

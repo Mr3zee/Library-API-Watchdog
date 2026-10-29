@@ -34,10 +34,10 @@ public val documentedTopLevelProperty: Int = 0
 /** Documented. */
 public typealias DocumentedTypeAlias = String
 
-// A line comment is not KDoc.
+// A line comment isn't KDoc.
 public class <!UNDOCUMENTED_PUBLIC_API!>LineCommentedClass<!>
 
-/* A block comment is not KDoc. */
+/* A block comment isn't KDoc. */
 public class <!UNDOCUMENTED_PUBLIC_API!>BlockCommentedClass<!>
 
 /** Documented. */
@@ -135,7 +135,7 @@ public class WithSecondaryConstructors(input: Int) {
     public constructor(a: Int, b: Int) : this(a + b)
 }
 
-// A companion with the default name needs no KDoc. The check watches a named companion.
+// A companion with the default name doesn't need KDoc. The check watches a named companion.
 
 /** Documented. */
 public class WithDefaultNamedCompanion {
@@ -213,7 +213,7 @@ internal class InternalOuter {
     fun memberOfInternal() {}
 }
 
-/** Members that users can't see need no documentation. */
+/** Members that users can't see don't need documentation. */
 public abstract class WithNonPublicMembers {
     internal fun internalFunction() {}
 

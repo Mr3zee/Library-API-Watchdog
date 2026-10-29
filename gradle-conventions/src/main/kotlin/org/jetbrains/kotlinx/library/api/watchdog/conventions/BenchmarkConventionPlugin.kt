@@ -151,7 +151,7 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                 argumentProviders.add(
                     CommandLineArgumentProvider {
                         val resultFile = checkNotNull(resultsPath) {
-                            "The benchmark results path was not initialized."
+                            "The benchmark results path wasn't initialized."
                         }
                         buildList {
                             include.orNull?.let { add(it) }
@@ -193,7 +193,7 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                 }
                 doLast {
                     val resultTimestamp = checkNotNull(timestamp) {
-                        "The profile result timestamp was not initialized."
+                        "The profile result timestamp wasn't initialized."
                     }
                     resultsPath.walkTopDown()
                         .filter { it.isFile && it.name == "profile.jfr" && it.lastModified() >= startedAt }

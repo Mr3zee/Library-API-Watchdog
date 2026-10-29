@@ -182,7 +182,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             GENERATE_REPORT_TASK_NAME,
             GenerateApiWatchdogReportTask::class.java,
             "Writes the API Watchdog reports: the applied exemptions and the diagnostics without one. " +
-                    "Changes no source",
+                    "Doesn't change any source",
         )
         // IDE sync realizes every task, so task realization can't be the signal.
         val exemptsTaskPaths = listOf(EXEMPT_EXISTING_API_TASK_NAME, GENERATE_REPORT_TASK_NAME)
@@ -208,7 +208,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 rootDirectory.absolutePath,
             )
         }
-        // A disabled watchdog has no report file for aggregation.
+        // A disabled watchdog doesn't have a report file for aggregation.
         afterEvaluate {
             if (!enabled.get()) return@afterEvaluate
             configurations.named(API_WATCHDOG_REPORT_ELEMENTS_CONFIGURATION).configure { configuration ->
@@ -247,7 +247,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             fun ApiWatchdogReportTask.addCompilation() {
                 compilationNames.add(kotlinCompilation.compileKotlinTaskName)
                 sourceFiles.from(kotlinCompilation.allKotlinSourceSets.map { it.kotlin })
-                // The built-in Kotlin of AGP 9 registers no Kotlin source set on the compilation.
+                // The built-in Kotlin of AGP 9 doesn't register a Kotlin source set on the compilation.
                 sourceFiles.from(kotlinCompilation.compileTaskProvider.map { task ->
                     (task as? KotlinCompileTool)?.sources ?: objects.fileCollection()
                 })
@@ -345,7 +345,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                         },
                     ),
                 )
-                // The compiler plugin has no option for exempt dependencies, so they go into the
+                // The compiler plugin doesn't have an option for exempt dependencies, so they go into the
                 // transitive paths.
                 add(
                     SubpluginOption(
@@ -432,7 +432,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
 
     /**
      * The files of [configuration] as the compiler sees them. Without the `android-classes-jar`
-     * view, a project AAR has no artifact. The view leaves a plain jar as it is.
+     * view, a project AAR doesn't have an artifact. The view leaves a plain jar as it is.
      */
     private fun dependencyFiles(configuration: Configuration, android: Boolean): FileCollection =
         if (android) dependencyArtifacts(configuration, android).artifactFiles else configuration
@@ -505,7 +505,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
 
     private fun Project.publishedApiElementsName(kotlinCompilation: KotlinCompilation<*>): String {
         // The target-level configuration of Android lacks the build-type and flavor `api`
-        // dependencies. A non-library Android variant has no API elements of its own.
+        // dependencies. A non-library Android variant doesn't have API elements of its own.
         val androidApiElementsName = "${kotlinCompilation.name}ApiElements"
         return if (
             kotlinCompilation.platformType == KotlinPlatformType.androidJvm &&
@@ -610,7 +610,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
 
         private fun missingExplicitApiWarning(projectPath: String): String = """
             |Project '$projectPath' applies library-api-watchdog but doesn't enable explicit API mode, so the
-            |watchdog registers no checks. Enable it in the build script of the module:
+            |watchdog doesn't register any checks. Enable it in the build script of the module:
             |
             |    kotlin {
             |        explicitApi()

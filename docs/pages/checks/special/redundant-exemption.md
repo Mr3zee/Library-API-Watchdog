@@ -19,58 +19,21 @@ An `@Intentionally*` exemption that doesn't exempt anything on the element.
 public class Connection
 ```
 
-The common cases:
-
-- The declaration isn't public API: `internal`, `private`, `@PublishedApi internal`, an override, or
-  [internal API](../../exemptions.md#internal-api-annotations).
-- The declaration doesn't have the shape the check reports, as in the sample.
-- A broader exemption covers the same element: on the function and on its parameter, or on a class
-  and on a member. The check reports the narrower one. Two overloads that both carry
-  `@IntentionallyInconsistentParameterOrder` cover each other, and the check doesn't report either
-  of them.
-- The exemption is on an element the check doesn't visit: `@IntentionallyBooleanParameter` on a
-  constructor parameter, or `@IntentionallyKotlinOnlyApi` on an interface member.
-
-## Rationale
-
-A redundant exemption states that a shape is intended, but the shape doesn't exist. A reader looks
-for it. A later edit can give the declaration the shape, and the old exemption then hides the new
-finding.
-
-### Don't
-
-```kotlin
-// !hide-focused
-/** A queue of messages. */
-public class Queue {
-    /** Reads a snapshot of the queue. */
-    // !diag[/@IntentionallyMutableCollection.*\)/] REDUNDANT_EXEMPTION ["IntentionallyMutableCollection","$declaration"]
-    @IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)
-    public fun snapshot(): List<String> = emptyList()
-}
-```
-
-### Do
-
-```kotlin
-// !hide-focused
-/** A queue of messages. */
-public class Queue {
-    /** Reads a snapshot of the queue. */
-    public fun snapshot(): List<String> = emptyList()
-}
-```
-
 ## Notes
 
 - The [report](../../report.md) tags the annotation as **Redundant**.
-- A check with every diagnostic set to `NONE` reports no redundant exemption. A diagnostic set to
-  `NONE` next to an enabled diagnostic of the same check keeps the exemptions it needs when it is on.
-- The check skips `expect`, `actual`, and local declarations.
+- A check set to `NONE` doesn't report anything, so its exemptions are redundant.
+  [`exemptExistingApi`](../../existing-libs.md) removes them. To keep them, turn the check on
+  before you run the task.
+- An exemption on an `expect` declaration is redundant when neither the `expect` nor its `actual`
+  declaration needs it. Each platform compilation reports it for its own `actual`. The common
+  compilation doesn't report it.
+- When the `expect` and the `actual` declaration carry the same exemption, the one on the `actual`
+  is redundant.
 - An [annotation ignore rule](../../exemptions.md#annotation-ignore-rules) doesn't make an exemption
   redundant.
 - [`exemptExistingApi`](../../existing-libs.md) removes a redundant exemption, and the import of the
-  annotation when the file has no other use of it.
+  annotation when the file doesn't have another use of it.
 
 ## See also
 

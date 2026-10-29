@@ -49,7 +49,7 @@ test('rejects a diagnostic without an inline range', () => {
 test('rejects an inline range that matches no code', () => {
   assert.throws(
     () => transform('// !diag[/Missing/] DATA_CLASS_PUBLIC_API ["Thing"]\npublic data class Thing(public val value: Int)'),
-    /matches no code/,
+    /doesn't match any code/,
   );
 });
 

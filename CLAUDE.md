@@ -9,7 +9,7 @@ evolve. README.md lists the diagnostics. `DOCS_GUIDELINE.md` holds the rules for
 
 ## Commands
 
-The compiler plugin and the fixer have no plain `test` task. The dev kit registers one test task for each supported
+The compiler plugin and the fixer don't have a plain `test` task. The dev kit registers one test task for each supported
 Kotlin version (`k2320Test`, `k2410Test`, ...). `./gradlew :<module>:tasks --all` lists the current set.
 
 ```bash
@@ -44,7 +44,7 @@ npm run build                       # the site build, fails on a broken link or 
 - `diagnostics.json` is the single source of truth for diagnostic texts. The build generates `WatchdogDiagnosticMessages`
   (compiler plugin), `WatchdogChecks` (Gradle plugin and fixer), `WatchdogCheckDescriptions` (report aggregation),
   and the `Diagnostic` enum of the Gradle plugin's functional tests from it. The docs build fails on a diagnostic
-  name that `diagnostics.json` doesn't list or a range that matches no sample line. `DocsExamplesTest` in the
+  name that `diagnostics.json` doesn't list or a range that doesn't match any sample line. `DocsExamplesTest` in the
   Gradle functional tests compiles every docs sample and checks that the compiler reports exactly the annotated
   diagnostics, at the annotated ranges, with the annotated parameters.
 - The Gradle functional tests describe a build with the DSL in `WatchdogProject.kt` (`jvmProject`, `kmpProject`,
@@ -63,8 +63,8 @@ npm run build                       # the site build, fails on a broken link or 
 - The Gradle plugin checks the task graph in `gradle.taskGraph.whenReady`, never on task realization, because IDE
   sync realizes every task.
 - Android compilations resolve dependencies through an `android-classes-jar` artifact view. Without it a project AAR
-  has no artifact. The plugin recognizes them by the `android` JVM environment of the compile classpath, because the
-  `com.android.kotlin.multiplatform.library` target of AGP 8 reports platform type `jvm`.
+  doesn't have an artifact. The plugin recognizes them by the `android` JVM environment of the compile classpath,
+  because the `com.android.kotlin.multiplatform.library` target of AGP 8 reports platform type `jvm`.
 - `:kotlin-library-api-watchdog-report-aggregation` is a separate artifact so a root project that applies it doesn't
   put the KGP-dependent support plugin on every project's plugin classpath.
 - The Android functional tests skip themselves without an Android SDK. AGP 8 fixtures run with the Gradle version

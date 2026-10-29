@@ -1,8 +1,17 @@
 FILE: declarations.kt
     package foo.bar
 
-    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutEquals|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final class NeededWithoutEquals : R|kotlin/Any| {
-        public constructor(token: R|kotlin/String|): R|foo/bar/NeededWithoutEquals| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutEqualsHashCodeOrToString|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final class NeededOpaque : R|kotlin/Any| {
+        public constructor(token: R|kotlin/String|): R|foo/bar/NeededOpaque| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val token: R|kotlin/String| = R|<local>/token|
+            public get(): R|kotlin/String|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutEquals|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final class OnlyEqualsMissing : R|kotlin/Any| {
+        public constructor(token: R|kotlin/String|): R|foo/bar/OnlyEqualsMissing| {
             super<R|kotlin/Any|>()
         }
 
@@ -10,11 +19,11 @@ FILE: declarations.kt
             public get(): R|kotlin/String|
 
         public open override fun hashCode(): R|kotlin/Int| {
-            ^hashCode this@R|foo/bar/NeededWithoutEquals|.R|foo/bar/NeededWithoutEquals.token|.R|kotlin/Any.hashCode|()
+            ^hashCode this@R|foo/bar/OnlyEqualsMissing|.R|foo/bar/OnlyEqualsMissing.token|.R|kotlin/Any.hashCode|()
         }
 
         public open override fun toString(): R|kotlin/String| {
-            ^toString this@R|foo/bar/NeededWithoutEquals|.R|foo/bar/NeededWithoutEquals.token|
+            ^toString this@R|foo/bar/OnlyEqualsMissing|.R|foo/bar/OnlyEqualsMissing.token|
         }
 
     }
@@ -39,8 +48,8 @@ FILE: declarations.kt
         }
 
     }
-    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public open class NeededOpen : R|kotlin/Any| {
-        public constructor(): R|foo/bar/NeededOpen| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public open class OpenWithOffCheck : R|kotlin/Any| {
+        public constructor(): R|foo/bar/OpenWithOffCheck| {
             super<R|kotlin/Any|>()
         }
 
@@ -72,18 +81,18 @@ FILE: declarations.kt
         }
 
     }
-    public final class NeededFactory : R|kotlin/Any| {
-        public constructor(): R|foo/bar/NeededFactory| {
+    public final class OffCompanionFactory : R|kotlin/Any| {
+        public constructor(): R|foo/bar/OffCompanionFactory| {
             super<R|kotlin/Any|>()
         }
 
         @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final companion object Companion : R|kotlin/Any| {
-            private constructor(): R|foo/bar/NeededFactory.Companion| {
+            private constructor(): R|foo/bar/OffCompanionFactory.Companion| {
                 super<R|kotlin/Any|>()
             }
 
-            public final fun create(): R|foo/bar/NeededFactory| {
-                ^create R|foo/bar/NeededFactory.NeededFactory|()
+            public final fun create(): R|foo/bar/OffCompanionFactory| {
+                ^create R|foo/bar/OffCompanionFactory.OffCompanionFactory|()
             }
 
         }
@@ -106,8 +115,8 @@ FILE: declarations.kt
         }
 
     }
-    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility|() @R|kotlin/DslMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|)) public final annotation class NoopMarker : R|kotlin/Annotation| {
-        public constructor(): R|foo/bar/NoopMarker| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility|() @R|kotlin/DslMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|)) public final annotation class NoopMarkerOffCheck : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/NoopMarkerOffCheck| {
             super<R|kotlin/Any|>()
         }
 
@@ -118,8 +127,8 @@ FILE: declarations.kt
         }
 
     }
-    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDataClass|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final class NotData : R|kotlin/Any| {
-        public constructor(): R|foo/bar/NotData| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDataClass|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final class NotDataOffCheck : R|kotlin/Any| {
+        public constructor(): R|foo/bar/NotDataOffCheck| {
             super<R|kotlin/Any|>()
         }
 

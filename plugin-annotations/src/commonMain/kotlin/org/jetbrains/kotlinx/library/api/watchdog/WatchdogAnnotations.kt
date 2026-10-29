@@ -459,7 +459,7 @@ public annotation class IntentionallyNonTransitiveDependency(
  *
  * Apply it to a published marker, because a change of its targets breaks user code. A new marker
  * must declare effective targets. Backwards compatibility is the only accepted reason, so the
- * annotation has no [ExemptionReason].
+ * annotation doesn't have an [ExemptionReason].
  *
  * @param description Optional context for the exemption.
  */

@@ -66,9 +66,7 @@ class ConfigurableWatchdogDiagnostic<out F : AbstractKtDiagnosticFactory>(
 class WatchdogDiagnosticSeverities(private val overrides: Map<String, WatchdogSeverity>) {
     operator fun <F : AbstractKtDiagnosticFactory> get(diagnostic: ConfigurableWatchdogDiagnostic<F>): F? {
         val default = WatchdogDiagnosticMessages.defaultSeverityFor(diagnostic.name)
-        val configured = overrides[diagnostic.name] ?: default
-        val severity = if (configured == WatchdogSeverity.NONE && ExemptionProbe.everyDiagnosticEnabled) default else configured
-        return diagnostic.withSeverity(severity)
+        return diagnostic.withSeverity(overrides[diagnostic.name] ?: default)
     }
 
     fun isEnabled(diagnostic: ConfigurableWatchdogDiagnostic<*>): Boolean =

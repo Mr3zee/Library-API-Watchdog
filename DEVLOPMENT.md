@@ -41,7 +41,7 @@ The website code samples read the library version from `gradle.properties`.
 LIBRARY_VERSION=0.2.0-dev-1 ./gradlew assemble
 ```
 
-The override takes precedence over `-Pversion` and changes no source file.
+The override takes precedence over `-Pversion` and doesn't change any source file.
 An empty or invalid value fails the build.
 
 ## Dependency updates
@@ -96,7 +96,7 @@ Configure these repository secrets:
 The Maven Central workflow uploads all modules, including the annotation platform variants, as a draft deployment.
 Approve it in [Central Portal](https://central.sonatype.com/publishing/deployments) before the Plugin Portal run.
 The Plugin Portal workflow publishes the watchdog and report aggregation plugins.
-Plugin Portal has no draft deployment mode. A successful run submits both plugin versions for publication.
+Plugin Portal doesn't have a draft deployment mode. A successful run submits both plugin versions for publication.
 
 For a local Maven Central upload, set the environment variables below, then run `./gradlew publishToMavenCentral`:
 

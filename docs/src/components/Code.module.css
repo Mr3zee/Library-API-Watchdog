@@ -244,6 +244,11 @@
   outline: none;
 }
 
+.warning {
+  --watchdog-diagnostic-color: var(--watchdog-warning-color);
+  --watchdog-diagnostic-highlight: var(--watchdog-warning-highlight);
+}
+
 .tooltip {
   z-index: 1000;
   width: max-content;
@@ -288,7 +293,7 @@
   border-top: var(--ifm-global-border-width) solid var(--ifm-color-emphasis-300);
 }
 
-.errorIcon {
+.diagnosticIcon {
   display: inline-flex;
   width: 0.9rem;
   height: 0.9rem;
@@ -302,6 +307,10 @@
   font-size: 0.68rem;
   font-weight: 800;
   line-height: 1;
+}
+
+.warning .diagnosticIcon {
+  color: #1b1b1d;
 }
 
 .diagnosticText {

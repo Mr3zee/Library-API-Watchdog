@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.utils.isData
 import org.jetbrains.kotlin.name.ClassId
 
-/** A `data object` isn't reported, because it has no constructor properties. */
+/** A `data object` isn't reported, because it doesn't have constructor properties. */
 internal class DataClassChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirClassChecker(MppCheckerKind.Common), ExemptingChecker {

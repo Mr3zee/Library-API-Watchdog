@@ -7,7 +7,7 @@ package org.jetbrains.kotlinx.library.api.watchdog.fixer
  */
 internal class LineEndingMapping private constructor(
     val normalizedText: String,
-    /** Null when the text has no `\r`. */
+    /** Null when the text doesn't have a `\r`. */
     private val rawOffsets: IntArray?,
     val newline: String,
 ) {

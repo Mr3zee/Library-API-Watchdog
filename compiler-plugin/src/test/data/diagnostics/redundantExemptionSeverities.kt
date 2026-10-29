@@ -12,10 +12,14 @@ import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyMutableCollection
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyNonStaticCompanionApi
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEquals
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEqualsHashCodeOrToString
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility
 
-@IntentionallyWithoutEquals(reason = ExemptionReason.API_DESIGN)
-public class NeededWithoutEquals(public val token: String) {
+@IntentionallyWithoutEqualsHashCodeOrToString(reason = ExemptionReason.API_DESIGN)
+public class NeededOpaque(public val token: String)
+
+<!REDUNDANT_EXEMPTION!>@IntentionallyWithoutEquals(reason = ExemptionReason.API_DESIGN)<!>
+public class OnlyEqualsMissing(public val token: String) {
     override fun hashCode(): Int = token.hashCode()
     override fun toString(): String = token
 }
@@ -27,15 +31,15 @@ public class ProvidesEquals(public val token: String) {
     override fun toString(): String = token
 }
 
-@IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
-public open class NeededOpen
+<!REDUNDANT_EXEMPTION!>@IntentionallyOpen(reason = ExemptionReason.API_DESIGN)<!>
+public open class OpenWithOffCheck
 
 <!REDUNDANT_EXEMPTION!>@IntentionallyOpen(reason = ExemptionReason.API_DESIGN)<!>
 public class FinalWithOpenExemption
 
 public class Factory {
     public companion object {
-        @IntentionallyNonStaticCompanionApi(reason = ExemptionReason.API_DESIGN)
+        <!REDUNDANT_EXEMPTION!>@IntentionallyNonStaticCompanionApi(reason = ExemptionReason.API_DESIGN)<!>
         public fun create(): Factory = Factory()
 
         <!REDUNDANT_EXEMPTION!>@IntentionallyNonStaticCompanionApi(reason = ExemptionReason.API_DESIGN)<!>
@@ -44,10 +48,10 @@ public class Factory {
     }
 }
 
-public class NeededFactory {
-    @IntentionallyNonStaticCompanionApi(reason = ExemptionReason.API_DESIGN)
+public class OffCompanionFactory {
+    <!REDUNDANT_EXEMPTION!>@IntentionallyNonStaticCompanionApi(reason = ExemptionReason.API_DESIGN)<!>
     public companion object {
-        public fun create(): NeededFactory = NeededFactory()
+        public fun create(): OffCompanionFactory = OffCompanionFactory()
     }
 }
 
@@ -59,18 +63,18 @@ public class StaticFactory {
     }
 }
 
-@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility
+<!REDUNDANT_EXEMPTION!>@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility<!>
 @DslMarker
 @Target(AnnotationTarget.FUNCTION)
-public annotation class NoopMarker
+public annotation class NoopMarkerOffCheck
 
 <!REDUNDANT_EXEMPTION!>@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility<!>
 @DslMarker
 @Target(AnnotationTarget.CLASS)
 public annotation class EffectiveMarker
 
-@IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)
-public class NotData
+<!REDUNDANT_EXEMPTION!>@IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)<!>
+public class NotDataOffCheck
 
 <!REDUNDANT_EXEMPTION!>@IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)<!>
 public fun readOnlyView(): List<Int> = emptyList()

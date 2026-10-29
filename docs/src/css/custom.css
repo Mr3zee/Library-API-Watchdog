@@ -61,6 +61,8 @@
   --ch-26: #afb8c133;
   --watchdog-diagnostic-color: #cf222e;
   --watchdog-diagnostic-highlight: #cf222e14;
+  --watchdog-warning-color: #bf8700;
+  --watchdog-warning-highlight: #bf870014;
   --watchdog-dont-color: #cf222e;
   --watchdog-do-color: #1a7f37;
   --watchdog-sample-badge-glyph: #fff;
@@ -95,6 +97,8 @@
   --ch-26: #6e768166;
   --watchdog-diagnostic-color: #ff7b72;
   --watchdog-diagnostic-highlight: #ff7b7217;
+  --watchdog-warning-color: #e3b341;
+  --watchdog-warning-highlight: #e3b34117;
   --watchdog-dont-color: #ff7b72;
   --watchdog-do-color: #3fb950;
   --watchdog-sample-badge-glyph: #1b1b1d;

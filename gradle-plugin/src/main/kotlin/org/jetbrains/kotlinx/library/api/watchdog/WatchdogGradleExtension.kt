@@ -38,7 +38,7 @@ public open class WatchdogGradleExtension @Inject internal constructor(
     public val openApiWithoutSubclassOptIn: Property<WatchdogSeverity> = objectFactory.severityProperty()
 
     /**
-     * Severity of `SUBCLASS_OPT_IN_WITHOUT_MARKERS`: `@SubclassOptInRequired` with no markers.
+     * Severity of `SUBCLASS_OPT_IN_WITHOUT_MARKERS`: `@SubclassOptInRequired` without markers.
      *
      * See [Subclass opt-in without markers](https://mr3zee.github.io/Library-API-Watchdog/checks/subclass-opt-in-without-markers) for more details.
      */
@@ -245,7 +245,7 @@ public open class WatchdogGradleExtension @Inject internal constructor(
     /**
      * Ignores [check] on a declaration that carries one of the [whenAnnotatedWith] annotations.
      * When the `@Intentionally*` annotation of the check also covers an enclosing class, so does
-     * the rule. An always-error check has no severity property, so `ignore` rejects it. An
+     * the rule. An always-error check doesn't have a severity property, so `ignore` rejects it. An
      * annotation is its fully qualified class name:
      *
      * ```kotlin
@@ -268,7 +268,7 @@ public open class WatchdogGradleExtension @Inject internal constructor(
      */
     public fun ignore(check: WatchdogChecks, whenAnnotatedWith: List<String>) {
         require(check in diagnosticSeverities) {
-            "API Watchdog check '$check' is always an error and accepts no ignore rule"
+            "API Watchdog check '$check' is always an error and doesn't accept an ignore rule"
         }
         require(whenAnnotatedWith.isNotEmpty()) {
             "API Watchdog check '$check' needs at least one annotation name"

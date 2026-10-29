@@ -9,7 +9,7 @@ package lib.api
 
 import org.jetbrains.kotlinx.library.api.watchdog.InternalAnnotationMarker
 
-/** Flags declarations that are public for technical reasons but are not supported API. */
+/** Flags declarations that are public for technical reasons but aren't supported API. */
 @InternalAnnotationMarker
 @Target(
     AnnotationTarget.CLASS,

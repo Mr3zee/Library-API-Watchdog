@@ -38,7 +38,7 @@ internal class OpenApiChecker(
 
         val session = context.session
 
-        // A class without a public or protected constructor has no subclass outside the library.
+        // A class without a public or protected constructor doesn't have a subclass outside the library.
         val constructors = if (declaration.classKind == ClassKind.CLASS) {
             declaration.constructors(session)
         } else emptyList()

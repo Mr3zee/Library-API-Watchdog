@@ -391,7 +391,7 @@ internal class WatchdogFixture(
         appendLine("}")
     }
 
-    /** A source set configuration such as `commonMainImplementation` has no type-safe accessor. */
+    /** A source set configuration such as `commonMainImplementation` doesn't have a type-safe accessor. */
     private fun dependenciesBlock(module: ModuleSpec, sourceSetPrefix: String?): String {
         if (module.dependencies.isEmpty()) return ""
         return buildString {

@@ -98,7 +98,7 @@
       "title": "Subclass opt-in without markers",
       "docs": "checks/subclass-opt-in-without-markers",
       "message": [
-        "`@SubclassOptInRequired` on `{0}` lists no marker classes, so any external class can subclass it.",
+        "`@SubclassOptInRequired` on `{0}` doesn't list any marker classes, so any external class can subclass it.",
         "Pass at least one opt-in marker class or remove the annotation."
       ]
     },
@@ -133,7 +133,7 @@
       "docs": "checks/undocumented-public-api",
       "defaultSeverity": "warning",
       "message": [
-        "The public {0} `{1}` has no `KDoc`. Document the behavior users can rely on.",
+        "The public {0} `{1}` doesn't have `KDoc`. Document the behavior users can rely on.",
         "",
         "If this is intended, apply `@IntentionallyUndocumented` to the declaration."
       ]
@@ -277,7 +277,7 @@
         ]
       },
       "message": [
-        "The {0} `{1}` exposes the tuple type `{2}`, whose components {3} have no domain meaning.",
+        "The {0} `{1}` exposes the tuple type `{2}`, whose components {3} don't have any domain meaning.",
         "Declare a small class with named properties instead.",
         "",
         "If this is intended, apply `@IntentionallyPairOrTriple` to the declaration, parameter, or type",
@@ -648,8 +648,8 @@
       "title": "DSL markers without explicit targets",
       "docs": "checks/special/dsl-marker-without-explicit-targets",
       "message": [
-        "The DSL marker `{0}` declares no `@Target`. The default targets lack `TYPE` and `TYPEALIAS` and",
-        "include targets a DSL marker has no effect on. Declare `@Target(AnnotationTarget.CLASS,",
+        "The DSL marker `{0}` doesn't declare a `@Target`. The default targets lack `TYPE` and `TYPEALIAS` and",
+        "include targets a DSL marker doesn't have any effect on. Declare `@Target(AnnotationTarget.CLASS,",
         "AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPEALIAS)` or a subset",
         "of it.",
         "",
@@ -676,7 +676,7 @@
         ]
       },
       "message": [
-        "The DSL marker `{0}` has no effect on this {1}. It works only on the type of an implicit value:",
+        "The DSL marker `{0}` doesn't have any effect on this {1}. It works only on the type of an implicit value:",
         "a receiver, a context parameter, or a function type with one. Move the",
         "marker to the class or to a receiver type, or remove it."
       ]

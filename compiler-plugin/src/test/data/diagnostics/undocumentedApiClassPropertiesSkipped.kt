@@ -4,7 +4,7 @@
 
 package foo.bar
 
-// By default a member property isn't reported. A top-level property has no class KDoc to hold a
+// By default a member property isn't reported. A top-level property doesn't have a class KDoc to hold a
 // `@property` tag, so it stays reported.
 
 public val <!UNDOCUMENTED_PUBLIC_API!>undocumentedTopLevelProperty<!>: Int = 0
