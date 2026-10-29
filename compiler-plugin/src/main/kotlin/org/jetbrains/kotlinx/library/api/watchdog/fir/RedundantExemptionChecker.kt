@@ -233,6 +233,8 @@ internal class EnclosingExemptionRedundancyChecker(
  * Judges the exemptions of `expect` declarations. A check that reports on the `actual` declaration
  * reads them through the `actual`. So the checker runs in the platform session, where the symbol
  * provider finds the `actual` declarations to probe. Without a visible `actual`, the exemption stays.
+ * The IDE runs every checker in the module's own session, so on a common module it finds no `actual`
+ * and reports only the exemptions of checks that are off.
  *
  * When the `actual` duplicates an exemption of the `expect`, the duplicate is the redundant one.
  */

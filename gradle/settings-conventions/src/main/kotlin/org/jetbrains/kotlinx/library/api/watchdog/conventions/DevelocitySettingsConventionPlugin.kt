@@ -19,7 +19,7 @@ class DevelocitySettingsConventionPlugin : Plugin<Settings> {
                 .getOrElse(isCi)
 
             val develocity = extensions.getByType(DevelocityConfiguration::class.java)
-            develocity.server.set("https://ge.jetbrains.com")
+            develocity.server.set("https://develocity.jetbrains.com")
             develocity.buildScan {
                 publishing.onlyIf { buildScanEnabled && it.isAuthenticated }
                 uploadInBackground.set(!isCi)
