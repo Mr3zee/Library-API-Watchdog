@@ -31,6 +31,7 @@ public final class org/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks : j
 	public static final field PAIR_OR_TRIPLE_PUBLIC_API Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
 	public static final field PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
 	public static final field PUBLIC_TYPE_WITH_INTERNAL_API Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
+	public static final field REDUNDANT_EXEMPTION Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
 	public static final field REQUIRED_PARAMETER_AFTER_OPTIONAL Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
 	public static final field STATEFUL_CLASS_WITHOUT_EQUALS Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
 	public static final field STATEFUL_CLASS_WITHOUT_HASH_CODE Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;
