@@ -6,6 +6,15 @@ const repositoryDirectory = fileURLToPath(new URL('../../', import.meta.url));
 const source = path.join(repositoryDirectory, 'CHANGELOG.md');
 const destination = path.join(repositoryDirectory, 'docs/pages/changelog.md');
 const args = process.argv.slice(2);
+const websiteUrl = 'https://mr3zee.github.io/Library-API-Watchdog/';
+
+// A link to the website becomes a link to the page file, so the docs build checks that the page exists.
+function websiteLinks(markdown) {
+  return markdown.replaceAll(
+    new RegExp(`\\]\\(${websiteUrl.replaceAll('.', '\\.')}([^)#]+)(#[^)]*)?\\)`, 'g'),
+    (_, page, anchor = '') => `](${page}.md${anchor})`,
+  );
+}
 
 if (args.length > 1 || args.some((arg) => arg !== '--check')) {
   console.error('Usage: node docs/scripts/sync-changelog.mjs [--check]');
@@ -20,7 +29,7 @@ if (args.length > 1 || args.some((arg) => arg !== '--check')) {
     '',
     '<!-- Generated from CHANGELOG.md. Run npm run sync:changelog from docs/. -->',
     '',
-    fs.readFileSync(source, 'utf8'),
+    websiteLinks(fs.readFileSync(source, 'utf8')),
   ].join('\n');
 
   if (args.includes('--check')) {
