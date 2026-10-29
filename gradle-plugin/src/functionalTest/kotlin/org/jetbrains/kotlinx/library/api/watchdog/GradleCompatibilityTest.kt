@@ -108,7 +108,6 @@ class GradleCompatibilityTest {
                 plugins(Plugin("org.jetbrains.kotlin.jvm"))
                 source("/** A tool. */\npublic open class Tool", "Tool")
             }
-            // A disabled Watchdog skips the report task and publishes no report file.
             subproject("internalApi") {
                 apiWatchdog { enabled = false }
                 source("/** An internal API. */\npublic open class InternalApi", "InternalApi")

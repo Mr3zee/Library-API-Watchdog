@@ -119,8 +119,6 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         val rootDirectory = isolated.rootProject.projectDirectory.asFile
         val projectDirectoryFromRoot = layout.projectDirectory.asFile
             .relativeToOrSelf(rootDirectory).invariantSeparatorsPath
-        // The fixer leaves a warning alone and the report shows its severity, so the always-warning
-        // check is in the map too. The compiler plugin gets the configurable severities only.
         val diagnosticSeverities = extension.diagnosticSeverities.entries.fold(
             objects.mapProperty(String::class.java, WatchdogSeverity::class.java),
         ) { map, (diagnostic, severity) -> map.apply { put(diagnostic.name, severity) } }
@@ -210,8 +208,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 rootDirectory.absolutePath,
             )
         }
-        // A disabled watchdog skips the report task, so its variant has no artifact and the
-        // aggregation plugin reads no missing file.
+        // A disabled watchdog has no report file for aggregation.
         afterEvaluate {
             if (!enabled.get()) return@afterEvaluate
             configurations.named(API_WATCHDOG_REPORT_ELEMENTS_CONFIGURATION).configure { configuration ->
@@ -226,13 +223,10 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         kotlinCompilation: KotlinCompilation<*>
     ): Provider<List<SubpluginOption>> {
         val extension = extensions.getByType(WatchdogGradleExtension::class.java)
-        // Only the compilations the checks run in, so the exempt task doesn't annotate anything
-        // that no build reports.
         val feedsReport = !kotlinCompilation.isTestCompilation() &&
                 (kotlinCompilation.hasExplicitApiFromExtension() || hasRawExplicitApiFlag())
         val collect = collectDiagnosticsForExempts.map { it && feedsReport }
-        // KGP passes the configured mode itself, twice in a multiplatform project. A different
-        // value makes the compiler warn that `-Xexplicit-api` is passed multiple times.
+        // KGP already sets `-Xexplicit-api`. A different value causes a warning about repeated flags.
         val forceExplicitApi = collect.map { it && !hasExplicitApiMode() }
         val compileDependencies = configurations.named(kotlinCompilation.compileDependencyConfigurationName)
         val transitiveDependencies = transitiveDependenciesFor(kotlinCompilation, compileDependencies)

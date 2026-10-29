@@ -5,10 +5,6 @@
 // TRANSITIVE_DEPENDENCY_PATHS: ../messages/nonTransitiveDependency.deps/shared
 // DEPENDENCY_DECLARATIONS: ../messages/nonTransitiveDependency.deps/models implementation "com.example:models:1.0"
 
-// The dependency exemption applies to a declaration, a parameter, a type usage, and a class with
-// its members. The roots under `messages/nonTransitiveDependency.deps` hold an empty `.class`
-// file for each type, which is all the checker reads.
-
 // MODULE: lib
 // FILE: models.kt
 package com.example.models
@@ -38,7 +34,6 @@ import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyNonTransitiveDepe
 @IntentionallyNonTransitiveDependency(reason = ExemptionReason.INTEROP, description = "The host ships the models.")
 public fun neededReturn(): Model = Model()
 
-// The `shared` dependency is transitive.
 <!REDUNDANT_EXEMPTION!>@IntentionallyNonTransitiveDependency(reason = ExemptionReason.INTEROP, description = "The host ships the models.")<!>
 public fun transitiveReturn(): Shared = Shared()
 
@@ -49,8 +44,6 @@ public fun plainParameter(<!REDUNDANT_EXEMPTION!>@IntentionallyNonTransitiveDepe
 public fun neededNested(): List<@IntentionallyNonTransitiveDependency(reason = ExemptionReason.INTEROP, description = "The host ships the models.") Model> = emptyList()
 
 public fun plainNested(): List<<!REDUNDANT_EXEMPTION!>@IntentionallyNonTransitiveDependency(reason = ExemptionReason.INTEROP, description = "The host ships the models.")<!> Int> = emptyList()
-
-// The class-level exemption covers the supertype and the members.
 
 @IntentionallyNonTransitiveDependency(reason = ExemptionReason.INTEROP, description = "The host ships the models.")
 public class NeededSubtype : Model()
@@ -64,8 +57,6 @@ public class NeededHolder {
 public class PlainHolder {
     public fun count(): Int = 1
 }
-
-// The class-level exemption covers the member, so the member-level one is redundant.
 
 @IntentionallyNonTransitiveDependency(reason = ExemptionReason.INTEROP, description = "The host ships the models.")
 public class CoveredHolder {

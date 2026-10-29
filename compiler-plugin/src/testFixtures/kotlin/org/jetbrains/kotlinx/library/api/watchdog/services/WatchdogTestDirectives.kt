@@ -30,7 +30,7 @@ object WatchdogTestDirectives : SimpleDirectivesContainer() {
         description = "Annotation ignore rules in the form of the ignoreWhenAnnotated option",
     )
 
-    /** `// DIAGNOSTIC_SEVERITIES: STATEFUL_CLASS_WITHOUT_EQUALS:none DATA_CLASS_PUBLIC_API:warning`. One `<NAME>:<severity>` for each override. */
+    /** One `<NAME>:<severity>` pair for each override. */
     val DIAGNOSTIC_SEVERITIES by stringDirective(
         description = "Severity overrides in the form of the diagnosticSeverity option",
     )

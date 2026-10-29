@@ -75,7 +75,6 @@ public object ApiWatchdogHtmlReport {
         })
     }
 
-    /** [redundant] marks an applied annotation that a `REDUNDANT_EXEMPTION` diagnostic reports at the same location. */
     private class Finding(
         val report: ApiWatchdogProjectReport,
         val location: String,

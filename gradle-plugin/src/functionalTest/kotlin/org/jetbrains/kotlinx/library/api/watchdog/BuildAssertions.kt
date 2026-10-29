@@ -10,14 +10,12 @@ import org.gradle.testkit.runner.TaskOutcome
 /** `WatchdogSeverity` of the Gradle plugin. */
 enum class Severity { ERROR, WARNING, NONE }
 
-/** The diagnostics without a severity property in the Gradle extension that are always errors. */
 val alwaysErrorDiagnostics: Set<Diagnostic> = setOf(
     Diagnostic.PUBLIC_TYPE_WITH_INTERNAL_API,
     Diagnostic.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY,
     Diagnostic.EXEMPTION_WITHOUT_EXPLANATION,
 )
 
-/** The diagnostics without a severity property in the Gradle extension that are always warnings. */
 val alwaysWarningDiagnostics: Set<Diagnostic> = setOf(
     Diagnostic.REDUNDANT_EXEMPTION,
 )

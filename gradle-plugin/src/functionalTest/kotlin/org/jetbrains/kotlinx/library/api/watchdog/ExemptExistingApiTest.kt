@@ -325,8 +325,6 @@ class ExemptExistingApiTest {
 
     @Test
     fun `keeps the configured explicit API mode`() {
-        // KGP passes `-Xexplicit-api=strict` twice to a multiplatform compilation. A third,
-        // different value makes the compiler warn that the flag is passed multiple times.
         val project = kmpProject { source(openClass("SharedApi"), "sharedApi") }
 
         val result = project.build(EXEMPT_TASK)

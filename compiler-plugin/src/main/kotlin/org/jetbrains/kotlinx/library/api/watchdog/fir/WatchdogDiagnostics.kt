@@ -64,10 +64,6 @@ class ConfigurableWatchdogDiagnostic<out F : AbstractKtDiagnosticFactory>(
  * of its `diagnostics.json` entry.
  */
 class WatchdogDiagnosticSeverities(private val overrides: Map<String, WatchdogSeverity>) {
-    /**
-     * The factory with the configured severity, or null for `none`. A probe of [ExemptionProbe]
-     * gets the factory with the default severity instead of null.
-     */
     operator fun <F : AbstractKtDiagnosticFactory> get(diagnostic: ConfigurableWatchdogDiagnostic<F>): F? {
         val default = WatchdogDiagnosticMessages.defaultSeverityFor(diagnostic.name)
         val configured = overrides[diagnostic.name] ?: default
@@ -75,7 +71,6 @@ class WatchdogDiagnosticSeverities(private val overrides: Map<String, WatchdogSe
         return diagnostic.withSeverity(severity)
     }
 
-    /** Whether the configured severity isn't `none`. A probe doesn't change the answer. */
     fun isEnabled(diagnostic: ConfigurableWatchdogDiagnostic<*>): Boolean =
         (overrides[diagnostic.name] ?: WatchdogDiagnosticMessages.defaultSeverityFor(diagnostic.name)) != WatchdogSeverity.NONE
 

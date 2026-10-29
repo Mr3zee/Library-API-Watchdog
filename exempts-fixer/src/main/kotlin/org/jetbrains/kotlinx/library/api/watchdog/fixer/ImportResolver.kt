@@ -24,7 +24,6 @@ internal class ImportResolver(private val ktFile: KtFile) {
 
     private val importsToAdd = sortedSetOf<String>()
 
-    /** Whether a fix of this run adds a reference to the annotation. */
     fun references(shortName: String): Boolean =
         "${ExemptionRegistry.ANNOTATIONS_PACKAGE}.$shortName" in importsToAdd
 

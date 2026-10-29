@@ -48,7 +48,6 @@ internal class FixerRequest(
     val updateSources: Boolean,
     val responseFile: Path,
 ) {
-    /** The fixer removes a redundant exemption even though it is a warning. */
     fun fixes(diagnostic: String): Boolean =
         diagnostic == WatchdogChecks.REDUNDANT_EXEMPTION.name ||
                 (diagnosticSeverities[diagnostic] ?: ERROR_SEVERITY) == ERROR_SEVERITY

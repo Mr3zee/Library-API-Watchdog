@@ -1965,9 +1965,7 @@ private val exposesJavaDependencyTypeFile = """
     }
 """.trimIndent()
 
-/** [unacknowledgedFile] with every diagnostic exempted. */
 @Suppress("RedundantSuspendModifier", "MayBeConstant")
-/** One exemption the check needs and one it doesn't. */
 @Language("kotlin")
 private val redundantExemptionFile = """
     /** A deliberately stable data holder. */

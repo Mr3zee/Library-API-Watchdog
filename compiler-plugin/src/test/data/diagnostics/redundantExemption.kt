@@ -2,10 +2,6 @@
 // EXPLICIT_API_MODE: WARNING
 // DIAGNOSTICS: -UNDOCUMENTED_PUBLIC_API -TOP_LEVEL_API_WITHOUT_JVM_NAME -EXEMPTION_WITHOUT_EXPLANATION -STATEFUL_CLASS_WITHOUT_EQUALS -STATEFUL_CLASS_WITHOUT_HASH_CODE -STATEFUL_CLASS_WITHOUT_TO_STRING -OPEN_API_WITHOUT_SUBCLASS_OPT_IN -EXHAUSTIVE_PUBLIC_API -DATA_CLASS_PUBLIC_API -FUNCTION_TYPE_ALIAS_PUBLIC_API -MUTABLE_COLLECTION_PUBLIC_API -PAIR_OR_TRIPLE_PUBLIC_API -BOOLEAN_PARAMETER_PUBLIC_API -NULLABLE_BOOLEAN_PUBLIC_API -REQUIRED_PARAMETER_AFTER_OPTIONAL -INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS -INLINE_FUNCTION_WITH_LOGIC -MANGLED_JVM_NAME_PUBLIC_API -KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC -COMPANION_API_WITHOUT_JVM_STATIC -COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS -DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS -DSL_MARKER_NOOP_TARGET -DSL_MARKER_WITHOUT_EXPLICIT_TARGETS -NOTHING_TO_INLINE
 
-// An exemption that the check needs is silent. An exemption on a declaration the check wouldn't
-// report is redundant, whatever the reason. The directive hides the other diagnostics, so the
-// markers are about the exemptions only.
-
 // FILE: declarations.kt
 package foo.bar
 
@@ -30,8 +26,6 @@ import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEqualsHash
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutJvmOverloads
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility
 
-// Class-level exemptions
-
 @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public open class NeededOpen
 
@@ -53,7 +47,6 @@ public class NotData(public val x: Int)
 @IntentionallyWithoutEqualsHashCodeOrToString(reason = ExemptionReason.API_DESIGN)
 public class NeededOpaque(public val token: String)
 
-// The combined exemption covers `equals`, so the one for `equals` doesn't change anything.
 @IntentionallyWithoutEqualsHashCodeOrToString(reason = ExemptionReason.API_DESIGN)
 <!REDUNDANT_EXEMPTION!>@IntentionallyWithoutEquals(reason = ExemptionReason.API_DESIGN)<!>
 public class DoublyOpaque(public val token: String)
@@ -73,7 +66,6 @@ public class Documented
 @IntentionallyUndocumented(description = "Self-explanatory.")
 public class Undocumented
 
-// A check skips a non-public declaration, so its exemptions are redundant.
 <!REDUNDANT_EXEMPTION!>@IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)<!>
 internal data class HiddenData(val x: Int)
 
@@ -92,8 +84,6 @@ public annotation class EffectiveMarker
 @DslMarker
 @Target(AnnotationTarget.FUNCTION)
 public annotation class NoopMarker
-
-// Signature types: declaration, parameter, type usage, type parameter, constructor property
 
 @IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)
 public fun neededBuffer(): MutableList<Int> = mutableListOf()
@@ -127,9 +117,6 @@ public fun origin(): Int = 0
 <!REDUNDANT_EXEMPTION!>@IntentionallyNullableBoolean(reason = ExemptionReason.API_DESIGN)<!>
 public fun known(): Boolean = true
 
-// Parameter checks
-
-// The same rule for a function and its parameter, and for a parameter and its type.
 @IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)
 public fun doublyToggle(<!REDUNDANT_EXEMPTION!>@IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)<!> on: Boolean) {}
 
@@ -147,7 +134,6 @@ public fun mixed(
     @IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN) on: Boolean,
 ) {}
 
-// The check skips constructors.
 public class Switch(<!REDUNDANT_EXEMPTION!>@IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)<!> on: Boolean)
 
 @IntentionallyRequiredParameterAfterOptional(reason = ExemptionReason.API_DESIGN)
@@ -159,22 +145,17 @@ public fun ordered(host: String, retries: Int = 3) {}
 <!REDUNDANT_EXEMPTION!>@IntentionallyInconsistentParameterOrder(reason = ExemptionReason.API_DESIGN)<!>
 public fun alone(x: Int, y: Int) {}
 
-// Two overloads that exempt each other both keep their exemption: the check skips an exempt sibling.
 @IntentionallyInconsistentParameterOrder(reason = ExemptionReason.API_DESIGN)
 public fun shape(x: Int, y: Int) {}
 
 @IntentionallyInconsistentParameterOrder(reason = ExemptionReason.API_DESIGN)
 public fun shape(y: Int, x: Int, scale: Double) {}
 
-// Implementation checks
-
 @IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)
 public inline fun neededInline(x: Int): Int = if (x > 0) x else -x
 
 <!REDUNDANT_EXEMPTION!>@IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)<!>
 public inline fun thin(block: () -> Unit): Unit = block()
-
-// JVM checks on the declaration
 
 @IntentionallyWithoutJvmOverloads(reason = ExemptionReason.API_DESIGN)
 public fun neededDefaults(x: Int = 0) {}
@@ -196,8 +177,6 @@ public suspend fun neededSuspend() {}
 
 <!REDUNDANT_EXEMPTION!>@IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)<!>
 public fun blocking() {}
-
-// Enclosing-class exemptions cover every member, nested classes included.
 
 @IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN)
 public class NeededIds {
@@ -245,8 +224,6 @@ public class StaticCompanion {
     }
 }
 
-// When a class-level exemption and a member exemption cover the same member, the member one is
-// redundant. The class-level one stays, so a fix that removes the redundant one doesn't change anything.
 @IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN)
 public class CoveredIds {
     <!REDUNDANT_EXEMPTION!>@IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN)<!>

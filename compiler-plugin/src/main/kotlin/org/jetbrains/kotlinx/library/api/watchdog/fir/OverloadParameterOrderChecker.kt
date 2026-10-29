@@ -64,8 +64,6 @@ internal class OverloadParameterOrderChecker(
                 return@siblings
             }
 
-            // An override keeps the order of its supertype, so the check skips it. Its exemption
-            // doesn't cover the siblings, or a redundant exemption on it would seem needed.
             if ((sibling.isExempt() && !sibling.isOverride) || !sibling.isWatchedPublicSourceApiSibling()) {
                 return@siblings
             }

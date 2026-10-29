@@ -3,10 +3,6 @@
 // DIAGNOSTIC_SEVERITIES: STATEFUL_CLASS_WITHOUT_EQUALS:none OPEN_API_WITHOUT_SUBCLASS_OPT_IN:none COMPANION_API_WITHOUT_JVM_STATIC:none DSL_MARKER_NOOP_TARGET:none DATA_CLASS_PUBLIC_API:none MUTABLE_COLLECTION_PUBLIC_API:warning
 // DIAGNOSTICS: -UNDOCUMENTED_PUBLIC_API -TOP_LEVEL_API_WITHOUT_JVM_NAME -EXEMPTION_WITHOUT_EXPLANATION -STATEFUL_CLASS_WITHOUT_HASH_CODE -STATEFUL_CLASS_WITHOUT_TO_STRING -SUBCLASS_OPT_IN_WITHOUT_MARKERS -COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS -DSL_MARKER_WITHOUT_EXPLICIT_TARGETS -MUTABLE_COLLECTION_PUBLIC_API
 
-// A probe runs with every diagnostic enabled. So the exemption of a diagnostic set to `none` has
-// the verdict it has with the diagnostic on, and a check with every diagnostic set to `none`
-// reports no redundant exemption. The severity of an enabled diagnostic doesn't change the verdict.
-
 // FILE: declarations.kt
 package foo.bar
 
@@ -17,8 +13,6 @@ import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyNonStaticCompanio
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutEquals
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility
-
-// STATEFUL_CLASS_WITHOUT_EQUALS is off. The other two generated-member diagnostics are on.
 
 @IntentionallyWithoutEquals(reason = ExemptionReason.API_DESIGN)
 public class NeededWithoutEquals(public val token: String) {
@@ -33,15 +27,11 @@ public class ProvidesEquals(public val token: String) {
     override fun toString(): String = token
 }
 
-// OPEN_API_WITHOUT_SUBCLASS_OPT_IN is off. SUBCLASS_OPT_IN_WITHOUT_MARKERS is on.
-
 @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
 public open class NeededOpen
 
 <!REDUNDANT_EXEMPTION!>@IntentionallyOpen(reason = ExemptionReason.API_DESIGN)<!>
 public class FinalWithOpenExemption
-
-// COMPANION_API_WITHOUT_JVM_STATIC is off. COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS is on.
 
 public class Factory {
     public companion object {
@@ -69,8 +59,6 @@ public class StaticFactory {
     }
 }
 
-// DSL_MARKER_NOOP_TARGET is off. DSL_MARKER_WITHOUT_EXPLICIT_TARGETS is on.
-
 @IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility
 @DslMarker
 @Target(AnnotationTarget.FUNCTION)
@@ -81,13 +69,8 @@ public annotation class NoopMarker
 @Target(AnnotationTarget.CLASS)
 public annotation class EffectiveMarker
 
-// Every diagnostic of the data class check is off, so the check doesn't run and reports no
-// redundant exemption.
-
 @IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)
 public class NotData
-
-// MUTABLE_COLLECTION_PUBLIC_API is a warning.
 
 <!REDUNDANT_EXEMPTION!>@IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)<!>
 public fun readOnlyView(): List<Int> = emptyList()

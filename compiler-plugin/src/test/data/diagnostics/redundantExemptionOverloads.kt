@@ -2,16 +2,11 @@
 // EXPLICIT_API_MODE: WARNING
 // DIAGNOSTICS: -UNDOCUMENTED_PUBLIC_API -TOP_LEVEL_API_WITHOUT_JVM_NAME -EXEMPTION_WITHOUT_EXPLANATION -OPEN_API_WITHOUT_SUBCLASS_OPT_IN -STATEFUL_CLASS_WITHOUT_EQUALS -STATEFUL_CLASS_WITHOUT_HASH_CODE -STATEFUL_CLASS_WITHOUT_TO_STRING
 
-// The order check reads the exemption of a sibling, so the probe treats the exemption as absent
-// on every declaration. Two overloads that exempt each other both keep the exemption.
-
 // FILE: shapes.kt
 package foo.bar
 
 import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyInconsistentParameterOrder
-
-// The sibling is in another file of the package.
 
 @IntentionallyInconsistentParameterOrder(reason = ExemptionReason.API_DESIGN)
 public fun draw(x: Int, y: Int) {}
@@ -20,9 +15,6 @@ public interface Canvas {
     public fun place(x: Int, y: Int)
 }
 
-// The check skips an override, and the exemption of an override doesn't cover its siblings. So
-// the exemption on the override is redundant, and the new overload reports.
-
 public class Panel : Canvas {
     <!REDUNDANT_EXEMPTION!>@IntentionallyInconsistentParameterOrder(reason = ExemptionReason.API_DESIGN)<!>
     override fun place(x: Int, y: Int) {}
@@ -30,17 +22,12 @@ public class Panel : Canvas {
     public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>place<!>(y: Int, x: Int, scale: Double) {}
 }
 
-// The exemption on the new overload covers the pair.
-
 public class Frame : Canvas {
     override fun place(x: Int, y: Int) {}
 
     @IntentionallyInconsistentParameterOrder(reason = ExemptionReason.API_DESIGN)
     public fun place(y: Int, x: Int, scale: Double) {}
 }
-
-// Constructors of one class are siblings. The exempt primary constructor keeps the exemption,
-// because the secondary one has a different order.
 
 public class Rect @IntentionallyInconsistentParameterOrder(reason = ExemptionReason.API_DESIGN) constructor(x: Int, y: Int) {
     public constructor(y: Int, x: Int, scale: Double) : this(x, y)

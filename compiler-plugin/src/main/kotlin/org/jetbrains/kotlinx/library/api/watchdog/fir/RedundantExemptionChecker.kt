@@ -49,39 +49,16 @@ import org.jetbrains.kotlin.fir.types.customAnnotations
 import org.jetbrains.kotlin.fir.types.forEachType
 import org.jetbrains.kotlin.name.ClassId
 
-/**
- * A checker that reads `@Intentionally*` exemptions. [RedundantExemptionProbingChecker] and
- * [EnclosingExemptionRedundancyChecker] report the exemptions that the checker doesn't need.
- */
 internal interface ExemptingChecker {
-    /** The exemptions the checker reads on the checked declaration, its parameters, and its signature types. */
     val exemptions: Set<ClassId>
 
     /** The subset of [exemptions] that a class applies to all its members. */
     val enclosingClassExemptions: Set<ClassId> get() = emptySet()
 
-    /**
-     * Whether the checker reads the exemptions of other declarations too. The probe then treats
-     * the exemption as absent on every declaration, so two declarations that exempt each other
-     * both need it.
-     */
     val readsExemptionOnSiblings: Boolean get() = false
 }
 
-/**
- * Runs the [delegates], the [ExemptingChecker]s of one checker category. A declaration without an
- * exemption gets no other run. A declaration with exemptions gets a probe of each delegate that
- * reads one of them: a run with every diagnostic enabled as the baseline, then one run for each
- * exemption with that exemption treated as absent. The exemption is redundant when its run doesn't
- * report anything that the baseline doesn't.
- *
- * One checker for the category walks the signature once for all the delegates. The walk has no
- * cache: a cache that outlives the visit would keep a declaration and its session reachable from a
- * pooled thread of the IDE.
- *
- * When a declaration and a part of its signature carry the same exemption, the probe of the
- * broader one treats the narrower ones as absent too. So only the narrower ones can be redundant.
- */
+/** A cache across visits can hold FIR declarations and their sessions on IDE pooled threads. */
 internal class RedundantExemptionProbingChecker<D : FirDeclaration>(
     private val delegates: List<FirDeclarationChecker<D>>,
 ) : FirDeclarationChecker<D>(delegates.first().mppKind) {
@@ -115,22 +92,15 @@ internal class RedundantExemptionProbingChecker<D : FirDeclaration>(
         }
     }
 
-    /** A class-level exemption of [ExemptingChecker.enclosingClassExemptions] goes to [EnclosingExemptionRedundancyChecker]. */
     private fun ExemptionCandidate.isReadBy(exempting: ExemptingChecker, declaration: FirDeclaration): Boolean =
         classId in exempting.exemptions &&
                 !(declaration is FirRegularClass && rank == 0 && classId in exempting.enclosingClassExemptions)
 
-    /** A declaration covers its signature. A parameter or type parameter covers the types in it. */
     private fun ExemptionCandidate.covers(other: ExemptionCandidate): Boolean =
         other.rank > rank && (group == null || group === other.group) && classId == other.classId
 }
 
-/**
- * Reports a class-level exemption of [ExemptingChecker.enclosingClassExemptions] that neither the
- * class nor a member needs. A class checker runs before the member checkers, so this checker runs
- * the member checkers itself, with the class on the context. The probe treats the same exemption
- * on the members as absent too.
- */
+/** Class checkers run before member checkers, so this checker probes members itself. */
 internal class EnclosingExemptionRedundancyChecker(
     basicCheckers: Collection<FirBasicDeclarationChecker>,
     functionCheckers: Collection<FirFunctionChecker>,
@@ -170,14 +140,11 @@ internal class EnclosingExemptionRedundancyChecker(
         }
     }
 
-    /**
-     * The exemptions of [classId] on the members and in their signatures, nested classes included.
-     * The members get resolved first, because the IDE visits the class before them.
-     */
     @OptIn(DirectDeclarationsAccess::class)
     context(context: CheckerContext)
     private fun FirRegularClass.collectNestedExemptions(classId: ClassId, into: MutableList<FirAnnotation>) {
         for (member in declarations) {
+            // The IDE can visit a class before its members resolve.
             member.symbol.lazyResolveToPhase(FirResolvePhase.BODY_RESOLVE)
             member.exemptionCandidates(setOf(classId)).mapTo(into) { it.annotation }
             if (member is FirRegularClass) {
@@ -187,7 +154,6 @@ internal class EnclosingExemptionRedundancyChecker(
         }
     }
 
-    /** The probes check the class in the current context and the members in a context with the class added. */
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun isNeeded(declaration: FirRegularClass, ignored: List<FirAnnotation>, probes: List<Probe>): Boolean {
         if (probes.any { it.reportsNew(declaration, ignored) }) return true
@@ -248,11 +214,6 @@ private fun KtDiagnostic.key(): ReportedDiagnosticKey {
     return ReportedDiagnosticKey(factoryName, element?.startOffset ?: -1, element?.endOffset ?: -1)
 }
 
-/**
- * The diagnostics that the checker reports on the declaration in a probe of [ExemptionProbe]: with
- * every diagnostic enabled, the [ignored] annotations absent, and the [ignoredEverywhere] exemptions
- * absent on every declaration. Nothing reaches the reporter.
- */
 context(context: CheckerContext, reporter: DiagnosticReporter)
 private fun <D : FirDeclaration> FirDeclarationChecker<D>.probedDiagnostics(
     declaration: D,
@@ -280,12 +241,6 @@ private fun reportRedundantExemption(annotation: FirAnnotation, kind: String) {
     )
 }
 
-/**
- * Whether the declaration owns the exemptions in its signature. A value parameter, a type
- * parameter, and an accessor don't: their owner reads the exemptions. The property of a constructor
- * parameter has a fake source and owns the exemptions of the parameter. The probe skips an `expect`
- * or `actual` declaration, because the exemption on the `expect` also serves the `actual`.
- */
 context(context: CheckerContext)
 private fun FirDeclaration.isProbed(): Boolean {
     if (this is FirFile) return true
@@ -296,11 +251,11 @@ private fun FirDeclaration.isProbed(): Boolean {
     }
 
     val sourceKind = source?.kind
+    // Constructor properties own their parameter's exemptions.
     if (sourceKind != KtRealSourceElementKind && sourceKind != KtFakeSourceElementKind.PropertyFromParameter) {
         return false
     }
 
-    // Every check skips a local declaration, and a probe of every local variable would cost more than it finds.
     if ((this as? FirMemberDeclaration)?.visibility == Visibilities.Local) return false
     return !isExpectedDeclaration() && !isActualizedDeclaration()
 }
@@ -317,15 +272,9 @@ private class ExemptionCandidate(
     val group: Any?,
 )
 
-/** All the exemptions, for one walk over a signature that serves every delegate of [RedundantExemptionProbingChecker]. */
 private val allExemptions: Set<ClassId> =
     WatchdogClassIds.exemptionAnnotations + WatchdogClassIds.IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility
 
-/**
- * The exemptions of [exemptions] in the signature of the declaration, each with its
- * `parameterValues` key of `diagnostics.json`. A primary constructor parameter with a property
- * belongs to the property, as in the checkers.
- */
 context(context: CheckerContext)
 private fun FirDeclaration.exemptionCandidates(exemptions: Set<ClassId>): List<ExemptionCandidate> {
     val collector = ExemptionCandidateCollector(context.session, exemptions)
@@ -373,7 +322,7 @@ private fun FirDeclaration.exemptionCandidates(exemptions: Set<ClassId>): List<E
     return collector.candidates
 }
 
-/** The class comes from the constructor, not from the context, because [EnclosingExemptionRedundancyChecker] visits a member in the context of the class. */
+/** [EnclosingExemptionRedundancyChecker] can have the constructor's class already in the context. */
 context(context: CheckerContext)
 private fun propertyParameterSymbols(constructor: FirConstructor): Set<FirValueParameterSymbol> {
     val result = hashSetOf<FirValueParameterSymbol>()
@@ -395,7 +344,6 @@ private class ExemptionCandidateCollector(private val session: FirSession, priva
         }
     }
 
-    /** An unresolved type, which the IDE can have on a member before its visit, has no annotations to collect. */
     fun types(typeRef: FirTypeRef?, group: Any? = null) {
         typeRef?.coneTypeOrNull?.forEachType { type ->
             for (annotation in type.customAnnotations) {
@@ -430,7 +378,7 @@ private class ExemptionCandidateCollector(private val session: FirSession, priva
         }
     }
 
-    /** The property of a constructor parameter has copies of the parameter's annotations. Each annotation counts once. */
+    /** FIR copies constructor parameter annotations to their properties, so source offsets identify duplicates. */
     private fun add(annotation: FirAnnotation, kind: String, rank: Int, group: Any?) {
         val classId = annotation.toAnnotationClassIdSafe(session) ?: return
         if (classId !in exemptions) return

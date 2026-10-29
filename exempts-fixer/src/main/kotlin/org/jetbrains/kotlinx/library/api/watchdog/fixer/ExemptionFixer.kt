@@ -173,11 +173,6 @@ private fun Fix.describe(): String = when (this) {
     RemoveAnnotationFix -> "a removal"
 }
 
-/**
- * The edits that remove the import of each removed annotation, unless another reference in the
- * file, such as an annotation entry or a class literal, still uses the name or a fix of this run
- * adds it again.
- */
 private fun unusedImportRemovals(
     ktFile: KtFile,
     targets: Set<FixTarget>,
@@ -373,7 +368,6 @@ private sealed interface FixTarget {
         }
     }
 
-    /** The removal of the reported annotation. */
     data class RemovedAnnotation(val entry: KtAnnotationEntry) : FixTarget {
         override fun alreadyAnnotated(annotationShortName: String) = false
 
@@ -416,7 +410,6 @@ private sealed interface FixTarget {
     }
 }
 
-/** The entries of an `@[First Second]` list have no `@` of their own. */
 private val KtAnnotationEntry.annotationList: KtAnnotation? get() = parent as? KtAnnotation
 
 private fun KtAnnotationEntry.removal(text: String): TextEdit {

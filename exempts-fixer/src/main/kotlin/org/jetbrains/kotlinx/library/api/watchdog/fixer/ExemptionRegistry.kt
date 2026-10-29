@@ -37,7 +37,6 @@ internal object PlaceholderKdocFix : Fix {
     override val targetStrategy: TargetStrategy get() = TargetStrategy.DOCUMENTED_DECLARATION
 }
 
-/** Removes the reported annotation, and its import when the file has no other use of it. */
 internal object RemoveAnnotationFix : Fix {
     override val id: String get() = "Remove"
     override val targetStrategy: TargetStrategy get() = TargetStrategy.REPORTED_ANNOTATION
@@ -103,7 +102,6 @@ internal object ExemptionRegistry {
     fun annotationFor(diagnostic: String): String? =
         ((resolutions[diagnostic] as? FixResolution.Fixable)?.fix as? ExemptionFix)?.annotationShortName
 
-    /** The exemption of the diagnostic, or the annotation that a `REDUNDANT_EXEMPTION` diagnostic names in its first parameter. */
     fun annotationFor(diagnostic: String, messageParameters: List<String>): String? =
         if (diagnostic == WatchdogChecks.REDUNDANT_EXEMPTION.name) messageParameters.firstOrNull() else annotationFor(diagnostic)
 

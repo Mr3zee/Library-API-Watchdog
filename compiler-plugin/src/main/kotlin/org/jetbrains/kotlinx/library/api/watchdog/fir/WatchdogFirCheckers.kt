@@ -23,8 +23,6 @@ import org.jetbrains.kotlin.platform.jvm.isJvm
  * Registers the checkers in a module compiled with explicit API mode, `strict` or `warning`.
  * A contract-shape check reports on the `expect` declaration. An implementation or JVM check
  * reports on the `actual` declaration and accepts annotations of the matched `expect`.
- * [RedundantExemptionProbingChecker] wraps every [ExemptingChecker], so a check that is off reports
- * no redundant exemption.
  */
 class WatchdogFirCheckers internal constructor(
     session: FirSession,
@@ -54,10 +52,6 @@ class WatchdogFirCheckers internal constructor(
                 AnnotationExcludingDeclarationChecker(it, annotationBasedExclusions)
             }
 
-        /**
-         * The probe runs inside the ignore rules, so an exemption on an ignored declaration isn't redundant.
-         * One probing checker holds every [ExemptingChecker] of the set, so the signature walk happens once.
-         */
         private fun <D : FirDeclaration> Set<FirDeclarationChecker<D>>.probingRedundantExemptions():
                 Set<FirDeclarationChecker<D>> {
             val (exempting, plain) = partition { it is ExemptingChecker }

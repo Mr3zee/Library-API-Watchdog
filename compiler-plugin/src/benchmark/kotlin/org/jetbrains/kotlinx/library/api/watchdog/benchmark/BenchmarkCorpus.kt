@@ -366,7 +366,7 @@ internal object BenchmarkCorpus {
         @IntentionallyFunctionTypeAlias(reason = ExemptionReason.API_DESIGN)
         public typealias Mapper$i = (Int) -> String
 
-        /** Shorthand for validated name lists. The exemption is redundant: the alias isn't a function type. */
+        /** Shorthand for validated name lists. */
         @IntentionallyFunctionTypeAlias(reason = ExemptionReason.API_DESIGN)
         public typealias Names$i = List<String>
 
