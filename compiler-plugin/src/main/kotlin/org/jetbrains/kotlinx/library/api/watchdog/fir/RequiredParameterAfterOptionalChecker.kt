@@ -9,7 +9,6 @@ import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirValueParameter
-import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.utils.isFun
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
@@ -17,6 +16,7 @@ import org.jetbrains.kotlin.fir.resolve.toClassSymbol
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.types.functionTypeKind
+import org.jetbrains.kotlin.name.ClassId
 
 /**
  * A last required parameter that accepts a trailing lambda isn't reported. Context parameters
@@ -24,7 +24,9 @@ import org.jetbrains.kotlin.fir.types.functionTypeKind
  */
 internal class RequiredParameterAfterOptionalChecker(
     private val severities: WatchdogDiagnosticSeverities,
-) : FirFunctionChecker(MppCheckerKind.Common) {
+) : FirFunctionChecker(MppCheckerKind.Common), ExemptingChecker {
+    override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyRequiredParameterAfterOptional)
+
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirFunction) {
         val factory = severities[WatchdogDiagnostics.REQUIRED_PARAMETER_AFTER_OPTIONAL] ?: return
@@ -39,7 +41,7 @@ internal class RequiredParameterAfterOptionalChecker(
             return
         }
 
-        if (declaration.hasAnnotation(WatchdogClassIds.IntentionallyRequiredParameterAfterOptional, context.session)) {
+        if (declaration.hasExemption(WatchdogClassIds.IntentionallyRequiredParameterAfterOptional)) {
             return
         }
 

@@ -93,8 +93,8 @@ public suspend fun ignoredInteropWithDescription(): Int = 0
 
 /** Documented holder. */
 public class Holder(
-    <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyUndocumented<!> public val bare: Int,
-    @IntentionallyUndocumented(reason = ExemptionReason.API_DESIGN) public val explained: Int,
+    <!EXEMPTION_WITHOUT_EXPLANATION, REDUNDANT_EXEMPTION!>@IntentionallyUndocumented<!> public val bare: Int,
+    <!REDUNDANT_EXEMPTION!>@IntentionallyUndocumented(reason = ExemptionReason.API_DESIGN)<!> public val explained: Int,
 )
 
 // Every annotation use is checked, in non-public declarations and internal API too.
@@ -105,19 +105,19 @@ public fun bareTypeUse(): <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyMutable
 
 public fun explainedTypeUse(): @IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN) MutableList<Int> = mutableListOf()
 
-private fun privateBareTypeUse(): <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyMutableCollection<!> MutableList<Int> = mutableListOf()
+private fun privateBareTypeUse(): <!EXEMPTION_WITHOUT_EXPLANATION, REDUNDANT_EXEMPTION!>@IntentionallyMutableCollection<!> MutableList<Int> = mutableListOf()
 
 public fun localBareTypeUse(): Unit {
     val items: <!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyMutableCollection<!> MutableList<Int> = mutableListOf()
     items.clear()
 }
 
-<!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyOpen<!>
+<!EXEMPTION_WITHOUT_EXPLANATION, REDUNDANT_EXEMPTION!>@IntentionallyOpen<!>
 internal open class InternalBareExemption
 
 @InternalAnnotationMarker
 public annotation class InternalLibApi
 
 @InternalLibApi
-<!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyOpen<!>
+<!EXEMPTION_WITHOUT_EXPLANATION, REDUNDANT_EXEMPTION!>@IntentionallyOpen<!>
 public open class ExemptionInsideInternalApi

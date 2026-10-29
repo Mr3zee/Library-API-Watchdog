@@ -31,10 +31,16 @@ internal class ExemptionFix(
 }
 
 internal object PlaceholderKdocFix : Fix {
-    const val TEXT = "TODO: Provide kDocs for this declaration"
+    const val TEXT = "TODO: Document this declaration"
 
     override val id: String get() = "KDoc"
     override val targetStrategy: TargetStrategy get() = TargetStrategy.DOCUMENTED_DECLARATION
+}
+
+/** Removes the reported annotation, and its import when nothing else in the file uses it. */
+internal object RemoveAnnotationFix : Fix {
+    override val id: String get() = "Remove"
+    override val targetStrategy: TargetStrategy get() = TargetStrategy.REPORTED_ANNOTATION
 }
 
 internal sealed interface FixResolution {
@@ -77,6 +83,7 @@ internal object ExemptionRegistry {
         // Documentation isn't a compatibility concern, so a placeholder KDoc replaces the exemption.
         WatchdogChecks.UNDOCUMENTED_PUBLIC_API.name to FixResolution.Fixable(PlaceholderKdocFix),
         WatchdogChecks.EXEMPTION_WITHOUT_EXPLANATION.name to FixResolution.Unfixable("The existing exemption needs a reason or description only its author can write"),
+        WatchdogChecks.REDUNDANT_EXEMPTION.name to FixResolution.Fixable(RemoveAnnotationFix),
         WatchdogChecks.DSL_MARKER_NOOP_TYPE_POSITION.name to FixResolution.Unfixable("No exemption annotation exists. Move the DSL marker to an effective position or remove it"),
         WatchdogChecks.PUBLIC_TYPE_WITH_INTERNAL_API.name to FixResolution.Unfixable("Remove the internal type from the public signature or mark the exposing declaration as internal API"),
         WatchdogChecks.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY.name to FixResolution.Unfixable("Declare the dependency with `api`, or exempt it on the `apiWatchdogExemptNonTransitive` configuration"),
@@ -96,8 +103,12 @@ internal object ExemptionRegistry {
     fun annotationFor(diagnostic: String): String? =
         ((resolutions[diagnostic] as? FixResolution.Fixable)?.fix as? ExemptionFix)?.annotationShortName
 
+    /** The exemption of the diagnostic, or the annotation that a `REDUNDANT_EXEMPTION` diagnostic names in its first parameter. */
+    fun annotationFor(diagnostic: String, messageParameters: List<String>): String? =
+        if (diagnostic == WatchdogChecks.REDUNDANT_EXEMPTION.name) messageParameters.firstOrNull() else annotationFor(diagnostic)
+
     fun resolutionFor(diagnostic: String): FixResolution = resolutions[diagnostic] ?: FixResolution.Unfixable(
-        "Unknown diagnostic. This fixer version doesn't know how to exempt it"
+        "Unknown diagnostic. This fixer version has no exemption for it"
     )
 
     private fun fixable(

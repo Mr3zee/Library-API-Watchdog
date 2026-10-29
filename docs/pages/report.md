@@ -34,7 +34,9 @@ Each task writes the report in two formats. Both are on by default:
 The HTML page has two sections:
 
 - **Applied annotations**: every Watchdog `@Intentionally*` annotation in the Kotlin sources of those
-  compilations.
+  compilations. An annotation that
+  [Redundant exemptions](./checks/special/redundant-exemption.md) reports has the tag **Redundant**
+  instead of **Applied**, and the totals count it.
 - **Not applied**: the diagnostics without an annotation.
   Each entry gives the severity, a link to the check page, the diagnostic message, and the reason
   the task didn't apply a fix. A tag marks each entry as **Wasn't auto-fixed** or **Can't be auto-fixed**.
@@ -115,19 +117,24 @@ tasks.aggregateApiWatchdogReports {
 
 ## Included builds
 
-The aggregation plugin can also combine reports from included builds. Apply the Watchdog plugin to
+The aggregation plugin also combines reports from included builds. Apply the Watchdog plugin to
 each included project whose report you need.
+
+The example below includes the build in the `libraries` directory. Its root project and its
+subprojects `:core` and `:client` have `group = "com.example"`. The root project is named `libraries`
+in its `settings.gradle.kts`:
+
+```kotlin libraries/settings.gradle.kts
+rootProject.name = "libraries"
+```
 
 Include the build in the settings of the build that generates the aggregate report:
 
 ```kotlin settings.gradle.kts
-includeBuild("libraries") {
-    name = "shared-libraries"
-}
+includeBuild("libraries")
 ```
 
-Declare each included project by its module coordinates in `apiWatchdogReports`.
-For projects with `group = "com.example"` and names `library-core` and `library-client`:
+Declare each included project by its module coordinates, `group:name`, in `apiWatchdogReports`:
 
 ```kotlin build.gradle.kts
 plugins {
@@ -135,12 +142,12 @@ plugins {
 }
 
 dependencies {
-    apiWatchdogReports("com.example:library-core")
-    apiWatchdogReports("com.example:library-client")
+    apiWatchdogReports("com.example:libraries")
+    apiWatchdogReports("com.example:core")
+    apiWatchdogReports("com.example:client")
 }
 ```
 
-Use the project's `group` and name, even when `includeBuild` sets a different build name.
 The `subprojects` loop selects projects from the current build only, so declare included projects separately.
 
 Run `aggregateApiWatchdogReports` from the build that applies the aggregation plugin.

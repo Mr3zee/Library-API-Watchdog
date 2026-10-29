@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.KtRealSourceElementKind
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
+import org.jetbrains.kotlin.fir.FirAnnotationContainer
 import org.jetbrains.kotlin.fir.SessionHolder
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
@@ -54,12 +55,12 @@ import org.jetbrains.kotlin.name.SpecialNames
 internal val FirRegularClass.kindParameterValue: String?
     // An exhaustive `when` over the enum compiles to an `ordinal()` switch, which AnimalSniffer
     // rejects against the compiler API baseline.
-    get() = when {
-        classKind == ClassKind.CLASS -> "class"
-        classKind == ClassKind.INTERFACE -> "interface"
-        classKind == ClassKind.OBJECT -> "object"
-        classKind == ClassKind.ENUM_CLASS -> "enumClass"
-        classKind == ClassKind.ANNOTATION_CLASS -> "annotationClass"
+    get() = when (classKind) {
+        ClassKind.CLASS -> "class"
+        ClassKind.INTERFACE -> "interface"
+        ClassKind.OBJECT -> "object"
+        ClassKind.ENUM_CLASS -> "enumClass"
+        ClassKind.ANNOTATION_CLASS -> "annotationClass"
         else -> null
     }
 
@@ -151,10 +152,58 @@ internal fun FirDeclaration.isExpectedDeclaration(): Boolean =
                 }
             }
 
+/**
+ * The exemption annotations that [RedundantExemptionProbingChecker] treats as absent on the
+ * current thread. Two annotations are the same when they are one object or have the same source
+ * offsets: the property of a constructor parameter gets a copy of the type annotations of the
+ * parameter.
+ */
+internal object ExemptionProbe {
+    private class Ignored(val annotations: List<FirAnnotation>, val classIds: Set<ClassId>)
+
+    private val ignored = ThreadLocal<Ignored?>()
+
+    /** [classIds] names the exemptions to treat as absent on every declaration, for a check that reads them on siblings. */
+    fun <R> ignoring(annotations: List<FirAnnotation>, classIds: Set<ClassId> = emptySet(), block: () -> R): R {
+        val previous = ignored.get()
+        ignored.set(Ignored(annotations, classIds))
+        try {
+            return block()
+        } finally {
+            ignored.set(previous)
+        }
+    }
+
+    fun ignores(annotation: FirAnnotation, classId: ClassId): Boolean {
+        val current = ignored.get() ?: return false
+        return classId in current.classIds ||
+                current.annotations.any { it === annotation || it.sameSourceAs(annotation) }
+    }
+
+    private fun FirAnnotation.sameSourceAs(other: FirAnnotation): Boolean {
+        val source = source ?: return false
+        val otherSource = other.source ?: return false
+        return source.startOffset == otherSource.startOffset && source.endOffset == otherSource.endOffset
+    }
+}
+
+/** Whether the annotation is [classId] and [ExemptionProbe] doesn't ignore it. */
+context(context: CheckerContext)
+internal fun FirAnnotation.isEffective(classId: ClassId): Boolean =
+    toAnnotationClassIdSafe(context.session) == classId && !ExemptionProbe.ignores(this, classId)
+
+/** [hasAnnotation] without the annotation [ExemptionProbe] ignores. Every exemption lookup goes through it. */
+context(context: CheckerContext)
+internal fun FirAnnotationContainer.hasExemption(classId: ClassId): Boolean =
+    annotations.any { it.isEffective(classId) }
+
+context(context: CheckerContext)
+internal fun FirBasedSymbol<*>.hasExemption(classId: ClassId): Boolean =
+    resolvedAnnotationsWithClassIds.any { it.isEffective(classId) }
+
 context(context: CheckerContext)
 internal fun FirBasedSymbol<*>.hasAnnotationOnActualOrExpect(classId: ClassId): Boolean =
-    hasAnnotation(classId, context.session) ||
-            getSingleMatchedExpectForActualOrNull()?.hasAnnotation(classId, context.session) == true
+    hasExemption(classId) || getSingleMatchedExpectForActualOrNull()?.hasExemption(classId) == true
 
 context(context: CheckerContext)
 internal fun FirDeclaration.hasAnnotationOnActualOrExpect(classId: ClassId): Boolean =

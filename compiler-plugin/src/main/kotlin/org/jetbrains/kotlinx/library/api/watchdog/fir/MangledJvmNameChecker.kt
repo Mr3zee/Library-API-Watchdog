@@ -12,7 +12,6 @@ import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirPropertyAccessor
-import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
 import org.jetbrains.kotlin.fir.declarations.utils.correspondingValueParameterFromPrimaryConstructor
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
@@ -25,7 +24,11 @@ import org.jetbrains.kotlin.name.Name
 
 internal class MangledJvmNameChecker(
     private val severities: WatchdogDiagnosticSeverities,
-) : FirCallableDeclarationChecker(MppCheckerKind.Common) {
+) : FirCallableDeclarationChecker(MppCheckerKind.Common), ExemptingChecker {
+    override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyMangledJvmName)
+
+    override val enclosingClassExemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyMangledJvmName)
+
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirCallableDeclaration) {
         if (declaration.isExpectedDeclaration()) return
@@ -126,7 +129,7 @@ internal class MangledJvmNameChecker(
     private fun FirCallableDeclaration.isExempt(): Boolean =
         hasAnnotationOnSelfOrEnclosingClass(WatchdogClassIds.IntentionallyMangledJvmName) ||
                 (this as? FirProperty)?.correspondingValueParameterFromPrimaryConstructor
-                    ?.hasAnnotation(WatchdogClassIds.IntentionallyMangledJvmName, context.session) == true
+                    ?.hasExemption(WatchdogClassIds.IntentionallyMangledJvmName) == true
 
     /** Whether `@JvmName` or `@JvmSynthetic` is on the accessor, by any of the three annotation sites. */
     context(context: CheckerContext)

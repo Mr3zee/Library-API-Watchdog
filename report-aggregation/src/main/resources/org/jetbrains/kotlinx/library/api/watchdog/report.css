@@ -58,6 +58,7 @@ summary { padding: 8px 0; cursor: pointer; font-weight: 600; overflow-wrap: anyw
 .fix-status.applied { color: #28613b; background: #edf7ef; border-color: #b9d8c2; }
 .fix-status.not-fixed { color: #315783; background: #eef3fb; border-color: #c0cee3; }
 .fix-status.unfixable { color: #914731; background: #fcf0ea; border-color: #e5c5b7; }
+.fix-status.redundant { color: #7a5600; background: #fdf6e1; border-color: #e8d48f; }
 .diagnostic-message { margin: 8px 0; border: 0; overflow-wrap: anywhere; }
 .diagnostic-message > summary { padding: 0; font-size: 13px; font-weight: 400; color: #65676e; }
 .diagnostic-message[open] > summary { margin-bottom: 8px; }

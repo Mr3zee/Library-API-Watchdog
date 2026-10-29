@@ -229,7 +229,7 @@ class ApiWatchdogReportTest {
             assertContains(html, "data-severity=\"warning\" data-range-start=\"38\" data-range-end=\"41\"")
             assertContains(html, "<details class=\"diagnostic-message\"><summary>Diagnostic message</summary>")
             assertFalse(html.contains("<details open class=\"diagnostic-message\""))
-            assertContains(html, "The class <code>Api</code> can be subclassed outside the library.")
+            assertContains(html, "Users can subclass the class <code>Api</code> outside the library.")
             assertContains(html, "Apply <code>@SubclassOptInRequired</code>.")
             assertFalse(html.contains("{0}"))
             assertContains(html, "Source unavailable.")

@@ -16,10 +16,15 @@ import org.jetbrains.kotlin.fir.declarations.utils.isConst
 import org.jetbrains.kotlin.fir.declarations.utils.isLateInit
 import org.jetbrains.kotlin.name.JvmStandardClassIds
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.name.ClassId
 
 internal class CompanionJvmExposureChecker(
     private val severities: WatchdogDiagnosticSeverities,
-) : FirCallableDeclarationChecker(MppCheckerKind.Common) {
+) : FirCallableDeclarationChecker(MppCheckerKind.Common), ExemptingChecker {
+    override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyNonStaticCompanionApi)
+
+    override val enclosingClassExemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyNonStaticCompanionApi)
+
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirCallableDeclaration) {
         if (declaration.isExpectedDeclaration()) return

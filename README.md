@@ -231,6 +231,8 @@ run only in JVM compilations. A Kotlin-only library turns off the group with
 - [`EXEMPTION_WITHOUT_EXPLANATION`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/exemption-without-explanation) -
   `@Intentionally*` annotations with the default `OTHER` reason and a blank description. They
   explain nothing.
+- [`REDUNDANT_EXEMPTION`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/redundant-exemption) -
+  `@Intentionally*` annotations on declarations their check doesn't report.
 
 ### Build-level suggestions
 

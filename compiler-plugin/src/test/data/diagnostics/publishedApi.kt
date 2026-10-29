@@ -58,7 +58,7 @@ internal class PublishedOuter {
 @PublishedApi
 internal open class PublishedOpenClass
 
-@IntentionallyOpen
+<!REDUNDANT_EXEMPTION!>@IntentionallyOpen<!>
 @PublishedApi
 internal open class AcknowledgedPublishedOpenClass
 
@@ -71,7 +71,7 @@ internal enum class PublishedEnum {
     ENTRY,
 }
 
-@IntentionallyExhaustive
+<!REDUNDANT_EXEMPTION!>@IntentionallyExhaustive<!>
 @PublishedApi
 internal enum class AcknowledgedPublishedEnum {
     ENTRY,

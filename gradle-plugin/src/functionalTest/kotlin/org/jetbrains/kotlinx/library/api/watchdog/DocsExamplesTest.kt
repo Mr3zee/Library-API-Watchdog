@@ -430,7 +430,6 @@ private val supportFile = """
     package docs.support
 
     import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
-    import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyInlinedLogic
     import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
 
     /** Stand-in for the Poko compiler-plugin annotation used by documentation samples. */
@@ -468,7 +467,6 @@ private val supportFile = """
     public fun calculateArraysSizeImpl(): Int = 0
 
     /** Executes [block] for isolated documentation snippets. */
-    @IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)
     public inline fun <T> withCache(block: () -> T): T = block()
 
     /** Stand-in reflection members for isolated documentation snippets. */

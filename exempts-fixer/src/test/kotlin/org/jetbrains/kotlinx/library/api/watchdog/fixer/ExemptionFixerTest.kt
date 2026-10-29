@@ -101,6 +101,57 @@ class ExemptionFixerTest {
     }
 
     @Test
+    fun `a redundant exemption and its unused import go away`() {
+        val text = """
+            package test
+
+            import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+            import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDataClass
+            import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
+
+            /** Settled. */
+            @IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)
+            public class Settled
+
+            /** Open. */
+            @IntentionallyOpen(reason = ExemptionReason.API_DESIGN) public open class Base
+
+            @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
+            public open class Other
+        """.trimIndent()
+        val result = fix(
+            text,
+            diagnostic("REDUNDANT_EXEMPTION", text, "@IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)")
+                .copy(messageParameters = listOf("IntentionallyDataClass", "declaration")),
+            diagnostic("REDUNDANT_EXEMPTION", text, "@IntentionallyOpen(reason = ExemptionReason.API_DESIGN) public open class Base")
+                .let { it.copy(endOffset = it.startOffset + "@IntentionallyOpen(reason = ExemptionReason.API_DESIGN)".length) }
+                .copy(messageParameters = listOf("IntentionallyOpen", "declaration")),
+        )
+
+        assertEquals(
+            """
+                package test
+
+                import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+                import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
+
+                /** Settled. */
+                public class Settled
+
+                /** Open. */
+                public open class Base
+
+                @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
+                public open class Other
+            """.trimIndent(),
+            result.newText,
+        )
+        assertEquals(listOf("IntentionallyDataClass", "IntentionallyOpen"), result.applied.map { it.annotation })
+        assertEquals(listOf(7, 10), result.applied.map { it.line })
+        assertEquals(emptyList(), result.skipped)
+    }
+
+    @Test
     fun `annotation goes between KDoc and declaration`() {
         @Language("kotlin")
         val text = """
@@ -155,7 +206,7 @@ class ExemptionFixerTest {
         )
 
         val newText = result.newText!!
-        assertFalse("TODO: Provide kDocs" in newText)
+        assertFalse("TODO: Document" in newText)
         assertFalse("IntentionallyDataClass" in newText)
         assertContains(newText, "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic open class Service")
         assertEquals(
@@ -637,7 +688,7 @@ class ExemptionFixerTest {
         val result = fix(text, diagnostic("UNDOCUMENTED_PUBLIC_API", text, "public class Documented"))
 
         assertNull(result.newText)
-        assertContains(result.skipped.single().reason, "already carries a KDoc")
+        assertContains(result.skipped.single().reason, "already has a KDoc")
     }
 
     @Test
@@ -1015,7 +1066,7 @@ class ExemptionFixerTest {
         val result = fix(text, diagnostic("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", text, "public open class Service"))
 
         assertNull(result.newText)
-        assertContains(result.skipped.single().reason, "already carries")
+        assertContains(result.skipped.single().reason, "already has")
     }
 
     @Test
@@ -1320,7 +1371,7 @@ class ExemptionFixerTest {
 
     private companion object {
         const val FILE_PATH = "/project/src/main/kotlin/com/example/Sample.kt"
-        const val PLACEHOLDER_KDOC = "/** TODO: Provide kDocs for this declaration */"
+        const val PLACEHOLDER_KDOC = "/** TODO: Document this declaration */"
 
         fun lineOf(text: String, snippet: String): Int {
             val offset = text.indexOf(snippet)

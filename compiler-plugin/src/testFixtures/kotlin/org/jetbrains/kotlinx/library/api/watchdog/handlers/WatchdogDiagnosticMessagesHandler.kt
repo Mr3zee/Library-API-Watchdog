@@ -76,6 +76,7 @@ class WatchdogDiagnosticMessagesHandler(testServices: TestServices) : FirAnalysi
         val watchdogDiagnosticNames: Set<String> = buildSet {
             WatchdogDiagnostics.allDiagnostics.mapTo(this) { it.name }
             add(WatchdogDiagnostics.EXEMPTION_WITHOUT_EXPLANATION.name)
+            add(WatchdogDiagnostics.REDUNDANT_EXEMPTION.name)
             add(WatchdogDiagnostics.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY.name)
             add(WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API.name)
         }

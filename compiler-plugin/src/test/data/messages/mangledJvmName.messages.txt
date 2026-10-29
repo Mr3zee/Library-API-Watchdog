@@ -34,28 +34,28 @@
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api
 
 /mangledJvmName.kt:22:21: error: MANGLED_JVM_NAME_PUBLIC_API
-    The function `handle` has the `value class` `UserId` in its signature. The compiler mangles the JVM method name, so Java can't call it. An open or abstract function supports neither `@JvmName` nor `@JvmExposeBoxed`, so remove the value class from the signature if Java needs access.
+    The function `handle` has the `value class` `UserId` in its signature. The compiler mangles the JVM method name, so Java can't call it. An open or abstract function supports neither `@JvmName` nor `@JvmExposeBoxed`. If Java needs access, remove the value class from the signature.
 
     If this is intended, apply `@IntentionallyMangledJvmName` to the declaration or an enclosing class.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api
 
 /mangledJvmName.kt:24:21: error: MANGLED_JVM_NAME_PUBLIC_API
-    The property `owner` has the `value class` `UserId` in its signature. The compiler mangles the JVM name of the getter, so Java can't call it. An open or abstract property supports neither `@get:JvmName` nor `@JvmExposeBoxed`, so remove the value class from the signature if Java needs access.
+    The property `owner` has the `value class` `UserId` in its signature. The compiler mangles the JVM name of the getter, so Java can't call it. An open or abstract property supports neither `@get:JvmName` nor `@JvmExposeBoxed`. If Java needs access, remove the value class from the signature.
 
     If this is intended, apply `@IntentionallyMangledJvmName` to the declaration or an enclosing class.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api
 
 /mangledJvmName.kt:26:21: error: MANGLED_JVM_NAME_PUBLIC_API
-    The property `editor` has the `value class` `UserId` in its signature. The compiler mangles the JVM names of both accessors, so Java can't call them. An open or abstract property supports neither accessor `@JvmName` nor `@JvmExposeBoxed`, so remove the value class from the signature if Java needs access.
+    The property `editor` has the `value class` `UserId` in its signature. The compiler mangles the JVM names of both accessors, so Java can't call them. An open or abstract property supports neither accessor `@JvmName` nor `@JvmExposeBoxed`. If Java needs access, remove the value class from the signature.
 
     If this is intended, apply `@IntentionallyMangledJvmName` to the declaration or an enclosing class.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api
 
 /mangledJvmName.kt:29:21: error: MANGLED_JVM_NAME_PUBLIC_API
-    The property `setterOnly` has the `value class` `UserId` in its signature. The compiler mangles the JVM name of the setter, so Java can't call it. An open or abstract property supports neither `@set:JvmName` nor `@JvmExposeBoxed`, so remove the value class from the signature if Java needs access.
+    The property `setterOnly` has the `value class` `UserId` in its signature. The compiler mangles the JVM name of the setter, so Java can't call it. An open or abstract property supports neither `@set:JvmName` nor `@JvmExposeBoxed`. If Java needs access, remove the value class from the signature.
 
     If this is intended, apply `@IntentionallyMangledJvmName` to the declaration or an enclosing class.
 

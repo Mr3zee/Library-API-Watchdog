@@ -15,10 +15,8 @@ import org.jetbrains.kotlin.fir.declarations.FirTypeAlias
 import org.jetbrains.kotlin.fir.declarations.FirTypeParameter
 import org.jetbrains.kotlin.fir.declarations.FirTypeParameterRef
 import org.jetbrains.kotlin.fir.declarations.FirValueParameter
-import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.isLegacyContextReceiver
 import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
-import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
 import org.jetbrains.kotlin.fir.declarations.utils.correspondingValueParameterFromPrimaryConstructor
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
@@ -46,7 +44,9 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
     private val checkTypeAliases: Boolean = true,
     private val skipOverrides: Boolean = false,
     private val exemption: ClassId? = null,
-) : FirBasicDeclarationChecker(MppCheckerKind.Common) {
+) : FirBasicDeclarationChecker(MppCheckerKind.Common), ExemptingChecker {
+    override val exemptions: Set<ClassId> = setOfNotNull(exemption)
+
     context(context: CheckerContext, reporter: DiagnosticReporter)
     final override fun check(declaration: FirDeclaration) {
         // The expansion of an actual typealias can expose a type that the expect doesn't mention.
@@ -70,11 +70,11 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
 
     context(context: CheckerContext)
     protected open fun isDeclarationExempt(declaration: FirDeclaration): Boolean =
-        exemption != null && declaration.hasAnnotation(exemption, context.session)
+        exemption != null && declaration.hasExemption(exemption)
 
     context(context: CheckerContext)
     protected open fun isParameterExempt(parameter: FirValueParameterSymbol): Boolean =
-        exemption != null && parameter.hasAnnotation(exemption, context.session)
+        exemption != null && parameter.hasExemption(exemption)
 
     context(context: CheckerContext)
     protected abstract fun ConeKotlinType.violatingClassifier(): Violation?
@@ -84,9 +84,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
 
     context(context: CheckerContext)
     protected open fun ConeKotlinType.isTypeExempt(): Boolean =
-        exemption != null && customAnnotations.any {
-            it.toAnnotationClassIdSafe(context.session) == exemption
-        }
+        exemption != null && customAnnotations.any { it.isEffective(exemption) }
 
     context(context: CheckerContext)
     protected open fun ConeKotlinType.typeBeforeClassifier(): ConeKotlinType? = null

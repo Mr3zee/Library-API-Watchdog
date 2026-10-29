@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.diagnostics.SourceElementPositioningStrategies.NAME_
 import org.jetbrains.kotlin.diagnostics.error2
 import org.jetbrains.kotlin.diagnostics.error3
 import org.jetbrains.kotlin.diagnostics.error4
+import org.jetbrains.kotlin.diagnostics.warning2
 import org.jetbrains.kotlin.diagnostics.rendering.BaseDiagnosticRendererFactory
 import org.jetbrains.kotlin.diagnostics.rendering.CommonRenderers.NAME
 import org.jetbrains.kotlin.diagnostics.rendering.CommonRenderers.STRING
@@ -152,6 +153,9 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
 
     /** Parameters: the exemption annotation name, the reason that needs a description. */
     val EXEMPTION_WITHOUT_EXPLANATION by error2<KtAnnotationEntry, Name, Name>()
+
+    /** Parameters: the exemption annotation name, what the annotation exempts, in words. Always a warning. */
+    val REDUNDANT_EXEMPTION by warning2<KtAnnotationEntry, Name, String>()
 
     /** Parameters: declaration kind, declaration name, exposed type FQ name, exemption snippet. */
     val PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY by error4<KtElement, String, Name, String, String>()
@@ -332,6 +336,11 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             diagnostic = WatchdogDiagnostics.EXEMPTION_WITHOUT_EXPLANATION,
             rendererA = NAME,
             rendererB = NAME,
+        )
+        map.put(
+            diagnostic = WatchdogDiagnostics.REDUNDANT_EXEMPTION,
+            rendererA = NAME,
+            rendererB = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY,

@@ -6,6 +6,7 @@ import com.autonomousapps.kit.gradle.Dependency.Companion.api
 import com.autonomousapps.kit.gradle.Dependency.Companion.compileOnly
 import com.autonomousapps.kit.gradle.Dependency.Companion.implementation
 import com.autonomousapps.kit.gradle.Plugin
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -32,6 +33,7 @@ import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.TOP_LEVEL_API_WITHO
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PAIR_OR_TRIPLE_PUBLIC_API
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PUBLIC_TYPE_WITH_INTERNAL_API
+import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.REDUNDANT_EXEMPTION
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.STATEFUL_CLASS_WITHOUT_EQUALS
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.STATEFUL_CLASS_WITHOUT_HASH_CODE
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.STATEFUL_CLASS_WITHOUT_TO_STRING
@@ -321,6 +323,35 @@ class WatchdogProjectTest {
     }
 
     @Test
+    fun `a redundant exemption is a warning that the report tags and exemptExistingApi removes`() {
+        val project = jvmProject {
+            apiWatchdog { suggestAbiValidation = false }
+            source(redundantExemptionFile, "redundant")
+        }
+
+        val result = project.build("build", "generateApiWatchdogReport")
+        result.assertWarnings(REDUNDANT_EXEMPTION)
+        result.assertReportedIn(REDUNDANT_EXEMPTION, "redundant.kt")
+        result.assertWarning("The `@IntentionallyDataClass` exemption is redundant.")
+        result.assertNotReported(*configurableDiagnostics.toTypedArray())
+
+        val report = project.file("build/reports/api-watchdog/report.html").readText()
+        assertContains(report, "1 redundant annotation")
+        assertContains(report, "<span class=\"fix-status redundant\">Redundant</span>")
+        assertContains(report, "<span class=\"fix-status applied\">Applied</span>")
+        assertReportGroup(report, "IntentionallyDataClass", 1, REDUNDANT_EXEMPTION)
+        assertContains(report, "exemptExistingApi can remove it.")
+
+        val fixed = project.build("exemptExistingApi")
+        fixed.assertOutputHas("Removed the redundant @IntentionallyDataClass at src/main/kotlin/test/redundant.kt:")
+        fixed.assertOutputHas("removed 1 redundant exemption(s)")
+        val source = project.file("src/main/kotlin/test/redundant.kt").readText()
+        assertEquals(1, Regex("@IntentionallyDataClass").findAll(source).count(), source)
+        assertContains(source, "/** A regular class with a data class exemption. */\npublic class Settled")
+        project.build("build").assertNoWatchdogDiagnostics()
+    }
+
+    @Test
     fun `silent without explicit API mode`() {
         val project = jvmProject {
             explicitApi = false
@@ -355,7 +386,7 @@ class WatchdogProjectTest {
         result.assertOutputHas("PLUGIN_CLASSPATH=")
         result.assertOutputLacks("watchdog-compiler-plugin")
         result.assertOutputLacks("doesn't enable explicit API mode")
-        result.assertOutputLacks("but no binary compatibility validation is enabled")
+        result.assertOutputLacks("but doesn't enable binary compatibility validation")
         result.assertTaskOutcome(":exemptExistingApi", SKIPPED)
         result.assertTaskOutcome(":generateApiWatchdogReport", SKIPPED)
     }
@@ -1377,7 +1408,7 @@ class WatchdogProjectTest {
     fun `suggests ABI validation when it isn't enabled`() {
         val result = jvmProject().build("help")
 
-        result.assertOutputHas("but no binary compatibility validation is enabled")
+        result.assertOutputHas("but doesn't enable binary compatibility validation")
         assertEquals(
             legacyAbiValidationDsl,
             result.output.contains("abiValidation {"),
@@ -1399,7 +1430,7 @@ class WatchdogProjectTest {
             apiWatchdog { suggestAbiValidation = false }
         }
 
-        project.build("help").assertOutputLacks("but no binary compatibility validation is enabled")
+        project.build("help").assertOutputLacks("but doesn't enable binary compatibility validation")
     }
 
     @Test
@@ -1416,7 +1447,7 @@ class WatchdogProjectTest {
             )
         }
 
-        project.build("help").assertOutputLacks("but no binary compatibility validation is enabled")
+        project.build("help").assertOutputLacks("but doesn't enable binary compatibility validation")
     }
 
     @Test
@@ -1456,7 +1487,7 @@ class WatchdogProjectTest {
             }
         }
 
-        project.build("help").assertOutputLacks("but no binary compatibility validation is enabled")
+        project.build("help").assertOutputLacks("but doesn't enable binary compatibility validation")
     }
 
     /** [testOnlyFile] in a test source set. */
@@ -1561,7 +1592,8 @@ private fun unexemptedTestOnlyFile(className: String) = """
 
 /** The diagnostics of [unacknowledgedFile] and [internalApiExposureFile]. */
 private val singleModuleDiagnostics: List<Diagnostic> =
-    Diagnostic.entries - setOf(PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY, EXEMPTION_WITHOUT_EXPLANATION)
+    Diagnostic.entries - setOf(PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY, EXEMPTION_WITHOUT_EXPLANATION) -
+            alwaysWarningDiagnostics
 
 /** One specimen of every configurable diagnostic. */
 @Suppress("RedundantSuspendModifier", "MayBeConstant")
@@ -1935,6 +1967,22 @@ private val exposesJavaDependencyTypeFile = """
 
 /** [unacknowledgedFile] with every diagnostic exempted. */
 @Suppress("RedundantSuspendModifier", "MayBeConstant")
+/** One exemption the check needs and one it doesn't. */
+@Language("kotlin")
+private val redundantExemptionFile = """
+    /** A deliberately stable data holder. */
+    @IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)
+    public data class StableData(
+        /** The only coordinate. */
+        val x: Int,
+    )
+
+    /** A regular class with a data class exemption. */
+    @IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)
+    public class Settled
+
+""".trimIndent()
+
 @Language("kotlin")
 private val acknowledgedFile = """
     /** A deliberately open class. */

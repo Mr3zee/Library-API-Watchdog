@@ -69,6 +69,34 @@ class ApiWatchdogHtmlReportTest {
     }
 
     @Test
+    fun `an applied annotation that a redundant-exemption diagnostic reports gets the redundant tag`() {
+        val redundant = entry(
+            location = "src/Api.kt:2",
+            diagnostic = "REDUNDANT_EXEMPTION",
+            annotation = "IntentionallyDataClass",
+            severity = "warning",
+        ).copy(messageParameters = listOf("IntentionallyDataClass", "declaration"))
+        val document = render(listOf(report(
+            entries = listOf(redundant),
+            applied = listOf(
+                AppliedExemptionReportEntry("IntentionallyDataClass", "src/Api.kt:2"),
+                AppliedExemptionReportEntry("IntentionallyDataClass", "src/Api.kt:9"),
+                AppliedExemptionReportEntry("IntentionallyOpen", "src/Api.kt:2"),
+            ),
+        )))
+        assertEquals(
+            listOf("1 not applied", "0 errors", "1 warning", "3 applied annotations", "1 redundant annotation"),
+            document.select(".totals li").map { it.text() },
+        )
+        val tagged = document.select("#applied ~ .diagnostic-groups .finding:has(.fix-status.redundant)")
+        assertEquals(listOf("src/Api.kt:2"), tagged.map { it.selectFirst(".location")?.text() })
+        val taggedDiagnostics = tagged.single().attr("data-diagnostics").split(" ")
+        assertTrue("REDUNDANT_EXEMPTION" in taggedDiagnostics, taggedDiagnostics.toString())
+        assertTrue(tagged.single().selectFirst(".group-title, .finding-heading")?.text()?.contains("Redundant exemptions") == true)
+        assertEquals(2, document.select("#applied ~ .diagnostic-groups .fix-status.applied").size)
+    }
+
+    @Test
     fun `identical findings and shared source locations remain separate entries`() {
         val same = entry()
         val document = render(listOf(report(

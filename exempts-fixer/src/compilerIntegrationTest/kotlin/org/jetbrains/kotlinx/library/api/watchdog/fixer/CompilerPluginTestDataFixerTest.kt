@@ -32,11 +32,13 @@ import org.jetbrains.kotlinx.library.api.watchdog.WatchdogConfigurationKeys
 import org.opentest4j.AssertionFailedError
 
 private val PATH_SEPARATOR = File.pathSeparator
+private const val REDUNDANT_EXEMPTION = "REDUNDANT_EXEMPTION"
 
 /**
  * Runs the fixer over the diagnostics test data of the compiler plugin. The `<!NAME!>...<!>`
  * markers are the diagnostics report. The fixed source then runs through the diagnostics test
- * runner with the markers of the unfixable diagnostics only.
+ * runner with the markers of the unfixable diagnostics only. A fix on a callable can make an
+ * exemption on one of its parameters redundant, so the run hides `REDUNDANT_EXEMPTION`.
  */
 class CompilerPluginTestDataFixerTest {
     private val parser = KotlinFileParser()
@@ -85,6 +87,7 @@ class CompilerPluginTestDataFixerTest {
         }
         return buildString {
             appendLine("// DISABLE_NEXT_PHASE_SUGGESTION")
+            appendLine("// DIAGNOSTICS: -$REDUNDANT_EXEMPTION")
             append(generated)
         }
     }
@@ -111,7 +114,11 @@ class CompilerPluginTestDataFixerTest {
             )
         }
 
+        // A removal takes an annotation and the markers on it away.
         val remainingDiagnostics = diagnosticsThatWereSkipped(source, fixedText, result, result.skipped)
+            .filterNot { diagnostic ->
+                result.edits.any { it.text.isEmpty() && it.offset <= diagnostic.startOffset && diagnostic.endOffset <= it.endOffset }
+            }
             .map { diagnostic ->
                 diagnostic.copy(
                     startOffset = result.mapOffset(diagnostic.startOffset, afterEditsAtOffset = true),

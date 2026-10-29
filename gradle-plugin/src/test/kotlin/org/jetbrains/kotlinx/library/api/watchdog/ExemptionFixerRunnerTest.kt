@@ -153,7 +153,7 @@ class ExemptionFixerRunnerTest {
         val failure = assertFailsWith<GradleException> {
             runFixer(overlayVersion = "9.0.0", onStart = { processStarted = true })
         }
-        assertEquals("The exempts fixer has no overlay for Kotlin 2.4.10", failure.message)
+        assertEquals("The exempts fixer doesn't support Kotlin 2.4.10", failure.message)
         assertFalse(processStarted)
     }
 

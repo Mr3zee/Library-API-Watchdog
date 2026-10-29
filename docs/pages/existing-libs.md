@@ -35,7 +35,7 @@ Three diagnostics get a different fix:
 The placeholder KDoc satisfies the check until the real documentation replaces it:
 
 ```kotlin
-/** TODO: Provide kDocs for this declaration */
+/** TODO: Document this declaration */
 public class Config
 ```
 
@@ -56,7 +56,7 @@ collection mode. [The report page](./report.md) lists the compilations.
 When neither task is in the task graph, the compilations run as configured. Collection mode changes
 three things:
 
-- Explicit API mode is `warning`.
+- A module without Explicit API mode on compiles with additional `-Xexplicit-api=warning`.
 - Every enabled configurable check reports a warning, so the compilation passes. The configured
   severity still decides the fix: `exemptExistingApi` exempts a check set to `ERROR` and leaves a
   check set to `WARNING`. A check set to `NONE` in `apiWatchdog` records nothing.
@@ -68,6 +68,8 @@ three things:
     internal type has to leave the signature.
   - [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md):
     declare the dependency with `api` in the build script. This breaks no consumer.
+
+`exemptExistingApi` removes the [redundant annotations](./checks/special/redundant-exemption.md), and `generateApiWatchdogReport` tags them.
 
 Any other compilation error still fails the task. Fix unresolved references and syntax errors first.
 The compilations outside collection mode still report the three always-error checks, so fix them

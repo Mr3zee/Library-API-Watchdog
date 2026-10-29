@@ -1,5 +1,5 @@
 /exposure.kt:44:28: error: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
-    The property `leakedProperty` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library supplies the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:
+    The property `leakedProperty` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library includes the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:
 
         dependencies {
             implementation("com.example:models:1.0")
@@ -11,7 +11,7 @@
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency
 
 /exposure.kt:46:12: error: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
-    The property receiver `leakedReceiver` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library supplies the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:
+    The property receiver `leakedReceiver` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library includes the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:
 
         dependencies {
             implementation("com.example:models:1.0")
@@ -23,7 +23,7 @@
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency
 
 /exposure.kt:49:28: error: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
-    The function `leakedReturn` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library supplies the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:
+    The function `leakedReturn` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library includes the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:
 
         dependencies {
             implementation("com.example:models:1.0")
@@ -35,7 +35,7 @@
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency
 
 /exposure.kt:51:12: error: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
-    The function receiver `leakedFunctionReceiver` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library supplies the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:
+    The function receiver `leakedFunctionReceiver` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library includes the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:
 
         dependencies {
             implementation("com.example:models:1.0")
@@ -47,7 +47,7 @@
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency
 
 /exposure.kt:53:35: error: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
-    The parameter `value` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library supplies the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:
+    The parameter `value` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library includes the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:
 
         dependencies {
             implementation("com.example:models:1.0")
@@ -59,7 +59,7 @@
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency
 
 /exposure.kt:55:32: error: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
-    The supertype of `LeakedSupertype` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library supplies the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:
+    The supertype of `LeakedSupertype` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library includes the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:
 
         dependencies {
             implementation("com.example:models:1.0")
@@ -71,7 +71,7 @@
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency
 
 /exposure.kt:57:35: error: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
-    The type parameter `T` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library supplies the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:
+    The type parameter `T` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library includes the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:
 
         dependencies {
             implementation("com.example:models:1.0")
@@ -83,7 +83,7 @@
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency
 
 /exposure.kt:59:36: error: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
-    The type alias `LeakedTypeAlias` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library supplies the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:
+    The type alias `LeakedTypeAlias` publicly exposes `com.example.models.Model`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library includes the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:
 
         dependencies {
             implementation("com.example:models:1.0")
@@ -95,7 +95,7 @@
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency
 
 /exposure.kt:61:35: error: PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
-    The parameter `tool` publicly exposes `com.example.tools.Tool`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library supplies the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:
+    The parameter `tool` publicly exposes `com.example.tools.Tool`, but the dependency with that type isn't published transitively to consumers. Declare the dependency with `api` instead. If the environment that loads the library includes the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:
 
         dependencies {
             implementation("<the dependency of tools>")

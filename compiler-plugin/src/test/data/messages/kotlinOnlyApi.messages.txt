@@ -1,40 +1,40 @@
 /kotlinOnlyApi.kt:7:20: error: KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
-    The function `fetch` is a `suspend` function, which Java sees with an extra `Continuation` parameter. Hide it from Java with `@JvmSynthetic`, and add a Java-friendly alternative.
+    The function `fetch` is a `suspend` function, which Java sees with an extra `Continuation` parameter. Hide it from Java with `@JvmSynthetic`, and add an alternative that Java can call.
 
     If this is intended, apply `@IntentionallyKotlinOnlyApi` to the function or an enclosing class.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic
 
 /kotlinOnlyApi.kt:9:31: error: KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
-    The function `instantiate` declares a `reified` type parameter, so a call from Java fails at runtime. Hide it from Java with `@JvmSynthetic`, and add a Java-friendly alternative.
+    The function `instantiate` declares a `reified` type parameter, so a call from Java fails at runtime. Hide it from Java with `@JvmSynthetic`, and add an alternative that Java can call.
 
     If this is intended, apply `@IntentionallyKotlinOnlyApi` to the function or an enclosing class.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic
 
 /kotlinOnlyApi.kt:11:12: error: KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
-    The function `race` takes a `suspend` function type in the parameter `work`, which Java sees with an extra `Continuation` parameter. Hide it from Java with `@JvmSynthetic`, and add a Java-friendly alternative.
+    The function `race` takes a `suspend` function type in the parameter `work`, which Java sees with an extra `Continuation` parameter. Hide it from Java with `@JvmSynthetic`, and add an alternative that Java can call.
 
     If this is intended, apply `@IntentionallyKotlinOnlyApi` to the function or an enclosing class.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic
 
 /kotlinOnlyApi.kt:15:12: error: KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
-    The function `configure` takes a function type with receiver in the parameter `block`, which a Java lambda gets as an explicit first argument. Hide it from Java with `@JvmSynthetic`, and add a Java-friendly alternative.
+    The function `configure` takes a function type with receiver in the parameter `block`, which a Java lambda gets as an explicit first argument. Hide it from Java with `@JvmSynthetic`, and add an alternative that Java can call.
 
     If this is intended, apply `@IntentionallyKotlinOnlyApi` to the function or an enclosing class.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic
 
 /kotlinOnlyApi.kt:17:12: error: KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
-    The function `measure` takes a function type with context parameters in the parameter `block`, which a Java lambda gets as explicit leading arguments. Hide it from Java with `@JvmSynthetic`, and add a Java-friendly alternative.
+    The function `measure` takes a function type with context parameters in the parameter `block`, which a Java lambda gets as explicit leading arguments. Hide it from Java with `@JvmSynthetic`, and add an alternative that Java can call.
 
     If this is intended, apply `@IntentionallyKotlinOnlyApi` to the function or an enclosing class.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic
 
 /kotlinOnlyApi.kt:19:12: error: KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
-    The function `onEach` takes a `Unit`-returning function type in the parameter `action`, so a Java lambda has to return `Unit.INSTANCE`. Hide it from Java with `@JvmSynthetic`, and add a Java-friendly alternative.
+    The function `onEach` takes a `Unit`-returning function type in the parameter `action`, so a Java lambda has to return `Unit.INSTANCE`. Hide it from Java with `@JvmSynthetic`, and add an alternative that Java can call.
 
     If this is intended, apply `@IntentionallyKotlinOnlyApi` to the function or an enclosing class.
 

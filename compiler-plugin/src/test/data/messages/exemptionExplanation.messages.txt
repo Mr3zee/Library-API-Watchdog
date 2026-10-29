@@ -1,19 +1,19 @@
 /exemptionExplanation.kt:11:1: error: EXEMPTION_WITHOUT_EXPLANATION
-    The `@IntentionallyOpen` exemption doesn't explain why it is applied: the reason `OTHER` is generic, and the `description` is empty. Pass a self-explanatory reason (`FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`, `FOR_DEPRECATION`), or explain the exemption in the `description`.
+    The `@IntentionallyOpen` exemption has the generic reason `OTHER` and an empty `description`. Pass one of the reasons `FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`, or `FOR_DEPRECATION`, or explain the exemption in the `description`.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/exemption-without-explanation
 
 /exemptionExplanation.kt:14:1: error: EXEMPTION_WITHOUT_EXPLANATION
-    The `@IntentionallyExhaustive` exemption doesn't explain why it is applied: the reason `INTEROP` is generic, and the `description` is empty. Pass a self-explanatory reason (`FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`, `FOR_DEPRECATION`), or explain the exemption in the `description`.
+    The `@IntentionallyExhaustive` exemption has the generic reason `INTEROP` and an empty `description`. Pass one of the reasons `FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`, or `FOR_DEPRECATION`, or explain the exemption in the `description`.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/exemption-without-explanation
 
 /exemptionExplanation.kt:19:1: error: EXEMPTION_WITHOUT_EXPLANATION
-    The `@IntentionallyExhaustive` exemption doesn't explain why it is applied: the reason `EXTERNAL_CONTRACT` is generic, and the `description` is empty. Pass a self-explanatory reason (`FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`, `FOR_DEPRECATION`), or explain the exemption in the `description`.
+    The `@IntentionallyExhaustive` exemption has the generic reason `EXTERNAL_CONTRACT` and an empty `description`. Pass one of the reasons `FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`, or `FOR_DEPRECATION`, or explain the exemption in the `description`.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/exemption-without-explanation
 
 /exemptionExplanation.kt:24:1: error: EXEMPTION_WITHOUT_EXPLANATION
-    The `@IntentionallyExhaustive` exemption doesn't explain why it is applied: the reason `IGNORE_JAVA_INTEROP` is generic, and the `description` is empty. Pass a self-explanatory reason (`FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`, `FOR_DEPRECATION`), or explain the exemption in the `description`.
+    The `@IntentionallyExhaustive` exemption has the generic reason `IGNORE_JAVA_INTEROP` and an empty `description`. Pass one of the reasons `FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`, or `FOR_DEPRECATION`, or explain the exemption in the `description`.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/exemption-without-explanation

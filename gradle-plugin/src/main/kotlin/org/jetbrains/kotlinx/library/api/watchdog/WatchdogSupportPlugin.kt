@@ -119,9 +119,12 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         val rootDirectory = isolated.rootProject.projectDirectory.asFile
         val projectDirectoryFromRoot = layout.projectDirectory.asFile
             .relativeToOrSelf(rootDirectory).invariantSeparatorsPath
+        // The fixer leaves a warning alone and the report shows its severity, so the always-warning
+        // check is in the map too. The compiler plugin gets the configurable severities only.
         val diagnosticSeverities = extension.diagnosticSeverities.entries.fold(
             objects.mapProperty(String::class.java, WatchdogSeverity::class.java),
         ) { map, (diagnostic, severity) -> map.apply { put(diagnostic.name, severity) } }
+            .apply { put(WatchdogChecks.REDUNDANT_EXEMPTION.name, WatchdogSeverity.WARNING) }
         val fixerDependency = dependencyHandler.create(
             "${info.artifact.groupId}:$FIXER_ARTIFACT_ID:${info.artifact.version}",
         )
@@ -174,9 +177,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         registerReportTask(
             EXEMPT_EXISTING_API_TASK_NAME,
             ExemptExistingApiTask::class.java,
-            "Exempts every declaration with a watchdog error in the Kotlin sources of every compilation " +
-                    "except tests, with the " +
-                    "FOR_BACKWARDS_COMPATIBILITY annotation or a placeholder KDoc, and writes the API Watchdog reports",
+            "Exempts every declaration with a watchdog error in every compilation except tests, with a " +
+                    "FOR_BACKWARDS_COMPATIBILITY exemption or a placeholder KDoc. Writes the API Watchdog reports",
         )
         val reportTask = registerReportTask(
             GENERATE_REPORT_TASK_NAME,
@@ -207,8 +209,15 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 API_WATCHDOG_REPORT_ROOT_DIRECTORY_ATTRIBUTE,
                 rootDirectory.absolutePath,
             )
-            configuration.outgoing.artifact(reportTask.flatMap { it.reportDataFile }) { artifact ->
-                artifact.builtBy(reportTask)
+        }
+        // A disabled watchdog skips the report task, so its variant has no artifact and the
+        // aggregation plugin reads no missing file.
+        afterEvaluate {
+            if (!enabled.get()) return@afterEvaluate
+            configurations.named(API_WATCHDOG_REPORT_ELEMENTS_CONFIGURATION).configure { configuration ->
+                configuration.outgoing.artifact(reportTask.flatMap { it.reportDataFile }) { artifact ->
+                    artifact.builtBy(reportTask)
+                }
             }
         }
     }
@@ -222,6 +231,9 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         val feedsReport = !kotlinCompilation.isTestCompilation() &&
                 (kotlinCompilation.hasExplicitApiFromExtension() || hasRawExplicitApiFlag())
         val collect = collectDiagnosticsForExempts.map { it && feedsReport }
+        // KGP passes the configured mode itself, twice in a multiplatform project. A different
+        // value makes the compiler warn that `-Xexplicit-api` is passed multiple times.
+        val forceExplicitApi = collect.map { it && !hasExplicitApiMode() }
         val compileDependencies = configurations.named(kotlinCompilation.compileDependencyConfigurationName)
         val transitiveDependencies = transitiveDependenciesFor(kotlinCompilation, compileDependencies)
         val exemptNonTransitiveDependencies = exemptNonTransitiveDependenciesFor(kotlinCompilation, compileDependencies)
@@ -264,7 +276,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 task.outputs.doNotCacheIf("watchdog diagnostic collection is enabled") {
                     collect.get()
                 }
-                task.compilerOptions.freeCompilerArgs.addAll(collect.map {
+                task.compilerOptions.freeCompilerArgs.addAll(forceExplicitApi.map {
                     if (it) listOf("-Xexplicit-api=warning") else emptyList()
                 })
                 task.doFirst {
@@ -636,7 +648,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 """.trimIndent()
             }.prependIndent("    ")
             return """
-            |Project '$projectPath' applies library-api-watchdog but no binary compatibility validation is enabled.
+            |Project '$projectPath' applies library-api-watchdog but doesn't enable binary compatibility validation.
             |The watchdog checks the shape of new API. Binary compatibility validation compares each build with
             |a committed dump of the released API and catches a breaking change. Enable the ABI validation of
             |the Kotlin Gradle plugin in the build script of the module:

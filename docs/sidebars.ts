@@ -53,6 +53,7 @@ const sidebars: SidebarsConfig = {
             'checks/special/exemption-without-explanation',
             'checks/special/public-type-from-non-transitive-dependency',
             'checks/special/public-type-with-internal-api',
+            'checks/special/redundant-exemption',
           ],
         },
       ],

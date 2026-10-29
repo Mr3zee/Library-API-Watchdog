@@ -1,26 +1,26 @@
 /openApi.kt:7:19: error: OPEN_API_WITHOUT_SUBCLASS_OPT_IN
-    The class `OpenClass` can be subclassed outside the library. Apply `@SubclassOptInRequired`, or make every constructor `internal` or `private`.
+    Users can subclass the class `OpenClass` outside the library. Apply `@SubclassOptInRequired`, or make every constructor `internal` or `private`.
 
     If this is intended, apply `@IntentionallyOpen` to the class.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in
 
 /openApi.kt:9:23: error: OPEN_API_WITHOUT_SUBCLASS_OPT_IN
-    The class `AbstractClass` can be subclassed outside the library. Apply `@SubclassOptInRequired`, or make every constructor `internal` or `private`.
+    Users can subclass the class `AbstractClass` outside the library. Apply `@SubclassOptInRequired`, or make every constructor `internal` or `private`.
 
     If this is intended, apply `@IntentionallyOpen` to the class.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in
 
 /openApi.kt:11:18: error: OPEN_API_WITHOUT_SUBCLASS_OPT_IN
-    The interface `Interface` can be subclassed outside the library. Apply `@SubclassOptInRequired`.
+    Users can subclass the interface `Interface` outside the library. Apply `@SubclassOptInRequired`.
 
     If this is intended, apply `@IntentionallyOpen` to the interface.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in
 
 /openApi.kt:13:22: error: OPEN_API_WITHOUT_SUBCLASS_OPT_IN
-    The interface `FunInterface` can be subclassed outside the library. Users implement a `fun interface` with a lambda. `@SubclassOptInRequired` isn't applicable to it, so acknowledge the external implementations with `@IntentionallyOpen`.
+    Users can subclass the interface `FunInterface` outside the library. A lambda implements a `fun interface`, so `@SubclassOptInRequired` doesn't apply to it.
 
     If this is intended, apply `@IntentionallyOpen` to the interface.
 

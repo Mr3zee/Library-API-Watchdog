@@ -23,10 +23,15 @@ import org.jetbrains.kotlin.fir.types.isUnit
 import org.jetbrains.kotlin.fir.types.type
 import org.jetbrains.kotlin.fir.types.varargElementType
 import org.jetbrains.kotlin.name.JvmStandardClassIds
+import org.jetbrains.kotlin.name.ClassId
 
 internal class KotlinOnlyApiChecker(
     private val severities: WatchdogDiagnosticSeverities,
-) : FirFunctionChecker(MppCheckerKind.Common) {
+) : FirFunctionChecker(MppCheckerKind.Common), ExemptingChecker {
+    override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyKotlinOnlyApi)
+
+    override val enclosingClassExemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyKotlinOnlyApi)
+
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirFunction) {
         if (declaration !is FirNamedFunction || declaration.isExpectedDeclaration() ||

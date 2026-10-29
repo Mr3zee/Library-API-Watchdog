@@ -84,11 +84,11 @@
           "Apply `@SubclassOptInRequired`."
         ],
         "funInterfaceFix": [
-          "Users implement a `fun interface` with a lambda. `@SubclassOptInRequired` isn't applicable to it, so acknowledge the external implementations with `@IntentionallyOpen`."
+          "A lambda implements a `fun interface`, so `@SubclassOptInRequired` doesn't apply to it."
         ]
       },
       "message": [
-        "The {0} `{1}` can be subclassed outside the library. {2}",
+        "Users can subclass the {0} `{1}` outside the library. {2}",
         "",
         "If this is intended, apply `@IntentionallyOpen` to the {0}."
       ]
@@ -143,7 +143,7 @@
       "title": "Function type aliases in public API",
       "docs": "checks/function-type-alias-public-api",
       "message": [
-        "`{0}` is a type alias for a function type, and users bind it. This complicates possible future evolution.",
+        "`{0}` is a type alias for a function type. Compiled callers bind the expanded type, so a change to the alias breaks them.",
         "Declare a `fun interface` instead.",
         "",
         "If this is intended, apply `@IntentionallyFunctionTypeAlias` to the type alias."
@@ -277,7 +277,7 @@
         ]
       },
       "message": [
-        "The {0} `{1}` exposes the tuple type `{2}`, whose components {3} carry no domain meaning.",
+        "The {0} `{1}` exposes the tuple type `{2}`, whose components {3} have no domain meaning.",
         "Declare a small class with named properties instead.",
         "",
         "If this is intended, apply `@IntentionallyPairOrTriple` to the declaration, parameter, or type",
@@ -309,7 +309,7 @@
         "",
         "{2}",
         "",
-        "Use the same positions for shared parameters, and append extra parameters after them.",
+        "Use the same positions for shared parameters, and put extra parameters after them.",
         "",
         "If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the {3}."
       ],
@@ -389,7 +389,7 @@
         ]
       },
       "message": [
-        "The {0} `{1}` contains logic beyond a single thin delegating statement, and the compiler copies an",
+        "The {0} `{1}` has logic beyond a thin wrapper, and the compiler copies an",
         "`inline` body into every user binary. Move the logic into a function without `inline`",
         "(`@PublishedApi internal` keeps it out of the public API) and delegate to it.",
         "",
@@ -407,8 +407,8 @@
         ],
         "nonFinalFunctionFix": [
           "The compiler mangles the JVM method name, so Java can't call it. An open or abstract function",
-          "supports neither `@JvmName` nor `@JvmExposeBoxed`, so remove the value class from the signature",
-          "if Java needs access."
+          "supports neither `@JvmName` nor `@JvmExposeBoxed`. If Java needs access, remove the value class",
+          "from the signature."
         ],
         "propertyGetterFix": [
           "The compiler mangles the JVM name of the getter, so Java can't call it. Rename it with",
@@ -424,18 +424,18 @@
         ],
         "nonFinalPropertyGetterFix": [
           "The compiler mangles the JVM name of the getter, so Java can't call it. An open or abstract",
-          "property supports neither `@get:JvmName` nor `@JvmExposeBoxed`, so remove the value class from",
-          "the signature if Java needs access."
+          "property supports neither `@get:JvmName` nor `@JvmExposeBoxed`. If Java needs access, remove the",
+          "value class from the signature."
         ],
         "nonFinalPropertySetterFix": [
           "The compiler mangles the JVM name of the setter, so Java can't call it. An open or abstract",
-          "property supports neither `@set:JvmName` nor `@JvmExposeBoxed`, so remove the value class from",
-          "the signature if Java needs access."
+          "property supports neither `@set:JvmName` nor `@JvmExposeBoxed`. If Java needs access, remove the",
+          "value class from the signature."
         ],
         "nonFinalPropertyGetterAndSetterFix": [
           "The compiler mangles the JVM names of both accessors, so Java can't call them. An open or",
-          "abstract property supports neither accessor `@JvmName` nor `@JvmExposeBoxed`, so remove the",
-          "value class from the signature if Java needs access."
+          "abstract property supports neither accessor `@JvmName` nor `@JvmExposeBoxed`. If Java needs",
+          "access, remove the value class from the signature."
         ],
         "constructorFix": [
           "The compiler hides the constructor behind a synthetic one, so Java can't call it. Add a boxed",
@@ -477,8 +477,8 @@
         ]
       },
       "message": [
-        "The function `{0}` {1}. Hide it from Java with `@JvmSynthetic`, and add a Java-friendly",
-        "alternative.",
+        "The function `{0}` {1}. Hide it from Java with `@JvmSynthetic`, and add an alternative that Java",
+        "can call.",
         "",
         "If this is intended, apply `@IntentionallyKotlinOnlyApi` to the function or an enclosing class."
       ]
@@ -582,7 +582,7 @@
       "message": [
         "The {0} `{1}` publicly exposes `{2}`, but the dependency with that type isn't published transitively",
         "to consumers. Declare the dependency with `api` instead. If the environment that loads the library",
-        "supplies the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:",
+        "includes the dependency, declare it on the `apiWatchdogExemptNonTransitive` configuration too:",
         "",
         "{3}",
         "",
@@ -603,9 +603,32 @@
       "title": "Exemptions without explanation",
       "docs": "checks/special/exemption-without-explanation",
       "message": [
-        "The `@{0}` exemption doesn't explain why it is applied: the reason `{1}` is generic, and the",
-        "`description` is empty. Pass a self-explanatory reason (`FOR_BACKWARDS_COMPATIBILITY`,",
-        "`API_DESIGN`, `FOR_DEPRECATION`), or explain the exemption in the `description`."
+        "The `@{0}` exemption has the generic reason `{1}` and an empty `description`. Pass one of the",
+        "reasons `FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`, or `FOR_DEPRECATION`, or explain the",
+        "exemption in the `description`."
+      ]
+    },
+    {
+      "name": "REDUNDANT_EXEMPTION",
+      "title": "Redundant exemptions",
+      "docs": "checks/special/redundant-exemption",
+      "defaultSeverity": "warning",
+      "parameterValues": {
+        "declaration": [
+          "declaration"
+        ],
+        "typeUsage": [
+          "type usage"
+        ],
+        "file": [
+          "file"
+        ],
+        "classAndMembers": [
+          "class and its members"
+        ]
+      },
+      "message": [
+        "The `@{0}` exemption is redundant. No check reports on this {1} without it. Remove the annotation."
       ]
     },
     {
@@ -613,7 +636,7 @@
       "title": "DSL markers with no-op targets",
       "docs": "checks/special/dsl-marker-noop-target",
       "message": [
-        "The DSL marker `{0}` declares the `{1}` annotation target, but a DSL marker has an effect only on",
+        "The DSL marker `{0}` declares the `{1}` annotation target. A DSL marker has an effect only on",
         "`CLASS`, `ANNOTATION_CLASS`, `TYPE`, and `TYPEALIAS`. Remove `{1}` from `@Target`.",
         "",
         "If this is intended, apply `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` to the DSL",
@@ -653,8 +676,8 @@
         ]
       },
       "message": [
-        "The DSL marker `{0}` has no effect on this {1}. Scope control reacts only to a marker on the type",
-        "of an implicit value: a receiver, a context parameter, or a function type with one. Move the",
+        "The DSL marker `{0}` has no effect on this {1}. It works only on the type of an implicit value:",
+        "a receiver, a context parameter, or a function type with one. Move the",
         "marker to the class or to a receiver type, or remove it."
       ]
     }

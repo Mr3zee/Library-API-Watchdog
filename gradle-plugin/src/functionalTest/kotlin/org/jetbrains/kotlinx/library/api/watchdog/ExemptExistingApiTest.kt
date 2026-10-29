@@ -178,7 +178,7 @@ class ExemptExistingApiTest {
         assertContains(report, "<code class=\"language-kotlin\">")
         assertContains(report, "public open class LegacyApi")
         assertContains(report, "data-line=\"")
-        assertContains(report, "The class <code>LegacyApi</code> can be subclassed outside the library.")
+        assertContains(report, "Users can subclass the class <code>LegacyApi</code> outside the library.")
         assertContains(report, "Apply <code>@SubclassOptInRequired</code>")
         assertContains(report, "<details class=\"diagnostic-message\"><summary>Diagnostic message</summary>")
         assertReportedElement(report, "LegacyApi", "error")
@@ -321,6 +321,18 @@ class ExemptExistingApiTest {
             project.mainSource("open").readText(),
             "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic open class Open",
         )
+    }
+
+    @Test
+    fun `keeps the configured explicit API mode`() {
+        // KGP passes `-Xexplicit-api=strict` twice to a multiplatform compilation. A third,
+        // different value makes the compiler warn that the flag is passed multiple times.
+        val project = kmpProject { source(openClass("SharedApi"), "sharedApi") }
+
+        val result = project.build(EXEMPT_TASK)
+
+        result.assertOutputLacks("is passed multiple times")
+        project.assertExempted("src/commonMain/kotlin/test/sharedApi.kt", "SharedApi")
     }
 
     @Test
@@ -833,7 +845,7 @@ class ExemptExistingApiTest {
     private companion object {
         const val EXEMPT_TASK = "exemptExistingApi"
         const val REPORT_TASK = "generateApiWatchdogReport"
-        const val PLACEHOLDER_KDOC = "/** TODO: Provide kDocs for this declaration */"
+        const val PLACEHOLDER_KDOC = "/** TODO: Document this declaration */"
         const val CONTEXT_PARAMETERS_BUILD_SCRIPT = """kotlin { compilerOptions.freeCompilerArgs.add("-Xcontext-parameters") }"""
     }
 }

@@ -73,7 +73,7 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             valueDescription = "<diagnostic name>:error|warning|none",
             description = "Report the named watchdog diagnostic with the given severity, " +
                     "or disable its check with 'none'. " +
-                    "Every diagnostic not mentioned has its default severity.",
+                    "Every other diagnostic has its default severity.",
             required = false,
             allowMultipleOccurrences = true,
         )
@@ -81,8 +81,8 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
         val IGNORE_WHEN_ANNOTATED_OPTION: CliOption = CliOption(
             optionName = "ignoreWhenAnnotated",
             valueDescription = "<diagnostic name>:<annotation fully qualified name>",
-            description = "Do not report the named configurable watchdog diagnostic on a " +
-                    "declaration carrying the annotation.",
+            description = "Don't report the named configurable watchdog diagnostic on a " +
+                    "declaration with the annotation.",
             required = false,
             allowMultipleOccurrences = true,
         )
@@ -90,9 +90,9 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
         val INTERNAL_API_ANNOTATION_OPTION: CliOption = CliOption(
             optionName = "internalApiAnnotation",
             valueDescription = "<annotation fully qualified name>",
-            description = "Treat declarations carrying the annotation as internal API, exactly " +
-                    "as if the annotation class were marked with @InternalAnnotationMarker. " +
-                    "Meant for annotations the library can't mark itself.",
+            description = "Treat a declaration with the annotation as internal API, as if the " +
+                    "annotation class had @InternalAnnotationMarker. " +
+                    "For annotations that the library can't mark itself.",
             required = false,
             allowMultipleOccurrences = true,
         )
@@ -103,9 +103,9 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             description = "Append every reported watchdog diagnostic to the given file as a " +
                     "tab-separated line: diagnostic name, source file path, start and end " +
                     "offset of the source element, start and end offset of the reported " +
-                    "range, then one field for each message parameter. Meant for tooling. " +
-                    "The Gradle plugin's exemptExistingApi and generateApiWatchdogReport " +
-                    "tasks consume it.",
+                    "range, then one field for each message parameter. For tooling. " +
+                    "The exemptExistingApi and generateApiWatchdogReport tasks of the " +
+                    "Gradle plugin read it.",
             required = false,
             // The blank placeholder of the Gradle plugin can meet a path from other tooling.
             allowMultipleOccurrences = true,
@@ -138,12 +138,12 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
 
         val COMPILE_DEPENDENCY_PATHS_OPTION: CliOption = dependencyPathsOption(
             optionName = "compileDependencyPaths",
-            description = "Compilation dependency paths used by the public dependency exposure check.",
+            description = "Compile dependency paths that PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY reads.",
         )
 
         val TRANSITIVE_DEPENDENCY_PATHS_OPTION: CliOption = dependencyPathsOption(
             optionName = "transitiveDependencyPaths",
-            description = "Dependency paths exposed transitively to consumers.",
+            description = "Dependency paths that the project publishes transitively to consumers.",
         )
 
         val DEPENDENCY_DECLARATIONS_OPTION: CliOption = CliOption(

@@ -95,7 +95,7 @@ internal object ExemptionFixerRunner {
         outputDirectory: File,
     ): File {
         outputDirectory.deleteRecursively()
-        check(outputDirectory.mkdirs()) { "Could not create $outputDirectory" }
+        check(outputDirectory.mkdirs()) { "Can't create $outputDirectory" }
 
         val currentVersion = KotlinToolingVersion(kotlinVersion)
         var selectedVersion: KotlinToolingVersion? = null
@@ -127,7 +127,7 @@ internal object ExemptionFixerRunner {
         }
         if (!opened || selectedVersion == null) {
             throw GradleException(
-                "The exempts fixer has no overlay for Kotlin $kotlinVersion",
+                "The exempts fixer doesn't support Kotlin $kotlinVersion",
             )
         }
         return outputDirectory

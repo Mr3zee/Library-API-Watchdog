@@ -9,11 +9,14 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirClassChecker
 import org.jetbrains.kotlin.fir.declarations.FirClass
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.utils.isData
+import org.jetbrains.kotlin.name.ClassId
 
 /** A `data object` isn't reported, because it has no constructor properties. */
 internal class DataClassChecker(
     private val severities: WatchdogDiagnosticSeverities,
-) : FirClassChecker(MppCheckerKind.Common) {
+) : FirClassChecker(MppCheckerKind.Common), ExemptingChecker {
+    override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyDataClass)
+
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirClass) {
         val factory = severities[WatchdogDiagnostics.DATA_CLASS_PUBLIC_API] ?: return

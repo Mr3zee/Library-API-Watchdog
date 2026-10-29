@@ -27,7 +27,9 @@ import org.jetbrains.kotlin.util.OperatorNameConventions
 
 internal class StatefulClassWithoutGeneratedMembersChecker(
     private val severities: WatchdogDiagnosticSeverities,
-) : FirClassChecker(MppCheckerKind.Common) {
+) : FirClassChecker(MppCheckerKind.Common), ExemptingChecker {
+    override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyWithoutEquals, WatchdogClassIds.IntentionallyWithoutHashCode, WatchdogClassIds.IntentionallyWithoutToString, WatchdogClassIds.IntentionallyWithoutEqualsHashCodeOrToString)
+
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirClass) {
         if (declaration !is FirRegularClass || declaration.isExpectedDeclaration() ||

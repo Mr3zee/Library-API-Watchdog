@@ -53,7 +53,7 @@ fun main(args: Array<String>) {
 
         val silent = WatchdogDiagnostics.allDiagnostics.map { it.name }
             .filter { it !in counts } +
-            listOf("EXEMPTION_WITHOUT_EXPLANATION", "PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY")
+            listOf("EXEMPTION_WITHOUT_EXPLANATION", "REDUNDANT_EXEMPTION", "PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY")
                 .filter { it !in counts }
         if (silent.isNotEmpty()) {
             println()

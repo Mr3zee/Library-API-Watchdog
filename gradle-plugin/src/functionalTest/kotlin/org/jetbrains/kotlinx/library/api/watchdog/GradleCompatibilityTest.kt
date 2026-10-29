@@ -77,7 +77,7 @@ class GradleCompatibilityTest {
         assertContains(html, "<code class=\"language-kotlin\">")
         assertContains(html, "public open class OpenApi")
         assertContains(html, "public data class DataApi")
-        assertContains(html, "The class <code>OpenApi</code> can be subclassed outside the library.")
+        assertContains(html, "Users can subclass the class <code>OpenApi</code> outside the library.")
         assertContains(html, "The <code>data class</code> <code>DataApi</code>")
         assertContains(html, "href=\"https://github.com/drewhamilton/Poko\">Poko</a>")
         assertReportedElement(html, "OpenApi", "error")
@@ -108,6 +108,11 @@ class GradleCompatibilityTest {
                 plugins(Plugin("org.jetbrains.kotlin.jvm"))
                 source("/** A tool. */\npublic open class Tool", "Tool")
             }
+            // A disabled Watchdog skips the report task and publishes no report file.
+            subproject("internalApi") {
+                apiWatchdog { enabled = false }
+                source("/** An internal API. */\npublic open class InternalApi", "InternalApi")
+            }
         }
 
         val result = project.build("aggregateApiWatchdogReports", *PROJECT_ISOLATION)
@@ -115,11 +120,13 @@ class GradleCompatibilityTest {
         result.assertTaskOutcome(":openApi:generateApiWatchdogReport", SUCCESS)
         result.assertTaskOutcome(":dataApi:generateApiWatchdogReport", SUCCESS)
         result.assertTaskOutcome(":tools:generateApiWatchdogReport", null)
+        result.assertTaskOutcome(":internalApi:generateApiWatchdogReport", null)
         val html = project.file("build/reports/api-watchdog/aggregate-report.html").readText()
         assertContains(html, "Aggregate report for 2 projects")
         assertContains(html, ":openApi")
         assertContains(html, ":dataApi")
         assertFalse(html.contains(":tools"), html)
+        assertFalse(html.contains(":internalApi"), html)
     }
 
     @Test

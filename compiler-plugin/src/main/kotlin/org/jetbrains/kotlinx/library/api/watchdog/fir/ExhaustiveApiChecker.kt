@@ -9,12 +9,14 @@ import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirClassChecker
 import org.jetbrains.kotlin.fir.declarations.FirClass
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
-import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.utils.modality
+import org.jetbrains.kotlin.name.ClassId
 
 internal class ExhaustiveApiChecker(
     private val severities: WatchdogDiagnosticSeverities,
-) : FirClassChecker(MppCheckerKind.Common) {
+) : FirClassChecker(MppCheckerKind.Common), ExemptingChecker {
+    override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyExhaustive)
+
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirClass) {
         val factory = severities[WatchdogDiagnostics.EXHAUSTIVE_PUBLIC_API] ?: return
@@ -32,7 +34,7 @@ internal class ExhaustiveApiChecker(
             return
         }
 
-        if (declaration.hasAnnotation(WatchdogClassIds.IntentionallyExhaustive, context.session)) {
+        if (declaration.hasExemption(WatchdogClassIds.IntentionallyExhaustive)) {
             return
         }
 

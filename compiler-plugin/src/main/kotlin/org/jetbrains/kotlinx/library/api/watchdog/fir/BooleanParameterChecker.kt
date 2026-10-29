@@ -10,7 +10,6 @@ import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirValueParameter
-import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.isLegacyContextReceiver
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
@@ -21,10 +20,13 @@ import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.types.varargElementType
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
+import org.jetbrains.kotlin.name.ClassId
 
 internal class BooleanParameterChecker(
     private val severities: WatchdogDiagnosticSeverities,
-) : FirFunctionChecker(MppCheckerKind.Common) {
+) : FirFunctionChecker(MppCheckerKind.Common), ExemptingChecker {
+    override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyBooleanParameter)
+
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirFunction) {
         if (declaration !is FirNamedFunction || declaration.isActualizedDeclaration() ||
@@ -76,5 +78,5 @@ internal class BooleanParameterChecker(
 
     context(context: CheckerContext)
     private fun FirDeclaration.isExempt(): Boolean =
-        hasAnnotation(WatchdogClassIds.IntentionallyBooleanParameter, context.session)
+        hasExemption(WatchdogClassIds.IntentionallyBooleanParameter)
 }

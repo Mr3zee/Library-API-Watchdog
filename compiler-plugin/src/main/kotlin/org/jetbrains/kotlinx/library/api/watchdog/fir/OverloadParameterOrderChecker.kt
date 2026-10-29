@@ -12,7 +12,6 @@ import org.jetbrains.kotlin.fir.analysis.checkers.unsubstitutedScope
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
-import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
 import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
@@ -27,13 +26,18 @@ import org.jetbrains.kotlin.fir.unwrapFakeOverrides
 import org.jetbrains.kotlin.lexer.KtToken
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.name.ClassId
 
 /**
  * Context parameters aren't compared, because the call site doesn't pass them.
  */
 internal class OverloadParameterOrderChecker(
     private val severities: WatchdogDiagnosticSeverities,
-) : FirFunctionChecker(MppCheckerKind.Common) {
+) : FirFunctionChecker(MppCheckerKind.Common), ExemptingChecker {
+    override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyInconsistentParameterOrder)
+
+    override val readsExemptionOnSiblings: Boolean get() = true
+
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirFunction) {
         val factory = severities[WatchdogDiagnostics.INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS] ?: return
@@ -221,7 +225,7 @@ internal class OverloadParameterOrderChecker(
 
     context(context: CheckerContext)
     private fun FirBasedSymbol<*>.isExempt(): Boolean =
-        hasAnnotation(WatchdogClassIds.IntentionallyInconsistentParameterOrder, context.session)
+        hasExemption(WatchdogClassIds.IntentionallyInconsistentParameterOrder)
 
     private companion object {
         private val IDENTIFIER_TOKENS: Set<KtToken> = setOf(KtTokens.IDENTIFIER)

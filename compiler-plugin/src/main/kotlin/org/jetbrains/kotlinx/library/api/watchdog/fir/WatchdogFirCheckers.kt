@@ -23,6 +23,8 @@ import org.jetbrains.kotlin.platform.jvm.isJvm
  * Registers the checkers in a module compiled with explicit API mode, `strict` or `warning`.
  * A contract-shape check reports on the `expect` declaration. An implementation or JVM check
  * reports on the `actual` declaration and accepts annotations of the matched `expect`.
+ * [RedundantExemptionProbingChecker] wraps every checker that honors an exemption, so a check that
+ * is off reports no redundant exemption either.
  */
 class WatchdogFirCheckers internal constructor(
     session: FirSession,
@@ -52,20 +54,17 @@ class WatchdogFirCheckers internal constructor(
                 AnnotationExcludingDeclarationChecker(it, annotationBasedExclusions)
             }
 
-        override val classCheckers: Set<FirClassChecker> = setOfNotNull(
-            OpenApiChecker(severities)
-                .unlessDisabled(WatchdogDiagnostics.OPEN_API_WITHOUT_SUBCLASS_OPT_IN, WatchdogDiagnostics.SUBCLASS_OPT_IN_WITHOUT_MARKERS),
-            ExhaustiveApiChecker(severities)
-                .unlessDisabled(WatchdogDiagnostics.EXHAUSTIVE_PUBLIC_API),
-            DataClassChecker(severities)
-                .unlessDisabled(WatchdogDiagnostics.DATA_CLASS_PUBLIC_API),
-            StatefulClassWithoutGeneratedMembersChecker(severities)
-                .unlessDisabled(WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_EQUALS, WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_HASH_CODE, WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_TO_STRING,),
-            DslMarkerTargetsChecker(severities)
-                .unlessDisabled(WatchdogDiagnostics.DSL_MARKER_NOOP_TARGET, WatchdogDiagnostics.DSL_MARKER_WITHOUT_EXPLICIT_TARGETS),
-        ).excludingConfiguredAnnotations().recorded()
+        /** The probe sees the diagnostics before an ignore rule drops them, so an ignored declaration keeps its exemptions. */
+        private fun <D : FirDeclaration> Set<FirDeclarationChecker<D>>.probingRedundantExemptions():
+                Set<FirDeclarationChecker<D>> =
+            mapTo(mutableSetOf()) { checker ->
+                if (checker is ExemptingChecker) RedundantExemptionProbingChecker(checker, checker) else checker
+            }
 
-        override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> = setOfNotNull(
+        private fun <D : FirDeclaration> Set<FirDeclarationChecker<D>>.wrapped(): Set<FirDeclarationChecker<D>> =
+            probingRedundantExemptions().excludingConfiguredAnnotations().recorded()
+
+        private val plainBasicDeclarationCheckers: Set<FirBasicDeclarationChecker> = setOfNotNull(
             UndocumentedApiChecker(severities, reportUndocumentedClassProperties)
                 .unlessDisabled(WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API),
             ExemptionExplanationChecker.declarationChecker
@@ -80,9 +79,9 @@ class WatchdogFirCheckers internal constructor(
                 .takeIf { enabled && publicTypeWithInternalApiEnabled && !exemptingExistingApi },
             dependencyExposure?.let { NonTransitiveDependencyChecker(session, it) }
                 ?.takeIf { enabled && !exemptingExistingApi },
-        ).excludingConfiguredAnnotations().recorded()
+        )
 
-        override val functionCheckers: Set<FirFunctionChecker> = setOfNotNull(
+        private val plainFunctionCheckers: Set<FirFunctionChecker> = setOfNotNull(
             BooleanParameterChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.BOOLEAN_PARAMETER_PUBLIC_API),
             RequiredParameterAfterOptionalChecker(severities)
@@ -95,19 +94,9 @@ class WatchdogFirCheckers internal constructor(
             JvmOverloadsChecker(severities)
                 .onlyOnJvm()
                 ?.unlessDisabled(WatchdogDiagnostics.DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS),
-        ).excludingConfiguredAnnotations().recorded()
+        )
 
-        override val fileCheckers: Set<FirFileChecker> = setOfNotNull(
-            TopLevelJvmNameChecker(severities)
-                .onlyOnJvm()
-                ?.unlessDisabled(WatchdogDiagnostics.TOP_LEVEL_API_WITHOUT_JVM_NAME),
-        ).excludingConfiguredAnnotations().recorded()
-
-        override val typeAliasCheckers: Set<FirTypeAliasChecker> = setOfNotNull(
-            FunctionTypeAliasChecker(severities).unlessDisabled(WatchdogDiagnostics.FUNCTION_TYPE_ALIAS_PUBLIC_API),
-        ).excludingConfiguredAnnotations().recorded()
-
-        override val callableDeclarationCheckers: Set<FirCallableDeclarationChecker> = setOfNotNull(
+        private val plainCallableDeclarationCheckers: Set<FirCallableDeclarationChecker> = setOfNotNull(
             DslMarkerTypePositionChecker(severities).unlessDisabled(WatchdogDiagnostics.DSL_MARKER_NOOP_TYPE_POSITION),
             InlineFunctionLogicChecker(severities)
                 .unlessDisabled(WatchdogDiagnostics.INLINE_FUNCTION_WITH_LOGIC),
@@ -120,7 +109,41 @@ class WatchdogFirCheckers internal constructor(
                     WatchdogDiagnostics.COMPANION_API_WITHOUT_JVM_STATIC,
                     WatchdogDiagnostics.COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS,
                 ),
-        ).excludingConfiguredAnnotations().recorded()
+        )
+
+        override val classCheckers: Set<FirClassChecker> = setOfNotNull(
+            OpenApiChecker(severities)
+                .unlessDisabled(WatchdogDiagnostics.OPEN_API_WITHOUT_SUBCLASS_OPT_IN, WatchdogDiagnostics.SUBCLASS_OPT_IN_WITHOUT_MARKERS),
+            ExhaustiveApiChecker(severities)
+                .unlessDisabled(WatchdogDiagnostics.EXHAUSTIVE_PUBLIC_API),
+            DataClassChecker(severities)
+                .unlessDisabled(WatchdogDiagnostics.DATA_CLASS_PUBLIC_API),
+            StatefulClassWithoutGeneratedMembersChecker(severities)
+                .unlessDisabled(WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_EQUALS, WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_HASH_CODE, WatchdogDiagnostics.STATEFUL_CLASS_WITHOUT_TO_STRING,),
+            DslMarkerTargetsChecker(severities)
+                .unlessDisabled(WatchdogDiagnostics.DSL_MARKER_NOOP_TARGET, WatchdogDiagnostics.DSL_MARKER_WITHOUT_EXPLICIT_TARGETS),
+            EnclosingExemptionRedundancyChecker(
+                plainBasicDeclarationCheckers,
+                plainFunctionCheckers,
+                plainCallableDeclarationCheckers,
+            ).takeIf { enabled },
+        ).wrapped()
+
+        override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> = plainBasicDeclarationCheckers.wrapped()
+
+        override val functionCheckers: Set<FirFunctionChecker> = plainFunctionCheckers.wrapped()
+
+        override val fileCheckers: Set<FirFileChecker> = setOfNotNull(
+            TopLevelJvmNameChecker(severities)
+                .onlyOnJvm()
+                ?.unlessDisabled(WatchdogDiagnostics.TOP_LEVEL_API_WITHOUT_JVM_NAME),
+        ).wrapped()
+
+        override val typeAliasCheckers: Set<FirTypeAliasChecker> = setOfNotNull(
+            FunctionTypeAliasChecker(severities).unlessDisabled(WatchdogDiagnostics.FUNCTION_TYPE_ALIAS_PUBLIC_API),
+        ).wrapped()
+
+        override val callableDeclarationCheckers: Set<FirCallableDeclarationChecker> = plainCallableDeclarationCheckers.wrapped()
     }
 
     override val typeCheckers: TypeCheckers = object : TypeCheckers() {

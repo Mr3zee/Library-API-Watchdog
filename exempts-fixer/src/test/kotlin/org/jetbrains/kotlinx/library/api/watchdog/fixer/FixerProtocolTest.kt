@@ -77,6 +77,7 @@ class FixerProtocolTest {
         assertEquals(false, request.fixes("UNDOCUMENTED_PUBLIC_API"))
         assertEquals(true, request.fixes("DATA_CLASS_PUBLIC_API"))
         assertEquals(true, request.fixes("EXEMPTION_WITHOUT_EXPLANATION"))
+        assertEquals(true, request.fixes("REDUNDANT_EXEMPTION"))
     }
 
     @Test
@@ -261,6 +262,7 @@ class FixerProtocolTest {
             "TOP_LEVEL_API_WITHOUT_JVM_NAME",
             "DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS",
             "EXEMPTION_WITHOUT_EXPLANATION",
+            "REDUNDANT_EXEMPTION",
             "DSL_MARKER_NOOP_TARGET",
             "DSL_MARKER_WITHOUT_EXPLICIT_TARGETS",
             "DSL_MARKER_NOOP_TYPE_POSITION",

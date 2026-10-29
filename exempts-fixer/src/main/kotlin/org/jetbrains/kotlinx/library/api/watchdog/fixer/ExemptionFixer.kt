@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.psi.KtPropertyAccessor
 import org.jetbrains.kotlin.psi.KtSecondaryConstructor
 import org.jetbrains.kotlin.psi.KtTypeAlias
 import org.jetbrains.kotlin.psi.KtTypeParameter
+import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
 
 internal class FileFixResult(
     /** Null when no fix applies. */
@@ -77,7 +78,7 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
             }
 
             if (startOffset !in text.indices) {
-                skip("The recorded source position is outside the file. It was probably edited during the build")
+                skip("The recorded source position is outside the file. The file changed after the compilation")
                 continue
             }
 
@@ -85,12 +86,12 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
                 skip("No source element found at the recorded position")
                 continue
             }
-            val target = resolveTarget(element, fix.targetStrategy, ktFile) ?: run {
-                skip("No declaration accepting ${fix.describe()} encloses the reported position")
+            val target = resolveTarget(element, fix, ktFile) ?: run {
+                skip("No declaration that accepts ${fix.describe()} encloses the reported position")
                 continue
             }
             if (target.alreadyHas(fix)) {
-                skip("The target already carries ${fix.describe()}")
+                skip("The target already has ${fix.describe()}")
                 continue
             }
 
@@ -118,6 +119,7 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
             edits += target.render(fixes, text, imports)
             applied += fixes
         }
+        edits += unusedImportRemovals(ktFile, plannedFixes.keys, imports, text)
         edits += imports.importInsertions(ktFile)
 
         val rawEdits = edits.map {
@@ -139,7 +141,11 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
                 planned.reports.values.map { recorded ->
                     AppliedFix(
                         recorded.name,
-                        (planned.fix as? ExemptionFix)?.annotationShortName,
+                        when (planned.fix) {
+                            is ExemptionFix -> planned.fix.annotationShortName
+                            RemoveAnnotationFix -> recorded.messageParameters.firstOrNull()
+                            PlaceholderKdocFix -> null
+                        },
                         filePath,
                         locations.lineAt(recorded.startOffset),
                         recorded.messageParameters,
@@ -161,6 +167,42 @@ private class PlannedFix(val fix: Fix) {
 private fun Fix.describe(): String = when (this) {
     is ExemptionFix -> "@$annotationShortName"
     PlaceholderKdocFix -> "a KDoc"
+    RemoveAnnotationFix -> "a removal"
+}
+
+/**
+ * The edits that remove the import of each annotation that the removals take out of the file,
+ * unless another entry still uses the name or a fix of this run adds the annotation again.
+ */
+private fun unusedImportRemovals(
+    ktFile: KtFile,
+    targets: Set<FixTarget>,
+    imports: ImportResolver,
+    text: String,
+): List<TextEdit> {
+    val removedEntries = targets.filterIsInstance<FixTarget.RemovedAnnotation>().map { it.entry }
+    if (removedEntries.isEmpty()) return emptyList()
+
+    val remainingNames = ktFile.collectDescendantsOfType<KtAnnotationEntry>()
+        .filter { entry -> removedEntries.none { it == entry } }
+        .mapNotNullTo(hashSetOf()) { it.shortName?.asString() }
+    return removedEntries
+        .asSequence()
+        .mapNotNull { it.shortName?.asString() }
+        .distinct()
+        .filter { name -> name !in remainingNames && !imports.references(name) }
+        .mapNotNull { name ->
+            ktFile.importDirectives.firstOrNull {
+                it.aliasName == null && it.importedFqName?.asString() == "${ExemptionRegistry.ANNOTATIONS_PACKAGE}.$name"
+            }
+        }
+        .map { directive ->
+            val start = directive.textRange.startOffset
+            val end = directive.textRange.endOffset
+            val lineEnd = text.indexOf('\n', end).let { if (it < 0) text.length else it + 1 }
+            TextEdit(start, lineEnd, "")
+        }
+        .toList()
 }
 
 private fun MutableMap<String, PlannedFix>.collapseCombinedExemptions() {
@@ -265,6 +307,7 @@ private sealed interface FixTarget {
     fun alreadyHas(fix: Fix): Boolean = when (fix) {
         is ExemptionFix -> alreadyAnnotated(fix.annotationShortName)
         PlaceholderKdocFix -> alreadyDocumented()
+        RemoveAnnotationFix -> false
     }
 
     /** Fixes that share an insertion point go into one edit, so [applyEdits] can't reorder them. */
@@ -307,37 +350,28 @@ private sealed interface FixTarget {
 
     /** The exemption replaces the reported annotation. */
     data class ReplacedAnnotation(val entry: KtAnnotationEntry) : FixTarget {
-        /** The entries of an `@[First Second]` list have no `@` of their own. */
-        private val list: KtAnnotation? get() = entry.parent as? KtAnnotation
-
         override fun alreadyAnnotated(annotationShortName: String) = false
 
         override fun render(fixes: List<PlannedFix>, text: String, imports: ImportResolver): List<TextEdit> {
             val owner = entry.annotatedDeclaration()
             val missing = fixes.filterNot { owner?.hasAnnotationNamed(it.exemption.annotationShortName) == true }
             if (missing.isEmpty()) {
-                return listOf(removal(text))
+                return listOf(entry.removal(text))
             }
 
             val replacement = missing.joinToString(" ") {
-                if (list == null) it.annotationText(imports) else it.annotationCall(imports)
+                if (entry.annotationList == null) it.annotationText(imports) else it.annotationCall(imports)
             }
             return listOf(TextEdit(entry.textRange.startOffset, entry.textRange.endOffset, replacement))
         }
+    }
 
-        private fun removal(text: String): TextEdit {
-            // `@[]` isn't valid Kotlin, so the last entry of a list takes the brackets with it.
-            val removed = list?.takeIf { it.entries.size == 1 } ?: entry
-            val start = removed.textRange.startOffset
-            val end = removed.textRange.endOffset
-            val lineStart = text.lastIndexOf('\n', start - 1) + 1
-            val lineEnd = text.indexOf('\n', end).let { if (it < 0) text.length else it + 1 }
-            return if (text.substring(lineStart, start).isBlank() && text.substring(end, lineEnd).isBlank()) {
-                TextEdit(lineStart, lineEnd, "")
-            } else {
-                TextEdit(start, end + text.substring(end).takeWhile { it == ' ' || it == '\t' }.length, "")
-            }
-        }
+    /** The reported annotation goes away. */
+    data class RemovedAnnotation(val entry: KtAnnotationEntry) : FixTarget {
+        override fun alreadyAnnotated(annotationShortName: String) = false
+
+        override fun render(fixes: List<PlannedFix>, text: String, imports: ImportResolver): List<TextEdit> =
+            listOf(entry.removal(text))
     }
 
     data class ImplicitPrimaryConstructor(val constructor: KtPrimaryConstructor) : FixTarget {
@@ -375,9 +409,29 @@ private sealed interface FixTarget {
     }
 }
 
+/** The entries of an `@[First Second]` list have no `@` of their own. */
+private val KtAnnotationEntry.annotationList: KtAnnotation? get() = parent as? KtAnnotation
+
+private fun KtAnnotationEntry.removal(text: String): TextEdit {
+    // `@[]` isn't valid Kotlin, so the last entry of a list takes the brackets with it.
+    val removed = annotationList?.takeIf { it.entries.size == 1 } ?: this
+    val start = removed.textRange.startOffset
+    val end = removed.textRange.endOffset
+    val lineStart = text.lastIndexOf('\n', start - 1) + 1
+    val lineEnd = text.indexOf('\n', end).let { if (it < 0) text.length else it + 1 }
+    return if (text.substring(lineStart, start).isBlank() && text.substring(end, lineEnd).isBlank()) {
+        TextEdit(lineStart, lineEnd, "")
+    } else {
+        TextEdit(start, end + text.substring(end).takeWhile { it == ' ' || it == '\t' }.length, "")
+    }
+}
+
+
+
 private fun PlannedFix.insertionText(imports: ImportResolver, useSite: String = ""): String = when (fix) {
     is ExemptionFix -> annotationText(imports, useSite)
     PlaceholderKdocFix -> "/** ${PlaceholderKdocFix.TEXT} */"
+    RemoveAnnotationFix -> error("A removal inserts nothing")
 }
 
 private fun PlannedFix.annotationText(imports: ImportResolver, useSite: String = ""): String =
@@ -406,8 +460,8 @@ private fun KtAnnotated.hasAnnotationNamed(shortName: String): Boolean =
 private fun KtAnnotationEntry.annotatedDeclaration(): KtAnnotated? =
     parent.ancestorsWithSelf().filterIsInstance<KtDeclaration>().firstOrNull()
 
-private fun resolveTarget(element: PsiElement, strategy: TargetStrategy, ktFile: KtFile): FixTarget? =
-    when (strategy) {
+private fun resolveTarget(element: PsiElement, fix: Fix, ktFile: KtFile): FixTarget? =
+    when (fix.targetStrategy) {
         TargetStrategy.CONTAINING_FILE -> FixTarget.WholeFile(ktFile)
 
         TargetStrategy.ENCLOSING_CLASS ->
@@ -430,7 +484,7 @@ private fun resolveTarget(element: PsiElement, strategy: TargetStrategy, ktFile:
             element.ancestorsWithSelf()
                 .filterIsInstance<KtAnnotationEntry>()
                 .firstOrNull()
-                ?.let { FixTarget.ReplacedAnnotation(it) }
+                ?.let { if (fix is RemoveAnnotationFix) FixTarget.RemovedAnnotation(it) else FixTarget.ReplacedAnnotation(it) }
 
         TargetStrategy.ENCLOSING_CALLABLE -> element.resolveCallableTarget()
 

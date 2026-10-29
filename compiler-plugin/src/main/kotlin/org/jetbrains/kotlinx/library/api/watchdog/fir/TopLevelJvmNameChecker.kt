@@ -13,16 +13,19 @@ import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils
 import org.jetbrains.kotlin.name.JvmStandardClassIds
+import org.jetbrains.kotlin.name.ClassId
 
 /** Reports one time for each file, on the first Java-visible top-level callable. */
 internal class TopLevelJvmNameChecker(
     private val severities: WatchdogDiagnosticSeverities,
-) : FirFileChecker(MppCheckerKind.Common) {
+) : FirFileChecker(MppCheckerKind.Common), ExemptingChecker {
+    override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyDefaultFacadeName)
+
     @OptIn(DirectDeclarationsAccess::class)
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirFile) {
         if (declaration.hasAnnotation(JvmStandardClassIds.Annotations.JvmName, context.session) ||
-            declaration.hasAnnotation(WatchdogClassIds.IntentionallyDefaultFacadeName, context.session)
+            declaration.hasExemption(WatchdogClassIds.IntentionallyDefaultFacadeName)
         ) {
             return
         }

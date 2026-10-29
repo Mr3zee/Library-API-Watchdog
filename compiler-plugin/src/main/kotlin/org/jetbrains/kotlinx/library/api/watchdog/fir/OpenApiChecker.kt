@@ -13,17 +13,19 @@ import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.constructors
 import org.jetbrains.kotlin.fir.declarations.findArgumentByName
 import org.jetbrains.kotlin.fir.declarations.getAnnotationByClassId
-import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.utils.isFun
 import org.jetbrains.kotlin.fir.declarations.utils.modality
 import org.jetbrains.kotlin.fir.declarations.utils.visibility
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
 import org.jetbrains.kotlin.fir.expressions.unwrapAndFlattenArgument
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.name.ClassId
 
 internal class OpenApiChecker(
     private val severities: WatchdogDiagnosticSeverities,
-) : FirClassChecker(MppCheckerKind.Common) {
+) : FirClassChecker(MppCheckerKind.Common), ExemptingChecker {
+    override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyOpen)
+
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirClass) {
         if (declaration !is FirRegularClass || declaration.isActualizedDeclaration()) {
@@ -76,7 +78,7 @@ internal class OpenApiChecker(
             return
         }
 
-        if (declaration.hasAnnotation(WatchdogClassIds.IntentionallyOpen, session)) return
+        if (declaration.hasExemption(WatchdogClassIds.IntentionallyOpen)) return
 
         val factory = severities[WatchdogDiagnostics.OPEN_API_WITHOUT_SUBCLASS_OPT_IN] ?: return
         val diagnostic = WatchdogDiagnostics.OPEN_API_WITHOUT_SUBCLASS_OPT_IN.name

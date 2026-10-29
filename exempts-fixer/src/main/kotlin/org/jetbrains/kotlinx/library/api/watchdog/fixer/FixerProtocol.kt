@@ -48,7 +48,10 @@ internal class FixerRequest(
     val updateSources: Boolean,
     val responseFile: Path,
 ) {
-    fun fixes(diagnostic: String): Boolean = (diagnosticSeverities[diagnostic] ?: ERROR_SEVERITY) == ERROR_SEVERITY
+    /** A redundant exemption is a warning, and the fixer removes it anyway. */
+    fun fixes(diagnostic: String): Boolean =
+        diagnostic == WatchdogChecks.REDUNDANT_EXEMPTION.name ||
+                (diagnosticSeverities[diagnostic] ?: ERROR_SEVERITY) == ERROR_SEVERITY
 
     companion object {
         const val REPORT_FILE = "reportFile"
@@ -147,13 +150,13 @@ internal class FixerResponse {
                 )
             }
             skipped.forEach {
-                val annotation = ExemptionRegistry.annotationFor(it.diagnostic).orEmpty()
+                val annotation = ExemptionRegistry.annotationFor(it.diagnostic, it.messageParameters).orEmpty()
                 appendDiagnostic(
                     SKIPPED, listOf(it.diagnostic, annotation, it.line.toString(), it.filePath, it.reason), it.messageParameters, it.sourceRange,
                 )
             }
             warnings.forEach {
-                val annotation = ExemptionRegistry.annotationFor(it.diagnostic).orEmpty()
+                val annotation = ExemptionRegistry.annotationFor(it.diagnostic, it.messageParameters).orEmpty()
                 appendDiagnostic(
                     WARNING, listOf(it.diagnostic, annotation, it.line.toString(), it.filePath), it.messageParameters, it.sourceRange,
                 )

@@ -19,7 +19,7 @@ import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
 @PublishedApi
 internal class LibPublishedClass
 
-@IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
+<!REDUNDANT_EXEMPTION!>@IntentionallyOpen(reason = ExemptionReason.API_DESIGN)<!>
 @PublishedApi
 internal open class LibPublishedOpenClass
 

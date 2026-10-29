@@ -15,11 +15,11 @@ import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.FirTypeAlias
-import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.utils.isCompanion
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
+import org.jetbrains.kotlin.name.ClassId
 
 /**
  * The KDoc lookup isn't cached: in the IDE the session outlives a KDoc edit, and the source
@@ -28,7 +28,9 @@ import org.jetbrains.kotlin.name.SpecialNames
 internal class UndocumentedApiChecker(
     severities: WatchdogDiagnosticSeverities,
     private val reportClassProperties: Boolean,
-) : FirBasicDeclarationChecker(MppCheckerKind.Common) {
+) : FirBasicDeclarationChecker(MppCheckerKind.Common), ExemptingChecker {
+    override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyUndocumented)
+
     private val factory = severities[WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API]
 
     private companion object {
@@ -61,7 +63,7 @@ internal class UndocumentedApiChecker(
             return
         }
 
-        if (declaration.hasAnnotation(WatchdogClassIds.IntentionallyUndocumented, context.session)) {
+        if (declaration.hasExemption(WatchdogClassIds.IntentionallyUndocumented)) {
             return
         }
 

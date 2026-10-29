@@ -39,6 +39,8 @@ internal class NonTransitiveDependencyChecker(
     session: FirSession,
     configuration: DependencyExposureCheckConfiguration,
 ) : PublicSignatureTypeChecker<NonTransitiveType>(exemption = WatchdogClassIds.IntentionallyNonTransitiveDependency) {
+    override val enclosingClassExemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyNonTransitiveDependency)
+
     private val dependencyIndex = DependencyExposureIndex(session, configuration)
     private val dependencyDeclarations = configuration.dependencyDeclarations
         .mapKeys { (path, _) -> normalizedPath(path) }

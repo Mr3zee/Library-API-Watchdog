@@ -18,7 +18,7 @@ class ApiWatchdogBlock internal constructor() {
     /** A Java-interop diagnostic goes into the `javaInterop { }` group. */
     fun severity(severity: Severity, vararg diagnostics: Diagnostic) {
         for (diagnostic in diagnostics) {
-            require(diagnostic !in alwaysErrorDiagnostics) { "$diagnostic has no severity property" }
+            require(diagnostic in configurableDiagnostics) { "$diagnostic has no severity property" }
             val line = "${diagnostic.property} = WatchdogSeverity.$severity"
             if (diagnostic.javaInterop) javaInterop.lines += line else lines += line
         }

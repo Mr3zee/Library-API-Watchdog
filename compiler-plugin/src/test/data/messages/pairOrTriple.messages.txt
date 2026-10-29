@@ -1,40 +1,40 @@
 /pairOrTriple.kt:7:22: error: PAIR_OR_TRIPLE_PUBLIC_API
-    The function `locate` exposes the tuple type `Pair`, whose components `first` and `second` carry no domain meaning. Declare a small class with named properties instead.
+    The function `locate` exposes the tuple type `Pair`, whose components `first` and `second` have no domain meaning. Declare a small class with named properties instead.
 
     If this is intended, apply `@IntentionallyPairOrTriple` to the declaration, parameter, or type usage.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/pair-or-triple-public-api
 
 /pairOrTriple.kt:9:20: error: PAIR_OR_TRIPLE_PUBLIC_API
-    The property `bounds` exposes the tuple type `Triple`, whose components `first`, `second`, and `third` carry no domain meaning. Declare a small class with named properties instead.
+    The property `bounds` exposes the tuple type `Triple`, whose components `first`, `second`, and `third` have no domain meaning. Declare a small class with named properties instead.
 
     If this is intended, apply `@IntentionallyPairOrTriple` to the declaration, parameter, or type usage.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/pair-or-triple-public-api
 
 /pairOrTriple.kt:11:24: error: PAIR_OR_TRIPLE_PUBLIC_API
-    The parameter `point` exposes the tuple type `Pair`, whose components `first` and `second` carry no domain meaning. Declare a small class with named properties instead.
+    The parameter `point` exposes the tuple type `Pair`, whose components `first` and `second` have no domain meaning. Declare a small class with named properties instead.
 
     If this is intended, apply `@IntentionallyPairOrTriple` to the declaration, parameter, or type usage.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/pair-or-triple-public-api
 
 /pairOrTriple.kt:13:42: error: PAIR_OR_TRIPLE_PUBLIC_API
-    The property `position` exposes the tuple type `Triple`, whose components `first`, `second`, and `third` carry no domain meaning. Declare a small class with named properties instead.
+    The property `position` exposes the tuple type `Triple`, whose components `first`, `second`, and `third` have no domain meaning. Declare a small class with named properties instead.
 
     If this is intended, apply `@IntentionallyPairOrTriple` to the declaration, parameter, or type usage.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/pair-or-triple-public-api
 
 /pairOrTriple.kt:15:17: error: PAIR_OR_TRIPLE_PUBLIC_API
-    The type parameter `T` exposes the tuple type `Triple`, whose components `first`, `second`, and `third` carry no domain meaning. Declare a small class with named properties instead.
+    The type parameter `T` exposes the tuple type `Triple`, whose components `first`, `second`, and `third` have no domain meaning. Declare a small class with named properties instead.
 
     If this is intended, apply `@IntentionallyPairOrTriple` to the declaration, parameter, or type usage.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/pair-or-triple-public-api
 
 /pairOrTriple.kt:17:23: error: PAIR_OR_TRIPLE_PUBLIC_API
-    The type parameter `T` exposes the tuple type `Pair`, whose components `first` and `second` carry no domain meaning. Declare a small class with named properties instead.
+    The type parameter `T` exposes the tuple type `Pair`, whose components `first` and `second` have no domain meaning. Declare a small class with named properties instead.
 
     If this is intended, apply `@IntentionallyPairOrTriple` to the declaration, parameter, or type usage.
 

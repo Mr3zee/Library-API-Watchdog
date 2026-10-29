@@ -1,0 +1,29 @@
+/declarations.kt:13:1: warning: REDUNDANT_EXEMPTION
+    The `@IntentionallyOpen` exemption is redundant. No check reports on this declaration without it. Remove the annotation.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/redundant-exemption
+
+/declarations.kt:16:17: warning: REDUNDANT_EXEMPTION
+    The `@IntentionallyMutableCollection` exemption is redundant. No check reports on this parameter without it. Remove the annotation.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/redundant-exemption
+
+/declarations.kt:18:35: warning: REDUNDANT_EXEMPTION
+    The `@IntentionallyMutableCollection` exemption is redundant. No check reports on this type usage without it. Remove the annotation.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/redundant-exemption
+
+/declarations.kt:20:13: warning: REDUNDANT_EXEMPTION
+    The `@IntentionallyMutableCollection` exemption is redundant. No check reports on this type parameter without it. Remove the annotation.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/redundant-exemption
+
+/declarations.kt:22:1: warning: REDUNDANT_EXEMPTION
+    The `@IntentionallyMangledJvmName` exemption is redundant. No check reports on this class and its members without it. Remove the annotation.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/redundant-exemption
+
+/namedFacade.kt:29:1: warning: REDUNDANT_EXEMPTION
+    The `@IntentionallyDefaultFacadeName` exemption is redundant. No check reports on this file without it. Remove the annotation.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/redundant-exemption

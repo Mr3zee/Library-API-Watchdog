@@ -1,5 +1,5 @@
 /functionTypeAlias.kt:7:18: error: FUNCTION_TYPE_ALIAS_PUBLIC_API
-    `Callback` is a type alias for a function type, and users bind it. This complicates possible future evolution. Declare a `fun interface` instead.
+    `Callback` is a type alias for a function type. Compiled callers bind the expanded type, so a change to the alias breaks them. Declare a `fun interface` instead.
 
     If this is intended, apply `@IntentionallyFunctionTypeAlias` to the type alias.
 

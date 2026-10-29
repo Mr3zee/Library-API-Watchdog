@@ -224,10 +224,12 @@ A severity property holds a `WatchdogSeverity`:
 | `WARNING` | Reports a compiler warning. The build succeeds. Default for `undocumentedPublicApi`. |
 | `NONE`    | Turns the check off.                                                             |
 
-Three checks have no severity property:
+Four checks have no severity property:
 
 - [`EXEMPTION_WITHOUT_EXPLANATION`](./checks/special/exemption-without-explanation.md): always an
   error.
+- [`REDUNDANT_EXEMPTION`](./checks/special/redundant-exemption.md): always a warning. A check set to
+  `NONE` reports no redundant exemption.
 - [`PUBLIC_TYPE_WITH_INTERNAL_API`](./checks/special/public-type-with-internal-api.md): always an
   error while on. Turn off with `publicTypeWithInternalApi`.
 - [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md):

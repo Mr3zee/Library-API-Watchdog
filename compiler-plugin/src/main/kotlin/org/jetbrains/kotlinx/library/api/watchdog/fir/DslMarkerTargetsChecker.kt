@@ -16,11 +16,14 @@ import org.jetbrains.kotlin.fir.declarations.findArgumentByName
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.expressions.unwrapAndFlattenArgument
 import org.jetbrains.kotlin.name.StandardClassIds
+import org.jetbrains.kotlin.name.ClassId
 
 /** Checks every visibility, because a marker on a private annotation class has no effect either. */
 internal class DslMarkerTargetsChecker(
     private val severities: WatchdogDiagnosticSeverities,
-) : FirClassChecker(MppCheckerKind.Common) {
+) : FirClassChecker(MppCheckerKind.Common), ExemptingChecker {
+    override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility)
+
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirClass) {
         if (declaration !is FirRegularClass || declaration.isActualizedDeclaration() ||
@@ -38,11 +41,7 @@ internal class DslMarkerTargetsChecker(
             return
         }
 
-        if (declaration.hasAnnotation(
-                WatchdogClassIds.IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility,
-                session,
-            )
-        ) {
+        if (declaration.hasExemption(WatchdogClassIds.IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility)) {
             return
         }
 

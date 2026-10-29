@@ -18,10 +18,19 @@ public object ApiWatchdogHtmlReport {
     ) {
         val sortedReports = reports.sortedBy { it.projectPath }
         val applied = sortedReports.flatMap { report ->
+            val redundant = report.notApplied
+                .filter { it.diagnostic == REDUNDANT_EXEMPTION && it.annotation != null }
+                .mapTo(hashSetOf()) { it.location to it.annotation }
             report.applied.map { entry ->
-                Finding(report, entry.location, WatchdogCheckDescriptions.diagnosticsByAnnotation[entry.annotation] ?: listOf("unknown"), entry.annotation)
+                val diagnostics = WatchdogCheckDescriptions.diagnosticsByAnnotation[entry.annotation] ?: listOf("unknown")
+                if (entry.location to entry.annotation in redundant) {
+                    Finding(report, entry.location, diagnostics + REDUNDANT_EXEMPTION, entry.annotation, redundant = true)
+                } else {
+                    Finding(report, entry.location, diagnostics, entry.annotation)
+                }
             }
         }
+        val redundantCount = applied.count { it.redundant }
         val notApplied = sortedReports.flatMap { report ->
             report.notApplied.map { entry ->
                 val annotation = entry.annotation ?: WatchdogCheckDescriptions.diagnosticsByAnnotation.entries
@@ -50,6 +59,7 @@ public object ApiWatchdogHtmlReport {
             appendLine("<li>${countLabel(notApplied.count { it.diagnostic?.severity == "error" }, "error")}</li>")
             appendLine("<li>${countLabel(notApplied.count { it.diagnostic?.severity == "warning" }, "warning")}</li>")
             appendLine("<li><a href=\"#applied\">${countLabel(applied.size, "applied annotation")}</a></li>")
+            if (redundantCount > 0) appendLine("<li>${countLabel(redundantCount, "redundant annotation")}</li>")
             appendLine("</ul>")
 
             if (applied.isNotEmpty() || notApplied.isNotEmpty()) {
@@ -65,12 +75,14 @@ public object ApiWatchdogHtmlReport {
         })
     }
 
+    /** [redundant] marks an applied annotation that a `REDUNDANT_EXEMPTION` diagnostic reports at the same location. */
     private class Finding(
         val report: ApiWatchdogProjectReport,
         val location: String,
         val diagnostics: List<String>,
         val annotation: String?,
         val diagnostic: NotAppliedExemptionReportEntry? = null,
+        val redundant: Boolean = false,
     ) {
         val title = diagnostics.joinToString(", ") { diagnosticTitle(it) }
         val line = location.lineNumber()
@@ -117,7 +129,8 @@ public object ApiWatchdogHtmlReport {
                     appendLocation(finding.report, finding.location, aggregate)
                     val entry = finding.diagnostic
                     if (entry == null) {
-                        appendLine("<p class=\"check\"><span class=\"fix-status applied\">Applied</span></p>")
+                        val (statusClass, statusText) = if (finding.redundant) "redundant" to "Redundant" else "applied" to "Applied"
+                        appendLine("<p class=\"check\"><span class=\"fix-status $statusClass\">$statusText</span></p>")
                     } else {
                         val severityClass = if (entry.severity == "warning") "warning" else "error"
                         val statusClass = if (entry.autoFixAvailable) "not-fixed" else "unfixable"
@@ -203,6 +216,8 @@ public object ApiWatchdogHtmlReport {
         val end = offsetAt(endLine, endColumn) ?: return null
         return if (end > start) start to end else null
     }
+
+    private const val REDUNDANT_EXEMPTION = "REDUNDANT_EXEMPTION"
 
     private fun countLabel(count: Int, singular: String): String =
         "$count $singular${if (count == 1) "" else "s"}"

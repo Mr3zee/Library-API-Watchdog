@@ -6,13 +6,15 @@ import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirTypeAliasChecker
 import org.jetbrains.kotlin.fir.declarations.FirTypeAlias
-import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.types.functionTypeKind
+import org.jetbrains.kotlin.name.ClassId
 
 internal class FunctionTypeAliasChecker(
     private val severities: WatchdogDiagnosticSeverities,
-) : FirTypeAliasChecker(MppCheckerKind.Common) {
+) : FirTypeAliasChecker(MppCheckerKind.Common), ExemptingChecker {
+    override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyFunctionTypeAlias)
+
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirTypeAlias) {
         val factory = severities[WatchdogDiagnostics.FUNCTION_TYPE_ALIAS_PUBLIC_API] ?: return
@@ -27,7 +29,7 @@ internal class FunctionTypeAliasChecker(
             return
         }
 
-        if (declaration.hasAnnotation(WatchdogClassIds.IntentionallyFunctionTypeAlias, context.session)) {
+        if (declaration.hasExemption(WatchdogClassIds.IntentionallyFunctionTypeAlias)) {
             return
         }
 
