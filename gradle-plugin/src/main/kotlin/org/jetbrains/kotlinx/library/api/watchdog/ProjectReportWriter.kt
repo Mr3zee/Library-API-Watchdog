@@ -38,10 +38,11 @@ internal object ProjectReportWriter {
                     annotation = fix.annotation,
                     diagnostic = fix.diagnostic,
                     location = fix.location(projectDirectory),
+                    // The "Wasn't auto-fixed" tag already states that the task can apply an annotation.
                     reason = when {
                         fix.annotation == null -> "exemptExistingApi can add a placeholder KDoc."
                         fix.diagnostic == WatchdogChecks.REDUNDANT_EXEMPTION.name -> "exemptExistingApi can remove it."
-                        else -> "exemptExistingApi can apply it."
+                        else -> ""
                     },
                     severity = severityOf(fix.diagnostic),
                     messageParameters = fix.messageParameters,

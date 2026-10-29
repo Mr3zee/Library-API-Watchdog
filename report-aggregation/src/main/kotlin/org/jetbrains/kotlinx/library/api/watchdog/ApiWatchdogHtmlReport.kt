@@ -63,13 +63,14 @@ public object ApiWatchdogHtmlReport {
             appendLine("</ul>")
 
             if (applied.isNotEmpty() || notApplied.isNotEmpty()) {
-                appendControls(applied + notApplied)
+                appendControls(applied + notApplied, if (aggregate) sortedReports.map { it.projectPath } else emptyList())
             }
             appendSection("not-applied", "Not applied", "No diagnostics without an exemption.", notApplied, aggregate)
             appendSection("applied", "Applied annotations", "No Watchdog @Intentionally* annotations found.", applied, aggregate)
             appendLine("</main><footer><a href=\"${WatchdogCheckDescriptions.DOCS_URL.escapeHtml()}\">Library API Watchdog</a> ")
             appendLine("${WatchdogCheckDescriptions.TOOL_VERSION.escapeHtml()}</footer>")
-            appendLine("<script>$highlighter</script>")
+            // The report script highlights a snippet when it scrolls into view, so Prism must not highlight on load.
+            appendLine("<script>window.Prism = {manual: true};\n$highlighter</script>")
             appendLine("<script>$reportScript</script>")
             appendLine("</body></html>")
         })
@@ -91,14 +92,21 @@ public object ApiWatchdogHtmlReport {
     private fun diagnosticTitle(name: String): String =
         WatchdogCheckDescriptions.checks[name]?.title ?: if (name == "unknown" || name.isBlank()) "Unknown diagnostic" else name
 
-    private fun StringBuilder.appendControls(findings: List<Finding>) {
+    /** @param projects the project paths of an aggregate report. The project filter needs two or more. */
+    private fun StringBuilder.appendControls(findings: List<Finding>, projects: List<String>) {
         appendLine("<div class=\"report-controls\" hidden>")
         appendLine("<label>View <select id=\"view-mode\"><option value=\"diagnostic\">By diagnostic</option><option value=\"directory\">Directory tree</option></select></label>")
         appendLine("<label>Diagnostic <select id=\"diagnostic-filter\"><option value=\"\">All diagnostics</option>")
         findings.flatMap { it.diagnostics }.distinct().sortedBy { diagnosticTitle(it) }.forEach { diagnostic ->
             appendLine("<option value=\"${diagnostic.filterKey().escapeHtml()}\">${diagnosticTitle(diagnostic).escapeHtml()}</option>")
         }
-        appendLine("</select></label><button type=\"button\" id=\"reset-filter\" disabled>Reset filter</button>")
+        appendLine("</select></label>")
+        if (projects.size > 1) {
+            appendLine("<label>Project <select id=\"project-filter\"><option value=\"\">All projects</option>")
+            projects.forEach { project -> appendLine("<option value=\"${project.escapeHtml()}\">${project.escapeHtml()}</option>") }
+            appendLine("</select></label>")
+        }
+        appendLine("<button type=\"button\" id=\"reset-filter\" disabled>Reset filter</button>")
         appendLine("<output id=\"filter-summary\" aria-live=\"polite\"></output></div>")
     }
 
@@ -121,7 +129,8 @@ public object ApiWatchdogHtmlReport {
                     val path = listOf(if (aggregate) finding.report.projectDirectory else "", finding.sourcePath)
                         .filter(String::isNotEmpty).joinToString("/").replace('\\', '/')
                     val line = finding.line ?: 0
-                    appendLine("<li class=\"finding\" data-diagnostics=\"${finding.diagnostics.joinToString(" ") { it.filterKey() }.escapeHtml()}\" data-path=\"${path.escapeHtml()}\" data-line=\"$line\">")
+                    val project = if (aggregate) " data-project=\"${finding.report.projectPath.escapeHtml()}\"" else ""
+                    appendLine("<li class=\"finding\" data-diagnostics=\"${finding.diagnostics.joinToString(" ") { it.filterKey() }.escapeHtml()}\" data-path=\"${path.escapeHtml()}\" data-line=\"$line\"$project>")
                     appendLine("<div class=\"finding-heading\">")
                     appendFindingHeading(finding)
                     appendLine("</div>")
@@ -138,7 +147,7 @@ public object ApiWatchdogHtmlReport {
                         DiagnosticMessageHtml.render(entry)?.let { message ->
                             appendLine("<details class=\"diagnostic-message\"><summary>Diagnostic message</summary>$message</details>")
                         }
-                        appendLine("<p class=\"reason\">${entry.reason.escapeHtml()}</p>")
+                        if (entry.reason.isNotEmpty()) appendLine("<p class=\"reason\">${entry.reason.escapeHtml()}</p>")
                     }
                     appendSource(finding.report, finding.location, entry?.sourceRange, entry?.let { if (it.severity == "warning") "warning" else "error" })
                     appendLine("</li>")
@@ -146,7 +155,7 @@ public object ApiWatchdogHtmlReport {
                 appendLine("</ul></details>")
             }
         appendLine("</div><div class=\"directory-tree\" hidden></div>")
-        appendLine("<p class=\"filter-empty\" hidden>No findings match this diagnostic.</p></section>")
+        appendLine("<p class=\"filter-empty\" hidden>No findings match the filters.</p></section>")
     }
 
     private fun StringBuilder.appendFindingHeading(finding: Finding) {

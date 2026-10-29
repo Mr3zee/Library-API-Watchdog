@@ -38,8 +38,8 @@ The HTML page has two sections:
   [Redundant exemptions](./checks/special/redundant-exemption.md) reports has the tag **Redundant**
   instead of **Applied**.
 - **Not applied**: the diagnostics without an annotation.
-  Each entry gives the severity, a link to the check page, the diagnostic message, and the reason
-  the task didn't apply a fix. A tag marks each entry as **Wasn't auto-fixed** or **Can't be auto-fixed**.
+  Each entry gives the severity, a link to the check page, and the diagnostic message. A tag marks
+  each entry as **Wasn't auto-fixed** or **Can't be auto-fixed**.
 
 The SARIF file follows [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html).
 It holds the **Not applied** diagnostics only:

@@ -31,6 +31,7 @@ public data class AppliedExemptionReportEntry(
  *
  * @property annotation the annotation that exempts the declaration, or null when none exists
  * @property location `path:line`, relative to the project directory
+ * @property reason why the task didn't apply a fix, or empty when the fix tag states it
  * @property severity `error` or `warning`
  * @property messageParameters the compiler's rendered arguments for the diagnostic message template
  * @property autoFixAvailable whether `exemptExistingApi` can apply a fix at this location

@@ -71,12 +71,11 @@ public object ApiWatchdogSarifReport {
     private const val TOOL_NAME = "Library API Watchdog"
     private const val SOURCE_ROOT = "%SRCROOT%"
 
-    private fun NotAppliedExemptionReportEntry.message(): String = buildString {
-        append(WatchdogCheckDescriptions.checks[diagnostic]?.title ?: diagnostic)
-        append(". ")
-        if (annotation != null) append("Exemption: @").append(annotation).append(". ")
-        append(reason)
-    }
+    private fun NotAppliedExemptionReportEntry.message(): String = listOfNotNull(
+        (WatchdogCheckDescriptions.checks[diagnostic]?.title ?: diagnostic) + ".",
+        annotation?.let { "Exemption: @$it." },
+        reason.ifEmpty { null },
+    ).joinToString(" ")
 
     private fun String.splitLocation(): Pair<String, Int?> {
         val line = substringAfterLast(':', "").toIntOrNull()

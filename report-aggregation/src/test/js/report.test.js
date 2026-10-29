@@ -5,9 +5,10 @@ import {JSDOM, VirtualConsole} from "jsdom";
 
 const fixtures = new URL("../../../build/html-report-fixtures/", import.meta.url);
 
-function load(t, name = "mixed", scripts = true) {
+function load(t, name = "mixed", scripts = true, lazy = false) {
     const errors = [];
     const frames = [];
+    const observers = [];
     const console = new VirtualConsole();
     console.on("jsdomError", error => errors.push(error));
     const dom = new JSDOM(readFileSync(new URL(name + ".html", fixtures), "utf8"), {
@@ -15,8 +16,22 @@ function load(t, name = "mixed", scripts = true) {
         pretendToBeVisual: true,
         virtualConsole: console,
         beforeParse(window) {
-            window.Prism = {manual: true};
             window.requestAnimationFrame = callback => frames.push(callback);
+            if (lazy) {
+                // jsdom has no IntersectionObserver. The fake records the observed elements and lets a test fire the callback.
+                window.IntersectionObserver = class {
+                    constructor(callback, options) {
+                        this.callback = callback;
+                        this.options = options;
+                        this.targets = [];
+                        observers.push(this);
+                    }
+                    observe(target) { this.targets.push(target); }
+                    unobserve() {}
+                    disconnect() {}
+                    intersect(target, isIntersecting) { this.callback([{target, isIntersecting}], this); }
+                };
+            }
         },
     });
     const {window} = dom;
@@ -26,7 +41,7 @@ function load(t, name = "mixed", scripts = true) {
         assert.deepEqual(errors, []);
     });
     return {
-        window, document, frames,
+        window, document, frames, observers,
         change(id, value) {
             const select = document.getElementById(id);
             select.value = value;
@@ -63,6 +78,7 @@ test("controls enable with an unfiltered diagnostic view", t => {
     assert.equal(document.querySelector(".report-controls").hidden, false);
     assert.equal(document.getElementById("view-mode").value, "diagnostic");
     assert.equal(document.getElementById("diagnostic-filter").value, "");
+    assert.equal(document.getElementById("project-filter").value, "");
     assert.equal(document.getElementById("reset-filter").disabled, true);
     assert.equal(document.getElementById("filter-summary").textContent, "");
     assert.equal(visibleFindings(document).length, 6);
@@ -89,6 +105,48 @@ test("diagnostic filters match individual checks in combined applied annotations
     assert.equal(document.getElementById("diagnostic-filter").value, "");
     assert.equal(document.getElementById("filter-summary").textContent, "");
     assert.equal(document.getElementById("reset-filter").disabled, true);
+});
+
+test("project filters narrow findings together with the diagnostic filter and reset with it", t => {
+    const {document, change} = load(t);
+    const findings = [...document.querySelectorAll(".finding")];
+    const options = [...document.querySelectorAll("#project-filter option")];
+    assert.deepEqual(options.map(option => option.value), ["", ":", ":library"]);
+    assert.deepEqual(options.map(option => option.textContent), ["All projects", ":", ":library"]);
+    const expected = (project, diagnostic) => findings.filter(finding =>
+        (!project || finding.dataset.project === project) && (!diagnostic || finding.dataset.diagnostics.split(" ").includes(diagnostic)));
+    change("project-filter", ":");
+    assert.deepEqual(locations(visibleFindings(document)), ["src/Api.kt:2"]);
+    assert.equal(document.getElementById("filter-summary").textContent, "Showing 1 of 6 findings.");
+    assert.equal(document.getElementById("reset-filter").disabled, false);
+    change("project-filter", ":library");
+    assert.equal(visibleFindings(document).length, 5);
+    assert.equal(document.querySelector("#not-applied").parentElement.querySelector(".filter-empty").hidden, true);
+    change("diagnostic-filter", "DATA_CLASS_PUBLIC_API");
+    assert.deepEqual(visibleFindings(document), expected(":library", "DATA_CLASS_PUBLIC_API"));
+    assert.equal(visibleFindings(document).length, 1);
+    change("view-mode", "directory");
+    assert.deepEqual(visibleFindings(document), expected(":library", "DATA_CLASS_PUBLIC_API"));
+    for (const node of document.querySelectorAll(".tree-node")) {
+        const count = [...node.querySelectorAll(".finding")].filter(finding => !finding.hidden).length;
+        assert.equal(node.hidden, count === 0);
+        assert.equal(node.querySelector(".group-count").textContent, "(" + count + ")");
+    }
+    document.getElementById("reset-filter").click();
+    assert.equal(document.getElementById("project-filter").value, "");
+    assert.equal(document.getElementById("diagnostic-filter").value, "");
+    assert.equal(visibleFindings(document).length, 6);
+    assert.equal(document.getElementById("filter-summary").textContent, "");
+});
+
+test("single-project reports have no project filter", t => {
+    const {document, change} = load(t, "duplicates");
+    assert.equal(document.getElementById("project-filter"), null);
+    assert.equal(document.querySelector(".finding").dataset.project, ":library");
+    change("diagnostic-filter", "FUTURE_CHECK");
+    assert.equal(visibleFindings(document).length, 1);
+    document.getElementById("reset-filter").click();
+    assert.equal(visibleFindings(document).length, 5);
 });
 
 test("unknown annotations use the unknown diagnostic filter", t => {
@@ -150,7 +208,10 @@ test("directory branches separate projects and sort findings numerically by sour
     const moduleFile = apiFiles.find(file => file.querySelectorAll(".finding").length === 2);
     assert.deepEqual(locations([...moduleFile.querySelectorAll(".finding")]), ["src/Api.kt:3", "src/Api.kt:12"]);
     const top = document.querySelector("#not-applied ~ .directory-tree > ul");
-    assert.deepEqual([...top.children].map(node => node.querySelector(".tree-name").textContent), ["modules", "src"]);
+    assert.deepEqual([...top.children].map(node => node.querySelector(".tree-name").textContent), ["modules/library/src", "src"]);
+    const merged = top.children[0].querySelector(":scope > details > .tree-children");
+    assert.deepEqual([...merged.children].map(node => node.querySelector(".tree-name").textContent), ["z", "Api.kt"]);
+    assert.equal(merged.children[0].querySelector(".tree-file .tree-name").textContent, "Other.kt");
     assert.equal(document.querySelectorAll(".directory-tree script, .directory-tree img").length, 0);
     assert.equal([...document.querySelectorAll(".tree-name")].some(name => name.textContent === '<script>&".kt'), true);
 });
@@ -222,11 +283,17 @@ test("seeded view and filter changes never lose or duplicate findings", t => {
     const diagnostics = [...document.querySelectorAll("#diagnostic-filter option")].map(option => option.value);
     let seed = 0x5eed2026;
     const next = () => (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0);
+    const projects = [...document.querySelectorAll("#project-filter option")].map(option => option.value);
     for (let iteration = 0; iteration < 128; iteration++) {
-        if (next() % 3 === 0) change("view-mode", next() % 2 ? "directory" : "diagnostic");
-        else change("diagnostic-filter", diagnostics[next() % diagnostics.length]);
+        switch (next() % 4) {
+            case 0: change("view-mode", next() % 2 ? "directory" : "diagnostic"); break;
+            case 1: change("project-filter", projects[next() % projects.length]); break;
+            default: change("diagnostic-filter", diagnostics[next() % diagnostics.length]);
+        }
         const selected = document.getElementById("diagnostic-filter").value;
-        const expected = findings.filter(finding => !selected || finding.dataset.diagnostics.split(" ").includes(selected));
+        const project = document.getElementById("project-filter").value;
+        const expected = findings.filter(finding =>
+            (!selected || finding.dataset.diagnostics.split(" ").includes(selected)) && (!project || finding.dataset.project === project));
         assert.equal(document.querySelectorAll(".finding").length, findings.length, "iteration=" + iteration);
         assert.equal(visibleFindings(document).length, expected.length, "iteration=" + iteration);
         findings.forEach(finding => assert.equal(document.contains(finding), true));
@@ -271,6 +338,42 @@ test("range highlighting crosses syntax tokens and lines without changing source
             pre.remove();
         }
     }
+});
+
+test("without IntersectionObserver the page highlights every snippet on load", t => {
+    const {document} = load(t);
+    const blocks = [...document.querySelectorAll("pre code")];
+    assert.ok(blocks.length > 1);
+    assert.ok(blocks.every(code => code.querySelector(".token")));
+    assert.equal(document.querySelectorAll("pre.line-numbers .line-numbers-rows").length, document.querySelectorAll("pre.line-numbers").length);
+});
+
+test("with IntersectionObserver the page highlights and refreshes only snippets in view", t => {
+    const {document, window, observers, flushFrames} = load(t, "mixed", true, true);
+    const [observer] = observers;
+    const snippets = [...document.querySelectorAll("pre")];
+    assert.deepEqual(observer.targets, snippets);
+    assert.equal(document.querySelector(".token"), null);
+    const [first, second] = snippets;
+    observer.intersect(first, true);
+    assert.ok(first.querySelector(".token"));
+    assert.equal(second.querySelector(".token"), null);
+    const resized = [];
+    window.Prism.plugins.lineNumbers.resize = element => resized.push(element);
+    window.Prism.plugins.lineHighlight.highlightLines = () => () => {};
+    window.dispatchEvent(new window.Event("resize"));
+    flushFrames();
+    assert.deepEqual(resized, [first]);
+    observer.intersect(first, true);
+    assert.deepEqual(resized, [first, first]);
+    assert.equal(first.querySelectorAll(".line-numbers-rows").length, 1);
+    observer.intersect(first, false);
+    resized.length = 0;
+    window.dispatchEvent(new window.Event("resize"));
+    flushFrames();
+    assert.deepEqual(resized, []);
+    observer.intersect(second, true);
+    assert.ok(second.querySelector(".token"));
 });
 
 test("code blocks without source ranges get syntax colors without reported element marks", t => {

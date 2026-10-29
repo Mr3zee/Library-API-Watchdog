@@ -69,7 +69,7 @@ class ApiWatchdogHtmlReportFuzzTest {
                                 it.selectFirst(".location code")?.wholeText() == normalize(entry.location) &&
                                     diagnosticName(it.attr("data-diagnostics")) == entry.diagnostic
                             })
-                            assertEquals(normalize(entry.reason), finding.selectFirst(".reason")?.wholeText())
+                            assertEquals(normalize(entry.reason).ifEmpty { null }, finding.selectFirst(".reason")?.wholeText())
                             assertEquals(normalize(entry.severity), finding.selectFirst(".severity")?.wholeText())
                             assertEquals(normalize(entry.location), finding.selectFirst(".location code")?.wholeText())
                             val line = entry.location.substringAfterLast(':', "").toIntOrNull()

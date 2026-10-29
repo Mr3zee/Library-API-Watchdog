@@ -174,7 +174,7 @@ class ExemptExistingApiTest {
         assertContains(report, "Not applied")
         assertReportGroup(report, "IntentionallyOpen", 1, Diagnostic.OPEN_API_WITHOUT_SUBCLASS_OPT_IN)
         assertContains(report, "class=\"fix-status not-fixed\">Wasn't auto-fixed</span>")
-        assertContains(report, "exemptExistingApi can apply it.")
+        assertFalse(report.contains("<p class=\"reason\">"))
         assertContains(report, "<code class=\"language-kotlin\">")
         assertContains(report, "public open class LegacyApi")
         assertContains(report, "data-line=\"")
@@ -225,7 +225,7 @@ class ExemptExistingApiTest {
         assertContains(sarif, "\"level\": \"warning\"")
         assertContains(sarif, "\"uri\": \"lib/src/main/kotlin/test/legacyApi.kt\"")
         assertContains(sarif, "\"startLine\": ")
-        assertContains(sarif, "Open API without subclass opt-in. Exemption: @IntentionallyOpen. exemptExistingApi can apply it.")
+        assertContains(sarif, "Open API without subclass opt-in. Exemption: @IntentionallyOpen.\"")
     }
 
     @Test

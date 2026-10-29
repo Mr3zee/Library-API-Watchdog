@@ -69,6 +69,25 @@ class ApiWatchdogHtmlReportTest {
     }
 
     @Test
+    fun `project filter lists the projects of an aggregate report with two or more projects`() {
+        val special = ":library<&\"'>"
+        val reports = listOf(report(entries = listOf(entry()), project = special), report(entries = listOf(entry()), project = ":a"))
+        val document = render(reports)
+        val options = document.select("#project-filter option")
+        assertEquals(listOf("", ":a", special), options.map { it.attr("value") })
+        assertEquals(listOf("All projects", ":a", special), options.map { it.text() })
+        assertEquals(listOf(":a", special), document.select(".finding").map { it.attr("data-project") })
+
+        val single = render(listOf(report(entries = listOf(entry()))))
+        assertTrue(single.select("#project-filter").isEmpty())
+        assertEquals(":library", single.selectFirst(".finding")?.attr("data-project"))
+
+        val project = render(reports, aggregate = false)
+        assertTrue(project.select("#project-filter").isEmpty())
+        assertTrue(project.select(".finding[data-project]").isEmpty())
+    }
+
+    @Test
     fun `an applied annotation that a redundant-exemption diagnostic reports gets the redundant tag`() {
         val redundant = entry(
             location = "src/Api.kt:2",

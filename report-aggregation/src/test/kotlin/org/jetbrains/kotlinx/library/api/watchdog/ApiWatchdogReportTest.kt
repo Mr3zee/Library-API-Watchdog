@@ -295,7 +295,7 @@ class ApiWatchdogReportTest {
                     annotation = "IntentionallyOpen",
                     diagnostic = "OPEN_API_WITHOUT_SUBCLASS_OPT_IN",
                     location = "src/main/kotlin/Open Api.kt:12",
-                    reason = "exemptExistingApi can apply it.",
+                    reason = "",
                     severity = "error",
                 ),
                 NotAppliedExemptionReportEntry(
@@ -340,7 +340,7 @@ class ApiWatchdogReportTest {
             assertContains(sarif, "\"level\": \"warning\"")
             assertContains(
                 sarif,
-                "\"text\": \"Open API without subclass opt-in. Exemption: @IntentionallyOpen. exemptExistingApi can apply it.\"",
+                "\"text\": \"Open API without subclass opt-in. Exemption: @IntentionallyOpen.\"",
             )
             // The root result comes first, then the library results ordered by location.
             val rootIndex = sarif.indexOf("Root.kt")

@@ -29,24 +29,32 @@ Prism.hooks.add("after-highlight", function (environment) {
 });
 
 (function () {
-    const controls = document.querySelector(".report-controls");
-    if (!controls) return;
-    const view = document.getElementById("view-mode");
-    const filter = document.getElementById("diagnostic-filter");
-    const reset = document.getElementById("reset-filter");
-    const status = document.getElementById("filter-summary");
-    const findings = [...document.querySelectorAll(".finding")];
-    const sections = [...document.querySelectorAll(".report-section")].map(section => ({
-        element: section,
-        groups: [...section.querySelectorAll(".diagnostic-group")].map(group => ({
-            element: group,
-            list: group.querySelector(".findings"),
-            findings: [...group.querySelectorAll(".finding")],
-        })),
-        findings: [...section.querySelectorAll(".finding")],
-        tree: section.querySelector(".directory-tree"),
-        treeLists: null,
-    }));
+    // Prism highlights a snippet when it scrolls into view. A browser without IntersectionObserver highlights every snippet on load.
+    const highlighted = new Set();
+    const visible = new Set();
+    const observer = typeof IntersectionObserver === "function" ? new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            const pre = entry.target;
+            if (!entry.isIntersecting) {
+                visible.delete(pre);
+                return;
+            }
+            visible.add(pre);
+            if (highlighted.has(pre)) {
+                refreshPre(pre);
+            } else {
+                highlighted.add(pre);
+                Prism.highlightElement(pre.querySelector("code"));
+            }
+        });
+    }, {rootMargin: "50% 0px"}) : null;
+
+    function refreshPre(pre) {
+        if (!pre.classList.contains("line-numbers")) return;
+        pre.querySelectorAll(".line-highlight").forEach(mark => mark.style.removeProperty("width"));
+        Prism.plugins.lineNumbers.resize(pre);
+        if (pre.hasAttribute("data-line")) Prism.plugins.lineHighlight.highlightLines(pre)();
+    }
 
     let refreshScheduled = false;
     function refreshCode() {
@@ -54,13 +62,48 @@ Prism.hooks.add("after-highlight", function (environment) {
         refreshScheduled = true;
         requestAnimationFrame(() => {
             refreshScheduled = false;
-            document.querySelectorAll("pre.line-numbers").forEach(pre => {
-                if (!pre.getClientRects().length) return;
-                pre.querySelectorAll(".line-highlight").forEach(mark => mark.style.removeProperty("width"));
-                Prism.plugins.lineNumbers.resize(pre);
-                if (pre.hasAttribute("data-line")) Prism.plugins.lineHighlight.highlightLines(pre)();
-            });
+            const snippets = observer
+                ? [...visible]
+                : [...document.querySelectorAll("pre.line-numbers")].filter(pre => pre.getClientRects().length);
+            snippets.forEach(refreshPre);
         });
+    }
+
+    if (observer) {
+        document.querySelectorAll("pre > code.language-kotlin").forEach(code => observer.observe(code.parentElement));
+    } else {
+        Prism.highlightAll();
+    }
+    document.addEventListener("toggle", event => {
+        if (event.target instanceof HTMLDetailsElement) refreshCode();
+    }, true);
+    window.addEventListener("resize", refreshCode);
+
+    const controls = document.querySelector(".report-controls");
+    if (!controls) return;
+    const view = document.getElementById("view-mode");
+    const filter = document.getElementById("diagnostic-filter");
+    const projectFilter = document.getElementById("project-filter");
+    const reset = document.getElementById("reset-filter");
+    const status = document.getElementById("filter-summary");
+    const findings = [...document.querySelectorAll(".finding")];
+    const sections = [...document.querySelectorAll(".report-section")].map(section => ({
+        element: section,
+        groups: [...section.querySelectorAll(".diagnostic-group")].map(group => ({
+            element: group,
+            count: group.querySelector(".group-count"),
+            list: group.querySelector(".findings"),
+            findings: [...group.querySelectorAll(".finding")],
+        })),
+        findings: [...section.querySelectorAll(".finding")],
+        tree: section.querySelector(".directory-tree"),
+        filterEmpty: section.querySelector(".filter-empty"),
+        treeLists: null,
+        treeNodes: null,
+    }));
+
+    function setText(element, text) {
+        if (element.textContent !== text) element.textContent = text;
     }
 
     function createBranch(name, file) {
@@ -80,7 +123,7 @@ Prism.hooks.add("after-highlight", function (environment) {
         children.className = file ? "findings" : "tree-children";
         details.append(summary, children);
         node.append(details);
-        return {node, children};
+        return {node, children, count};
     }
 
     function buildTree(section) {
@@ -99,10 +142,23 @@ Prism.hooks.add("after-highlight", function (environment) {
             directory.files.get(filename).push(finding);
         });
         section.treeLists = [];
+        // Children come before their parent, so a filter pass sums the counts in one loop.
+        section.treeNodes = [];
         function appendDirectory(directory, parent) {
+            const nodes = [];
             [...directory.directories].sort(([a], [b]) => a.localeCompare(b)).forEach(([name, child]) => {
-                const branch = createBranch(name, false);
-                appendDirectory(child, branch.children);
+                // A chain of directories with one subdirectory and no file is one node.
+                let label = name;
+                while (child.files.size === 0 && child.directories.size === 1) {
+                    const [[next, grandchild]] = child.directories;
+                    label += "/" + next;
+                    child = grandchild;
+                }
+                const branch = createBranch(label, false);
+                const children = appendDirectory(child, branch.children);
+                const node = {element: branch.node, count: branch.count, children, findings: [], visible: 0};
+                section.treeNodes.push(node);
+                nodes.push(node);
                 parent.append(branch.node);
             });
             [...directory.files].sort(([a], [b]) => a.localeCompare(b)).forEach(([name, entries]) => {
@@ -110,8 +166,12 @@ Prism.hooks.add("after-highlight", function (environment) {
                 entries.sort((a, b) => Number(a.dataset.line) - Number(b.dataset.line));
                 section.treeLists.push({list: branch.children, findings: entries});
                 branch.children.append(...entries);
+                const node = {element: branch.node, count: branch.count, children: [], findings: entries, visible: 0};
+                section.treeNodes.push(node);
+                nodes.push(node);
                 parent.append(branch.node);
             });
+            return nodes;
         }
         const list = document.createElement("ul");
         list.className = "tree-children";
@@ -119,28 +179,39 @@ Prism.hooks.add("after-highlight", function (environment) {
         section.tree.append(list);
     }
 
+    function matches(finding) {
+        if (filter.value !== "" && !finding.dataset.diagnostics.split(" ").includes(filter.value)) return false;
+        return !projectFilter || projectFilter.value === "" || finding.dataset.project === projectFilter.value;
+    }
+
     function updateFilter() {
+        let shown = 0;
         findings.forEach(finding => {
-            finding.hidden = filter.value !== "" && !finding.dataset.diagnostics.split(" ").includes(filter.value);
+            const hidden = !matches(finding);
+            if (finding.hidden !== hidden) finding.hidden = hidden;
+            if (!hidden) shown++;
         });
         sections.forEach(section => {
             section.groups.forEach(group => {
                 const count = group.findings.filter(finding => !finding.hidden).length;
                 group.element.hidden = count === 0;
-                group.element.querySelector(".group-count").textContent = "(" + count + ")";
+                setText(group.count, "(" + count + ")");
             });
-            if (section.tree) {
-                section.tree.querySelectorAll(".tree-node").forEach(node => {
-                    const count = [...node.querySelectorAll(".finding")].filter(finding => !finding.hidden).length;
-                    node.hidden = count === 0;
-                    node.querySelector(".group-count").textContent = "(" + count + ")";
+            if (!section.tree) return;
+            if (section.treeNodes) {
+                section.treeNodes.forEach(node => {
+                    node.visible = node.children.length
+                        ? node.children.reduce((sum, child) => sum + child.visible, 0)
+                        : node.findings.filter(finding => !finding.hidden).length;
+                    node.element.hidden = node.visible === 0;
+                    setText(node.count, "(" + node.visible + ")");
                 });
-                section.element.querySelector(".filter-empty").hidden = section.findings.some(finding => !finding.hidden);
             }
+            section.filterEmpty.hidden = section.findings.some(finding => !finding.hidden);
         });
-        const count = findings.filter(finding => !finding.hidden).length;
-        status.textContent = filter.value ? "Showing " + count + " of " + findings.length + " findings." : "";
-        reset.disabled = filter.value === "";
+        const active = filter.value !== "" || (projectFilter !== null && projectFilter.value !== "");
+        setText(status, active ? "Showing " + shown + " of " + findings.length + " findings." : "");
+        reset.disabled = !active;
         refreshCode();
     }
 
@@ -163,13 +234,11 @@ Prism.hooks.add("after-highlight", function (environment) {
 
     view.addEventListener("change", updateView);
     filter.addEventListener("change", updateFilter);
+    if (projectFilter) projectFilter.addEventListener("change", updateFilter);
     reset.addEventListener("click", () => {
         filter.value = "";
+        if (projectFilter) projectFilter.value = "";
         updateFilter();
     });
-    document.addEventListener("toggle", event => {
-        if (event.target instanceof HTMLDetailsElement) refreshCode();
-    }, true);
-    window.addEventListener("resize", refreshCode);
     controls.hidden = false;
 })();

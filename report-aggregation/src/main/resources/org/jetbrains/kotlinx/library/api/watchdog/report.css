@@ -46,7 +46,8 @@ summary { padding: 8px 0; cursor: pointer; font-weight: 600; overflow-wrap: anyw
 .tree-file > summary { font-weight: 600; }
 .filter-empty { color: #65676e; }
 .findings { margin: 0; padding: 0 0 0 20px; list-style: none; }
-.finding { padding: 12px 0 20px; }
+/* The browser lays out and paints a finding when it is near the viewport, so a large report opens fast. */
+.finding { padding: 12px 0 20px; content-visibility: auto; contain-intrinsic-size: auto 240px; }
 .finding + .finding { border-top: 1px solid #e8e8ec; }
 .project { font-size: 13px; }
 .location { overflow-wrap: anywhere; }
@@ -136,5 +137,6 @@ footer { margin-top: 32px; padding-top: 12px; border-top: 1px solid #dfe1e5; fon
     pre { white-space: pre-wrap; overflow-wrap: anywhere; }
     .line-highlight { print-color-adjust: exact; }
     .report-controls { display: none; }
+    .finding { content-visibility: visible; }
     .fix-status { print-color-adjust: exact; }
 }
