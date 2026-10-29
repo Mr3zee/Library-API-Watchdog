@@ -64,12 +64,20 @@ class ConfigurableWatchdogDiagnostic<out F : AbstractKtDiagnosticFactory>(
  * of its `diagnostics.json` entry.
  */
 class WatchdogDiagnosticSeverities(private val overrides: Map<String, WatchdogSeverity>) {
-    operator fun <F : AbstractKtDiagnosticFactory> get(diagnostic: ConfigurableWatchdogDiagnostic<F>): F? =
-        diagnostic.withSeverity(
-            overrides[diagnostic.name] ?: WatchdogDiagnosticMessages.defaultSeverityFor(diagnostic.name),
-        )
+    /**
+     * The factory with the configured severity, or null for `none`. A probe of [ExemptionProbe]
+     * gets the factory with the default severity instead of null.
+     */
+    operator fun <F : AbstractKtDiagnosticFactory> get(diagnostic: ConfigurableWatchdogDiagnostic<F>): F? {
+        val default = WatchdogDiagnosticMessages.defaultSeverityFor(diagnostic.name)
+        val configured = overrides[diagnostic.name] ?: default
+        val severity = if (configured == WatchdogSeverity.NONE && ExemptionProbe.everyDiagnosticEnabled) default else configured
+        return diagnostic.withSeverity(severity)
+    }
 
-    fun isEnabled(diagnostic: ConfigurableWatchdogDiagnostic<*>): Boolean = this[diagnostic] != null
+    /** Whether the configured severity isn't `none`. A probe doesn't change the answer. */
+    fun isEnabled(diagnostic: ConfigurableWatchdogDiagnostic<*>): Boolean =
+        (overrides[diagnostic.name] ?: WatchdogDiagnosticMessages.defaultSeverityFor(diagnostic.name)) != WatchdogSeverity.NONE
 
     companion object {
         val DEFAULT = WatchdogDiagnosticSeverities(emptyMap())
@@ -154,7 +162,7 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     /** Parameters: the exemption annotation name, the reason that needs a description. */
     val EXEMPTION_WITHOUT_EXPLANATION by error2<KtAnnotationEntry, Name, Name>()
 
-    /** Parameters: the exemption annotation name, what the annotation exempts, in words. Always a warning. */
+    /** Parameters: the exemption annotation name, the exempted element in words. */
     val REDUNDANT_EXEMPTION by warning2<KtAnnotationEntry, Name, String>()
 
     /** Parameters: declaration kind, declaration name, exposed type FQ name, exemption snippet. */

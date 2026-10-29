@@ -1601,7 +1601,7 @@ private val singleModuleDiagnostics: List<Diagnostic> =
 private val unacknowledgedFile = """
     public open class UnprotectedOpenClass
 
-    /** A base class whose subclass opt-in lists no markers and so restricts nothing. */
+    /** A base class whose subclass opt-in lists no markers and so doesn't restrict anything. */
     @SubclassOptInRequired
     public open class UnmarkedOptIn
 
@@ -1661,7 +1661,7 @@ private val unacknowledgedFile = """
     @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPEALIAS)
     public annotation class ScopedDsl
 
-    /** A parameter type carrying a DSL marker that restricts nothing. */
+    /** A parameter type carrying a DSL marker that doesn't restrict anything. */
     public fun processTag(tag: @ScopedDsl UnprotectedOpenClass) { }
 
     /** A user handle compiled to its underlying type. */
@@ -1753,7 +1753,7 @@ private val markerConsumerFile = """
 
 @Language("kotlin")
 private val configuredInternalApiLibraryFile = """
-    /** The dependency's own internal-API annotation. It knows nothing about the watchdog. */
+    /** The dependency's own internal-API annotation. It doesn't reference the watchdog. */
     @Target(
         AnnotationTarget.CLASS,
         AnnotationTarget.FUNCTION,
@@ -1873,7 +1873,7 @@ private val partiallyExemptedDependencyTypeFile = """
     import test.model.ExternalContract
     import test.model.ExternalModel
 
-    /** The exemption on the class covers its supertype and its members, nothing else. */
+    /** The exemption on the class covers only its supertype and its members. */
     @IntentionallyNonTransitiveDependency(
         reason = ExemptionReason.INTEROP,
         description = "The host application ships the model module.",

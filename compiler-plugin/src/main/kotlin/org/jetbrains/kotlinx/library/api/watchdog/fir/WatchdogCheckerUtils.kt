@@ -153,24 +153,36 @@ internal fun FirDeclaration.isExpectedDeclaration(): Boolean =
             }
 
 /**
- * The exemption annotations that [RedundantExemptionProbingChecker] treats as absent on the
- * current thread. Two annotations are the same when they are one object or have the same source
- * offsets: the property of a constructor parameter gets a copy of the type annotations of the
- * parameter.
+ * The state of a probe of [RedundantExemptionProbingChecker] on the current thread: the exemptions
+ * that the checkers treat as absent, and [everyDiagnosticEnabled]. Two annotations with the same
+ * source offsets are one annotation, because the property of a constructor parameter has copies of
+ * the type annotations of the parameter.
  */
 internal object ExemptionProbe {
     private class Ignored(val annotations: List<FirAnnotation>, val classIds: Set<ClassId>)
 
     private val ignored = ThreadLocal<Ignored?>()
 
-    /** [classIds] names the exemptions to treat as absent on every declaration, for a check that reads them on siblings. */
-    fun <R> ignoring(annotations: List<FirAnnotation>, classIds: Set<ClassId> = emptySet(), block: () -> R): R {
+    /**
+     * Whether a probe runs. [WatchdogDiagnosticSeverities] then gives a diagnostic set to `none`
+     * its default severity, so the probe judges an exemption as if its diagnostic were on. A
+     * checker with several diagnostics otherwise reports the exemption of a disabled one as
+     * redundant.
+     */
+    val everyDiagnosticEnabled: Boolean get() = ignored.get() != null
+
+    /**
+     * Runs [block] as a probe. The [annotations] are absent, and the exemptions in [classIds] are
+     * absent on every declaration, for a checker with [ExemptingChecker.readsExemptionOnSiblings].
+     */
+    fun <R> probing(annotations: List<FirAnnotation> = emptyList(), classIds: Set<ClassId> = emptySet(), block: () -> R): R {
         val previous = ignored.get()
         ignored.set(Ignored(annotations, classIds))
         try {
             return block()
         } finally {
-            ignored.set(previous)
+            // A pooled thread of the IDE keeps the entry, so an empty one goes away.
+            if (previous == null) ignored.remove() else ignored.set(previous)
         }
     }
 
@@ -192,7 +204,7 @@ context(context: CheckerContext)
 internal fun FirAnnotation.isEffective(classId: ClassId): Boolean =
     toAnnotationClassIdSafe(context.session) == classId && !ExemptionProbe.ignores(this, classId)
 
-/** [hasAnnotation] without the annotation [ExemptionProbe] ignores. Every exemption lookup goes through it. */
+/** [hasAnnotation] without the annotations that [ExemptionProbe] ignores. Every exemption lookup must use it. */
 context(context: CheckerContext)
 internal fun FirAnnotationContainer.hasExemption(classId: ClassId): Boolean =
     annotations.any { it.isEffective(classId) }

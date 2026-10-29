@@ -36,7 +36,7 @@ The HTML page has two sections:
 - **Applied annotations**: every Watchdog `@Intentionally*` annotation in the Kotlin sources of those
   compilations. An annotation that
   [Redundant exemptions](./checks/special/redundant-exemption.md) reports has the tag **Redundant**
-  instead of **Applied**, and the totals count it.
+  instead of **Applied**.
 - **Not applied**: the diagnostics without an annotation.
   Each entry gives the severity, a link to the check page, the diagnostic message, and the reason
   the task didn't apply a fix. A tag marks each entry as **Wasn't auto-fixed** or **Can't be auto-fixed**.
@@ -71,7 +71,7 @@ apiWatchdog {
 ## Multi-project builds
 
 Apply the report aggregation plugin to the root project and declare every subproject. A subproject
-without the Watchdog adds nothing to the report:
+without the Watchdog doesn't add anything to the report:
 
 ```kotlin build.gradle.kts
 plugins {

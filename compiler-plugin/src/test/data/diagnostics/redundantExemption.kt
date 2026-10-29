@@ -53,7 +53,7 @@ public class NotData(public val x: Int)
 @IntentionallyWithoutEqualsHashCodeOrToString(reason = ExemptionReason.API_DESIGN)
 public class NeededOpaque(public val token: String)
 
-// The combined exemption covers `equals`, so the one for `equals` changes nothing.
+// The combined exemption covers `equals`, so the one for `equals` doesn't change anything.
 @IntentionallyWithoutEqualsHashCodeOrToString(reason = ExemptionReason.API_DESIGN)
 <!REDUNDANT_EXEMPTION!>@IntentionallyWithoutEquals(reason = ExemptionReason.API_DESIGN)<!>
 public class DoublyOpaque(public val token: String)
@@ -246,7 +246,7 @@ public class StaticCompanion {
 }
 
 // When a class-level exemption and a member exemption cover the same member, the member one is
-// redundant. The class-level one stays, so a fix that removes the redundant one changes nothing.
+// redundant. The class-level one stays, so a fix that removes the redundant one doesn't change anything.
 @IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN)
 public class CoveredIds {
     <!REDUNDANT_EXEMPTION!>@IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN)<!>

@@ -38,89 +38,98 @@ import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
 import org.jetbrains.kotlin.fir.declarations.utils.correspondingValueParameterFromPrimaryConstructor
 import org.jetbrains.kotlin.fir.declarations.utils.visibility
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
+import org.jetbrains.kotlin.fir.resolve.getContainingClassSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
 import org.jetbrains.kotlin.fir.symbols.lazyResolveToPhase
 import org.jetbrains.kotlin.fir.types.FirTypeRef
-import org.jetbrains.kotlin.fir.types.coneType
+import org.jetbrains.kotlin.fir.types.coneTypeOrNull
 import org.jetbrains.kotlin.fir.types.customAnnotations
 import org.jetbrains.kotlin.fir.types.forEachType
 import org.jetbrains.kotlin.name.ClassId
 
 /**
- * A checker that reads `@Intentionally*` exemption annotations. [RedundantExemptionProbingChecker]
- * and [EnclosingExemptionRedundancyChecker] report an exemption the checker doesn't need.
+ * A checker that reads `@Intentionally*` exemptions. [RedundantExemptionProbingChecker] and
+ * [EnclosingExemptionRedundancyChecker] report the exemptions that the checker doesn't need.
  */
 internal interface ExemptingChecker {
     /** The exemptions the checker reads on the checked declaration, its parameters, and its signature types. */
     val exemptions: Set<ClassId>
 
-    /** The exemptions of [exemptions] that an enclosing class carries for every member. */
+    /** The subset of [exemptions] that a class applies to all its members. */
     val enclosingClassExemptions: Set<ClassId> get() = emptySet()
 
     /**
-     * Whether the checker reads the exemption on sibling declarations too. The probe then treats
-     * the exemption as absent everywhere, so two siblings that exempt each other both keep theirs.
+     * Whether the checker reads the exemptions of other declarations too. The probe then treats
+     * the exemption as absent on every declaration, so two declarations that exempt each other
+     * both need it.
      */
     val readsExemptionOnSiblings: Boolean get() = false
 }
 
 /**
- * Runs [delegate], then runs it again for each exemption annotation of the declaration with that
- * annotation treated as absent. The annotation is redundant when the second run reports nothing new.
+ * Runs the [delegates], the [ExemptingChecker]s of one checker category. A declaration without an
+ * exemption gets no other run. A declaration with exemptions gets a probe of each delegate that
+ * reads one of them: a run with every diagnostic enabled as the baseline, then one run for each
+ * exemption with that exemption treated as absent. The exemption is redundant when its run doesn't
+ * report anything that the baseline doesn't.
  *
- * The probe runs at the visit of the declaration that reads the annotation. A callable reads the
- * annotations of its parameters and signature types. A property reads the annotations of its
- * primary constructor parameter. A file reads a `@file:` annotation. An `expect` or `actual`
- * declaration isn't probed, because the checks split between them and the annotation on the
- * `expect` serves the `actual`. An exemption of [ExemptingChecker.enclosingClassExemptions] on a
- * class is the job of [EnclosingExemptionRedundancyChecker].
+ * One checker for the category walks the signature once for all the delegates. The walk has no
+ * cache: a cache that outlives the visit would keep a declaration and its session reachable from a
+ * pooled thread of the IDE.
  *
- * When a declaration and one of its parameters or types carry the same exemption, only the
- * narrower one is redundant. The probe of the broader annotation treats the narrower ones in its
- * scope as absent too, so a fix that removes the redundant annotations keeps one of them.
+ * When a declaration and a part of its signature carry the same exemption, the probe of the
+ * broader one treats the narrower ones as absent too. So only the narrower ones can be redundant.
  */
 internal class RedundantExemptionProbingChecker<D : FirDeclaration>(
-    private val delegate: FirDeclarationChecker<D>,
-    private val exempting: ExemptingChecker,
-) : FirDeclarationChecker<D>(delegate.mppKind) {
+    private val delegates: List<FirDeclarationChecker<D>>,
+) : FirDeclarationChecker<D>(delegates.first().mppKind) {
+    init {
+        require(delegates.all { it is ExemptingChecker && it.mppKind == mppKind }) {
+            "Every delegate is an ExemptingChecker of the same MppCheckerKind"
+        }
+    }
+
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: D) {
-        val baseline = hashSetOf<ReportedDiagnosticKey>()
-        val recording = delegatingDiagnosticReporter(reporter) { diagnostic, diagnosticContext ->
-            if (diagnostic != null) baseline += diagnostic.key()
-            reporter.report(diagnostic, diagnosticContext)
-        }
-        context(recording) { delegate.check(declaration) }
+        delegates.forEach { it.check(declaration) }
 
         if (!declaration.isProbed()) return
-        val candidates = declaration.exemptionCandidates(exempting)
-        for (candidate in candidates) {
-            val ignored = candidates.filter { it === candidate || candidate.covers(it) }.map { it.annotation }
-            val ignoredEverywhere = if (exempting.readsExemptionOnSiblings) {
-                setOfNotNull(candidate.annotation.toAnnotationClassIdSafe(context.session))
-            } else {
-                emptySet()
-            }
-            if (!delegate.probeReportsNew(declaration, ignored, baseline, ignoredEverywhere)) {
-                reportRedundantExemption(candidate.annotation, candidate.kind)
+        val candidates = declaration.exemptionCandidates(allExemptions)
+        if (candidates.isEmpty()) return
+
+        for (delegate in delegates) {
+            val exempting = delegate as ExemptingChecker
+            val own = candidates.filter { it.isReadBy(exempting, declaration) }
+            if (own.isEmpty()) continue
+
+            val baseline = delegate.probedDiagnostics(declaration)
+            for (candidate in own) {
+                val ignored = own.filter { it === candidate || candidate.covers(it) }.map { it.annotation }
+                val ignoredEverywhere = if (exempting.readsExemptionOnSiblings) setOf(candidate.classId) else emptySet()
+                if (delegate.probedDiagnostics(declaration, ignored, ignoredEverywhere).all { it in baseline }) {
+                    reportRedundantExemption(candidate.annotation, candidate.kind)
+                }
             }
         }
     }
 
-    /** A declaration covers everything in its signature. A parameter or type parameter covers the types in it. */
-    context(context: CheckerContext)
+    /** A class-level exemption of [ExemptingChecker.enclosingClassExemptions] goes to [EnclosingExemptionRedundancyChecker]. */
+    private fun ExemptionCandidate.isReadBy(exempting: ExemptingChecker, declaration: FirDeclaration): Boolean =
+        classId in exempting.exemptions &&
+                !(declaration is FirRegularClass && rank == 0 && classId in exempting.enclosingClassExemptions)
+
+    /** A declaration covers its signature. A parameter or type parameter covers the types in it. */
     private fun ExemptionCandidate.covers(other: ExemptionCandidate): Boolean =
-        other.rank > rank && (group == null || group === other.group) &&
-                annotation.toAnnotationClassIdSafe(context.session) == other.annotation.toAnnotationClassIdSafe(context.session)
+        other.rank > rank && (group == null || group === other.group) && classId == other.classId
 }
 
 /**
  * Reports a class-level exemption of [ExemptingChecker.enclosingClassExemptions] that neither the
- * class nor a member needs. A class checker runs before the member checkers. So this checker runs
- * the checkers of the exemption on the members itself, with the class on the context. The probe
- * treats every same-kind exemption inside the class as absent too, so a member that needs an
- * exemption keeps the class-level one and loses its own.
+ * class nor a member needs. A class checker runs before the member checkers, so this checker runs
+ * the member checkers itself, with the class on the context. The probe treats the same exemption
+ * on the members as absent too.
  */
 internal class EnclosingExemptionRedundancyChecker(
     basicCheckers: Collection<FirBasicDeclarationChecker>,
@@ -161,11 +170,15 @@ internal class EnclosingExemptionRedundancyChecker(
         }
     }
 
-    /** The exemptions of [classId] on the members and in their signatures, nested classes included. */
+    /**
+     * The exemptions of [classId] on the members and in their signatures, nested classes included.
+     * The members get resolved first, because the IDE visits the class before them.
+     */
     @OptIn(DirectDeclarationsAccess::class)
     context(context: CheckerContext)
     private fun FirRegularClass.collectNestedExemptions(classId: ClassId, into: MutableList<FirAnnotation>) {
         for (member in declarations) {
+            member.symbol.lazyResolveToPhase(FirResolvePhase.BODY_RESOLVE)
             member.exemptionCandidates(setOf(classId)).mapTo(into) { it.annotation }
             if (member is FirRegularClass) {
                 member.annotations.filterTo(into) { it.toAnnotationClassIdSafe(context.session) == classId }
@@ -174,7 +187,7 @@ internal class EnclosingExemptionRedundancyChecker(
         }
     }
 
-    /** The class is a target in the current context. A member needs the class on the context. */
+    /** The probes check the class in the current context and the members in a context with the class added. */
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun isNeeded(declaration: FirRegularClass, ignored: List<FirAnnotation>, probes: List<Probe>): Boolean {
         if (probes.any { it.reportsNew(declaration, ignored) }) return true
@@ -210,15 +223,11 @@ internal class EnclosingExemptionRedundancyChecker(
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun Probe.reportsNew(declaration: FirDeclaration, ignored: List<FirAnnotation>): Boolean {
         if (!accepts(declaration)) return false
-        val baseline = hashSetOf<ReportedDiagnosticKey>()
-        val recording = delegatingDiagnosticReporter(reporter) { diagnostic, _ ->
-            if (diagnostic != null) baseline += diagnostic.key()
-        }
-        context(context, recording) { checker.check(declaration) }
-        return checker.probeReportsNew(declaration, ignored, baseline)
+        val baseline = checker.probedDiagnostics(declaration)
+        return checker.probedDiagnostics(declaration, ignored).any { it !in baseline }
     }
 
-    /** Like the diagnostics visitor, `dropDeclaration` goes to the context that got `addDeclaration`. */
+    /** The outer context gets `dropDeclaration`, as in the diagnostics visitor. */
     private inline fun <R> CheckerContextForProvider.withDeclaration(
         declaration: FirDeclaration,
         block: (CheckerContextForProvider) -> R,
@@ -239,22 +248,25 @@ private fun KtDiagnostic.key(): ReportedDiagnosticKey {
     return ReportedDiagnosticKey(factoryName, element?.startOffset ?: -1, element?.endOffset ?: -1)
 }
 
-/** Whether the checker reports a diagnostic outside [baseline] when the [ignored] annotations are absent. */
+/**
+ * The diagnostics that the checker reports on the declaration in a probe of [ExemptionProbe]: with
+ * every diagnostic enabled, the [ignored] annotations absent, and the [ignoredEverywhere] exemptions
+ * absent on every declaration. Nothing reaches the reporter.
+ */
 context(context: CheckerContext, reporter: DiagnosticReporter)
-private fun <D : FirDeclaration> FirDeclarationChecker<D>.probeReportsNew(
+private fun <D : FirDeclaration> FirDeclarationChecker<D>.probedDiagnostics(
     declaration: D,
-    ignored: List<FirAnnotation>,
-    baseline: Set<ReportedDiagnosticKey>,
+    ignored: List<FirAnnotation> = emptyList(),
     ignoredEverywhere: Set<ClassId> = emptySet(),
-): Boolean {
-    var reportsNew = false
+): Set<ReportedDiagnosticKey> {
+    val reported = hashSetOf<ReportedDiagnosticKey>()
     val collecting = delegatingDiagnosticReporter(reporter) { diagnostic, _ ->
-        if (diagnostic != null && diagnostic.key() !in baseline) reportsNew = true
+        if (diagnostic != null) reported += diagnostic.key()
     }
-    ExemptionProbe.ignoring(ignored, ignoredEverywhere) {
+    ExemptionProbe.probing(ignored, ignoredEverywhere) {
         context(context, collecting) { check(declaration) }
     }
-    return reportsNew
+    return reported
 }
 
 context(context: CheckerContext, reporter: DiagnosticReporter)
@@ -269,9 +281,10 @@ private fun reportRedundantExemption(annotation: FirAnnotation, kind: String) {
 }
 
 /**
- * Whether the declaration owns the exemptions in its signature. The visitor also visits a value
- * parameter, a type parameter, and an accessor, but their owner reads the exemptions. The property
- * of a constructor parameter has a fake source and owns the exemptions on the parameter.
+ * Whether the declaration owns the exemptions in its signature. A value parameter, a type
+ * parameter, and an accessor don't: their owner reads the exemptions. The property of a constructor
+ * parameter has a fake source and owns the exemptions of the parameter. The probe skips an `expect`
+ * or `actual` declaration, because the exemption on the `expect` also serves the `actual`.
  */
 context(context: CheckerContext)
 private fun FirDeclaration.isProbed(): Boolean {
@@ -287,37 +300,39 @@ private fun FirDeclaration.isProbed(): Boolean {
         return false
     }
 
+    // Every check skips a local declaration, and a probe of every local variable would cost more than it finds.
     if ((this as? FirMemberDeclaration)?.visibility == Visibilities.Local) return false
     return !isExpectedDeclaration() && !isActualizedDeclaration()
 }
 
 /**
- * [rank] orders the scopes: a declaration, then a parameter or type parameter, then a type usage.
- * [group] is the parameter or type parameter whose signature part holds the annotation, or null
- * at the declaration level.
+ * [rank]: 0 for a declaration, 1 for a parameter or type parameter, 2 for a type usage.
+ * [group]: the parameter or type parameter that holds the annotation, or null on the declaration.
  */
-private class ExemptionCandidate(val annotation: FirAnnotation, val kind: String, val rank: Int, val group: Any?)
+private class ExemptionCandidate(
+    val annotation: FirAnnotation,
+    val classId: ClassId,
+    val kind: String,
+    val rank: Int,
+    val group: Any?,
+)
+
+/** All the exemptions, for one walk over a signature that serves every delegate of [RedundantExemptionProbingChecker]. */
+private val allExemptions: Set<ClassId> =
+    WatchdogClassIds.exemptionAnnotations + WatchdogClassIds.IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility
 
 /**
- * The exemption annotations of [exempting] in the signature of the declaration, each with the kind
- * word of `diagnostics.json` for the annotated element. A primary constructor parameter with a
- * property belongs to the property, like in the checkers. A class-level exemption that covers the
- * members belongs to [EnclosingExemptionRedundancyChecker].
+ * The exemptions of [exemptions] in the signature of the declaration, each with its
+ * `parameterValues` key of `diagnostics.json`. A primary constructor parameter with a property
+ * belongs to the property, as in the checkers.
  */
 context(context: CheckerContext)
-private fun FirDeclaration.exemptionCandidates(exempting: ExemptingChecker): List<ExemptionCandidate> =
-    exemptionCandidates(exempting.exemptions, exceptOnClass = exempting.enclosingClassExemptions)
-
-context(context: CheckerContext)
-private fun FirDeclaration.exemptionCandidates(
-    exemptions: Set<ClassId>,
-    exceptOnClass: Set<ClassId> = emptySet(),
-): List<ExemptionCandidate> {
+private fun FirDeclaration.exemptionCandidates(exemptions: Set<ClassId>): List<ExemptionCandidate> {
     val collector = ExemptionCandidateCollector(context.session, exemptions)
     when (this) {
         is FirFile -> collector.annotations(this, "file")
         is FirRegularClass -> {
-            collector.annotations(this, "declaration", except = exceptOnClass)
+            collector.annotations(this, "declaration")
             collector.typeParameters(typeParameters)
             superTypeRefs.forEach { collector.types(it) }
             collector.parameters(contextParameters)
@@ -338,7 +353,7 @@ private fun FirDeclaration.exemptionCandidates(
         is FirConstructor -> {
             collector.annotations(this, "declaration")
             collector.parameters(contextParameters)
-            val propertyParameters = if (isPrimary) propertyParameterSymbols() else emptySet()
+            val propertyParameters = if (isPrimary) propertyParameterSymbols(this) else emptySet()
             collector.parameters(valueParameters.filter { it.symbol !in propertyParameters })
         }
         is FirProperty -> {
@@ -358,10 +373,11 @@ private fun FirDeclaration.exemptionCandidates(
     return collector.candidates
 }
 
+/** The class comes from the constructor, not from the context, because [EnclosingExemptionRedundancyChecker] visits a member in the context of the class. */
 context(context: CheckerContext)
-private fun propertyParameterSymbols(): Set<FirValueParameterSymbol> {
+private fun propertyParameterSymbols(constructor: FirConstructor): Set<FirValueParameterSymbol> {
     val result = hashSetOf<FirValueParameterSymbol>()
-    context.containingClassSymbol?.processAllDeclarations(context.session) { member ->
+    (constructor.getContainingClassSymbol() as? FirClassSymbol<*>)?.processAllDeclarations(context.session) { member ->
         if (member is FirPropertySymbol) {
             member.correspondingValueParameterFromPrimaryConstructor?.let(result::add)
         }
@@ -373,19 +389,17 @@ private class ExemptionCandidateCollector(private val session: FirSession, priva
     val candidates = mutableListOf<ExemptionCandidate>()
     private val seenOffsets = hashSetOf<Pair<Int, Int>>()
 
-    fun annotations(container: FirAnnotationContainer, kind: String, except: Set<ClassId> = emptySet()) {
+    fun annotations(container: FirAnnotationContainer, kind: String) {
         for (annotation in container.annotations) {
-            val classId = annotation.toAnnotationClassIdSafe(session) ?: continue
-            if (classId !in exemptions || classId in except) continue
             add(annotation, kind, rank = 0, group = null)
         }
     }
 
+    /** An unresolved type, which the IDE can have on a member before its visit, has no annotations to collect. */
     fun types(typeRef: FirTypeRef?, group: Any? = null) {
-        typeRef?.coneType?.forEachType { type ->
+        typeRef?.coneTypeOrNull?.forEachType { type ->
             for (annotation in type.customAnnotations) {
-                val classId = annotation.toAnnotationClassIdSafe(session) ?: continue
-                if (classId in exemptions) add(annotation, "typeUsage", rank = 2, group = group)
+                add(annotation, "typeUsage", rank = 2, group = group)
             }
         }
     }
@@ -393,8 +407,7 @@ private class ExemptionCandidateCollector(private val session: FirSession, priva
     fun parameters(parameters: List<FirValueParameter>) {
         for (parameter in parameters) {
             for (annotation in parameter.annotations) {
-                val classId = annotation.toAnnotationClassIdSafe(session) ?: continue
-                if (classId in exemptions) add(annotation, "parameter", rank = 1, group = parameter.symbol)
+                add(annotation, "parameter", rank = 1, group = parameter.symbol)
             }
             types(parameter.returnTypeRef, group = parameter.symbol)
         }
@@ -402,8 +415,7 @@ private class ExemptionCandidateCollector(private val session: FirSession, priva
 
     fun parameter(parameter: FirValueParameterSymbol) {
         for (annotation in parameter.resolvedAnnotationsWithClassIds) {
-            val classId = annotation.toAnnotationClassIdSafe(session) ?: continue
-            if (classId in exemptions) add(annotation, "parameter", rank = 1, group = parameter)
+            add(annotation, "parameter", rank = 1, group = parameter)
         }
         types(parameter.resolvedReturnTypeRef, group = parameter)
     }
@@ -412,19 +424,20 @@ private class ExemptionCandidateCollector(private val session: FirSession, priva
         for (typeParameterRef in typeParameters) {
             val typeParameter = typeParameterRef as? FirTypeParameter ?: continue
             for (annotation in typeParameter.annotations) {
-                val classId = annotation.toAnnotationClassIdSafe(session) ?: continue
-                if (classId in exemptions) add(annotation, "typeParameter", rank = 1, group = typeParameter.symbol)
+                add(annotation, "typeParameter", rank = 1, group = typeParameter.symbol)
             }
             typeParameter.bounds.forEach { types(it, group = typeParameter.symbol) }
         }
     }
 
-    /** The annotation copy on the property of a constructor parameter has a fake source, so the parameter's wins. */
+    /** The property of a constructor parameter has copies of the parameter's annotations. Each annotation counts once. */
     private fun add(annotation: FirAnnotation, kind: String, rank: Int, group: Any?) {
+        val classId = annotation.toAnnotationClassIdSafe(session) ?: return
+        if (classId !in exemptions) return
         val source = annotation.source ?: return
         if (source.kind != KtRealSourceElementKind) return
         if (seenOffsets.add(source.startOffset to source.endOffset)) {
-            candidates += ExemptionCandidate(annotation, kind, rank, group)
+            candidates += ExemptionCandidate(annotation, classId, kind, rank, group)
         }
     }
 }

@@ -4,6 +4,7 @@ import java.nio.file.Paths
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.psi.KtAnnotated
 import org.jetbrains.kotlin.psi.KtAnnotation
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
@@ -14,12 +15,14 @@ import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtEnumEntry
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtImportDirective
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.psi.KtPrimaryConstructor
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtPropertyAccessor
 import org.jetbrains.kotlin.psi.KtSecondaryConstructor
+import org.jetbrains.kotlin.psi.KtSimpleNameExpression
 import org.jetbrains.kotlin.psi.KtTypeAlias
 import org.jetbrains.kotlin.psi.KtTypeParameter
 import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
@@ -171,8 +174,9 @@ private fun Fix.describe(): String = when (this) {
 }
 
 /**
- * The edits that remove the import of each annotation that the removals take out of the file,
- * unless another entry still uses the name or a fix of this run adds the annotation again.
+ * The edits that remove the import of each removed annotation, unless another reference in the
+ * file, such as an annotation entry or a class literal, still uses the name or a fix of this run
+ * adds it again.
  */
 private fun unusedImportRemovals(
     ktFile: KtFile,
@@ -183,9 +187,12 @@ private fun unusedImportRemovals(
     val removedEntries = targets.filterIsInstance<FixTarget.RemovedAnnotation>().map { it.entry }
     if (removedEntries.isEmpty()) return emptyList()
 
-    val remainingNames = ktFile.collectDescendantsOfType<KtAnnotationEntry>()
-        .filter { entry -> removedEntries.none { it == entry } }
-        .mapNotNullTo(hashSetOf()) { it.shortName?.asString() }
+    val remainingNames = ktFile.collectDescendantsOfType<KtSimpleNameExpression>()
+        .filter { reference ->
+            PsiTreeUtil.getParentOfType(reference, KtImportDirective::class.java) == null &&
+                    removedEntries.none { PsiTreeUtil.isAncestor(it, reference, false) }
+        }
+        .mapTo(hashSetOf()) { it.getReferencedName() }
     return removedEntries
         .asSequence()
         .mapNotNull { it.shortName?.asString() }
@@ -366,7 +373,7 @@ private sealed interface FixTarget {
         }
     }
 
-    /** The reported annotation goes away. */
+    /** The removal of the reported annotation. */
     data class RemovedAnnotation(val entry: KtAnnotationEntry) : FixTarget {
         override fun alreadyAnnotated(annotationShortName: String) = false
 
@@ -431,7 +438,7 @@ private fun KtAnnotationEntry.removal(text: String): TextEdit {
 private fun PlannedFix.insertionText(imports: ImportResolver, useSite: String = ""): String = when (fix) {
     is ExemptionFix -> annotationText(imports, useSite)
     PlaceholderKdocFix -> "/** ${PlaceholderKdocFix.TEXT} */"
-    RemoveAnnotationFix -> error("A removal inserts nothing")
+    RemoveAnnotationFix -> error("A removal doesn't insert anything")
 }
 
 private fun PlannedFix.annotationText(imports: ImportResolver, useSite: String = ""): String =

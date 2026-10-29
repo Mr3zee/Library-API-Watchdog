@@ -52,7 +52,7 @@ public class Cache(private val capacity: Int) {
 public class Cache(private val capacity: Int) {
     /**
      * Returns the cached value for [key],
-     * or null when nothing is cached under it.
+     * or null when the key has no cached value.
      */
     public fun get(key: String): String? = store[key]
     // !hide-focused(1:3)

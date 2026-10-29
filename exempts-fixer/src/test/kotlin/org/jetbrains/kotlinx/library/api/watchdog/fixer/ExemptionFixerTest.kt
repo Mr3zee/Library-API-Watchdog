@@ -152,6 +152,123 @@ class ExemptionFixerTest {
     }
 
     @Test
+    fun `a removed annotation keeps the import that a class literal uses`() {
+        val text = """
+            package test
+
+            import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+            import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
+
+            /** Settled. */
+            @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
+            public class Settled
+
+            /** The marker. */
+            public val marker: Any = IntentionallyOpen::class
+        """.trimIndent()
+        val result = fix(
+            text,
+            diagnostic("REDUNDANT_EXEMPTION", text, "@IntentionallyOpen(reason = ExemptionReason.API_DESIGN)")
+                .copy(messageParameters = listOf("IntentionallyOpen", "declaration")),
+        )
+
+        assertEquals(
+            """
+                package test
+
+                import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+                import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
+
+                /** Settled. */
+                public class Settled
+
+                /** The marker. */
+                public val marker: Any = IntentionallyOpen::class
+            """.trimIndent(),
+            result.newText,
+        )
+    }
+
+    @Test
+    fun `a removal and a new exemption on one declaration combine`() {
+        val text = """
+            package test
+
+            import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+            import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
+
+            /** A point. */
+            @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
+            public data class Point(val x: Int)
+        """.trimIndent()
+        val result = fix(
+            text,
+            diagnostic("REDUNDANT_EXEMPTION", text, "@IntentionallyOpen(reason = ExemptionReason.API_DESIGN)")
+                .copy(messageParameters = listOf("IntentionallyOpen", "declaration")),
+            diagnostic("DATA_CLASS_PUBLIC_API", text, "Point"),
+        )
+
+        assertEquals(
+            """
+                package test
+
+                import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+                import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDataClass
+
+                /** A point. */
+                @IntentionallyDataClass(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)
+                public data class Point(val x: Int)
+            """.trimIndent(),
+            result.newText,
+        )
+        assertEquals(setOf("IntentionallyOpen", "IntentionallyDataClass"), result.applied.map { it.annotation }.toSet())
+    }
+
+    @Test
+    fun `a removed entry of an annotation list leaves the other entries and its import goes once`() {
+        val text = """
+            package test
+
+            import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+            import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
+
+            /** Settled. */
+            @[IntentionallyOpen(reason = ExemptionReason.API_DESIGN) Suppress("unused")]
+            public class Settled
+
+            /** Alone. */
+            @[IntentionallyOpen(reason = ExemptionReason.API_DESIGN)]
+            public class Alone
+        """.trimIndent()
+        val entry = "IntentionallyOpen(reason = ExemptionReason.API_DESIGN)"
+        val first = text.indexOf(entry)
+        val second = text.indexOf(entry, first + 1)
+        val parameters = listOf("IntentionallyOpen", "declaration")
+        val result = fix(
+            text,
+            RecordedDiagnostic("REDUNDANT_EXEMPTION", FILE_PATH, first, first + entry.length, parameters),
+            RecordedDiagnostic("REDUNDANT_EXEMPTION", FILE_PATH, second, second + entry.length, parameters),
+        )
+
+        assertEquals(
+            """
+                package test
+
+                import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+
+                /** Settled. */
+                @[Suppress("unused")]
+                public class Settled
+
+                /** Alone. */
+                public class Alone
+            """.trimIndent(),
+            result.newText,
+        )
+        assertEquals(listOf(6, 10), result.applied.map { it.line })
+    }
+
+    @Test
     fun `annotation goes between KDoc and declaration`() {
         @Language("kotlin")
         val text = """

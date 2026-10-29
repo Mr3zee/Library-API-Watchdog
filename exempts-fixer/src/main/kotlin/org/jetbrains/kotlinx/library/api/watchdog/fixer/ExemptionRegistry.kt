@@ -37,7 +37,7 @@ internal object PlaceholderKdocFix : Fix {
     override val targetStrategy: TargetStrategy get() = TargetStrategy.DOCUMENTED_DECLARATION
 }
 
-/** Removes the reported annotation, and its import when nothing else in the file uses it. */
+/** Removes the reported annotation, and its import when the file has no other use of it. */
 internal object RemoveAnnotationFix : Fix {
     override val id: String get() = "Remove"
     override val targetStrategy: TargetStrategy get() = TargetStrategy.REPORTED_ANNOTATION

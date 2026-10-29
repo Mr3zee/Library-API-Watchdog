@@ -28,8 +28,8 @@ Every `@Intentionally*` annotation except
 `FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`, and `FOR_DEPRECATION` explain the exemption on their
 own. Every other reason needs a `description`, or
 [Exemptions without explanation](./checks/special/exemption-without-explanation.md) reports the
-annotation. An exemption on a declaration its check doesn't report is a warning:
-[Redundant exemptions](./checks/special/redundant-exemption.md).
+annotation. [Redundant exemptions](./checks/special/redundant-exemption.md) reports an exemption
+that its check doesn't need.
 
 An explained exemption:
 

@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.moduleStructure
 import org.jetbrains.kotlinx.library.api.watchdog.WatchdogConfigurationKeys
 import org.jetbrains.kotlinx.library.api.watchdog.fir.DependencyDeclaration
+import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogSeverity
 
 /** The directives that replace the plugin options in test data. A path is relative to the test data file. */
 object WatchdogTestDirectives : SimpleDirectivesContainer() {
@@ -27,6 +28,11 @@ object WatchdogTestDirectives : SimpleDirectivesContainer() {
     /** `// IGNORE_WHEN_ANNOTATED: STATEFUL_CLASS_WITHOUT_EQUALS:test.Generated`. One `<NAME>:<annotation FQ name>` for each rule. */
     val IGNORE_WHEN_ANNOTATED by stringDirective(
         description = "Annotation ignore rules in the form of the ignoreWhenAnnotated option",
+    )
+
+    /** `// DIAGNOSTIC_SEVERITIES: STATEFUL_CLASS_WITHOUT_EQUALS:none DATA_CLASS_PUBLIC_API:warning`. One `<NAME>:<severity>` for each override. */
+    val DIAGNOSTIC_SEVERITIES by stringDirective(
+        description = "Severity overrides in the form of the diagnosticSeverity option",
     )
 
     /**
@@ -61,6 +67,14 @@ class WatchdogOptionsConfigurator(testServices: TestServices) : EnvironmentConfi
 
         if (WatchdogTestDirectives.REPORT_UNDOCUMENTED_CLASS_PROPERTIES in module.directives) {
             configuration.put(WatchdogConfigurationKeys.REPORT_UNDOCUMENTED_CLASS_PROPERTIES, true)
+        }
+
+        val severities = module.directives[WatchdogTestDirectives.DIAGNOSTIC_SEVERITIES]
+        if (severities.isNotEmpty()) {
+            configuration.put(
+                WatchdogConfigurationKeys.DIAGNOSTIC_SEVERITIES,
+                severities.associate { it.substringBefore(':') to WatchdogSeverity.valueOf(it.substringAfter(':').uppercase()) },
+            )
         }
 
         val ignoreRules = module.directives[WatchdogTestDirectives.IGNORE_WHEN_ANNOTATED]

@@ -123,7 +123,7 @@ configurations.apiWatchdogExemptNonTransitive {
 }
 ```
 
-`apiWatchdogExemptNonTransitive` adds nothing to the compile classpath. The dependency still needs
+`apiWatchdogExemptNonTransitive` doesn't add anything to the compile classpath. The dependency still needs
 an `implementation` or `compileOnly` declaration.
 
 ## See also

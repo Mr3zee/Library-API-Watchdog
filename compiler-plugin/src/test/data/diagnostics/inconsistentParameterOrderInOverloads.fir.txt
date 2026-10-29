@@ -119,6 +119,18 @@ FILE: overloads.kt
         }
 
     }
+    public final class Window : R|foo/bar/Shape| {
+        public constructor(): R|foo/bar/Window| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInconsistentParameterOrder|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|]) public open override fun place(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
+        }
+
+        public final fun place(y: R|kotlin/Int|, x: R|kotlin/Int|, tint: R|kotlin/Long|): R|kotlin/Unit| {
+        }
+
+    }
     public final fun render(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
     }
     @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInconsistentParameterOrder|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|]) public final fun render(y: R|kotlin/Int|, x: R|kotlin/Int|, alpha: R|kotlin/Long|): R|kotlin/Unit| {

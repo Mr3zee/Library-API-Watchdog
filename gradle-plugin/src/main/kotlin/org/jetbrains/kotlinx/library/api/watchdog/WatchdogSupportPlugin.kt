@@ -226,8 +226,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         kotlinCompilation: KotlinCompilation<*>
     ): Provider<List<SubpluginOption>> {
         val extension = extensions.getByType(WatchdogGradleExtension::class.java)
-        // Only the compilations the checks run in, so the exempt task annotates nothing that no
-        // build reports.
+        // Only the compilations the checks run in, so the exempt task doesn't annotate anything
+        // that no build reports.
         val feedsReport = !kotlinCompilation.isTestCompilation() &&
                 (kotlinCompilation.hasExplicitApiFromExtension() || hasRawExplicitApiFlag())
         val collect = collectDiagnosticsForExempts.map { it && feedsReport }

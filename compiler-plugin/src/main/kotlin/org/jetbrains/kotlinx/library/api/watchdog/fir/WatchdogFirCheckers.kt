@@ -23,8 +23,8 @@ import org.jetbrains.kotlin.platform.jvm.isJvm
  * Registers the checkers in a module compiled with explicit API mode, `strict` or `warning`.
  * A contract-shape check reports on the `expect` declaration. An implementation or JVM check
  * reports on the `actual` declaration and accepts annotations of the matched `expect`.
- * [RedundantExemptionProbingChecker] wraps every checker that honors an exemption, so a check that
- * is off reports no redundant exemption either.
+ * [RedundantExemptionProbingChecker] wraps every [ExemptingChecker], so a check that is off reports
+ * no redundant exemption.
  */
 class WatchdogFirCheckers internal constructor(
     session: FirSession,
@@ -54,12 +54,18 @@ class WatchdogFirCheckers internal constructor(
                 AnnotationExcludingDeclarationChecker(it, annotationBasedExclusions)
             }
 
-        /** The probe sees the diagnostics before an ignore rule drops them, so an ignored declaration keeps its exemptions. */
+        /**
+         * The probe runs inside the ignore rules, so an exemption on an ignored declaration isn't redundant.
+         * One probing checker holds every [ExemptingChecker] of the set, so the signature walk happens once.
+         */
         private fun <D : FirDeclaration> Set<FirDeclarationChecker<D>>.probingRedundantExemptions():
-                Set<FirDeclarationChecker<D>> =
-            mapTo(mutableSetOf()) { checker ->
-                if (checker is ExemptingChecker) RedundantExemptionProbingChecker(checker, checker) else checker
+                Set<FirDeclarationChecker<D>> {
+            val (exempting, plain) = partition { it is ExemptingChecker }
+            return buildSet {
+                addAll(plain)
+                if (exempting.isNotEmpty()) add(RedundantExemptionProbingChecker(exempting))
             }
+        }
 
         private fun <D : FirDeclaration> Set<FirDeclarationChecker<D>>.wrapped(): Set<FirDeclarationChecker<D>> =
             probingRedundantExemptions().excludingConfiguredAnnotations().recorded()

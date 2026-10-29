@@ -47,7 +47,7 @@ diagnostics that need manual attention. The console prints the same list as warn
 Review the diff and commit it. The checks then report only the API that you add later. For a new
 declaration, fix the shape or pick the exemption reason by hand.
 
-A second run adds nothing, because an exempted declaration reports no diagnostic.
+A second run doesn't add anything, because an exempted declaration reports no diagnostic.
 
 ## Collection mode
 
@@ -56,10 +56,10 @@ collection mode. [The report page](./report.md) lists the compilations.
 When neither task is in the task graph, the compilations run as configured. Collection mode changes
 three things:
 
-- A module without Explicit API mode on compiles with additional `-Xexplicit-api=warning`.
+- A module without explicit API mode compiles with `-Xexplicit-api=warning`.
 - Every enabled configurable check reports a warning, so the compilation passes. The configured
   severity still decides the fix: `exemptExistingApi` exempts a check set to `ERROR` and leaves a
-  check set to `WARNING`. A check set to `NONE` in `apiWatchdog` records nothing.
+  check set to `WARNING`. A check set to `NONE` in `apiWatchdog` doesn't record anything.
 - The three always-error checks are off, because `FOR_BACKWARDS_COMPATIBILITY` isn't a reason for
   them:
   - [`EXEMPTION_WITHOUT_EXPLANATION`](./checks/special/exemption-without-explanation.md): only the
@@ -69,7 +69,8 @@ three things:
   - [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md):
     declare the dependency with `api` in the build script. This breaks no consumer.
 
-`exemptExistingApi` removes the [redundant annotations](./checks/special/redundant-exemption.md), and `generateApiWatchdogReport` tags them.
+`exemptExistingApi` removes a [redundant exemption](./checks/special/redundant-exemption.md), and
+`generateApiWatchdogReport` tags it as redundant.
 
 Any other compilation error still fails the task. Fix unresolved references and syntax errors first.
 The compilations outside collection mode still report the three always-error checks, so fix them

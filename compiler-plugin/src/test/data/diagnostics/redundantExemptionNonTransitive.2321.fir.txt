@@ -1,0 +1,75 @@
+Module: lib
+FILE: models.kt
+    package com.example.models
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public open class Model : R|kotlin/Any| {
+        public constructor(): R|com/example/models/Model| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+FILE: shared.kt
+    package com.example.shared
+
+    public final class Shared : R|kotlin/Any| {
+        public constructor(): R|com/example/shared/Shared| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+Module: main
+FILE: exposure.kt
+    package consumer
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonTransitiveDependency|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.INTEROP|, description = String(The host ships the models.)) public final fun neededReturn(): R|com/example/models/Model| {
+        ^neededReturn R|com/example/models/Model.Model|()
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonTransitiveDependency|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.INTEROP|, description = String(The host ships the models.)) public final fun transitiveReturn(): R|com/example/shared/Shared| {
+        ^transitiveReturn R|com/example/shared/Shared.Shared|()
+    }
+    public final fun neededParameter(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonTransitiveDependency|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.INTEROP|, description = String(The host ships the models.)) model: R|com/example/models/Model|): R|kotlin/Unit| {
+    }
+    public final fun plainParameter(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonTransitiveDependency|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.INTEROP|, description = String(The host ships the models.)) count: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun neededNested(): R|kotlin/collections/List<@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonTransitiveDependency|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.INTEROP|, description = String(The host ships the models.))  com/example/models/Model>| {
+        ^neededNested R|kotlin/collections/emptyList|<R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonTransitiveDependency|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.INTEROP|, description = String(The host ships the models.))  com/example/models/Model|>()
+    }
+    public final fun plainNested(): R|kotlin/collections/List<@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonTransitiveDependency|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.INTEROP|, description = String(The host ships the models.))  kotlin/Int>| {
+        ^plainNested R|kotlin/collections/emptyList|<R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonTransitiveDependency|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.INTEROP|, description = String(The host ships the models.))  kotlin/Int|>()
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonTransitiveDependency|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.INTEROP|, description = String(The host ships the models.)) public final class NeededSubtype : R|com/example/models/Model| {
+        public constructor(): R|consumer/NeededSubtype| {
+            super<R|com/example/models/Model|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonTransitiveDependency|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.INTEROP|, description = String(The host ships the models.)) public final class NeededHolder : R|kotlin/Any| {
+        public constructor(): R|consumer/NeededHolder| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun model(): R|com/example/models/Model| {
+            ^model R|com/example/models/Model.Model|()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonTransitiveDependency|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.INTEROP|, description = String(The host ships the models.)) public final class PlainHolder : R|kotlin/Any| {
+        public constructor(): R|consumer/PlainHolder| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun count(): R|kotlin/Int| {
+            ^count Int(1)
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonTransitiveDependency|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.INTEROP|, description = String(The host ships the models.)) public final class CoveredHolder : R|kotlin/Any| {
+        public constructor(): R|consumer/CoveredHolder| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonTransitiveDependency|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.INTEROP|, description = String(The host ships the models.)) public final fun model(): R|com/example/models/Model| {
+            ^model R|com/example/models/Model.Model|()
+        }
+
+    }

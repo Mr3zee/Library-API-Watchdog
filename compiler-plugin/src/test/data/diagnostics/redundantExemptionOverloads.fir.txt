@@ -1,0 +1,54 @@
+FILE: shapes.kt
+    package foo.bar
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInconsistentParameterOrder|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final fun draw(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public abstract interface Canvas : R|kotlin/Any| {
+        public abstract fun place(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit|
+
+    }
+    public final class Panel : R|foo/bar/Canvas| {
+        public constructor(): R|foo/bar/Panel| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInconsistentParameterOrder|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public open override fun place(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
+        }
+
+        public final fun place(y: R|kotlin/Int|, x: R|kotlin/Int|, scale: R|kotlin/Double|): R|kotlin/Unit| {
+        }
+
+    }
+    public final class Frame : R|foo/bar/Canvas| {
+        public constructor(): R|foo/bar/Frame| {
+            super<R|kotlin/Any|>()
+        }
+
+        public open override fun place(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInconsistentParameterOrder|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final fun place(y: R|kotlin/Int|, x: R|kotlin/Int|, scale: R|kotlin/Double|): R|kotlin/Unit| {
+        }
+
+    }
+    public final class Rect : R|kotlin/Any| {
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInconsistentParameterOrder|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public constructor(x: R|kotlin/Int|, y: R|kotlin/Int|): R|foo/bar/Rect| {
+            super<R|kotlin/Any|>()
+        }
+
+        public constructor(y: R|kotlin/Int|, x: R|kotlin/Int|, scale: R|kotlin/Double|): R|foo/bar/Rect| {
+            this<R|foo/bar/Rect|>(R|<local>/x|, R|<local>/y|)
+        }
+
+    }
+    public final class Square : R|kotlin/Any| {
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInconsistentParameterOrder|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public constructor(side: R|kotlin/Int|, color: R|kotlin/Int|): R|foo/bar/Square| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+FILE: other.kt
+    package foo.bar
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInconsistentParameterOrder|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final fun draw(y: R|kotlin/Int|, x: R|kotlin/Int|, scale: R|kotlin/Double|): R|kotlin/Unit| {
+    }

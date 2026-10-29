@@ -1,0 +1,132 @@
+FILE: declarations.kt
+    package foo.bar
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutEquals|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final class NeededWithoutEquals : R|kotlin/Any| {
+        public constructor(token: R|kotlin/String|): R|foo/bar/NeededWithoutEquals| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val token: R|kotlin/String| = R|<local>/token|
+            public get(): R|kotlin/String|
+
+        public open override fun hashCode(): R|kotlin/Int| {
+            ^hashCode this@R|foo/bar/NeededWithoutEquals|.R|foo/bar/NeededWithoutEquals.token|.R|kotlin/Any.hashCode|()
+        }
+
+        public open override fun toString(): R|kotlin/String| {
+            ^toString this@R|foo/bar/NeededWithoutEquals|.R|foo/bar/NeededWithoutEquals.token|
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutEquals|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final class ProvidesEquals : R|kotlin/Any| {
+        public constructor(token: R|kotlin/String|): R|foo/bar/ProvidesEquals| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val token: R|kotlin/String| = R|<local>/token|
+            public get(): R|kotlin/String|
+
+        public open override operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean| {
+            ^equals (R|<local>/other| is R|foo/bar/ProvidesEquals|) && ==(R|<local>/other|.R|foo/bar/ProvidesEquals.token|, this@R|foo/bar/ProvidesEquals|.R|foo/bar/ProvidesEquals.token|)
+        }
+
+        public open override fun hashCode(): R|kotlin/Int| {
+            ^hashCode this@R|foo/bar/ProvidesEquals|.R|foo/bar/ProvidesEquals.token|.R|kotlin/Any.hashCode|()
+        }
+
+        public open override fun toString(): R|kotlin/String| {
+            ^toString this@R|foo/bar/ProvidesEquals|.R|foo/bar/ProvidesEquals.token|
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public open class NeededOpen : R|kotlin/Any| {
+        public constructor(): R|foo/bar/NeededOpen| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final class FinalWithOpenExemption : R|kotlin/Any| {
+        public constructor(): R|foo/bar/FinalWithOpenExemption| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final class Factory : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Factory| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/Factory.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final fun create(): R|foo/bar/Factory| {
+                ^create R|foo/bar/Factory.Factory|()
+            }
+
+            @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) @R|kotlin/jvm/JvmStatic|() public final fun createStatic(): R|foo/bar/Factory| {
+                ^createStatic R|foo/bar/Factory.Factory|()
+            }
+
+        }
+
+    }
+    public final class NeededFactory : R|kotlin/Any| {
+        public constructor(): R|foo/bar/NeededFactory| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/NeededFactory.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun create(): R|foo/bar/NeededFactory| {
+                ^create R|foo/bar/NeededFactory.NeededFactory|()
+            }
+
+        }
+
+    }
+    public final class StaticFactory : R|kotlin/Any| {
+        public constructor(): R|foo/bar/StaticFactory| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/StaticFactory.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            @R|kotlin/jvm/JvmStatic|() public final fun create(): R|foo/bar/StaticFactory| {
+                ^create R|foo/bar/StaticFactory.StaticFactory|()
+            }
+
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility|() @R|kotlin/DslMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|)) public final annotation class NoopMarker : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/NoopMarker| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility|() @R|kotlin/DslMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|)) public final annotation class EffectiveMarker : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/EffectiveMarker| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDataClass|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final class NotData : R|kotlin/Any| {
+        public constructor(): R|foo/bar/NotData| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final fun readOnlyView(): R|kotlin/collections/List<kotlin/Int>| {
+        ^readOnlyView R|kotlin/collections/emptyList|<R|kotlin/Int|>()
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final fun neededBuffer(): R|kotlin/collections/MutableList<kotlin/Int>| {
+        ^neededBuffer R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+    }

@@ -103,6 +103,15 @@ public class Panel : Shape {
     public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>place<!>(y: Int, x: Int, scale: Double) {}
 }
 
+// An exemption on an override doesn't remove it from the comparisons.
+
+public class Window : Shape {
+    <!REDUNDANT_EXEMPTION!>@IntentionallyInconsistentParameterOrder(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)<!>
+    override fun place(x: Int, y: Int) {}
+
+    public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>place<!>(y: Int, x: Int, tint: Long) {}
+}
+
 // An exempt overload isn't a reference.
 
 public fun render(x: Int, y: Int) {}

@@ -23,7 +23,7 @@ public object Markers {
     public annotation class NestedInternalApi
 }
 
-/** An unrelated annotation of the dependency: not configured, so it exempts nothing. */
+/** An unrelated annotation of the dependency: not configured, so it doesn't exempt anything. */
 @Target(AnnotationTarget.CLASS)
 public annotation class ThirdPartyOrdinary
 

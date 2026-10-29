@@ -32,7 +32,7 @@ public open class ProtectedApi {
     /** An unrestricted protected subclassing point. */
     protected open class <!OPEN_API_WITHOUT_SUBCLASS_OPT_IN!>OpenType<!>
 
-    /** A protected subclassing point whose opt-in annotation restricts nothing. */
+    /** A protected subclassing point whose opt-in annotation doesn't restrict anything. */
     <!SUBCLASS_OPT_IN_WITHOUT_MARKERS!>@SubclassOptInRequired<!>
     protected open class EmptyOptIn
 

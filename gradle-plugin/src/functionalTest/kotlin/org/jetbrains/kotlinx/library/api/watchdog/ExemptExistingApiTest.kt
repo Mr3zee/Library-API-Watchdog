@@ -861,7 +861,7 @@ private val fixableFile = """
         public fun undocumentedMember() {}
     }
 
-    /** A base class whose subclass opt-in lists no markers and so restricts nothing. */
+    /** A base class whose subclass opt-in lists no markers and so doesn't restrict anything. */
     @SubclassOptInRequired
     public open class UnmarkedOptIn
 
@@ -964,7 +964,7 @@ private val unfixableFile = """
     @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPEALIAS)
     public annotation class ScopedDsl
 
-    /** A parameter type carrying a DSL marker that restricts nothing. */
+    /** A parameter type carrying a DSL marker that doesn't restrict anything. */
     public fun processTag(tag: @ScopedDsl String) { }
 """.trimIndent()
 

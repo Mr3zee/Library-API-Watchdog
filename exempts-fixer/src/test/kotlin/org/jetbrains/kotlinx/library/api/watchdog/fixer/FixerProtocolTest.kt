@@ -205,6 +205,25 @@ class FixerProtocolTest {
     }
 
     @Test
+    fun `skipped and warned redundant exemptions name the annotation of the message`() {
+        val response = FixerResponse().apply {
+            skipped += SkippedDiagnostic(
+                "REDUNDANT_EXEMPTION", "/p/B.kt", 7, "No source element found at the recorded position",
+                listOf("IntentionallyOpen", "declaration"),
+            )
+            warnings += WarningDiagnostic("REDUNDANT_EXEMPTION", "/p/C.kt", 4, listOf("IntentionallyDataClass", "declaration"))
+        }
+        val target = tempDir.resolve("redundant.txt")
+
+        response.writeTo(target)
+
+        val lines = Files.readAllLines(target).filter { it.isNotBlank() }
+        assertEquals(2, lines.size)
+        assertTrue(lines[0].startsWith("skipped=REDUNDANT_EXEMPTION\tIntentionallyOpen\t7\t/p/B.kt\t"), lines[0])
+        assertTrue(lines[1].startsWith("warning=REDUNDANT_EXEMPTION\tIntentionallyDataClass\t4\t/p/C.kt\t"), lines[1])
+    }
+
+    @Test
     fun `skipped reason with line breaks stays on one protocol line`() {
         val response = FixerResponse().apply {
             skipped += SkippedDiagnostic("SOME_DIAGNOSTIC", "/p/B.kt", 7, "line one\nline two")

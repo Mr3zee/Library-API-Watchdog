@@ -150,7 +150,8 @@ The comparisons have these limits:
 - Top-level functions in one package share a group. Constructors of one class share a group.
 - An extension also compares against its receiver's members. Only the extension reports that mismatch.
 - Ordinary top-level functions don't compare against class members. Declarations from dependencies aren't checked.
-- Overrides don't get diagnostics but are used in comparisons.
+- Overrides don't get diagnostics but are used in comparisons. An exemption on an override doesn't
+  remove it from the comparisons.
 - `@PublishedApi internal` overloads aren't used in comparisons.
 
 ## Exemption
@@ -161,7 +162,7 @@ If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the fun
 or constructor.
 
 Use the exemption when the declaration is part of the API design or must stay for backwards compatibility.
-The annotation removes that overload from all comparisons.
+The annotation removes that overload from all comparisons, unless the overload is an override.
 
 ```kotlin
 // !hide-focused
