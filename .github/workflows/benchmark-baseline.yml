@@ -1,7 +1,6 @@
 name: Benchmark baseline
 
-# The baseline file is valid for one machine profile. The job pins the runner image, so a change of
-# `runs-on` or `java-version` needs a new baseline.
+# A change of `runs-on` or `java-version` changes the machine profile, so it needs a new baseline file.
 
 on:
   push:
@@ -31,11 +30,10 @@ on:
   workflow_dispatch:
     inputs:
       record:
-        description: 'Record a new baseline file and upload it as an artifact instead of comparing'
+        description: 'Record the baseline file and upload it as an artifact instead of the comparison'
         type: boolean
         default: false
 
-# A newer push to the same branch cancels the runs of the older pushes.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

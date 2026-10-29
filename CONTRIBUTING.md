@@ -1,4 +1,54 @@
-# Development and releases
+# Contributing
+
+## Build
+
+The build gets the compiler-plugin-dev-kit from its
+[Space EAP repository](https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap).
+The dev kit settings plugin gives the Kotlin development repositories, the plugin coordinates,
+and the functional-test publishing.
+
+## Tests
+
+```bash
+./gradlew :kotlin-library-api-watchdog-compiler-plugin:allTests           # diagnostics tests against every supported Kotlin version
+./gradlew :kotlin-library-api-watchdog-compiler-plugin:generateTests      # regenerate the JUnit classes from the test data
+./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkCorpusAudit # check that the corpus triggers every benchmark-eligible checker
+./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkBaseline   # compare checker time and allocation with the CI baseline
+./gradlew :kotlin-library-api-watchdog-exempts-fixer:allTests             # exemption fixer tests against every supported Kotlin version
+./gradlew :kotlin-library-api-watchdog-gradle-plugin:functionalTest       # Gradle TestKit tests against every supported Kotlin version
+./gradlew :kotlin-library-api-watchdog-report-aggregation:test            # report aggregation tests
+```
+
+CI runs one functional test task for each supported Kotlin version.
+`:kotlin-library-api-watchdog-gradle-plugin:printCiFunctionalTestMatrix` lists those tasks.
+
+The benchmarks and the baseline check are in
+[compiler-plugin/src/benchmark/README.md](compiler-plugin/src/benchmark/README.md).
+
+## Modules
+
+- [`:kotlin-library-api-watchdog-compiler-plugin`](compiler-plugin/src): the compiler plugin, FIR checkers only. The
+  test data is in [compiler-plugin/src/test/data/diagnostics](compiler-plugin/src/test/data/diagnostics).
+- [`:kotlin-library-api-watchdog-plugin-annotations`](plugin-annotations/src/commonMain/kotlin): the `@Intentionally*`
+  exemption annotations, `@InternalAnnotationMarker`, and the `ExemptionReason` enum.
+- [`:kotlin-library-api-watchdog-exempts-fixer`](exempts-fixer/src): reads the compiler diagnostic reports and applies
+  the exemption annotations to Kotlin sources.
+- [`:kotlin-library-api-watchdog-gradle-plugin`](gradle-plugin/src): applies the compiler plugin and the annotations
+  dependency, and registers the `exemptExistingApi` and `generateApiWatchdogReport` tasks. Plugin id
+  `org.jetbrains.kotlin.library.api-watchdog`.
+- [`:kotlin-library-api-watchdog-report-aggregation`](report-aggregation/src): combines the reports of several
+  projects. Plugin id `org.jetbrains.kotlin.library.api-watchdog-report-aggregation`.
+
+## Documentation site
+
+The site is a [Docusaurus](https://docusaurus.io/) project in [docs](docs), built by
+[docs.yml](.github/workflows/docs.yml). Run its checks in `docs/` after `npm ci`:
+
+```bash
+npm test                            # the remark plugins
+npm run check:diagnostic-exemptions # the exemption wording in the check pages matches diagnostics.json
+npm run build                       # the site build, fails on a broken link or anchor
+```
 
 ## Build scans and cache
 

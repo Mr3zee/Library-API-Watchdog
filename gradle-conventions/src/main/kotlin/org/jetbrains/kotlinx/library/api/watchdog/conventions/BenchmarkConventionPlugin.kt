@@ -250,16 +250,15 @@ class BenchmarkConventionPlugin : Plugin<Project> {
             val baselineSummary = layout.buildDirectory.file("reports/benchmark-baseline/summary.md")
             tasks.register("benchmarkBaseline", JavaExec::class.java) {
                 group = "benchmark"
-                description = "Runs the isolated checker benchmark and three whole-compilation modes, then fails on a " +
-                        "regression against src/benchmark/baseline/<machine-profile>.properties. " +
-                        "-Pbenchmark.baseline.record=true writes the file instead."
+                description = "Compares checker time and allocation with src/benchmark/baseline/<machine-profile>.properties " +
+                        "and fails on a regression. -Pbenchmark.baseline.record=true writes the file instead."
                 mainClass.set("org.jetbrains.kotlinx.library.api.watchdog.benchmark.BenchmarkBaseline")
                 classpath = files(benchmarkGeneratedClasses, benchmarkGeneratedResources) +
                         benchmarkRuntimeClasspath
                 dependsOn(compileBenchmarkJmhSources)
                 configureWatchdogBenchmarkInputs(this)
                 outputs.upToDateWhen { false }
-                // JMH forks inherit these arguments. A fixed heap keeps the GC behavior the same between runs.
+                // JMH forks inherit the fixed heap, so the GC behavior is the same between runs.
                 jvmArgs("-Xms2g", "-Xmx2g")
 
                 val flags = mapOf(

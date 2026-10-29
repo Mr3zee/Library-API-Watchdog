@@ -18,12 +18,7 @@ import org.openjdk.jmh.runner.Runner
 import org.openjdk.jmh.runner.options.OptionsBuilder
 import org.openjdk.jmh.runner.options.VerboseMode
 
-/**
- * Runs the isolated checker benchmark and three whole-compilation modes, then compares the results with the
- * baseline file of the current machine profile. Run it with the Gradle `benchmarkBaseline` task.
- *
- * Exit code 1 means a regression or a missing baseline. The summary file lists every metric.
- */
+/** The entry point of the Gradle `benchmarkBaseline` task. The benchmark README describes the check. */
 fun main(args: Array<String>) {
     val options = BaselineOptions.parse(args)
     val machine = MachineProfile.current()
@@ -146,10 +141,7 @@ internal class RunSettings(
     )
 }
 
-/**
- * The pinned part is the [id]: OS, architecture, CPU count, JDK feature version, and the GitHub runner image
- * (`local` outside GitHub Actions). A baseline is comparable on a machine with the same id only.
- */
+/** A baseline is comparable on a machine with the same [id] only. */
 internal class MachineProfile(
     val os: String,
     val arch: String,
@@ -252,7 +244,6 @@ internal class BaselineRunner(private val settings: RunSettings) {
             Measured.WHOLE_MODES.map { Measured.WHOLE_PREFIX + it },
     )
 
-    /** [subjects] are `isolated.<checker>` and `whole.<mode>` keys. */
     fun measureSubjects(subjects: Set<String>): Measured {
         val values = linkedMapOf<String, Double>()
         val checkers = subjects.filter { it.startsWith(Measured.ISOLATED_PREFIX) }
@@ -292,7 +283,6 @@ internal class BaselineRunner(private val settings: RunSettings) {
         return Runner(options).run()
     }
 
-    /** The `ms` value is the median of the measurement iterations of every fork. The `bytes` value is the same for allocation. */
     private fun collect(results: Collection<RunResult>, parameter: String, prefix: String): Map<String, Double> {
         val values = linkedMapOf<String, Double>()
         for (result in results) {
@@ -341,7 +331,7 @@ internal object BaselineFile {
     fun render(machine: MachineProfile, settings: RunSettings, measured: Measured, tolerances: Tolerances): String =
         buildString {
             appendLine("# Benchmark baseline. The benchmarkBaseline Gradle task writes and reads this file.")
-            appendLine("# machine.* keys and settings.* keys must match the comparing run. The other machine keys are information.")
+            appendLine("# machine.* and settings.* keys must match the run that compares. Other machine.* keys are information.")
             for ((key, value) in machine.pinned + machine.details.toSortedMap() + settings.asProperties + tolerances.asProperties) {
                 appendLine("$key=$value")
             }

@@ -180,8 +180,6 @@ internal object CheckerSubjects {
             listOf("COMPANION_API_WITHOUT_JVM_STATIC", "COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS"),
         ) { ofCallable(CompanionJvmExposureChecker(severities)) },
 
-        // The redundancy probes rerun the exempting checkers without each exemption. The cost of the
-        // probes is the probing subject minus the plain subject.
         CheckerSubject("ExemptingCheckers", emptyList(), isolatedOnly = true) { environment ->
             exemptingCheckers(environment)
         },
@@ -190,7 +188,6 @@ internal object CheckerSubjects {
         },
     )
 
-    /** The checkers that read an exemption, in the categories of the plugin's `WatchdogFirCheckers`. */
     private fun exemptingCheckers(environment: CheckerEnvironment): IsolatedCheckers {
         val created = all.filter { !it.isolatedOnly }.map { it.createCheckers(environment).declarations }
         fun <C : Any> exempting(select: (DeclarationCheckers) -> Set<C>): Set<C> =
@@ -209,7 +206,7 @@ internal object CheckerSubjects {
         )
     }
 
-    /** The same wrapping as `WatchdogFirCheckers` applies when every configurable diagnostic is on. */
+    /** Mirrors the wrapping in `WatchdogFirCheckers` with every configurable diagnostic on. */
     private fun IsolatedCheckers.probingRedundantExemptions(): IsolatedCheckers {
         val source = declarations
         val enclosingProbes = EnclosingExemptionProbes(

@@ -1,7 +1,6 @@
 # CLAUDE.md
 
-Skill from https://mr3zee.github.io/code-doc-writer/ must be installed 
-and used as `/code-doc-writer:code-doc-writer` in every session.
+Use the `/code-doc-writer:code-doc-writer` skill (https://mr3zee.github.io/code-doc-writer/) in every session.
 
 A Kotlin K2 compiler plugin, a Gradle plugin, an exemption fixer, a report-aggregation plugin, and an
 annotations library. The checkers warn library authors about public API declarations that are hard to
@@ -9,8 +8,8 @@ evolve. README.md lists the diagnostics. `DOCS_GUIDELINE.md` holds the rules for
 
 ## Commands
 
-The compiler plugin and the fixer don't have a plain `test` task. The dev kit registers one test task for each supported
-Kotlin version (`k2320Test`, `k2410Test`, ...). `./gradlew :<module>:tasks --all` lists the current set.
+The compiler plugin and the fixer have no plain `test` task, only one task for each supported Kotlin version
+(`k2320Test`, `k2410Test`, ...). `./gradlew :<module>:tasks --all` lists them.
 
 ```bash
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:k2410Test          # diagnostics tests against Kotlin 2.4.10
@@ -23,16 +22,13 @@ Kotlin version (`k2320Test`, `k2410Test`, ...). `./gradlew :<module>:tasks --all
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkBaseline -Pbenchmark.baseline.allowMissing=true  # the CI benchmark check, report only on a machine without a baseline
 ```
 
-Each test-data file is one test method in the generated classes. After you add, remove, or rename a file in
-`compiler-plugin/src/test/data/diagnostics/` or `compiler-plugin/src/test/data/messages/`, run `generateTests`
-again. Test results are in `build/test-results/<taskName>/` of the module.
+Each file in `compiler-plugin/src/test/data/diagnostics/` and `messages/` is one generated test method. Run
+`generateTests` after you add, remove, or rename one. `messages/` checks the rendered text of every diagnostic:
+inline markers plus a `.messages.txt` dump of the full messages (`JvmDiagnosticMessagesTestGenerated`). The first
+run generates a missing dump. The dump replaces the macOS shortcut `⌘N` with `Alt+Insert`. Hand-written tests in
+`compiler-plugin/src/test/kotlin` run in every `k*Test` task.
 
-The `messages/` test data checks the rendered text of every diagnostic. Each `.kt` file has the inline
-markers plus a `.messages.txt` dump of the full messages (`JvmDiagnosticMessagesTestGenerated`). A missing
-dump is generated on the first run. The dump replaces the macOS shortcut `⌘N` with `Alt+Insert`.
-Hand-written tests in `compiler-plugin/src/test/kotlin` run in every `k*Test` task.
-
-The docs website has its own checks. Run them in `docs/` after `npm ci`. The `docs.yml` workflow runs all three:
+Docs checks run in `docs/` after `npm ci`. The `docs.yml` workflow runs all three:
 
 ```bash
 npm test                            # the remark plugins: diagnostic annotations in code samples, check-page links, README order
@@ -42,40 +38,38 @@ npm run build                       # the site build, fails on a broken link or 
 
 ## Constraints the code doesn't show
 
-- `diagnostics.json` is the single source of truth for diagnostic texts. The build generates `WatchdogDiagnosticMessages`
-  (compiler plugin), `WatchdogChecks` (Gradle plugin and fixer), `WatchdogCheckDescriptions` (report aggregation),
-  and the `Diagnostic` enum of the Gradle plugin's functional tests from it. The docs build fails on a diagnostic
-  name that `diagnostics.json` doesn't list or a range that doesn't match any sample line. `DocsExamplesTest` in the
-  Gradle functional tests compiles every docs sample and checks that the compiler reports exactly the annotated
-  diagnostics, at the annotated ranges, with the annotated parameters.
+- `diagnostics.json` is the single source of truth for diagnostic texts. The build generates
+  `WatchdogDiagnosticMessages` (compiler plugin), `WatchdogChecks` (Gradle plugin and fixer),
+  `WatchdogCheckDescriptions` (report aggregation), and the `Diagnostic` enum of the Gradle functional tests from
+  it. The docs build fails on a diagnostic name that it doesn't list or a range that matches no sample line.
+  `DocsExamplesTest` compiles every docs sample and checks that the compiler reports exactly the annotated
+  diagnostics, ranges, and parameters.
 - The Gradle functional tests describe a build with the DSL in `WatchdogProject.kt` (`jvmProject`, `kmpProject`,
-  `androidLibrary`, `kmpAndroidProject`) and check output with the `BuildResult` assertions in `BuildAssertions.kt`,
-  which match the first paragraph of each message. A new always-error diagnostic goes into `alwaysErrorDiagnostics`.
+  `androidLibrary`, `kmpAndroidProject`). They check output with the `BuildResult` assertions in
+  `BuildAssertions.kt`, and an assertion matches the first paragraph of a message. A new always-error diagnostic
+  goes into `alwaysErrorDiagnostics`.
 - The compiler plugin must not reference `com.intellij` types in bytecode (a field type, a method signature, or a
-  class literal), because the jar runs both in the CLI and in the relocated `kotlin-compiler-embeddable` classpath.
-  A reference links in one of them only. `IntellijReferencesTest` scans the compiled classes and fails on each
-  one. A type argument is fine, because erasure removes it. A custom positioning strategy is impossible for the
-  same reason. Its `mark` override never binds in the embeddable compiler, and the default strategy marks the
-  whole declaration. A checker reports on a child source element from `KtSourceElement.getChild` with a `Set` of
-  token types instead.
-- The fixer uses K2 PSI entry points only, with unrelocated `com.intellij` imports. Its dependencies are
-  compile-only. The Gradle task runs it in a separate JVM with the `kotlin-compiler` artifact of the project's
-  Kotlin version.
+  class literal). The jar runs in the CLI and in the relocated `kotlin-compiler-embeddable` classpath, and a
+  reference links in one of them only. `IntellijReferencesTest` fails on each one. A type argument is fine, because
+  erasure removes it. So a custom positioning strategy is impossible: its `mark` override never binds in the
+  embeddable compiler, and the default strategy marks the whole declaration. A checker reports on a child source
+  element from `KtSourceElement.getChild` with a `Set` of token types instead.
+- The fixer uses K2 PSI entry points only, with unrelocated `com.intellij` imports, and compile-only dependencies.
+  The Gradle task runs it in a separate JVM with the `kotlin-compiler` artifact of the project's Kotlin version.
 - The Gradle plugin checks the task graph in `gradle.taskGraph.whenReady`, never on task realization, because IDE
   sync realizes every task.
-- Android compilations resolve dependencies through an `android-classes-jar` artifact view. Without it a project AAR
-  doesn't have an artifact. The plugin recognizes them by the `android` JVM environment of the compile classpath,
+- Android compilations resolve dependencies through an `android-classes-jar` artifact view, because a project AAR
+  has no artifact without it. The plugin recognizes them by the `android` JVM environment of the compile classpath,
   because the `com.android.kotlin.multiplatform.library` target of AGP 8 reports platform type `jvm`.
-- `:kotlin-library-api-watchdog-report-aggregation` is a separate artifact so a root project that applies it doesn't
-  put the KGP-dependent support plugin on every project's plugin classpath.
+- `:kotlin-library-api-watchdog-report-aggregation` is a separate artifact, so a root project that applies it
+  doesn't put the KGP-dependent support plugin on every project's plugin classpath.
 - `exemptExistingApi` writes the aggregate report through two project-local hooks, because project isolation
   forbids a finalizer on another project's task. The support plugin picks the producer of the report artifact
-  from `gradle.startParameter.taskNames`, and the aggregation plugin finalizes the root's `exemptExistingApi`
-  (its own lifecycle task when the root has no Watchdog) with `aggregateApiWatchdogReports`.
-- The benchmark baseline (`compiler-plugin/src/benchmark/baseline/`) is valid for one machine profile: OS,
-  architecture, CPU count, JDK feature version, and GitHub runner image. Record it with the `Benchmark baseline`
-  workflow (`record` input), not on a developer machine. The `ms` metrics have a wide tolerance, the `bytes`
-  metrics a narrow one, so a regression shows up in allocation first.
+  from `gradle.startParameter.taskNames`. The aggregation plugin finalizes the root's `exemptExistingApi` (its own
+  lifecycle task when the root has no Watchdog) with `aggregateApiWatchdogReports`.
+- The benchmark baseline (`compiler-plugin/src/benchmark/baseline/`) is valid for one machine profile. Record it
+  with the `Benchmark baseline` workflow (`record` input), never on a developer machine. A regression shows up in
+  `bytes` first, because the `ms` tolerance is wide.
 - The Android functional tests skip themselves without an Android SDK. AGP 8 fixtures run with the Gradle version
   pinned in `AgpVersion.AGP8` of `WatchdogProject.kt`, because AGP 8 can't run on Gradle 9.6 or later. The dev kit
   skips every multiplatform fixture on Kotlin versions older than the build's own, because KLIBs aren't forward
@@ -94,6 +88,6 @@ npm run build                       # the site build, fails on a broken link or 
    `ExemptExistingApiTest`.
 7. The docs: the check page at the `docs` path from `diagnostics.json`, `docs/sidebars.ts`, and the check list in
    `docs/pages/overview.md`.
-8. The benchmarks in `compiler-plugin/src/benchmark/`, only when the checker can report a warning: a
+8. The benchmarks in `compiler-plugin/src/benchmark/`, only when the checker can report a warning. Add a
    `CheckerSubject`, the `@Param` lists of both benchmark classes, and a triggering shape in `BenchmarkCorpus`. Then
    run `benchmarkCorpusAudit`.

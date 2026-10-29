@@ -102,36 +102,31 @@ that changes the compiler plugin.
 
 The subset:
 
-- `IsolatedCheckerBenchmark` with every `checker` value, including `ExemptingCheckers` and
-  `RedundantExemptionProbingChecker`. The second is the first wrapped in the redundancy probes, as
-  the plugin wraps them. Their difference is the cost of the probes.
+- `IsolatedCheckerBenchmark` with every `checker` value. `RedundantExemptionProbingChecker` is
+  `ExemptingCheckers` wrapped in the redundancy probes, so their difference is the cost of the probes.
 - `WholeCompilationBenchmark` with `noPlugin`, `pluginBaseline`, and `allCheckers`.
 
 The metrics of each subject:
 
 | Metric | Value | Default tolerance |
 |---|---|---|
-| `ms` | The median time of one operation over the measurement iterations of all forks. | 30% of the baseline, at least 1 ms. |
-| `bytes` | The median allocation of one operation (`gc.alloc.rate.norm`). | 5%. |
-| `overhead` | The `ms` of a whole-compilation mode divided by the `ms` of `noPlugin`. | 10%. |
+| `ms` | Median time of one operation over all measurement iterations. | 30%, at least 1 ms. |
+| `bytes` | Median allocation of one operation (`gc.alloc.rate.norm`). | 5%. |
+| `overhead` | `ms` of a whole-compilation mode divided by `ms` of `noPlugin`. | 10%. |
 
-Allocation doesn't depend on the load of the machine, so a regression shows up in `bytes` first.
 The check fails in two cases:
 
 - A measured value is above the baseline value plus the tolerance.
 - The baseline has a metric that the run didn't measure.
 
-When a subject regresses, the task measures
-it a second time and uses the lower value of the two runs. The summary lists a metric without a
-baseline value, and the check passes. The task writes the summary as Markdown to
-`build/reports/benchmark-baseline/summary.md`. The workflow shows it on the job summary page.
+When a subject regresses, the task measures it a second time and uses the lower value. A metric
+without a baseline value passes. The task writes a Markdown summary to
+`build/reports/benchmark-baseline/summary.md`, and the workflow shows it on the job summary page.
 
 A baseline file is valid for one machine profile. The profile is the file name:
-`<os>-<arch>-<cpus>cpu-jdk<feature version>-<GitHub runner image>.properties`, for example
-`linux-amd64-4cpu-jdk21-ubuntu24.properties`. The image is `local` outside GitHub Actions. The
-file also holds the run settings (forks, iterations, corpus size) and the tolerances. A run with
-another profile or other settings fails before it compares. The workflow pins `runs-on` and the
-JDK, so the profile of CI is stable.
+`<os>-<arch>-<cpus>cpu-jdk<feature version>-<GitHub runner image>.properties`. The image is
+`local` outside GitHub Actions. The file also holds the run settings and the tolerances. A run
+with another profile or other settings fails before it measures.
 
 To record the baseline of CI:
 
@@ -155,8 +150,6 @@ The run settings and their Gradle properties:
 | `benchmark.baseline.measurement` | 5 iterations | Yes |
 | `benchmark.baseline.corpusFiles` | 200 | Yes |
 | `benchmark.baseline.retries` | 1 | No |
-
-A comparison needs the recorded values of the first four.
 
 ## The corpus
 
@@ -185,9 +178,8 @@ It compiles the corpus with everything enabled and prints how often each diagnos
 For a checker that can safely report warnings, add a `CheckerSubject` to `CheckerSubjects`, the
 checker name to the `@Param` lists of both benchmarks, and a triggering (or at least scannable)
 shape to a corpus template, then run `benchmarkCorpusAudit`. Always-error diagnostics must not
-have a triggering corpus shape or a per-checker benchmark mode. The baseline check takes its
-subjects from `CheckerSubjects`, so the new checker is a new metric until the baseline is recorded
-again.
+have a triggering corpus shape or a per-checker benchmark mode. The new checker is a new metric of
+the baseline check until the baseline is recorded again.
 
 ## Caveats
 
