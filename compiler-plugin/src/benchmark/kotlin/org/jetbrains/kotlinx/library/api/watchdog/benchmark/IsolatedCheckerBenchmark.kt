@@ -71,6 +71,8 @@ open class IsolatedCheckerBenchmark {
         "InlineFunctionLogicChecker",
         "MangledJvmNameChecker",
         "CompanionJvmExposureChecker",
+        "ExemptingCheckers",
+        "RedundantExemptionProbingChecker",
     )
     @JvmField
     var checker: String = "none"

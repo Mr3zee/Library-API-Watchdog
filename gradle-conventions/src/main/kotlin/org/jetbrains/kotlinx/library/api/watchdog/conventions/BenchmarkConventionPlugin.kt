@@ -246,6 +246,49 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                 )
             }
 
+            val baselineDirectory = layout.projectDirectory.dir("src/benchmark/baseline")
+            val baselineSummary = layout.buildDirectory.file("reports/benchmark-baseline/summary.md")
+            tasks.register("benchmarkBaseline", JavaExec::class.java) {
+                group = "benchmark"
+                description = "Runs the isolated checker benchmark and three whole-compilation modes, then fails on a " +
+                        "regression against src/benchmark/baseline/<machine-profile>.properties. " +
+                        "-Pbenchmark.baseline.record=true writes the file instead."
+                mainClass.set("org.jetbrains.kotlinx.library.api.watchdog.benchmark.BenchmarkBaseline")
+                classpath = files(benchmarkGeneratedClasses, benchmarkGeneratedResources) +
+                        benchmarkRuntimeClasspath
+                dependsOn(compileBenchmarkJmhSources)
+                configureWatchdogBenchmarkInputs(this)
+                outputs.upToDateWhen { false }
+                // JMH forks inherit these arguments. A fixed heap keeps the GC behavior the same between runs.
+                jvmArgs("-Xms2g", "-Xmx2g")
+
+                val flags = mapOf(
+                    "benchmark.baseline.record" to "--record",
+                    "benchmark.baseline.allowMissing" to "--allow-missing",
+                ).mapValues { (property, flag) ->
+                    providers.gradleProperty(property).map { if (it.toBoolean()) flag else null }
+                }
+                val valued = mapOf(
+                    "benchmark.baseline.forks" to "--forks",
+                    "benchmark.baseline.warmup" to "--warmup",
+                    "benchmark.baseline.measurement" to "--measurement",
+                    "benchmark.baseline.corpusFiles" to "--corpus-files",
+                    "benchmark.baseline.retries" to "--retries",
+                ).mapValues { (property, option) ->
+                    providers.gradleProperty(property).map { listOf(option, it) }
+                }
+                argumentProviders.add(
+                    CommandLineArgumentProvider {
+                        buildList {
+                            addAll(listOf("--baseline-dir", baselineDirectory.asFile.absolutePath))
+                            addAll(listOf("--summary", baselineSummary.get().asFile.absolutePath))
+                            flags.values.forEach { flag -> flag.orNull?.let { add(it) } }
+                            valued.values.forEach { option -> option.orNull?.let { addAll(it) } }
+                        }
+                    },
+                )
+            }
+
             tasks.register("benchmarkCorpusAudit", JavaExec::class.java) {
                 group = "benchmark"
                 description = "Compiles the benchmark corpus with every watchdog diagnostic enabled and " +

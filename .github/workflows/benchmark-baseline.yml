@@ -1,0 +1,84 @@
+name: Benchmark baseline
+
+# The baseline file is valid for one machine profile. The job pins the runner image, so a change of
+# `runs-on` or `java-version` needs a new baseline.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'compiler-plugin/src/main/**'
+      - 'compiler-plugin/src/benchmark/**'
+      - 'compiler-plugin/build.gradle.kts'
+      - 'plugin-annotations/**'
+      - 'gradle-conventions/**'
+      - 'diagnostics.json'
+      - 'gradle/**'
+      - 'gradle.properties'
+      - '.github/workflows/benchmark-baseline.yml'
+  pull_request:
+    paths:
+      - 'compiler-plugin/src/main/**'
+      - 'compiler-plugin/src/benchmark/**'
+      - 'compiler-plugin/build.gradle.kts'
+      - 'plugin-annotations/**'
+      - 'gradle-conventions/**'
+      - 'diagnostics.json'
+      - 'gradle/**'
+      - 'gradle.properties'
+      - '.github/workflows/benchmark-baseline.yml'
+  workflow_dispatch:
+    inputs:
+      record:
+        description: 'Record a new baseline file and upload it as an artifact instead of comparing'
+        type: boolean
+        default: false
+
+# A newer push to the same branch cancels the runs of the older pushes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+          cache-read-only: true
+
+      - name: Compare with the baseline
+        if: ${{ !inputs.record }}
+        run: ./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkBaseline
+
+      - name: Record the baseline
+        if: ${{ inputs.record }}
+        run: ./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkBaseline -Pbenchmark.baseline.record=true
+
+      - name: Publish the summary
+        if: always()
+        run: cat compiler-plugin/build/reports/benchmark-baseline/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the recorded baseline
+        if: ${{ inputs.record }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: benchmark-baseline
+          path: compiler-plugin/src/benchmark/baseline/*.properties
+          retention-days: 30

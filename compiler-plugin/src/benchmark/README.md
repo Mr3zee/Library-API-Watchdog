@@ -2,8 +2,9 @@
 
 JMH benchmarks measuring the time and memory allocation cost of watchdog checkers that can run
 against a triggering corpus without failing compilation, both inside a complete compilation and
-in isolation on resolved FIR. They are manual tooling: the benchmarks don't run as part of `check`
-or CI, and the results are reports for humans, not assertions. CI runs only `benchmarkCorpusAudit`.
+in isolation on resolved FIR. The `benchmark` and `profile` tasks are manual tooling: they don't
+run as part of `check`, and their results are reports for humans, not assertions. CI runs
+`benchmarkCorpusAudit` and the [baseline check](#baseline-check).
 
 ## Running
 
@@ -82,6 +83,81 @@ collector visitor wired to exactly one checker. The `checker` parameter names th
 `none` runs the traversal with zero checkers and is the baseline to subtract. This is the
 low-noise, per-checker view: no plugin loading, no message rendering, no backend.
 
+## Baseline check
+
+The `benchmarkBaseline` task runs a fixed subset of the benchmarks and compares the results with a
+baseline file. The `Benchmark baseline` workflow runs it on every pull request and push to `main`
+that changes the compiler plugin.
+
+```bash
+# Compare with the baseline of this machine profile. Fails on a regression or without a baseline file.
+./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkBaseline
+
+# Report only. Use it on a machine without a baseline file.
+./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkBaseline -Pbenchmark.baseline.allowMissing=true
+
+# Write the baseline file of this machine profile.
+./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkBaseline -Pbenchmark.baseline.record=true
+```
+
+The subset:
+
+- `IsolatedCheckerBenchmark` with every `checker` value, including `ExemptingCheckers` and
+  `RedundantExemptionProbingChecker`. The second is the first wrapped in the redundancy probes, as
+  the plugin wraps them. Their difference is the cost of the probes.
+- `WholeCompilationBenchmark` with `noPlugin`, `pluginBaseline`, and `allCheckers`.
+
+The metrics of each subject:
+
+| Metric | Value | Default tolerance |
+|---|---|---|
+| `ms` | The median time of one operation over the measurement iterations of all forks. | 30% of the baseline, at least 1 ms. |
+| `bytes` | The median allocation of one operation (`gc.alloc.rate.norm`). | 5%. |
+| `overhead` | The `ms` of a whole-compilation mode divided by the `ms` of `noPlugin`. | 10%. |
+
+Allocation doesn't depend on the load of the machine, so a regression shows up in `bytes` first.
+The check fails in two cases:
+
+- A measured value is above the baseline value plus the tolerance.
+- The baseline has a metric that the run didn't measure.
+
+When a subject regresses, the task measures
+it a second time and uses the lower value of the two runs. The summary lists a metric without a
+baseline value, and the check passes. The task writes the summary as Markdown to
+`build/reports/benchmark-baseline/summary.md`. The workflow shows it on the job summary page.
+
+A baseline file is valid for one machine profile. The profile is the file name:
+`<os>-<arch>-<cpus>cpu-jdk<feature version>-<GitHub runner image>.properties`, for example
+`linux-amd64-4cpu-jdk21-ubuntu24.properties`. The image is `local` outside GitHub Actions. The
+file also holds the run settings (forks, iterations, corpus size) and the tolerances. A run with
+another profile or other settings fails before it compares. The workflow pins `runs-on` and the
+JDK, so the profile of CI is stable.
+
+To record the baseline of CI:
+
+1. Run the `Benchmark baseline` workflow from the Actions tab with the `record` input on.
+2. Download the `benchmark-baseline` artifact and put the file into `src/benchmark/baseline/`.
+3. Commit the file.
+
+Record the baseline again after one of these changes:
+
+- An intended change of a checker's cost.
+- A change of the corpus templates.
+- A change of the run settings.
+- A change of the pinned runner image or JDK.
+
+The run settings and their Gradle properties:
+
+| Property | Default | In the baseline |
+|---|---|---|
+| `benchmark.baseline.forks` | 2 | Yes |
+| `benchmark.baseline.warmup` | 3 iterations | Yes |
+| `benchmark.baseline.measurement` | 5 iterations | Yes |
+| `benchmark.baseline.corpusFiles` | 200 | Yes |
+| `benchmark.baseline.retries` | 1 | No |
+
+A comparison needs the recorded values of the first four.
+
 ## The corpus
 
 `BenchmarkCorpus` deterministically generates `corpusFiles` (default 200) explicit-API-style
@@ -109,7 +185,9 @@ It compiles the corpus with everything enabled and prints how often each diagnos
 For a checker that can safely report warnings, add a `CheckerSubject` to `CheckerSubjects`, the
 checker name to the `@Param` lists of both benchmarks, and a triggering (or at least scannable)
 shape to a corpus template, then run `benchmarkCorpusAudit`. Always-error diagnostics must not
-have a triggering corpus shape or a per-checker benchmark mode.
+have a triggering corpus shape or a per-checker benchmark mode. The baseline check takes its
+subjects from `CheckerSubjects`, so the new checker is a new metric until the baseline is recorded
+again.
 
 ## Caveats
 

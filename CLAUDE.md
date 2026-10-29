@@ -20,6 +20,7 @@ Kotlin version (`k2320Test`, `k2410Test`, ...). `./gradlew :<module>:tasks --all
 ./gradlew :kotlin-library-api-watchdog-gradle-plugin:k2410FunctionalTest  # the same against one Kotlin version
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:k2410Test --tests "*JvmDiagnosticTestGenerated*"   # filter generated tests
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkCorpusAudit   # check that the corpus triggers every benchmark-eligible checker
+./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkBaseline -Pbenchmark.baseline.allowMissing=true  # the CI benchmark check, report only on a machine without a baseline
 ```
 
 Each test-data file is one test method in the generated classes. After you add, remove, or rename a file in
@@ -71,6 +72,10 @@ npm run build                       # the site build, fails on a broken link or 
   forbids a finalizer on another project's task. The support plugin picks the producer of the report artifact
   from `gradle.startParameter.taskNames`, and the aggregation plugin finalizes the root's `exemptExistingApi`
   (its own lifecycle task when the root has no Watchdog) with `aggregateApiWatchdogReports`.
+- The benchmark baseline (`compiler-plugin/src/benchmark/baseline/`) is valid for one machine profile: OS,
+  architecture, CPU count, JDK feature version, and GitHub runner image. Record it with the `Benchmark baseline`
+  workflow (`record` input), not on a developer machine. The `ms` metrics have a wide tolerance, the `bytes`
+  metrics a narrow one, so a regression shows up in allocation first.
 - The Android functional tests skip themselves without an Android SDK. AGP 8 fixtures run with the Gradle version
   pinned in `AgpVersion.AGP8` of `WatchdogProject.kt`, because AGP 8 can't run on Gradle 9.6 or later. The dev kit
   skips every multiplatform fixture on Kotlin versions older than the build's own, because KLIBs aren't forward

@@ -259,6 +259,7 @@ Tests:
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:allTests           # diagnostics tests against every supported Kotlin version
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:generateTests      # regenerate the JUnit classes from the test data
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkCorpusAudit # check that the corpus triggers every benchmark-eligible checker
+./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkBaseline   # compare checker time and allocation with the CI baseline
 ./gradlew :kotlin-library-api-watchdog-exempts-fixer:allTests             # exemption fixer tests against every supported Kotlin version
 ./gradlew :kotlin-library-api-watchdog-gradle-plugin:functionalTest       # Gradle TestKit tests against every supported Kotlin version
 ./gradlew :kotlin-library-api-watchdog-report-aggregation:test            # report aggregation tests

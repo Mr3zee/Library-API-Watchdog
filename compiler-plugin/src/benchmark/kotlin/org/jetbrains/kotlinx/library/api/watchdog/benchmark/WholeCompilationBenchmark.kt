@@ -116,7 +116,7 @@ open class WholeCompilationBenchmark {
             withDependencyPaths = true,
         )
         else -> {
-            val subject = CheckerSubjects.byName[mode]
+            val subject = CheckerSubjects.byName[mode]?.takeIf { !it.isolatedOnly }
                 ?: error("Unknown benchmark mode '$mode'. Update CheckerSubjects and the @Param list together.")
             corpusPluginOptions(subject.configurableDiagnostics.toSet(), subject.needsDependencyPaths)
         }

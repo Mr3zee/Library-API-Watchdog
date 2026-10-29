@@ -5,18 +5,24 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.DeclarationChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirBasicDeclarationChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirCallableDeclarationChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirClassChecker
+import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirDeclarationChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFileChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFunctionChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirTypeAliasChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.type.FirResolvedTypeRefChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.type.TypeCheckers
+import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlinx.library.api.watchdog.fir.BooleanParameterChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.CompanionJvmExposureChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.DataClassChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.DependencyExposureCheckConfiguration
 import org.jetbrains.kotlinx.library.api.watchdog.fir.DslMarkerTargetsChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.DslMarkerTypePositionChecker
+import org.jetbrains.kotlinx.library.api.watchdog.fir.EnclosingExemptionProbes
+import org.jetbrains.kotlinx.library.api.watchdog.fir.EnclosingExemptionRedundancyChecker
+import org.jetbrains.kotlinx.library.api.watchdog.fir.ExemptingChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.ExemptionExplanationChecker
+import org.jetbrains.kotlinx.library.api.watchdog.fir.ExpectExemptionRedundancyChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.ExhaustiveApiChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.FunctionTypeAliasChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.InlineFunctionLogicChecker
@@ -29,6 +35,7 @@ import org.jetbrains.kotlinx.library.api.watchdog.fir.NullableBooleanChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.OpenApiChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.OverloadParameterOrderChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.PairOrTripleChecker
+import org.jetbrains.kotlinx.library.api.watchdog.fir.RedundantExemptionProbingChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.RequiredParameterAfterOptionalChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.StatefulClassWithoutGeneratedMembersChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.TopLevelJvmNameChecker
@@ -38,11 +45,14 @@ import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnosticSeveriti
 /**
  * [configurableDiagnostics] is empty for `ExemptionExplanationChecker`, which always runs, and
  * for `NonTransitiveDependencyChecker`, which the dependency-path options enable.
+ *
+ * An [isolatedOnly] subject has no whole-compilation mode, because the plugin options can't select it.
  */
 internal class CheckerSubject(
     val name: String,
     val configurableDiagnostics: List<String>,
     val needsDependencyPaths: Boolean = false,
+    val isolatedOnly: Boolean = false,
     val createCheckers: (environment: CheckerEnvironment) -> IsolatedCheckers,
 )
 
@@ -169,7 +179,70 @@ internal object CheckerSubjects {
             "CompanionJvmExposureChecker",
             listOf("COMPANION_API_WITHOUT_JVM_STATIC", "COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS"),
         ) { ofCallable(CompanionJvmExposureChecker(severities)) },
+
+        // The redundancy probes rerun the exempting checkers without each exemption. The cost of the
+        // probes is the probing subject minus the plain subject.
+        CheckerSubject("ExemptingCheckers", emptyList(), isolatedOnly = true) { environment ->
+            exemptingCheckers(environment)
+        },
+        CheckerSubject("RedundantExemptionProbingChecker", emptyList(), isolatedOnly = true) { environment ->
+            exemptingCheckers(environment).probingRedundantExemptions()
+        },
     )
+
+    /** The checkers that read an exemption, in the categories of the plugin's `WatchdogFirCheckers`. */
+    private fun exemptingCheckers(environment: CheckerEnvironment): IsolatedCheckers {
+        val created = all.filter { !it.isolatedOnly }.map { it.createCheckers(environment).declarations }
+        fun <C : Any> exempting(select: (DeclarationCheckers) -> Set<C>): Set<C> =
+            created.flatMapTo(linkedSetOf()) { checkers -> select(checkers).filter { it is ExemptingChecker } }
+        return IsolatedCheckers(
+            declarations = object : DeclarationCheckers() {
+                override val classCheckers: Set<FirClassChecker> = exempting { it.classCheckers }
+                override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> =
+                    exempting { it.basicDeclarationCheckers }
+                override val functionCheckers: Set<FirFunctionChecker> = exempting { it.functionCheckers }
+                override val fileCheckers: Set<FirFileChecker> = exempting { it.fileCheckers }
+                override val typeAliasCheckers: Set<FirTypeAliasChecker> = exempting { it.typeAliasCheckers }
+                override val callableDeclarationCheckers: Set<FirCallableDeclarationChecker> =
+                    exempting { it.callableDeclarationCheckers }
+            },
+        )
+    }
+
+    /** The same wrapping as `WatchdogFirCheckers` applies when every configurable diagnostic is on. */
+    private fun IsolatedCheckers.probingRedundantExemptions(): IsolatedCheckers {
+        val source = declarations
+        val enclosingProbes = EnclosingExemptionProbes(
+            source.basicDeclarationCheckers,
+            source.functionCheckers,
+            source.callableDeclarationCheckers,
+            disabled = emptyList(),
+        )
+        val expectChecker = ExpectExemptionRedundancyChecker(
+            basicCheckers = source.basicDeclarationCheckers,
+            functionCheckers = source.functionCheckers,
+            callableCheckers = source.callableDeclarationCheckers,
+            classCheckers = source.classCheckers,
+            typeAliasCheckers = source.typeAliasCheckers,
+            disabled = emptyList(),
+            enclosing = enclosingProbes,
+        )
+        fun <D : FirDeclaration> Set<FirDeclarationChecker<D>>.probed(): Set<FirDeclarationChecker<D>> =
+            if (isEmpty()) emptySet() else setOf(RedundantExemptionProbingChecker(toList()))
+        return IsolatedCheckers(
+            declarations = object : DeclarationCheckers() {
+                override val classCheckers: Set<FirClassChecker> =
+                    source.classCheckers.probed() + EnclosingExemptionRedundancyChecker(enclosingProbes)
+                override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> =
+                    source.basicDeclarationCheckers.probed() + expectChecker
+                override val functionCheckers: Set<FirFunctionChecker> = source.functionCheckers.probed()
+                override val fileCheckers: Set<FirFileChecker> = source.fileCheckers.probed()
+                override val typeAliasCheckers: Set<FirTypeAliasChecker> = source.typeAliasCheckers.probed()
+                override val callableDeclarationCheckers: Set<FirCallableDeclarationChecker> =
+                    source.callableDeclarationCheckers.probed()
+            },
+        )
+    }
 
     val byName: Map<String, CheckerSubject> = all.associateBy { it.name }
 
