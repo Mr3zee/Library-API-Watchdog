@@ -139,6 +139,8 @@ dependencies {
 ./gradlew aggregateApiWatchdogReports
 ```
 
+`exemptExistingApi` also creates the aggregate reports.
+
 See [Report generation](https://mr3zee.github.io/Library-API-Watchdog/report) for more details.
 
 ## Checks

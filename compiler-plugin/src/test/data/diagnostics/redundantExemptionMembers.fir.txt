@@ -1,0 +1,418 @@
+FILE: declarations.kt
+    package foo.bar
+
+    @R|kotlin/jvm/JvmInline|() public final value class Id : R|kotlin/Any| {
+        public constructor(raw: R|kotlin/Int|): R|foo/bar/Id| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val raw: R|kotlin/Int| = R|<local>/raw|
+            public get(): R|kotlin/Int|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class CompanionIds : R|kotlin/Any| {
+        public constructor(): R|foo/bar/CompanionIds| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/CompanionIds.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun id(): R|foo/bar/Id| {
+                ^id R|foo/bar/Id.Id|(Int(1))
+            }
+
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class ObjectIds : R|kotlin/Any| {
+        public constructor(): R|foo/bar/ObjectIds| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final object Factory : R|kotlin/Any| {
+            private constructor(): R|foo/bar/ObjectIds.Factory| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun id(): R|foo/bar/Id| {
+                ^id R|foo/bar/Id.Id|(Int(1))
+            }
+
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class PropertyId : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PropertyId| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val id: R|foo/bar/Id| = R|foo/bar/Id.Id|(Int(1))
+            public get(): R|foo/bar/Id|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class ConstructorPropertyId : R|kotlin/Any| {
+        public constructor(id: R|foo/bar/Id|): R|foo/bar/ConstructorPropertyId| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val id: R|foo/bar/Id| = R|<local>/id|
+            public get(): R|foo/bar/Id|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class SecondaryConstructorId : R|kotlin/Any| {
+        public constructor(id: R|foo/bar/Id|): R|foo/bar/SecondaryConstructorId| {
+            super<R|kotlin/Any|>()
+        }
+
+        public constructor(raw: R|kotlin/Int|): R|foo/bar/SecondaryConstructorId| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class DeepIds : R|kotlin/Any| {
+        public constructor(): R|foo/bar/DeepIds| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final class Middle : R|kotlin/Any| {
+            public constructor(): R|foo/bar/DeepIds.Middle| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final class Inner : R|kotlin/Any| {
+                public constructor(): R|foo/bar/DeepIds.Middle.Inner| {
+                    super<R|kotlin/Any|>()
+                }
+
+                public final fun id(): R|foo/bar/Id| {
+                    ^id R|foo/bar/Id.Id|(Int(1))
+                }
+
+            }
+
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class NamedIds : R|kotlin/Any| {
+        public constructor(): R|foo/bar/NamedIds| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|kotlin/jvm/JvmName|(name = String(identifier) [evaluated = String(identifier)]) public final fun id(): R|foo/bar/Id| {
+            ^id R|foo/bar/Id.Id|(Int(1))
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class SyntheticIds : R|kotlin/Any| {
+        public constructor(): R|foo/bar/SyntheticIds| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|kotlin/jvm/JvmSynthetic|() public final fun id(): R|foo/bar/Id| {
+            ^id R|foo/bar/Id.Id|(Int(1))
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class SuspendingIds : R|kotlin/Any| {
+        public constructor(): R|foo/bar/SuspendingIds| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final suspend fun id(): R|foo/bar/Id| {
+            ^id R|foo/bar/Id.Id|(Int(1))
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class BoxedIds : R|kotlin/Any| {
+        public constructor(): R|foo/bar/BoxedIds| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun ids(): R|kotlin/collections/List<foo/bar/Id>| {
+            ^ids R|kotlin/collections/emptyList|<R|foo/bar/Id|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public abstract interface IdSource : R|kotlin/Any| {
+        public abstract fun id(): R|foo/bar/Id|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final suspend fun suspendId(id: R|foo/bar/Id|): R|kotlin/Unit| {
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class DeepSuspending : R|kotlin/Any| {
+        public constructor(): R|foo/bar/DeepSuspending| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final class Middle : R|kotlin/Any| {
+            public constructor(): R|foo/bar/DeepSuspending.Middle| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final class Inner : R|kotlin/Any| {
+                public constructor(): R|foo/bar/DeepSuspending.Middle.Inner| {
+                    super<R|kotlin/Any|>()
+                }
+
+                public final suspend fun go(): R|kotlin/Unit| {
+                }
+
+            }
+
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class CompanionSuspending : R|kotlin/Any| {
+        public constructor(): R|foo/bar/CompanionSuspending| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/CompanionSuspending.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final suspend fun go(): R|kotlin/Unit| {
+            }
+
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class SyntheticSuspending : R|kotlin/Any| {
+        public constructor(): R|foo/bar/SyntheticSuspending| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|kotlin/jvm/JvmSynthetic|() public final suspend fun go(): R|kotlin/Unit| {
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final enum class Modes : R|kotlin/Enum<foo/bar/Modes>| {
+        private constructor(): R|foo/bar/Modes| {
+            super<R|kotlin/Enum<foo/bar/Modes>|>()
+        }
+
+        public final static enum entry FAST: R|foo/bar/Modes| = object : R|foo/bar/Modes| {
+            private constructor(): R|foo/bar/<anonymous>| {
+                super<R|foo/bar/Modes|>()
+            }
+
+            public final suspend fun go(): R|kotlin/Unit| {
+            }
+
+        }
+
+        public final static fun values(): R|kotlin/Array<foo/bar/Modes>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/Modes| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/Modes>|
+            public static get(): R|kotlin/enums/EnumEntries<foo/bar/Modes>|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class ReifiedOnly : R|kotlin/Any| {
+        public constructor(): R|foo/bar/ReifiedOnly| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final inline fun <reified T> make(): R|T?| {
+            ^make Null(null)
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class ReifiedMember : R|kotlin/Any| {
+        public constructor(): R|foo/bar/ReifiedMember| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final inline fun <reified T> make(): R|T?| {
+            ^make Null(null)
+        }
+
+        public final fun plain(): R|kotlin/Int| {
+            ^plain Int(1)
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class OuterCompanion : R|kotlin/Any| {
+        public constructor(): R|foo/bar/OuterCompanion| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/OuterCompanion.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun create(): R|foo/bar/OuterCompanion| {
+                ^create R|foo/bar/OuterCompanion.OuterCompanion|()
+            }
+
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class StaticOuterCompanion : R|kotlin/Any| {
+        public constructor(): R|foo/bar/StaticOuterCompanion| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/StaticOuterCompanion.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            @R|kotlin/jvm/JvmStatic|() public final fun create(): R|foo/bar/StaticOuterCompanion| {
+                ^create R|foo/bar/StaticOuterCompanion.StaticOuterCompanion|()
+            }
+
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class NoCompanion : R|kotlin/Any| {
+        public constructor(): R|foo/bar/NoCompanion| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun create(): R|foo/bar/NoCompanion| {
+            ^create R|foo/bar/NoCompanion.NoCompanion|()
+        }
+
+    }
+    public final object Registry : R|kotlin/Any| {
+        private constructor(): R|foo/bar/Registry| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final fun create(): R|foo/bar/Registry| {
+            ^create this@R|foo/bar/Registry|
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final val default: R|foo/bar/Registry| = this@R|foo/bar/Registry|
+            public get(): R|foo/bar/Registry|
+
+    }
+    public final class Props : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Props| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/Props.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final val plain: R|kotlin/Int| = Int(1)
+                public get(): R|kotlin/Int|
+
+            @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final const val CONSTANT: R|kotlin/Int| = Int(1)
+                public get(): R|kotlin/Int|
+
+            @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) field:@R|kotlin/jvm/JvmField|() public final val field: R|kotlin/Int| = Int(1)
+                public get(): R|kotlin/Int|
+
+            @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) @R|kotlin/jvm/JvmStatic|() public final val static: R|kotlin/Int| = Int(1)
+                public get(): R|kotlin/Int|
+
+            @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final lateinit var late: R|kotlin/String|
+                public get(): R|kotlin/String|
+                public set(value: R|kotlin/String|): R|kotlin/Unit|
+
+            @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final var half: R|kotlin/Int| = Int(1)
+                @PROPERTY_GETTER:R|kotlin/jvm/JvmStatic|() public get(): R|kotlin/Int|
+                public set(value: R|kotlin/Int|): R|kotlin/Unit|
+
+            @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final val hidden: R|kotlin/Int| = Int(1)
+                @PROPERTY_GETTER:R|kotlin/jvm/JvmSynthetic|() public get(): R|kotlin/Int|
+
+            @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) private final val secret: R|kotlin/Int| = Int(1)
+                private get(): R|kotlin/Int|
+
+        }
+
+    }
+    public final class NamedProps : R|kotlin/Any| {
+        public constructor(): R|foo/bar/NamedProps| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyNonStaticCompanionApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final companion object Factory : R|kotlin/Any| {
+            private constructor(): R|foo/bar/NamedProps.Factory| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun create(): R|foo/bar/NamedProps| {
+                ^create R|foo/bar/NamedProps.NamedProps|()
+            }
+
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final val logicGetter: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            lval base: R|kotlin/Int| = Int(1)
+            ^ R|<local>/base|.R|kotlin/Int.plus|(Int(1))
+        }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final val thinGetter: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ Int(1)
+        }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final val plainGetter: R|kotlin/Int|
+        public get(): R|kotlin/Int| {
+            lval base: R|kotlin/Int| = Int(1)
+            ^ R|<local>/base|.R|kotlin/Int.plus|(Int(1))
+        }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final var logicSetter: R|kotlin/Int|
+        public get(): R|kotlin/Int| {
+            ^ Int(1)
+        }
+        public inline set(value: R|kotlin/Int|): R|kotlin/Unit| {
+            lval doubled: R|kotlin/Int| = R|<local>/value|.R|kotlin/Int.times|(Int(2))
+            R|kotlin/check|(CMP(>=, R|<local>/doubled|.R|kotlin/Int.compareTo|(Int(0))))
+        }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final fun notInline(): R|kotlin/Int| {
+        lval base: R|kotlin/Int| = Int(1)
+        ^notInline R|<local>/base|.R|kotlin/Int.plus|(Int(1))
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDataClass|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final data object Singleton : R|kotlin/Any| {
+        private constructor(): R|foo/bar/Singleton| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDataClass|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) @R|kotlin/jvm/JvmInline|() public final value class Wrapped : R|kotlin/Any| {
+        public constructor(raw: R|kotlin/Int|): R|foo/bar/Wrapped| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val raw: R|kotlin/Int| = R|<local>/raw|
+            public get(): R|kotlin/Int|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExhaustive|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public sealed interface Shape : R|kotlin/Any| {
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExhaustive|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public abstract interface Plugin : R|kotlin/Any| {
+    }
+    public abstract interface Toggler : R|kotlin/Any| {
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public abstract fun toggle(on: R|kotlin/Boolean|): R|kotlin/Unit|
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public abstract fun buffer(): R|kotlin/collections/MutableList<kotlin/Int>|
+
+    }
+    public final class Switch : R|foo/bar/Toggler| {
+        public constructor(): R|foo/bar/Switch| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public open override fun toggle(on: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public open override fun buffer(): R|kotlin/collections/MutableList<kotlin/Int>| {
+            ^buffer R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+        }
+
+    }

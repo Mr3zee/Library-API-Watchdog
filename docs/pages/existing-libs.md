@@ -42,7 +42,9 @@ public class Config
 ## Review the result
 
 The task writes the [API Watchdog report](./report.md). Its not-applied section lists the
-diagnostics that need manual attention. The console prints the same list as warnings.
+diagnostics that need manual attention. The console prints the same list as warnings. In a build
+with the [report aggregation plugin](./report.md#multi-project-builds), the task also writes the
+aggregate reports of the root project.
 
 Review the diff and commit it. The checks then report only the API that you add later. For a new
 declaration, fix the shape or pick the exemption reason by hand.

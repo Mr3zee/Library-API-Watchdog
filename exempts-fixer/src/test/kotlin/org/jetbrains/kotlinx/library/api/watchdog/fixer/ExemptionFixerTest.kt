@@ -225,6 +225,42 @@ class ExemptionFixerTest {
     }
 
     @Test
+    fun `an annotation list goes when the run removes every entry`() {
+        val text = """
+            package test
+
+            import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+            import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDataClass
+            import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
+
+            /** Listed. */
+            @[IntentionallyOpen(reason = ExemptionReason.API_DESIGN) IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)]
+            public class Listed
+        """.trimIndent()
+        val open = "IntentionallyOpen(reason = ExemptionReason.API_DESIGN)"
+        val data = "IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)"
+        val openStart = text.indexOf(open)
+        val dataStart = text.indexOf(data)
+        val result = fix(
+            text,
+            RecordedDiagnostic("REDUNDANT_EXEMPTION", FILE_PATH, openStart, openStart + open.length, listOf("IntentionallyOpen", "declaration")),
+            RecordedDiagnostic("REDUNDANT_EXEMPTION", FILE_PATH, dataStart, dataStart + data.length, listOf("IntentionallyDataClass", "declaration")),
+        )
+
+        assertEquals(
+            """
+                package test
+
+                import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+
+                /** Listed. */
+                public class Listed
+            """.trimIndent(),
+            result.newText,
+        )
+    }
+
+    @Test
     fun `a removed entry of an annotation list leaves the other entries and its import goes once`() {
         val text = """
             package test

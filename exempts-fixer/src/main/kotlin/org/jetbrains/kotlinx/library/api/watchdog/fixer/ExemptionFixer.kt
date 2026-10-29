@@ -117,9 +117,14 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
         val imports = ImportResolver(ktFile)
         val edits = mutableListOf<TextEdit>()
         val applied = mutableListOf<PlannedFix>()
+        val removedEntries = plannedFixes.keys.filterIsInstance<FixTarget.RemovedAnnotation>().mapTo(hashSetOf()) { it.entry }
         for ((target, fixesById) in plannedFixes) {
             val fixes = fixesById.values.sortedWith(compareBy({ it.fix !is PlaceholderKdocFix }, { it.fix.id }))
-            edits += target.render(fixes, text, imports)
+            edits += if (target is FixTarget.RemovedAnnotation) {
+                target.entry.removal(text, removedEntries)
+            } else {
+                target.render(fixes, text, imports)
+            }
             applied += fixes
         }
         edits += unusedImportRemovals(ktFile, plannedFixes.keys, imports, text)
@@ -358,7 +363,7 @@ private sealed interface FixTarget {
             val owner = entry.annotatedDeclaration()
             val missing = fixes.filterNot { owner?.hasAnnotationNamed(it.exemption.annotationShortName) == true }
             if (missing.isEmpty()) {
-                return listOf(entry.removal(text))
+                return entry.removal(text, setOf(entry))
             }
 
             val replacement = missing.joinToString(" ") {
@@ -368,11 +373,12 @@ private sealed interface FixTarget {
         }
     }
 
+    /** The apply loop calls `removal` with every removed entry instead of `render`, so a fully removed list takes its brackets too. */
     data class RemovedAnnotation(val entry: KtAnnotationEntry) : FixTarget {
         override fun alreadyAnnotated(annotationShortName: String) = false
 
         override fun render(fixes: List<PlannedFix>, text: String, imports: ImportResolver): List<TextEdit> =
-            listOf(entry.removal(text))
+            entry.removal(text, setOf(entry))
     }
 
     data class ImplicitPrimaryConstructor(val constructor: KtPrimaryConstructor) : FixTarget {
@@ -412,18 +418,22 @@ private sealed interface FixTarget {
 
 private val KtAnnotationEntry.annotationList: KtAnnotation? get() = parent as? KtAnnotation
 
-private fun KtAnnotationEntry.removal(text: String): TextEdit {
-    // `@[]` isn't valid Kotlin, so the last entry of a list takes the brackets with it.
-    val removed = annotationList?.takeIf { it.entries.size == 1 } ?: this
+/** [removedEntries] holds every entry that this run removes, this one included. */
+private fun KtAnnotationEntry.removal(text: String, removedEntries: Set<KtAnnotationEntry>): List<TextEdit> {
+    // `@[]` isn't valid Kotlin. When the run removes every entry of a list, the first one takes the brackets.
+    val list = annotationList?.takeIf { annotationList -> annotationList.entries.all { it in removedEntries } }
+    if (list != null && list.entries.first() != this) return emptyList()
+    val removed = list ?: this
     val start = removed.textRange.startOffset
     val end = removed.textRange.endOffset
     val lineStart = text.lastIndexOf('\n', start - 1) + 1
     val lineEnd = text.indexOf('\n', end).let { if (it < 0) text.length else it + 1 }
-    return if (text.substring(lineStart, start).isBlank() && text.substring(end, lineEnd).isBlank()) {
+    val edit = if (text.substring(lineStart, start).isBlank() && text.substring(end, lineEnd).isBlank()) {
         TextEdit(lineStart, lineEnd, "")
     } else {
         TextEdit(start, end + text.substring(end).takeWhile { it == ' ' || it == '\t' }.length, "")
     }
+    return listOf(edit)
 }
 
 

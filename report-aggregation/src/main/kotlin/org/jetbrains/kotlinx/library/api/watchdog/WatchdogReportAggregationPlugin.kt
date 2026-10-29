@@ -18,6 +18,7 @@ import org.gradle.api.attributes.Usage
  *
  * Projects without the Watchdog plugin don't add a report.
  * Source paths are relative to this build's root directory.
+ * `exemptExistingApi` in the root project writes the aggregate reports after the same task of the declared projects.
  *
  * See [Multi-project builds](https://mr3zee.github.io/Library-API-Watchdog/report#multi-project-builds) and
  * [Included builds](https://mr3zee.github.io/Library-API-Watchdog/report#included-builds) for more details.
@@ -56,7 +57,7 @@ public class WatchdogReportAggregationPlugin : Plugin<Project> {
             // Lenient resolution skips projects without the Watchdog.
             configuration.incoming.artifactView { view -> view.lenient(true) }
         }
-        target.tasks.register(
+        val aggregateTask = target.tasks.register(
             AGGREGATE_REPORT_TASK_NAME,
             AggregateApiWatchdogReportsTask::class.java,
         ) { task ->
@@ -79,9 +80,28 @@ public class WatchdogReportAggregationPlugin : Plugin<Project> {
             task.reports.sarif.convention(true)
             task.reports.sarifFile.convention(target.layout.buildDirectory.file(AGGREGATE_SARIF_REPORT))
         }
+        // Project isolation forbids a finalizer on another project's task, so the root's own
+        // `exemptExistingApi` finalizes the aggregate. The report artifacts of the declared projects
+        // come from their `exemptExistingApi`, so the aggregate runs after them.
+        target.pluginManager.withPlugin(WATCHDOG_PLUGIN_ID) {
+            target.tasks.named(EXEMPT_EXISTING_API_TASK_NAME).configure { task ->
+                task.finalizedBy(aggregateTask)
+            }
+        }
+        target.afterEvaluate { project ->
+            if (project.pluginManager.hasPlugin(WATCHDOG_PLUGIN_ID)) return@afterEvaluate
+            project.tasks.register(EXEMPT_EXISTING_API_TASK_NAME) { task ->
+                task.group = "api watchdog"
+                task.description =
+                    "Writes the aggregate API Watchdog reports after exemptExistingApi of the declared projects"
+                task.finalizedBy(aggregateTask)
+            }
+        }
     }
 
     private companion object {
+        private const val WATCHDOG_PLUGIN_ID = "org.jetbrains.kotlin.library.api-watchdog"
+        private const val EXEMPT_EXISTING_API_TASK_NAME = "exemptExistingApi"
         private const val AGGREGATE_REPORT_TASK_NAME =
             "aggregateApiWatchdogReports"
         private const val AGGREGATE_HTML_REPORT = "reports/api-watchdog/aggregate-report.html"

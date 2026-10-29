@@ -1,0 +1,55 @@
+Module: common
+FILE: common.kt
+    package foo.bar
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect val items: R|kotlin/collections/MutableList<kotlin/Int>|
+        public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect val views: R|kotlin/collections/List<kotlin/Int>|
+        public get(): R|kotlin/collections/List<kotlin/Int>|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect val logic: R|kotlin/Int|
+        public get(): R|kotlin/Int|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect val thin: R|kotlin/Int|
+        public get(): R|kotlin/Int|
+    public final expect value class Id : R|kotlin/Any| {
+        public expect constructor(raw: R|kotlin/Int|): R|foo/bar/Id|
+
+        public final expect val raw: R|kotlin/Int| = R|<local>/raw|
+            public get(): R|kotlin/Int|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect var mangled: R|foo/bar/Id|
+        public get(): R|foo/bar/Id|
+        public set(value: R|foo/bar/Id|): R|kotlin/Unit|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect val plain: R|kotlin/Int|
+        public get(): R|kotlin/Int|
+Module: jvm
+FILE: jvm.kt
+    package foo.bar
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final actual val items: R|kotlin/collections/MutableList<kotlin/Int>| = R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+        public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+    public final actual val views: R|kotlin/collections/List<kotlin/Int>| = R|kotlin/collections/emptyList|<R|kotlin/Int|>()
+        public get(): R|kotlin/collections/List<kotlin/Int>|
+    public final actual val logic: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            lval base: R|kotlin/Int| = Int(1)
+            ^ R|<local>/base|.R|kotlin/Int.plus|(Int(1))
+        }
+    public final actual val thin: R|kotlin/Int|
+        public inline get(): R|kotlin/Int| {
+            ^ Int(1)
+        }
+    @R|kotlin/jvm/JvmInline|() public final actual value class Id : R|kotlin/Any| {
+        public actual constructor(raw: R|kotlin/Int|): R|foo/bar/Id| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual val raw: R|kotlin/Int| = R|<local>/raw|
+            public get(): R|kotlin/Int|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final actual var mangled: R|foo/bar/Id| = R|foo/bar/Id.Id|(Int(1))
+        public get(): R|foo/bar/Id|
+        public set(value: R|foo/bar/Id|): R|kotlin/Unit|
+    public final actual val plain: R|kotlin/Int| = Int(1)
+        public get(): R|kotlin/Int|

@@ -104,6 +104,9 @@ The task runs `generateApiWatchdogReport` in each declared subproject with the W
 the results into `build/reports/api-watchdog/aggregate-report.html` and `aggregate-report.sarif`
 in the root project.
 
+`exemptExistingApi` writes the same aggregate reports after it has changed the sources of every
+subproject.
+
 The `reports` block of the task selects the aggregate formats:
 
 ```kotlin build.gradle.kts
@@ -151,5 +154,7 @@ dependencies {
 The `subprojects` loop selects projects from the current build only, so declare included projects separately.
 
 Run `aggregateApiWatchdogReports` from the build that applies the aggregation plugin.
+`exemptExistingApi` in that build doesn't change the sources of an included build. The aggregate
+gets the report of `generateApiWatchdogReport` from each included project.
 
 For SARIF uploads, the source paths must resolve from the code scanning service's checkout root.

@@ -172,7 +172,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             task.reports.sarifFile.convention(extension.reports.sarifFile)
             task.reportDataFile.convention(layout.buildDirectory.file(REPORT_DATA_FILE))
         }
-        registerReportTask(
+        val exemptTask = registerReportTask(
             EXEMPT_EXISTING_API_TASK_NAME,
             ExemptExistingApiTask::class.java,
             "Exempts every declaration with a watchdog error in every compilation except tests, with a " +
@@ -185,11 +185,18 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                     "Doesn't change any source",
         )
         // IDE sync realizes every task, so task realization can't be the signal.
-        val exemptsTaskPaths = listOf(EXEMPT_EXISTING_API_TASK_NAME, GENERATE_REPORT_TASK_NAME)
-            .map { if (path == ":") ":$it" else "$path:$it" }
+        val exemptTaskPath = taskPath(EXEMPT_EXISTING_API_TASK_NAME)
+        val exemptsTaskPaths = listOf(exemptTaskPath, taskPath(GENERATE_REPORT_TASK_NAME))
         gradle.taskGraph.whenReady { graph ->
             collectDiagnostics.set(exemptsTaskPaths.any(graph::hasTask))
         }
+        // Both tasks write the report data file. When the build requests `exemptExistingApi`, the report
+        // artifact comes from that run, not from a second compilation in `generateApiWatchdogReport`.
+        // The artifact's producer is set before the task graph exists, so the requested task names decide.
+        val exemptRequested = gradle.startParameter.taskNames.any {
+            it == EXEMPT_EXISTING_API_TASK_NAME || it == exemptTaskPath
+        }
+        val reportDataTask: TaskProvider<out ApiWatchdogReportTask> = if (exemptRequested) exemptTask else reportTask
         configurations.register(API_WATCHDOG_REPORT_ELEMENTS_CONFIGURATION) { configuration ->
             configuration.isCanBeConsumed = true
             configuration.isCanBeResolved = false
@@ -212,8 +219,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         afterEvaluate {
             if (!enabled.get()) return@afterEvaluate
             configurations.named(API_WATCHDOG_REPORT_ELEMENTS_CONFIGURATION).configure { configuration ->
-                configuration.outgoing.artifact(reportTask.flatMap { it.reportDataFile }) { artifact ->
-                    artifact.builtBy(reportTask)
+                configuration.outgoing.artifact(reportDataTask.flatMap { it.reportDataFile }) { artifact ->
+                    artifact.builtBy(reportDataTask)
                 }
             }
         }
@@ -516,6 +523,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             kotlinCompilation.target.apiElementsConfigurationName
         }
     }
+
+    private fun Project.taskPath(taskName: String): String = if (path == ":") ":$taskName" else "$path:$taskName"
 
     private fun AttributeContainer.copyFrom(source: AttributeContainer) {
         for (key in source.keySet()) {

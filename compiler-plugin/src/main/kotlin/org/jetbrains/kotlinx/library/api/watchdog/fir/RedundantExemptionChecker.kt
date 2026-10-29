@@ -51,7 +51,11 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
 import org.jetbrains.kotlin.fir.symbols.lazyResolveToPhase
+import org.jetbrains.kotlin.fir.types.FirFunctionTypeRef
+import org.jetbrains.kotlin.fir.types.FirResolvedTypeRef
+import org.jetbrains.kotlin.fir.types.FirTypeProjectionWithVariance
 import org.jetbrains.kotlin.fir.types.FirTypeRef
+import org.jetbrains.kotlin.fir.types.FirUserTypeRef
 import org.jetbrains.kotlin.fir.types.coneTypeOrNull
 import org.jetbrains.kotlin.fir.types.customAnnotations
 import org.jetbrains.kotlin.fir.types.forEachType
@@ -540,11 +544,37 @@ private class ExemptionCandidateCollector(private val session: FirSession, priva
         }
     }
 
+    /**
+     * `vararg x: Boolean` resolves to `BooleanArray` without a type argument, so the cone type has no
+     * annotations of the element type. The written type reference still has them.
+     */
     fun types(typeRef: FirTypeRef?, group: Any? = null) {
         typeRef?.coneTypeOrNull?.forEachType { type ->
             for (annotation in type.customAnnotations) {
                 add(annotation, "typeUsage", rank = 2, group = group)
             }
+        }
+        writtenTypes(typeRef, group)
+    }
+
+    private fun writtenTypes(typeRef: FirTypeRef?, group: Any?) {
+        val written = (typeRef as? FirResolvedTypeRef)?.delegatedTypeRef ?: typeRef ?: return
+        for (annotation in written.annotations) {
+            add(annotation, "typeUsage", rank = 2, group = group)
+        }
+        when (written) {
+            is FirUserTypeRef -> for (part in written.qualifier) {
+                for (argument in part.typeArgumentList.typeArguments) {
+                    writtenTypes((argument as? FirTypeProjectionWithVariance)?.typeRef, group)
+                }
+            }
+            is FirFunctionTypeRef -> {
+                writtenTypes(written.receiverTypeRef, group)
+                written.contextParameterTypeRefs.forEach { writtenTypes(it, group) }
+                written.parameters.forEach { writtenTypes(it.returnTypeRef, group) }
+                writtenTypes(written.returnTypeRef, group)
+            }
+            else -> {}
         }
     }
 

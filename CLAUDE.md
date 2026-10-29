@@ -67,6 +67,10 @@ npm run build                       # the site build, fails on a broken link or 
   because the `com.android.kotlin.multiplatform.library` target of AGP 8 reports platform type `jvm`.
 - `:kotlin-library-api-watchdog-report-aggregation` is a separate artifact so a root project that applies it doesn't
   put the KGP-dependent support plugin on every project's plugin classpath.
+- `exemptExistingApi` writes the aggregate report through two project-local hooks, because project isolation
+  forbids a finalizer on another project's task. The support plugin picks the producer of the report artifact
+  from `gradle.startParameter.taskNames`, and the aggregation plugin finalizes the root's `exemptExistingApi`
+  (its own lifecycle task when the root has no Watchdog) with `aggregateApiWatchdogReports`.
 - The Android functional tests skip themselves without an Android SDK. AGP 8 fixtures run with the Gradle version
   pinned in `AgpVersion.AGP8` of `WatchdogProject.kt`, because AGP 8 can't run on Gradle 9.6 or later. The dev kit
   skips every multiplatform fixture on Kotlin versions older than the build's own, because KLIBs aren't forward

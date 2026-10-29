@@ -42,3 +42,10 @@ kotlin {
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 }
+
+// RedundantExemptionFuzzTest reads these. Its KDoc lists them.
+tasks.withType<Test>().configureEach {
+    for (property in listOf("watchdog.fuzz.programs", "watchdog.fuzz.seed", "watchdog.fuzz.file")) {
+        providers.gradleProperty(property).orNull?.let { systemProperty(property, it) }
+    }
+}

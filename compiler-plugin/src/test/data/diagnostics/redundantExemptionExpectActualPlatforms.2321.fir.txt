@@ -1,0 +1,115 @@
+Module: common
+FILE: common.kt
+    package foo.bar
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect class Service : R|kotlin/Any| {
+        public expect constructor(): R|foo/bar/Service|
+
+        public final expect fun run(): R|kotlin/Unit|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect class Worker : R|kotlin/Any| {
+        public expect constructor(): R|foo/bar/Worker|
+
+        public final expect suspend fun run(): R|kotlin/Unit|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDataClass|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect class Record : R|kotlin/Any| {
+        public expect constructor(value: R|kotlin/Int|): R|foo/bar/Record|
+
+        public final expect val value: R|kotlin/Int|
+            public get(): R|kotlin/Int|
+
+    }
+FILE: common.kt
+    package foo.bar
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect class Service : R|kotlin/Any| {
+        public expect constructor(): R|foo/bar/Service|
+
+        public final expect fun run(): R|kotlin/Unit|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect class Worker : R|kotlin/Any| {
+        public expect constructor(): R|foo/bar/Worker|
+
+        public final expect suspend fun run(): R|kotlin/Unit|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDataClass|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect class Record : R|kotlin/Any| {
+        public expect constructor(value: R|kotlin/Int|): R|foo/bar/Record|
+
+        public final expect val value: R|kotlin/Int|
+            public get(): R|kotlin/Int|
+
+    }
+Module: jvmA
+FILE: jvmA.kt
+    package foo.bar
+
+    public final actual class Service : R|kotlin/Any| {
+        public actual constructor(): R|foo/bar/Service| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual fun run(): R|kotlin/Unit| {
+        }
+
+        public final suspend fun extra(): R|kotlin/Unit| {
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final actual class Worker : R|kotlin/Any| {
+        public actual constructor(): R|foo/bar/Worker| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual suspend fun run(): R|kotlin/Unit| {
+        }
+
+    }
+    public final actual typealias Record = R|foo/bar/RecordImpl|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDataClass|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final data class RecordImpl : R|kotlin/Any| {
+        public constructor(value: R|kotlin/Int|): R|foo/bar/RecordImpl| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val value: R|kotlin/Int| = R|<local>/value|
+            public get(): R|kotlin/Int|
+
+        public final operator fun component1(): R|kotlin/Int|
+
+        public final fun copy(value: R|kotlin/Int| = this@R|foo/bar/RecordImpl|.R|foo/bar/RecordImpl.value|): R|foo/bar/RecordImpl|
+
+    }
+Module: jvmB
+FILE: jvmB.kt
+    package foo.bar
+
+    public final actual class Service : R|kotlin/Any| {
+        public actual constructor(): R|foo/bar/Service| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual fun run(): R|kotlin/Unit| {
+        }
+
+    }
+    public final actual class Worker : R|kotlin/Any| {
+        public actual constructor(): R|foo/bar/Worker| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual suspend fun run(): R|kotlin/Unit| {
+        }
+
+    }
+    public final actual class Record : R|kotlin/Any| {
+        public actual constructor(value: R|kotlin/Int|): R|foo/bar/Record| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual val value: R|kotlin/Int| = R|<local>/value|
+            public get(): R|kotlin/Int|
+
+    }

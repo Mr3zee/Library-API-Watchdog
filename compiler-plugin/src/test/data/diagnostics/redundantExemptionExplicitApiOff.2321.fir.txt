@@ -1,0 +1,30 @@
+FILE: declarations.kt
+    package foo.bar
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final class FinalWithOpenExemption : R|kotlin/Any| {
+        public constructor(): R|foo/bar/FinalWithOpenExemption| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDataClass|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final class NotData : R|kotlin/Any| {
+        public constructor(x: R|kotlin/Int|): R|foo/bar/NotData| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val x: R|kotlin/Int| = R|<local>/x|
+            public get(): R|kotlin/Int|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final fun count(n: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun read(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) n: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+FILE: facade.kt
+    @FILE:R|kotlin/jvm/JvmName|(name = String(Facade))
+    @FILE:R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDefaultFacadeName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|)
+    package foo.bar
+
+    public final fun facadeMember(): R|kotlin/Int| {
+        ^facadeMember Int(1)
+    }
