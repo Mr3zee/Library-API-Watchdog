@@ -18,7 +18,7 @@ develocity = "4.3.3"
 # https://github.com/gmazzo/gradle-buildconfig-plugin, the version that the dev kit uses
 buildconfig = "6.0.10"
 # https://developer.android.com/build/releases/gradle-plugin
-agp8 = "8.13.0"
+agp8 = "8.13.2"
 agp9 = "9.2.1"
 commonmark = "0.24.0"
 jsoup = "1.23.2"
