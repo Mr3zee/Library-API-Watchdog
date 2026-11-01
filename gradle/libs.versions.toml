@@ -8,7 +8,7 @@ devkit = "0.0.4-dev-356"
 # https://github.com/Kotlin/dokka
 dokka = "2.2.0"
 # https://github.com/GradleUp/shadow
-shadow = "9.6.0"
+shadow = "9.6.1"
 # https://github.com/vanniktech/gradle-maven-publish-plugin
 publish = "0.37.0"
 # https://plugins.gradle.org/plugin/com.gradle.plugin-publish
