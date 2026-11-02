@@ -11,4 +11,3 @@
 - Documentation for each check and an API reference for the annotations and Gradle plugins.
 - [`REDUNDANT_EXEMPTION`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/redundant-exemption): a warning on an `@Intentionally*` annotation that its check doesn't need.
   The report tags the annotation as redundant, and `exemptExistingApi` removes it.
-- `ignore` in the Gradle plugin accepts a list of checks and a single annotation name.
