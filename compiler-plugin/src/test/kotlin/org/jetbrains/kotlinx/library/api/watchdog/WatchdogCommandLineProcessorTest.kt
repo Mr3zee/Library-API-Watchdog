@@ -172,16 +172,16 @@ class WatchdogCommandLineProcessorTest {
         val option = WatchdogCommandLineProcessor.IGNORE_WHEN_ANNOTATED_OPTION
         process(option, "$diagnostic:com.example.Exempt")
 
-        for (value in listOf(diagnostic, "$diagnostic:", "$diagnostic: \t", "$diagnostic:com.example:Exempt")) {
-            val annotation = value.substringAfter(':', missingDelimiterValue = "")
+        for (value in listOf(diagnostic, "$diagnostic:", "$diagnostic: \t", "$diagnostic:com.example:Exempt", "$diagnostic::recursive")) {
+            val rule = value.substringAfter(':', missingDelimiterValue = "")
             assertInvalid(
                 option,
                 value,
-                "Invalid annotation name '$annotation' for watchdog diagnostic '$diagnostic': " +
-                        "expected a fully qualified class name.",
+                "Invalid rule '$rule' for watchdog diagnostic '$diagnostic': " +
+                        "expected a fully qualified class name, with or without ':recursive'.",
             )
             assertEquals(
-                mapOf(diagnostic to setOf("com.example.Exempt")),
+                mapOf(diagnostic to setOf(rule("com.example.Exempt"))),
                 configuration[WatchdogConfigurationKeys.ANNOTATION_IGNORE_RULES],
             )
         }
@@ -196,15 +196,33 @@ class WatchdogCommandLineProcessorTest {
         process(option, "$otherDiagnostic:com.example.Exempt")
         process(option, "$diagnostic:com.example.Exempt")
 
-        assertEquals(mapOf(diagnostic to setOf("com.example.Exempt")), original)
+        assertEquals(mapOf(diagnostic to setOf(rule("com.example.Exempt"))), original)
         assertEquals(
             mapOf(
-                diagnostic to setOf("com.example.Exempt", "com.example.OtherExempt"),
-                otherDiagnostic to setOf("com.example.Exempt"),
+                diagnostic to setOf(rule("com.example.Exempt"), rule("com.example.OtherExempt")),
+                otherDiagnostic to setOf(rule("com.example.Exempt")),
             ),
             configuration[WatchdogConfigurationKeys.ANNOTATION_IGNORE_RULES],
         )
     }
+
+    @Test
+    fun `recursive ignore annotations are separate rules`() {
+        val option = WatchdogCommandLineProcessor.IGNORE_WHEN_ANNOTATED_OPTION
+        process(option, "$diagnostic:com.example.Exempt")
+        process(option, "$diagnostic:com.example.Exempt:recursive")
+        process(option, "$otherDiagnostic:com.example.Exempt:recursive")
+
+        assertEquals(
+            mapOf(
+                diagnostic to setOf(rule("com.example.Exempt"), rule("com.example.Exempt", recursive = true)),
+                otherDiagnostic to setOf(rule("com.example.Exempt", recursive = true)),
+            ),
+            configuration[WatchdogConfigurationKeys.ANNOTATION_IGNORE_RULES],
+        )
+    }
+
+    private fun rule(annotationName: String, recursive: Boolean = false) = AnnotationIgnoreRule(annotationName, recursive)
 
     @Test
     fun `blank diagnostics output values preserve the tooling path`() {

@@ -6,25 +6,41 @@ import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirDeclarationChecker
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
+import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
+import org.jetbrains.kotlinx.library.api.watchdog.AnnotationIgnoreRule
 
 /**
- * The annotation FQ names that disable each configurable diagnostic on the annotated declaration.
- * A rule has the scope of the diagnostic's exemption annotation: for a diagnostic with
- * [ConfigurableWatchdogDiagnostic.exemptionCoversEnclosingClass], the annotation on an enclosing
- * class also counts.
+ * The annotation ignore rules of each configurable diagnostic. A non-recursive rule has the scope
+ * of the diagnostic's exemption annotation, so the annotation on an enclosing class counts for a
+ * diagnostic with [ConfigurableWatchdogDiagnostic.exemptionCoversEnclosingClass].
  */
 internal class AnnotationBasedCheckExclusions(
-    private val annotationNamesByDiagnostic: Map<String, Set<String>>,
+    rulesByDiagnostic: Map<String, Set<AnnotationIgnoreRule>>,
 ) {
-    val isEmpty: Boolean get() = annotationNamesByDiagnostic.isEmpty()
+    private class Annotations(val all: Set<String>, val recursive: Set<String>)
+
+    private val annotationsByDiagnostic: Map<String, Annotations> = rulesByDiagnostic.mapValues { (_, rules) ->
+        Annotations(
+            all = rules.mapTo(hashSetOf()) { it.annotationName },
+            recursive = rules.filter { it.recursive }.mapTo(hashSetOf()) { it.annotationName },
+        )
+    }
+
+    val isEmpty: Boolean get() = annotationsByDiagnostic.isEmpty()
 
     context(context: CheckerContext)
     fun ignores(diagnosticName: String, declaration: FirDeclaration): Boolean {
-        val ignoredAnnotations = annotationNamesByDiagnostic[diagnosticName] ?: return false
-        if (declaration.hasAnyAnnotationOf(ignoredAnnotations)) return true
-        return diagnosticName in diagnosticsCoveringEnclosingClass &&
-                context.containingDeclarations.any { it is FirClassSymbol<*> && it.hasAnyAnnotationOf(ignoredAnnotations) }
+        val annotations = annotationsByDiagnostic[diagnosticName] ?: return false
+        if (declaration.hasAnyAnnotationOf(annotations.all)) return true
+        if (
+            diagnosticName in diagnosticsCoveringEnclosingClass &&
+            context.containingDeclarations.any { it is FirClassSymbol<*> && it.hasAnyAnnotationOf(annotations.all) }
+        ) {
+            return true
+        }
+        return annotations.recursive.isNotEmpty() &&
+                context.containingDeclarations.any { it.hasAnyAnnotationOf(annotations.recursive) }
     }
 
     context(context: CheckerContext)
@@ -34,7 +50,7 @@ internal class AnnotationBasedCheckExclusions(
         }
 
     context(context: CheckerContext)
-    private fun FirClassSymbol<*>.hasAnyAnnotationOf(names: Set<String>): Boolean =
+    private fun FirBasedSymbol<*>.hasAnyAnnotationOf(names: Set<String>): Boolean =
         resolvedAnnotationsWithClassIds.any { annotation ->
             annotation.toAnnotationClassIdSafe(context.session)?.asSingleFqName()?.asString() in names
         }

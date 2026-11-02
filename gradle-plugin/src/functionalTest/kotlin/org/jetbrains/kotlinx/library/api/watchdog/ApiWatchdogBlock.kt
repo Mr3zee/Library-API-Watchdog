@@ -26,20 +26,22 @@ class ApiWatchdogBlock internal constructor() {
         severity(severity, *configurableDiagnostics.toTypedArray())
     }
 
-    fun ignore(diagnostic: Diagnostic, vararg whenAnnotatedWith: String) {
+    fun ignore(diagnostic: Diagnostic, vararg whenAnnotatedWith: String, recursive: Boolean = false) {
         val annotations = whenAnnotatedWith.joinToString { "\"$it\"" }
-        lines += "ignore(WatchdogChecks.${diagnostic.name}, whenAnnotatedWith = listOf($annotations))"
+        lines += "ignore(WatchdogChecks.${diagnostic.name}, whenAnnotatedWith = listOf($annotations)${recursiveArgument(recursive)})"
     }
 
     fun ignoreOne(diagnostic: Diagnostic, whenAnnotatedWith: String) {
         lines += "ignore(WatchdogChecks.${diagnostic.name}, whenAnnotatedWith = \"$whenAnnotatedWith\")"
     }
 
-    fun ignore(diagnostics: List<Diagnostic>, vararg whenAnnotatedWith: String) {
+    fun ignore(diagnostics: List<Diagnostic>, vararg whenAnnotatedWith: String, recursive: Boolean = false) {
         val checks = diagnostics.joinToString { "WatchdogChecks.${it.name}" }
         val annotations = whenAnnotatedWith.joinToString { "\"$it\"" }
-        lines += "ignore(listOf($checks), whenAnnotatedWith = listOf($annotations))"
+        lines += "ignore(listOf($checks), whenAnnotatedWith = listOf($annotations)${recursiveArgument(recursive)})"
     }
+
+    private fun recursiveArgument(recursive: Boolean): String = if (recursive) ", recursive = true" else ""
 
     fun ignoreOne(diagnostics: List<Diagnostic>, whenAnnotatedWith: String) {
         val checks = diagnostics.joinToString { "WatchdogChecks.${it.name}" }

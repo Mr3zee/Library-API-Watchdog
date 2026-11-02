@@ -168,7 +168,8 @@ apiWatchdog {
 }
 ```
 
-A rule works for configurable checks only, not for always-error checks.
+A rule works for configurable checks only, not for always-error checks. With `recursive = true`,
+the rule also covers every declaration nested in the annotated one.
 
 ## The annotations artifact
 

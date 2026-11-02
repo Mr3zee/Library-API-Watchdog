@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.services.EnvironmentConfigurator
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.moduleStructure
+import org.jetbrains.kotlinx.library.api.watchdog.AnnotationIgnoreRule
 import org.jetbrains.kotlinx.library.api.watchdog.WatchdogConfigurationKeys
 import org.jetbrains.kotlinx.library.api.watchdog.fir.DependencyDeclaration
 import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogSeverity
@@ -25,7 +26,7 @@ object WatchdogTestDirectives : SimpleDirectivesContainer() {
         description = "Member properties of a class without KDoc are reported (reportUndocumentedClassProperties=true)",
     )
 
-    /** `// IGNORE_WHEN_ANNOTATED: STATEFUL_CLASS_WITHOUT_EQUALS:test.Generated`. One `<NAME>:<annotation FQ name>` for each rule. */
+    /** `// IGNORE_WHEN_ANNOTATED: STATEFUL_CLASS_WITHOUT_EQUALS:test.Generated`. One `<NAME>:<annotation FQ name>[:recursive]` for each rule. */
     val IGNORE_WHEN_ANNOTATED by stringDirective(
         description = "Annotation ignore rules in the form of the ignoreWhenAnnotated option",
     )
@@ -81,8 +82,9 @@ class WatchdogOptionsConfigurator(testServices: TestServices) : EnvironmentConfi
         if (ignoreRules.isNotEmpty()) {
             configuration.put(
                 WatchdogConfigurationKeys.ANNOTATION_IGNORE_RULES,
-                ignoreRules.groupBy({ it.substringBefore(':') }, { it.substringAfter(':') })
-                    .mapValues { (_, annotations) -> annotations.toSet() },
+                ignoreRules.groupBy({ it.substringBefore(':') }) { rule ->
+                    AnnotationIgnoreRule.parse(rule.substringAfter(':')) ?: error("Invalid annotation ignore rule '$rule'")
+                }.mapValues { (_, rules) -> rules.toSet() },
             )
         }
 

@@ -28,6 +28,7 @@ import org.jetbrains.kotlin.test.services.EnvironmentConfigurator
 import org.jetbrains.kotlin.test.services.KotlinTestInfo
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlinx.library.api.watchdog.WatchdogComponentRegistrar
+import org.jetbrains.kotlinx.library.api.watchdog.AnnotationIgnoreRule
 import org.jetbrains.kotlinx.library.api.watchdog.WatchdogConfigurationKeys
 import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogSeverity
 import org.opentest4j.AssertionFailedError
@@ -306,8 +307,9 @@ private class WatchdogOptionsConfigurator(testServices: TestServices) : Environm
         if (ignoreRules.isNotEmpty()) {
             configuration.put(
                 WatchdogConfigurationKeys.ANNOTATION_IGNORE_RULES,
-                ignoreRules.groupBy({ it.substringBefore(':') }, { it.substringAfter(':') })
-                    .mapValues { (_, annotations) -> annotations.toSet() },
+                ignoreRules.groupBy({ it.substringBefore(':') }) { rule ->
+                    AnnotationIgnoreRule.parse(rule.substringAfter(':')) ?: error("Invalid annotation ignore rule '$rule'")
+                }.mapValues { (_, rules) -> rules.toSet() },
             )
         }
         if (WatchdogTestDirectives.REPORT_UNDOCUMENTED_CLASS_PROPERTIES in module.directives) {

@@ -225,6 +225,24 @@ class WatchdogProjectTest {
         assertFalse(result.hasStatefulDiagnostic("AlternateGeneratedState", "an `equals`"))
         assertTrue(result.hasStatefulDiagnostic("GeneratedState", "a `hashCode`"))
         assertTrue(result.hasStatefulDiagnostic("GeneratedState", "a `toString`"))
+        assertTrue(result.hasStatefulDiagnostic("NestedState", "an `equals`"))
+        assertTrue(result.hasStatefulDiagnostic("RegularState", "an `equals`"))
+    }
+
+    @Test
+    fun `recursive ignore rule covers nested declarations`() {
+        val project = jvmProject {
+            apiWatchdog {
+                ignore(STATEFUL_CLASS_WITHOUT_EQUALS, "test.GeneratedValueMembers", recursive = true)
+                ignore(STATEFUL_CLASS_WITHOUT_HASH_CODE, "test.GeneratedValueMembers")
+            }
+            source(annotationIgnoreFile)
+        }
+
+        val result = project.buildAndFail("build")
+        assertFalse(result.hasStatefulDiagnostic("GeneratedState", "an `equals`"))
+        assertFalse(result.hasStatefulDiagnostic("NestedState", "an `equals`"))
+        assertTrue(result.hasStatefulDiagnostic("NestedState", "a `hashCode`"))
         assertTrue(result.hasStatefulDiagnostic("RegularState", "an `equals`"))
     }
 
@@ -1737,7 +1755,10 @@ private val annotationIgnoreFile = """
 
     /** State whose equals, hashCode, and toString implementations are generated. */
     @GeneratedValueMembers
-    public class GeneratedState(public val value: Int)
+    public class GeneratedState(public val value: Int) {
+        /** State nested in the annotated class. */
+        public class NestedState(public val value: Int)
+    }
 
     /** State whose value members are generated under the alternate annotation. */
     @AlternateGeneratedValueMembers

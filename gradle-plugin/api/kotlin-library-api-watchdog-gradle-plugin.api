@@ -73,9 +73,17 @@ public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension 
 	public final fun getSuggestAbiValidation ()Lorg/gradle/api/provider/Property;
 	public final fun getUndocumentedPublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun ignore (Ljava/util/List;Ljava/lang/String;)V
+	public final fun ignore (Ljava/util/List;Ljava/lang/String;Z)V
 	public final fun ignore (Ljava/util/List;Ljava/util/List;)V
+	public final fun ignore (Ljava/util/List;Ljava/util/List;Z)V
 	public final fun ignore (Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;Ljava/lang/String;)V
+	public final fun ignore (Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;Ljava/lang/String;Z)V
 	public final fun ignore (Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;Ljava/util/List;)V
+	public final fun ignore (Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;Ljava/util/List;Z)V
+	public static synthetic fun ignore$default (Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension;Ljava/util/List;Ljava/lang/String;ZILjava/lang/Object;)V
+	public static synthetic fun ignore$default (Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension;Ljava/util/List;Ljava/util/List;ZILjava/lang/Object;)V
+	public static synthetic fun ignore$default (Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension;Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;Ljava/lang/String;ZILjava/lang/Object;)V
+	public static synthetic fun ignore$default (Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension;Lorg/jetbrains/kotlinx/library/api/watchdog/WatchdogChecks;Ljava/util/List;ZILjava/lang/Object;)V
 	public final fun javaInterop (Lorg/gradle/api/Action;)V
 	public final fun reports (Lorg/gradle/api/Action;)V
 }

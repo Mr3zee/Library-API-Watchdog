@@ -244,9 +244,7 @@ public open class WatchdogGradleExtension @Inject internal constructor(
 
     /**
      * Ignores [check] on a declaration that carries one of the [whenAnnotatedWith] annotations.
-     * When the `@Intentionally*` annotation of the check also covers an enclosing class, so does
-     * the rule. An always-error check doesn't have a severity property, so `ignore` rejects it. An
-     * annotation is its fully qualified class name:
+     * An annotation is its fully qualified class name:
      *
      * ```kotlin
      * import org.jetbrains.kotlinx.library.api.watchdog.WatchdogChecks
@@ -262,9 +260,16 @@ public open class WatchdogGradleExtension @Inject internal constructor(
      * }
      * ```
      *
+     * With [recursive], the annotation on a class, a function, or a file also ignores the check on
+     * every declaration nested in it. Default is `false`. Without it, the rule covers an enclosing
+     * class only when the `@Intentionally*` annotation of the check does.
+     *
+     * An always-error check doesn't have a severity property, so `ignore` rejects it.
+     *
      * See [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions) for more details about when to use a rule.
      */
-    public fun ignore(check: WatchdogChecks, whenAnnotatedWith: List<String>) {
+    @JvmOverloads
+    public fun ignore(check: WatchdogChecks, whenAnnotatedWith: List<String>, recursive: Boolean = false) {
         require(check in diagnosticSeverities) {
             "API Watchdog check '$check' is always an error and doesn't accept an ignore rule"
         }
@@ -275,7 +280,7 @@ public open class WatchdogGradleExtension @Inject internal constructor(
             require(annotationName.isNotBlank() && ':' !in annotationName) {
                 "The annotation name must be a non-blank fully qualified class name: '$annotationName'"
             }
-            annotationIgnoreRules.add("${check.name}:$annotationName")
+            annotationIgnoreRules.add("${check.name}:$annotationName" + if (recursive) ":recursive" else "")
         }
     }
 
@@ -289,8 +294,9 @@ public open class WatchdogGradleExtension @Inject internal constructor(
      * }
      * ```
      */
-    public fun ignore(check: WatchdogChecks, whenAnnotatedWith: String) {
-        ignore(check, listOf(whenAnnotatedWith))
+    @JvmOverloads
+    public fun ignore(check: WatchdogChecks, whenAnnotatedWith: String, recursive: Boolean = false) {
+        ignore(check, listOf(whenAnnotatedWith), recursive)
     }
 
     /**
@@ -312,9 +318,10 @@ public open class WatchdogGradleExtension @Inject internal constructor(
      * }
      * ```
      */
-    public fun ignore(checks: List<WatchdogChecks>, whenAnnotatedWith: List<String>) {
+    @JvmOverloads
+    public fun ignore(checks: List<WatchdogChecks>, whenAnnotatedWith: List<String>, recursive: Boolean = false) {
         require(checks.isNotEmpty()) { "An API Watchdog ignore rule needs at least one check" }
-        checks.forEach { check -> ignore(check, whenAnnotatedWith) }
+        checks.forEach { check -> ignore(check, whenAnnotatedWith, recursive) }
     }
 
     /**
@@ -333,8 +340,9 @@ public open class WatchdogGradleExtension @Inject internal constructor(
      * }
      * ```
      */
-    public fun ignore(checks: List<WatchdogChecks>, whenAnnotatedWith: String) {
-        ignore(checks, listOf(whenAnnotatedWith))
+    @JvmOverloads
+    public fun ignore(checks: List<WatchdogChecks>, whenAnnotatedWith: String, recursive: Boolean = false) {
+        ignore(checks, listOf(whenAnnotatedWith), recursive)
     }
 
     internal fun annotationIgnoreRules(): Provider<List<String>> = annotationIgnoreRules

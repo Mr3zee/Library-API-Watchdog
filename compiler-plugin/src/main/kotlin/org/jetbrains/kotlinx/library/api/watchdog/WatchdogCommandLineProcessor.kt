@@ -17,8 +17,8 @@ object WatchdogConfigurationKeys {
     val DIAGNOSTIC_SEVERITIES: CompilerConfigurationKey<Map<String, WatchdogSeverity>> =
         CompilerConfigurationKey.create("watchdog diagnostic severities")
 
-    /** Annotation FQ names, each with the diagnostics it disables on the annotated declaration. */
-    val ANNOTATION_IGNORE_RULES: CompilerConfigurationKey<Map<String, Set<String>>> =
+    /** The annotation ignore rules of each diagnostic. */
+    val ANNOTATION_IGNORE_RULES: CompilerConfigurationKey<Map<String, Set<AnnotationIgnoreRule>>> =
         CompilerConfigurationKey.create("watchdog annotation ignore rules")
 
     /** FQ names of annotation classes that mark internal API without `@InternalAnnotationMarker`. */
@@ -80,9 +80,10 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
 
         val IGNORE_WHEN_ANNOTATED_OPTION: CliOption = CliOption(
             optionName = "ignoreWhenAnnotated",
-            valueDescription = "<diagnostic name>:<annotation fully qualified name>",
+            valueDescription = "<diagnostic name>:<annotation fully qualified name>[:recursive]",
             description = "Don't report the named configurable watchdog diagnostic on a " +
-                    "declaration with the annotation.",
+                    "declaration with the annotation. With ':recursive', the annotation on an " +
+                    "enclosing declaration or on the file also covers the nested declarations.",
             required = false,
             allowMultipleOccurrences = true,
         )
@@ -287,19 +288,35 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
                 "Unknown watchdog diagnostic '$diagnosticName'. Known configurable diagnostics: " +
                         WatchdogDiagnostics.allDiagnostics.joinToString { it.name },
             )
-        val annotationName = value.substringAfter(':', missingDelimiterValue = "")
-        if (annotationName.isBlank() || ':' in annotationName) {
-            throw CliOptionProcessingException(
-                "Invalid annotation name '$annotationName' for watchdog diagnostic '${diagnostic.name}': " +
-                        "expected a fully qualified class name.",
+        val ruleSpec = value.substringAfter(':', missingDelimiterValue = "")
+        val rule = AnnotationIgnoreRule.parse(ruleSpec)
+            ?: throw CliOptionProcessingException(
+                "Invalid rule '$ruleSpec' for watchdog diagnostic '${diagnostic.name}': " +
+                        "expected a fully qualified class name, with or without ':${AnnotationIgnoreRule.RECURSIVE_FLAG}'.",
             )
-        }
 
         val key = WatchdogConfigurationKeys.ANNOTATION_IGNORE_RULES
-        val rules = configuration[key, emptyMap()].mapValuesTo(HashMap()) { (_, annotations) ->
-            annotations.toMutableSet()
+        val rules = configuration[key, emptyMap()].mapValuesTo(HashMap()) { (_, diagnosticRules) ->
+            diagnosticRules.toMutableSet()
         }
-        rules.getOrPut(diagnostic.name, ::linkedSetOf).add(annotationName)
+        rules.getOrPut(diagnostic.name, ::linkedSetOf).add(rule)
         configuration.put(key, rules)
+    }
+}
+
+/**
+ * The part of a [WatchdogCommandLineProcessor.IGNORE_WHEN_ANNOTATED_OPTION] value after the
+ * diagnostic name: `<annotation fully qualified name>[:recursive]`.
+ */
+data class AnnotationIgnoreRule(val annotationName: String, val recursive: Boolean) {
+    companion object {
+        const val RECURSIVE_FLAG: String = "recursive"
+
+        fun parse(spec: String): AnnotationIgnoreRule? {
+            val annotationName = spec.substringBefore(':')
+            val flag = spec.substringAfter(':', missingDelimiterValue = "")
+            if (annotationName.isBlank() || flag.isNotEmpty() && flag != RECURSIVE_FLAG) return null
+            return AnnotationIgnoreRule(annotationName, recursive = flag == RECURSIVE_FLAG)
+        }
     }
 }

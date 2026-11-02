@@ -303,7 +303,7 @@ A direct compiler call configures the plugin with `-P` options of this form:
 | Option                      | Value                                                  | Gradle equivalent             |
 |-----------------------------|--------------------------------------------------------|-------------------------------|
 | `diagnosticSeverity`        | `<NAME>:<severity>`. Repeatable.                       | The severity property.        |
-| `ignoreWhenAnnotated`       | `<NAME>:<annotation class name>`. Repeatable.          | `ignore`                      |
+| `ignoreWhenAnnotated`       | `<NAME>:<annotation class name>[:recursive]`. Repeatable. | `ignore`                   |
 | `internalApiAnnotation`     | `<annotation class name>`. Repeatable.                 | `internalApiAnnotations`      |
 | `publicTypeWithInternalApi` | `true` or `false`.                                     | `publicTypeWithInternalApi`   |
 | `reportUndocumentedClassProperties` | `true` or `false`.                             | `reportUndocumentedClassProperties` |
