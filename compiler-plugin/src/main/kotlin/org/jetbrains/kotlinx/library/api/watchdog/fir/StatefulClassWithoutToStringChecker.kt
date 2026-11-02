@@ -14,7 +14,6 @@ import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
 import org.jetbrains.kotlin.fir.declarations.utils.hasBackingField
 import org.jetbrains.kotlin.fir.declarations.utils.isData
-import org.jetbrains.kotlin.fir.declarations.utils.isInlineOrValue
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.types.isNullableAny
@@ -38,7 +37,8 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
             return
         }
 
-        if (declaration.classKind != ClassKind.CLASS || declaration.isData || declaration.isInlineOrValue) {
+        // Kotlin 2.5.20 deprecates `isInlineOrValue`, and the versions before it reject `isValue`. The status fields work in all.
+        if (declaration.classKind != ClassKind.CLASS || declaration.isData || declaration.status.isValue || declaration.status.isInline) {
             return
         }
 

@@ -176,7 +176,6 @@ class ExemptionFixerTest {
             """
                 package test
 
-                import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
                 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
 
                 /** Settled. */
@@ -251,8 +250,6 @@ class ExemptionFixerTest {
             """
                 package test
 
-                import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
-
                 /** Listed. */
                 public class Listed
             """.trimIndent(),
@@ -290,8 +287,6 @@ class ExemptionFixerTest {
             """
                 package test
 
-                import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
-
                 /** Settled. */
                 @[Suppress("unused")]
                 public class Settled
@@ -301,7 +296,186 @@ class ExemptionFixerTest {
             """.trimIndent(),
             result.newText,
         )
-        assertEquals(listOf(6, 10), result.applied.map { it.line })
+        assertEquals(listOf(4, 8), result.applied.map { it.line })
+    }
+
+    @Test
+    fun `a removed exemption takes the constructor keyword and the last imports`() {
+        val text = """
+            package test
+
+            import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+            import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutJvmOverloads
+
+            /** A format. */
+            public class Binary<Format : Any> @IntentionallyWithoutJvmOverloads(reason = ExemptionReason.API_DESIGN) constructor(
+                format: Format,
+                from: Format? = null,
+            )
+
+            /** Kept. */
+            public class Kept @IntentionallyWithoutJvmOverloads(reason = ExemptionReason.API_DESIGN) private constructor(a: Int = 0)
+        """.trimIndent()
+        val entry = "@IntentionallyWithoutJvmOverloads(reason = ExemptionReason.API_DESIGN)"
+        val first = text.indexOf(entry)
+        val second = text.indexOf(entry, first + 1)
+        val parameters = listOf("IntentionallyWithoutJvmOverloads", "declaration")
+        val result = fix(
+            text,
+            RecordedDiagnostic("REDUNDANT_EXEMPTION", FILE_PATH, first, first + entry.length, parameters),
+            RecordedDiagnostic("REDUNDANT_EXEMPTION", FILE_PATH, second, second + entry.length, parameters),
+        )
+
+        assertEquals(
+            """
+                package test
+
+                /** A format. */
+                public class Binary<Format : Any>(
+                    format: Format,
+                    from: Format? = null,
+                )
+
+                /** Kept. */
+                public class Kept private constructor(a: Int = 0)
+            """.trimIndent(),
+            result.newText,
+        )
+        assertEquals(listOf(4, 10), result.applied.map { it.line })
+    }
+
+    @Test
+    fun `a removed exemption keeps the constructor keyword that another annotation needs`() {
+        val text = """
+            package test
+
+            import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+            import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutJvmOverloads
+
+            /** A format. */
+            public class Binary @IntentionallyWithoutJvmOverloads(reason = ExemptionReason.API_DESIGN) @Suppress("unused") constructor(a: Int = 0)
+        """.trimIndent()
+        val result = fix(
+            text,
+            diagnostic("REDUNDANT_EXEMPTION", text, "@IntentionallyWithoutJvmOverloads(reason = ExemptionReason.API_DESIGN)")
+                .copy(messageParameters = listOf("IntentionallyWithoutJvmOverloads", "declaration")),
+        )
+
+        assertEquals(
+            """
+                package test
+
+                /** A format. */
+                public class Binary @Suppress("unused") constructor(a: Int = 0)
+            """.trimIndent(),
+            result.newText,
+        )
+    }
+
+    @Test
+    fun `a removed file exemption leaves no blank line`() {
+        val text = """
+            /*
+             * Copyright
+             */
+
+            @file:IntentionallyDefaultFacadeName(reason = ExemptionReason.API_DESIGN)
+
+            package test
+
+            import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+            import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName
+
+            /** Top. */
+            public fun top(): Unit = Unit
+        """.trimIndent()
+        val result = fix(
+            text,
+            diagnostic("REDUNDANT_EXEMPTION", text, "@file:IntentionallyDefaultFacadeName(reason = ExemptionReason.API_DESIGN)")
+                .copy(messageParameters = listOf("IntentionallyDefaultFacadeName", "declaration")),
+        )
+
+        assertEquals(
+            """
+                /*
+                 * Copyright
+                 */
+
+                package test
+
+                /** Top. */
+                public fun top(): Unit = Unit
+            """.trimIndent(),
+            result.newText,
+        )
+        assertEquals(listOf(5), result.applied.map { it.line })
+    }
+
+    @Test
+    fun `removed file exemptions on consecutive lines at the file start leave no blank line`() {
+        val text = """
+            @file:IntentionallyDefaultFacadeName(reason = ExemptionReason.API_DESIGN)
+            @file:IntentionallyWithoutJvmOverloads(reason = ExemptionReason.API_DESIGN)
+
+            package test
+
+            import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+            import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName
+            import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyWithoutJvmOverloads
+
+            /** Top. */
+            public fun top(a: Int = 0): Unit = Unit
+        """.trimIndent()
+        val result = fix(
+            text,
+            diagnostic("REDUNDANT_EXEMPTION", text, "@file:IntentionallyDefaultFacadeName(reason = ExemptionReason.API_DESIGN)")
+                .copy(messageParameters = listOf("IntentionallyDefaultFacadeName", "declaration")),
+            diagnostic("REDUNDANT_EXEMPTION", text, "@file:IntentionallyWithoutJvmOverloads(reason = ExemptionReason.API_DESIGN)")
+                .copy(messageParameters = listOf("IntentionallyWithoutJvmOverloads", "declaration")),
+        )
+
+        assertEquals(
+            """
+                package test
+
+                /** Top. */
+                public fun top(a: Int = 0): Unit = Unit
+            """.trimIndent(),
+            result.newText,
+        )
+    }
+
+    @Test
+    fun `a removal of every import and a new import keep the blank lines around the import list`() {
+        val text = """
+            package test
+
+            import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
+
+            /** A point. */
+            @IntentionallyOpen
+            public data class Point(val x: Int)
+        """.trimIndent()
+        val result = fix(
+            text,
+            diagnostic("REDUNDANT_EXEMPTION", text, "@IntentionallyOpen")
+                .copy(messageParameters = listOf("IntentionallyOpen", "declaration")),
+            diagnostic("DATA_CLASS_PUBLIC_API", text, "Point"),
+        )
+
+        assertEquals(
+            """
+                package test
+
+                import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+                import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDataClass
+
+                /** A point. */
+                @IntentionallyDataClass(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)
+                public data class Point(val x: Int)
+            """.trimIndent(),
+            result.newText,
+        )
     }
 
     @Test

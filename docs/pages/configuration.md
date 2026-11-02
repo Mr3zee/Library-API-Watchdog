@@ -173,6 +173,18 @@ apiWatchdog {
 }
 ```
 
+Both arguments take one value or a list:
+
+```kotlin build.gradle.kts
+apiWatchdog {
+    ignore(WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS, whenAnnotatedWith = "com.example.GeneratedValueMembers")
+    ignore(
+        listOf(WatchdogChecks.STATEFUL_CLASS_WITHOUT_HASH_CODE, WatchdogChecks.STATEFUL_CLASS_WITHOUT_TO_STRING),
+        whenAnnotatedWith = "com.example.GeneratedValueMembers",
+    )
+}
+```
+
 `ignore` doesn't work for always-error checks. See [Exemptions and internal API](./exemptions.md)
 for more details about when to use a rule.
 

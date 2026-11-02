@@ -1,6 +1,7 @@
 package org.jetbrains.kotlinx.library.api.watchdog.fixer
 
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtImportDirective
 
 internal class ImportResolver(private val ktFile: KtFile) {
     private val samePackage = ktFile.packageFqName.asString() == ExemptionRegistry.ANNOTATIONS_PACKAGE
@@ -24,11 +25,14 @@ internal class ImportResolver(private val ktFile: KtFile) {
 
     private val importsToAdd = sortedSetOf<String>()
 
+    private val referencedFqNames = hashSetOf<String>()
+
     fun references(shortName: String): Boolean =
-        "${ExemptionRegistry.ANNOTATIONS_PACKAGE}.$shortName" in importsToAdd
+        "${ExemptionRegistry.ANNOTATIONS_PACKAGE}.$shortName" in referencedFqNames
 
     fun reference(shortName: String): String {
         val fqName = "${ExemptionRegistry.ANNOTATIONS_PACKAGE}.$shortName"
+        referencedFqNames += fqName
         visibleNameByFqName[fqName]?.let { return it }
         if (samePackage || wildcardImportSuffices) return shortName
         if (fqName in importsToAdd) return shortName
@@ -37,24 +41,37 @@ internal class ImportResolver(private val ktFile: KtFile) {
         return shortName
     }
 
-    fun importInsertions(ktFile: KtFile): List<TextEdit> {
-        if (importsToAdd.isEmpty()) {
-            return emptyList()
+    fun importEdits(unusedImports: List<KtImportDirective>, text: String): List<TextEdit> {
+        val edits = mutableListOf<TextEdit>()
+        val unused = unusedImports.sortedBy { it.textRange.startOffset }
+        val remaining = ktFile.importDirectives.filter { it !in unused }
+        if (unused.isNotEmpty() && remaining.isEmpty()) {
+            val start = unused.first().textRange.startOffset
+            var end = text.lineEndAfter(unused.last().textRange.endOffset)
+            if (importsToAdd.isEmpty() && end < text.length && text[end] == '\n') end++
+            edits += TextEdit(start, end, "")
+        } else {
+            unused.mapTo(edits) { TextEdit(it.textRange.startOffset, text.lineEndAfter(it.textRange.endOffset), "") }
         }
 
-        val importLines = importsToAdd.joinToString("\n") { "import $it" }
-
-        val lastImport = ktFile.importList?.imports?.lastOrNull()
-        if (lastImport != null) {
-            return listOf(TextEdit(lastImport.textRange.endOffset, "\n$importLines"))
+        if (importsToAdd.isNotEmpty()) {
+            val importLines = importsToAdd.joinToString("\n") { "import $it" }
+            edits += when {
+                remaining.isNotEmpty() -> TextEdit(remaining.last().textRange.endOffset, "\n$importLines")
+                // The insertion at the offset of the removal goes in front of it.
+                unused.isNotEmpty() -> TextEdit(unused.first().textRange.startOffset, "$importLines\n")
+                else -> {
+                    val packageDirective = ktFile.packageDirective?.takeIf { it.textLength > 0 }
+                    if (packageDirective != null) {
+                        TextEdit(packageDirective.textRange.endOffset, "\n\n$importLines")
+                    } else {
+                        TextEdit(ktFile.declarations.firstOrNull()?.textRange?.startOffset ?: 0, "$importLines\n\n")
+                    }
+                }
+            }
         }
-
-        val packageDirective = ktFile.packageDirective?.takeIf { it.textLength > 0 }
-        if (packageDirective != null) {
-            return listOf(TextEdit(packageDirective.textRange.endOffset, "\n\n$importLines"))
-        }
-
-        val firstDeclarationOffset = ktFile.declarations.firstOrNull()?.textRange?.startOffset ?: 0
-        return listOf(TextEdit(firstDeclarationOffset, "$importLines\n\n"))
+        return edits
     }
+
+    private fun String.lineEndAfter(offset: Int): Int = indexOf('\n', offset).let { if (it < 0) length else it + 1 }
 }

@@ -1,6 +1,5 @@
 package org.jetbrains.kotlinx.library.api.watchdog
 
-/** The `apiWatchdog { }` block of a generated build script. */
 class ApiWatchdogBlock internal constructor() {
     private val lines = mutableListOf<String>()
     private val javaInterop = JavaInteropBlock()
@@ -15,7 +14,6 @@ class ApiWatchdogBlock internal constructor() {
 
     var reportUndocumentedClassProperties: Boolean? = null
 
-    /** A Java-interop diagnostic goes into the `javaInterop { }` group. */
     fun severity(severity: Severity, vararg diagnostics: Diagnostic) {
         for (diagnostic in diagnostics) {
             require(diagnostic in configurableDiagnostics) { "$diagnostic doesn't have a severity property" }
@@ -33,6 +31,21 @@ class ApiWatchdogBlock internal constructor() {
         lines += "ignore(WatchdogChecks.${diagnostic.name}, whenAnnotatedWith = listOf($annotations))"
     }
 
+    fun ignoreOne(diagnostic: Diagnostic, whenAnnotatedWith: String) {
+        lines += "ignore(WatchdogChecks.${diagnostic.name}, whenAnnotatedWith = \"$whenAnnotatedWith\")"
+    }
+
+    fun ignore(diagnostics: List<Diagnostic>, vararg whenAnnotatedWith: String) {
+        val checks = diagnostics.joinToString { "WatchdogChecks.${it.name}" }
+        val annotations = whenAnnotatedWith.joinToString { "\"$it\"" }
+        lines += "ignore(listOf($checks), whenAnnotatedWith = listOf($annotations))"
+    }
+
+    fun ignoreOne(diagnostics: List<Diagnostic>, whenAnnotatedWith: String) {
+        val checks = diagnostics.joinToString { "WatchdogChecks.${it.name}" }
+        lines += "ignore(listOf($checks), whenAnnotatedWith = \"$whenAnnotatedWith\")"
+    }
+
     fun internalApiAnnotations(vararg annotations: String) {
         annotations.forEach { lines += "internalApiAnnotations.add(\"$it\")" }
     }
@@ -41,7 +54,6 @@ class ApiWatchdogBlock internal constructor() {
         javaInterop.block()
     }
 
-    /** The `reports { }` block. A file is a path relative to the build directory. */
     fun reports(block: ReportsBlock.() -> Unit) {
         val reports = ReportsBlock().apply(block)
         lines += "reports {"
@@ -52,7 +64,6 @@ class ApiWatchdogBlock internal constructor() {
         lines += "}"
     }
 
-    /** Script text written as is. */
     fun raw(script: String) {
         lines += script.trimIndent().lines()
     }

@@ -262,8 +262,6 @@ public open class WatchdogGradleExtension @Inject internal constructor(
      * }
      * ```
      *
-     * Call it again for another check.
-     *
      * See [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions) for more details about when to use a rule.
      */
     public fun ignore(check: WatchdogChecks, whenAnnotatedWith: List<String>) {
@@ -279,6 +277,64 @@ public open class WatchdogGradleExtension @Inject internal constructor(
             }
             annotationIgnoreRules.add("${check.name}:$annotationName")
         }
+    }
+
+    /**
+     * Ignores [check] on a declaration that carries the [whenAnnotatedWith] annotation.
+     * The same as the overload that takes a list of annotations:
+     *
+     * ```kotlin
+     * apiWatchdog {
+     *     ignore(WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS, whenAnnotatedWith = "com.example.GeneratedValue")
+     * }
+     * ```
+     */
+    public fun ignore(check: WatchdogChecks, whenAnnotatedWith: String) {
+        ignore(check, listOf(whenAnnotatedWith))
+    }
+
+    /**
+     * Ignores every check in [checks] on a declaration that carries one of the [whenAnnotatedWith]
+     * annotations. The same as a call of the single-check overload for each check:
+     *
+     * ```kotlin
+     * apiWatchdog {
+     *     ignore(
+     *         listOf(
+     *             WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS,
+     *             WatchdogChecks.STATEFUL_CLASS_WITHOUT_HASH_CODE,
+     *         ),
+     *         whenAnnotatedWith = listOf(
+     *             "com.example.GeneratedValue",
+     *             "com.example.GeneratedEntity",
+     *         ),
+     *     )
+     * }
+     * ```
+     */
+    public fun ignore(checks: List<WatchdogChecks>, whenAnnotatedWith: List<String>) {
+        require(checks.isNotEmpty()) { "An API Watchdog ignore rule needs at least one check" }
+        checks.forEach { check -> ignore(check, whenAnnotatedWith) }
+    }
+
+    /**
+     * Ignores every check in [checks] on a declaration that carries the [whenAnnotatedWith]
+     * annotation. The same as a call of the single-check overload for each check:
+     *
+     * ```kotlin
+     * apiWatchdog {
+     *     ignore(
+     *         listOf(
+     *             WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS,
+     *             WatchdogChecks.STATEFUL_CLASS_WITHOUT_HASH_CODE,
+     *         ),
+     *         whenAnnotatedWith = "com.example.GeneratedValue",
+     *     )
+     * }
+     * ```
+     */
+    public fun ignore(checks: List<WatchdogChecks>, whenAnnotatedWith: String) {
+        ignore(checks, listOf(whenAnnotatedWith))
     }
 
     internal fun annotationIgnoreRules(): Provider<List<String>> = annotationIgnoreRules

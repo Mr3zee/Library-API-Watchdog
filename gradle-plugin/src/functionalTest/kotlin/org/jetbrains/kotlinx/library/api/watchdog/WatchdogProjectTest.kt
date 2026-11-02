@@ -229,6 +229,30 @@ class WatchdogProjectTest {
     }
 
     @Test
+    fun `ignore accepts a list of checks and a single annotation`() {
+        val project = jvmProject {
+            apiWatchdog {
+                ignoreOne(
+                    listOf(STATEFUL_CLASS_WITHOUT_EQUALS, STATEFUL_CLASS_WITHOUT_HASH_CODE),
+                    "test.GeneratedValueMembers",
+                )
+                ignore(listOf(STATEFUL_CLASS_WITHOUT_TO_STRING), "test.AlternateGeneratedValueMembers")
+                ignoreOne(STATEFUL_CLASS_WITHOUT_EQUALS, "test.AlternateGeneratedValueMembers")
+            }
+            source(annotationIgnoreFile)
+        }
+
+        val result = project.buildAndFail("build")
+        assertFalse(result.hasStatefulDiagnostic("GeneratedState", "an `equals`"))
+        assertFalse(result.hasStatefulDiagnostic("GeneratedState", "a `hashCode`"))
+        assertTrue(result.hasStatefulDiagnostic("GeneratedState", "a `toString`"))
+        assertFalse(result.hasStatefulDiagnostic("AlternateGeneratedState", "an `equals`"))
+        assertTrue(result.hasStatefulDiagnostic("AlternateGeneratedState", "a `hashCode`"))
+        assertFalse(result.hasStatefulDiagnostic("AlternateGeneratedState", "a `toString`"))
+        assertTrue(result.hasStatefulDiagnostic("RegularState", "an `equals`"))
+    }
+
+    @Test
     fun `ignore rejects an always-error check`() {
         val project = jvmProject {
             apiWatchdog { ignore(EXEMPTION_WITHOUT_EXPLANATION, "test.GeneratedValueMembers") }

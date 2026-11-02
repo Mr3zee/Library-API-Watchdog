@@ -5,6 +5,7 @@ import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtAnnotated
 import org.jetbrains.kotlin.psi.KtAnnotation
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
@@ -127,8 +128,7 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
             }
             applied += fixes
         }
-        edits += unusedImportRemovals(ktFile, plannedFixes.keys, imports, text)
-        edits += imports.importInsertions(ktFile)
+        edits += imports.importEdits(unusedImports(ktFile, plannedFixes.keys, imports), text)
 
         val rawEdits = edits.map {
             TextEdit(
@@ -178,12 +178,11 @@ private fun Fix.describe(): String = when (this) {
     RemoveAnnotationFix -> "a removal"
 }
 
-private fun unusedImportRemovals(
+private fun unusedImports(
     ktFile: KtFile,
     targets: Set<FixTarget>,
     imports: ImportResolver,
-    text: String,
-): List<TextEdit> {
+): List<KtImportDirective> {
     val removedEntries = targets.filterIsInstance<FixTarget.RemovedAnnotation>().map { it.entry }
     if (removedEntries.isEmpty()) return emptyList()
 
@@ -193,23 +192,17 @@ private fun unusedImportRemovals(
                     removedEntries.none { PsiTreeUtil.isAncestor(it, reference, false) }
         }
         .mapTo(hashSetOf()) { it.getReferencedName() }
-    return removedEntries
-        .asSequence()
-        .mapNotNull { it.shortName?.asString() }
-        .distinct()
+    // The entry references its annotation class and, in the `reason` argument, `ExemptionReason`.
+    val removedNames = removedEntries.flatMapTo(linkedSetOf()) { entry ->
+        entry.collectDescendantsOfType<KtSimpleNameExpression>().map { it.getReferencedName() }
+    }
+    return removedNames
         .filter { name -> name !in remainingNames && !imports.references(name) }
         .mapNotNull { name ->
             ktFile.importDirectives.firstOrNull {
                 it.aliasName == null && it.importedFqName?.asString() == "${ExemptionRegistry.ANNOTATIONS_PACKAGE}.$name"
             }
         }
-        .map { directive ->
-            val start = directive.textRange.startOffset
-            val end = directive.textRange.endOffset
-            val lineEnd = text.indexOf('\n', end).let { if (it < 0) text.length else it + 1 }
-            TextEdit(start, lineEnd, "")
-        }
-        .toList()
 }
 
 private fun MutableMap<String, PlannedFix>.collapseCombinedExemptions() {
@@ -420,23 +413,58 @@ private val KtAnnotationEntry.annotationList: KtAnnotation? get() = parent as? K
 
 /** [removedEntries] holds every entry that this run removes, this one included. */
 private fun KtAnnotationEntry.removal(text: String, removedEntries: Set<KtAnnotationEntry>): List<TextEdit> {
-    // `@[]` isn't valid Kotlin. When the run removes every entry of a list, the first one takes the brackets.
-    val list = annotationList?.takeIf { annotationList -> annotationList.entries.all { it in removedEntries } }
-    if (list != null && list.entries.first() != this) return emptyList()
-    val removed = list ?: this
-    val start = removed.textRange.startOffset
-    val end = removed.textRange.endOffset
-    val lineStart = text.lastIndexOf('\n', start - 1) + 1
-    val lineEnd = text.indexOf('\n', end).let { if (it < 0) text.length else it + 1 }
-    val edit = if (text.substring(lineStart, start).isBlank() && text.substring(end, lineEnd).isBlank()) {
-        TextEdit(lineStart, lineEnd, "")
-    } else {
-        TextEdit(start, end + text.substring(end).takeWhile { it == ' ' || it == '\t' }.length, "")
+    val constructor = (annotatedDeclaration() as? KtPrimaryConstructor)?.takeIf { it.keywordGoesWith(removedEntries) }
+    if (constructor != null) {
+        // The fixer wrote the keyword for the annotations, so the first removed entry takes the keyword too.
+        if (constructor.modifierList?.annotationEntries?.firstOrNull() != this) return emptyList()
+        val start = (constructor.prevSibling as? PsiWhiteSpace)?.textRange?.startOffset ?: constructor.textRange.startOffset
+        val end = constructor.valueParameterList?.textRange?.startOffset ?: constructor.textRange.endOffset
+        return listOf(TextEdit(start, end, ""))
     }
-    return listOf(edit)
+
+    val removed = removedElement(removedEntries) ?: return emptyList()
+    val line = removed.wholeLine(text) ?: run {
+        val end = removed.textRange.endOffset
+        return listOf(TextEdit(removed.textRange.startOffset, end + text.substring(end).takeWhile { it == ' ' || it == '\t' }.length, ""))
+    }
+
+    // A removed line between two blank lines takes one of them, so a removed `@file:` exemption leaves no gap.
+    // The removed lines before this one don't count, because their edits remove them.
+    val removedLines = removedEntries.mapNotNull { it.removedElement(removedEntries)?.wholeLine(text) }
+    var before = line.first
+    while (true) {
+        before = removedLines.firstOrNull { it.last + 1 == before }?.first ?: break
+    }
+    val blankBefore = before <= 1 || text[before - 2] == '\n'
+    val blankAfter = line.last + 1 < text.length && text[line.last + 1] == '\n'
+    return listOf(TextEdit(line.first, if (blankBefore && blankAfter) line.last + 2 else line.last + 1, ""))
 }
 
+private fun KtAnnotationEntry.removedElement(removedEntries: Set<KtAnnotationEntry>): PsiElement? {
+    // `@[]` isn't valid Kotlin. When the run removes every entry of a list, the first one takes the brackets.
+    val list = annotationList?.takeIf { annotationList -> annotationList.entries.all { it in removedEntries } }
+    if (list != null && list.entries.first() != this) return null
+    return list ?: this
+}
 
+private fun PsiElement.wholeLine(text: String): IntRange? {
+    val start = textRange.startOffset
+    val end = textRange.endOffset
+    val lineStart = text.lastIndexOf('\n', start - 1) + 1
+    val lineEnd = text.indexOf('\n', end).let { if (it < 0) text.length else it + 1 }
+    val alone = text.substring(lineStart, start).isBlank() && text.substring(end, lineEnd).isBlank()
+    return (lineStart until lineEnd).takeIf { alone }
+}
+
+private fun KtPrimaryConstructor.keywordGoesWith(removedEntries: Set<KtAnnotationEntry>): Boolean {
+    val modifiers = modifierList ?: return false
+    val entries = modifiers.annotationEntries
+    return getConstructorKeyword() != null &&
+            docComment == null &&
+            modifiers.node.getChildren(KtTokens.MODIFIER_KEYWORDS).isEmpty() &&
+            entries.isNotEmpty() &&
+            entries.all { it in removedEntries }
+}
 
 private fun PlannedFix.insertionText(imports: ImportResolver, useSite: String = ""): String = when (fix) {
     is ExemptionFix -> annotationText(imports, useSite)
