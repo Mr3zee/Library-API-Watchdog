@@ -241,7 +241,7 @@ FILE: declarations.kt
     }
     @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutJvmOverloads|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final fun noDefaults(x: R|kotlin/Int|): R|kotlin/Unit| {
     }
-    @R|kotlin/jvm/JvmInline|() public final value class Id : R|kotlin/Any| {
+    @R|kotlin/jvm/JvmInline|() public final inline value class Id : R|kotlin/Any| {
         public constructor(raw: R|kotlin/Int|): R|foo/bar/Id| {
             super<R|kotlin/Any|>()
         }

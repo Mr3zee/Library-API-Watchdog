@@ -1,7 +1,7 @@
 FILE: protectedApi.kt
     package foo.bar
 
-    @R|kotlin/jvm/JvmInline|() public final value class UserId : R|kotlin/Any| {
+    @R|kotlin/jvm/JvmInline|() public final inline value class UserId : R|kotlin/Any| {
         public constructor(value: R|kotlin/String|): R|foo/bar/UserId| {
             super<R|kotlin/Any|>()
         }

@@ -26,7 +26,7 @@ FILE: declarations.kt
         }
 
     }
-    @R|kotlin/jvm/JvmInline|() public final value class Id : R|kotlin/Any| {
+    @R|kotlin/jvm/JvmInline|() public final inline value class Id : R|kotlin/Any| {
         public constructor(raw: R|kotlin/Int|): R|foo/bar/Id| {
             super<R|kotlin/Any|>()
         }

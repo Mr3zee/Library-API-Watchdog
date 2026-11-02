@@ -73,7 +73,7 @@ FILE: jvmOverloads.kt
             public get(): R|kotlin/Int|
 
     }
-    @R|kotlin/jvm/JvmInline|() public final value class Port : R|kotlin/Any| {
+    @R|kotlin/jvm/JvmInline|() public final inline value class Port : R|kotlin/Any| {
         public constructor(number: R|kotlin/Int|): R|foo/bar/Port| {
             super<R|kotlin/Any|>()
         }

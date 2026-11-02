@@ -211,7 +211,7 @@ FILE: statefulToString.kt
         public final fun copy(x: R|kotlin/Int| = this@R|foo/bar/DataPoint|.R|foo/bar/DataPoint.x|): R|foo/bar/DataPoint|
 
     }
-    @R|kotlin/jvm/JvmInline|() public final value class UserId : R|kotlin/Any| {
+    @R|kotlin/jvm/JvmInline|() public final inline value class UserId : R|kotlin/Any| {
         public constructor(raw: R|kotlin/Int|): R|foo/bar/UserId| {
             super<R|kotlin/Any|>()
         }

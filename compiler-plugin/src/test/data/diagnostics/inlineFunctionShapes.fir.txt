@@ -449,7 +449,7 @@ FILE: inlineFunctionShapes.kt
         }
 
     }
-    @R|kotlin/jvm/JvmInline|() public final value class Boxed : R|kotlin/Any| {
+    @R|kotlin/jvm/JvmInline|() public final inline value class Boxed : R|kotlin/Any| {
         public constructor(value: R|kotlin/Int|): R|foo/bar/Boxed| {
             super<R|kotlin/Any|>()
         }

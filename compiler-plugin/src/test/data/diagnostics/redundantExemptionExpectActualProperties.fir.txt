@@ -10,7 +10,7 @@ FILE: common.kt
         public get(): R|kotlin/Int|
     @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInlinedLogic|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final expect val thin: R|kotlin/Int|
         public get(): R|kotlin/Int|
-    public final expect value class Id : R|kotlin/Any| {
+    public final expect inline value class Id : R|kotlin/Any| {
         public expect constructor(raw: R|kotlin/Int|): R|foo/bar/Id|
 
         public final expect val raw: R|kotlin/Int| = R|<local>/raw|
@@ -39,7 +39,7 @@ FILE: jvm.kt
         public inline get(): R|kotlin/Int| {
             ^ Int(1)
         }
-    @R|kotlin/jvm/JvmInline|() public final actual value class Id : R|kotlin/Any| {
+    @R|kotlin/jvm/JvmInline|() public final actual inline value class Id : R|kotlin/Any| {
         public actual constructor(raw: R|kotlin/Int|): R|foo/bar/Id| {
             super<R|kotlin/Any|>()
         }

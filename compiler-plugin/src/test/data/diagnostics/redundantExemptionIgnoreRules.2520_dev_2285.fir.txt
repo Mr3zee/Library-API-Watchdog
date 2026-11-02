@@ -1,0 +1,57 @@
+FILE: declarations.kt
+    package foo.bar
+
+    @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|)]) public final annotation class Generated : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/Generated| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|foo/bar/Generated|() @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDataClass|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final data class GeneratedPoint : R|kotlin/Any| {
+        public constructor(x: R|kotlin/Int|): R|foo/bar/GeneratedPoint| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val x: R|kotlin/Int| = R|<local>/x|
+            public get(): R|kotlin/Int|
+
+        public final operator fun component1(): R|kotlin/Int|
+
+        public final fun copy(x: R|kotlin/Int| = this@R|foo/bar/GeneratedPoint|.R|foo/bar/GeneratedPoint.x|): R|foo/bar/GeneratedPoint|
+
+    }
+    @R|foo/bar/Generated|() @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDataClass|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class GeneratedPlain : R|kotlin/Any| {
+        public constructor(): R|foo/bar/GeneratedPlain| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/jvm/JvmInline|() public final value class Id : R|kotlin/Any| {
+        public constructor(raw: R|kotlin/Int|): R|foo/bar/Id| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val raw: R|kotlin/Int| = R|<local>/raw|
+            public get(): R|kotlin/Int|
+
+    }
+    @R|foo/bar/Generated|() @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class GeneratedIds : R|kotlin/Any| {
+        public constructor(): R|foo/bar/GeneratedIds| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun id(): R|foo/bar/Id| {
+            ^id R|foo/bar/Id.Id|(Int(1))
+        }
+
+    }
+    @R|foo/bar/Generated|() @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMangledJvmName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final class GeneratedNames : R|kotlin/Any| {
+        public constructor(): R|foo/bar/GeneratedNames| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun id(): R|kotlin/Int| {
+            ^id Int(1)
+        }
+
+    }

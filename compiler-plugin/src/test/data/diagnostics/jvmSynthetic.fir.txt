@@ -101,7 +101,7 @@ FILE: jvmSynthetic.kt
         }
 
     }
-    @R|kotlin/jvm/JvmInline|() public final value class UserId : R|kotlin/Any| {
+    @R|kotlin/jvm/JvmInline|() public final inline value class UserId : R|kotlin/Any| {
         public constructor(raw: R|kotlin/String|): R|foo/bar/UserId| {
             super<R|kotlin/Any|>()
         }
@@ -119,7 +119,7 @@ FILE: jvmSynthetic.kt
     }
     @R|kotlin/OptIn|(markerClass = vararg(<getClass>(Q|kotlin/ExperimentalStdlibApi|)) [evaluated = vararg(<getClass>(Q|kotlin/ExperimentalStdlibApi|))]) @R|kotlin/jvm/JvmExposeBoxed|() public final fun onUserEachBoxed(id: R|foo/bar/UserId|, action: R|(kotlin/Int) -> kotlin/Unit|): R|kotlin/Unit| {
     }
-    @R|kotlin/jvm/JvmInline|() public final value class Wrapped : R|kotlin/Any| {
+    @R|kotlin/jvm/JvmInline|() public final inline value class Wrapped : R|kotlin/Any| {
         public constructor(raw: R|kotlin/String|): R|foo/bar/Wrapped| {
             super<R|kotlin/Any|>()
         }
