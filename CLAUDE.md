@@ -70,6 +70,11 @@ npm run build                       # the site build, fails on a broken link or 
 - The benchmark baseline (`compiler-plugin/src/benchmark/baseline/`) is valid for one machine profile. Record it
   with the `Benchmark baseline` workflow (`record` input), never on a developer machine. A regression shows up in
   `bytes` first, because the `ms` tolerance is wide.
+- `library-api-watchdog.jvm-target-conventions` sets the bytecode level of a published module. The annotations
+  target Java 8. The Gradle plugin and the report aggregation target Java 17, because the dev kit's
+  `gradle-plugin-runtime` and `version-resolution` are Java 17 classes. The compiler plugin and the fixer don't
+  apply the convention. The dev kit compiles their versioned classes for Java 8 itself, and a Java 8 release on
+  their Java compile tasks breaks the resolution of `version-resolution`.
 - The Android functional tests skip themselves without an Android SDK. AGP 8 fixtures run with the Gradle version
   pinned in `AgpVersion.AGP8` of `WatchdogProject.kt`, because AGP 8 can't run on Gradle 9.6 or later. The dev kit
   skips every multiplatform fixture on Kotlin versions older than the build's own, because KLIBs aren't forward

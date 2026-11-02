@@ -1,5 +1,6 @@
 @file:OptIn(ExperimentalAbiValidation::class)
 
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 import org.jetbrains.kotlinx.library.api.watchdog.conventions.GenerateCheckDescriptions
 import org.jetbrains.kotlinx.library.api.watchdog.conventions.registerDiagnosticsGenerator
@@ -7,11 +8,17 @@ import org.jetbrains.kotlinx.library.api.watchdog.conventions.registerDiagnostic
 plugins {
     kotlin("jvm")
     id("library-api-watchdog.dokka-conventions")
+    id("library-api-watchdog.jvm-target-conventions")
     `java-gradle-plugin`
     `maven-publish`
     id("library-api-watchdog.space-publishing-conventions")
     id("library-api-watchdog.plugin-portal-publishing-conventions")
     id("library-api-watchdog.maven-central-publishing-conventions")
+}
+
+// The Watchdog Gradle plugin depends on this module and needs Java 17.
+jvmTargetConventions {
+    release.set(JvmTarget.JVM_17)
 }
 
 val generateCheckDescriptions = registerDiagnosticsGenerator<GenerateCheckDescriptions>(

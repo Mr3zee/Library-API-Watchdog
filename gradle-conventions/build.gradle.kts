@@ -40,6 +40,10 @@ gradlePlugin {
             id = "library-api-watchdog.gradle-plugin-conventions"
             implementationClass = "org.jetbrains.kotlinx.library.api.watchdog.conventions.GradlePluginConventionPlugin"
         }
+        register("jvmTargetConventions") {
+            id = "library-api-watchdog.jvm-target-conventions"
+            implementationClass = "org.jetbrains.kotlinx.library.api.watchdog.conventions.JvmTargetConventionPlugin"
+        }
         register("rootConventions") {
             id = "library-api-watchdog.root-conventions"
             implementationClass = "org.jetbrains.kotlinx.library.api.watchdog.conventions.RootConventionPlugin"

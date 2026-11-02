@@ -6,6 +6,7 @@ import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     id("library-api-watchdog.dokka-conventions")
+    id("library-api-watchdog.jvm-target-conventions")
     `maven-publish`
     id("library-api-watchdog.space-publishing-conventions")
     id("library-api-watchdog.maven-central-publishing-conventions")

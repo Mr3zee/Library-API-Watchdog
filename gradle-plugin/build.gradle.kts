@@ -1,5 +1,6 @@
 @file:OptIn(ExperimentalAbiValidation::class)
 
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {
@@ -7,12 +8,18 @@ plugins {
     id("library-api-watchdog.devkit-versions-conventions")
     id("library-api-watchdog.dokka-conventions")
     id("library-api-watchdog.gradle-plugin-conventions")
+    id("library-api-watchdog.jvm-target-conventions")
     id("library-api-watchdog.space-publishing-conventions")
     id("library-api-watchdog.plugin-portal-publishing-conventions")
     id("library-api-watchdog.maven-central-publishing-conventions")
 }
 
 val devKitVersion = providers.systemProperty("devkitVersion").get()
+
+// The dev kit's `gradle-plugin-runtime` and `version-resolution` are Java 17 classes.
+jvmTargetConventions {
+    release.set(JvmTarget.JVM_17)
+}
 
 kotlin {
     explicitApi()
