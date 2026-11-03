@@ -45,7 +45,7 @@ npm run build                       # the site build, fails on a broken link or 
   `:gradle-plugin:test`. The root `check` and publication tasks also run in the included builds. A Maven Central
   publication makes one deployment for each build.
 - `library.properties` holds `group` and `version`, not `gradle.properties`, because an included build doesn't read
-  the root `gradle.properties`. `useLibraryGroupAndVersion` in `build-logic-settings` sets both in every build. The dev
+  the root `gradle.properties`. The `devkit` settings plugin in `build-logic-settings` sets both in every build. The dev
   kit version is the `devkit` entry of the version catalog.
 - A project of an included build depends on the root build's projects, and the reverse, by coordinates
   (`"$group:<name>:$version"`), never with `project(...)`. Composite substitution resolves them.
