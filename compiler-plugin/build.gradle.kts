@@ -21,7 +21,6 @@ pluginDevKit {
     companionLibrary("kotlin-library-api-watchdog-plugin-annotations")
 
     versionHierarchy {
-        splitDev(2, 4)
         splitDev(2, 5)
 
         val pathKlibVersion = KotlinToolingVersion("2.4.20-Beta2")

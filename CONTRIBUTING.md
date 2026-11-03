@@ -14,7 +14,7 @@ The repository is a composite build:
 |---|---|
 | The root build | The compiler plugin, the exemption fixer, and the Gradle plugin functional tests (`:gradle-plugin-test`). |
 | [gradle-plugin](gradle-plugin) | The Gradle plugin and the report aggregation plugin. |
-| [plugin-annotations](plugin-annotations) | The annotations. The build uses the Kotlin version `kotlinMin` of the version catalog, because a Kotlin 2.3 compiler can't read a klib of a newer compiler. |
+| [plugin-annotations](plugin-annotations) | The annotations. |
 | [build-logic-settings](build-logic-settings) | The settings plugins: `devkit` for the root build and `devkit-included` for the other builds. Both apply the dev kit settings plugin. |
 | [build-logic](build-logic) | The project plugins: `devkit.compiler`, `devkit.compiler-library`, `devkit.gradle`, and the `library-api-watchdog.*` conventions. |
 
@@ -125,7 +125,6 @@ The version catalog tracks the compiler-plugin-dev-kit. A package rule gives its
 A custom manager tracks the Android Gradle plugin test versions in the version catalog.
 The `agp8` entry stays on version 8, and `agp9` stays on version 9.
 The minimum supported Kotlin and IntelliJ IDEA versions remain manual compatibility decisions.
-Renovate doesn't update `kotlinMin`, the Kotlin version of the `plugin-annotations` build.
 
 To validate the configuration:
 

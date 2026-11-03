@@ -11,12 +11,6 @@
       "separateMajorMinor": false
     },
     {
-      "description": "kotlinMin in the version catalog is the Kotlin version of the plugin-annotations build. Change it by hand. The rule matches the 2.3 line only, so change the rule with kotlinMin.",
-      "matchPackageNames": ["/^org\\.jetbrains\\.kotlin\\.multiplatform[.:]/"],
-      "matchCurrentVersion": "/^2\\.3\\./",
-      "enabled": false
-    },
-    {
       "matchPackageNames": ["/^org\\.jetbrains\\.kotlin\\.compiler\\.plugin\\.devkit:/"],
       "registryUrls": ["https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap"],
       "ignoreUnstable": false

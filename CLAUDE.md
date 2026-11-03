@@ -9,7 +9,7 @@ evolve. README.md lists the diagnostics. `DOCS_GUIDELINE.md` holds the rules for
 ## Commands
 
 The compiler plugin and the fixer have no plain `test` task, only one task for each supported Kotlin version
-(`k2320Test`, `k2410Test`, ...). `./gradlew :<module>:tasks --all` lists them.
+(`k240Test`, `k2410Test`, ...). `./gradlew :<module>:tasks --all` lists them.
 
 ```bash
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:k2410Test          # diagnostics tests against Kotlin 2.4.10
@@ -44,9 +44,6 @@ npm run build                       # the site build, fails on a broken link or 
   `report-aggregation`) and `plugin-annotations` are included builds. Address their tasks with the build name first:
   `:gradle-plugin:test`. The root `check` and publication tasks also run in the included builds. A Maven Central
   publication makes one deployment for each build.
-- `plugin-annotations` uses KGP `kotlinMin` from the version catalog, because a Kotlin 2.3 compiler can't read a
-  klib of a newer compiler. So `build-logic` has KGP as `compileOnly`: a plugin there must not put another KGP on a
-  build's classpath.
 - `useRootGroupAndVersion` in `build-logic-settings` sets `group` and `version` from the root
   `gradle.properties` in every build, because an included build doesn't read that file. The dev kit version is the
   `devkit` entry of the version catalog.
@@ -90,10 +87,9 @@ npm run build                       # the site build, fails on a broken link or 
   dev kit compiles their versioned classes for Java 8 itself.
 - The Android functional tests skip themselves without an Android SDK. AGP 8 fixtures run with the Gradle version
   pinned in `AgpVersion.AGP8` of `WatchdogProject.kt`, because AGP 8 can't run on Gradle 9.6 or later. The dev kit
-  skips every multiplatform fixture on Kotlin versions older than `companionLibrariesKotlinVersion`, because KLIBs
-  aren't forward compatible. `config()` in `build-logic` sets it to `kotlinCliMin`, because the dev kit default
-  depends on the state of the build directory. The klibs of `kotlinMin` have the ABI version 2.3.0, which
-  `kotlinCliMin` reads.
+  skips every multiplatform fixture on Kotlin versions older than the Kotlin version that compiled the annotations
+  klibs, because KLIBs aren't forward compatible. So when `kotlin` in the version catalog is newer than `kotlinCliMin`, the
+  multiplatform fixtures don't run on the older versions.
 
 ## Adding a new diagnostic
 

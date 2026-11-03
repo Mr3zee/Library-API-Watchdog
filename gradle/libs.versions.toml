@@ -1,11 +1,7 @@
 [versions]
 # https://github.com/JetBrains/kotlin
 kotlin = "2.4.0"
-kotlinCliMin = "2.3.20"
-# The plugin-annotations build compiles with this version, because a Kotlin 2.3 compiler can't read a klib of a newer
-# compiler. It isn't kotlinCliMin, because the KotlinNativeCacheMetrics of KGP 2.3.20 fail the first configuration
-# cache store.
-kotlinMin = "2.3.21"
+kotlinCliMin = "2.4.0"
 kotlinIdeMin = "262"
 # https://github.com/Kotlin/compiler-plugin-dev-kit
 devkit = "0.0.4-dev-334"
@@ -39,6 +35,5 @@ develocity-gradle-plugin = { module = "com.gradle:develocity-gradle-plugin", ver
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-kotlin-multiplatform-min = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlinMin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
