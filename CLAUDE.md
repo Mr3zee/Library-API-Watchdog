@@ -47,7 +47,7 @@ npm run build                       # the site build, fails on a broken link or 
 - `plugin-annotations` uses KGP `kotlinMin` from the version catalog, because a Kotlin 2.3 compiler can't read a
   klib of a newer compiler. So `build-logic` has KGP as `compileOnly`: a plugin there must not put another KGP on a
   build's classpath.
-- `build-logic-settings/src/main/kotlin/devkit.settings.gradle.kts` sets `group` and `version` from the root
+- `useRootGroupAndVersion` in `build-logic-settings` sets `group` and `version` from the root
   `gradle.properties` in every build, because an included build doesn't read that file. The dev kit version is the
   `devkit` entry of the version catalog.
 - A project of an included build depends on the root build's projects, and the reverse, by coordinates
