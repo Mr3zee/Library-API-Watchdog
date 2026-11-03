@@ -16,6 +16,7 @@ on:
       - 'diagnostics.json'
       - 'gradle/**'
       - 'gradle.properties'
+      - 'library.properties'
       - '.github/workflows/benchmark-baseline.yml'
   pull_request:
     paths:
@@ -28,6 +29,7 @@ on:
       - 'diagnostics.json'
       - 'gradle/**'
       - 'gradle.properties'
+      - 'library.properties'
       - '.github/workflows/benchmark-baseline.yml'
   workflow_dispatch:
     inputs:

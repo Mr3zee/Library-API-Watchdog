@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'gradle.properties'
+      - 'library.properties'
       - 'gradle/libs.versions.toml'
       - 'README.md'
       - 'docs/**'
@@ -18,6 +19,7 @@ on:
   pull_request:
     paths:
       - 'gradle.properties'
+      - 'library.properties'
       - 'gradle/libs.versions.toml'
       - 'README.md'
       - 'docs/**'

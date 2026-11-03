@@ -95,14 +95,14 @@ CI on `main` sets `DEVELOCITY_CACHE_PUSH=true` to write cache entries.
 
 ## Version
 
-`gradle.properties` sets the library version. To change the build, README examples, and website package versions, run:
+`library.properties` sets the library version. To change the build, README examples, and website package versions, run:
 
 ```bash
 ./scripts/update-version.sh 0.2.0
 ./scripts/verify-version-alignment.sh
 ```
 
-The website code samples read the library version from `gradle.properties`.
+The website code samples read the library version from `library.properties`.
 `LIBRARY_VERSION` overrides that version in every Gradle project, generated plugin coordinates, reports, and website code samples:
 
 ```bash

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       library_version:
-        description: Library version override (blank uses gradle.properties)
+        description: Library version override (blank uses library.properties)
         required: false
         type: string
 

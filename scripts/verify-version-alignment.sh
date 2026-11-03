@@ -4,7 +4,7 @@ set -euo pipefail
 
 "$(dirname -- "${BASH_SOURCE[0]}")/update-version.sh" --check
 
-readonly properties_file='gradle.properties'
+readonly properties_file='library.properties'
 readonly version_catalog_file='gradle/libs.versions.toml'
 readonly docs_prefix='docs/pages/'
 readonly docs_version_template='{{libraryApiWatchdogVersion}}'

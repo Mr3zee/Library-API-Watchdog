@@ -1,10 +1,10 @@
-import org.jetbrains.kotlinx.library.api.watchdog.conventions.useRootGroupAndVersion
+import org.jetbrains.kotlinx.library.api.watchdog.conventions.useLibraryGroupAndVersion
 
 plugins {
     kotlin("compiler.plugin.devkit")
 }
 
-useRootGroupAndVersion()
+useLibraryGroupAndVersion()
 
 dependencyResolutionManagement {
     @Suppress("UnstableApiUsage")

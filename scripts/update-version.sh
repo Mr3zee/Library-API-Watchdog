@@ -26,7 +26,7 @@ mkdir -p "$version_tmpdir/docs"
 awk -v version="$version" '
   /^version=/ { $0 = "version=" version }
   { print }
-' "$watchdog_repository_dir/gradle.properties" > "$version_tmpdir/gradle.properties"
+' "$watchdog_repository_dir/library.properties" > "$version_tmpdir/library.properties"
 
 awk -v version="$version" '
   {
@@ -66,7 +66,7 @@ for file in docs/package.json docs/package-lock.json; do
 done
 
 failures=0
-for file in gradle.properties README.md docs/package.json docs/package-lock.json; do
+for file in library.properties README.md docs/package.json docs/package-lock.json; do
   if ! cmp -s "$watchdog_repository_dir/$file" "$version_tmpdir/$file"; then
     if "$check_only"; then
       echo "$file has a stale library version. Run scripts/update-version.sh $previous." >&2

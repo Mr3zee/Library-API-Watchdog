@@ -10,6 +10,7 @@ on:
       - 'diagnostics.json'
       - 'CHANGELOG.md'
       - 'gradle.properties'
+      - 'library.properties'
       - 'scripts/lib/project-version.sh'
       - 'scripts/update-version.sh'
       - 'scripts/check-publication-env.sh'

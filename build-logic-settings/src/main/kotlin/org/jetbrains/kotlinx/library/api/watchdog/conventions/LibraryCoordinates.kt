@@ -4,29 +4,30 @@ import org.gradle.api.initialization.Settings
 import java.util.Properties
 
 /**
- * Sets the group and the version of every project in this build from the root `gradle.properties`, because an
- * included build doesn't read that file. `LIBRARY_VERSION` overrides the version. `-Pgroup` and `-Pversion` have no
- * effect, because the `beforeProject` action runs after Gradle applies the `-P` values.
+ * Sets the group and the version of every project in this build from `library.properties` in the repository root.
+ * `LIBRARY_VERSION` overrides the version. `-Pgroup` and `-Pversion` have no effect, because the `beforeProject` action
+ * runs after Gradle applies the `-P` values.
  *
  * Don't move the body into the settings script. Gradle copies the `beforeProject` action for each project with the
  * configuration cache serializer. In a script, a lambda that reads a script `val` holds the script object, and the
  * serializer can't copy it.
  */
-internal fun Settings.useRootGroupAndVersion() {
-    val repositoryRoot = generateSequence(settingsDir) { it.parentFile }
-        .first { it.resolve("gradle/libs.versions.toml").isFile }
-    val rootProperties = Properties().apply {
-        val file = layout.settingsDirectory.file(repositoryRoot.resolve("gradle.properties").absolutePath)
+internal fun Settings.useLibraryGroupAndVersion() {
+    val propertiesFile = generateSequence(settingsDir) { it.parentFile }
+        .map { it.resolve("library.properties") }
+        .first { it.isFile }
+    val libraryProperties = Properties().apply {
+        val file = layout.settingsDirectory.file(propertiesFile.absolutePath)
         load(providers.fileContents(file).asText.get().reader())
     }
-    val libraryGroup: String = rootProperties.getProperty("group")
+    val libraryGroup: String = libraryProperties.getProperty("group")
     val libraryVersion: String = providers.environmentVariable("LIBRARY_VERSION").orNull
         ?.also {
             require(it.matches(Regex("\\d+\\.\\d+\\.\\d+(?:[.-][0-9A-Za-z]+)*"))) {
                 "Invalid LIBRARY_VERSION. Use MAJOR.MINOR.PATCH with an optional alphanumeric suffix."
             }
         }
-        ?: rootProperties.getProperty("version")
+        ?: libraryProperties.getProperty("version")
 
     gradle.lifecycle.beforeProject {
         group = libraryGroup

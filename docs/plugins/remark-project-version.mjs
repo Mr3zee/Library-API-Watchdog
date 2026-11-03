@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 import {visit} from 'unist-util-visit';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const propertiesFile = path.resolve(here, '../../gradle.properties');
+const propertiesFile = path.resolve(here, '../../library.properties');
 const versionCatalogFile = path.resolve(here, '../../gradle/libs.versions.toml');
 
 export const projectVersionTemplate = '{{libraryApiWatchdogVersion}}';

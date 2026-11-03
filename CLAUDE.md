@@ -44,9 +44,9 @@ npm run build                       # the site build, fails on a broken link or 
   `report-aggregation`) and `plugin-annotations` are included builds. Address their tasks with the build name first:
   `:gradle-plugin:test`. The root `check` and publication tasks also run in the included builds. A Maven Central
   publication makes one deployment for each build.
-- `useRootGroupAndVersion` in `build-logic-settings` sets `group` and `version` from the root
-  `gradle.properties` in every build, because an included build doesn't read that file. The dev kit version is the
-  `devkit` entry of the version catalog.
+- `library.properties` holds `group` and `version`, not `gradle.properties`, because an included build doesn't read
+  the root `gradle.properties`. `useLibraryGroupAndVersion` in `build-logic-settings` sets both in every build. The dev
+  kit version is the `devkit` entry of the version catalog.
 - A project of an included build depends on the root build's projects, and the reverse, by coordinates
   (`"$group:<name>:$version"`), never with `project(...)`. Composite substitution resolves them.
 - `diagnostics.json` is the single source of truth for diagnostic texts. The build generates
