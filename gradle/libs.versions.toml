@@ -15,6 +15,8 @@ publish = "0.37.0"
 pluginPublish = "2.2.1"
 # https://plugins.gradle.org/plugin/com.gradle.develocity
 develocity = "4.3.3"
+# https://github.com/gmazzo/gradle-buildconfig-plugin, the version that the dev kit uses
+buildconfig = "6.0.10"
 # https://developer.android.com/build/releases/gradle-plugin
 agp8 = "8.13.0"
 agp9 = "9.2.1"
@@ -32,8 +34,10 @@ dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", vers
 maven-publish-gradle-plugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "publish" }
 plugin-publish-gradle-plugin = { module = "com.gradle.publish:plugin-publish-plugin", version.ref = "pluginPublish" }
 develocity-gradle-plugin = { module = "com.gradle:develocity-gradle-plugin", version.ref = "develocity" }
+buildconfig-gradle-plugin = { module = "com.github.gmazzo.buildconfig:plugin", version.ref = "buildconfig" }
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-multiplatform-cliMin = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlinCliMin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

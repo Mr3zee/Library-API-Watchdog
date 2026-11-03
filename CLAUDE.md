@@ -15,7 +15,7 @@ The compiler plugin and the fixer have no plain `test` task, only one task for e
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:k2410Test          # diagnostics tests against Kotlin 2.4.10
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:generateTests      # regenerate JUnit classes from test data
 ./gradlew :kotlin-library-api-watchdog-exempts-fixer:k2410Test            # fixer tests plus the compiler-plugin integration test
-./gradlew :gradle-plugin-test:functionalTest                              # Gradle TestKit tests against every supported Kotlin version
+./gradlew :gradle-plugin-test:allVersionedFunctionalTests                 # Gradle TestKit tests against every supported Kotlin version
 ./gradlew :gradle-plugin-test:k2410FunctionalTest                         # the same against one Kotlin version
 ./gradlew :gradle-plugin:test :gradle-plugin:kotlin-library-api-watchdog-report-aggregation:test  # unit tests of the included gradle-plugin build
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:k2410Test --tests "*JvmDiagnosticTestGenerated*"   # filter generated tests
@@ -88,8 +88,7 @@ npm run build                       # the site build, fails on a broken link or 
 - The Android functional tests skip themselves without an Android SDK. AGP 8 fixtures run with the Gradle version
   pinned in `AgpVersion.AGP8` of `WatchdogProject.kt`, because AGP 8 can't run on Gradle 9.6 or later. The dev kit
   skips every multiplatform fixture on Kotlin versions older than the Kotlin version that compiled the annotations
-  klibs, because KLIBs aren't forward compatible. So when `kotlin` in the version catalog is newer than `kotlinCliMin`, the
-  multiplatform fixtures don't run on the older versions.
+  klibs, because KLIBs aren't forward compatible.
 
 ## Adding a new diagnostic
 

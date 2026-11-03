@@ -6,7 +6,6 @@ import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
-import org.jetbrains.kotlinx.library.api.watchdog.PluginInfo
 import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnostics
 
 /** The system properties that the Gradle `benchmark`, `profile`, and `benchmarkCorpusAudit` tasks pass to the JVM. */
@@ -19,7 +18,7 @@ internal object BenchmarkEnv {
             .filter { it.isNotEmpty() }
     }
 
-    const val pluginId: String = PluginInfo.PLUGIN_ID
+    const val pluginId: String = BenchmarkPluginInfo.PLUGIN_ID
 
     private fun requireProperty(name: String): String =
         System.getProperty(name)

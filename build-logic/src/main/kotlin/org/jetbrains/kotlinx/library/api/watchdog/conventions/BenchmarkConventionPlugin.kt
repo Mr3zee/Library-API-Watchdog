@@ -1,5 +1,6 @@
 package org.jetbrains.kotlinx.library.api.watchdog.conventions
 
+import com.github.gmazzo.buildconfig.BuildConfigExtension
 import java.io.File
 import java.nio.file.Files
 import java.time.LocalDateTime
@@ -19,6 +20,7 @@ import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.jvm.tasks.Jar
 import org.gradle.process.CommandLineArgumentProvider
+import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitPropertiesDsl
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -29,15 +31,25 @@ class BenchmarkConventionPlugin : Plugin<Project> {
             val versions = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
             val kotlinVersion = versions.findVersion("kotlin").get().requiredVersion
             val kotlin = extensions.getByType(KotlinMultiplatformExtension::class.java)
-            val entryPointCompilation = kotlin.targets.firstNotNullOf { it.compilations.findByName("entryPoint") }
-            val kotlinTarget = entryPointCompilation.target
+            // The plugin jar is the jar of the target with the entry-point compilation.
+            val kotlinTarget = kotlin.targets.first { it.compilations.findByName("entryPoint") != null }
             val mainCompilation = kotlinTarget.compilations.getByName("main")
             val benchmarkCompilation =
                 kotlinTarget.compilations.create("benchmark") {
                     associateWith(mainCompilation)
-                    // The dev kit generates `PluginInfo` in the entry-point compilation.
-                    associateWith(entryPointCompilation)
                     defaultSourceSet.kotlin.srcDir("src/benchmark/kotlin")
+                }
+            // The dev kit entry point is a no-op when its class loader doesn't give its URLs, and the application class
+            // loader doesn't. So the entry-point compilation and its `PluginInfo` stay off the benchmark classpath, and
+            // the compiler loads the entry point from the plugin jar. The benchmarks get the plugin ID from their own
+            // generated class.
+            val pluginId = extensions.getByType(DevKitPropertiesDsl::class.java).pluginPackage
+            extensions.getByType(BuildConfigExtension::class.java).sourceSets
+                .named(benchmarkCompilation.defaultSourceSet.name) {
+                    forClass("org.jetbrains.kotlinx.library.api.watchdog.benchmark", "BenchmarkPluginInfo") {
+                        useKotlinOutput()
+                        buildConfigField(String::class.java, "PLUGIN_ID", pluginId)
+                    }
                 }
             configurations.named(checkNotNull(benchmarkCompilation.runtimeDependencyConfigurationName)) {
                 // A custom compilation doesn't inherit the compiler-version attribute of the dev kit,
@@ -75,12 +87,9 @@ class BenchmarkConventionPlugin : Plugin<Project> {
             dependencies.add("benchmarkCorpusClasspath", "$group:kotlin-library-api-watchdog-plugin-annotations:$version")
             dependencies.add("jmhBytecodeGenerator", "org.openjdk.jmh:jmh-generator-bytecode:$JMH_VERSION")
 
-            // The benchmarks read only the constants of `PluginInfo`, so the entry-point classes stay off the runtime
-            // classpath. The compiler then loads the entry point from the plugin jar. The dev kit entry point is a
-            // no-op when its class loader doesn't give its URLs, and the application class loader doesn't.
             val benchmarkRuntimeClasspath = files(
                 benchmarkCompilation.output.allOutputs,
-                checkNotNull(benchmarkCompilation.runtimeDependencyFiles).minus(entryPointCompilation.output.allOutputs),
+                benchmarkCompilation.runtimeDependencyFiles,
             )
             val benchmarkGeneratedSources = layout.buildDirectory.dir("benchmark-jmh/sources")
             val benchmarkGeneratedResources = layout.buildDirectory.dir("benchmark-jmh/resources")

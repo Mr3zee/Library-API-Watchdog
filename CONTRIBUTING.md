@@ -31,7 +31,7 @@ build name first: `./gradlew :gradle-plugin:test`. The root `check` task also ru
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkCorpusAudit # check that the corpus triggers every benchmark-eligible checker
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkBaseline   # compare checker time and allocation with the CI baseline
 ./gradlew :kotlin-library-api-watchdog-exempts-fixer:allTests             # exemption fixer tests against every supported Kotlin version
-./gradlew :gradle-plugin-test:functionalTest                              # Gradle TestKit tests against every supported Kotlin version
+./gradlew :gradle-plugin-test:allVersionedFunctionalTests                 # Gradle TestKit tests against every supported Kotlin version
 ./gradlew :gradle-plugin:test                                             # Gradle plugin unit tests
 ./gradlew :gradle-plugin:kotlin-library-api-watchdog-report-aggregation:test # report aggregation tests
 ./gradlew :build-logic:test                                               # build logic tests
@@ -109,7 +109,7 @@ The website code samples read the library version from `gradle.properties`.
 LIBRARY_VERSION=0.2.0-dev-1 ./gradlew assemble
 ```
 
-The override doesn't change any source file. `-Pversion` has no effect, because a `-P` value doesn't reach an included build.
+The override doesn't change any source file. The build ignores `-Pversion`.
 An empty or invalid value fails the build.
 
 ## Dependency updates

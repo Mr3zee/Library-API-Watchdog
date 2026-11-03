@@ -7,6 +7,8 @@ dependencies {
     implementation(libs.devkit.plugins)
     // Each build applies the Kotlin Gradle plugin of its own version. The plugin-annotations build uses an older one.
     compileOnly(libs.kotlin.gradle.plugin)
+    // The dev kit applies the plugin and puts it on the runtime classpath.
+    compileOnly(libs.buildconfig.gradle.plugin)
     implementation(libs.maven.publish.gradle.plugin)
     implementation(libs.plugin.publish.gradle.plugin)
     implementation(libs.dokka.gradle.plugin)

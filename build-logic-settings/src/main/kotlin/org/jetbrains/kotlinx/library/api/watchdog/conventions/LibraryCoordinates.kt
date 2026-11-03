@@ -6,7 +6,7 @@ import java.util.Properties
 /**
  * Sets the group and the version of every project in this build from the root `gradle.properties`, because an
  * included build doesn't read that file. `LIBRARY_VERSION` overrides the version. `-Pgroup` and `-Pversion` have no
- * effect, because a `-P` value doesn't reach an included build.
+ * effect, because the `beforeProject` action runs after Gradle applies the `-P` values.
  *
  * Don't move the body into the settings script. Gradle copies the `beforeProject` action for each project with the
  * configuration cache serializer. In a script, a lambda that reads a script `val` holds the script object, and the
