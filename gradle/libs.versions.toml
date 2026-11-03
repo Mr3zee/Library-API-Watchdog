@@ -2,11 +2,23 @@
 # https://github.com/JetBrains/kotlin
 kotlin = "2.4.0"
 kotlinCliMin = "2.3.20"
+# The plugin-annotations build compiles with this version, because a Kotlin 2.3 compiler can't read a klib of a newer
+# compiler. It isn't kotlinCliMin, because the KotlinNativeCacheMetrics of KGP 2.3.20 fail the first configuration
+# cache store.
+kotlinMin = "2.3.21"
 kotlinIdeMin = "262"
+# https://github.com/Kotlin/compiler-plugin-dev-kit
+devkit = "0.0.4-dev-334"
 # https://github.com/Kotlin/dokka
 dokka = "2.2.0"
 # https://github.com/GradleUp/shadow
 shadow = "9.6.0"
+# https://github.com/vanniktech/gradle-maven-publish-plugin
+publish = "0.37.0"
+# https://plugins.gradle.org/plugin/com.gradle.plugin-publish
+pluginPublish = "2.2.1"
+# https://plugins.gradle.org/plugin/com.gradle.develocity
+develocity = "4.3.3"
 # https://developer.android.com/build/releases/gradle-plugin
 agp8 = "8.13.0"
 agp9 = "9.2.1"
@@ -17,8 +29,16 @@ jsoup = "1.23.2"
 commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 kotlin-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+devkit-settings = { module = "org.jetbrains.kotlin.compiler.plugin.devkit:settings", version.ref = "devkit" }
+devkit-plugins = { module = "org.jetbrains.kotlin.compiler.plugin.devkit:plugins", version.ref = "devkit" }
+dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
+maven-publish-gradle-plugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "publish" }
+plugin-publish-gradle-plugin = { module = "com.gradle.publish:plugin-publish-plugin", version.ref = "pluginPublish" }
+develocity-gradle-plugin = { module = "com.gradle:develocity-gradle-plugin", version.ref = "develocity" }
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-multiplatform-min = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlinMin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

@@ -7,22 +7,24 @@ on:
     branches:
       - main
     paths:
-      - 'compiler-plugin/src/main/**'
+      - 'compiler-plugin/src/*Main/**'
       - 'compiler-plugin/src/benchmark/**'
       - 'compiler-plugin/build.gradle.kts'
       - 'plugin-annotations/**'
-      - 'gradle-conventions/**'
+      - 'build-logic/**'
+      - 'build-logic-settings/**'
       - 'diagnostics.json'
       - 'gradle/**'
       - 'gradle.properties'
       - '.github/workflows/benchmark-baseline.yml'
   pull_request:
     paths:
-      - 'compiler-plugin/src/main/**'
+      - 'compiler-plugin/src/*Main/**'
       - 'compiler-plugin/src/benchmark/**'
       - 'compiler-plugin/build.gradle.kts'
       - 'plugin-annotations/**'
-      - 'gradle-conventions/**'
+      - 'build-logic/**'
+      - 'build-logic-settings/**'
       - 'diagnostics.json'
       - 'gradle/**'
       - 'gradle.properties'

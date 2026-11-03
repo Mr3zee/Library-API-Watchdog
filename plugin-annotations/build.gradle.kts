@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {
-    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.multiplatform.min)
     id("library-api-watchdog.dokka-conventions")
     id("library-api-watchdog.jvm-target-conventions")
     `maven-publish`
@@ -48,5 +48,8 @@ kotlin {
 
     applyDefaultHierarchyTemplate()
 
-    abiValidation()
+    // KGP 2.3 turns the ABI validation off by default.
+    abiValidation {
+        enabled.set(true)
+    }
 }

@@ -1,0 +1,319 @@
+package org.jetbrains.kotlinx.library.api.watchdog.conventions
+
+import java.io.File
+import java.nio.file.Files
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import kotlin.jvm.java
+import org.gradle.api.GradleException
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.VersionCatalogsExtension
+import org.gradle.api.attributes.Category
+import org.gradle.api.attributes.Usage
+import org.gradle.api.file.FileCollection
+import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.JavaExec
+import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.jvm.tasks.Jar
+import org.gradle.process.CommandLineArgumentProvider
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+class BenchmarkConventionPlugin : Plugin<Project> {
+    override fun apply(target: Project) {
+        with(target) {
+            val versions = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
+            val kotlinVersion = versions.findVersion("kotlin").get().requiredVersion
+            val kotlin = extensions.getByType(KotlinMultiplatformExtension::class.java)
+            val entryPointCompilation = kotlin.targets.firstNotNullOf { it.compilations.findByName("entryPoint") }
+            val kotlinTarget = entryPointCompilation.target
+            val mainCompilation = kotlinTarget.compilations.getByName("main")
+            val benchmarkCompilation =
+                kotlinTarget.compilations.create("benchmark") {
+                    associateWith(mainCompilation)
+                    // The dev kit generates `PluginInfo` in the entry-point compilation.
+                    associateWith(entryPointCompilation)
+                    defaultSourceSet.kotlin.srcDir("src/benchmark/kotlin")
+                }
+            configurations.named(checkNotNull(benchmarkCompilation.runtimeDependencyConfigurationName)) {
+                // A custom compilation doesn't inherit the compiler-version attribute of the dev kit,
+                // so its runtime has unflattened multi-release artifacts.
+                val mainRuntime =
+                    configurations.getByName(
+                        checkNotNull(mainCompilation.runtimeDependencyConfigurationName),
+                    )
+                attributes.addAllLater(mainRuntime.attributes)
+            }
+
+            // The classpath that the corpus compiles against.
+            val benchmarkCorpusClasspath: Configuration = configurations.create("benchmarkCorpusClasspath") {
+                isCanBeConsumed = false
+                attributes {
+                    attribute(
+                        Usage.USAGE_ATTRIBUTE,
+                        objects.named(Usage::class.java, Usage.JAVA_RUNTIME),
+                    )
+                    attribute(
+                        Category.CATEGORY_ATTRIBUTE,
+                        objects.named(Category::class.java, Category.LIBRARY),
+                    )
+                    attribute(KotlinPlatformType.attribute, KotlinPlatformType.jvm)
+                }
+            }
+
+            val jmhBytecodeGenerator = configurations.create("jmhBytecodeGenerator")
+
+            benchmarkCompilation.defaultSourceSet.dependencies {
+                implementation("org.openjdk.jmh:jmh-core:$JMH_VERSION")
+                implementation("org.jetbrains.kotlin:kotlin-compiler:$kotlinVersion")
+            }
+            // The annotations are in an included build, so the dependency uses their coordinates.
+            dependencies.add("benchmarkCorpusClasspath", "$group:kotlin-library-api-watchdog-plugin-annotations:$version")
+            dependencies.add("jmhBytecodeGenerator", "org.openjdk.jmh:jmh-generator-bytecode:$JMH_VERSION")
+
+            // The benchmarks read only the constants of `PluginInfo`, so the entry-point classes stay off the runtime
+            // classpath. The compiler then loads the entry point from the plugin jar. The dev kit entry point is a
+            // no-op when its class loader doesn't give its URLs, and the application class loader doesn't.
+            val benchmarkRuntimeClasspath = files(
+                benchmarkCompilation.output.allOutputs,
+                checkNotNull(benchmarkCompilation.runtimeDependencyFiles).minus(entryPointCompilation.output.allOutputs),
+            )
+            val benchmarkGeneratedSources = layout.buildDirectory.dir("benchmark-jmh/sources")
+            val benchmarkGeneratedResources = layout.buildDirectory.dir("benchmark-jmh/resources")
+            val benchmarkGeneratedClasses = layout.buildDirectory.dir("benchmark-jmh/classes")
+            val benchmarkKotlinClasses = tasks
+                .named(benchmarkCompilation.compileTaskProvider.name, KotlinCompile::class.java)
+                .flatMap { it.destinationDirectory }
+
+            val generateBenchmarkJmhSources = tasks.register("generateBenchmarkJmhSources", JavaExec::class.java) {
+                description = "Generates the JMH benchmark wrappers from the compiled benchmark classes."
+                mainClass.set("org.openjdk.jmh.generators.bytecode.JmhBytecodeGenerator")
+                classpath = files(jmhBytecodeGenerator, benchmarkRuntimeClasspath)
+                inputs.files(benchmarkKotlinClasses)
+                outputs.dir(benchmarkGeneratedSources)
+                outputs.dir(benchmarkGeneratedResources)
+                argumentProviders.add(
+                    CommandLineArgumentProvider {
+                        listOf(
+                            benchmarkKotlinClasses.get().asFile.absolutePath,
+                            benchmarkGeneratedSources.get().asFile.absolutePath,
+                            benchmarkGeneratedResources.get().asFile.absolutePath,
+                            "default",
+                        )
+                    },
+                )
+            }
+
+            val compileBenchmarkJmhSources = tasks.register("compileBenchmarkJmhSources", JavaCompile::class.java) {
+                description = "Compiles the generated JMH benchmark wrappers."
+                dependsOn(generateBenchmarkJmhSources)
+                source(benchmarkGeneratedSources)
+                classpath = benchmarkRuntimeClasspath
+                destinationDirectory.set(benchmarkGeneratedClasses)
+            }
+
+            fun configureWatchdogBenchmarkInputs(task: JavaExec) {
+                val pluginJar: Provider<RegularFile> =
+                    tasks.named(kotlinTarget.artifactsTaskName, Jar::class.java).flatMap { it.archiveFile }
+                val corpusFiles: FileCollection = files(benchmarkCorpusClasspath)
+                task.inputs.file(pluginJar)
+                task.inputs.files(corpusFiles)
+                task.jvmArgumentProviders.add(
+                    CommandLineArgumentProvider {
+                        listOf(
+                            "-Dwatchdog.benchmark.pluginJar=${pluginJar.get().asFile.absolutePath}",
+                            "-Dwatchdog.benchmark.corpusClasspath=${corpusFiles.files.joinToString(File.pathSeparator) { it.absolutePath }}",
+                        )
+                    },
+                )
+            }
+
+            val benchmarkResultsDirectory = layout.buildDirectory.dir("reports/benchmark")
+            tasks.register("benchmark", JavaExec::class.java) {
+                group = "benchmark"
+                description = "Runs the watchdog JMH benchmarks with the GC (allocation) profiler. " +
+                        "The check task doesn't run it. Filter with -Pbenchmark.include=<regex>. " +
+                        "Pass extra JMH options with -Pbenchmark.args='...'."
+                mainClass.set("org.openjdk.jmh.Main")
+                classpath = files(benchmarkGeneratedClasses, benchmarkGeneratedResources) +
+                        benchmarkRuntimeClasspath
+                dependsOn(compileBenchmarkJmhSources)
+                configureWatchdogBenchmarkInputs(this)
+                val include = providers.gradleProperty("benchmark.include")
+                val extraArgs = providers.gradleProperty("benchmark.args")
+                var resultsPath: File? = null
+                doFirst {
+                    resultsPath = benchmarkResultsDirectory.get().file(
+                        "results-${resultTimestamp()}.json",
+                    ).asFile
+                    resultsPath.parentFile.mkdirs()
+                }
+                argumentProviders.add(
+                    CommandLineArgumentProvider {
+                        val resultFile = checkNotNull(resultsPath) {
+                            "The benchmark results path wasn't initialized."
+                        }
+                        buildList {
+                            include.orNull?.let { add(it) }
+                            addAll(listOf("-prof", "gc"))
+                            addAll(listOf("-foe", "true"))
+                            addAll(listOf("-rf", "json", "-rff", resultFile.absolutePath))
+                            extraArgs.orNull?.let {
+                                addAll(it.split(' ').filter(String::isNotEmpty))
+                            }
+                        }
+                    },
+                )
+            }
+
+            val profileResultsDirectory = layout.buildDirectory.dir("reports/profile")
+            tasks.register("profile", JavaExec::class.java) {
+                group = "benchmark"
+                description = "Profiles one watchdog benchmark subject with Java Flight Recorder. " +
+                        "Defaults to a whole compilation with all checkers. Select an isolated checker with " +
+                        "-Pprofile.benchmark=isolated -Pprofile.subject=<CheckerName>."
+                mainClass.set("org.openjdk.jmh.Main")
+                classpath = files(benchmarkGeneratedClasses, benchmarkGeneratedResources) +
+                        benchmarkRuntimeClasspath
+                dependsOn(compileBenchmarkJmhSources)
+                configureWatchdogBenchmarkInputs(this)
+
+                val benchmark = providers.gradleProperty("profile.benchmark").orElse("whole")
+                val subject = providers.gradleProperty("profile.subject")
+                val corpusFiles = providers.gradleProperty("profile.corpusFiles").orElse("200")
+                val stackDepth = providers.gradleProperty("profile.stackDepth").orElse("256")
+                val extraArgs = providers.gradleProperty("profile.args")
+                val resultsPath = profileResultsDirectory.get().asFile
+                var startedAt = 0L
+                var timestamp: String? = null
+                doFirst {
+                    startedAt = System.currentTimeMillis()
+                    timestamp = resultTimestamp()
+                    resultsPath.mkdirs()
+                }
+                doLast {
+                    val resultTimestamp = checkNotNull(timestamp) {
+                        "The profile result timestamp wasn't initialized."
+                    }
+                    resultsPath.walkTopDown()
+                        .filter { it.isFile && it.name == "profile.jfr" && it.lastModified() >= startedAt }
+                        .toList()
+                        .forEach { profile ->
+                            Files.move(
+                                profile.toPath(),
+                                profile.resolveSibling("profile-$resultTimestamp.jfr").toPath(),
+                            )
+                        }
+                }
+                argumentProviders.add(
+                    CommandLineArgumentProvider {
+                        val (include, parameter, selectedSubject) = when (benchmark.get()) {
+                            "whole" -> Triple(
+                                "WholeCompilationBenchmark.compile",
+                                "mode",
+                                subject.orNull ?: "allCheckers",
+                            )
+                            "isolated" -> Triple(
+                                "IsolatedCheckerBenchmark.sweepCorpus",
+                                "checker",
+                                subject.orNull ?: throw GradleException(
+                                    "An isolated profile needs -Pprofile.subject=<CheckerName> " +
+                                            "(or -Pprofile.subject=none for the traversal baseline).",
+                                ),
+                            )
+                            else -> throw GradleException(
+                                "Unknown profile benchmark '${benchmark.get()}'. Expected 'whole' or 'isolated'.",
+                            )
+                        }
+
+                        buildList {
+                            add(include)
+                            addAll(listOf("-p", "$parameter=$selectedSubject"))
+                            addAll(listOf("-p", "corpusFiles=${corpusFiles.get()}"))
+                            addAll(
+                                listOf(
+                                    "-prof",
+                                    "jfr:dir=${resultsPath.absolutePath};configName=profile;" +
+                                            "stackDepth=${stackDepth.get()}",
+                                ),
+                            )
+                            addAll(listOf("-foe", "true"))
+                            extraArgs.orNull?.let {
+                                addAll(it.split(' ').filter(String::isNotEmpty))
+                            }
+                        }
+                    },
+                )
+            }
+
+            val baselineDirectory = layout.projectDirectory.dir("src/benchmark/baseline")
+            val baselineSummary = layout.buildDirectory.file("reports/benchmark-baseline/summary.md")
+            tasks.register("benchmarkBaseline", JavaExec::class.java) {
+                group = "benchmark"
+                description = "Compares checker time and allocation with src/benchmark/baseline/<machine-profile>.properties " +
+                        "and fails on a regression. -Pbenchmark.baseline.record=true writes the file instead."
+                mainClass.set("org.jetbrains.kotlinx.library.api.watchdog.benchmark.BenchmarkBaseline")
+                classpath = files(benchmarkGeneratedClasses, benchmarkGeneratedResources) +
+                        benchmarkRuntimeClasspath
+                dependsOn(compileBenchmarkJmhSources)
+                configureWatchdogBenchmarkInputs(this)
+                outputs.upToDateWhen { false }
+                // JMH forks inherit the fixed heap, so the GC behavior is the same between runs.
+                jvmArgs("-Xms2g", "-Xmx2g")
+
+                val flags = mapOf(
+                    "benchmark.baseline.record" to "--record",
+                    "benchmark.baseline.allowMissing" to "--allow-missing",
+                ).mapValues { (property, flag) ->
+                    providers.gradleProperty(property).map { if (it.toBoolean()) flag else null }
+                }
+                val valued = mapOf(
+                    "benchmark.baseline.forks" to "--forks",
+                    "benchmark.baseline.warmup" to "--warmup",
+                    "benchmark.baseline.measurement" to "--measurement",
+                    "benchmark.baseline.corpusFiles" to "--corpus-files",
+                    "benchmark.baseline.retries" to "--retries",
+                ).mapValues { (property, option) ->
+                    providers.gradleProperty(property).map { listOf(option, it) }
+                }
+                argumentProviders.add(
+                    CommandLineArgumentProvider {
+                        buildList {
+                            addAll(listOf("--baseline-dir", baselineDirectory.asFile.absolutePath))
+                            addAll(listOf("--summary", baselineSummary.get().asFile.absolutePath))
+                            flags.values.forEach { flag -> flag.orNull?.let { add(it) } }
+                            valued.values.forEach { option -> option.orNull?.let { addAll(it) } }
+                        }
+                    },
+                )
+            }
+
+            tasks.register("benchmarkCorpusAudit", JavaExec::class.java) {
+                group = "benchmark"
+                description = "Compiles the benchmark corpus with every watchdog diagnostic enabled and " +
+                        "prints the report count of each one. Set the file count with " +
+                        "-Pbenchmark.corpusFiles=<n>."
+                mainClass.set("org.jetbrains.kotlinx.library.api.watchdog.benchmark.CorpusAudit")
+                classpath = benchmarkRuntimeClasspath
+                configureWatchdogBenchmarkInputs(this)
+                val corpusFiles = providers.gradleProperty("benchmark.corpusFiles")
+                argumentProviders.add(
+                    CommandLineArgumentProvider {
+                        listOfNotNull(corpusFiles.orNull)
+                    },
+                )
+            }
+        }
+    }
+
+    private companion object {
+        const val JMH_VERSION = "1.37"
+        val RESULT_TIMESTAMP_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss-SSS")
+
+        fun resultTimestamp(): String = LocalDateTime.now().format(RESULT_TIMESTAMP_FORMATTER)
+    }
+}

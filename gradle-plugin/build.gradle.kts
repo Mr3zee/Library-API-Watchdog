@@ -1,11 +1,12 @@
 @file:OptIn(ExperimentalAbiValidation::class)
 
+import org.jetbrains.kotlin.compiler.plugin.devkit.ProjectOrGav
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {
-    id("org.jetbrains.kotlin.compiler.plugin.devkit.gradle-plugin")
-    id("library-api-watchdog.devkit-versions-conventions")
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    id("devkit.gradle")
     id("library-api-watchdog.dokka-conventions")
     id("library-api-watchdog.gradle-plugin-conventions")
     id("library-api-watchdog.jvm-target-conventions")
@@ -14,9 +15,7 @@ plugins {
     id("library-api-watchdog.maven-central-publishing-conventions")
 }
 
-val devKitVersion = providers.systemProperty("devkitVersion").get()
-
-// The dev kit's `gradle-plugin-runtime` and `version-resolution` are Java 17 classes.
+// The dev kit's `gradle-plugin-runtime` is a Java 17 library.
 jvmTargetConventions {
     release.set(JvmTarget.JVM_17)
 }
@@ -29,25 +28,20 @@ kotlin {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin.compiler.plugin.devkit:version-resolution:$devKitVersion")
+    implementation(pluginDevKit("version-resolution"))
     implementation(project(":kotlin-library-api-watchdog-report-aggregation"))
     testImplementation(kotlin("test-junit"))
 }
 
 pluginDevKit {
-    pluginPackage.set("org.jetbrains.kotlinx.library.api.watchdog")
+    pluginPackage = "org.jetbrains.kotlinx.library.api.watchdog"
+    companionLibrary("kotlin-library-api-watchdog-plugin-annotations")
+    compilerPlugin = ProjectOrGav.Sibling("kotlin-library-api-watchdog-compiler-plugin")
 }
 
-tasks.register("printCiFunctionalTestMatrix") {
-    group = "help"
-    description = "Prints the versioned functional-test task names as a JSON array for CI."
-
-    val taskNames = pluginDevKit.testAgainst.map { it.testTask.name }.sorted()
-    val json = taskNames.joinToString(prefix = "[\"", separator = "\",\"", postfix = "\"]")
-
-    doLast {
-        logger.quiet(json)
-    }
+// The root build runs `check` of this project only.
+tasks.check {
+    dependsOn(":kotlin-library-api-watchdog-report-aggregation:check")
 }
 
 gradlePlugin {

@@ -1,24 +1,17 @@
 plugins {
-    id("org.jetbrains.kotlin.compiler.plugin.devkit.compiler-library")
-    id("library-api-watchdog.devkit-versions-conventions")
+    id("devkit.compiler-library")
     id("library-api-watchdog.exempts-fixer-conventions")
     id("library-api-watchdog.space-publishing-conventions")
     id("library-api-watchdog.maven-central-publishing-conventions")
 }
 
-val devKitVersion = providers.systemProperty("devkitVersion").get()
-
 pluginDevKit {
-    pluginPackage.set("org.jetbrains.kotlinx.library.api.watchdog.fixer")
+    pluginPackage = "org.jetbrains.kotlinx.library.api.watchdog.fixer"
 }
 
 kotlin {
     sourceSets {
-        commonMain {
-            kotlin.srcDir("src/main/kotlin")
-        }
         commonTest {
-            kotlin.srcDir("src/test/kotlin")
             dependencies {
                 implementation(kotlin("test"))
             }
@@ -26,20 +19,16 @@ kotlin {
     }
     val compilerIntegrationTest = sourceSets.create("compilerIntegrationTest") {
         dependsOn(sourceSets.commonTest.get())
-        resources.srcDir(rootProject.file("compiler-plugin/src/test/data"))
+        resources.srcDir(isolated.rootProject.projectDirectory.dir("compiler-plugin/src/commonTest/data"))
         dependencies {
-            implementation("org.jetbrains.kotlin.compiler.plugin.devkit:compiler-plugin-runtime:$devKitVersion")
+            implementation(pluginDevKit("compiler-plugin-runtime"))
             implementation(project(":kotlin-library-api-watchdog-compiler-plugin"))
-            implementation(project(":kotlin-library-api-watchdog-plugin-annotations"))
+            implementation("$group:kotlin-library-api-watchdog-plugin-annotations:$version")
         }
     }
 
     pluginDevKit.testAgainst.configureEach { test { dependsOn(compilerIntegrationTest) } }
 }
-
-// The tests don't need generated runners. The `GenerateTestsTask` type of the dev kit is internal,
-// so the name selects the tasks: https://github.com/Kotlin/compiler-plugin-dev-kit/issues/62.
-tasks.matching { it.name.startsWith("generateTests") }.configureEach { enabled = false }
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
