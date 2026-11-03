@@ -10,6 +10,7 @@ on:
       - 'diagnostics.json'
       - 'CHANGELOG.md'
       - 'gradle.properties'
+      - 'library.properties'
       - 'scripts/lib/project-version.sh'
       - 'scripts/update-version.sh'
       - 'scripts/check-publication-env.sh'
@@ -89,10 +90,10 @@ jobs:
 
       - name: Cross-check documentation examples
         run: |
-          ./gradlew :kotlin-library-api-watchdog-gradle-plugin:k240FunctionalTest \
+          ./gradlew :gradle-plugin-test:k240FunctionalTest \
             --tests org.jetbrains.kotlinx.library.api.watchdog.DocsExamplesTest || {
               echo "Tests failed; retrying once."
-              ./gradlew :kotlin-library-api-watchdog-gradle-plugin:k240FunctionalTest \
+              ./gradlew :gradle-plugin-test:k240FunctionalTest \
                 --tests org.jetbrains.kotlinx.library.api.watchdog.DocsExamplesTest
             }
 

@@ -11,7 +11,8 @@
       "separateMajorMinor": false
     },
     {
-      "matchPackageNames": ["org.jetbrains.kotlin.compiler.plugin.devkit:plugins"],
+      "matchPackageNames": ["/^org\\.jetbrains\\.kotlin\\.compiler\\.plugin\\.devkit:/"],
+      "registryUrls": ["https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap"],
       "ignoreUnstable": false
     },
     {
@@ -33,15 +34,6 @@
     }
   ],
   "customManagers": [
-    {
-      "customType": "regex",
-      "managerFilePatterns": ["/^gradle\\.properties$/"],
-      "matchStrings": ["(?:^|\\n)systemProp\\.devkitVersion=(?<currentValue>[^\\s]+)"],
-      "datasourceTemplate": "maven",
-      "packageNameTemplate": "org.jetbrains.kotlin.compiler.plugin.devkit:plugins",
-      "registryUrlTemplate": "https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap",
-      "versioningTemplate": "maven"
-    },
     {
       "customType": "regex",
       "managerFilePatterns": ["/^gradle/libs\\.versions\\.toml$/"],

@@ -56,7 +56,7 @@ class CompilerPluginTestDataFixerTest {
     fun `fixes compiler plugin diagnostics test data`() {
         val diagnosticsDirectory = assertNotNull(
             javaClass.getResource("/diagnostics"),
-            "compiler-plugin/src/test/data must be on the exempts-fixer test classpath",
+            "compiler-plugin/src/commonTest/data must be on the exempts-fixer test classpath",
         ).let { Paths.get(it.toURI()) }
         val fixtures = Files.list(diagnosticsDirectory).use { paths ->
             paths.filter { it.fileName.toString().endsWith(".kt") }

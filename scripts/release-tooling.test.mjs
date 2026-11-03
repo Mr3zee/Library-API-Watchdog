@@ -28,7 +28,7 @@ function fixture(t) {
     fs.copyFileSync(path.join(repositoryDirectory, file), destination);
   }
   fs.mkdirSync(path.join(directory, 'docs/pages'), {recursive: true});
-  fs.writeFileSync(path.join(directory, 'gradle.properties'), 'group=example\nversion=1.2.3\n');
+  fs.writeFileSync(path.join(directory, 'library.properties'), 'group=example\nversion=1.2.3\n');
   fs.writeFileSync(path.join(directory, 'README.md'), [
     'kotlin("library.api-watchdog") version "1.2.3"',
     'kotlin("library.api-watchdog-report-aggregation") version "1.2.3"',
@@ -76,7 +76,7 @@ test('version updates preserve dependency versions and historical changelog entr
   const changelog = read('CHANGELOG.md');
   const updated = runScript(directory, 'scripts/update-version.sh', '2.3.4-RC1');
   assert.equal(updated.status, 0, updated.stderr);
-  assert.match(read('gradle.properties'), /version=2\.3\.4-RC1/);
+  assert.match(read('library.properties'), /version=2\.3\.4-RC1/);
   assert.match(read('README.md'), /kotlin\("library\.api-watchdog"\) version "2\.3\.4-RC1"/);
   assert.match(read('README.md'), /kotlin\("library\.api-watchdog-report-aggregation"\) version "2\.3\.4-RC1"/);
   assert.match(read('README.md'), /kotlin\("jvm"\) version "1\.2\.3"/);
@@ -97,9 +97,9 @@ test('version updates preserve dependency versions and historical changelog entr
 
 test('invalid version updates leave files unchanged', (t) => {
   const directory = fixture(t);
-  const properties = fs.readFileSync(path.join(directory, 'gradle.properties'), 'utf8');
+  const properties = fs.readFileSync(path.join(directory, 'library.properties'), 'utf8');
   assert.equal(runScript(directory, 'scripts/update-version.sh', 'invalid').status, 1);
-  assert.equal(fs.readFileSync(path.join(directory, 'gradle.properties'), 'utf8'), properties);
+  assert.equal(fs.readFileSync(path.join(directory, 'library.properties'), 'utf8'), properties);
 });
 
 test('changelog checks reject missing or stale pages and never rewrite them', (t) => {

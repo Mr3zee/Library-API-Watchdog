@@ -4,7 +4,9 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {
-    alias(libs.plugins.kotlin.multiplatform)
+    // The oldest supported Kotlin version compiles the annotations, because an older compiler can't read a klib from a
+    // newer one.
+    alias(libs.plugins.kotlin.multiplatform.cliMin)
     id("library-api-watchdog.dokka-conventions")
     id("library-api-watchdog.jvm-target-conventions")
     `maven-publish`

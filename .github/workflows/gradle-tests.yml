@@ -8,13 +8,15 @@ on:
       - 'compiler-plugin/**'
       - 'exempts-fixer/**'
       - 'gradle-plugin/**'
+      - 'gradle-plugin-test/**'
       - 'plugin-annotations/**'
-      - 'report-aggregation/**'
-      - 'gradle-conventions/**'
+      - 'build-logic/**'
+      - 'build-logic-settings/**'
       - 'diagnostics.json'
       - 'build.gradle.kts'
       - 'settings.gradle.kts'
       - 'gradle.properties'
+      - 'library.properties'
       - 'gradle/**'
       - 'gradlew'
       - '.github/workflows/gradle-tests.yml'
@@ -23,13 +25,15 @@ on:
       - 'compiler-plugin/**'
       - 'exempts-fixer/**'
       - 'gradle-plugin/**'
+      - 'gradle-plugin-test/**'
       - 'plugin-annotations/**'
-      - 'report-aggregation/**'
-      - 'gradle-conventions/**'
+      - 'build-logic/**'
+      - 'build-logic-settings/**'
       - 'diagnostics.json'
       - 'build.gradle.kts'
       - 'settings.gradle.kts'
       - 'gradle.properties'
+      - 'library.properties'
       - 'gradle/**'
       - 'gradlew'
       - '.github/workflows/gradle-tests.yml'
@@ -70,7 +74,7 @@ jobs:
       - name: Discover functional test tasks
         id: matrix
         run: |
-          tasks="$(./gradlew -q :kotlin-library-api-watchdog-gradle-plugin:printCiFunctionalTestMatrix)"
+          tasks="$(./gradlew -q :gradle-plugin-test:printCiFunctionalTestMatrix)"
           echo "tasks=$tasks" >> "$GITHUB_OUTPUT"
 
   library-checks:
@@ -94,31 +98,31 @@ jobs:
       - name: Run unit tests
         run: |
           ./gradlew \
-            :gradle-conventions:test \
-            :kotlin-library-api-watchdog-gradle-plugin:test \
-            :kotlin-library-api-watchdog-report-aggregation:test
+            :build-logic:test \
+            :gradle-plugin:test \
+            :gradle-plugin:kotlin-library-api-watchdog-report-aggregation:test
 
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: report-aggregation/package-lock.json
+          cache-dependency-path: gradle-plugin/report-aggregation/package-lock.json
 
       - name: Install report test dependencies
-        working-directory: report-aggregation
+        working-directory: gradle-plugin/report-aggregation
         run: npm ci --ignore-scripts
 
       - name: Test report JavaScript
-        working-directory: report-aggregation
+        working-directory: gradle-plugin/report-aggregation
         run: npm test
 
       - name: Check the ABI dumps
         run: |
           ./gradlew \
-            :kotlin-library-api-watchdog-gradle-plugin:checkKotlinAbi \
-            :kotlin-library-api-watchdog-plugin-annotations:checkKotlinAbi \
-            :kotlin-library-api-watchdog-report-aggregation:checkKotlinAbi
+            :gradle-plugin:checkKotlinAbi \
+            :gradle-plugin:kotlin-library-api-watchdog-report-aggregation:checkKotlinAbi \
+            :plugin-annotations:checkKotlinAbi
 
       - name: Save test reports
         if: failure()
@@ -202,9 +206,9 @@ jobs:
         env:
           FUNCTIONAL_TEST_TASK: ${{ matrix.task }}
         run: |
-          ./gradlew ":kotlin-library-api-watchdog-gradle-plugin:$FUNCTIONAL_TEST_TASK" || {
+          ./gradlew ":gradle-plugin-test:$FUNCTIONAL_TEST_TASK" || {
             echo "Tests failed; retrying once."
-            ./gradlew ":kotlin-library-api-watchdog-gradle-plugin:$FUNCTIONAL_TEST_TASK"
+            ./gradlew ":gradle-plugin-test:$FUNCTIONAL_TEST_TASK"
           }
 
       - name: Save test reports

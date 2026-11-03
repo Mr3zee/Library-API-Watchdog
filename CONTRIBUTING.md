@@ -4,8 +4,24 @@
 
 The build gets the compiler-plugin-dev-kit from its
 [Space EAP repository](https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap).
+The `devkit` entry of [gradle/libs.versions.toml](gradle/libs.versions.toml) sets its version.
 The dev kit settings plugin gives the Kotlin development repositories, the plugin coordinates,
 and the functional-test publishing.
+
+The repository is a composite build:
+
+| Build | Holds |
+|---|---|
+| The root build | The compiler plugin, the exemption fixer, and the Gradle plugin functional tests (`:gradle-plugin-test`). |
+| [gradle-plugin](gradle-plugin) | The Gradle plugin and the report aggregation plugin. |
+| [plugin-annotations](plugin-annotations) | The annotations. |
+| [build-logic-settings](build-logic-settings) | The settings plugins: `devkit` for the root build and `devkit-included` for the other builds. Both apply the dev kit settings plugin. |
+| [build-logic](build-logic) | The project plugins: `devkit.compiler`, `devkit.compiler-library`, `devkit.gradle`, and the `library-api-watchdog.*` conventions. |
+
+A task name on the command line runs the task in the root build only. To run a task of an included build, put the
+build name first: `./gradlew :gradle-plugin:test`. The root `check` task also runs `check` in `gradle-plugin` and
+`plugin-annotations`. The root `publishToMavenCentral`, `publishAllPublicationsToSpaceRepository`, and
+`publishPlugins` tasks also run the publication tasks of the included builds.
 
 ## Tests
 
@@ -15,12 +31,14 @@ and the functional-test publishing.
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkCorpusAudit # check that the corpus triggers every benchmark-eligible checker
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkBaseline   # compare checker time and allocation with the CI baseline
 ./gradlew :kotlin-library-api-watchdog-exempts-fixer:allTests             # exemption fixer tests against every supported Kotlin version
-./gradlew :kotlin-library-api-watchdog-gradle-plugin:functionalTest       # Gradle TestKit tests against every supported Kotlin version
-./gradlew :kotlin-library-api-watchdog-report-aggregation:test            # report aggregation tests
+./gradlew :gradle-plugin-test:allVersionedFunctionalTests                 # Gradle TestKit tests against every supported Kotlin version
+./gradlew :gradle-plugin:test                                             # Gradle plugin unit tests
+./gradlew :gradle-plugin:kotlin-library-api-watchdog-report-aggregation:test # report aggregation tests
+./gradlew :build-logic:test                                               # build logic tests
 ```
 
 CI runs one functional test task for each supported Kotlin version.
-`:kotlin-library-api-watchdog-gradle-plugin:printCiFunctionalTestMatrix` lists those tasks.
+`:gradle-plugin-test:printCiFunctionalTestMatrix` lists those tasks.
 
 The benchmarks and the baseline check are in
 [compiler-plugin/src/benchmark/README.md](compiler-plugin/src/benchmark/README.md).
@@ -28,16 +46,16 @@ The benchmarks and the baseline check are in
 ## Modules
 
 - [`:kotlin-library-api-watchdog-compiler-plugin`](compiler-plugin/src): the compiler plugin, FIR checkers only. The
-  test data is in [compiler-plugin/src/test/data/diagnostics](compiler-plugin/src/test/data/diagnostics).
-- [`:kotlin-library-api-watchdog-plugin-annotations`](plugin-annotations/src/commonMain/kotlin): the `@Intentionally*`
-  exemption annotations, `@InternalAnnotationMarker`, and the `ExemptionReason` enum.
+  test data is in [compiler-plugin/src/commonTest/data/diagnostics](compiler-plugin/src/commonTest/data/diagnostics).
+- [`:plugin-annotations`](plugin-annotations/src/commonMain/kotlin), the `kotlin-library-api-watchdog-plugin-annotations`
+  artifact: the `@Intentionally*` exemption annotations, `@InternalAnnotationMarker`, and the `ExemptionReason` enum.
 - [`:kotlin-library-api-watchdog-exempts-fixer`](exempts-fixer/src): reads the compiler diagnostic reports and applies
   the exemption annotations to Kotlin sources.
-- [`:kotlin-library-api-watchdog-gradle-plugin`](gradle-plugin/src): applies the compiler plugin and the annotations
-  dependency, and registers the `exemptExistingApi` and `generateApiWatchdogReport` tasks. Plugin id
-  `org.jetbrains.kotlin.library.api-watchdog`.
-- [`:kotlin-library-api-watchdog-report-aggregation`](report-aggregation/src): combines the reports of several
-  projects. Plugin id `org.jetbrains.kotlin.library.api-watchdog-report-aggregation`.
+- [`:gradle-plugin`](gradle-plugin/src), the `kotlin-library-api-watchdog-gradle-plugin` artifact: applies the
+  compiler plugin and the annotations dependency, and registers the `exemptExistingApi` and
+  `generateApiWatchdogReport` tasks. Plugin id `org.jetbrains.kotlin.library.api-watchdog`.
+- [`:gradle-plugin:kotlin-library-api-watchdog-report-aggregation`](gradle-plugin/report-aggregation/src): combines
+  the reports of several projects. Plugin id `org.jetbrains.kotlin.library.api-watchdog-report-aggregation`.
 
 ## Documentation site
 
@@ -52,7 +70,7 @@ npm run build                       # the site build, fails on a broken link or 
 
 ## Build scans and cache
 
-The root build and its `gradle-conventions` included build use [JetBrains Develocity](https://ge.jetbrains.com/) for build scans and the remote build cache.
+The root build and its included builds use [JetBrains Develocity](https://ge.jetbrains.com/) for build scans and the remote build cache.
 CI publishes scans for authenticated builds. Local scans are disabled by default.
 
 To enable local scans, copy `local.properties.template` to `local.properties` and set `develocity.buildScan.enabled=true`.
@@ -77,21 +95,21 @@ CI on `main` sets `DEVELOCITY_CACHE_PUSH=true` to write cache entries.
 
 ## Version
 
-`gradle.properties` sets the library version. To change the build, README examples, and website package versions, run:
+`library.properties` sets the library version. To change the build, README examples, and website package versions, run:
 
 ```bash
 ./scripts/update-version.sh 0.2.0
 ./scripts/verify-version-alignment.sh
 ```
 
-The website code samples read the library version from `gradle.properties`.
+The website code samples read the library version from `library.properties`.
 `LIBRARY_VERSION` overrides that version in every Gradle project, generated plugin coordinates, reports, and website code samples:
 
 ```bash
 LIBRARY_VERSION=0.2.0-dev-1 ./gradlew assemble
 ```
 
-The override takes precedence over `-Pversion` and doesn't change any source file.
+The override doesn't change any source file. The build ignores `-Pversion`.
 An empty or invalid value fails the build.
 
 ## Dependency updates
@@ -103,7 +121,8 @@ Renovate opens pull requests for Gradle, npm, and GitHub Actions updates. Automa
 Renovate groups Kotlin and compiler-plugin-dev-kit updates for compatibility review.
 Docusaurus packages also share one pull request.
 
-Custom managers track `systemProp.devkitVersion` and the Android Gradle plugin test versions in the version catalog.
+The version catalog tracks the compiler-plugin-dev-kit. A package rule gives its Space registry.
+A custom manager tracks the Android Gradle plugin test versions in the version catalog.
 The `agp8` entry stays on version 8, and `agp9` stays on version 9.
 The minimum supported Kotlin and IntelliJ IDEA versions remain manual compatibility decisions.
 
@@ -143,8 +162,9 @@ Configure these repository secrets:
 | Gradle Plugin Portal | `GRADLE_PUBLISH_KEY` | Portal API key |
 | Gradle Plugin Portal | `GRADLE_PUBLISH_SECRET` | Portal API secret |
 
-The Maven Central workflow uploads all modules, including the annotation platform variants, as a draft deployment.
-Approve it in [Central Portal](https://central.sonatype.com/publishing/deployments) before the Plugin Portal run.
+The Maven Central workflow uploads all modules, including the annotation platform variants, as draft deployments.
+Each build makes its own deployment: the root build, `gradle-plugin`, and `plugin-annotations`.
+Approve all three in [Central Portal](https://central.sonatype.com/publishing/deployments) before the Plugin Portal run.
 The Plugin Portal workflow publishes the watchdog and report aggregation plugins.
 Plugin Portal doesn't have a draft deployment mode. A successful run submits both plugin versions for publication.
 

@@ -15,12 +15,12 @@ read_source_version() {
     /^version=/ { count++; value = substr($0, length($1) + 2); sub(/\r$/, "", value) }
     END {
       if (count != 1) {
-        print "gradle.properties must declare exactly one version property." > "/dev/stderr"
+        print "library.properties must declare exactly one version property." > "/dev/stderr"
         exit 1
       }
       print value
     }
-  ' "$watchdog_repository_dir/gradle.properties")" || return 1
+  ' "$watchdog_repository_dir/library.properties")" || return 1
   validate_library_version "$source_version" || return 1
   printf '%s\n' "$source_version"
 }

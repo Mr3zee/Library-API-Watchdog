@@ -9,24 +9,25 @@ evolve. README.md lists the diagnostics. `DOCS_GUIDELINE.md` holds the rules for
 ## Commands
 
 The compiler plugin and the fixer have no plain `test` task, only one task for each supported Kotlin version
-(`k2320Test`, `k2410Test`, ...). `./gradlew :<module>:tasks --all` lists them.
+(`k240Test`, `k2410Test`, ...). `./gradlew :<module>:tasks --all` lists them.
 
 ```bash
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:k2410Test          # diagnostics tests against Kotlin 2.4.10
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:generateTests      # regenerate JUnit classes from test data
 ./gradlew :kotlin-library-api-watchdog-exempts-fixer:k2410Test            # fixer tests plus the compiler-plugin integration test
-./gradlew :kotlin-library-api-watchdog-gradle-plugin:functionalTest       # Gradle TestKit tests against every supported Kotlin version
-./gradlew :kotlin-library-api-watchdog-gradle-plugin:k2410FunctionalTest  # the same against one Kotlin version
+./gradlew :gradle-plugin-test:allVersionedFunctionalTests                 # Gradle TestKit tests against every supported Kotlin version
+./gradlew :gradle-plugin-test:k2410FunctionalTest                         # the same against one Kotlin version
+./gradlew :gradle-plugin:test :gradle-plugin:kotlin-library-api-watchdog-report-aggregation:test  # unit tests of the included gradle-plugin build
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:k2410Test --tests "*JvmDiagnosticTestGenerated*"   # filter generated tests
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkCorpusAudit   # check that the corpus triggers every benchmark-eligible checker
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkBaseline -Pbenchmark.baseline.allowMissing=true  # the CI benchmark check, report only on a machine without a baseline
 ```
 
-Each file in `compiler-plugin/src/test/data/diagnostics/` and `messages/` is one generated test method. Run
+Each file in `compiler-plugin/src/commonTest/data/diagnostics/` and `messages/` is one generated test method. Run
 `generateTests` after you add, remove, or rename one. `messages/` checks the rendered text of every diagnostic:
 inline markers plus a `.messages.txt` dump of the full messages (`JvmDiagnosticMessagesTestGenerated`). The first
 run generates a missing dump. The dump replaces the macOS shortcut `⌘N` with `Alt+Insert`. Hand-written tests in
-`compiler-plugin/src/test/kotlin` run in every `k*Test` task.
+`compiler-plugin/src/commonTest/kotlin` run in every `k*Test` task.
 
 Docs checks run in `docs/` after `npm ci`. The `docs.yml` workflow runs all three:
 
@@ -38,6 +39,16 @@ npm run build                       # the site build, fails on a broken link or 
 
 ## Constraints the code doesn't show
 
+- The repository is a composite build, as in the dev kit's `compiler-plugin-template`. The root build has the
+  compiler plugin, the fixer, and the functional tests (`:gradle-plugin-test`). `gradle-plugin` (with
+  `report-aggregation`) and `plugin-annotations` are included builds. Address their tasks with the build name first:
+  `:gradle-plugin:test`. The root `check` and publication tasks also run in the included builds. A Maven Central
+  publication makes one deployment for each build.
+- `library.properties` holds `group` and `version`, not `gradle.properties`, because an included build doesn't read
+  the root `gradle.properties`. The `devkit` settings plugin in `build-logic-settings` sets both in every build. The dev
+  kit version is the `devkit` entry of the version catalog.
+- A project of an included build depends on the root build's projects, and the reverse, by coordinates
+  (`"$group:<name>:$version"`), never with `project(...)`. Composite substitution resolves them.
 - `diagnostics.json` is the single source of truth for diagnostic texts. The build generates
   `WatchdogDiagnosticMessages` (compiler plugin), `WatchdogChecks` (Gradle plugin and fixer),
   `WatchdogCheckDescriptions` (report aggregation), and the `Diagnostic` enum of the Gradle functional tests from
@@ -72,13 +83,12 @@ npm run build                       # the site build, fails on a broken link or 
   `bytes` first, because the `ms` tolerance is wide.
 - `library-api-watchdog.jvm-target-conventions` sets the bytecode level of a published module. The annotations
   target Java 8. The Gradle plugin and the report aggregation target Java 17, because the dev kit's
-  `gradle-plugin-runtime` and `version-resolution` are Java 17 classes. The compiler plugin and the fixer don't
-  apply the convention. The dev kit compiles their versioned classes for Java 8 itself, and a Java 8 release on
-  their Java compile tasks breaks the resolution of `version-resolution`.
+  `gradle-plugin-runtime` is a Java 17 library. The compiler plugin and the fixer don't apply the convention. The
+  dev kit compiles their versioned classes for Java 8 itself.
 - The Android functional tests skip themselves without an Android SDK. AGP 8 fixtures run with the Gradle version
   pinned in `AgpVersion.AGP8` of `WatchdogProject.kt`, because AGP 8 can't run on Gradle 9.6 or later. The dev kit
-  skips every multiplatform fixture on Kotlin versions older than the build's own, because KLIBs aren't forward
-  compatible.
+  skips every multiplatform fixture on Kotlin versions older than the Kotlin version that compiled the annotations
+  klibs, because KLIBs aren't forward compatible.
 
 ## Adding a new diagnostic
 
