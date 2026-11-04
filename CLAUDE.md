@@ -13,6 +13,7 @@ The compiler plugin and the fixer have no plain `test` task, only one task for e
 
 ```bash
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:k2410Test          # diagnostics tests against Kotlin 2.4.10
+./gradlew :kotlin-library-api-watchdog-compiler-plugin:latestKotlinTest   # the daily CI run: tests against the newest Kotlin dev build only
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:generateTests      # regenerate JUnit classes from test data
 ./gradlew :kotlin-library-api-watchdog-exempts-fixer:k2410Test            # fixer tests plus the compiler-plugin integration test
 ./gradlew :gradle-plugin-test:allVersionedFunctionalTests                 # Gradle TestKit tests against every supported Kotlin version
@@ -47,6 +48,11 @@ npm run build                       # the site build, fails on a broken link or 
 - `library.properties` holds `group` and `version`, not `gradle.properties`, because an included build doesn't read
   the root `gradle.properties`. The `devkit` settings plugin in `build-logic-settings` sets both in every build. The dev
   kit version is the `devkit` entry of the version catalog.
+- `version` in `library.properties` is the next development version, not the latest release. The release build and
+  the docs deploy get the release version from `LIBRARY_VERSION`, so the README has no plugin version. Only a manual
+  run of `docs.yml` on `main` with the `version` input deploys the website. The `Release` workflow starts it.
+- A pull request doesn't edit `CHANGELOG.md`. The `Release` workflow writes the section of a release from the GitHub
+  generated release notes, after the text of an optional `## Unreleased` section.
 - A project of an included build depends on the root build's projects, and the reverse, by coordinates
   (`"$group:<name>:$version"`), never with `project(...)`. Composite substitution resolves them.
 - `diagnostics.json` is the single source of truth for diagnostic texts. The build generates
@@ -79,8 +85,8 @@ npm run build                       # the site build, fails on a broken link or 
   from `gradle.startParameter.taskNames`. The aggregation plugin finalizes the root's `exemptExistingApi` (its own
   lifecycle task when the root has no Watchdog) with `aggregateApiWatchdogReports`.
 - The benchmark baseline (`compiler-plugin/src/benchmark/baseline/`) is valid for one machine profile. Record it
-  with the `Benchmark baseline` workflow (`record` input), never on a developer machine. A regression shows up in
-  `bytes` first, because the `ms` tolerance is wide.
+  with the `Benchmark baseline` workflow (`record` input), never on a developer machine. The check compares `bytes`
+  only.
 - `library-api-watchdog.jvm-target-conventions` sets the bytecode level of a published module. The annotations
   target Java 8. The Gradle plugin and the report aggregation target Java 17, because the dev kit's
   `gradle-plugin-runtime` is a Java 17 library. The compiler plugin and the fixer don't apply the convention. The

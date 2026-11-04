@@ -2,6 +2,8 @@
 title: Changelog
 slug: /changelog
 custom_edit_url: https://github.com/Mr3zee/Library-API-Watchdog/edit/main/CHANGELOG.md
+mdx:
+  format: md
 ---
 
 <!-- Generated from CHANGELOG.md. Run npm run sync:changelog from docs/. -->

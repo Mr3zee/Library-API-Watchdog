@@ -31,10 +31,20 @@ on:
       - 'gradle/**'
       - 'gradlew'
       - '.github/workflows/compiler-plugin-tests.yml'
+  schedule:
+    - cron: '0 9 * * *'
+      timezone: 'Europe/Berlin'
+  workflow_call:
+    inputs:
+      ref:
+        description: 'The commit to test. Empty tests the commit of the caller.'
+        type: string
+        default: ''
 
-# A newer push to the same branch cancels the runs of the older pushes.
+# A newer run of the same event and branch cancels the older run. In a called workflow, `github.workflow` is the name
+# of the caller, so the group starts with the name of this file.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: compiler-plugin-tests-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -49,6 +59,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -61,11 +73,14 @@ jobs:
         with:
           develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
+      # The daily run tests only the newest Kotlin dev build, because the other Kotlin versions don't change.
       - name: Run compiler plugin tests
+        env:
+          TEST_TASK: ${{ github.event_name == 'schedule' && 'latestKotlinTest' || 'allTests' }}
         run: |
-          ./gradlew :kotlin-library-api-watchdog-compiler-plugin:allTests || {
+          ./gradlew ":kotlin-library-api-watchdog-compiler-plugin:$TEST_TASK" || {
             echo "Tests failed; retrying once."
-            ./gradlew :kotlin-library-api-watchdog-compiler-plugin:allTests
+            ./gradlew ":kotlin-library-api-watchdog-compiler-plugin:$TEST_TASK"
           }
 
       - name: Save test reports
@@ -80,4 +95,5 @@ jobs:
           retention-days: 7
 
       - name: Audit benchmark corpus
+        if: github.event_name != 'schedule'
         run: ./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkCorpusAudit

@@ -37,10 +37,17 @@ on:
       - 'gradle/**'
       - 'gradlew'
       - '.github/workflows/gradle-tests.yml'
+  workflow_call:
+    inputs:
+      ref:
+        description: 'The commit to test. Empty tests the commit of the caller.'
+        type: string
+        default: ''
 
-# A newer push to the same branch cancels the runs of the older pushes.
+# A newer run of the same event and branch cancels the older run. In a called workflow, `github.workflow` is the name
+# of the caller, so the group starts with the name of this file.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: gradle-tests-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -57,6 +64,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -83,6 +92,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -101,21 +112,6 @@ jobs:
             :build-logic:test \
             :gradle-plugin:test \
             :gradle-plugin:kotlin-library-api-watchdog-report-aggregation:test
-
-      - name: Set up Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: gradle-plugin/report-aggregation/package-lock.json
-
-      - name: Install report test dependencies
-        working-directory: gradle-plugin/report-aggregation
-        run: npm ci --ignore-scripts
-
-      - name: Test report JavaScript
-        working-directory: gradle-plugin/report-aggregation
-        run: npm test
 
       - name: Check the ABI dumps
         run: |
@@ -140,6 +136,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -181,6 +179,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Set up JDK
         uses: actions/setup-java@v5

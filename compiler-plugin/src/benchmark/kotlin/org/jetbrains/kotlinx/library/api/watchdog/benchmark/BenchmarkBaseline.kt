@@ -62,18 +62,17 @@ fun main(args: Array<String>) {
         println()
         val regressed = comparison.regressions.mapTo(linkedSetOf()) { it.subject }
         println("Regressions in $regressed. Measuring them again.")
-        // The overhead ratios need the `noPlugin` time of the same run.
-        if (regressed.any { it.startsWith(Measured.WHOLE_PREFIX) }) {
-            regressed += Measured.WHOLE_MODES.map { Measured.WHOLE_PREFIX + it }
-        }
         val again = runner.measureSubjects(regressed)
         measured = measured.lowerOf(again)
         comparison = Comparison(baseline, measured)
     }
 
-    val summary = Summary.compared(machine, comparison, baselineFile)
+    val summary = Summary.compared(machine, comparison, measured, baselineFile)
     writeSummary(options.summaryFile, summary)
     println(summary)
+    if (System.getenv("GITHUB_ACTIONS") == "true") {
+        comparison.regressions.forEach { println(Summary.annotation(it)) }
+    }
     if (comparison.regressions.isNotEmpty()) exitProcess(1)
 }
 
@@ -199,14 +198,32 @@ internal class MachineProfile(
     }
 }
 
-/** A metric key is `<subject>.<metric>`, for example `isolated.OpenApiChecker.ms`. */
+/**
+ * A metric key is `<subject>.<metric>`, for example `isolated.OpenApiChecker.bytes`. The metrics are `bytes` and
+ * `ms`. The baseline holds and compares `bytes` only.
+ */
 internal class Measured(val values: Map<String, Double>) {
+    val subjects: Set<String> get() = values.keys.mapTo(sortedSetOf()) { subjectOf(it) }
+
     fun lowerOf(other: Measured): Measured =
         Measured(values.mapValues { (key, value) -> other.values[key]?.let { minOf(it, value) } ?: value })
+
+    fun bytes(subject: String): Double? = values["$subject.$BYTES"]
+
+    fun ms(subject: String): Double? = values["$subject.$MS"]
+
+    /** The time of a whole-compilation mode divided by the time of `noPlugin`. */
+    fun overhead(subject: String): Double? {
+        if (!subject.startsWith(WHOLE_PREFIX) || subject == WHOLE_PREFIX + "noPlugin") return null
+        val noPlugin = ms(WHOLE_PREFIX + "noPlugin") ?: return null
+        return ms(subject)?.div(noPlugin)
+    }
 
     companion object {
         const val WHOLE_PREFIX = "whole."
         const val ISOLATED_PREFIX = "isolated."
+        const val BYTES = "bytes"
+        const val MS = "ms"
         val WHOLE_MODES = listOf("noPlugin", "pluginBaseline", "allCheckers")
 
         fun subjectOf(key: String): String = key.substringBeforeLast('.')
@@ -215,24 +232,12 @@ internal class Measured(val values: Map<String, Double>) {
     }
 }
 
-/** Each tolerance is a fraction of the baseline value. The `ms` tolerance has a floor in milliseconds. */
-internal class Tolerances(val ms: Double, val msFloor: Double, val bytes: Double, val overhead: Double) {
-    fun forMetric(metric: String): Double = when (metric) {
-        "ms" -> ms
-        "bytes" -> bytes
-        "overhead" -> overhead
-        else -> error("Unknown metric '$metric'.")
-    }
-
-    val asProperties: Map<String, String> = mapOf(
-        "tolerance.ms" to ms.toString(),
-        "tolerance.msFloor" to msFloor.toString(),
-        "tolerance.bytes" to bytes.toString(),
-        "tolerance.overhead" to overhead.toString(),
-    )
+/** The tolerance is a fraction of the baseline value. */
+internal class Tolerances(val bytes: Double) {
+    val asProperties: Map<String, String> = mapOf("tolerance.bytes" to bytes.toString())
 
     companion object {
-        val DEFAULT = Tolerances(ms = 0.30, msFloor = 1.0, bytes = 0.05, overhead = 0.10)
+        val DEFAULT = Tolerances(bytes = 0.05)
     }
 }
 
@@ -258,13 +263,6 @@ internal class BaselineRunner(private val settings: RunSettings) {
             val results = run("WholeCompilationBenchmark.compile", "mode", modes)
             values += collect(results, "mode", Measured.WHOLE_PREFIX)
         }
-        val noPluginMs = values[Measured.WHOLE_PREFIX + "noPlugin.ms"]
-        if (noPluginMs != null) {
-            for (mode in Measured.WHOLE_MODES) {
-                val ms = values[Measured.WHOLE_PREFIX + "$mode.ms"] ?: continue
-                if (mode != "noPlugin") values[Measured.WHOLE_PREFIX + "$mode.overhead"] = ms / noPluginMs
-            }
-        }
         return Measured(values)
     }
 
@@ -288,8 +286,8 @@ internal class BaselineRunner(private val settings: RunSettings) {
         for (result in results) {
             val subject = prefix + result.params.getParam(parameter)
             val iterations = result.benchmarkResults.flatMap { it.iterationResults }
-            values["$subject.ms"] = iterations.map { it.primaryResult.getScore() }.median()
-            values["$subject.bytes"] = iterations.mapNotNull { iteration ->
+            values["$subject.${Measured.MS}"] = iterations.map { it.primaryResult.getScore() }.median()
+            values["$subject.${Measured.BYTES}"] = iterations.mapNotNull { iteration ->
                 ALLOCATION_METRIC_KEYS.firstNotNullOfOrNull { iteration.secondaryResults[it] }?.getScore()
             }.median()
         }
@@ -335,7 +333,7 @@ internal object BaselineFile {
             for ((key, value) in machine.pinned + machine.details.toSortedMap() + settings.asProperties + tolerances.asProperties) {
                 appendLine("$key=$value")
             }
-            for ((key, value) in measured.values.toSortedMap()) {
+            for ((key, value) in measured.values.filterKeys { Measured.metricOf(it) == Measured.BYTES }.toSortedMap()) {
                 appendLine("$key=${format(value)}")
             }
         }
@@ -343,13 +341,14 @@ internal object BaselineFile {
     fun parse(file: Path): Baseline {
         val properties = Properties().apply { file.readText().reader().use { load(it) } }
         val entries = properties.entries.associate { (key, value) -> key.toString() to value.toString() }
-        fun tolerance(name: String) = entries["tolerance.$name"]?.toDouble()
-            ?: error("The baseline file $file has no tolerance.$name key.")
+        val bytesTolerance = entries["tolerance.bytes"]?.toDouble()
+            ?: error("The baseline file $file has no tolerance.bytes key.")
         return Baseline(
             pinned = entries.filterKeys { it.startsWith("machine.") },
             settings = entries.filterKeys { it.startsWith("settings.") },
-            tolerances = Tolerances(tolerance("ms"), tolerance("msFloor"), tolerance("bytes"), tolerance("overhead")),
+            tolerances = Tolerances(bytesTolerance),
             values = entries.filterKeys { it.startsWith(Measured.ISOLATED_PREFIX) || it.startsWith(Measured.WHOLE_PREFIX) }
+                .filterKeys { Measured.metricOf(it) == Measured.BYTES }
                 .mapValues { (_, value) -> value.toDouble() },
         )
     }
@@ -364,7 +363,6 @@ internal class MetricComparison(
     val allowed: Double?,
 ) {
     val subject: String get() = Measured.subjectOf(key)
-    val metric: String get() = Measured.metricOf(key)
 
     val change: Double? get() = if (baseline != null && measured != null && baseline != 0.0) measured / baseline - 1 else null
 
@@ -381,15 +379,15 @@ internal class MetricComparison(
 }
 
 internal class Comparison(baseline: Baseline, measured: Measured) {
-    val metrics: List<MetricComparison> = (baseline.values.keys + measured.values.keys).sorted().map { key ->
-        val expected = baseline.values[key]
-        val tolerance = baseline.tolerances
-        val allowed = expected?.let {
-            val margin = it * tolerance.forMetric(Measured.metricOf(key))
-            it + if (Measured.metricOf(key) == "ms") maxOf(margin, tolerance.msFloor) else margin
+    val tolerances: Tolerances = baseline.tolerances
+
+    val metrics: List<MetricComparison> = (baseline.values.keys + measured.values.keys)
+        .filter { Measured.metricOf(it) == Measured.BYTES }
+        .sorted()
+        .map { key ->
+            val expected = baseline.values[key]
+            MetricComparison(key, expected, measured.values[key], expected?.let { it * (1 + tolerances.bytes) })
         }
-        MetricComparison(key, expected, measured.values[key], allowed)
-    }
 
     /** A metric that the baseline has but the run didn't measure is a regression too, because a renamed subject hides a slowdown. */
     val regressions: List<MetricComparison> = metrics.filter { it.isRegression || it.isMissing }
@@ -400,12 +398,9 @@ internal object Summary {
         appendLine("## Benchmark baseline recorded")
         appendLine()
         appendLine("Machine profile `${machine.id}`. File `${file.fileName}`. Commit the file to keep the baseline.")
+        appendLine("The file holds the allocation values only.")
         appendLine()
-        appendLine("| Metric | Value |")
-        appendLine("|---|---|")
-        for ((key, value) in measured.values.toSortedMap()) {
-            appendLine("| `$key` | ${BaselineFile.format(value)} |")
-        }
+        appendMeasured(measured)
     }
 
     fun missing(machine: MachineProfile, measured: Measured, file: Path): String = buildString {
@@ -414,29 +409,70 @@ internal object Summary {
         appendLine("No baseline for machine profile `${machine.id}` at `$file`.")
         appendLine("Run the `benchmarkBaseline` task with `-Pbenchmark.baseline.record=true` on this machine profile and commit the file.")
         appendLine()
-        appendLine("| Metric | Value |")
-        appendLine("|---|---|")
-        for ((key, value) in measured.values.toSortedMap()) {
-            appendLine("| `$key` | ${BaselineFile.format(value)} |")
-        }
+        appendMeasured(measured)
     }
 
-    fun compared(machine: MachineProfile, comparison: Comparison, file: Path): String = buildString {
+    fun compared(machine: MachineProfile, comparison: Comparison, measured: Measured, file: Path): String = buildString {
         val regressions = comparison.regressions
         appendLine(if (regressions.isEmpty()) "## Benchmark baseline: no regression" else "## Benchmark baseline: ${regressions.size} regression(s)")
         appendLine()
         appendLine("Machine profile `${machine.id}`. Baseline `${file.fileName}`.")
+        appendLine("The check compares the allocation per operation. The limit is ${percent(comparison.tolerances.bytes)} above the baseline.")
+        appendLine("The times are for information only. They change too much between runners of the same profile.")
         appendLine()
-        appendLine("| Subject | Metric | Baseline | Measured | Change | Allowed | Status |")
-        appendLine("|---|---|---|---|---|---|---|")
+        if (regressions.isNotEmpty()) {
+            appendLine("Regressions:")
+            appendLine()
+            regressions.forEach { appendLine("- ${message(it)}") }
+            appendLine()
+        }
+        appendLine("### Allocation per operation")
+        appendLine()
+        appendLine("| Subject | Baseline, bytes | Measured, bytes | Change | Allowed, bytes | Status |")
+        appendLine("|---|--:|--:|--:|--:|---|")
         for (metric in comparison.metrics) {
             appendLine(
-                "| `${metric.subject}` | ${metric.metric} | ${metric.baseline?.let(BaselineFile::format) ?: ""} | " +
-                    "${metric.measured?.let(BaselineFile::format) ?: ""} | ${metric.change?.let { percent(it) } ?: ""} | " +
-                    "${metric.allowed?.let(BaselineFile::format) ?: ""} | ${metric.status} |",
+                "| `${metric.subject}` | ${metric.baseline?.let(::bytes).orEmpty()} | ${metric.measured?.let(::bytes).orEmpty()} | " +
+                    "${metric.change?.let(::signedPercent).orEmpty()} | ${metric.allowed?.let(::bytes).orEmpty()} | ${metric.status} |",
+            )
+        }
+        appendLine()
+        appendLine("### Time per operation")
+        appendLine()
+        appendLine("| Subject | Median, ms | Overhead |")
+        appendLine("|---|--:|--:|")
+        for (subject in measured.subjects) {
+            appendLine("| `$subject` | ${measured.ms(subject)?.let(::decimal).orEmpty()} | ${measured.overhead(subject)?.let(::decimal).orEmpty()} |")
+        }
+    }
+
+    /** A GitHub Actions workflow command. GitHub shows it as an error annotation of the run. */
+    fun annotation(metric: MetricComparison): String =
+        "::error title=Benchmark allocation regression::" + message(metric).replace("%", "%25")
+
+    private fun message(metric: MetricComparison): String = if (metric.isMissing) {
+        "`${metric.subject}` is in the baseline, but the run didn't measure it."
+    } else {
+        "`${metric.subject}` allocates ${bytes(checkNotNull(metric.measured))} bytes per operation, " +
+            "${signedPercent(checkNotNull(metric.change))} from the baseline. The limit is ${bytes(checkNotNull(metric.allowed))} bytes."
+    }
+
+    private fun StringBuilder.appendMeasured(measured: Measured) {
+        appendLine("| Subject | Allocation, bytes | Median time, ms | Overhead |")
+        appendLine("|---|--:|--:|--:|")
+        for (subject in measured.subjects) {
+            appendLine(
+                "| `$subject` | ${measured.bytes(subject)?.let(::bytes).orEmpty()} | ${measured.ms(subject)?.let(::decimal).orEmpty()} | " +
+                    "${measured.overhead(subject)?.let(::decimal).orEmpty()} |",
             )
         }
     }
 
-    private fun percent(change: Double): String = String.format(Locale.ROOT, "%+.1f%%", change * 100)
+    private fun bytes(value: Double): String = String.format(Locale.ROOT, "%,.0f", value)
+
+    private fun decimal(value: Double): String = String.format(Locale.ROOT, "%.3f", value)
+
+    private fun percent(fraction: Double): String = String.format(Locale.ROOT, "%.0f%%", fraction * 100)
+
+    private fun signedPercent(change: Double): String = String.format(Locale.ROOT, "%+.1f%%", change * 100)
 }

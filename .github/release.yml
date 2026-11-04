@@ -1,0 +1,5 @@
+# The configuration of the GitHub generated release notes. The Release workflow labels its own pull requests `release`.
+changelog:
+  exclude:
+    labels:
+      - release

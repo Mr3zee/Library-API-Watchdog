@@ -351,41 +351,6 @@ class ApiWatchdogHtmlReportTest {
         }
     }
 
-    @Test
-    fun `generate fixtures for report JavaScript tests`() {
-        val output = File(System.getProperty("htmlReportFixtures", "build/html-report-fixtures"))
-        val code = "public data class Api(\n    val text: String = \"😀<&>\",\n)\n"
-        val entries = listOf(
-            entry("src/Api.kt:12", range = ApiWatchdogSourceRange(12, 5, 12, 27)),
-            entry("src/Api.kt:3", diagnostic = "UNDOCUMENTED_PUBLIC_API", severity = "warning").copy(messageParameters = listOf("class", "Api")),
-            entry("src/z/Other.kt:1", diagnostic = "FUTURE_CHECK"),
-        )
-        val library = report(
-            entries = entries,
-            applied = listOf(
-                AppliedExemptionReportEntry("IntentionallyWithoutEqualsHashCodeOrToString", "src/Api.kt:12"),
-                AppliedExemptionReportEntry("IntentionallyCustom", "src/<script>&\".kt:1"),
-            ),
-            snippets = mapOf(entries.first().location to ApiWatchdogSourceSnippet(11, code)),
-        )
-        val root = report(entries = listOf(entry("src/Api.kt:2")), project = ":", directory = "")
-        for ((name, reports) in mapOf(
-            "mixed" to listOf(library, root), "empty" to emptyList(),
-            "applied-only" to listOf(library.copy(notApplied = emptyList())),
-            "not-applied-only" to listOf(library.copy(applied = emptyList())),
-            "malformed" to listOf(report(entries = listOf(entry(""), entry("/"), entry("Api.kt:NaN"), entry("C:\\Api.kt"), entry("Unknown file:1")), directory = "")),
-            "unusual-diagnostics" to listOf(report(entries = listOf(
-                "FUTURE CHECK", "FUTURE\tCHECK", "FUTURE\nCHECK", "FUTURE%20CHECK", "FUTURE+CHECK", "", "a\"<&>'", "日本語", "~",
-            ).mapIndexed { index, diagnostic -> entry("src/Api$index.kt:1", diagnostic) })),
-            "duplicates" to listOf(report(
-                entries = listOf(entries.first(), entries.first(), entries.first().copy(diagnostic = "FUTURE_CHECK")),
-                applied = listOf(library.applied.first(), library.applied.first()),
-            )),
-        )) {
-            ApiWatchdogHtmlReport.write(reports, File(output, "$name.html"), aggregate = true)
-        }
-    }
-
     private fun render(reports: List<ApiWatchdogProjectReport>, aggregate: Boolean = true): Document {
         val output = Files.createTempFile("html-report", ".html").toFile()
         return try {

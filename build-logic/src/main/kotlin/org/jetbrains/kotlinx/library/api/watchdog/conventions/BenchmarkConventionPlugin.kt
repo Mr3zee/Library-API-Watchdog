@@ -263,8 +263,9 @@ class BenchmarkConventionPlugin : Plugin<Project> {
             val baselineSummary = layout.buildDirectory.file("reports/benchmark-baseline/summary.md")
             tasks.register("benchmarkBaseline", JavaExec::class.java) {
                 group = "benchmark"
-                description = "Compares checker time and allocation with src/benchmark/baseline/<machine-profile>.properties " +
-                        "and fails on a regression. -Pbenchmark.baseline.record=true writes the file instead."
+                description = "Measures checker time and allocation, compares the allocation with " +
+                        "src/benchmark/baseline/<machine-profile>.properties, and fails on a regression. " +
+                        "-Pbenchmark.baseline.record=true writes the file instead."
                 mainClass.set("org.jetbrains.kotlinx.library.api.watchdog.benchmark.BenchmarkBaseline")
                 classpath = files(benchmarkGeneratedClasses, benchmarkGeneratedResources) +
                         benchmarkRuntimeClasspath

@@ -2,7 +2,9 @@
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
+import org.jetbrains.kotlinx.library.api.watchdog.conventions.ChromeForTestingArguments
 import org.jetbrains.kotlinx.library.api.watchdog.conventions.GenerateCheckDescriptions
+import org.jetbrains.kotlinx.library.api.watchdog.conventions.chromeForTesting
 import org.jetbrains.kotlinx.library.api.watchdog.conventions.registerDiagnosticsGenerator
 import org.jetbrains.kotlinx.library.api.watchdog.conventions.repositoryRoot
 
@@ -51,7 +53,11 @@ dependencies {
     implementation(libs.commonmark)
     testImplementation(kotlin("test-junit5"))
     testImplementation(libs.jsoup)
+    testImplementation(libs.selenium.chrome.driver)
 }
+
+// The HTML report script tests run in this browser and driver.
+val chromeForTestingDirectories = chromeForTesting(libs.versions.chromeForTesting.get())
 
 tasks.processResources {
     // The HTML report embeds the repository logo as its favicon.
@@ -63,12 +69,10 @@ tasks.processResources {
 
 tasks.test {
     useJUnitPlatform()
-    val htmlReportFixtures = layout.buildDirectory.dir("html-report-fixtures")
-    systemProperty("htmlReportFixtures", htmlReportFixtures.get().asFile.absolutePath)
     val repositoryLogo = repositoryRoot.file("assets/logo.svg")
     systemProperty("repositoryLogo", repositoryLogo.asFile.absolutePath)
     inputs.file(repositoryLogo)
-    outputs.dir(htmlReportFixtures)
+    jvmArgumentProviders.add(ChromeForTestingArguments(chromeForTestingDirectories))
 }
 
 gradlePlugin {

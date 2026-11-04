@@ -13,15 +13,27 @@ on:
       - 'library.properties'
       - 'scripts/lib/project-version.sh'
       - 'scripts/update-version.sh'
+      - 'scripts/bump-after-release.sh'
+      - 'scripts/changelog-section.sh'
+      - 'scripts/insert-changelog-section.sh'
+      - 'scripts/prepare-release.sh'
+      - 'scripts/release-plan.sh'
+      - 'scripts/release-notes.sh'
       - 'scripts/check-publication-env.sh'
       - 'scripts/release-tooling.test.mjs'
       - '.github/workflows/docs.yml'
+  # Only a manual run on main deploys the website. The Release workflow starts one after each release.
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'The release version that the website shows, MAJOR.MINOR.PATCH. Its tag must exist.'
+        required: true
+        type: string
 
-# Runs of one branch don't overlap. A newer push cancels the run of a pull request. A run on main
-# isn't cancelled, so a deploy to GitHub Pages never stops half way.
+# Runs of one event and branch don't overlap. A newer push cancels the run of a pull request. Other runs aren't
+# cancelled, so a deploy to GitHub Pages never stops half way.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
@@ -35,6 +47,7 @@ env:
   DOKKA_OUTPUT: 'build/dokka/html'
   ASSEMBLE_DIR: '__docs_assembled'
   ASSEMBLE_ARTIFACT: 'assembled.zip'
+  WEBSITE_VERSION: ${{ inputs.version }}
 
 jobs:
   build:
@@ -51,6 +64,15 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: docs/package-lock.json
+
+      - name: Check the website version
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [[ ! "$WEBSITE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] \
+            || ! git rev-parse --quiet --verify "refs/tags/v$WEBSITE_VERSION" > /dev/null; then
+            echo "The website version must be a release with a tag, for example 0.2.0. Got '$WEBSITE_VERSION'." >&2
+            exit 1
+          fi
 
       - name: Install docs dependencies
         working-directory: docs
@@ -73,9 +95,14 @@ jobs:
         run: npm run check:changelog
 
       # Docusaurus fails on a broken link or anchor, so this is the docs check as well.
+      # The code samples show LIBRARY_VERSION, or the version in library.properties without it.
       - name: Build the docs website
         working-directory: docs
-        run: npm run build
+        run: |
+          if [[ -n "$WEBSITE_VERSION" ]]; then
+            export LIBRARY_VERSION="$WEBSITE_VERSION"
+          fi
+          npm run build
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -98,7 +125,11 @@ jobs:
             }
 
       - name: Build Dokka API reference
-        run: ./gradlew :dokkaGenerate
+        run: |
+          if [[ -n "$WEBSITE_VERSION" ]]; then
+            export LIBRARY_VERSION="$WEBSITE_VERSION"
+          fi
+          ./gradlew :dokkaGenerate
 
       - name: Add Dokka to the assembled website
         run: |
@@ -120,7 +151,7 @@ jobs:
           retention-days: 7
 
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

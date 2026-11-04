@@ -61,6 +61,10 @@ private val INCLUDED_PUBLICATION_TASKS: Map<String, Map<String, List<String>>> =
         GRADLE_PLUGIN_BUILD to listOf("", REPORT_AGGREGATION_PROJECT),
         ANNOTATIONS_BUILD to listOf(""),
     ),
+    "publishAllPublicationsToBuildRepository" to mapOf(
+        GRADLE_PLUGIN_BUILD to listOf("", REPORT_AGGREGATION_PROJECT),
+        ANNOTATIONS_BUILD to listOf(""),
+    ),
     "publishPlugins" to mapOf(
         GRADLE_PLUGIN_BUILD to listOf("", REPORT_AGGREGATION_PROJECT),
     ),

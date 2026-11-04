@@ -40,7 +40,7 @@ strict or warning:
 
 ```kotlin
 plugins {
-    kotlin("library.api-watchdog") version "0.1.0"
+    kotlin("library.api-watchdog")
 }
 
 kotlin {
@@ -126,7 +126,7 @@ The report aggregation plugin combines the reports of several projects:
 
 ```kotlin
 plugins {
-    kotlin("library.api-watchdog-report-aggregation") version "0.1.0"
+    kotlin("library.api-watchdog-report-aggregation")
 }
 
 dependencies {

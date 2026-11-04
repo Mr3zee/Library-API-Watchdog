@@ -3,15 +3,16 @@ name: Publish to Maven Central
 on:
   workflow_dispatch:
     inputs:
-      library_version:
-        description: Library version override (blank uses library.properties)
-        required: false
+      version:
+        description: 'The release version, MAJOR.MINOR.PATCH. The workflow publishes the commit of its tag.'
+        required: true
         type: string
 
 permissions:
   contents: read
 
 env:
+  LIBRARY_VERSION: ${{ inputs.version }}
   DEVELOCITY_CACHE_PUSH: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
 
 concurrency:
@@ -23,8 +24,21 @@ jobs:
     # Apple annotation variants need macOS.
     runs-on: macos-latest
     steps:
+      # library.properties holds the next development version, so the workflow takes the version from the input.
+      - name: Check the release version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ ! "$LIBRARY_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] \
+            || ! gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v$LIBRARY_VERSION" --silent 2> /dev/null; then
+            echo "The version must be a release with a tag, for example 0.2.0. Got '$LIBRARY_VERSION'." >&2
+            exit 1
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          ref: refs/tags/v${{ inputs.version }}
 
       - name: Check publication credentials
         env:
@@ -38,19 +52,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '22'
-
-      - name: Resolve publication version
-        env:
-          REQUESTED_VERSION: ${{ inputs.library_version }}
-        run: |
-          source scripts/lib/project-version.sh
-          version="${REQUESTED_VERSION:-$(read_source_version)}"
-          validate_library_version "$version"
-          if [[ "$version" == *-SNAPSHOT ]]; then
-            echo 'Release publication needs a version without -SNAPSHOT.' >&2
-            exit 1
-          fi
-          echo "LIBRARY_VERSION=$version" >> "$GITHUB_ENV"
 
       - name: Check release metadata
         run: |

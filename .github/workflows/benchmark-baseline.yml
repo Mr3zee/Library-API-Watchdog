@@ -73,9 +73,17 @@ jobs:
         if: ${{ inputs.record }}
         run: ./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkBaseline -Pbenchmark.baseline.record=true
 
+      # The task writes no summary when it stops before the measurement, for example on a baseline of other settings.
       - name: Publish the summary
         if: always()
-        run: cat compiler-plugin/build/reports/benchmark-baseline/summary.md >> "$GITHUB_STEP_SUMMARY"
+        env:
+          SUMMARY: compiler-plugin/build/reports/benchmark-baseline/summary.md
+        run: |
+          if [[ -f "$SUMMARY" ]]; then
+            cat "$SUMMARY" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'The benchmark baseline task wrote no summary. The log of the previous step has the error.' >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload the recorded baseline
         if: ${{ inputs.record }}

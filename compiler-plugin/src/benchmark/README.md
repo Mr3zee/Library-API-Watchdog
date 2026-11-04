@@ -85,7 +85,7 @@ low-noise, per-checker view: no plugin loading, no message rendering, no backend
 
 ## Baseline check
 
-The `benchmarkBaseline` task runs a fixed subset of the benchmarks and compares the results with a
+The `benchmarkBaseline` task runs a fixed subset of the benchmarks and compares the allocation with a
 baseline file. The `Benchmark baseline` workflow runs it on every pull request and push to `main`
 that changes the compiler plugin.
 
@@ -108,24 +108,28 @@ The subset:
 
 The metrics of each subject:
 
-| Metric | Value | Default tolerance |
+| Metric | Value | Compared |
 |---|---|---|
-| `ms` | Median time of one operation over all measurement iterations. | 30%, at least 1 ms. |
-| `bytes` | Median allocation of one operation (`gc.alloc.rate.norm`). | 5%. |
-| `overhead` | `ms` of a whole-compilation mode divided by `ms` of `noPlugin`. | 10%. |
+| `bytes` | Median allocation of one operation (`gc.alloc.rate.norm`). | Yes, with a default tolerance of 5%. |
+| `ms` | Median time of one operation over all measurement iterations. | No. |
+
+The time of one operation changes by up to 50% between GitHub runners of the same machine profile,
+so the baseline file holds `bytes` only. The summary shows `ms`, and the `overhead` of each
+whole-compilation mode: its `ms` divided by the `ms` of `noPlugin`.
 
 The check fails in two cases:
 
-- A measured value is above the baseline value plus the tolerance.
-- The baseline has a metric that the run didn't measure.
+- A measured allocation is above the baseline value plus the tolerance.
+- The baseline has a subject that the run didn't measure.
 
-When a subject regresses, the task measures it a second time and uses the lower value. A metric
+When a subject regresses, the task measures it a second time and uses the lower value. A subject
 without a baseline value passes. The task writes a Markdown summary to
 `build/reports/benchmark-baseline/summary.md`, and the workflow shows it on the job summary page.
+On GitHub Actions, the task also reports each regression as an error annotation of the run.
 
 A baseline file is valid for one machine profile. The profile is the file name:
 `<os>-<arch>-<cpus>cpu-jdk<feature version>-<GitHub runner image>.properties`. The image is
-`local` outside GitHub Actions. The file also holds the run settings and the tolerances. A run
+`local` outside GitHub Actions. The file also holds the run settings and the tolerance. A run
 with another profile or other settings fails before it measures.
 
 To record the baseline of CI:
