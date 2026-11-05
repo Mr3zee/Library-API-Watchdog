@@ -27,6 +27,7 @@ function fixture(t) {
     'scripts/prepare-release.sh',
     'scripts/release-plan.sh',
     'scripts/release-notes.sh',
+    'scripts/push-signed-commit.sh',
     'scripts/lib/project-version.sh',
     'docs/scripts/sync-changelog.mjs',
   ]) {
@@ -432,5 +433,86 @@ test('publication preflight requires each selected credential without printing v
       assert.doesNotMatch(blank.stdout + blank.stderr, /test-credential-never-log/);
       env[name] = 'test-credential-never-log';
     }
+  }
+});
+
+test('signed commits send the changes of the tracked files to the GitHub API, on top of HEAD', (t) => {
+  const directory = fixture(t);
+  const git = gitRepository(directory);
+  for (const file of ['a.txt', 'b.txt', 'with space.txt']) fs.writeFileSync(path.join(directory, file), `${file}\n`);
+  git('add', 'a.txt', 'b.txt', 'with space.txt');
+  git('commit', '--quiet', '--message', 'Files');
+  const head = git('rev-parse', 'HEAD');
+
+  // The fake gh writes each call to a file, copies the GraphQL request, and fails the branch lookup without BRANCH_EXISTS.
+  const calls = path.join(directory, 'gh-calls');
+  const request = path.join(directory, 'gh-request.json');
+  fs.mkdirSync(path.join(directory, 'bin'));
+  fs.writeFileSync(path.join(directory, 'bin/gh'), [
+    '#!/usr/bin/env bash',
+    `printf '%s\\n' "$*" >> '${calls}'`,
+    'if [[ "$2" == graphql ]]; then',
+    `  cp "$4" '${request}'`,
+    "  echo 'commit-hash'",
+    'elif [[ "$2" == */git/ref/heads/* && -z "${BRANCH_EXISTS:-}" ]]; then',
+    '  exit 1',
+    'fi',
+    '',
+  ].join('\n'), {mode: 0o755});
+  const push = (args = ['release/1.0', 'Release 1.0'], env = {}) => {
+    fs.rmSync(calls, {force: true});
+    fs.rmSync(request, {force: true});
+    return spawnSync('bash', [path.join(directory, 'scripts/push-signed-commit.sh'), ...args], {
+      cwd: os.tmpdir(), encoding: 'utf8',
+      env: {...process.env, PATH: `${path.join(directory, 'bin')}:${process.env.PATH}`, GITHUB_REPOSITORY: 'example/watchdog', ...env},
+    });
+  };
+  const callLines = () => fs.readFileSync(calls, 'utf8').trim().split('\n');
+
+  fs.writeFileSync(path.join(directory, 'a.txt'), 'changed ä\n');
+  fs.rmSync(path.join(directory, 'b.txt'));
+  fs.writeFileSync(path.join(directory, 'with space.txt'), 'changed\n');
+  fs.writeFileSync(path.join(directory, 'untracked.txt'), 'untracked\n');
+  const created = push();
+  assert.equal(created.status, 0, created.stderr);
+  assert.equal(created.stdout, 'commit-hash\n');
+  const [lookup, create, mutation] = callLines();
+  assert.equal(lookup, 'api repos/example/watchdog/git/ref/heads/release/1.0 --silent');
+  assert.equal(create, `api --method POST repos/example/watchdog/git/refs -f ref=refs/heads/release/1.0 -f sha=${head} --silent`);
+  assert.match(mutation, /^api graphql --input \S+ --jq \.data\.createCommitOnBranch\.commit\.oid$/);
+  const body = JSON.parse(fs.readFileSync(request, 'utf8'));
+  assert.match(body.query, /createCommitOnBranch\(input: \$input\)/);
+  assert.deepEqual(body.variables.input, {
+    branch: {repositoryNameWithOwner: 'example/watchdog', branchName: 'release/1.0'},
+    message: {headline: 'Release 1.0'},
+    expectedHeadOid: head,
+    fileChanges: {
+      additions: [
+        {path: 'a.txt', contents: Buffer.from('changed ä\n').toString('base64')},
+        {path: 'with space.txt', contents: Buffer.from('changed\n').toString('base64')},
+      ],
+      deletions: [{path: 'b.txt'}],
+    },
+  });
+
+  const moved = push(undefined, {BRANCH_EXISTS: '1'});
+  assert.equal(moved.status, 0, moved.stderr);
+  assert.equal(callLines()[1], `api --method PATCH repos/example/watchdog/git/refs/heads/release/1.0 -f sha=${head} -F force=true --silent`);
+
+  fs.chmodSync(path.join(directory, 'a.txt'), 0o755);
+  const executable = push();
+  assert.equal(executable.status, 1);
+  assert.match(executable.stderr, /^a\.txt has the file mode 100755\./);
+  assert.equal(fs.existsSync(calls), false);
+
+  git('checkout', '--', 'a.txt', 'b.txt', 'with space.txt');
+  const unchanged = push();
+  assert.equal(unchanged.status, 1);
+  assert.match(unchanged.stderr, /no changes against HEAD/);
+  assert.equal(fs.existsSync(calls), false);
+
+  for (const args of [[], ['release/1.0'], ['', 'Release 1.0'], ['release/1.0', '']]) {
+    assert.equal(push(args).status, 1, JSON.stringify(args));
+    assert.equal(fs.existsSync(calls), false, JSON.stringify(args));
   }
 });

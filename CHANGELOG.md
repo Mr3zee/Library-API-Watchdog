@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- [Inconsistent parameter order in overloads](https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads):
+  a last parameter that accepts a trailing lambda can stay last in each overload. Such a parameter has a
+  function type, a `fun interface` type, or a Java SAM interface type.
+- [Required parameters after optional ones](https://mr3zee.github.io/Library-API-Watchdog/checks/required-parameter-after-optional):
+  the trailing-lambda exception also applies to a Java SAM interface in the last position.
+
 ## 0.1.0 - 2026-11-05
 
 ### Added
