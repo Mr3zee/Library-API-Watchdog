@@ -48,6 +48,18 @@ FILE: common.kt
     }
     public open expect class AliasToOwnClass : R|kotlin/Any| {
     }
+    public abstract expect class AliasToClassLoader : R|kotlin/Any| {
+    }
+    public final expect class AliasToOwnJavaClass : R|kotlin/Any| {
+    }
+    public abstract expect class AliasToOwnJavaProtected : R|kotlin/Any| {
+    }
+    @R|kotlin/SubclassOptInRequired|(markerClass = vararg(<getClass>(Q|foo/bar/Marker|)) [evaluated = vararg(<getClass>(Q|foo/bar/Marker|))]) public abstract expect interface AliasToOwnJavaInterface : R|kotlin/Any| {
+    }
+    public final expect class AliasToOwnJavaOptIn : R|kotlin/Any| {
+    }
+    public final expect class AliasToOwnJavaPackagePrivate : R|kotlin/Any| {
+    }
 Module: jvm
 FILE: jvm.kt
     package foo.bar
@@ -118,3 +130,9 @@ FILE: jvm.kt
         }
 
     }
+    public final actual typealias AliasToClassLoader = R|java/lang/ClassLoader|
+    public final actual typealias AliasToOwnJavaClass = R|foo/bar/OwnJavaClass|
+    public final actual typealias AliasToOwnJavaProtected = R|foo/bar/OwnJavaProtected|
+    public final actual typealias AliasToOwnJavaInterface = R|foo/bar/OwnJavaInterface|
+    public final actual typealias AliasToOwnJavaOptIn = R|foo/bar/OwnJavaOptIn|
+    public final actual typealias AliasToOwnJavaPackagePrivate = R|foo/bar/OwnJavaPackagePrivate|
