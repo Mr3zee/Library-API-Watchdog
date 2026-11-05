@@ -19,6 +19,7 @@ internal object ProjectReportWriter {
         projectPath: String,
         projectDirectory: File,
         projectDirectoryFromRoot: String,
+        ideLinks: ApiWatchdogIdeLinks?,
         htmlFile: File?,
         sarifFile: File?,
         reportDataFile: File,
@@ -87,7 +88,7 @@ internal object ProjectReportWriter {
         )
         ApiWatchdogReportData.write(report, reportDataFile)
         if (htmlFile != null) {
-            ApiWatchdogHtmlReport.write(listOf(report), htmlFile, aggregate = false)
+            ApiWatchdogHtmlReport.write(listOf(report), htmlFile, aggregate = false, ideLinks = ideLinks)
             logger.lifecycle("API Watchdog report: ${htmlFile.toPath().toUri()}")
         }
         if (sarifFile != null) {

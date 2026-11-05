@@ -132,6 +132,31 @@ class ExemptExistingApiAggregationTest {
         assertReportedElement(html, "LibraryApi", "error")
     }
 
+    @Test
+    fun `open in IDE buttons name the project from the IDE name file or the root directory`() {
+        val project = aggregateProject(watchdogInRoot = true) {
+            subproject("library") {
+                source("/** A library API. */\npublic open class LibraryApi", "Api")
+            }
+        }
+        val arguments = arrayOf("aggregateApiWatchdogReports", *PROJECT_ISOLATION)
+        val reports = listOf("build/reports/api-watchdog/aggregate-report.html", "library/build/reports/api-watchdog/report.html")
+        fun assertButtons(ideProject: String) = reports.forEach { report ->
+            val html = project.file(report).readText()
+            assertContains(html, "data-ide-project=\"$ideProject\" data-ide-root=\"${project.rootDir.absoluteFile.invariantSeparatorsPath}\"")
+            assertContains(html, "data-ide-path=\"library/src/main/kotlin/test/Api.kt\"")
+        }
+        project.file(".idea").mkdirs()
+        project.file(".idea/.name").writeText("My Library\n")
+
+        project.build(*arguments)
+        assertButtons("My Library")
+
+        project.file(".idea/.name").delete()
+        project.build(*arguments).assertTaskOutcome(":aggregateApiWatchdogReports", SUCCESS)
+        assertButtons(project.rootDir.name)
+    }
+
     /** The root declares every project with the Watchdog. [watchdogInRoot] applies the Watchdog to the root too. */
     private fun aggregateProject(watchdogInRoot: Boolean, block: ProjectSpec.() -> Unit): WatchdogBuild = jvmProject {
         val aggregation = Plugin("org.jetbrains.kotlin.library.api-watchdog-report-aggregation", pluginUnderTestVersion)

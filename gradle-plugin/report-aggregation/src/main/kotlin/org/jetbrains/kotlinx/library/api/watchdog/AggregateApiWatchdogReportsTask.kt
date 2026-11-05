@@ -5,10 +5,12 @@ import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.provider.MapProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
@@ -28,6 +30,14 @@ public abstract class AggregateApiWatchdogReportsTask internal constructor() : D
     @get:Input
     internal val projectDirectoryPrefixes: MapProperty<String, String> =
         project.objects.mapProperty(String::class.java, String::class.java).convention(emptyMap())
+
+    /**
+     * The IDE project of the build root. Without it, the HTML report has no **Open in IDE** buttons. The task finds the
+     * running IDEs for the buttons when it runs.
+     */
+    @get:Input
+    @get:Optional
+    internal val ideProject: Property<ApiWatchdogIdeProject> = project.objects.property(ApiWatchdogIdeProject::class.java)
 
     /** The report formats. Default files are `build/reports/api-watchdog/aggregate-report.html` and `.sarif`. */
     @get:Nested
@@ -52,7 +62,7 @@ public abstract class AggregateApiWatchdogReportsTask internal constructor() : D
                 )
             }
         this.reports.htmlOutput.orNull?.asFile?.let { file ->
-            ApiWatchdogHtmlReport.write(reports, file, aggregate = true)
+            ApiWatchdogHtmlReport.write(reports, file, aggregate = true, ideLinks = ideProject.orNull?.let(ApiWatchdogIdeLinks::detect))
             logger.lifecycle("Aggregate API Watchdog report: ${file.toPath().toUri()}")
         }
         this.reports.sarifOutput.orNull?.asFile?.let { file ->

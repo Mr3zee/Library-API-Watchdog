@@ -119,6 +119,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         val rootDirectory = isolated.rootProject.projectDirectory.asFile
         val projectDirectoryFromRoot = layout.projectDirectory.asFile
             .relativeToOrSelf(rootDirectory).invariantSeparatorsPath
+        @Suppress("UnstableApiUsage")
+        val ideProject = ApiWatchdogHtmlReport.ideProject(providers, isolated.rootProject.projectDirectory)
         val diagnosticSeverities = extension.diagnosticSeverities.entries.fold(
             objects.mapProperty(String::class.java, WatchdogSeverity::class.java),
         ) { map, (diagnostic, severity) -> map.apply { put(diagnostic.name, severity) } }
@@ -162,6 +164,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             @Suppress("UnstableApiUsage")
             task.projectIdentityPath.set(isolated.buildTreePath)
             task.projectDirectoryFromRoot.set(projectDirectoryFromRoot)
+            task.ideProject.set(ideProject)
             task.diagnosticSeverities.set(diagnosticSeverities)
             task.kotlinVersion.set(kotlinVersion)
             task.fixerArtifact.from(fixerArtifact)

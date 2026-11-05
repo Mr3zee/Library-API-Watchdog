@@ -189,6 +189,71 @@ class ApiWatchdogHtmlReportTest {
     }
 
     @Test
+    fun `open in IDE buttons give root-relative paths and 1-based positions`() {
+        val applied = AppliedExemptionReportEntry("IntentionallyOpen", "src/Api.kt:3")
+        val ranged = entry("src\\Api.kt:12", range = ApiWatchdogSourceRange(12, 5, 12, 9))
+        val reports = listOf(
+            report(entries = listOf(ranged, entry("src/Api.kt")), applied = listOf(applied)),
+            report(entries = listOf(entry("../shared/./src/Api.kt:1")), project = ":", directory = ""),
+        )
+        for (aggregate in listOf(true, false)) {
+            val buttons = render(reports.take(if (aggregate) 2 else 1), aggregate, ideLinks())
+                .select(".finding .location a.open-in-ide[hidden]")
+                .map { listOf(it.attr("data-ide-path"), it.attr("data-ide-line"), it.attr("data-ide-column")) }
+            val expected = listOf(
+                listOf("../shared/src/Api.kt", "1", "0"),
+                listOf("modules/library/src/Api.kt", "0", "0"),
+                listOf("modules/library/src/Api.kt", "12", "5"),
+                listOf("modules/library/src/Api.kt", "3", "0"),
+            ).filter { aggregate || !it.first().startsWith("..") }
+            assertEquals(expected, buttons)
+        }
+    }
+
+    @Test
+    fun `open in IDE buttons are absent without IDE links or for a path with a colon`() {
+        val reports = listOf(report(entries = listOf(entry("C:\\source\\Api.kt:12"), entry("src/a:b/Api.kt"), entry(""))))
+        assertTrue(render(reports, ideLinks = ideLinks()).select(".open-in-ide").isEmpty())
+        val document = render(listOf(report(entries = listOf(entry()))))
+        assertTrue(document.select(".open-in-ide, #ide-target").isEmpty())
+        assertFalse(assertNotNull(document.selectFirst(".report-controls")).hasAttr("data-ide-project"))
+    }
+
+    @Test
+    fun `the report shows an IDE selector only without exactly one Toolbox tag`() {
+        val reports = listOf(report(entries = listOf(entry())))
+        val project = ApiWatchdogIdeProject("my lib&", "/work/my lib")
+        val cases = mapOf(
+            ApiWatchdogIdeLinks(project, toolbox = true, tags = listOf("studio")) to ("studio" to emptyList()),
+            ApiWatchdogIdeLinks(project, toolbox = true, tags = listOf("idea", "studio")) to (null to listOf("IntelliJ IDEA", "Android Studio")),
+            ApiWatchdogIdeLinks(project, toolbox = false, tags = emptyList()) to ("idea-url" to emptyList()),
+        )
+        for ((links, expected) in cases) {
+            val document = render(reports, ideLinks = links)
+            val controls = assertNotNull(document.selectFirst(".report-controls"))
+            assertEquals("my lib&", controls.attr("data-ide-project"))
+            assertEquals("/work/my lib", controls.attr("data-ide-root"))
+            assertEquals(expected.first, controls.attr("data-ide-target").ifEmpty { null }, links.toString())
+            assertEquals(expected.second, document.select("#ide-target option").map { it.text() }, links.toString())
+        }
+    }
+
+    @Test
+    fun `IDE links prefer the IDEs with the project open and list both IDEs without exactly one tag`() {
+        val project = ApiWatchdogIdeProject("library", "/work/library")
+        fun tags(vararg running: RunningIdes.Ide) = ApiWatchdogIdeLinks.of(project, running.toList()).tags
+        val idea = RunningIdes.Ide("idea", listOf(File("/work/library")))
+        val otherIdea = RunningIdes.Ide("idea", listOf(File("/work")))
+        val studio = RunningIdes.Ide("studio", listOf(File("/work/other")))
+        assertEquals(listOf("idea"), tags(idea, studio))
+        assertEquals(listOf("idea"), tags(idea, otherIdea, studio))
+        assertEquals(listOf("studio"), tags(RunningIdes.Ide("studio", emptyList())))
+        assertEquals(listOf("idea", "studio"), tags())
+        assertEquals(listOf("idea", "studio"), tags(idea, RunningIdes.Ide("studio", listOf(File("/work/library")))))
+        assertEquals(listOf("idea", "studio"), tags(RunningIdes.Ide("idea", emptyList()), studio))
+    }
+
+    @Test
     fun `source positions use normalized newlines and UTF-16 columns`() {
         val code = "\t😀 e\u0301<&>\nnext"
         for (newline in listOf("\n", "\r\n", "\r")) {
@@ -320,9 +385,9 @@ class ApiWatchdogHtmlReportTest {
                 }
                 val type = isolated.loadClass(reportClass.name)
                 val instance = type.getField("INSTANCE").get(null)
-                val write = type.getMethod("write", List::class.java, File::class.java, Boolean::class.javaPrimitiveType)
+                val write = type.getMethod("write", List::class.java, File::class.java, Boolean::class.javaPrimitiveType, ApiWatchdogIdeLinks::class.java)
                 val failure = assertFailsWith<InvocationTargetException>(asset) {
-                    write.invoke(instance, emptyList<ApiWatchdogProjectReport>(), output, true)
+                    write.invoke(instance, emptyList<ApiWatchdogProjectReport>(), output, true, null)
                 }
                 assertIs<IllegalStateException>(failure.cause, asset)
                 assertEquals("previous report", output.readText(), asset)
@@ -351,10 +416,12 @@ class ApiWatchdogHtmlReportTest {
         }
     }
 
-    private fun render(reports: List<ApiWatchdogProjectReport>, aggregate: Boolean = true): Document {
+    private fun ideLinks() = ApiWatchdogIdeLinks(ApiWatchdogIdeProject("library", "/work/library"), toolbox = true, tags = listOf("idea"))
+
+    private fun render(reports: List<ApiWatchdogProjectReport>, aggregate: Boolean = true, ideLinks: ApiWatchdogIdeLinks? = null): Document {
         val output = Files.createTempFile("html-report", ".html").toFile()
         return try {
-            ApiWatchdogHtmlReport.write(reports, output, aggregate)
+            ApiWatchdogHtmlReport.write(reports, output, aggregate, ideLinks)
             Jsoup.parse(output.readText())
         } finally {
             output.delete()

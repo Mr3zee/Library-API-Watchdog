@@ -14,6 +14,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -65,6 +66,14 @@ public abstract class ApiWatchdogReportTask internal constructor() : DefaultTask
     @get:Input
     internal abstract val diagnosticSeverities: MapProperty<String, WatchdogSeverity>
 
+    /**
+     * The IDE project of the build root. Without it, the HTML report has no **Open in IDE** buttons. The task finds the
+     * running IDEs for the buttons when it runs.
+     */
+    @get:Input
+    @get:Optional
+    internal abstract val ideProject: Property<ApiWatchdogIdeProject>
+
     /** The report formats. Default: the `reports` block of the `apiWatchdog` extension. */
     @get:Nested
     public val reports: WatchdogReports = project.objects.newInstance(WatchdogReports::class.java)
@@ -115,6 +124,7 @@ public abstract class ApiWatchdogReportTask internal constructor() : DefaultTask
             projectPath = projectIdentityPath.get(),
             projectDirectory = projectDirectory.get().asFile,
             projectDirectoryFromRoot = projectDirectoryFromRoot.get(),
+            ideLinks = ideProject.orNull?.let(ApiWatchdogIdeLinks::detect),
             htmlFile = if (reports.html.get()) reports.htmlFile.get().asFile else null,
             sarifFile = if (reports.sarif.get()) reports.sarifFile.get().asFile else null,
             reportDataFile = reportDataFile.get().asFile,

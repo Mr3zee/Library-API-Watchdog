@@ -240,5 +240,54 @@ Prism.hooks.add("after-highlight", function (environment) {
         if (projectFilter) projectFilter.value = "";
         updateFilter();
     });
+
+    if (controls.dataset.ideProject !== undefined) {
+        const IDE_TARGET_KEY = "api-watchdog-ide-target";
+        const ideSelect = document.getElementById("ide-target");
+        const ideLinks = [...document.querySelectorAll("a.open-in-ide")];
+
+        // Lines and columns in the data attributes are 1-based, and 0 when unknown. The navigate command of
+        // JetBrains Toolbox takes 0-based positions. An `idea://open` link takes a 1-based line and a 0-based column.
+        function ideUrl(target, link) {
+            const path = link.dataset.idePath;
+            const line = Number(link.dataset.ideLine);
+            const column = Number(link.dataset.ideColumn);
+            if (target === "idea-url") {
+                let url = "idea://open?file=" + encodeURIComponent(controls.dataset.ideRoot + "/" + path);
+                if (line > 0) url += "&line=" + line + (column > 0 ? "&column=" + (column - 1) : "");
+                return url;
+            }
+            const position = line > 0 ? ":" + (line - 1) + (column > 0 ? ":" + (column - 1) : "") : "";
+            return "jetbrains://" + target + "/navigate/reference?project=" + encodeURIComponent(controls.dataset.ideProject) +
+                "&path=" + encodeURIComponent(path + position);
+        }
+
+        function updateIdeLinks() {
+            const target = ideSelect ? ideSelect.value : controls.dataset.ideTarget;
+            ideLinks.forEach(link => {
+                link.href = ideUrl(target, link);
+                link.hidden = false;
+            });
+        }
+
+        if (ideSelect) {
+            let saved = null;
+            try {
+                saved = localStorage.getItem(IDE_TARGET_KEY);
+            } catch (e) {
+                // Without storage for the page, the selector starts at its first IDE.
+            }
+            if ([...ideSelect.options].some(option => option.value === saved)) ideSelect.value = saved;
+            ideSelect.addEventListener("change", () => {
+                try {
+                    localStorage.setItem(IDE_TARGET_KEY, ideSelect.value);
+                } catch (e) {
+                    // The selection lasts until the page closes.
+                }
+                updateIdeLinks();
+            });
+        }
+        updateIdeLinks();
+    }
     controls.hidden = false;
 })();

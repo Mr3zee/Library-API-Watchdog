@@ -64,6 +64,43 @@ class ApiWatchdogHtmlReportScriptTest {
     }
 
     @Test
+    fun `open in IDE buttons link to the one Toolbox IDE with 0-based positions`() = openReport("ide-studio") {
+        assertEquals(0, count("#ide-target"))
+        assertEquals(0, count("a.open-in-ide[hidden]"))
+        val prefix = "jetbrains://studio/navigate/reference?project=my%20lib%26&path="
+        val links = ideLinks()
+        assertTrue(links.all { it.startsWith(prefix) }, links.toString())
+        for (path in listOf("src%2FApi.kt%3A1", "modules%2Flibrary%2Fsrc%2FApi.kt%3A11%3A4", "modules%2Flibrary%2Fsrc%2FApi.kt%3A11")) {
+            assertTrue(prefix + path in links, links.toString())
+        }
+    }
+
+    @Test
+    fun `open in IDE buttons without Toolbox are idea links with a 1-based line and a 0-based column`() = openReport("ide-url") {
+        assertEquals(0, count("#ide-target"))
+        assertTrue(
+            "idea://open?file=%2Fwork%2Fmy%20lib%2Fmodules%2Flibrary%2Fsrc%2FApi.kt&line=12&column=4" in ideLinks(),
+            ideLinks().toString(),
+        )
+        assertTrue("idea://open?file=%2Fwork%2Fmy%20lib%2Fsrc%2FApi.kt&line=2" in ideLinks(), ideLinks().toString())
+    }
+
+    @Test
+    fun `the IDE selector sets every button and remembers the selection`() = openReport("ide-select") {
+        js("localStorage.clear()")
+        reload()
+        assertEquals(listOf("idea", "studio"), optionValues("ide-target"))
+        assertEquals("idea", value("ide-target"))
+        assertTrue(ideLinks().all { it.startsWith("jetbrains://idea/navigate/reference?project=my%20lib%26&path=") }, ideLinks().toString())
+        change("ide-target", "studio")
+        assertTrue(ideLinks().all { it.startsWith("jetbrains://studio/") }, ideLinks().toString())
+        reload()
+        assertEquals("studio", value("ide-target"))
+        assertTrue(ideLinks().all { it.startsWith("jetbrains://studio/") }, ideLinks().toString())
+        js("localStorage.clear()")
+    }
+
+    @Test
     fun `empty reports initialize without controls or errors`() = openReport("empty") {
         js("Prism.highlightAll()")
         assertEquals(0, count(".report-controls"))
@@ -557,6 +594,13 @@ class ApiWatchdogHtmlReportScriptTest {
 
         fun value(id: String): String = property("#$id", "value") as String
 
+        fun ideLinks(): List<String> =
+            js("return [...document.querySelectorAll('a.open-in-ide')].map(link => link.getAttribute('href'))").asList()
+
+        fun reload() {
+            driver.navigate().refresh()
+        }
+
         fun optionValues(id: String): List<String> =
             js("return [...document.getElementById(arguments[0]).options].map(option => option.value)", id).asList()
 
@@ -684,6 +728,14 @@ class ApiWatchdogHtmlReportScriptTest {
             )),
         )) {
             ApiWatchdogHtmlReport.write(reports, File(fixtures, "$name.html"), aggregate = true)
+        }
+        val ideProject = ApiWatchdogIdeProject("my lib&", "/work/my lib")
+        for ((name, links) in mapOf(
+            "ide-studio" to ApiWatchdogIdeLinks(ideProject, toolbox = true, tags = listOf("studio")),
+            "ide-select" to ApiWatchdogIdeLinks(ideProject, toolbox = true, tags = listOf("idea", "studio")),
+            "ide-url" to ApiWatchdogIdeLinks(ideProject, toolbox = false, tags = emptyList()),
+        )) {
+            ApiWatchdogHtmlReport.write(listOf(library, root), File(fixtures, "$name.html"), aggregate = true, ideLinks = links)
         }
     }
 

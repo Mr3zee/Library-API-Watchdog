@@ -65,6 +65,8 @@ public class WatchdogReportAggregationPlugin : Plugin<Project> {
             task.description =
                 "Combines the declared projects' API Watchdog reports"
             task.reportDataFiles.from(reportArtifacts.map { it.files })
+            @Suppress("UnstableApiUsage")
+            task.ideProject.set(ApiWatchdogHtmlReport.ideProject(target.providers, target.isolated.rootProject.projectDirectory))
             // Variant metadata stores absolute build roots so report data remains portable.
             task.projectDirectoryPrefixes.set(reportArtifacts.flatMap { it.artifacts.resolvedArtifacts }.map { artifacts ->
                 artifacts.mapNotNull { artifact ->

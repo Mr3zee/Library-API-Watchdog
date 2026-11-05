@@ -3,6 +3,9 @@ package org.jetbrains.kotlinx.library.api.watchdog
 import java.io.File
 import java.net.URLEncoder
 import java.util.Base64
+import org.gradle.api.file.Directory
+import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ProviderFactory
 
 @InternalWatchdogApi
 public object ApiWatchdogHtmlReport {
@@ -11,10 +14,12 @@ public object ApiWatchdogHtmlReport {
     private val reportScript by lazy { resource("report.js") }
     private val favicon by lazy { Base64.getEncoder().encodeToString(resource("favicon.svg").toByteArray(Charsets.UTF_8)) }
 
+    /** @param ideLinks how the **Open in IDE** buttons open a file. Null writes no buttons. */
     public fun write(
         reports: List<ApiWatchdogProjectReport>,
         output: File,
         aggregate: Boolean,
+        ideLinks: ApiWatchdogIdeLinks? = null,
     ) {
         val sortedReports = reports.sortedBy { it.projectPath }
         val applied = sortedReports.flatMap { report ->
@@ -63,10 +68,10 @@ public object ApiWatchdogHtmlReport {
             appendLine("</ul>")
 
             if (applied.isNotEmpty() || notApplied.isNotEmpty()) {
-                appendControls(applied + notApplied, if (aggregate) sortedReports.map { it.projectPath } else emptyList())
+                appendControls(applied + notApplied, if (aggregate) sortedReports.map { it.projectPath } else emptyList(), ideLinks)
             }
-            appendSection("not-applied", "Not applied", "No diagnostics without an exemption.", notApplied, aggregate)
-            appendSection("applied", "Applied annotations", "No Watchdog @Intentionally* annotations found.", applied, aggregate)
+            appendSection("not-applied", "Not applied", "No diagnostics without an exemption.", notApplied, aggregate, ideLinks)
+            appendSection("applied", "Applied annotations", "No Watchdog @Intentionally* annotations found.", applied, aggregate, ideLinks)
             appendLine("</main><footer><a href=\"${WatchdogCheckDescriptions.DOCS_URL.escapeHtml()}\">Library API Watchdog</a> ")
             appendLine("${WatchdogCheckDescriptions.TOOL_VERSION.escapeHtml()}</footer>")
             // The report script highlights a snippet when it scrolls into view, so Prism must not highlight on load.
@@ -93,8 +98,16 @@ public object ApiWatchdogHtmlReport {
         WatchdogCheckDescriptions.checks[name]?.title ?: if (name == "unknown" || name.isBlank()) "Unknown diagnostic" else name
 
     /** @param projects the project paths of an aggregate report. The project filter needs two or more. */
-    private fun StringBuilder.appendControls(findings: List<Finding>, projects: List<String>) {
-        appendLine("<div class=\"report-controls\" hidden>")
+    /** @param projects the project paths of an aggregate report. The project filter needs two or more. */
+    private fun StringBuilder.appendControls(findings: List<Finding>, projects: List<String>, ideLinks: ApiWatchdogIdeLinks?) {
+        append("<div class=\"report-controls\"")
+        if (ideLinks != null) {
+            append(" data-ide-project=\"${ideLinks.project.name.escapeHtml()}\" data-ide-root=\"${ideLinks.project.rootDirectory.escapeHtml()}\"")
+            // `idea-url` is an `idea://open` link. Any other target is a JetBrains Toolbox tag.
+            val target = if (ideLinks.toolbox) ideLinks.tags.singleOrNull() else "idea-url"
+            if (target != null) append(" data-ide-target=\"${target.escapeHtml()}\"")
+        }
+        appendLine(" hidden>")
         appendLine("<label>View <select id=\"view-mode\"><option value=\"diagnostic\">By diagnostic</option><option value=\"directory\">Directory tree</option></select></label>")
         appendLine("<label>Diagnostic <select id=\"diagnostic-filter\"><option value=\"\">All diagnostics</option>")
         findings.flatMap { it.diagnostics }.distinct().sortedBy { diagnosticTitle(it) }.forEach { diagnostic ->
@@ -107,10 +120,25 @@ public object ApiWatchdogHtmlReport {
             appendLine("</select></label>")
         }
         appendLine("<button type=\"button\" id=\"reset-filter\" disabled>Reset filter</button>")
-        appendLine("<output id=\"filter-summary\" aria-live=\"polite\"></output></div>")
+        appendLine("<output id=\"filter-summary\" aria-live=\"polite\"></output>")
+        if (ideLinks != null && ideLinks.toolbox && ideLinks.tags.size > 1) {
+            append("<label class=\"ide-target\">Open in <select id=\"ide-target\">")
+            ideLinks.tags.forEach { tag ->
+                append("<option value=\"${tag.escapeHtml()}\">${(ApiWatchdogIdeLinks.SUPPORTED_TAGS[tag] ?: tag).escapeHtml()}</option>")
+            }
+            appendLine("</select></label>")
+        }
+        appendLine("</div>")
     }
 
-    private fun StringBuilder.appendSection(id: String, title: String, emptyText: String, findings: List<Finding>, aggregate: Boolean) {
+    private fun StringBuilder.appendSection(
+        id: String,
+        title: String,
+        emptyText: String,
+        findings: List<Finding>,
+        aggregate: Boolean,
+        ideLinks: ApiWatchdogIdeLinks?,
+    ) {
         appendLine("<section class=\"report-section\" data-view=\"diagnostic\" aria-labelledby=\"$id\">")
         appendLine("<h2 id=\"$id\">$title</h2>")
         if (findings.isEmpty()) {
@@ -134,7 +162,7 @@ public object ApiWatchdogHtmlReport {
                     appendLine("<div class=\"finding-heading\">")
                     appendFindingHeading(finding)
                     appendLine("</div>")
-                    appendLocation(finding.report, finding.location, aggregate)
+                    appendLocation(finding, aggregate, ideLinks)
                     val entry = finding.diagnostic
                     if (entry == null) {
                         val (statusClass, statusText) = if (finding.redundant) "redundant" to "Redundant" else "applied" to "Applied"
@@ -177,10 +205,54 @@ public object ApiWatchdogHtmlReport {
         }
     }
 
-    private fun StringBuilder.appendLocation(report: ApiWatchdogProjectReport, location: String, aggregate: Boolean) {
-        if (aggregate) appendLine("<p class=\"project\">Project <code>${report.projectPath.escapeHtml()}</code></p>")
-        appendLine("<p class=\"location\"><code>${location.escapeHtml()}</code></p>")
+    private fun StringBuilder.appendLocation(finding: Finding, aggregate: Boolean, ideLinks: ApiWatchdogIdeLinks?) {
+        if (aggregate) appendLine("<p class=\"project\">Project <code>${finding.report.projectPath.escapeHtml()}</code></p>")
+        append("<p class=\"location\"><code>${finding.location.escapeHtml()}</code>")
+        val path = if (ideLinks == null) null else idePath(finding)
+        if (path != null) {
+            // The report script sets the link for the IDE that the reader selects.
+            val range = finding.diagnostic?.sourceRange?.takeIf { it.startLine >= 1 && it.startColumn >= 1 }
+            val line = range?.startLine ?: finding.line ?: 0
+            append(" <a class=\"open-in-ide\" data-ide-path=\"${path.escapeHtml()}\" data-ide-line=\"$line\" ")
+            append("data-ide-column=\"${range?.startColumn ?: 0}\" hidden>Open in IDE</a>")
+        }
+        appendLine("</p>")
     }
+
+    /**
+     * The source path relative to the build root, or null when the IDE can't open it. The `navigate` command of the
+     * IDE reads a colon as the start of the line number.
+     */
+    private fun idePath(finding: Finding): String? {
+        if (finding.sourcePath.isEmpty()) return null
+        val path = normalizePath(
+            listOf(finding.report.projectDirectory, finding.sourcePath).filter(String::isNotEmpty).joinToString("/").replace('\\', '/'),
+        )
+        return path.takeUnless { ':' in it }
+    }
+
+    /** Removes the empty, `.`, and resolvable `..` segments of [path]. A leading `/` stays. */
+    private fun normalizePath(path: String): String {
+        val segments = ArrayDeque<String>()
+        for (segment in path.split('/')) {
+            when {
+                segment.isEmpty() || segment == "." -> {}
+                segment == ".." && segments.isNotEmpty() && segments.last() != ".." -> segments.removeLast()
+                else -> segments.addLast(segment)
+            }
+        }
+        return (if (path.startsWith('/')) "/" else "") + segments.joinToString("/")
+    }
+
+    /**
+     * The IDE project of the build in [rootDirectory]. The name is the text of `.idea/.name`, or the directory name when
+     * the file is missing or empty.
+     */
+    public fun ideProject(providers: ProviderFactory, rootDirectory: Directory): Provider<ApiWatchdogIdeProject> =
+        providers.fileContents(rootDirectory.file(".idea/.name")).asText
+            .map { text -> text.trim().ifEmpty { null } }
+            .orElse(rootDirectory.asFile.name)
+            .map { name -> ApiWatchdogIdeProject(name, rootDirectory.asFile.absoluteFile.invariantSeparatorsPath) }
 
     private fun StringBuilder.appendSource(
         report: ApiWatchdogProjectReport,

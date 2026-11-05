@@ -51,6 +51,19 @@ summary { padding: 8px 0; cursor: pointer; font-weight: 600; overflow-wrap: anyw
 .finding + .finding { border-top: 1px solid #e8e8ec; }
 .project { font-size: 13px; }
 .location { overflow-wrap: anywhere; }
+.open-in-ide {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 0 8px;
+    border: 1px solid #c7c9cf;
+    border-radius: 2px;
+    color: #27282c;
+    font-size: 12px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.open-in-ide:hover { color: #27282c; background: #f1f2f4; }
+.ide-target { margin-left: auto; }
 .check { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
 .severity { font-size: 13px; font-weight: 600; }
 .error { color: #b3261e; }
@@ -136,7 +149,7 @@ footer { margin-top: 32px; padding-top: 12px; border-top: 1px solid #dfe1e5; fon
     body { max-width: none; padding: 0; }
     pre { white-space: pre-wrap; overflow-wrap: anywhere; }
     .line-highlight { print-color-adjust: exact; }
-    .report-controls { display: none; }
+    .report-controls, .open-in-ide { display: none; }
     .finding { content-visibility: visible; }
     .fix-status { print-color-adjust: exact; }
 }
