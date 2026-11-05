@@ -19,6 +19,7 @@ on:
       - 'scripts/prepare-release.sh'
       - 'scripts/release-plan.sh'
       - 'scripts/release-notes.sh'
+      - 'scripts/push-signed-commit.sh'
       - 'scripts/check-publication-env.sh'
       - 'scripts/release-tooling.test.mjs'
       - '.github/workflows/docs.yml'
