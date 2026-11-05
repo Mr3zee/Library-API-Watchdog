@@ -1,0 +1,168 @@
+name: Dev kit update
+
+# Every day the workflow compares the `devkit` entry of the version catalog on main with the newest dev kit in the Space
+# repository. When the repository has a different version, the workflow:
+#
+# 1. Commits the version to the update branch and opens a pull request, or updates the open one.
+# 2. Runs every test and the benchmark check on the commit.
+# 3. Squash-merges the pull request when all of them pass. When a check fails, the pull request stays open.
+#
+# A pull request of GITHUB_TOKEN doesn't start other workflows, so this workflow calls the test workflows itself.
+on:
+  schedule:
+    - cron: '0 6 * * *'
+      timezone: 'Europe/Berlin'
+  workflow_dispatch:
+
+concurrency:
+  group: devkit-update
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  UPDATE_BRANCH: devkit-update
+  METADATA_URL: https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap/org/jetbrains/kotlin/compiler/plugin/devkit/settings/maven-metadata.xml
+  GIT_AUTHOR_NAME: github-actions[bot]
+  GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+  GIT_COMMITTER_NAME: github-actions[bot]
+  GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+
+jobs:
+  update:
+    name: Update the dev kit
+    runs-on: ubuntu-latest
+    permissions:
+      # The job pushes the update branch.
+      contents: write
+      pull-requests: write
+    outputs:
+      version: ${{ steps.versions.outputs.latest }}
+      sha: ${{ steps.branch.outputs.sha }}
+      pr: ${{ steps.pr.outputs.pr }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      # The branch check compares the update branch with main, so the job needs the history of both.
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Find the newest dev kit version
+        id: versions
+        run: |
+          current="$(sed -nE 's/^devkit = "([^"]+)"$/\1/p' gradle/libs.versions.toml)"
+          latest="$(curl --fail --silent --show-error --retry 3 "$METADATA_URL" \
+            | sed -nE 's|.*<latest>([^<]+)</latest>.*|\1|p')"
+          if [[ -z "$current" ]]; then
+            echo 'gradle/libs.versions.toml has no line devkit = "<version>".' >&2
+            exit 1
+          fi
+          if [[ ! "$latest" =~ ^[0-9A-Za-z.+-]+$ ]]; then
+            echo "The dev kit metadata at $METADATA_URL has no valid latest version. Got '$latest'." >&2
+            exit 1
+          fi
+          if [[ "$latest" == "$current" ]]; then
+            echo "The version catalog has the newest dev kit, $current."
+            exit 0
+          fi
+          echo "The version catalog has the dev kit $current. The newest dev kit is $latest."
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+
+      # The branch has one commit on top of main. A commit of another author in the branch of an open pull request is a
+      # fix by hand, so the job doesn't replace the branch.
+      - name: Create the update branch
+        id: branch
+        if: steps.versions.outputs.latest != ''
+        env:
+          LATEST: ${{ steps.versions.outputs.latest }}
+        run: |
+          pr="$(gh pr list --head "$UPDATE_BRANCH" --base main --state open --json number --jq 'first | .number // empty')"
+          if [[ -n "$pr" ]]; then
+            others="$(git log --format=%ae "origin/main..origin/$UPDATE_BRANCH" | grep -vxF "$GIT_AUTHOR_EMAIL" || true)"
+            if [[ -n "$others" ]]; then
+              echo "::warning::$UPDATE_BRANCH has commits of other authors, so the workflow doesn't replace it. Merge or close pull request #$pr."
+              exit 0
+            fi
+          fi
+          sed -i -E "s/^devkit = \"[^\"]+\"$/devkit = \"$LATEST\"/" gradle/libs.versions.toml
+          if git diff --quiet; then
+            echo "The update of the devkit entry in gradle/libs.versions.toml changed nothing." >&2
+            exit 1
+          fi
+          git switch --create "$UPDATE_BRANCH"
+          git commit --all --message "Update the dev kit to $LATEST"
+          git push --force origin "HEAD:refs/heads/$UPDATE_BRANCH"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "pr=$pr" >> "$GITHUB_OUTPUT"
+
+      - name: Open or update the pull request
+        id: pr
+        if: steps.branch.outputs.sha != ''
+        env:
+          PR: ${{ steps.branch.outputs.pr }}
+          CURRENT: ${{ steps.versions.outputs.current }}
+          LATEST: ${{ steps.versions.outputs.latest }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="Update the dev kit to $LATEST"
+          body="Updates the compiler-plugin-dev-kit from $CURRENT to $LATEST. The [Dev kit update workflow]($RUN_URL) runs every test and squash-merges this pull request when all of them pass. When a test fails, the pull request stays open for a fix."
+          if [[ -z "$PR" ]]; then
+            url="$(gh pr create --base main --head "$UPDATE_BRANCH" --title "$title" --body "$body")"
+            PR="${url##*/}"
+          else
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/pulls/$PR" -f "title=$title" -f "body=$body" --silent
+          fi
+          echo "pr=$PR" >> "$GITHUB_OUTPUT"
+
+  compiler-plugin-tests:
+    name: Compiler plugin tests
+    needs: update
+    if: needs.update.outputs.sha != ''
+    uses: ./.github/workflows/compiler-plugin-tests.yml
+    with:
+      ref: ${{ needs.update.outputs.sha }}
+    secrets: inherit
+
+  gradle-tests:
+    name: Gradle tests
+    needs: update
+    if: needs.update.outputs.sha != ''
+    uses: ./.github/workflows/gradle-tests.yml
+    with:
+      ref: ${{ needs.update.outputs.sha }}
+    secrets: inherit
+
+  benchmark:
+    name: Benchmark baseline
+    needs: update
+    if: needs.update.outputs.sha != ''
+    uses: ./.github/workflows/benchmark-baseline.yml
+    with:
+      ref: ${{ needs.update.outputs.sha }}
+    secrets: inherit
+
+  # A skipped or failed job in `needs` skips this job.
+  merge:
+    name: Merge the pull request
+    needs: [update, compiler-plugin-tests, gradle-tests, benchmark]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR: ${{ needs.update.outputs.pr }}
+      SHA: ${{ needs.update.outputs.sha }}
+      VERSION: ${{ needs.update.outputs.version }}
+    steps:
+      # The head commit check fails the merge when someone pushed to the branch after the tests started.
+      - name: Squash-merge the pull request
+        run: |
+          gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --squash --match-head-commit "$SHA" \
+            --subject "Update the dev kit to $VERSION (#$PR)" --body ''
+          gh api --method DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$UPDATE_BRANCH" --silent

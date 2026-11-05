@@ -47,7 +47,8 @@ npm run build                       # the site build, fails on a broken link or 
   publication makes one deployment for each build.
 - `library.properties` holds `group` and `version`, not `gradle.properties`, because an included build doesn't read
   the root `gradle.properties`. The `devkit` settings plugin in `build-logic-settings` sets both in every build. The dev
-  kit version is the `devkit` entry of the version catalog.
+  kit version is the `devkit` entry of the version catalog. The daily `Dev kit update` workflow updates it, not
+  Renovate.
 - `version` in `library.properties` is the next development version, not the latest release. The release build and
   the docs deploy get the release version from `LIBRARY_VERSION`, so the README has no plugin version. Only a manual
   run of `docs.yml` on `main` with the `version` input deploys the website. The `Release` workflow starts it.

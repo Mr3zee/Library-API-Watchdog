@@ -11,9 +11,9 @@
       "separateMajorMinor": false
     },
     {
+      "description": "The Dev kit update workflow updates the dev kit.",
       "matchPackageNames": ["/^org\\.jetbrains\\.kotlin\\.compiler\\.plugin\\.devkit:/"],
-      "registryUrls": ["https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap"],
-      "ignoreUnstable": false
+      "enabled": false
     },
     {
       "matchPackageNames": ["/^@docusaurus\\//"],

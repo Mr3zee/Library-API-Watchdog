@@ -130,10 +130,21 @@ Renovate reads [.github/renovate.json](.github/renovate.json).
 To activate it, install the [Renovate GitHub App](https://github.com/apps/renovate) for this repository and merge the configuration into `main`.
 
 Renovate opens pull requests for Gradle, npm, and GitHub Actions updates. Automatic merging is disabled.
-Renovate groups Kotlin and compiler-plugin-dev-kit updates for compatibility review.
+Renovate groups Kotlin updates for compatibility review.
 Docusaurus packages also share one pull request.
 
-The version catalog tracks the compiler-plugin-dev-kit. A package rule gives its Space registry.
+Renovate skips the compiler-plugin-dev-kit. [Dev kit update](.github/workflows/devkit-update.yml) updates it every
+day at 6:00 Berlin time, or when you run the workflow:
+
+1. The workflow compares the `devkit` entry of the version catalog on `main` with the newest version in the Space
+   repository. When they differ, it commits the newest version to the `devkit-update` branch and opens a pull request.
+2. The workflow runs the compiler plugin tests, the Gradle tests, and the benchmark check on that commit.
+3. When all of them pass, the workflow squash-merges the pull request. When one fails, the pull request stays open.
+
+Each run makes the branch again from `main`. When the branch of the open pull request has a commit of another author,
+the run doesn't change the branch. To fix a failed update, push the fix to the branch and merge the pull request
+yourself.
+
 A custom manager tracks the Android Gradle plugin test versions in the version catalog.
 The `agp8` entry stays on version 8, and `agp9` stays on version 9.
 The minimum supported Kotlin and IntelliJ IDEA versions remain manual compatibility decisions.

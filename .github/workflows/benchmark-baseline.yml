@@ -37,6 +37,12 @@ on:
         description: 'Record the baseline file and upload it as an artifact instead of the comparison'
         type: boolean
         default: false
+  workflow_call:
+    inputs:
+      ref:
+        description: 'The commit to measure. Empty measures the commit of the caller.'
+        type: string
+        default: ''
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -52,6 +58,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Set up JDK
         uses: actions/setup-java@v5
