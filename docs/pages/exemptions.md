@@ -53,6 +53,32 @@ public data class LegacyConfig(
 
 For a published API, the [`exemptExistingApi` task](./existing-libs.md) adds the exemptions.
 
+### Exemptions in a multiplatform project
+
+An exemption on an `expect` declaration also exempts its `actual` declarations.
+
+The compiler reports `ACTUAL_ANNOTATIONS_NOT_MATCH_EXPECT` when an `actual` declaration doesn't have
+every annotation of its `expect` declaration. So put a copy of the exemption on each `actual`
+declaration. [`exemptExistingApi`](./existing-libs.md) adds the copies.
+
+When the `actual` class declares a property as a `val` constructor parameter, put the copy of the
+property's exemption on that constructor parameter.
+
+#### Actual type aliases
+
+For an `actual typealias`, the compiler requires the annotations of the `expect` class on the class
+that the type alias expands to, not on the type alias. `exemptExistingApi` doesn't add a copy to that
+class:
+
+- A class of another module can't get an annotation.
+- The exemption on the `expect` class doesn't exempt the class that the type alias expands to. An
+  annotation on a class of the module is an exemption of that class only. When that class doesn't break
+  the rule of the check, [Redundant exemptions](./checks/special/redundant-exemption.md) reports the
+  annotation.
+
+When the compiler reports `ACTUAL_ANNOTATIONS_NOT_MATCH_EXPECT` for an `actual typealias`, add
+`@Suppress("ACTUAL_ANNOTATIONS_NOT_MATCH_EXPECT")` to the type alias.
+
 ### The DSL marker exemption
 
 `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` exempts a DSL marker from

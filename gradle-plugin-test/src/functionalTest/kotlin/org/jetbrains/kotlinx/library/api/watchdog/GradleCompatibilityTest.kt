@@ -77,7 +77,7 @@ class GradleCompatibilityTest {
         assertContains(html, "<code class=\"language-kotlin\">")
         assertContains(html, "public open class OpenApi")
         assertContains(html, "public data class DataApi")
-        assertContains(html, "Users can subclass the class <code>OpenApi</code> outside the library.")
+        assertContains(html, "Users can subclass <code>OpenApi</code> outside the library.")
         assertContains(html, "The <code>data class</code> <code>DataApi</code>")
         assertContains(html, "href=\"https://github.com/drewhamilton/Poko\">Poko</a>")
         assertReportedElement(html, "OpenApi", "error")

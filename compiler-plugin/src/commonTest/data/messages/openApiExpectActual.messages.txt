@@ -1,12 +1,12 @@
 /jvm.kt:20:25: error: OPEN_API_WITHOUT_SUBCLASS_OPT_IN
-    Users can subclass the type alias `Credentials` outside the library. The `actual typealias` expands to a declaration of another module, and `@SubclassOptInRequired` doesn't apply to a type alias. Declare an `actual` class or interface instead.
+    Users can subclass `Credentials` outside the library. The `actual typealias` expands to an open class or interface of another module. `@SubclassOptInRequired` doesn't apply to a type alias, so declare an `actual` class or interface instead.
 
     If this is intended, apply `@IntentionallyOpen` to the type alias.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in
 
 /jvm.kt:22:25: error: OPEN_API_WITHOUT_SUBCLASS_OPT_IN
-    Users can subclass the type alias `Session` outside the library. The `actual typealias` expands to a Java class or interface of this module. Apply `@SubclassOptInRequired` to the Java declaration.
+    Users can subclass `Session` outside the library. The `actual typealias` expands to an open Java class or interface of this module. Apply `@SubclassOptInRequired` to the Java declaration.
 
     If this is intended, apply `@IntentionallyOpen` to the type alias.
 

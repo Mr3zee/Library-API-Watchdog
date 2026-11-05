@@ -42,15 +42,16 @@ public enum class ExemptionReason {
 }
 
 /**
- * Exempts the annotated class or interface from
+ * Exempts the annotated class, interface, or `actual typealias` from
  * [Open API without subclass opt-in](https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in).
  *
  * Apply it when unrestricted subclassing outside the library is part of the API contract.
+ * The annotation on an `expect` class also exempts its `actual` class or `actual typealias`.
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
  *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
  */
-@Target(AnnotationTarget.CLASS)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.TYPEALIAS)
 @Retention(AnnotationRetention.BINARY)
 public annotation class IntentionallyOpen(
     val description: String = "",

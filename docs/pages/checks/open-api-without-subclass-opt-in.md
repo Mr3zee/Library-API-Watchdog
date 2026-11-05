@@ -83,6 +83,16 @@ public interface Plugin {
       public fun onEvent()
   }
   ```
+- In a multiplatform project, users on a platform can subclass the `actual` declaration. The check
+  reports an `actual` declaration that is open when its `expect` declaration isn't:
+  - An `open` `actual` class for a final `expect` class.
+  - A public or protected constructor that only the `actual` class declares.
+  - An `actual typealias` to an open class or interface of another module. `@SubclassOptInRequired`
+    doesn't apply to a type alias, so declare an `actual` class or interface instead.
+  - An `actual typealias` to an open Java class or interface of the module. Apply
+    `@SubclassOptInRequired` to the Java declaration.
+
+  `@IntentionallyOpen` on an `expect` declaration also exempts its `actual` declarations.
 - [Subclass opt-in without markers](./subclass-opt-in-without-markers.md) reports a markerless `@SubclassOptInRequired` instead.
 - [Exhaustive public API](./exhaustive-public-api.md) reports sealed types.
 - `@PublishedApi internal` types aren't reported.
@@ -90,8 +100,8 @@ public interface Plugin {
 ## Exemption
 
 <!-- diagnostic-exemption: OPEN_API_WITHOUT_SUBCLASS_OPT_IN -->
-<!-- diagnostic-exemption-substitution: class or interface => {0} -->
-If this is intended, apply `@IntentionallyOpen` to the class or interface.
+<!-- diagnostic-exemption-substitution: class, interface, or type alias => {0} -->
+If this is intended, apply `@IntentionallyOpen` to the class, interface, or type alias.
 
 Use the exemption when the declaration is part of the API design or must stay for backwards compatibility.
 

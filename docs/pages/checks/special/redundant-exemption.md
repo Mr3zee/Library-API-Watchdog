@@ -25,11 +25,12 @@ public class Connection
 - A check set to `NONE` doesn't report anything, so its exemptions are redundant.
   [`exemptExistingApi`](../../existing-libs.md) removes them. To keep them, turn the check on
   before you run the task.
-- An exemption on an `expect` declaration is redundant when neither the `expect` nor its `actual`
-  declaration needs it. Each platform compilation reports it for its own `actual`. The common
-  compilation doesn't report it.
-- When the `expect` and the `actual` declaration carry the same exemption, the one on the `actual`
-  is redundant.
+- In a multiplatform project, a platform compilation reports an exemption on an `expect` declaration
+  and its copy on the `actual` declaration together. It reports them when neither the `expect` nor the
+  `actual` declaration needs the exemption on this platform. The common compilation doesn't report these
+  exemptions. See
+  [Exemptions in a multiplatform project](../../exemptions.md#exemptions-in-a-multiplatform-project)
+  for more details about the copies.
 - An [annotation ignore rule](../../exemptions.md#annotation-ignore-rules) doesn't make an exemption
   redundant.
 - [`exemptExistingApi`](../../existing-libs.md) removes a redundant exemption, and the import of the

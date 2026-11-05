@@ -85,10 +85,18 @@
         ],
         "funInterfaceFix": [
           "A lambda implements a `fun interface`, so `@SubclassOptInRequired` doesn't apply to it."
+        ],
+        "typeAliasFix": [
+          "The `actual typealias` expands to an open class or interface of another module.",
+          "`@SubclassOptInRequired` doesn't apply to a type alias, so declare an `actual` class or interface instead."
+        ],
+        "typeAliasToJavaFix": [
+          "The `actual typealias` expands to an open Java class or interface of this module.",
+          "Apply `@SubclassOptInRequired` to the Java declaration."
         ]
       },
       "message": [
-        "Users can subclass the {0} `{1}` outside the library. {2}",
+        "Users can subclass `{1}` outside the library. {2}",
         "",
         "If this is intended, apply `@IntentionallyOpen` to the {0}."
       ]

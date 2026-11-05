@@ -69,11 +69,10 @@ class DiagnosticMessageHtmlTest {
     @Test
     fun `repeated parameters are replaced consistently without recursive substitution`() {
         val document = Jsoup.parseBodyFragment(assertNotNull(DiagnosticMessageHtml.render(entry(
-            "OPEN_API_WITHOUT_SUBCLASS_OPT_IN", "kind{1}", "Name{0}", "Hint{2}",
+            "DEFAULT_PARAMETERS_WITHOUT_JVM_OVERLOADS", "kind{1}", "Name{0}",
         ))))
-        assertEquals(2, Regex("kind\\{1}").findAll(document.text()).count())
+        assertEquals(3, Regex("kind\\{1}").findAll(document.text()).count())
         assertContains(document.text(), "Name{0}")
-        assertContains(document.text(), "Hint{2}")
     }
 
     @Test

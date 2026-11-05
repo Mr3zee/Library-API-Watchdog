@@ -178,7 +178,7 @@ class ExemptExistingApiTest {
         assertContains(report, "<code class=\"language-kotlin\">")
         assertContains(report, "public open class LegacyApi")
         assertContains(report, "data-line=\"")
-        assertContains(report, "Users can subclass the class <code>LegacyApi</code> outside the library.")
+        assertContains(report, "Users can subclass <code>LegacyApi</code> outside the library.")
         assertContains(report, "Apply <code>@SubclassOptInRequired</code>")
         assertContains(report, "<details class=\"diagnostic-message\"><summary>Diagnostic message</summary>")
         assertReportedElement(report, "LegacyApi", "error")
