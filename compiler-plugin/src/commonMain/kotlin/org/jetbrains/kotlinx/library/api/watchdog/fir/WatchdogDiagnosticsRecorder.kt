@@ -24,6 +24,7 @@ import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.getSingleMatchedExpectForActualOrNull
 import org.jetbrains.kotlin.fir.declarations.utils.isActual
 import org.jetbrains.kotlin.fir.resolve.providers.firProvider
+import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.types.FirTypeRef
@@ -40,10 +41,14 @@ import org.jetbrains.kotlin.fir.types.FirTypeRef
  * 7. One field for each rendered message parameter. The recorder writes a backslash, a tab, a
  *    line feed, and a carriage return as `\\`, `\t`, `\n`, and `\r`.
  *
- * A line with the name [EXPECT_ACTUAL_PAIR] isn't a diagnostic:
+ * Two line names aren't diagnostics:
  *
- * - Fields 2 to 6: the `actual` declaration, in the fields of a source element.
- * - Fields 7 to 9: the path, the start offset, and the end offset of its `expect` declaration.
+ * - [EXPECT_ACTUAL_PAIR]: fields 2 to 6 hold the `actual` declaration, in the fields of a source
+ *   element. Fields 7 to 9 hold the path, the start offset, and the end offset of its `expect`
+ *   declaration.
+ * - [REDUNDANT_COPY]: the copy on an `actual` of a redundant `expect` exemption, in the fields of a
+ *   `REDUNDANT_EXEMPTION` diagnostic. The compiler doesn't report the copy, and the fixer removes it
+ *   with the original.
  *
  * The recorder never truncates the file, because several compiler sessions of one build write
  * to it. The caller creates an empty file before the compilation.
@@ -61,6 +66,11 @@ class WatchdogDiagnosticsRecorder(private val outputFile: File) {
             listOf(EXPECT_ACTUAL_PAIR, actualPath, actual.startOffset, actual.endOffset, actual.startOffset, actual.endOffset),
             listOf(expectPath, expect.startOffset.toString(), expect.endOffset.toString()),
         )
+    }
+
+    /** [parameters] are the message parameters of the `REDUNDANT_EXEMPTION` diagnostic on the original. */
+    fun recordRedundantCopy(path: String, copy: KtSourceElement, parameters: List<String>) {
+        append(listOf(REDUNDANT_COPY, path, copy.startOffset, copy.endOffset, copy.startOffset, copy.endOffset), parameters)
     }
 
     private fun append(fields: List<Any>, parameters: List<String>) {
@@ -99,6 +109,7 @@ class WatchdogDiagnosticsRecorder(private val outputFile: File) {
 
     companion object {
         const val EXPECT_ACTUAL_PAIR: String = "EXPECT_ACTUAL_PAIR"
+        const val REDUNDANT_COPY: String = "REDUNDANT_COPY"
 
         /** The sessions of a compilation share the output file. */
         private val APPEND_LOCK = Any()
@@ -156,13 +167,18 @@ internal class ExpectActualPairRecorder(
         val actualPath = context.containingFilePath ?: return
         val expect = declaration.symbol.getSingleMatchedExpectForActualOrNull() ?: return
         val expectSource = expect.source?.takeIf { it.kind == KtRealSourceElementKind } ?: return
-        val provider = expect.moduleData.session.firProvider
-        val expectFile = when (expect) {
-            is FirClassLikeSymbol<*> -> provider.getFirClassifierContainerFileIfAny(expect)
-            is FirCallableSymbol<*> -> provider.getFirCallableContainerFile(expect)
-            else -> null
-        }
-        val expectPath = expectFile?.sourceFile?.path ?: return
+        val expectPath = expect.sourceFilePath() ?: return
         recorder.recordExpectActualPair(actualPath, actualSource, expectPath, expectSource)
     }
+}
+
+/** The path of the source file of the declaration, or null for a declaration without one. */
+internal fun FirBasedSymbol<*>.sourceFilePath(): String? {
+    val provider = moduleData.session.firProvider
+    val file = when (this) {
+        is FirClassLikeSymbol<*> -> provider.getFirClassifierContainerFileIfAny(this)
+        is FirCallableSymbol<*> -> provider.getFirCallableContainerFile(this)
+        else -> null
+    }
+    return file?.sourceFile?.path
 }

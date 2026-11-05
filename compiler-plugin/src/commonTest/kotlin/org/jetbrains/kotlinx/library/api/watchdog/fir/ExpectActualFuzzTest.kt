@@ -18,7 +18,8 @@ import org.jetbrains.kotlin.test.services.KotlinTestInfo
  *   [signatureDiagnostics] of the common view, each on one half of a pair. One exception: a
  *   common-only overload doesn't see the JVM-only overloads, so only a JVM-only overload reports their order.
  * - `REDUNDANT_EXEMPTION` agrees with blanking each exemption, as in [RedundantExemptionFuzzTest].
- *   The test blanks an exemption of an `expect` and its copy on the `actual` together. Both get one verdict.
+ *   The test blanks an exemption of an `expect` and its copy on the `actual` together. The original on the
+ *   `expect` gets the verdict, and the copy is never reported.
  *   An exemption that reads the sibling overloads isn't judged.
  */
 class ExpectActualFuzzTest {
@@ -99,14 +100,16 @@ class ExpectActualFuzzTest {
         val units = program.exemptions.groupBy { it.group ?: it }.values
         units.forEachIndexed { unitIndex, unit ->
             if (unit.first().annotation == "IntentionallyInconsistentParameterOrder") return@forEachIndexed
-            val verdicts = unit.map { exemption -> baselineRedundant.any { it.matches(exemption) } }.distinct()
+            val original = unit.firstOrNull { it.file == "common.kt" } ?: unit.single()
+            val reported = baselineRedundant.any { it.matches(original) }
+            val reportedCopies = (unit - original).filter { copy -> baselineRedundant.any { it.matches(copy) } }
             val variant = compile("${label}e$unitIndex", program.renderMpp(blanked = unit))
             val baselineKeys = mpp.comparable(variant.texts)
             val variantKeys = variant.comparable(variant.texts)
             val changed = baselineKeys != variantKeys
-            if (verdicts.size > 1 || verdicts.single() == changed) {
+            if (reportedCopies.isNotEmpty() || reported == changed) {
                 val verdict = when {
-                    verdicts.size > 1 -> "the copies got different verdicts"
+                    reportedCopies.isNotEmpty() -> "the copy on the actual is reported"
                     changed -> "reported as redundant, but blanking it changes the diagnostics"
                     else -> "not reported, but blanking it changes nothing"
                 }

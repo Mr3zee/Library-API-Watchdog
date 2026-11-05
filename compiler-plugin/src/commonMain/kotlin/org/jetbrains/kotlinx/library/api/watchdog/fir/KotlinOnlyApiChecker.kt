@@ -29,6 +29,7 @@ internal class KotlinOnlyApiChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirFunctionChecker(MppCheckerKind.Common), ExemptingChecker {
     override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyKotlinOnlyApi)
+    override val pairSide: PairSide = PairSide.ACTUAL
 
     override val enclosingClassExemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyKotlinOnlyApi)
 

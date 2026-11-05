@@ -24,7 +24,7 @@ public expect class Needed(@IntentionallyNullableBoolean(reason = ExemptionReaso
     public val flag: Boolean?
 }
 
-internal expect class Redundant(<!REDUNDANT_EXEMPTION!>@IntentionallyNullableBoolean(reason = ExemptionReason.API_DESIGN)<!> flag: Boolean?) {
+internal expect class Redundant(<!REDUNDANT_EXEMPTION, REDUNDANT_EXEMPTION{METADATA}!>@IntentionallyNullableBoolean(reason = ExemptionReason.API_DESIGN)<!> flag: Boolean?) {
     public val flag: Boolean?
 }
 
@@ -45,6 +45,6 @@ import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyNullableBoolean
 
 public actual class Needed actual constructor(@IntentionallyNullableBoolean(reason = ExemptionReason.API_DESIGN) public actual val flag: Boolean?)
 
-internal actual class Redundant actual constructor(<!REDUNDANT_EXEMPTION!>@IntentionallyNullableBoolean(reason = ExemptionReason.API_DESIGN)<!> public actual val flag: Boolean?)
+internal actual class Redundant actual constructor(@IntentionallyNullableBoolean(reason = ExemptionReason.API_DESIGN) public actual val flag: Boolean?)
 
 public actual class Inherited @IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN) actual constructor(public actual val id: Id)

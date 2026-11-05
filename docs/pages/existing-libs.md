@@ -72,7 +72,8 @@ three things:
     declare the dependency with `api` in the build script. This doesn't break any consumer.
 
 `exemptExistingApi` removes a [redundant exemption](./checks/special/redundant-exemption.md), and
-`generateApiWatchdogReport` tags it as redundant.
+`generateApiWatchdogReport` tags it as redundant. In a multiplatform project, the task removes the
+copies on the `actual` declarations with the exemption on the `expect` declaration.
 
 Any other compilation error still fails the task. Fix unresolved references and syntax errors first.
 The compilations outside collection mode still report the three always-error checks, so fix them

@@ -26,6 +26,7 @@ internal class MangledJvmNameChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirCallableDeclarationChecker(MppCheckerKind.Common), ExemptingChecker {
     override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyMangledJvmName)
+    override val pairSide: PairSide = PairSide.ACTUAL
 
     override val enclosingClassExemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyMangledJvmName)
 

@@ -185,12 +185,13 @@ internal object ExemptionProbe {
         return classId in current.classIds ||
                 current.annotations.any { it === annotation || it.sameSourceAs(annotation) }
     }
+}
 
-    private fun FirAnnotation.sameSourceAs(other: FirAnnotation): Boolean {
-        val source = source ?: return false
-        val otherSource = other.source ?: return false
-        return source.startOffset == otherSource.startOffset && source.endOffset == otherSource.endOffset
-    }
+/** FIR copies an annotation of a constructor parameter to its property, so the source identifies the annotation. */
+internal fun FirAnnotation.sameSourceAs(other: FirAnnotation): Boolean {
+    val source = source ?: return false
+    val otherSource = other.source ?: return false
+    return source.startOffset == otherSource.startOffset && source.endOffset == otherSource.endOffset
 }
 
 context(context: CheckerContext)

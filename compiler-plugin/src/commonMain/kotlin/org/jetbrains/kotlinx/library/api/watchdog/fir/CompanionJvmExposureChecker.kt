@@ -22,6 +22,7 @@ internal class CompanionJvmExposureChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirCallableDeclarationChecker(MppCheckerKind.Common), ExemptingChecker {
     override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyNonStaticCompanionApi)
+    override val pairSide: PairSide = PairSide.ACTUAL
 
     override val enclosingClassExemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyNonStaticCompanionApi)
 

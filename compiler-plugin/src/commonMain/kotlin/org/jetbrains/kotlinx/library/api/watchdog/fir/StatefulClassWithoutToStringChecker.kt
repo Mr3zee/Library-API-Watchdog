@@ -28,6 +28,7 @@ internal class StatefulClassWithoutGeneratedMembersChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirClassChecker(MppCheckerKind.Common), ExemptingChecker {
     override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyWithoutEquals, WatchdogClassIds.IntentionallyWithoutHashCode, WatchdogClassIds.IntentionallyWithoutToString, WatchdogClassIds.IntentionallyWithoutEqualsHashCodeOrToString)
+    override val pairSide: PairSide = PairSide.ACTUAL
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirClass) {

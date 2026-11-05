@@ -19,7 +19,7 @@ import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyMutableCollection
 @IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)
 public expect val items: MutableList<Int>
 
-<!REDUNDANT_EXEMPTION!>@IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)<!>
+<!REDUNDANT_EXEMPTION, REDUNDANT_EXEMPTION{METADATA}!>@IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)<!>
 public expect val views: List<Int>
 
 @IntentionallyInlinedLogic(reason = ExemptionReason.API_DESIGN)

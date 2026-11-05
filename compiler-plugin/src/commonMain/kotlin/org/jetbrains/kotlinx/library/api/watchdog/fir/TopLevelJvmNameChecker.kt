@@ -20,6 +20,7 @@ internal class TopLevelJvmNameChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirFileChecker(MppCheckerKind.Common), ExemptingChecker {
     override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyDefaultFacadeName)
+    override val pairSide: PairSide = PairSide.ACTUAL
 
     @OptIn(DirectDeclarationsAccess::class)
     context(context: CheckerContext, reporter: DiagnosticReporter)

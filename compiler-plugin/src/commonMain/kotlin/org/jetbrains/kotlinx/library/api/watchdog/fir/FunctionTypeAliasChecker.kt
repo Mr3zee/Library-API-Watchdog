@@ -14,6 +14,7 @@ internal class FunctionTypeAliasChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirTypeAliasChecker(MppCheckerKind.Common), ExemptingChecker {
     override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyFunctionTypeAlias)
+    override val pairSide: PairSide = PairSide.EXPECT
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirTypeAlias) {

@@ -187,6 +187,14 @@ class ExpectActualCopiesTest {
     }
 
     @Test
+    fun `a redundant copy becomes a removal`() {
+        val copy = RecordedDiagnostic(REDUNDANT_COPY, JVM, 10, 20, listOf("IntentionallyBooleanParameter", "declaration"), 10, 20)
+        val pair = pairs().first()
+
+        assertEquals(listOf(copy.copy(name = "REDUNDANT_EXEMPTION"), pair), listOf(copy, pair).redundantCopiesAsRemovals())
+    }
+
+    @Test
     fun `a diagnostic outside every expect isn't copied`() {
         assertEquals(emptyList(), copies(onCommon("BOOLEAN_PARAMETER_PUBLIC_API", "package")))
     }

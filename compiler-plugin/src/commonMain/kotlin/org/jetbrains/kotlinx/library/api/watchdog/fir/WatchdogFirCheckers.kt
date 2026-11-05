@@ -187,6 +187,7 @@ class WatchdogFirCheckers internal constructor(
                     addAll(typeAliases.disabled)
                 },
                 enclosing = enclosingExemptionProbes,
+                recorder = recorder,
             ).takeIf { enabled },
         )).wrapped(basic.disabled) + setOfNotNull(
             recorder?.let(::ExpectActualPairRecorder)?.takeIf { enabled && exemptingExistingApi },

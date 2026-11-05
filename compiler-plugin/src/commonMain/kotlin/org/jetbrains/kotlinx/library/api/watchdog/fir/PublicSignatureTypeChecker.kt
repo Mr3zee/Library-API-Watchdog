@@ -46,6 +46,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
     private val exemption: ClassId? = null,
 ) : FirBasicDeclarationChecker(MppCheckerKind.Common), ExemptingChecker {
     override val exemptions: Set<ClassId> = setOfNotNull(exemption)
+    override val pairSide: PairSide = PairSide.EXPECT
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     final override fun check(declaration: FirDeclaration) {

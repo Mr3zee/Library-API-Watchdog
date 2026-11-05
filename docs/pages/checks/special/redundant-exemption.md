@@ -25,10 +25,24 @@ public class Connection
 - A check set to `NONE` doesn't report anything, so its exemptions are redundant.
   [`exemptExistingApi`](../../existing-libs.md) removes them. To keep them, turn the check on
   before you run the task.
-- In a multiplatform project, a platform compilation reports an exemption on an `expect` declaration
-  and its copy on the `actual` declaration together. It reports them when neither the `expect` nor the
-  `actual` declaration needs the exemption on this platform. The common compilation doesn't report these
-  exemptions. See
+- In a multiplatform project, an exemption on an `expect` declaration is redundant when neither the
+  `expect` declaration nor an `actual` declaration needs it. The compilation that reports it depends on
+  the check:
+  - A check that reports `expect` declarations, such as
+    [Undocumented public API](../undocumented-public-api.md) or
+    [Boolean parameters in public API](../boolean-parameter-public-api.md), decides from the `expect`
+    declaration. Every compilation and the IDE report the exemption.
+  - A check that reports `actual` declarations, such as
+    [Data classes in public API](../data-class-public-api.md) or
+    [Mangled JVM names in public API](../java-interop/mangled-jvm-name-public-api.md), needs them. A
+    platform compilation reports the exemption when its own `actual` declaration doesn't need it. The
+    common compilation and the IDE don't see `actual` declarations, so they don't report it.
+
+  The copy of the exemption on an `actual` declaration isn't reported while the `expect` declaration
+  has the exemption. After you remove the exemption from the `expect` declaration, the copy is an
+  exemption of the `actual` declaration alone and gets its own verdict.
+  [`exemptExistingApi`](../../existing-libs.md) removes the copies with the exemption on the `expect`
+  declaration. See
   [Exemptions in a multiplatform project](../../exemptions.md#exemptions-in-a-multiplatform-project)
   for more details about the copies.
 - An [annotation ignore rule](../../exemptions.md#annotation-ignore-rules) doesn't make an exemption

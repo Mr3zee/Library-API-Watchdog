@@ -13,6 +13,17 @@ import org.jetbrains.kotlin.psi.psiUtil.getStrictParentOfType
 internal const val EXPECT_ACTUAL_PAIR = "EXPECT_ACTUAL_PAIR"
 
 /**
+ * The name of a recorded line for the copy on an `actual` of a redundant `expect` exemption. The
+ * compiler reports `REDUNDANT_EXEMPTION` on the original only. The line has the fields of that
+ * diagnostic, so the fixer removes the copy as one.
+ */
+internal const val REDUNDANT_COPY = "REDUNDANT_COPY"
+
+/** The [REDUNDANT_COPY] lines as `REDUNDANT_EXEMPTION` diagnostics, and the other lines as they are. */
+internal fun List<RecordedDiagnostic>.redundantCopiesAsRemovals(): List<RecordedDiagnostic> =
+    map { if (it.name == REDUNDANT_COPY) it.copy(name = WatchdogChecks.REDUNDANT_EXEMPTION.name) else it }
+
+/**
  * Copies each diagnostic that the fixer exempts on an `expect` to its `actual` declarations, because
  * the compiler reports `ACTUAL_ANNOTATIONS_NOT_MATCH_EXPECT` when an `actual` doesn't have an annotation
  * of its `expect`. The copy goes to the `actual` of the annotated declaration, or to its type parameter

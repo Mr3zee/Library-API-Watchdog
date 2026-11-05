@@ -359,7 +359,8 @@ private data class MarkedSource(
     val diagnostics: List<MarkedDiagnostic>,
 ) {
     companion object {
-        private val openingMarker = Regex("<!([A-Z][A-Z0-9_]*(?:, [A-Z][A-Z0-9_]*)*)!>")
+        /** A name can carry the session that reports it, such as `REDUNDANT_EXEMPTION{METADATA}`. */
+        private val openingMarker = Regex("<!([A-Z][A-Z0-9_]*(?:\\{[A-Z_]+\\})?(?:, [A-Z][A-Z0-9_]*(?:\\{[A-Z_]+\\})?)*)!>")
 
         fun parse(markedText: String): MarkedSource {
             val text = StringBuilder(markedText.length)
@@ -381,7 +382,7 @@ private data class MarkedSource(
                 val opening = openingMarker.find(markedText, sourceOffset)
                     ?.takeIf { it.range.first == sourceOffset }
                 if (opening != null) {
-                    open += OpenMarker(opening.groupValues[1].split(", "), text.length)
+                    open += OpenMarker(opening.groupValues[1].split(", ").map { it.substringBefore('{') }.distinct(), text.length)
                     sourceOffset = opening.range.last + 1
                     continue
                 }

@@ -55,11 +55,21 @@ For a published API, the [`exemptExistingApi` task](./existing-libs.md) adds the
 
 ### Exemptions in a multiplatform project
 
-An exemption on an `expect` declaration also exempts its `actual` declarations.
+Put the exemption on the declaration that the check reports:
 
-The compiler reports `ACTUAL_ANNOTATIONS_NOT_MATCH_EXPECT` when an `actual` declaration doesn't have
-every annotation of its `expect` declaration. So put a copy of the exemption on each `actual`
-declaration. [`exemptExistingApi`](./existing-libs.md) adds the copies.
+- A check that reports the `expect` declaration, such as
+  [Boolean parameters in public API](./checks/boolean-parameter-public-api.md), reads the exemption
+  there. The compiler reports `ACTUAL_ANNOTATIONS_NOT_MATCH_EXPECT` when an `actual` declaration
+  doesn't have an annotation of its `expect` declaration, so put a copy on each `actual` declaration.
+- A check that reports an `actual` declaration, such as
+  [Kotlin-only API without JvmSynthetic](./checks/java-interop/kotlin-only-api-without-jvm-synthetic.md),
+  reads an exemption on that `actual` declaration. It also reads an exemption on the `expect`
+  declaration. That exemption then needs a copy on each `actual` declaration.
+
+[`exemptExistingApi`](./existing-libs.md) adds the exemption where the check reports and the copies on
+the `actual` declarations. See [Redundant exemptions](./checks/special/redundant-exemption.md) for
+more details about an exemption that neither the `expect` declaration nor its `actual` declarations
+need.
 
 When the `actual` class declares a property as a `val` constructor parameter, put the copy of the
 property's exemption on that constructor parameter.

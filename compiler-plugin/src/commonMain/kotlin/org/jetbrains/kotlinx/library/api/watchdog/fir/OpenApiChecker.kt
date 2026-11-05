@@ -35,6 +35,7 @@ internal class OpenApiChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirClassChecker(MppCheckerKind.Common), ExemptingChecker {
     override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyOpen)
+    override val pairSide: PairSide = PairSide.BOTH
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirClass) {
@@ -137,6 +138,7 @@ internal class OpenApiTypeAliasChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirTypeAliasChecker(MppCheckerKind.Common), ExemptingChecker {
     override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyOpen)
+    override val pairSide: PairSide = PairSide.BOTH
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirTypeAlias) {

@@ -16,10 +16,10 @@ import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyBooleanParameter
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyKotlinOnlyApi
 
 internal expect class Internal {
-    public fun flag(<!REDUNDANT_EXEMPTION!>@IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)<!> on: Boolean)
+    public fun flag(<!REDUNDANT_EXEMPTION, REDUNDANT_EXEMPTION{METADATA}!>@IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)<!> on: Boolean)
 
     public class Nested {
-        public fun flag(<!REDUNDANT_EXEMPTION!>@IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)<!> on: Boolean)
+        public fun flag(<!REDUNDANT_EXEMPTION, REDUNDANT_EXEMPTION{METADATA}!>@IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)<!> on: Boolean)
     }
 }
 

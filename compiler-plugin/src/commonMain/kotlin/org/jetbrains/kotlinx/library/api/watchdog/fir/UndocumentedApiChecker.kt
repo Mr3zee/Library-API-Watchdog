@@ -30,6 +30,7 @@ internal class UndocumentedApiChecker(
     private val reportClassProperties: Boolean,
 ) : FirBasicDeclarationChecker(MppCheckerKind.Common), ExemptingChecker {
     override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyUndocumented)
+    override val pairSide: PairSide = PairSide.EXPECT
 
     private val factory = severities[WatchdogDiagnostics.UNDOCUMENTED_PUBLIC_API]
 

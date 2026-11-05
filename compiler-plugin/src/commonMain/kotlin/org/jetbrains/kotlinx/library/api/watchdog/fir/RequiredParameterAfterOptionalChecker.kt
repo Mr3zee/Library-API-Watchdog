@@ -26,6 +26,7 @@ internal class RequiredParameterAfterOptionalChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirFunctionChecker(MppCheckerKind.Common), ExemptingChecker {
     override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyRequiredParameterAfterOptional)
+    override val pairSide: PairSide = PairSide.EXPECT
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirFunction) {

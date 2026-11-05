@@ -24,7 +24,8 @@ fun main(args: Array<String>) {
 }
 
 private fun run(request: FixerRequest, response: FixerResponse) {
-    val (pairs, diagnostics) = RecordedDiagnostic.parseReports(request.reportFiles).partition { it.name == EXPECT_ACTUAL_PAIR }
+    val (pairs, recorded) = RecordedDiagnostic.parseReports(request.reportFiles).partition { it.name == EXPECT_ACTUAL_PAIR }
+    val diagnostics = recorded.redundantCopiesAsRemovals()
     if (diagnostics.isEmpty() && request.sourceFiles.isEmpty()) {
         return
     }

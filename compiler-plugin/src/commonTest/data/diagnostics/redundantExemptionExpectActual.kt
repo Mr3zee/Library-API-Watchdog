@@ -31,7 +31,7 @@ public expect suspend fun fetch(): Int
 
 public expect suspend fun pull(): Int
 
-<!REDUNDANT_EXEMPTION!>@IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)<!>
+<!REDUNDANT_EXEMPTION, REDUNDANT_EXEMPTION{METADATA}!>@IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)<!>
 public expect fun count(n: Int)
 
 @IntentionallyBooleanParameter(reason = ExemptionReason.API_DESIGN)
@@ -72,7 +72,7 @@ public actual class PlainExpect public actual constructor(public actual val valu
 @IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)
 public actual data class Record public actual constructor(public actual val value: Int)
 
-<!REDUNDANT_EXEMPTION!>@IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)<!>
+@IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)
 public actual fun blocking(): Int = 1
 
 public actual suspend fun fetch(): Int = 1

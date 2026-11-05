@@ -38,6 +38,7 @@ internal class OverloadParameterOrderChecker(
     private val severities: WatchdogDiagnosticSeverities,
 ) : FirFunctionChecker(MppCheckerKind.Common), ExemptingChecker {
     override val exemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyInconsistentParameterOrder)
+    override val pairSide: PairSide = PairSide.BOTH
 
     override val readsExemptionOnSiblings: Boolean get() = true
 

@@ -489,6 +489,47 @@ class ExemptExistingApiTest {
     }
 
     @Test
+    fun `a redundant exemption of an expect declaration is removed with its copy on the actual declaration`() {
+        val project = kmpProject {
+            source(
+                """
+                    /** Configures the server. */
+                    @IntentionallyBooleanParameter(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)
+                    public expect fun configure(name: String)
+
+                    /** Reads the state. */
+                    @IntentionallyKotlinOnlyApi(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)
+                    public expect fun state(): Int
+                """.trimIndent(),
+                "server",
+            )
+            source(
+                """
+                    @IntentionallyBooleanParameter(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)
+                    public actual fun configure(name: String) {}
+
+                    @IntentionallyKotlinOnlyApi(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)
+                    public actual fun state(): Int = 1
+                """.trimIndent(),
+                "serverJvm",
+                sourceSet = "jvmMain",
+            )
+        }
+
+        val result = project.build(EXEMPT_TASK)
+        result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+        assertEquals(4, result.output.lines().count { "Removed the redundant @Intentionally" in it }, result.output)
+
+        val common = project.file("src/commonMain/kotlin/test/server.kt").readText()
+        val jvm = project.file("src/jvmMain/kotlin/test/serverJvm.kt").readText()
+        for (text in listOf(common, jvm)) {
+            assertFalse("@IntentionallyBooleanParameter" in text, text)
+            assertFalse("@IntentionallyKotlinOnlyApi" in text, text)
+        }
+        project.build("compileKotlinJvm").assertNoWatchdogDiagnostics()
+    }
+
+    @Test
     fun `Android library is fixed through both variants`() = androidLibraryIsFixedThroughBothVariantsCase(AgpVersion.AGP8)
 
     @Test
