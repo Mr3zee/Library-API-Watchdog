@@ -1,6 +1,9 @@
 package org.jetbrains.kotlinx.library.api.watchdog.fir
 
 import java.io.File
+import org.jetbrains.kotlin.KtFakeSourceElementKind
+import org.jetbrains.kotlin.KtRealSourceElementKind
+import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.diagnostics.DiagnosticContext
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.KtDiagnostic
@@ -9,10 +12,20 @@ import org.jetbrains.kotlin.diagnostics.KtDiagnosticWithParameters2
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticWithParameters3
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticWithParameters4
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticWithSource
+import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
+import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirBasicDeclarationChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirDeclarationChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.type.FirTypeChecker
+import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
+import org.jetbrains.kotlin.fir.declarations.FirMemberDeclaration
+import org.jetbrains.kotlin.fir.declarations.FirRegularClass
+import org.jetbrains.kotlin.fir.declarations.getSingleMatchedExpectForActualOrNull
+import org.jetbrains.kotlin.fir.declarations.utils.isActual
+import org.jetbrains.kotlin.fir.resolve.providers.firProvider
+import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.types.FirTypeRef
 
 /**
@@ -27,6 +40,11 @@ import org.jetbrains.kotlin.fir.types.FirTypeRef
  * 7. One field for each rendered message parameter. The recorder writes a backslash, a tab, a
  *    line feed, and a carriage return as `\\`, `\t`, `\n`, and `\r`.
  *
+ * A line with the name [EXPECT_ACTUAL_PAIR] isn't a diagnostic:
+ *
+ * - Fields 2 to 6: the `actual` declaration, in the fields of a source element.
+ * - Fields 7 to 9: the path, the start offset, and the end offset of its `expect` declaration.
+ *
  * The recorder never truncates the file, because several compiler sessions of one build write
  * to it. The caller creates an empty file before the compilation.
  */
@@ -34,17 +52,20 @@ class WatchdogDiagnosticsRecorder(private val outputFile: File) {
     fun record(diagnostic: KtDiagnostic, context: DiagnosticContext) {
         val element = (diagnostic as? KtDiagnosticWithSource)?.element ?: return
         val path = context.containingFilePath ?: return
-        val fields = buildList {
-            add(diagnostic.factoryName)
-            add(path)
-            add(element.startOffset.toString())
-            add(element.endOffset.toString())
-            val range = firstRange(diagnostic)
-            add(range.first.toString())
-            add(range.second.toString())
-            parameters(diagnostic).mapTo(this) { it.escaped() }
-        }
-        val line = fields.joinToString(separator = "\t", postfix = "\n")
+        val range = firstRange(diagnostic)
+        append(listOf(diagnostic.factoryName, path, element.startOffset, element.endOffset, range.first, range.second), parameters(diagnostic))
+    }
+
+    fun recordExpectActualPair(actualPath: String, actual: KtSourceElement, expectPath: String, expect: KtSourceElement) {
+        append(
+            listOf(EXPECT_ACTUAL_PAIR, actualPath, actual.startOffset, actual.endOffset, actual.startOffset, actual.endOffset),
+            listOf(expectPath, expect.startOffset.toString(), expect.endOffset.toString()),
+        )
+    }
+
+    private fun append(fields: List<Any>, parameters: List<String>) {
+        val line = (fields.map { it.toString() } + parameters.map { it.escaped() })
+            .joinToString(separator = "\t", postfix = "\n")
         synchronized(APPEND_LOCK) {
             outputFile.parentFile?.mkdirs()
             outputFile.appendText(line)
@@ -76,7 +97,9 @@ class WatchdogDiagnosticsRecorder(private val outputFile: File) {
         .replace("\n", "\\n")
         .replace("\r", "\\r")
 
-    private companion object {
+    companion object {
+        const val EXPECT_ACTUAL_PAIR: String = "EXPECT_ACTUAL_PAIR"
+
         /** The sessions of a compilation share the output file. */
         private val APPEND_LOCK = Any()
 
@@ -115,3 +138,31 @@ private fun recordingDiagnosticReporter(delegate: DiagnosticReporter, recorder: 
         }
         delegate.report(diagnostic, context)
     }
+
+/**
+ * Records each `actual` with its `expect`, so the fixer can copy an exemption of the `expect` to the
+ * `actual`. Skips an `actual typealias`, because the compiler compares the expanded class instead.
+ */
+internal class ExpectActualPairRecorder(
+    private val recorder: WatchdogDiagnosticsRecorder,
+) : FirBasicDeclarationChecker(MppCheckerKind.Common) {
+    context(context: CheckerContext, reporter: DiagnosticReporter)
+    override fun check(declaration: FirDeclaration) {
+        if (declaration !is FirRegularClass && declaration !is FirCallableDeclaration) return
+        if (declaration.isActual.not()) return
+        val actualSource = declaration.source?.takeIf {
+            it.kind == KtRealSourceElementKind || it.kind == KtFakeSourceElementKind.PropertyFromParameter
+        } ?: return
+        val actualPath = context.containingFilePath ?: return
+        val expect = declaration.symbol.getSingleMatchedExpectForActualOrNull() ?: return
+        val expectSource = expect.source?.takeIf { it.kind == KtRealSourceElementKind } ?: return
+        val provider = expect.moduleData.session.firProvider
+        val expectFile = when (expect) {
+            is FirClassLikeSymbol<*> -> provider.getFirClassifierContainerFileIfAny(expect)
+            is FirCallableSymbol<*> -> provider.getFirCallableContainerFile(expect)
+            else -> null
+        }
+        val expectPath = expectFile?.sourceFile?.path ?: return
+        recorder.recordExpectActualPair(actualPath, actualSource, expectPath, expectSource)
+    }
+}

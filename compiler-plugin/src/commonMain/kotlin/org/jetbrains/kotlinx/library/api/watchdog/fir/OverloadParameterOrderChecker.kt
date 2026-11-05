@@ -13,7 +13,10 @@ import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
+import org.jetbrains.kotlin.fir.declarations.utils.isActual
+import org.jetbrains.kotlin.fir.declarations.utils.isExpect
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
+import org.jetbrains.kotlin.fir.moduleData
 import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
@@ -46,11 +49,13 @@ internal class OverloadParameterOrderChecker(
             return
         }
 
-        if (declaration.isActualizedDeclaration() || !declaration.isWatchedPublicSourceApi() ||
-            declaration.isOverride || declaration.symbol.isExempt()
-        ) {
+        if (!declaration.isWatchedPublicSourceApi() || declaration.isOverride || declaration.symbol.isExempt()) {
             return
         }
+
+        // The `expect` compares the common overloads. Its `actual` compares only the platform-only overloads.
+        val actual = declaration.isActualizedDeclaration()
+        val module = declaration.moduleData
 
         val ownParameters = declaration.valueParameters
         if (ownParameters.size < 2) {
@@ -63,6 +68,10 @@ internal class OverloadParameterOrderChecker(
             if (sibling == declaration.symbol) {
                 return@siblings
             }
+
+            // A platform module sees the `actual` of an `expect` sibling.
+            if (sibling.isExpect && sibling.moduleData != module) return@siblings
+            if (actual && (sibling.isActual || sibling.moduleData != module)) return@siblings
 
             if ((sibling.isExempt() && !sibling.isOverride) || !sibling.isWatchedPublicSourceApiSibling()) {
                 return@siblings
@@ -225,7 +234,7 @@ internal class OverloadParameterOrderChecker(
 
     context(context: CheckerContext)
     private fun FirBasedSymbol<*>.isExempt(): Boolean =
-        hasExemption(WatchdogClassIds.IntentionallyInconsistentParameterOrder)
+        hasAnnotationOnActualOrExpect(WatchdogClassIds.IntentionallyInconsistentParameterOrder)
 
     private companion object {
         private val IDENTIFIER_TOKENS: Set<KtToken> = setOf(KtTokens.IDENTIFIER)

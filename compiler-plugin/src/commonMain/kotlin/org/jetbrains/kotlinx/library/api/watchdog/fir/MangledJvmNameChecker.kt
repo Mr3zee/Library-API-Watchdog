@@ -129,7 +129,7 @@ internal class MangledJvmNameChecker(
     private fun FirCallableDeclaration.isExempt(): Boolean =
         hasAnnotationOnSelfOrEnclosingClass(WatchdogClassIds.IntentionallyMangledJvmName) ||
                 (this as? FirProperty)?.correspondingValueParameterFromPrimaryConstructor
-                    ?.hasExemption(WatchdogClassIds.IntentionallyMangledJvmName) == true
+                    ?.hasExemptionOnParameterOrExpect(WatchdogClassIds.IntentionallyMangledJvmName) == true
 
     /** Whether `@JvmName` or `@JvmSynthetic` is on the accessor, by any of the three annotation sites. */
     context(context: CheckerContext)

@@ -69,7 +69,7 @@ import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyKotlinOnlyApi
 
 public actual class PlainExpect public actual constructor(public actual val value: Int)
 
-<!REDUNDANT_EXEMPTION!>@IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)<!>
+@IntentionallyDataClass(reason = ExemptionReason.API_DESIGN)
 public actual data class Record public actual constructor(public actual val value: Int)
 
 <!REDUNDANT_EXEMPTION!>@IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)<!>

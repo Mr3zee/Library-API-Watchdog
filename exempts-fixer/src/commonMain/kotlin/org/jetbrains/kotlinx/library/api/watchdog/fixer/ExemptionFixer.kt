@@ -168,7 +168,7 @@ internal class ExemptionFixer(private val parser: KotlinFileParser) {
     }
 }
 
-private class PlannedFix(val fix: Fix) {
+internal class PlannedFix(val fix: Fix) {
     val reports: MutableMap<String, RecordedDiagnostic> = linkedMapOf()
 }
 
@@ -299,7 +299,7 @@ internal fun applyEdits(text: String, edits: List<TextEdit>): String {
     return builder.toString()
 }
 
-private sealed interface FixTarget {
+internal sealed interface FixTarget {
     fun alreadyAnnotated(annotationShortName: String): Boolean
 
     fun alreadyDocumented(): Boolean = false
@@ -498,7 +498,7 @@ private fun KtAnnotated.hasAnnotationNamed(shortName: String): Boolean =
 private fun KtAnnotationEntry.annotatedDeclaration(): KtAnnotated? =
     parent.ancestorsWithSelf().filterIsInstance<KtDeclaration>().firstOrNull()
 
-private fun resolveTarget(element: PsiElement, fix: Fix, ktFile: KtFile): FixTarget? =
+internal fun resolveTarget(element: PsiElement, fix: Fix, ktFile: KtFile): FixTarget? =
     when (fix.targetStrategy) {
         TargetStrategy.CONTAINING_FILE -> FixTarget.WholeFile(ktFile)
 
@@ -507,6 +507,11 @@ private fun resolveTarget(element: PsiElement, fix: Fix, ktFile: KtFile): FixTar
                 .filterIsInstance<KtClassOrObject>()
                 .firstOrNull { it !is KtEnumEntry }
                 ?.let { FixTarget.BeforeDeclaration(it) }
+
+        TargetStrategy.ENCLOSING_CLASS_OR_TYPE_ALIAS ->
+            element.ancestorsWithSelf()
+                .firstOrNull { it is KtTypeAlias || it is KtClassOrObject && it !is KtEnumEntry }
+                ?.let { FixTarget.BeforeDeclaration(it as KtDeclaration) }
 
         TargetStrategy.ENCLOSING_ANNOTATION_CLASS ->
             element.ancestorsWithSelf()

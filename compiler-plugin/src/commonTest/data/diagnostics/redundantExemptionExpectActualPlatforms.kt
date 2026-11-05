@@ -47,7 +47,7 @@ public actual class Service public actual constructor() {
     public suspend fun extra() {}
 }
 
-<!REDUNDANT_EXEMPTION!>@IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)<!>
+@IntentionallyKotlinOnlyApi(reason = ExemptionReason.API_DESIGN)
 public actual class Worker public actual constructor() {
     public actual suspend fun run() {}
 }

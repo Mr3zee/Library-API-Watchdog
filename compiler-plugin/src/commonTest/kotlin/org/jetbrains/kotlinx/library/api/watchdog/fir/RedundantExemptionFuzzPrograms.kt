@@ -2,8 +2,11 @@ package org.jetbrains.kotlinx.library.api.watchdog.fir
 
 import kotlin.random.Random
 
-/** One exemption annotation of a generated file: the `@` to the closing parenthesis. */
-internal class FuzzExemption(val file: String, val annotation: String, val start: Int, val end: Int)
+/**
+ * One exemption annotation of a generated file: the `@` to the closing parenthesis. The copies of one
+ * exemption have one [group], and the test blanks them together.
+ */
+internal class FuzzExemption(val file: String, val annotation: String, val start: Int, val end: Int, val group: String? = null)
 
 internal class FuzzFile(val name: String, val text: String, val exemptions: List<FuzzExemption>)
 

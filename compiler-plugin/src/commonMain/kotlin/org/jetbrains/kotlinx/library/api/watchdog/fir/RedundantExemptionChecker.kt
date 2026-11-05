@@ -49,6 +49,7 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirTypeAliasSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
 import org.jetbrains.kotlin.fir.symbols.lazyResolveToPhase
 import org.jetbrains.kotlin.fir.types.FirFunctionTypeRef
@@ -74,6 +75,8 @@ internal interface ExemptingChecker {
  * [disabled] holds the exempting checkers of the same category that `NONE` turns off. An exemption
  * that only they read is redundant.
  *
+ * [ExpectExemptionRedundancyChecker] judges an exemption that an `actual` copies from its `expect`.
+ *
  * A cache across visits can hold FIR declarations and their sessions on IDE pooled threads.
  */
 internal class RedundantExemptionProbingChecker<D : FirDeclaration>(
@@ -94,9 +97,11 @@ internal class RedundantExemptionProbingChecker<D : FirDeclaration>(
         if (declaration.isExpectedDeclaration() || !declaration.hasProbedShape()) return
         val candidates = declaration.exemptionCandidates(allExemptions)
         if (candidates.isEmpty()) return
+        val origins = declaration.expectOrigins()
 
         val baselines = HashMap<FirDeclarationChecker<D>, Set<ReportedDiagnosticKey>>()
         for (candidate in candidates) {
+            if (origins.any { it.originalsOf(candidate).isNotEmpty() }) continue
             val readers = delegates.filter { candidate.isReadBy(it as ExemptingChecker, declaration) }
             if (readers.isEmpty() && disabled.none { candidate.isReadBy(it, declaration) }) continue
             val needed = readers.any { reader ->
@@ -106,6 +111,58 @@ internal class RedundantExemptionProbingChecker<D : FirDeclaration>(
             if (!needed) reportRedundantExemption(candidate.annotation, candidate.kind)
         }
     }
+}
+
+/** [position] maps a position on the `actual` to the same place on [expect], or to null. */
+private class ExpectOrigin(
+    val expect: FirMemberDeclaration,
+    val candidates: List<ExemptionCandidate>,
+    val position: (String) -> String?,
+) {
+    fun originalsOf(copy: ExemptionCandidate): List<ExemptionCandidate> {
+        val expected = position(copy.position) ?: return emptyList()
+        return candidates.filter { it.classId == copy.classId && it.position == expected }
+    }
+}
+
+/**
+ * An exemption on an `actual` at the position of an exemption of its `expect` is a copy, because the
+ * compiler reports `ACTUAL_ANNOTATIONS_NOT_MATCH_EXPECT` without it. A `val` parameter of an `actual`
+ * constructor copies both the `expect` body property and the `expect` constructor parameter.
+ */
+@OptIn(SymbolInternals::class)
+context(context: CheckerContext)
+private fun FirDeclaration.expectOrigins(): List<ExpectOrigin> = buildList {
+    val expect = matchedExpect() as? FirMemberDeclaration
+    if (expect != null) add(ExpectOrigin(expect, expect.exemptionCandidates(allExemptions)) { it })
+    val parameter = (this@expectOrigins as? FirProperty)?.correspondingValueParameterFromPrimaryConstructor ?: return@buildList
+    val constructor = parameter.containingDeclarationSymbol.fir as? FirConstructor ?: return@buildList
+    val index = constructor.valueParameters.indexOfFirst { it.symbol == parameter }
+    val expectConstructor = constructor.matchedExpect() as? FirConstructor ?: return@buildList
+    add(ExpectOrigin(expectConstructor, expectConstructor.exemptionCandidates(allExemptions)) { position ->
+        when (position) {
+            "declaration" -> "parameter:$index"
+            "return/type" -> "parameter:$index/type"
+            else -> null
+        }
+    })
+}
+
+/** Null for an `actual typealias`, because the compiler compares the `expect` annotations with the expanded class. */
+@OptIn(SymbolInternals::class)
+private fun FirDeclaration.matchedExpect(): FirDeclaration? {
+    if ((this as? FirMemberDeclaration)?.isActual != true) return null
+    val expect = symbol.getSingleMatchedExpectForActualOrNull() ?: return null
+    expect.lazyResolveToPhase(FirResolvePhase.BODY_RESOLVE)
+    val fir = expect.fir
+    val sameKind = when (this) {
+        is FirRegularClass -> fir is FirRegularClass
+        is FirNamedFunction -> fir is FirNamedFunction
+        is FirConstructor -> fir is FirConstructor
+        is FirProperty -> fir is FirProperty
+        else -> false
+    }
+    return fir.takeIf { sameKind }
 }
 
 /** The member checkers that read a class-level exemption, by exemption. */
@@ -216,7 +273,10 @@ internal class EnclosingExemptionRedundancyChecker(
         if (probes.isEmpty || declaration !is FirRegularClass) return
         if (declaration.isExpectedDeclaration() || !declaration.hasProbedShape()) return
 
+        // ExpectExemptionRedundancyChecker judges the copies of the `expect` class exemptions.
+        val expectExemptions = (declaration.matchedExpect() as? FirRegularClass)?.let { probes.classExemptions(it) }.orEmpty()
         for (exemption in probes.classExemptions(declaration)) {
+            if (expectExemptions.any { it.classId == exemption.classId }) continue
             if (exemption.probes.isNotEmpty()) {
                 val ignored = buildList {
                     add(exemption.annotation)
@@ -236,7 +296,7 @@ internal class EnclosingExemptionRedundancyChecker(
  * The IDE runs every checker in the module's own session, so on a common module it finds no `actual`
  * and reports only the exemptions of checks that are off.
  *
- * When the `actual` duplicates an exemption of the `expect`, the duplicate is the redundant one.
+ * A copy of the exemption on an `actual` ([expectOrigins]) gets the verdict of its original.
  */
 internal class ExpectExemptionRedundancyChecker(
     basicCheckers: Collection<FirBasicDeclarationChecker>,
@@ -264,7 +324,9 @@ internal class ExpectExemptionRedundancyChecker(
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirDeclaration) {
-        if (declaration !is FirMemberDeclaration || !declaration.isExpectedDeclaration() || !declaration.hasProbedShape()) {
+        if (declaration !is FirMemberDeclaration || !declaration.hasProbedShape()) return
+        if (!declaration.isExpectedDeclaration()) {
+            judgeCopies(declaration)
             return
         }
         val candidates = declaration.exemptionCandidates(allExemptions)
@@ -272,54 +334,106 @@ internal class ExpectExemptionRedundancyChecker(
         if (candidates.isEmpty() && classExemptions.isEmpty()) return
 
         val actuals: List<FirDeclaration>? by lazy { declaration.findActuals() }
-
-        val baselines = HashMap<FirDeclarationChecker<FirDeclaration>, Set<ReportedDiagnosticKey>>()
         for (candidate in candidates) {
-            val readers = probes.filter {
-                it.accepts(declaration) && candidate.isReadBy(it.checker as ExemptingChecker, declaration)
+            if (declaration.verdict(candidate, candidates) { actuals } == false) {
+                reportRedundantExemption(candidate.annotation, candidate.kind)
             }
-            if (readers.isEmpty()) {
-                if (disabled.any { candidate.isReadBy(it, declaration) }) {
-                    reportRedundantExemption(candidate.annotation, candidate.kind)
-                }
-                continue
-            }
-            val neededOnExpect = readers.any { reader ->
-                val baseline = baselines.getOrPut(reader.checker) { reader.checker.probedDiagnostics(declaration) }
-                reader.checker.needs(declaration, candidate, candidates, baseline)
-            }
-            if (neededOnExpect) continue
-            val actualDeclarations = actuals ?: continue
-            val neededOnActual = actualDeclarations.any { actual ->
-                readers.any { it.accepts(actual) && it.checker.needsOnActual(actual, candidate) }
-            }
-            if (!neededOnActual) reportRedundantExemption(candidate.annotation, candidate.kind)
         }
-
         if (declaration !is FirRegularClass) return
         for (exemption in classExemptions) {
-            if (exemption.probes.isEmpty()) {
+            if (declaration.classVerdict(exemption) { actuals } == false) {
                 reportRedundantExemption(exemption.annotation, "classAndMembers")
-                continue
             }
-            val actualClasses = actuals?.filterIsInstance<FirRegularClass>() ?: continue
-            val ignored = buildList {
-                add(exemption.annotation)
-                enclosing.collectNestedExemptions(declaration, exemption.classId, this)
-                for (actualClass in actualClasses) {
-                    actualClass.annotations.filterTo(this) {
-                        it.toAnnotationClassIdSafe(context.session) == exemption.classId
-                    }
-                    enclosing.collectNestedExemptions(actualClass, exemption.classId, this)
-                }
-            }
-            if (enclosing.isNeeded(declaration, ignored, exemption.probes)) continue
-            if (actualClasses.any { enclosing.isNeeded(it, ignored, exemption.probes, actual = true) }) continue
-            reportRedundantExemption(exemption.annotation, "classAndMembers")
         }
     }
 
-    /** Whether [actual] needs [candidate] from its `expect` when its own duplicates of the exemption are gone. */
+    context(context: CheckerContext, reporter: DiagnosticReporter)
+    private fun judgeCopies(declaration: FirMemberDeclaration) {
+        val origins = declaration.expectOrigins()
+        if (origins.isEmpty()) return
+        for (copy in declaration.exemptionCandidates(allExemptions)) {
+            val verdicts = origins.flatMap { origin ->
+                origin.originalsOf(copy).map { original ->
+                    origin.expect.withExpectContext {
+                        origin.expect.verdict(original, origin.candidates) { origin.expect.findActuals() }
+                    }
+                }
+            }
+            if (verdicts.isNotEmpty() && verdicts.all { it == false }) reportRedundantExemption(copy.annotation, copy.kind)
+        }
+        if (declaration !is FirRegularClass) return
+        val expectClass = origins.firstOrNull()?.expect as? FirRegularClass ?: return
+        val originals = enclosing.classExemptions(expectClass)
+        for (copy in enclosing.classExemptions(declaration)) {
+            val verdicts = originals.filter { it.classId == copy.classId }.map { original ->
+                expectClass.withExpectContext { expectClass.classVerdict(original) { expectClass.findActuals() } }
+            }
+            if (verdicts.isNotEmpty() && verdicts.all { it == false }) reportRedundantExemption(copy.annotation, "classAndMembers")
+        }
+    }
+
+    /** Whether the `expect` needs [candidate]. Null means unknown. */
+    context(context: CheckerContext, reporter: DiagnosticReporter)
+    private fun FirMemberDeclaration.verdict(
+        candidate: ExemptionCandidate,
+        candidates: List<ExemptionCandidate>,
+        actuals: () -> List<FirDeclaration>?,
+    ): Boolean? {
+        val readers = probes.filter { it.accepts(this) && candidate.isReadBy(it.checker as ExemptingChecker, this) }
+        if (readers.isEmpty()) return if (disabled.any { candidate.isReadBy(it, this) }) false else null
+        if (readers.any { it.checker.needs(this, candidate, candidates, it.checker.probedDiagnostics(this)) }) return true
+        // Other checkers read an `actual typealias` and the property of a `val` constructor parameter.
+        return actuals()?.any { actual ->
+            (listOf(actual) + actual.valParameterProperty(candidate)).any { probed ->
+                probes.any {
+                    it.accepts(probed) && candidate.isReadBy(it.checker as ExemptingChecker, probed) && it.checker.needsOnActual(probed, candidate)
+                }
+            }
+        }
+    }
+
+    /** The property of the `val` parameter at the position of [candidate]. */
+    @OptIn(DirectDeclarationsAccess::class, SymbolInternals::class)
+    private fun FirDeclaration.valParameterProperty(candidate: ExemptionCandidate): List<FirProperty> {
+        if (this !is FirConstructor || !candidate.position.startsWith("parameter:")) return emptyList()
+        val index = candidate.position.substringAfter(':').substringBefore('/').toIntOrNull() ?: return emptyList()
+        val parameter = valueParameters.getOrNull(index)?.symbol ?: return emptyList()
+        val constructedClass = (getContainingClassSymbol() as? FirRegularClassSymbol)?.fir ?: return emptyList()
+        return constructedClass.declarations.filterIsInstance<FirProperty>()
+            .filter { it.correspondingValueParameterFromPrimaryConstructor == parameter }
+    }
+
+    /** [verdict] for a class-level exemption that covers the members. */
+    context(context: CheckerContext, reporter: DiagnosticReporter)
+    private fun FirRegularClass.classVerdict(
+        exemption: EnclosingExemptionProbes.ClassExemption,
+        actuals: () -> List<FirDeclaration>?,
+    ): Boolean? {
+        if (exemption.probes.isEmpty()) return false
+        val actualClasses = actuals()?.filterIsInstance<FirRegularClass>() ?: return null
+        val ignored = buildList {
+            add(exemption.annotation)
+            enclosing.collectNestedExemptions(this@classVerdict, exemption.classId, this)
+            for (actualClass in actualClasses) {
+                actualClass.annotations.filterTo(this) { it.toAnnotationClassIdSafe(context.session) == exemption.classId }
+                enclosing.collectNestedExemptions(actualClass, exemption.classId, this)
+            }
+        }
+        if (enclosing.isNeeded(this, ignored, exemption.probes)) return true
+        return actualClasses.any { enclosing.isNeeded(it, ignored, exemption.probes, actual = true) }
+    }
+
+    /** Runs [block] in the context of a visit to this `expect` member. */
+    @OptIn(SymbolInternals::class)
+    context(context: CheckerContext, reporter: DiagnosticReporter)
+    private fun <R> FirMemberDeclaration.withExpectContext(block: context(CheckerContext, DiagnosticReporter) () -> R): R {
+        val containingClass = (this as? FirCallableDeclaration)?.getContainingClassSymbol()?.fir as? FirRegularClass
+        val provider = context as? CheckerContextForProvider
+        if (containingClass == null || provider == null) return block(context, reporter)
+        return provider.withDeclaration(containingClass) { inner -> block(inner, reporter) }
+    }
+
+    /** Whether [actual] needs [candidate] from its `expect` when its own copies of the exemption are gone. */
     @OptIn(SymbolInternals::class)
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun FirDeclarationChecker<FirDeclaration>.needsOnActual(actual: FirDeclaration, candidate: ExemptionCandidate): Boolean {
@@ -327,6 +441,14 @@ internal class ExpectExemptionRedundancyChecker(
         val ignored = buildList {
             add(candidate.annotation)
             actual.exemptionCandidates(setOf(candidate.classId)).mapTo(this) { it.annotation }
+            // A `val` parameter of the `actual` constructor holds the copy of a parameter exemption.
+            val index = candidate.position.takeIf { it.startsWith("parameter:") }?.substringAfter(':')?.substringBefore('/')?.toIntOrNull()
+            val parameter = (actual as? FirConstructor)?.valueParameters?.getOrNull(index ?: -1)
+            if (parameter != null) {
+                val collector = ExemptionCandidateCollector(context.session, setOf(candidate.classId))
+                collector.parameters(listOf(parameter), "parameter")
+                collector.candidates.mapTo(this) { it.annotation }
+            }
         }
         val ignoredEverywhere = if ((this as ExemptingChecker).readsExemptionOnSiblings) setOf(candidate.classId) else emptySet()
         val containingClass = (actual as? FirCallableDeclaration)?.getContainingClassSymbol()?.fir as? FirRegularClass
@@ -348,6 +470,18 @@ internal class ExpectExemptionRedundancyChecker(
     context(context: CheckerContext)
     private fun FirMemberDeclaration.findActuals(): List<FirDeclaration>? {
         val provider = context.session.symbolProvider
+        val outerClassId = when (this) {
+            is FirClassLikeDeclaration -> symbol.classId.outerClassId
+            is FirCallableDeclaration -> getContainingClassSymbol()?.classId
+            else -> null
+        }
+        // The members of the class that an `actual typealias` expands to don't inherit the exemptions.
+        if (generateSequence(outerClassId) { it.outerClassId }.any { outer ->
+                (provider.getClassLikeSymbolByClassId(outer) as? FirTypeAliasSymbol)?.isActual == true
+            }
+        ) {
+            return emptyList()
+        }
         val found: List<FirBasedSymbol<*>> = when (this) {
             is FirClassLikeDeclaration -> listOfNotNull(provider.getClassLikeSymbolByClassId(symbol.classId))
             is FirCallableDeclaration -> {
@@ -356,9 +490,9 @@ internal class ExpectExemptionRedundancyChecker(
                     val callableId = symbol.callableId ?: return null
                     provider.getTopLevelCallableSymbols(callableId.packageName, callableId.callableName)
                 } else {
-                    val actualClass = provider.getClassLikeSymbolByClassId(containingClass.classId) as? FirRegularClassSymbol
-                        ?: return null
-                    if (!actualClass.isActualOf(containingClass)) return null
+                    val actualClassLike = provider.getClassLikeSymbolByClassId(containingClass.classId) ?: return null
+                    if (!actualClassLike.isActualOf(containingClass)) return null
+                    val actualClass = actualClassLike as? FirRegularClassSymbol ?: return null
                     actualClass.fir.declarations.map { it.symbol }
                 }
             }
@@ -457,6 +591,7 @@ private fun FirDeclaration.hasProbedShape(): Boolean {
 /**
  * [rank]: 0 for a declaration, 1 for a parameter or type parameter, 2 for a type usage.
  * [group]: the parameter or type parameter that holds the annotation, or null on the declaration.
+ * [position]: the place of the annotation in its declaration, the same in an `expect` and its `actual`.
  */
 private class ExemptionCandidate(
     val annotation: FirAnnotation,
@@ -464,6 +599,7 @@ private class ExemptionCandidate(
     val kind: String,
     val rank: Int,
     val group: Any?,
+    val position: String,
 )
 
 /** A class-level exemption that covers the members belongs to [EnclosingExemptionProbes]. */
@@ -485,38 +621,39 @@ private fun FirDeclaration.exemptionCandidates(exemptions: Set<ClassId>): List<E
         is FirRegularClass -> {
             collector.annotations(this, "declaration")
             collector.typeParameters(typeParameters)
-            superTypeRefs.forEach { collector.types(it) }
-            collector.parameters(contextParameters)
+            superTypeRefs.forEachIndexed { index, it -> collector.types(it, position = "supertype:$index") }
+            collector.parameters(contextParameters, "context")
         }
         is FirTypeAlias -> {
             collector.annotations(this, "declaration")
             collector.typeParameters(typeParameters)
-            collector.types(expandedTypeRef)
+            collector.types(expandedTypeRef, position = "expanded")
         }
         is FirNamedFunction -> {
             collector.annotations(this, "declaration")
             collector.typeParameters(typeParameters)
-            collector.types(receiverParameter?.typeRef)
-            collector.types(returnTypeRef)
-            collector.parameters(contextParameters)
-            collector.parameters(valueParameters)
+            collector.types(receiverParameter?.typeRef, position = "receiver")
+            collector.types(returnTypeRef, position = "return")
+            collector.parameters(contextParameters, "context")
+            collector.parameters(valueParameters, "parameter")
         }
         is FirConstructor -> {
             collector.annotations(this, "declaration")
-            collector.parameters(contextParameters)
+            collector.parameters(contextParameters, "context")
             val propertyParameters = if (isPrimary) propertyParameterSymbols(this) else emptySet()
-            collector.parameters(valueParameters.filter { it.symbol !in propertyParameters })
+            collector.parameters(valueParameters, "parameter") { it.symbol !in propertyParameters }
         }
         is FirProperty -> {
             collector.annotations(this, "declaration")
             collector.typeParameters(typeParameters)
-            collector.types(receiverParameter?.typeRef)
-            collector.parameters(contextParameters)
+            collector.types(receiverParameter?.typeRef, position = "receiver")
+            collector.parameters(contextParameters, "context")
+            // The positions match the body property of an `expect` class.
             val constructorParameter = correspondingValueParameterFromPrimaryConstructor
             if (constructorParameter != null) {
                 collector.parameter(constructorParameter)
             } else {
-                collector.types(returnTypeRef)
+                collector.types(returnTypeRef, position = "return")
             }
         }
         else -> return emptyList()
@@ -542,78 +679,82 @@ private class ExemptionCandidateCollector(private val session: FirSession, priva
 
     fun annotations(container: FirAnnotationContainer, kind: String) {
         for (annotation in container.annotations) {
-            add(annotation, kind, rank = 0, group = null)
+            add(annotation, kind, rank = 0, group = null, position = kind)
         }
     }
 
     /**
      * `vararg x: Boolean` resolves to `BooleanArray` without a type argument, so the cone type has no
      * annotations of the element type. The written type reference still has them.
+     *
+     * All annotations in [typeRef] get one position, because one type rarely has the same exemption twice.
      */
-    fun types(typeRef: FirTypeRef?, group: Any? = null) {
+    fun types(typeRef: FirTypeRef?, group: Any? = null, position: String) {
         typeRef?.coneTypeOrNull?.forEachType { type ->
             for (annotation in type.customAnnotations) {
-                add(annotation, "typeUsage", rank = 2, group = group)
+                add(annotation, "typeUsage", rank = 2, group = group, position = "$position/type")
             }
         }
-        writtenTypes(typeRef, group)
+        writtenTypes(typeRef, group, "$position/type")
     }
 
-    private fun writtenTypes(typeRef: FirTypeRef?, group: Any?) {
+    private fun writtenTypes(typeRef: FirTypeRef?, group: Any?, position: String) {
         val written = (typeRef as? FirResolvedTypeRef)?.delegatedTypeRef ?: typeRef ?: return
         for (annotation in written.annotations) {
-            add(annotation, "typeUsage", rank = 2, group = group)
+            add(annotation, "typeUsage", rank = 2, group = group, position = position)
         }
         when (written) {
             is FirUserTypeRef -> for (part in written.qualifier) {
                 for (argument in part.typeArgumentList.typeArguments) {
-                    writtenTypes((argument as? FirTypeProjectionWithVariance)?.typeRef, group)
+                    writtenTypes((argument as? FirTypeProjectionWithVariance)?.typeRef, group, position)
                 }
             }
             is FirFunctionTypeRef -> {
-                writtenTypes(written.receiverTypeRef, group)
-                written.contextParameterTypeRefs.forEach { writtenTypes(it, group) }
-                written.parameters.forEach { writtenTypes(it.returnTypeRef, group) }
-                writtenTypes(written.returnTypeRef, group)
+                writtenTypes(written.receiverTypeRef, group, position)
+                written.contextParameterTypeRefs.forEach { writtenTypes(it, group, position) }
+                written.parameters.forEach { writtenTypes(it.returnTypeRef, group, position) }
+                writtenTypes(written.returnTypeRef, group, position)
             }
             else -> {}
         }
     }
 
-    fun parameters(parameters: List<FirValueParameter>) {
-        for (parameter in parameters) {
+    /** [included] filters without a change to the indices, so the positions match an `expect`. */
+    fun parameters(parameters: List<FirValueParameter>, prefix: String, included: (FirValueParameter) -> Boolean = { true }) {
+        parameters.forEachIndexed { index, parameter ->
+            if (!included(parameter)) return@forEachIndexed
             for (annotation in parameter.annotations) {
-                add(annotation, "parameter", rank = 1, group = parameter.symbol)
+                add(annotation, "parameter", rank = 1, group = parameter.symbol, position = "$prefix:$index")
             }
-            types(parameter.returnTypeRef, group = parameter.symbol)
+            types(parameter.returnTypeRef, group = parameter.symbol, position = "$prefix:$index")
         }
     }
 
     fun parameter(parameter: FirValueParameterSymbol) {
         for (annotation in parameter.resolvedAnnotationsWithClassIds) {
-            add(annotation, "parameter", rank = 1, group = parameter)
+            add(annotation, "parameter", rank = 1, group = parameter, position = "declaration")
         }
-        types(parameter.resolvedReturnTypeRef, group = parameter)
+        types(parameter.resolvedReturnTypeRef, group = parameter, position = "return")
     }
 
     fun typeParameters(typeParameters: List<FirTypeParameterRef>) {
-        for (typeParameterRef in typeParameters) {
-            val typeParameter = typeParameterRef as? FirTypeParameter ?: continue
+        typeParameters.forEachIndexed { index, typeParameterRef ->
+            val typeParameter = typeParameterRef as? FirTypeParameter ?: return@forEachIndexed
             for (annotation in typeParameter.annotations) {
-                add(annotation, "typeParameter", rank = 1, group = typeParameter.symbol)
+                add(annotation, "typeParameter", rank = 1, group = typeParameter.symbol, position = "typeParameter:$index")
             }
-            typeParameter.bounds.forEach { types(it, group = typeParameter.symbol) }
+            typeParameter.bounds.forEach { types(it, group = typeParameter.symbol, position = "typeParameter:$index") }
         }
     }
 
     /** FIR copies constructor parameter annotations to their properties, so source offsets identify duplicates. */
-    private fun add(annotation: FirAnnotation, kind: String, rank: Int, group: Any?) {
+    private fun add(annotation: FirAnnotation, kind: String, rank: Int, group: Any?, position: String) {
         val classId = annotation.toAnnotationClassIdSafe(session) ?: return
         if (classId !in exemptions) return
         val source = annotation.source ?: return
         if (source.kind != KtRealSourceElementKind) return
         if (seenOffsets.add(source.startOffset to source.endOffset)) {
-            candidates += ExemptionCandidate(annotation, classId, kind, rank, group)
+            candidates += ExemptionCandidate(annotation, classId, kind, rank, group, position)
         }
     }
 }

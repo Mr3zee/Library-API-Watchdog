@@ -157,6 +157,8 @@ class WatchdogFirCheckers internal constructor(
         private val typeAliases = partition<FirTypeAliasChecker>(
             FunctionTypeAliasChecker(severities)
                 .toggledBy(WatchdogDiagnostics.FUNCTION_TYPE_ALIAS_PUBLIC_API),
+            OpenApiTypeAliasChecker(severities)
+                .toggledBy(WatchdogDiagnostics.OPEN_API_WITHOUT_SUBCLASS_OPT_IN),
         )
 
         private val enclosingExemptionProbes = EnclosingExemptionProbes(
@@ -177,10 +179,18 @@ class WatchdogFirCheckers internal constructor(
                 callableCheckers = callables.active,
                 classCheckers = classes.active,
                 typeAliasCheckers = typeAliases.active,
-                disabled = basic.disabled + functions.disabled + callables.disabled + classes.disabled + typeAliases.disabled,
+                disabled = buildList {
+                    addAll(basic.disabled)
+                    addAll(functions.disabled)
+                    addAll(callables.disabled)
+                    addAll(classes.disabled)
+                    addAll(typeAliases.disabled)
+                },
                 enclosing = enclosingExemptionProbes,
             ).takeIf { enabled },
-        )).wrapped(basic.disabled)
+        )).wrapped(basic.disabled) + setOfNotNull(
+            recorder?.let(::ExpectActualPairRecorder)?.takeIf { enabled && exemptingExistingApi },
+        )
 
         override val functionCheckers: Set<FirFunctionChecker> = functions.active.wrapped(functions.disabled)
 

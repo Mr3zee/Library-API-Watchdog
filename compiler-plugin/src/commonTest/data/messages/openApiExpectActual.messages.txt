@@ -1,0 +1,6 @@
+/jvm.kt:18:25: error: OPEN_API_WITHOUT_SUBCLASS_OPT_IN
+    Users can subclass the type alias `Credentials` outside the library. The `actual typealias` expands to a declaration of a dependency, so `@SubclassOptInRequired` doesn't apply to it. Declare an `actual` class or interface instead.
+
+    If this is intended, apply `@IntentionallyOpen` to the type alias.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in

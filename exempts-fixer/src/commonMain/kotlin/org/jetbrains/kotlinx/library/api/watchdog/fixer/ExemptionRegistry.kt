@@ -3,6 +3,9 @@ package org.jetbrains.kotlinx.library.api.watchdog.fixer
 internal enum class TargetStrategy {
     /** Never an enum entry. */
     ENCLOSING_CLASS,
+
+    /** [ENCLOSING_CLASS], or the reported `actual typealias`. */
+    ENCLOSING_CLASS_OR_TYPE_ALIAS,
     ENCLOSING_ANNOTATION_CLASS,
     REPORTED_DECLARATION,
     DOCUMENTED_DECLARATION,
@@ -54,7 +57,7 @@ internal object ExemptionRegistry {
     const val REASON_ENTRY = "FOR_BACKWARDS_COMPATIBILITY"
 
     private val resolutions: Map<String, FixResolution> = mapOf(
-        WatchdogChecks.OPEN_API_WITHOUT_SUBCLASS_OPT_IN.name to fixable("IntentionallyOpen", TargetStrategy.ENCLOSING_CLASS),
+        WatchdogChecks.OPEN_API_WITHOUT_SUBCLASS_OPT_IN.name to fixable("IntentionallyOpen", TargetStrategy.ENCLOSING_CLASS_OR_TYPE_ALIAS),
         WatchdogChecks.SUBCLASS_OPT_IN_WITHOUT_MARKERS.name to fixable("IntentionallyOpen", TargetStrategy.REPORTED_ANNOTATION),
         WatchdogChecks.EXHAUSTIVE_PUBLIC_API.name to fixable("IntentionallyExhaustive", TargetStrategy.ENCLOSING_CLASS),
         WatchdogChecks.FUNCTION_TYPE_ALIAS_PUBLIC_API.name to fixable("IntentionallyFunctionTypeAlias", TargetStrategy.REPORTED_DECLARATION),

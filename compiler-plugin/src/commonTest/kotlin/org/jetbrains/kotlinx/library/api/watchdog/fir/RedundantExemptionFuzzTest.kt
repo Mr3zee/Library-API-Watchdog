@@ -79,7 +79,7 @@ class RedundantExemptionFuzzTest {
     }
 
     private fun check(program: FuzzProgram): List<String> {
-        val baseline = compile(program, "p${program.index}", program.render())
+        val baseline = compile("p${program.index}", program.render())
         // The framework prepends the header to the first file and the `// FILE:` line to each later file.
         // The offsets of a file shift by the length difference.
         val bases: Map<String, Int> = program.files.associate { file ->
@@ -110,7 +110,7 @@ class RedundantExemptionFuzzTest {
         val mismatches = mutableListOf<String>()
         program.exemptions.forEachIndexed { exemptionIndex, exemption ->
             val reported = reportedRedundant.any { it.matches(exemption) }
-            val variant = compile(program, "p${program.index}e$exemptionIndex", program.render(blanked = exemption))
+            val variant = compile("p${program.index}e$exemptionIndex", program.render(blanked = exemption))
             // A blanked annotation at the start of an element moves the start of the element's range to the
             // next token. Both runs skip the blanks of the variant, so the same diagnostic has the same key.
             val variantTexts = FuzzDiagnosticsSink.lastFileTexts
@@ -130,7 +130,7 @@ class RedundantExemptionFuzzTest {
         return mismatches
     }
 
-    private fun compile(program: FuzzProgram, label: String, text: String): List<ReportedDiagnostic> {
+    private fun compile(label: String, text: String): List<ReportedDiagnostic> {
         val path = directory.resolve("$label.kt")
         Files.writeString(path, text)
         FuzzDiagnosticsSink.begin()
@@ -258,7 +258,7 @@ internal class CollectingDiagnosticsHandler(testServices: TestServices) : FirAna
     }
 }
 
-private class FuzzDiagnosticRunner : DevKitJvmDiagnosticTest({
+internal class FuzzDiagnosticRunner : DevKitJvmDiagnosticTest({
     configureWatchdogDiagnosticTest()
     defaultDirectives {
         +DISABLE_FIR_DUMP_HANDLER

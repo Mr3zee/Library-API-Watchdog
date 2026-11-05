@@ -511,6 +511,32 @@ class ExemptionFixerTest {
     }
 
     @Test
+    fun `open API exemption goes on an actual typealias`() {
+        @Language("kotlin")
+        val text = """
+            package com.example
+
+            public actual typealias Credentials = java.io.InputStream
+        """.trimIndent()
+
+        val result = fix(text, diagnostic("OPEN_API_WITHOUT_SUBCLASS_OPT_IN", text, "public actual typealias Credentials"))
+
+        assertEquals(
+            """
+                package com.example
+
+                import org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason
+                import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen
+
+                @IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)
+                public actual typealias Credentials = java.io.InputStream
+            """.trimIndent(),
+            result.newText,
+        )
+        assertEquals(emptyList(), result.skipped)
+    }
+
+    @Test
     fun `warnings stay and get the rewritten line`() {
         @Language("kotlin")
         val text = """

@@ -451,6 +451,44 @@ class ExemptExistingApiTest {
     }
 
     @Test
+    fun `an exemption of an expect declaration is copied to its actual declaration`() {
+        val project = kmpProject {
+            source(
+                """
+                    /** Server credentials. */
+                    public expect open class Credentials()
+
+                    /** Configures the server. */
+                    public expect fun configure(enabled: Boolean)
+                """.trimIndent(),
+                "credentials",
+            )
+            source(
+                """
+                    public actual open class Credentials actual constructor()
+
+                    public actual fun configure(enabled: Boolean) {}
+                """.trimIndent(),
+                "credentialsJvm",
+                sourceSet = "jvmMain",
+            )
+        }
+
+        project.build(EXEMPT_TASK).assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+
+        val common = project.file("src/commonMain/kotlin/test/credentials.kt").readText()
+        val jvm = project.file("src/jvmMain/kotlin/test/credentialsJvm.kt").readText()
+        assertContains(common, "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic expect open class Credentials")
+        assertContains(jvm, "@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic actual open class Credentials")
+        assertContains(common, "@IntentionallyBooleanParameter(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic expect fun configure")
+        assertContains(jvm, "@IntentionallyBooleanParameter(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)\npublic actual fun configure")
+
+        val compilation = project.build("compileKotlinJvm")
+        compilation.assertNoWatchdogDiagnostics()
+        assertFalse("is missing on actual declaration" in compilation.output, compilation.output)
+    }
+
+    @Test
     fun `Android library is fixed through both variants`() = androidLibraryIsFixedThroughBothVariantsCase(AgpVersion.AGP8)
 
     @Test

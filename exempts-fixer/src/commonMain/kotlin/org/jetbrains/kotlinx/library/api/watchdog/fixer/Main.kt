@@ -24,12 +24,15 @@ fun main(args: Array<String>) {
 }
 
 private fun run(request: FixerRequest, response: FixerResponse) {
-    val diagnosticsByFile = RecordedDiagnostic.parseReports(request.reportFiles).groupBy { it.filePath }
-    if (diagnosticsByFile.isEmpty() && request.sourceFiles.isEmpty()) {
+    val (pairs, diagnostics) = RecordedDiagnostic.parseReports(request.reportFiles).partition { it.name == EXPECT_ACTUAL_PAIR }
+    if (diagnostics.isEmpty() && request.sourceFiles.isEmpty()) {
         return
     }
 
     KotlinFileParser().use { parser ->
+        val copies = ExpectActualCopies(parser) { path -> Paths.get(path).takeIf { Files.isRegularFile(it) }?.let(Files::readString) }
+            .copies(diagnostics, pairs, request::fixes)
+        val diagnosticsByFile = (diagnostics + copies).groupBy { it.filePath }
         val fixer = ExemptionFixer(parser)
         for ((filePath, diagnostics) in diagnosticsByFile.toSortedMap()) {
             val file = Paths.get(filePath)

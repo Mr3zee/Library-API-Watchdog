@@ -1,0 +1,120 @@
+Module: common
+FILE: common.kt
+    package foo.bar
+
+    @R|kotlin/RequiresOptIn|() public final annotation class Marker : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/Marker| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public abstract expect class ImplicitConstructor : R|kotlin/Any| {
+    }
+    public abstract expect class InternalConstructor : R|kotlin/Any| {
+    }
+    public final expect class FinalToOpen : R|kotlin/Any| {
+    }
+    public abstract expect class ReportedOnExpect : R|kotlin/Any| {
+        public expect constructor(): R|foo/bar/ReportedOnExpect|
+
+    }
+    public abstract expect class ProtectedConstructors : R|kotlin/Any| {
+        protected expect constructor(): R|foo/bar/ProtectedConstructors|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public abstract expect class ExemptOnExpect : R|kotlin/Any| {
+    }
+    @R|kotlin/SubclassOptInRequired|(markerClass = vararg(<getClass>(Q|foo/bar/Marker|)) [evaluated = vararg(<getClass>(Q|foo/bar/Marker|))]) public abstract expect class OptInOnExpectOnly : R|kotlin/Any| {
+        public expect constructor(): R|foo/bar/OptInOnExpectOnly|
+
+    }
+    @R|kotlin/SubclassOptInRequired|(markerClass = vararg(<getClass>(Q|foo/bar/Marker|)) [evaluated = vararg(<getClass>(Q|foo/bar/Marker|))]) public abstract expect class OptInOnBoth : R|kotlin/Any| {
+        public expect constructor(): R|foo/bar/OptInOnBoth|
+
+    }
+    public open expect class AliasToThread : R|kotlin/Any| {
+    }
+    public abstract expect class AliasToInputStream : R|kotlin/Any| {
+    }
+    public final expect class AliasToStringBuilder : R|kotlin/Any| {
+    }
+    public abstract expect interface AliasToRunnable : R|kotlin/Any| {
+    }
+    @R|kotlin/SubclassOptInRequired|(markerClass = vararg(<getClass>(Q|foo/bar/Marker|)) [evaluated = vararg(<getClass>(Q|foo/bar/Marker|))]) public abstract expect interface OptInAliasToRunnable : R|kotlin/Any| {
+    }
+    public open expect class ExemptAlias : R|kotlin/Any| {
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public open expect class ExemptAliasOnExpect : R|kotlin/Any| {
+    }
+    public open expect class AliasToOwnClass : R|kotlin/Any| {
+    }
+Module: jvm
+FILE: jvm.kt
+    package foo.bar
+
+    public abstract actual class ImplicitConstructor : R|kotlin/Any| {
+        public constructor(): R|foo/bar/ImplicitConstructor| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public abstract actual class InternalConstructor : R|kotlin/Any| {
+        internal constructor(): R|foo/bar/InternalConstructor| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public open actual class FinalToOpen : R|kotlin/Any| {
+        public constructor(): R|foo/bar/FinalToOpen| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public abstract actual class ReportedOnExpect : R|kotlin/Any| {
+        public actual constructor(): R|foo/bar/ReportedOnExpect| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public abstract actual class ProtectedConstructors : R|kotlin/Any| {
+        protected actual constructor(): R|foo/bar/ProtectedConstructors| {
+            super<R|kotlin/Any|>()
+        }
+
+        protected constructor(value: R|kotlin/Int|): R|foo/bar/ProtectedConstructors| {
+            this<R|foo/bar/ProtectedConstructors|>()
+        }
+
+    }
+    public abstract actual class ExemptOnExpect : R|kotlin/Any| {
+        public constructor(): R|foo/bar/ExemptOnExpect| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public abstract actual class OptInOnExpectOnly : R|kotlin/Any| {
+        public actual constructor(): R|foo/bar/OptInOnExpectOnly| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/SubclassOptInRequired|(markerClass = vararg(<getClass>(Q|foo/bar/Marker|)) [evaluated = vararg(<getClass>(Q|foo/bar/Marker|))]) public abstract actual class OptInOnBoth : R|kotlin/Any| {
+        public actual constructor(): R|foo/bar/OptInOnBoth| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final actual typealias AliasToThread = R|java/lang/Thread|
+    public final actual typealias AliasToInputStream = R|java/io/InputStream|
+    public final actual typealias AliasToStringBuilder = R|java/lang/StringBuilder|
+    public final actual typealias AliasToRunnable = R|java/lang/Runnable|
+    public final actual typealias OptInAliasToRunnable = R|java/lang/Runnable|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final actual typealias ExemptAlias = R|java/lang/Thread|
+    public final actual typealias ExemptAliasOnExpect = R|java/lang/Thread|
+    public final actual typealias AliasToOwnClass = R|foo/bar/OwnOpenClass|
+    public open class OwnOpenClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/OwnOpenClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }

@@ -46,7 +46,7 @@ import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyInlinedLogic
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyMangledJvmName
 import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyMutableCollection
 
-<!REDUNDANT_EXEMPTION!>@IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)<!>
+@IntentionallyMutableCollection(reason = ExemptionReason.API_DESIGN)
 public actual val items: MutableList<Int> = mutableListOf()
 
 public actual val views: List<Int> = emptyList()
@@ -63,7 +63,7 @@ public actual inline val thin: Int
 @JvmInline
 public actual value class Id(public actual val raw: Int)
 
-<!REDUNDANT_EXEMPTION!>@IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN)<!>
+@IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN)
 public actual var mangled: Id = Id(1)
 
 public actual val plain: Int = 1

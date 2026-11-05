@@ -1,0 +1,57 @@
+Module: common
+FILE: common.kt
+    package foo.bar
+
+    internal final expect class Internal : R|kotlin/Any| {
+        public final expect fun flag(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) on: R|kotlin/Boolean|): R|kotlin/Unit|
+
+        public final expect class Nested : R|kotlin/Any| {
+            public final expect fun flag(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) on: R|kotlin/Boolean|): R|kotlin/Unit|
+
+        }
+
+    }
+    public final expect class Public : R|kotlin/Any| {
+        public final expect fun flag(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyBooleanParameter|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) on: R|kotlin/Boolean|): R|kotlin/Unit|
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final expect suspend fun load(): R|kotlin/Int|
+
+    }
+Module: jvm
+FILE: jvm.kt
+    package foo.bar
+
+    internal final actual typealias Internal = R|foo/bar/InternalImpl|
+    internal final class InternalImpl : R|kotlin/Any| {
+        public constructor(): R|foo/bar/InternalImpl| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun flag(on: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+        public final class Nested : R|kotlin/Any| {
+            public constructor(): R|foo/bar/InternalImpl.Nested| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun flag(on: R|kotlin/Boolean|): R|kotlin/Unit| {
+            }
+
+        }
+
+    }
+    public final actual typealias Public = R|foo/bar/PublicImpl|
+    public final class PublicImpl : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PublicImpl| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun flag(on: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+        public final suspend fun load(): R|kotlin/Int| {
+            ^load Int(0)
+        }
+
+    }

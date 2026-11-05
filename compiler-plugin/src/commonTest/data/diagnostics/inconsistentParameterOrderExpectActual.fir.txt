@@ -1,0 +1,27 @@
+Module: common
+FILE: common.kt
+    package foo.bar
+
+    public final expect fun pair(first: R|kotlin/Int|, second: R|kotlin/String|): R|kotlin/Unit|
+    public final expect fun common(first: R|kotlin/Int|, second: R|kotlin/String|): R|kotlin/Unit|
+    public final fun common(second: R|kotlin/String|, first: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyInconsistentParameterOrder|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public final expect fun exempt(first: R|kotlin/Int|, second: R|kotlin/String|): R|kotlin/Unit|
+    public final fun commonOnly(first: R|kotlin/Int|, second: R|kotlin/String|): R|kotlin/Unit| {
+    }
+Module: jvm
+FILE: jvm.kt
+    package foo.bar
+
+    public final actual fun pair(first: R|kotlin/Int|, second: R|kotlin/String|): R|kotlin/Unit| {
+    }
+    public final fun pair(second: R|kotlin/String|, first: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final actual fun common(first: R|kotlin/Int|, second: R|kotlin/String|): R|kotlin/Unit| {
+    }
+    public final actual fun exempt(first: R|kotlin/Int|, second: R|kotlin/String|): R|kotlin/Unit| {
+    }
+    public final fun exempt(second: R|kotlin/String|, first: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun commonOnly(second: R|kotlin/String|, first: R|kotlin/Int|): R|kotlin/Unit| {
+    }
