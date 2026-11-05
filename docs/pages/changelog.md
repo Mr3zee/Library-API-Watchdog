@@ -10,6 +10,16 @@ mdx:
 
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- [Inconsistent parameter order in overloads](checks/inconsistent-parameter-order-in-overloads.md):
+  a last parameter that accepts a trailing lambda can stay last in each overload. Such a parameter has a
+  function type, a `fun interface` type, or a Java SAM interface type.
+- [Required parameters after optional ones](checks/required-parameter-after-optional.md):
+  the trailing-lambda exception also applies to a Java SAM interface in the last position.
+
 ## 0.1.0 - 2026-11-05
 
 ### Added
