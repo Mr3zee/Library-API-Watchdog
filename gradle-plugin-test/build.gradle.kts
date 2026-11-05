@@ -5,11 +5,14 @@ plugins {
     id("library-api-watchdog.gradle-plugin-test-conventions")
 }
 
+// The dev kit publishes the included builds of the functional test classpath for the tests. The Gradle plugin brings
+// the report aggregation plugin of the same build.
+dependencies {
+    functionalTestRuntimeOnly("$group:kotlin-library-api-watchdog-gradle-plugin:$version")
+}
+
 pluginDevKit {
     pluginPackage = "org.jetbrains.kotlinx.library.api.watchdog"
-    // The report aggregation plugin is in the same build, and the Gradle plugin publishes it as a dependency.
-    includedBuildProjects.add("gradle-plugin")
-    includedBuildProjects.add("plugin-annotations")
     companionLibrary("kotlin-library-api-watchdog-plugin-annotations")
     compilerPlugin = ProjectOrGav.LocalProject(project(":kotlin-library-api-watchdog-compiler-plugin").isolated)
 }
