@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.1 - 2026-11-05
 
 ### Changed
 
@@ -9,6 +9,16 @@
   function type, a `fun interface` type, or a Java SAM interface type.
 - [Required parameters after optional ones](https://mr3zee.github.io/Library-API-Watchdog/checks/required-parameter-after-optional):
   the trailing-lambda exception also applies to a Java SAM interface in the last position.
+
+<!-- Release notes generated using configuration in .github/release.yml at 2a8e491056a220fcc662ac583fd94b32f526911d -->
+
+### What's Changed
+* Sign the commits of the Release and Dev kit update workflows by @Mr3zee in https://github.com/Mr3zee/Library-API-Watchdog/pull/25
+
+### New Contributors
+* @github-actions[bot] made their first contribution in https://github.com/Mr3zee/Library-API-Watchdog/pull/24
+
+**Full Changelog**: https://github.com/Mr3zee/Library-API-Watchdog/compare/v0.1.0...v0.1.1
 
 ## 0.1.0 - 2026-11-05
 
