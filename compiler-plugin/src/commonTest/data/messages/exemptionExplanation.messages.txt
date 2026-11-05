@@ -17,3 +17,8 @@
     The `@IntentionallyExhaustive` exemption has the generic reason `IGNORE_JAVA_INTEROP` and an empty `description`. Pass one of the reasons `FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`, or `FOR_DEPRECATION`, or explain the exemption in the `description`.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/exemption-without-explanation
+
+/exemptionExplanation.kt:29:1: error: EXEMPTION_WITHOUT_EXPLANATION
+    The `@IntentionallyExhaustive` exemption has the generic reason `TODO` and an empty `description`. Pass one of the reasons `FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`, or `FOR_DEPRECATION`, or explain the exemption in the `description`.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/exemption-without-explanation

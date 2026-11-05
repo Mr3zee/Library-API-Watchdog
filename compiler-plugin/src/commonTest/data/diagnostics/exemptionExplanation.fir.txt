@@ -168,6 +168,18 @@ FILE: exemptionExplanation.kt
     @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(description = String(Coroutine-first API. Java gets the blocking facade.) [evaluated = String(Coroutine-first API. Java gets the blocking facade.)], reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.IGNORE_JAVA_INTEROP| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.IGNORE_JAVA_INTEROP|]) public final suspend fun ignoredInteropWithDescription(): R|kotlin/Int| {
         ^ignoredInteropWithDescription Int(0)
     }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.TODO| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.TODO|]) public open class TodoWithoutDescription : R|kotlin/Any| {
+        public constructor(): R|foo/bar/TodoWithoutDescription| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|(description = String(Waits for the transport redesign.) [evaluated = String(Waits for the transport redesign.)], reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.TODO| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.TODO|]) public open class TodoWithDescription : R|kotlin/Any| {
+        public constructor(): R|foo/bar/TodoWithDescription| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
     public final class Holder : R|kotlin/Any| {
         public constructor(bare: R|kotlin/Int|, explained: R|kotlin/Int|): R|foo/bar/Holder| {
             super<R|kotlin/Any|>()

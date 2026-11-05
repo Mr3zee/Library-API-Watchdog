@@ -223,6 +223,7 @@ final enum class org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason : ko
     enum entry IGNORE_JAVA_INTEROP // org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason.IGNORE_JAVA_INTEROP|null[0]
     enum entry INTEROP // org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason.INTEROP|null[0]
     enum entry OTHER // org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason.OTHER|null[0]
+    enum entry TODO // org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason.TODO|null[0]
 
     final val entries // org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason.entries|#static{}entries[0]
         final fun <get-entries>(): kotlin.enums/EnumEntries<org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason> // org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason.entries.<get-entries>|<get-entries>#static(){}[0]

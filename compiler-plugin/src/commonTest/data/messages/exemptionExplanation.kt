@@ -25,3 +25,8 @@ public enum class ExternalContractReason {
 public enum class IgnoreJavaInteropReason {
     ENTRY,
 }
+
+<!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyExhaustive(reason = ExemptionReason.TODO)<!>
+public enum class TodoReason {
+    ENTRY,
+}

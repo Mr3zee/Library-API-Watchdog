@@ -20,6 +20,12 @@ public enum class ExemptionReason {
     FOR_DEPRECATION,
 
     /**
+     * The declaration is work in progress, so its shape isn't final. Name the remaining work in the
+     * `description`.
+     */
+    TODO,
+
+    /**
      * Interoperability with another language, platform, or framework needs the shape. Name it in
      * the `description`.
      */
@@ -49,7 +55,8 @@ public enum class ExemptionReason {
  * The annotation on an `expect` class also exempts its `actual` class or `actual typealias`.
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPEALIAS)
 @Retention(AnnotationRetention.BINARY)
@@ -65,7 +72,8 @@ public annotation class IntentionallyOpen(
  * Apply it when the set of entries or subtypes is a stable part of the API contract.
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
@@ -79,7 +87,8 @@ public annotation class IntentionallyExhaustive(
  * [Undocumented public API](https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api).
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(
     AnnotationTarget.CLASS,
@@ -99,7 +108,8 @@ public annotation class IntentionallyUndocumented(
  * [Function type aliases in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/function-type-alias-public-api).
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(AnnotationTarget.TYPEALIAS)
 @Retention(AnnotationRetention.BINARY)
@@ -115,7 +125,8 @@ public annotation class IntentionallyFunctionTypeAlias(
  * Apply it when the generated declarations are a stable part of the API contract.
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
@@ -131,7 +142,8 @@ public annotation class IntentionallyDataClass(
  * Apply it when identity equality is intended.
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
@@ -147,7 +159,8 @@ public annotation class IntentionallyWithoutEquals(
  * Apply it when identity hashing is intended.
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
@@ -163,7 +176,8 @@ public annotation class IntentionallyWithoutHashCode(
  * Apply it when the default `toString` output is intended.
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
@@ -180,7 +194,8 @@ public annotation class IntentionallyWithoutToString(
  * [IntentionallyWithoutToString] when only one inherited implementation is intended.
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
@@ -196,7 +211,8 @@ public annotation class IntentionallyWithoutEqualsHashCodeOrToString(
  * Apply it when the shared mutable collection is part of the API contract.
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(
     AnnotationTarget.FUNCTION,
@@ -217,7 +233,8 @@ public annotation class IntentionallyMutableCollection(
  * [Pair and Triple in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/pair-or-triple-public-api).
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(
     AnnotationTarget.FUNCTION,
@@ -241,7 +258,8 @@ public annotation class IntentionallyPairOrTriple(
  * `setEnabled(enabled: Boolean)`.
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(
     AnnotationTarget.FUNCTION,
@@ -258,7 +276,8 @@ public annotation class IntentionallyBooleanParameter(
  * [Nullable Booleans in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/nullable-boolean-public-api).
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(
     AnnotationTarget.FUNCTION,
@@ -279,7 +298,8 @@ public annotation class IntentionallyNullableBoolean(
  * [Required parameters after optional ones](https://mr3zee.github.io/Library-API-Watchdog/checks/required-parameter-after-optional).
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CONSTRUCTOR)
 @Retention(AnnotationRetention.BINARY)
@@ -293,7 +313,8 @@ public annotation class IntentionallyRequiredParameterAfterOptional(
  * [Inconsistent parameter order in overloads](https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads).
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CONSTRUCTOR)
 @Retention(AnnotationRetention.BINARY)
@@ -310,7 +331,8 @@ public annotation class IntentionallyInconsistentParameterOrder(
  * call.
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.BINARY)
@@ -328,7 +350,8 @@ public annotation class IntentionallyInlinedLogic(
  * `@JvmName` or `@JvmExposeBoxed`.
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(
     AnnotationTarget.CLASS,
@@ -352,7 +375,8 @@ public annotation class IntentionallyMangledJvmName(
  * `@JvmSynthetic`, or add a Java-friendly alternative.
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.BINARY)
@@ -372,7 +396,8 @@ public annotation class IntentionallyKotlinOnlyApi(
  * with `@JvmStatic`, `@JvmField`, or `const val`, or hide the member from Java with `@JvmSynthetic`.
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.BINARY)
@@ -388,7 +413,8 @@ public annotation class IntentionallyNonStaticCompanionApi(
  * Apply it as `@file:IntentionallyDefaultFacadeName(...)`.
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(AnnotationTarget.FILE)
 @Retention(AnnotationRetention.BINARY)
@@ -404,7 +430,8 @@ public annotation class IntentionallyDefaultFacadeName(
  * Apply it when Java callers must pass every argument.
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CONSTRUCTOR)
 @Retention(AnnotationRetention.BINARY)
@@ -434,7 +461,8 @@ public annotation class IntentionallyWithoutJvmOverloads(
  * ```
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
- *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY] or [ExemptionReason.API_DESIGN].
+ *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
+ *   [ExemptionReason.FOR_DEPRECATION].
  */
 @Target(
     AnnotationTarget.CLASS,

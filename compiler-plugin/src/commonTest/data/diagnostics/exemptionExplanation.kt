@@ -89,6 +89,12 @@ public suspend fun ignoredInteropWithoutDescription(): Int = 0
 @IntentionallyKotlinOnlyApi(description = "Coroutine-first API. Java gets the blocking facade.", reason = ExemptionReason.IGNORE_JAVA_INTEROP)
 public suspend fun ignoredInteropWithDescription(): Int = 0
 
+<!EXEMPTION_WITHOUT_EXPLANATION!>@IntentionallyOpen(reason = ExemptionReason.TODO)<!>
+public open class TodoWithoutDescription
+
+@IntentionallyOpen(description = "Waits for the transport redesign.", reason = ExemptionReason.TODO)
+public open class TodoWithDescription
+
 // A constructor property is reported once.
 
 /** Documented holder. */

@@ -6,6 +6,7 @@ public final class org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason : 
 	public static final field IGNORE_JAVA_INTEROP Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 	public static final field INTEROP Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 	public static final field OTHER Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
+	public static final field TODO Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
 	public static fun values ()[Lorg/jetbrains/kotlinx/library/api/watchdog/ExemptionReason;
