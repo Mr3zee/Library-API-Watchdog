@@ -45,3 +45,9 @@ public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>ordinalPositions<!>(
     p13: Int, p12: Int, p11: Int, p10: Int, p9: Int, p8: Int, p7: Int,
     p6: Int, p5: Int, p4: Int, p3: Int, p2: Int, p1: Int, extra: String,
 ) {}
+
+public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>subscribeGroup<!>(topic: String, handler: (String) -> Boolean) {}
+
+public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>subscribeGroup<!>(topic: String, retries: Int, handler: (String) -> Boolean) {}
+
+public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>subscribeGroup<!>(handler: (String) -> Boolean, topic: String, retries: Long) {}

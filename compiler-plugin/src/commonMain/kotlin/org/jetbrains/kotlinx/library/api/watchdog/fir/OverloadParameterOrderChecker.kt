@@ -143,23 +143,26 @@ internal class OverloadParameterOrderChecker(
     ) {
         val current = declaration.symbol.valueParameterSymbols
         val others = siblings.mapNotNull { sibling ->
-            val positions = sibling.valueParameterSymbols.withIndex().associate { it.value.name to it.index }
+            val parameters = sibling.valueParameterSymbols
+            val positions = parameters.withIndex().associate { it.value.name to it.index }
             if (current.count { it.name in positions } < 2) return@mapNotNull null
-            sibling to positions
+            parameters to positions
         }
         if (others.isEmpty()) return
 
         val changes = current.mapIndexedNotNull { index, parameter ->
-            if (others.none { (_, positions) ->
+            val trailingLambda = current.isTrailingLambda(index)
+            if (others.none { (parameters, positions) ->
                     val otherIndex = positions[parameter.name]
-                    otherIndex != null && otherIndex != index
+                    otherIndex != null && otherIndex != index &&
+                        !(trailingLambda && parameters.isTrailingLambda(otherIndex))
                 }
             ) return@mapIndexedNotNull null
             listOf(
                 parameter.name.asString(),
-                (index + 1).ordinalPosition(),
-            ) + others.map { (_, positions) ->
-                positions[parameter.name]?.let { (it + 1).ordinalPosition() }
+                index.position(trailingLambda, factory),
+            ) + others.map { (parameters, positions) ->
+                positions[parameter.name]?.let { it.position(parameters.isTrailingLambda(it), factory) }
                     ?: WatchdogDiagnosticMessages.parameterValueFor(factory.name, "absentParameter")
             }
         }
@@ -179,7 +182,7 @@ internal class OverloadParameterOrderChecker(
             b = others.zip(labels).joinToString("\n") { (other, label) ->
                 WatchdogDiagnosticMessages.parameterValueFor(
                     factory.name, "overloadSignature", "$label: ".padEnd(16),
-                    other.first.valueParameterSymbols.signature(callableName),
+                    other.first.signature(callableName),
                 )
             },
             c = (listOf(header.take(2) + labels) + changes).alignedTable(),
@@ -204,6 +207,23 @@ internal class OverloadParameterOrderChecker(
         return source.getChild(CONSTRUCTOR_KEYWORD_TOKENS, depth = 1)
             ?: context.containingClassSymbol?.source?.getChild(IDENTIFIER_TOKENS, depth = 1)
             ?: source
+    }
+
+    /**
+     * A call passes a trailing lambda after the parentheses, so its index isn't visible at the call site. A
+     * trailing lambda in two overloads has the same position.
+     */
+    context(context: CheckerContext)
+    private fun List<FirValueParameterSymbol>.isTrailingLambda(index: Int): Boolean =
+        index == lastIndex && this[index].acceptsTrailingLambda()
+
+    private fun Int.position(
+        trailingLambda: Boolean,
+        factory: KtDiagnosticFactory4<String, String, String, String>,
+    ): String = if (trailingLambda) {
+        WatchdogDiagnosticMessages.parameterValueFor(factory.name, "trailingLambdaPosition")
+    } else {
+        (this + 1).ordinalPosition()
     }
 
     private fun Int.ordinalPosition(): String {

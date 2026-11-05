@@ -8,14 +8,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFunctionChecker
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
-import org.jetbrains.kotlin.fir.declarations.FirValueParameter
-import org.jetbrains.kotlin.fir.declarations.utils.isFun
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
-import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
-import org.jetbrains.kotlin.fir.resolve.toClassSymbol
-import org.jetbrains.kotlin.fir.types.ConeClassLikeType
-import org.jetbrains.kotlin.fir.types.coneType
-import org.jetbrains.kotlin.fir.types.functionTypeKind
 import org.jetbrains.kotlin.name.ClassId
 
 /**
@@ -62,7 +55,7 @@ internal class RequiredParameterAfterOptionalChecker(
                 continue
             }
 
-            if (index == parameters.size && parameter.acceptsTrailingLambda()) {
+            if (index == parameters.size && parameter.symbol.acceptsTrailingLambda()) {
                 continue
             }
 
@@ -77,21 +70,5 @@ internal class RequiredParameterAfterOptionalChecker(
                 ),
             )
         }
-    }
-
-    /** No lambda literal satisfies a `KFunction` reflection type. */
-    context(context: CheckerContext)
-    private fun FirValueParameter.acceptsTrailingLambda(): Boolean {
-        val type = returnTypeRef.coneType.let {
-            if (it is ConeClassLikeType) it.fullyExpandedType() else it
-        }
-
-        val functionTypeKind = type.functionTypeKind(context.session)
-        if (functionTypeKind != null) {
-            return !functionTypeKind.isReflectType
-        }
-
-        val classSymbol = (type as? ConeClassLikeType)?.toClassSymbol() ?: return false
-        return classSymbol.isFun
     }
 }

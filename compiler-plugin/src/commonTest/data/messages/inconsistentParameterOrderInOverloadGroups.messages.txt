@@ -11,7 +11,7 @@
         x         | 1st           | 1st        | 2nd
         y         | 2nd           | 2nd        | 1st
 
-    Use the same positions for shared parameters, and put extra parameters after them.
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
@@ -30,7 +30,7 @@
         x         | 1st           | 1st        | 2nd
         y         | 2nd           | 2nd        | 1st
 
-    Use the same positions for shared parameters, and put extra parameters after them.
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
@@ -49,7 +49,7 @@
         y         | 1st           | 2nd        | 2nd
         x         | 2nd           | 1st        | 1st
 
-    Use the same positions for shared parameters, and put extra parameters after them.
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
@@ -69,7 +69,7 @@
         second    | 2nd           | 3rd        | 1st
         third     | 3rd           | 1st        | 2nd
 
-    Use the same positions for shared parameters, and put extra parameters after them.
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
@@ -89,7 +89,7 @@
         first     | 2nd           | 1st        | 3rd
         second    | 3rd           | 2nd        | 1st
 
-    Use the same positions for shared parameters, and put extra parameters after them.
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
@@ -109,7 +109,7 @@
         third     | 2nd           | 3rd        | 1st
         first     | 3rd           | 1st        | 2nd
 
-    Use the same positions for shared parameters, and put extra parameters after them.
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
@@ -128,7 +128,7 @@
         Parameter       | This overload | Overload 1 | Overload 2 | Overload 3
         destinationPath | 2nd           | 3rd        | 4th        | 2nd
 
-    Use the same positions for shared parameters, and put extra parameters after them.
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
@@ -147,7 +147,7 @@
         Parameter       | This overload | Overload 1 | Overload 2 | Overload 3
         destinationPath | 3rd           | 2nd        | 4th        | 2nd
 
-    Use the same positions for shared parameters, and put extra parameters after them.
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
@@ -166,7 +166,7 @@
         Parameter       | This overload | Overload 1 | Overload 2 | Overload 3
         destinationPath | 4th           | 2nd        | 3rd        | 2nd
 
-    Use the same positions for shared parameters, and put extra parameters after them.
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
@@ -185,7 +185,7 @@
         Parameter       | This overload | Overload 1 | Overload 2 | Overload 3
         destinationPath | 2nd           | 2nd        | 3rd        | 4th
 
-    Use the same positions for shared parameters, and put extra parameters after them.
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
@@ -204,7 +204,7 @@
         width     | 1st           | 2nd        | 1st
         height    | 2nd           | 1st        | 3rd
 
-    Use the same positions for shared parameters, and put extra parameters after them.
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the constructor.
 
@@ -224,7 +224,7 @@
         width     | 2nd           | 1st        | 1st
         scale     | 3rd           | absent     | 2nd
 
-    Use the same positions for shared parameters, and put extra parameters after them.
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the constructor.
 
@@ -244,7 +244,7 @@
         scale     | 2nd           | absent     | 3rd
         height    | 3rd           | 2nd        | 1st
 
-    Use the same positions for shared parameters, and put extra parameters after them.
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the constructor.
 
@@ -272,7 +272,7 @@
         p12       | 12th          | 2nd
         p13       | 13th          | 1st
 
-    Use the same positions for shared parameters, and put extra parameters after them.
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
@@ -300,7 +300,66 @@
         p2        | 12th          | 2nd
         p1        | 13th          | 1st
 
-    Use the same positions for shared parameters, and put extra parameters after them.
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:49:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  subscribeGroup(topic: String, handler: (String) -> Boolean)
+        Overload 1:     subscribeGroup(topic: String, retries: Int, handler: (String) -> Boolean)
+        Overload 2:     subscribeGroup(handler: (String) -> Boolean, topic: String, retries: Long)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Overload 1 | Overload 2
+        topic     | 1st           | 1st        | 2nd
+        handler   | last          | last       | 1st
+
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:51:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  subscribeGroup(topic: String, retries: Int, handler: (String) -> Boolean)
+        Overload 1:     subscribeGroup(topic: String, handler: (String) -> Boolean)
+        Overload 2:     subscribeGroup(handler: (String) -> Boolean, topic: String, retries: Long)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Overload 1 | Overload 2
+        topic     | 1st           | 1st        | 2nd
+        retries   | 2nd           | absent     | 3rd
+        handler   | last          | last       | 1st
+
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:53:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  subscribeGroup(handler: (String) -> Boolean, topic: String, retries: Long)
+        Overload 1:     subscribeGroup(topic: String, handler: (String) -> Boolean)
+        Overload 2:     subscribeGroup(topic: String, retries: Int, handler: (String) -> Boolean)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Overload 1 | Overload 2
+        handler   | 1st           | last       | last
+        topic     | 2nd           | 1st        | 1st
+        retries   | 3rd           | absent     | 2nd
+
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 

@@ -1,0 +1,17 @@
+FILE: requiredParameterAfterOptionalJavaSam.kt
+    package foo.bar
+
+    public final fun runLater(delay: R|kotlin/Long| = Long(0), action: R|java/lang/Runnable|): R|kotlin/Unit| {
+    }
+    public final fun compute(delay: R|kotlin/Long| = Long(0), task: R|java/util/concurrent/Callable<kotlin/String>|): R|kotlin/Unit| {
+    }
+    public final fun consume(bufferSize: R|kotlin/Int| = Int(16), consumer: R|java/util/function/Consumer<kotlin/String>?|): R|kotlin/Unit| {
+    }
+    public final fun drain(limit: R|kotlin/Int| = Int(0), source: R|java/util/Enumeration<kotlin/String>|): R|kotlin/Unit| {
+    }
+    public abstract interface Watcher : R|kotlin/Any| {
+        public abstract fun onChange(value: R|kotlin/Int|): R|kotlin/Unit|
+
+    }
+    public final fun watch(bufferSize: R|kotlin/Int| = Int(16), watcher: R|foo/bar/Watcher|): R|kotlin/Unit| {
+    }

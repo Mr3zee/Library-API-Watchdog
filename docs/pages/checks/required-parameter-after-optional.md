@@ -60,7 +60,7 @@ public fun connect(host: String, retries: Int = 3) { }
 
 The check skips overrides and `@PublishedApi internal` functions and constructors.
 
-The trailing-lambda exception applies to function types and `fun interface` types in the last position.
+The trailing-lambda exception applies to function types, `fun interface` types, and Java SAM interfaces in the last position.
 It doesn't apply to reflection types such as `KFunction` or to earlier parameters.
 
 ## Exemption

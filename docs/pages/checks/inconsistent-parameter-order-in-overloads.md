@@ -153,6 +153,8 @@ The comparisons have these limits:
 - Overrides don't get diagnostics but are used in comparisons. An exemption on an override doesn't
   remove it from the comparisons.
 - `@PublishedApi internal` overloads aren't used in comparisons.
+- A last parameter accepts a trailing lambda when its type is a function type, a `fun interface`, or a Java SAM
+  interface.
 
 ## Exemption
 

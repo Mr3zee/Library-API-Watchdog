@@ -1,0 +1,92 @@
+FILE: inconsistentParameterOrderTrailingLambda.kt
+    package foo.bar
+
+    public final fun register(name: R|kotlin/String|, configure: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun register(name: R|kotlin/String|, type: R|kotlin/reflect/KClass<*>|, configure: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun registerSuspend(name: R|kotlin/String|, configure: R|suspend () -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun registerSuspend(name: R|kotlin/String|, type: R|kotlin/reflect/KClass<*>|, configure: R|suspend () -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun registerNullable(name: R|kotlin/String|, configure: R|(() -> kotlin/Unit)?|): R|kotlin/Unit| {
+    }
+    public final fun registerNullable(name: R|kotlin/String|, type: R|kotlin/reflect/KClass<*>|, configure: R|(() -> kotlin/Unit)?|): R|kotlin/Unit| {
+    }
+    public final class Task : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Task| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun registerWithReceiver(name: R|kotlin/String|, configure: R|foo/bar/Task.() -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun registerWithReceiver(name: R|kotlin/String|, type: R|kotlin/reflect/KClass<*>|, configure: R|foo/bar/Task.() -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final typealias Configure = R|(foo/bar/Task) -> kotlin/Unit|
+    public final fun registerAlias(name: R|kotlin/String|, configure: R|{foo/bar/Configure=} (foo/bar/Task) -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun registerAlias(name: R|kotlin/String|, type: R|kotlin/reflect/KClass<*>|, configure: R|{foo/bar/Configure=} (foo/bar/Task) -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public abstract fun interface TaskAction : R|kotlin/Any| {
+        public abstract fun execute(task: R|foo/bar/Task|): R|kotlin/Unit|
+
+    }
+    public final fun registerFunInterface(name: R|kotlin/String|, configure: R|foo/bar/TaskAction|): R|kotlin/Unit| {
+    }
+    public final fun registerFunInterface(name: R|kotlin/String|, type: R|kotlin/reflect/KClass<*>|, configure: R|foo/bar/TaskAction|): R|kotlin/Unit| {
+    }
+    public final fun registerJavaSam(name: R|kotlin/String|, configure: R|java/util/function/Consumer<foo/bar/Task>|): R|kotlin/Unit| {
+    }
+    public final fun registerJavaSam(name: R|kotlin/String|, type: R|kotlin/reflect/KClass<*>|, configure: R|java/util/function/Consumer<foo/bar/Task>|): R|kotlin/Unit| {
+    }
+    public final class Tasks : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Tasks| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun register(name: R|kotlin/String|, configure: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+        }
+
+        public final fun register(name: R|kotlin/String|, type: R|kotlin/reflect/KClass<*>|, configure: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+        }
+
+    }
+    public final class Container : R|kotlin/Any| {
+        public constructor(name: R|kotlin/String|, configure: R|() -> kotlin/Unit|): R|foo/bar/Container| {
+            super<R|kotlin/Any|>()
+        }
+
+        public constructor(name: R|kotlin/String|, type: R|kotlin/reflect/KClass<*>|, configure: R|() -> kotlin/Unit|): R|foo/bar/Container| {
+            this<R|foo/bar/Container|>(R|<local>/name|, R|<local>/configure|)
+        }
+
+    }
+    public final fun registerTyped(type: R|kotlin/reflect/KClass<*>|, name: R|kotlin/String|, configure: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun registerTyped(name: R|kotlin/String|, configure: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun subscribe(topic: R|kotlin/String|, handler: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun subscribe(topic: R|kotlin/String|, priority: R|kotlin/Int|, handler: R|() -> kotlin/Unit|, retries: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun place(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun place(x: R|kotlin/Int|, scale: R|kotlin/Double|, y: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun bind(name: R|kotlin/String|, handler: R|kotlin/reflect/KFunction0<kotlin/Unit>|): R|kotlin/Unit| {
+    }
+    public final fun bind(name: R|kotlin/String|, priority: R|kotlin/Int|, handler: R|kotlin/reflect/KFunction0<kotlin/Unit>|): R|kotlin/Unit| {
+    }
+    public abstract interface Listener : R|kotlin/Any| {
+        public abstract fun onEvent(task: R|foo/bar/Task|): R|kotlin/Unit|
+
+    }
+    public final fun listen(name: R|kotlin/String|, listener: R|foo/bar/Listener|): R|kotlin/Unit| {
+    }
+    public final fun listen(name: R|kotlin/String|, priority: R|kotlin/Int|, listener: R|foo/bar/Listener|): R|kotlin/Unit| {
+    }
+    public final fun notifyAll(name: R|kotlin/String|, vararg handlers: R|kotlin/Array<out () -> kotlin/Unit>|): R|kotlin/Unit| {
+    }
+    public final fun notifyAll(name: R|kotlin/String|, priority: R|kotlin/Int|, vararg handlers: R|kotlin/Array<out () -> kotlin/Unit>|): R|kotlin/Unit| {
+    }

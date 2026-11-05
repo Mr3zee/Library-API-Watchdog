@@ -317,7 +317,8 @@
         "",
         "{2}",
         "",
-        "Use the same positions for shared parameters, and put extra parameters after them.",
+        "Use the same positions for shared parameters, and put extra parameters after them. A trailing",
+        "lambda parameter can stay last.",
         "",
         "If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the {3}."
       ],
@@ -330,6 +331,9 @@
         ],
         "absentParameter": [
           "absent"
+        ],
+        "trailingLambdaPosition": [
+          "last"
         ],
         "positionTableHeader": [
           "Parameter | This overload | Other overload"

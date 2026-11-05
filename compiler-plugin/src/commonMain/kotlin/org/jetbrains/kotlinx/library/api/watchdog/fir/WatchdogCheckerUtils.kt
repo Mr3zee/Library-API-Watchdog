@@ -32,6 +32,7 @@ import org.jetbrains.kotlin.fir.declarations.utils.isExpect
 import org.jetbrains.kotlin.fir.declarations.utils.modality
 import org.jetbrains.kotlin.fir.declarations.utils.visibility
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
+import org.jetbrains.kotlin.fir.resolve.FirSamResolver
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
 import org.jetbrains.kotlin.fir.resolve.toClassSymbol
 import org.jetbrains.kotlin.fir.resolve.transformers.publishedApiEffectiveVisibility
@@ -46,6 +47,7 @@ import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.fir.types.ConeTypeParameterType
 import org.jetbrains.kotlin.fir.types.coneType
+import org.jetbrains.kotlin.fir.types.functionTypeKind
 import org.jetbrains.kotlin.fir.types.upperBoundIfFlexible
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
@@ -325,6 +327,29 @@ internal fun ConeKotlinType.erasedClassSymbol(): FirClassSymbol<*>? {
     }
 
     return (type as? ConeClassLikeType)?.fullyExpandedType()?.toClassSymbol()
+}
+
+/**
+ * True when a call can pass a trailing lambda to this parameter: a function type, a `fun interface`, or a
+ * Java SAM interface. No lambda literal satisfies a `KFunction` type. A call can't pass a trailing lambda to
+ * a `vararg` parameter.
+ */
+context(context: CheckerContext)
+internal fun FirValueParameterSymbol.acceptsTrailingLambda(): Boolean {
+    if (isVararg) {
+        return false
+    }
+
+    val type = resolvedReturnType.let {
+        if (it is ConeClassLikeType) it.fullyExpandedType() else it
+    }
+
+    val functionTypeKind = type.functionTypeKind(context.session)
+    if (functionTypeKind != null) {
+        return !functionTypeKind.isReflectType
+    }
+
+    return FirSamResolver(context.session, context.scopeSession).isSamType(type)
 }
 
 /**
