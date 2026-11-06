@@ -299,6 +299,34 @@ See [Java interop checks](./checks/java-interop/java-interop.md) for more detail
 | [Mangled JVM names in public API](./checks/java-interop/mangled-jvm-name-public-api.md)                       | `mangledJvmNamePublicApi`              | `MANGLED_JVM_NAME_PUBLIC_API`               |
 | [Top-level API without JvmName](./checks/java-interop/top-level-api-without-jvm-name.md)                      | `topLevelApiWithoutJvmName`            | `TOP_LEVEL_API_WITHOUT_JVM_NAME`            |
 
+## Report aggregation
+
+The report aggregation plugin combines the reports of the subprojects into one HTML and one SARIF
+file in the root project. Apply it to the root project and declare every subproject:
+
+```kotlin build.gradle.kts
+plugins {
+    kotlin("library.api-watchdog-report-aggregation") version "{{libraryApiWatchdogVersion}}"
+}
+
+dependencies {
+    subprojects.forEach { apiWatchdogReports(project(it.path)) }
+}
+
+// !link[/aggregateApiWatchdogReports/] /report#multi-project-builds
+tasks.aggregateApiWatchdogReports {
+    reports {
+        html = true
+        htmlFile = layout.buildDirectory.file("reports/api-watchdog/aggregate-report.html")
+        sarif = true
+        sarifFile = layout.buildDirectory.file("reports/api-watchdog/aggregate-report.sarif")
+    }
+}
+```
+
+The snippet shows the defaults. See [Report generation](./report.md) for more details about the
+formats, the subproject selection, and included builds.
+
 ## Without Gradle
 
 A direct compiler call configures the plugin with `-P` options of this form:
@@ -336,5 +364,6 @@ without Gradle.
 
 - [Adding the plugin to existing libraries](./existing-libs.md)
 - [Exemptions and internal API](./exemptions.md)
+- [Report generation](./report.md)
 - [Binary compatibility validation suggestion](./abi-validation-suggestion.md)
 - [API reference](https://mr3zee.github.io/Library-API-Watchdog/api/)
