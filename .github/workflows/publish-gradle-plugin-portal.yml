@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   publish:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       # library.properties holds the next development version, so the workflow takes the version from the input.
       - name: Check the release version

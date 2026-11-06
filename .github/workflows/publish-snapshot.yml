@@ -13,8 +13,7 @@ env:
 
 jobs:
   publish:
-    # Only a macOS host can publish the Apple annotation variants.
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5

@@ -43,16 +43,27 @@ on:
       - 'scripts/release-tooling.test.mjs'
       - 'scripts/check-publication-env.sh'
       - '.github/workflows/version-alignment.yml'
+  workflow_call:
+    inputs:
+      ref:
+        description: 'The commit to check. Empty checks the commit of the caller.'
+        type: string
+        default: ''
 
 permissions:
   contents: read
 
 jobs:
+  # A `pull_request` run of the Watchdog bot skips the checks. The Release workflow calls this workflow on the commit of
+  # its pull request.
   verify:
+    if: github.event_name != 'pull_request' || github.actor != vars.WATCHDOG_BOT_LOGIN
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Set up Node
         uses: actions/setup-node@v6

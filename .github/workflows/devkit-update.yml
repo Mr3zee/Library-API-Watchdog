@@ -4,7 +4,7 @@ name: Dev kit update
 # repository. When the repository has a different version, the workflow:
 #
 # 1. Commits the version to the update branch and opens a pull request, or updates the open one.
-# 2. Runs every test and the benchmark check on the commit.
+# 2. Runs every test, the version alignment check, and the benchmark check on the commit.
 # 3. Squash-merges the pull request when all of them pass. When a check fails, the pull request stays open.
 #
 # The Watchdog bot (CONTRIBUTING.md) pushes the branch and opens the pull request, because a pull request of
@@ -136,6 +136,14 @@ jobs:
       ref: ${{ needs.update.outputs.sha }}
     secrets: inherit
 
+  version-alignment:
+    name: Version alignment
+    needs: update
+    if: needs.update.outputs.sha != ''
+    uses: ./.github/workflows/version-alignment.yml
+    with:
+      ref: ${{ needs.update.outputs.sha }}
+
   benchmark:
     name: Benchmark baseline
     needs: update
@@ -148,7 +156,7 @@ jobs:
   # A skipped or failed job in `needs` skips this job.
   merge:
     name: Merge the pull request
-    needs: [update, compiler-plugin-tests, gradle-tests, benchmark]
+    needs: [update, compiler-plugin-tests, gradle-tests, version-alignment, benchmark]
     runs-on: ubuntu-latest
     permissions:
       contents: write

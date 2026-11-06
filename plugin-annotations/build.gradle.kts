@@ -22,6 +22,7 @@ kotlin {
     androidNativeX64()
     androidNativeX86()
 
+    // Kotlin 2.2.20 and later compile the Apple klibs on every host, so the publications run on Linux.
     iosArm64()
     iosSimulatorArm64()
     iosX64()

@@ -176,17 +176,42 @@ jobs:
       ref: ${{ needs.prepare.outputs.sha }}
     secrets: inherit
 
+  docs-checks:
+    name: Docs checks
+    needs: [check, prepare]
+    if: needs.check.outputs.tagged != 'true'
+    uses: ./.github/workflows/docs.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+    secrets: inherit
+
+  release-tooling-checks:
+    name: Release tooling checks
+    needs: [check, prepare]
+    if: needs.check.outputs.tagged != 'true'
+    uses: ./.github/workflows/version-alignment.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+
+  benchmark:
+    name: Benchmark baseline
+    needs: [check, prepare]
+    if: needs.check.outputs.tagged != 'true'
+    uses: ./.github/workflows/benchmark-baseline.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+    secrets: inherit
+
   # The job builds every publication before it creates the tag. So a build failure leaves no tag, and a new run with a
   # fix makes the release branch again. After the tag, an upload failure needs no code change, and every run uploads the
   # tagged commit. The Space repository accepts a second upload of a version, so a rerun uploads every module again.
   publish:
     name: Tag and publish to Space
-    needs: [check, prepare, compiler-plugin-tests, gradle-tests]
-    # The tests skip a tagged commit, because the tag comes after them. Without a status function, a skipped test job
+    needs: [check, prepare, compiler-plugin-tests, gradle-tests, docs-checks, release-tooling-checks, benchmark]
+    # The checks skip a tagged commit, because the tag comes after them. Without a status function, a skipped check job
     # skips this job too.
     if: ${{ !cancelled() && !failure() && needs.check.outputs.published != 'true' }}
-    # Only a macOS host can publish the Apple annotation variants.
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     permissions:
       # The job creates the tag.
       contents: write
@@ -363,7 +388,7 @@ jobs:
             || echo "$CHANGELOG_BRANCH is deleted."
 
   # A merge with GITHUB_TOKEN doesn't start other workflows, so the job starts the docs deploy on main and waits for it.
-  docs:
+  docs-deploy:
     name: Deploy the docs website
     needs: [check, merge, main-changelog]
     if: ${{ !cancelled() && !failure() }}
