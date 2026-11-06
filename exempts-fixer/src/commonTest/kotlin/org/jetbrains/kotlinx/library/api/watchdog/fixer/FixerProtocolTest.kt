@@ -297,7 +297,6 @@ class FixerProtocolTest {
             setOf(
                 "EXEMPTION_WITHOUT_EXPLANATION",
                 "DSL_MARKER_NOOP_TYPE_POSITION",
-                "PUBLIC_TYPE_WITH_INTERNAL_API",
                 "PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY",
             ),
             unfixable.toSet(),

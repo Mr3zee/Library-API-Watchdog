@@ -499,6 +499,33 @@ public annotation class IntentionallyWrongDslMarkerTargetsForBackwardsCompatibil
 )
 
 /**
+ * Exempts the annotated declaration, parameter, or type usage from
+ * [Public types marked as internal API](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api).
+ * On a class, it covers the supertypes and the type parameter bounds, not the members.
+ *
+ * Apply it to a published declaration. Both fixes break its users: the removal of the type from
+ * the signature, and the internal API annotation on the declaration. A new declaration must not
+ * expose an internal API type. Backwards compatibility is the only accepted reason, so the
+ * annotation doesn't have an [ExemptionReason].
+ *
+ * @param description Optional context for the exemption.
+ */
+@Target(
+    AnnotationTarget.CLASS,
+    AnnotationTarget.TYPEALIAS,
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.PROPERTY,
+    AnnotationTarget.CONSTRUCTOR,
+    AnnotationTarget.VALUE_PARAMETER,
+    AnnotationTarget.TYPE_PARAMETER,
+    AnnotationTarget.TYPE,
+)
+@Retention(AnnotationRetention.BINARY)
+public annotation class IntentionallyExposedInternalApiForBackwardsCompatibility(
+    val description: String = "",
+)
+
+/**
  * Makes the annotated annotation class an internal API marker. Declarations annotated with the
  * marked annotation, and everything nested in them, are exempt from the public API checks.
  * `EXEMPTION_WITHOUT_EXPLANATION` and the DSL marker checks still apply to them. The marked

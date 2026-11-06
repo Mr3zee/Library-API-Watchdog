@@ -334,12 +334,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                     ),
                 )
                 add(SubpluginOption("exemptingExistingApi", lazy { collect.get().toString() }))
-                add(
-                    SubpluginOption(
-                        "publicTypeWithInternalApi",
-                        lazy { (extension.publicTypeWithInternalApi.get() && !collect.get()).toString() },
-                    ),
-                )
+                add(SubpluginOption("publicTypeWithInternalApi", lazy { extension.publicTypeWithInternalApi.get().toString() }))
                 add(
                     SubpluginOption(
                         "reportUndocumentedClassProperties",

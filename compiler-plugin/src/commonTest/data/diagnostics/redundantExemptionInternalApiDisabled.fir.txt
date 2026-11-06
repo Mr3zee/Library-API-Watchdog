@@ -1,0 +1,37 @@
+Module: lib
+FILE: internalTypes.kt
+    package lib.api
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/InternalAnnotationMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|)]) public final annotation class InternalLibApi : R|kotlin/Annotation| {
+        public constructor(): R|lib/api/InternalLibApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|lib/api/InternalLibApi|() public open class InternalType : R|kotlin/Any| {
+        public constructor(): R|lib/api/InternalType| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+Module: main
+FILE: exposure.kt
+    package consumer
+
+    public final fun unreported(): R|lib/api/InternalType| {
+        ^unreported R|lib/api/InternalType.InternalType|()
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final fun exempted(): R|lib/api/InternalType| {
+        ^exempted R|lib/api/InternalType.InternalType|()
+    }
+    public final fun exemptedParameter(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() value: R|lib/api/InternalType|): R|kotlin/Unit| {
+    }
+    public final fun exemptedNested(): R|kotlin/collections/List<@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|()  lib/api/InternalType>| {
+        ^exemptedNested R|kotlin/collections/emptyList|<R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|()  lib/api/InternalType|>()
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final class ExemptedSubtype : R|lib/api/InternalType| {
+        public constructor(): R|consumer/ExemptedSubtype| {
+            super<R|lib/api/InternalType|>()
+        }
+
+    }

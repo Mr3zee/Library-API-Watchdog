@@ -81,13 +81,13 @@ internal object ExemptionRegistry {
 
         WatchdogChecks.DSL_MARKER_NOOP_TARGET.name to fixable("IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility", TargetStrategy.ENCLOSING_ANNOTATION_CLASS, hasReasonParameter = false),
         WatchdogChecks.DSL_MARKER_WITHOUT_EXPLICIT_TARGETS.name to fixable("IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility", TargetStrategy.ENCLOSING_ANNOTATION_CLASS, hasReasonParameter = false),
+        WatchdogChecks.PUBLIC_TYPE_WITH_INTERNAL_API.name to fixable("IntentionallyExposedInternalApiForBackwardsCompatibility", TargetStrategy.REPORTED_DECLARATION, hasReasonParameter = false),
 
         // Documentation isn't a compatibility concern, so a placeholder KDoc replaces the exemption.
         WatchdogChecks.UNDOCUMENTED_PUBLIC_API.name to FixResolution.Fixable(PlaceholderKdocFix),
         WatchdogChecks.EXEMPTION_WITHOUT_EXPLANATION.name to FixResolution.Unfixable("The existing exemption needs a reason or description only its author can write"),
         WatchdogChecks.REDUNDANT_EXEMPTION.name to FixResolution.Fixable(RemoveAnnotationFix),
         WatchdogChecks.DSL_MARKER_NOOP_TYPE_POSITION.name to FixResolution.Unfixable("No exemption annotation exists. Move the DSL marker to an effective position or remove it"),
-        WatchdogChecks.PUBLIC_TYPE_WITH_INTERNAL_API.name to FixResolution.Unfixable("Remove the internal type from the public signature or mark the exposing declaration as internal API"),
         WatchdogChecks.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY.name to FixResolution.Unfixable("Declare the dependency with `api`, or exempt it on the `apiWatchdogExemptNonTransitive` configuration"),
     )
 

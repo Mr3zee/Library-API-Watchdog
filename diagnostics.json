@@ -584,7 +584,10 @@
       "message": [
         "The {0} `{1}` publicly exposes `{2}`, but that type is marked as internal API with `@{3}`. Remove",
         "the internal type from the public signature, or mark the exposing declaration with an internal API",
-        "annotation too."
+        "annotation too.",
+        "",
+        "If this is intended, apply `@IntentionallyExposedInternalApiForBackwardsCompatibility` to the declaration,",
+        "a parameter, or a type usage."
       ]
     },
     {

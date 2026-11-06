@@ -165,6 +165,7 @@ public open class WatchdogGradleExtension @Inject internal constructor(
 
     /**
      * Whether `PUBLIC_TYPE_WITH_INTERNAL_API` runs. Default is `true`. A violation is always an error.
+     * `@IntentionallyExposedInternalApiForBackwardsCompatibility` exempts a published declaration.
      *
      * See [Public types marked as internal API](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api)
      * for more details.

@@ -83,6 +83,7 @@ class ExemptionScannerTest {
             "IntentionallyDataClass",
             "IntentionallyDefaultFacadeName",
             "IntentionallyExhaustive",
+            "IntentionallyExposedInternalApiForBackwardsCompatibility",
             "IntentionallyFunctionTypeAlias",
             "IntentionallyInconsistentParameterOrder",
             "IntentionallyInlinedLogic",

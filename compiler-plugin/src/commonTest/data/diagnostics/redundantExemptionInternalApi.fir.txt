@@ -1,0 +1,117 @@
+Module: lib
+FILE: internalTypes.kt
+    package lib.api
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/InternalAnnotationMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|)]) public final annotation class InternalLibApi : R|kotlin/Annotation| {
+        public constructor(): R|lib/api/InternalLibApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|lib/api/InternalLibApi|() public open class InternalType : R|kotlin/Any| {
+        public constructor(): R|lib/api/InternalType| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN| [evaluated = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|]) public open class SupportedType : R|kotlin/Any| {
+        public constructor(): R|lib/api/SupportedType| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+Module: main
+FILE: exposure.kt
+    package consumer
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final fun neededReturn(): R|lib/api/InternalType| {
+        ^neededReturn R|lib/api/InternalType.InternalType|()
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final fun supportedReturn(): R|lib/api/SupportedType| {
+        ^supportedReturn R|lib/api/SupportedType.SupportedType|()
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|(description = String(Shipped in 1.0.) [evaluated = String(Shipped in 1.0.)]) public final val supportedProperty: R|lib/api/SupportedType| = R|lib/api/SupportedType.SupportedType|()
+        public get(): R|lib/api/SupportedType|
+    public final fun neededParameter(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() value: R|lib/api/InternalType|): R|kotlin/Unit| {
+    }
+    public final fun plainParameter(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() count: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun neededNested(): R|kotlin/collections/List<@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|()  lib/api/InternalType>| {
+        ^neededNested R|kotlin/collections/emptyList|<R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|()  lib/api/InternalType|>()
+    }
+    public final fun plainNested(): R|kotlin/collections/List<@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|()  kotlin/Int>| {
+        ^plainNested R|kotlin/collections/emptyList|<R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|()  kotlin/Int|>()
+    }
+    public final fun <@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() T : R|lib/api/InternalType|> neededBound(value: R|T|): R|kotlin/Unit| {
+    }
+    public final fun <@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() T : R|kotlin/Any|> plainBound(value: R|T|): R|kotlin/Unit| {
+    }
+    public final class NeededConstructorProperty : R|kotlin/Any| {
+        public constructor(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() value: R|lib/api/InternalType|, @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() count: R|kotlin/Int|): R|consumer/NeededConstructorProperty| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final val value: R|lib/api/InternalType| = R|<local>/value|
+            public get(): R|lib/api/InternalType|
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final val count: R|kotlin/Int| = R|<local>/count|
+            public get(): R|kotlin/Int|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final class NeededSubtype : R|lib/api/InternalType| {
+        public constructor(): R|consumer/NeededSubtype| {
+            super<R|lib/api/InternalType|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final class PlainSubtype : R|lib/api/SupportedType| {
+        public constructor(): R|consumer/PlainSubtype| {
+            super<R|lib/api/SupportedType|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final typealias NeededAlias = R|lib/api/InternalType|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final typealias PlainAlias = R|lib/api/SupportedType|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final class PlainHolder : R|kotlin/Any| {
+        public constructor(): R|consumer/PlainHolder| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final fun model(): R|lib/api/InternalType| {
+            ^model R|lib/api/InternalType.InternalType|()
+        }
+
+        public final class Nested : R|kotlin/Any| {
+            public constructor(): R|consumer/PlainHolder.Nested| {
+                super<R|kotlin/Any|>()
+            }
+
+            @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final fun deep(): R|lib/api/InternalType| {
+                ^deep R|lib/api/InternalType.InternalType|()
+            }
+
+        }
+
+    }
+    @R|lib/api/InternalLibApi|() @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final fun internalApiFunction(): R|lib/api/InternalType| {
+        ^internalApiFunction R|lib/api/InternalType.InternalType|()
+    }
+    @R|lib/api/InternalLibApi|() public final class InternalApiHolder : R|kotlin/Any| {
+        public constructor(): R|consumer/InternalApiHolder| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final fun member(): R|lib/api/InternalType| {
+            ^member R|lib/api/InternalType.InternalType|()
+        }
+
+    }
+    @R|kotlin/PublishedApi|() @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() internal final fun publishedHelper(): R|lib/api/InternalType| {
+        ^publishedHelper R|lib/api/InternalType.InternalType|()
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() internal final fun implementationHelper(): R|lib/api/InternalType| {
+        ^implementationHelper R|lib/api/InternalType.InternalType|()
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() private final fun privateHelper(): R|lib/api/InternalType| {
+        ^privateHelper R|lib/api/InternalType.InternalType|()
+    }

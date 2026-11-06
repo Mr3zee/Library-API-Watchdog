@@ -91,11 +91,18 @@ class WatchdogFirCheckers internal constructor(
                 .toggledBy(WatchdogDiagnostics.NULLABLE_BOOLEAN_PUBLIC_API),
         )
 
+        // The check runs in collection mode too, because `exemptExistingApi` adds its exemption.
+        private val internalApiTypeExposure = InternalApiTypeExposureChecker(collecting = exemptingExistingApi)
+
+        /** The exemptions of the check turned off with `publicTypeWithInternalApi` are redundant, as with `NONE`. */
+        private val internalApiTypeExposureDisabled: List<ExemptingChecker> =
+            listOf(internalApiTypeExposure).takeIf { enabled && !publicTypeWithInternalApiEnabled }.orEmpty()
+
         private val plainBasicDeclarationCheckers: Set<FirBasicDeclarationChecker> = basic.active + setOfNotNull(
             ExemptionExplanationChecker.declarationChecker
                 .takeIf { enabled && !exemptingExistingApi },
-            InternalApiTypeExposureChecker()
-                .takeIf { enabled && publicTypeWithInternalApiEnabled && !exemptingExistingApi },
+            internalApiTypeExposure
+                .takeIf { enabled && publicTypeWithInternalApiEnabled },
             dependencyExposure?.let { NonTransitiveDependencyChecker(session, it) }
                 ?.takeIf { enabled && !exemptingExistingApi },
         )
@@ -165,7 +172,7 @@ class WatchdogFirCheckers internal constructor(
             plainBasicDeclarationCheckers,
             functions.active,
             callables.active,
-            basic.disabled + functions.disabled + callables.disabled,
+            basic.disabled + internalApiTypeExposureDisabled + functions.disabled + callables.disabled,
         )
 
         override val classCheckers: Set<FirClassChecker> = (classes.active + setOfNotNull(
@@ -181,6 +188,7 @@ class WatchdogFirCheckers internal constructor(
                 typeAliasCheckers = typeAliases.active,
                 disabled = buildList {
                     addAll(basic.disabled)
+                    addAll(internalApiTypeExposureDisabled)
                     addAll(functions.disabled)
                     addAll(callables.disabled)
                     addAll(classes.disabled)
@@ -189,7 +197,7 @@ class WatchdogFirCheckers internal constructor(
                 enclosing = enclosingExemptionProbes,
                 recorder = recorder,
             ).takeIf { enabled },
-        )).wrapped(basic.disabled) + setOfNotNull(
+        )).wrapped(basic.disabled + internalApiTypeExposureDisabled) + setOfNotNull(
             recorder?.let(::ExpectActualPairRecorder)?.takeIf { enabled && exemptingExistingApi },
         )
 

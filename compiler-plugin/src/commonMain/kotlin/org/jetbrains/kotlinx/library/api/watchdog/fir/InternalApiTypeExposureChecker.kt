@@ -16,7 +16,10 @@ import org.jetbrains.kotlin.fir.types.abbreviatedType
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 
-internal class InternalApiTypeExposureChecker : PublicSignatureTypeChecker<InternalApiExposure>() {
+/** [collecting] reports the diagnostic as a warning, so the collection mode of `exemptExistingApi` compiles. */
+internal class InternalApiTypeExposureChecker(
+    private val collecting: Boolean = false,
+) : PublicSignatureTypeChecker<InternalApiExposure>(exemption = WatchdogClassIds.IntentionallyExposedInternalApiForBackwardsCompatibility) {
     context(context: CheckerContext)
     override fun isCheckedDeclaration(declaration: FirMemberDeclaration): Boolean =
         declaration.isWatchedPublicSourceApi()
@@ -49,7 +52,11 @@ internal class InternalApiTypeExposureChecker : PublicSignatureTypeChecker<Inter
         name: Name,
         violation: InternalApiExposure,
     ) {
-        val factory = WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API
+        val factory = if (collecting) {
+            WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API_COLLECTED
+        } else {
+            WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API
+        }
         reporter.reportOn(
             source = source,
             factory = factory,

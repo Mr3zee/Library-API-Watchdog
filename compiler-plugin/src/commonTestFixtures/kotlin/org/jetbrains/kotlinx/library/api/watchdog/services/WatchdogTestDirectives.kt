@@ -31,6 +31,16 @@ object WatchdogTestDirectives : SimpleDirectivesContainer() {
         description = "Annotation ignore rules in the form of the ignoreWhenAnnotated option",
     )
 
+    /** `// PUBLIC_TYPE_WITH_INTERNAL_API_DISABLED` */
+    val PUBLIC_TYPE_WITH_INTERNAL_API_DISABLED by directive(
+        description = "The always-error check is off (publicTypeWithInternalApi=false)",
+    )
+
+    /** `// EXEMPTING_EXISTING_API` */
+    val EXEMPTING_EXISTING_API by directive(
+        description = "The collection mode of exemptExistingApi (exemptingExistingApi=true)",
+    )
+
     /** One `<NAME>:<severity>` pair for each override. */
     val DIAGNOSTIC_SEVERITIES by stringDirective(
         description = "Severity overrides in the form of the diagnosticSeverity option",
@@ -68,6 +78,14 @@ class WatchdogOptionsConfigurator(testServices: TestServices) : EnvironmentConfi
 
         if (WatchdogTestDirectives.REPORT_UNDOCUMENTED_CLASS_PROPERTIES in module.directives) {
             configuration.put(WatchdogConfigurationKeys.REPORT_UNDOCUMENTED_CLASS_PROPERTIES, true)
+        }
+
+        if (WatchdogTestDirectives.PUBLIC_TYPE_WITH_INTERNAL_API_DISABLED in module.directives) {
+            configuration.put(WatchdogConfigurationKeys.PUBLIC_TYPE_WITH_INTERNAL_API_ENABLED, false)
+        }
+
+        if (WatchdogTestDirectives.EXEMPTING_EXISTING_API in module.directives) {
+            configuration.put(WatchdogConfigurationKeys.UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS, true)
         }
 
         val severities = module.directives[WatchdogTestDirectives.DIAGNOSTIC_SEVERITIES]

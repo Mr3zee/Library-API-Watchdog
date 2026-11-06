@@ -74,6 +74,7 @@ open class IsolatedCheckerBenchmark {
         "InlineFunctionLogicChecker",
         "MangledJvmNameChecker",
         "CompanionJvmExposureChecker",
+        "InternalApiTypeExposureChecker",
         "ExemptingCheckers",
         "RedundantExemptionProbingChecker",
     )

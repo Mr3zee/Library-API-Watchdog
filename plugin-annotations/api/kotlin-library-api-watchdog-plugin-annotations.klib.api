@@ -42,6 +42,13 @@ open annotation class org.jetbrains.kotlinx.library.api.watchdog/IntentionallyEx
         final fun <get-reason>(): org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason // org.jetbrains.kotlinx.library.api.watchdog/IntentionallyExhaustive.reason.<get-reason>|<get-reason>(){}[0]
 }
 
+open annotation class org.jetbrains.kotlinx.library.api.watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility : kotlin/Annotation { // org.jetbrains.kotlinx.library.api.watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|null[0]
+    constructor <init>(kotlin/String = ...) // org.jetbrains.kotlinx.library.api.watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility.<init>|<init>(kotlin.String){}[0]
+
+    final val description // org.jetbrains.kotlinx.library.api.watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility.description|{}description[0]
+        final fun <get-description>(): kotlin/String // org.jetbrains.kotlinx.library.api.watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility.description.<get-description>|<get-description>(){}[0]
+}
+
 open annotation class org.jetbrains.kotlinx.library.api.watchdog/IntentionallyFunctionTypeAlias : kotlin/Annotation { // org.jetbrains.kotlinx.library.api.watchdog/IntentionallyFunctionTypeAlias|null[0]
     constructor <init>(kotlin/String = ..., org.jetbrains.kotlinx.library.api.watchdog/ExemptionReason = ...) // org.jetbrains.kotlinx.library.api.watchdog/IntentionallyFunctionTypeAlias.<init>|<init>(kotlin.String;org.jetbrains.kotlinx.library.api.watchdog.ExemptionReason){}[0]
 

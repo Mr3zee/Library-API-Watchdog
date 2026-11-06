@@ -642,7 +642,9 @@ private fun ExemptionCandidate.covers(other: ExemptionCandidate): Boolean =
     other.rank > rank && (group == null || group === other.group) && classId == other.classId
 
 private val allExemptions: Set<ClassId> =
-    WatchdogClassIds.exemptionAnnotations + WatchdogClassIds.IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility
+    WatchdogClassIds.exemptionAnnotations +
+            WatchdogClassIds.IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility +
+            WatchdogClassIds.IntentionallyExposedInternalApiForBackwardsCompatibility
 
 context(context: CheckerContext)
 private fun FirDeclaration.exemptionCandidates(exemptions: Set<ClassId>): List<ExemptionCandidate> {

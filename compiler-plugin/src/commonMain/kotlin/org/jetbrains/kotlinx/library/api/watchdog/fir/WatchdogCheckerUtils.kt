@@ -101,12 +101,14 @@ internal object WatchdogClassIds {
     val IntentionallyWithoutJvmOverloads: ClassId = ClassId(annotationsPackage, Name.identifier("IntentionallyWithoutJvmOverloads"))
     val IntentionallyNonTransitiveDependency: ClassId = ClassId(annotationsPackage, Name.identifier("IntentionallyNonTransitiveDependency"))
     val IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility: ClassId = ClassId(annotationsPackage, Name.identifier("IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility"))
+    val IntentionallyExposedInternalApiForBackwardsCompatibility: ClassId = ClassId(annotationsPackage, Name.identifier("IntentionallyExposedInternalApiForBackwardsCompatibility"))
     val InternalAnnotationMarker: ClassId = ClassId(annotationsPackage, Name.identifier("InternalAnnotationMarker"))
 
     /**
      * The exemption annotations whose `reason` or `description` must explain the exemption.
-     * The name of [IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility] is its reason, so
-     * it isn't in the set.
+     * The name of [IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility] and of
+     * [IntentionallyExposedInternalApiForBackwardsCompatibility] is its reason, so they aren't in
+     * the set.
      */
     val exemptionAnnotations: Set<ClassId> = setOf(
         IntentionallyOpen,

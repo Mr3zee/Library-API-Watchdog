@@ -164,6 +164,18 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     /** Parameters: declaration kind, declaration name, internal type FQ name, annotation name. */
     val PUBLIC_TYPE_WITH_INTERNAL_API by error4<KtElement, String, Name, String, Name>()
 
+    /**
+     * [PUBLIC_TYPE_WITH_INTERNAL_API] as a warning, under the same name, for the collection mode of
+     * `exemptExistingApi`. The compilation then passes and the fixer reads the recorded diagnostic.
+     */
+    val PUBLIC_TYPE_WITH_INTERNAL_API_COLLECTED: KtDiagnosticFactory4<String, Name, String, Name> = KtDiagnosticFactory4(
+        PUBLIC_TYPE_WITH_INTERNAL_API.name,
+        Severity.WARNING,
+        SourceElementPositioningStrategies.DEFAULT,
+        KtElement::class,
+        getRendererFactory(),
+    )
+
     /** Parameters: the marker name, the no-op target name. */
     val DSL_MARKER_NOOP_TARGET by configurable2<Name, String>(KtExpression::class)
 
@@ -352,6 +364,13 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
         )
         map.put(
             diagnostic = WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API,
+            rendererA = STRING,
+            rendererB = NAME,
+            rendererC = STRING,
+            rendererD = NAME,
+        )
+        map.put(
+            diagnostic = WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API_COLLECTED,
             rendererA = STRING,
             rendererB = NAME,
             rendererC = STRING,

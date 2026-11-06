@@ -170,8 +170,11 @@ construction is also measured.
 Three diagnostics never fire on purpose, because they are always errors and would fail the
 measured compilation: `EXEMPTION_WITHOUT_EXPLANATION`,
 `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`, and `PUBLIC_TYPE_WITH_INTERNAL_API`. Their checkers
-still scan the whole corpus when the full plugin is loaded. `InternalApiTypeExposureChecker` is
-also omitted from the per-checker benchmark parameters.
+still scan the whole corpus when the full plugin is loaded. The one exposure of an internal API
+type carries `@IntentionallyExposedInternalApiForBackwardsCompatibility`, so
+`InternalApiTypeExposureChecker` and the redundancy probes read an exemption.
+`InternalApiTypeExposureChecker` has no whole-compilation mode, because the plugin options can't
+select an always-error check alone.
 
 After changing the templates, verify the corpus still exercises every benchmark-eligible checker:
 
@@ -185,9 +188,9 @@ It compiles the corpus with everything enabled and prints how often each diagnos
 
 For a checker that can safely report warnings, add a `CheckerSubject` to `CheckerSubjects`, the
 checker name to the `@Param` lists of both benchmarks, and a triggering (or at least scannable)
-shape to a corpus template, then run `benchmarkCorpusAudit`. Always-error diagnostics must not
-have a triggering corpus shape or a per-checker benchmark mode. The new checker is a new metric of
-the baseline check until the baseline is recorded again.
+shape to a corpus template, then run `benchmarkCorpusAudit`. An always-error diagnostic gets an
+isolated-only subject, no whole-compilation mode, and a corpus shape only under its exemption.
+The new checker is a new metric of the baseline check until the baseline is recorded again.
 
 ## Caveats
 

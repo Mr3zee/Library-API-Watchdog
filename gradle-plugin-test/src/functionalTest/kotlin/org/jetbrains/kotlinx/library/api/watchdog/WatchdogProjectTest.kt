@@ -311,6 +311,48 @@ class WatchdogProjectTest {
     }
 
     @Test
+    fun `internal API exposure is accepted when exempted for backwards compatibility`() {
+        val project = jvmProject { source(exemptedInternalApiExposureFile, "exemptedInternalApiExposure") }
+
+        project.build("build").assertNoWatchdogDiagnostics()
+    }
+
+    @Test
+    fun `internal API exposure exemption on a class doesn't cover its members`() {
+        val project = jvmProject { source(partiallyExemptedInternalApiExposureFile, "partiallyExempted") }
+
+        val result = project.buildAndFail("build")
+
+        result.assertErrors(PUBLIC_TYPE_WITH_INTERNAL_API)
+        result.assertOutputHas("The function `member` publicly exposes `test.InternalModel`")
+        result.assertOutputLacks("`Exempted` publicly exposes")
+        result.assertNotReported(REDUNDANT_EXEMPTION)
+    }
+
+    @Test
+    fun `unneeded internal API exposure exemption is redundant`() {
+        val project = jvmProject { source(redundantInternalApiExposureExemptionFile, "redundantExemption") }
+
+        val result = project.build("build")
+
+        result.assertWarnings(REDUNDANT_EXEMPTION)
+        result.assertOutputHas("The `@IntentionallyExposedInternalApiForBackwardsCompatibility` exemption is redundant.")
+    }
+
+    @Test
+    fun `internal API exposure exemption is redundant when the check is off`() {
+        val project = jvmProject {
+            apiWatchdog { publicTypeWithInternalApi = false }
+            source(exemptedInternalApiExposureFile, "exemptedInternalApiExposure")
+        }
+
+        val result = project.build("build")
+
+        result.assertNotReported(PUBLIC_TYPE_WITH_INTERNAL_API)
+        result.assertWarnings(REDUNDANT_EXEMPTION)
+    }
+
+    @Test
     fun `undocumented class properties are skipped by default`() {
         val result = holderProject(reportUndocumentedClassProperties = null).build("build")
 
@@ -1858,6 +1900,66 @@ private val internalApiExposureFile = """
 
         /** Leaks types governed by different internal API annotations. */
         public fun useModels(first: InternalModel, second: OtherInternalModel) {}
+    }
+""".trimIndent()
+
+@Language("kotlin")
+private val exemptedInternalApiExposureFile = """
+    /** Marks declarations that are public only for technical reasons. */
+    @InternalAnnotationMarker
+    @Target(AnnotationTarget.CLASS)
+    public annotation class InternalLibApi
+
+    @InternalLibApi
+    public open class InternalModel
+
+    /** Published entry points that keep an unsupported type in their signatures. */
+    public object Api {
+        /** Shipped in 1.0 with the unsupported return type. */
+        @IntentionallyExposedInternalApiForBackwardsCompatibility
+        public fun loadModel(): InternalModel = InternalModel()
+
+        /** Shipped in 1.0 with the unsupported parameter type. */
+        public fun useModel(@IntentionallyExposedInternalApiForBackwardsCompatibility model: InternalModel) {}
+
+        /** Shipped in 1.0 with the unsupported type argument. */
+        public fun listModels(): List<@IntentionallyExposedInternalApiForBackwardsCompatibility InternalModel> = emptyList()
+    }
+
+    /** A published subclass of an unsupported type. */
+    @IntentionallyExposedInternalApiForBackwardsCompatibility(description = "Shipped in 1.0.")
+    public class Special : InternalModel() {
+        /** Returns the unsupported type, with its own exemption. */
+        @IntentionallyExposedInternalApiForBackwardsCompatibility
+        public fun model(): InternalModel = InternalModel()
+    }
+""".trimIndent()
+
+@Language("kotlin")
+private val partiallyExemptedInternalApiExposureFile = """
+    /** Marks declarations that are public only for technical reasons. */
+    @InternalAnnotationMarker
+    @Target(AnnotationTarget.CLASS)
+    public annotation class InternalLibApi
+
+    @InternalLibApi
+    public open class InternalModel
+
+    /** A published subclass whose exemption covers the supertype only. */
+    @IntentionallyExposedInternalApiForBackwardsCompatibility
+    public class Exempted : InternalModel() {
+        /** Returns the unsupported type without an exemption of its own. */
+        public fun member(): InternalModel = InternalModel()
+    }
+""".trimIndent()
+
+@Language("kotlin")
+private val redundantInternalApiExposureExemptionFile = """
+    /** Supported entry points. */
+    public object Api {
+        /** Returns a supported type. */
+        @IntentionallyExposedInternalApiForBackwardsCompatibility
+        public fun supported(): String = ""
     }
 """.trimIndent()
 

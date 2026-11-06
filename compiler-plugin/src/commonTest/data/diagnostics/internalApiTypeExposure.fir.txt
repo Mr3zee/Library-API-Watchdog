@@ -139,3 +139,103 @@ FILE: exposure.kt
     public final fun supported(value: R|lib/api/SupportedType|): R|kotlin/collections/List<lib/api/SupportedType>| {
         ^supported R|kotlin/collections/listOf|<R|lib/api/SupportedType|>(R|<local>/value|)
     }
+FILE: exempted.kt
+    package consumer.exempted
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final fun exemptedReturn(): R|lib/api/InternalType| {
+        ^exemptedReturn R|lib/api/InternalType.InternalType|()
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|(description = String(Shipped in 1.0.) [evaluated = String(Shipped in 1.0.)]) public final val exemptedProperty: R|lib/api/InternalType| = R|lib/api/InternalType.InternalType|()
+        public get(): R|lib/api/InternalType|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final val R|lib/api/InternalType|.exemptedReceiver: R|kotlin/String|
+        public get(): R|kotlin/String| {
+            ^ String()
+        }
+    public final fun exemptedParameter(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() first: R|lib/api/InternalType|, second: R|lib/api/InternalType|): R|kotlin/Unit| {
+    }
+    context(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() value: R|lib/api/InternalType|)
+    public final fun exemptedContextParameter(): R|kotlin/Unit| {
+    }
+    public final fun exemptedTypeUsage(): R|kotlin/collections/List<@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|()  lib/api/InternalType>| {
+        ^exemptedTypeUsage R|kotlin/collections/emptyList|<R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|()  lib/api/InternalType|>()
+    }
+    public final fun <@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() T : R|lib/api/InternalType|> exemptedBound(value: R|T|): R|kotlin/Unit| {
+    }
+    public final class ExemptedConstructor : R|kotlin/Any| {
+        public constructor(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() value: R|lib/api/InternalType|): R|consumer/exempted/ExemptedConstructor| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final class ExemptedConstructorProperty : R|kotlin/Any| {
+        public constructor(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() value: R|lib/api/InternalType|, other: R|lib/api/InternalType|): R|consumer/exempted/ExemptedConstructorProperty| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final val value: R|lib/api/InternalType| = R|<local>/value|
+            public get(): R|lib/api/InternalType|
+
+        public final val other: R|lib/api/InternalType| = R|<local>/other|
+            public get(): R|lib/api/InternalType|
+
+    }
+    public final class ExemptedPropertyTarget : R|kotlin/Any| {
+        public constructor(value: R|lib/api/InternalType|): R|consumer/exempted/ExemptedPropertyTarget| {
+            super<R|kotlin/Any|>()
+        }
+
+        @PROPERTY:R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final val value: R|lib/api/InternalType| = R|<local>/value|
+            public get(): R|lib/api/InternalType|
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final class ExemptedSupertype : R|lib/api/InternalBase| {
+        public constructor(): R|consumer/exempted/ExemptedSupertype| {
+            super<R|lib/api/InternalBase|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final class ExemptedClassBound<T : R|lib/api/InternalType|> : R|kotlin/Any| {
+        public constructor<T : R|lib/api/InternalType|>(): R|consumer/exempted/ExemptedClassBound<T>| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final typealias ExemptedAlias = R|{lib/api/InternalAlias=} kotlin/String|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final class ExemptedHolder : R|lib/api/InternalBase| {
+        public constructor(): R|consumer/exempted/ExemptedHolder| {
+            super<R|lib/api/InternalBase|>()
+        }
+
+        public final fun member(value: R|lib/api/InternalType|): R|lib/api/InternalType| {
+            ^member R|<local>/value|
+        }
+
+        public final val property: R|lib/api/InternalType| = R|lib/api/InternalType.InternalType|()
+            public get(): R|lib/api/InternalType|
+
+        public final class Nested : R|lib/api/InternalBase| {
+            public constructor(): R|consumer/exempted/ExemptedHolder.Nested| {
+                super<R|lib/api/InternalBase|>()
+            }
+
+            public final fun deep(): R|lib/api/InternalType| {
+                ^deep R|lib/api/InternalType.InternalType|()
+            }
+
+        }
+
+    }
+    public final class UnexemptedHolder : R|kotlin/Any| {
+        public constructor(): R|consumer/exempted/UnexemptedHolder| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final fun member(): R|lib/api/InternalType| {
+            ^member R|lib/api/InternalType.InternalType|()
+        }
+
+        public final fun other(): R|lib/api/InternalType| {
+            ^other R|lib/api/InternalType.InternalType|()
+        }
+
+    }

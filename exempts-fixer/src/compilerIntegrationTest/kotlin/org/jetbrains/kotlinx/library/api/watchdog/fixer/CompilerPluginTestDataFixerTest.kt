@@ -292,6 +292,14 @@ private object WatchdogTestDirectives : SimpleDirectivesContainer() {
     val DIAGNOSTIC_SEVERITIES by stringDirective(
         description = "Severity overrides in the form of the diagnosticSeverity option",
     )
+
+    val PUBLIC_TYPE_WITH_INTERNAL_API_DISABLED by directive(
+        description = "The always-error check is off (publicTypeWithInternalApi=false)",
+    )
+
+    val EXEMPTING_EXISTING_API by directive(
+        description = "The collection mode of exemptExistingApi (exemptingExistingApi=true)",
+    )
 }
 
 private class WatchdogOptionsConfigurator(testServices: TestServices) : EnvironmentConfigurator(testServices) {
@@ -321,6 +329,12 @@ private class WatchdogOptionsConfigurator(testServices: TestServices) : Environm
                 WatchdogConfigurationKeys.DIAGNOSTIC_SEVERITIES,
                 severities.associate { it.substringBefore(':') to WatchdogSeverity.valueOf(it.substringAfter(':').uppercase()) },
             )
+        }
+        if (WatchdogTestDirectives.PUBLIC_TYPE_WITH_INTERNAL_API_DISABLED in module.directives) {
+            configuration.put(WatchdogConfigurationKeys.PUBLIC_TYPE_WITH_INTERNAL_API_ENABLED, false)
+        }
+        if (WatchdogTestDirectives.EXEMPTING_EXISTING_API in module.directives) {
+            configuration.put(WatchdogConfigurationKeys.UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS, true)
         }
     }
 }
