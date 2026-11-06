@@ -26,6 +26,7 @@ import org.jetbrains.kotlinx.library.api.watchdog.fir.ExpectExemptionRedundancyC
 import org.jetbrains.kotlinx.library.api.watchdog.fir.ExhaustiveApiChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.FunctionTypeAliasChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.InlineFunctionLogicChecker
+import org.jetbrains.kotlinx.library.api.watchdog.fir.InternalApiTypeExposureChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.JvmOverloadsChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.KotlinOnlyApiChecker
 import org.jetbrains.kotlinx.library.api.watchdog.fir.MangledJvmNameChecker
@@ -67,8 +68,8 @@ internal class CheckerEnvironment(
 )
 
 /**
- * Every checker except `InternalApiTypeExposureChecker`. Its diagnostic is always an error and the
- * corpus triggers it, so the corpus wouldn't compile.
+ * Every checker. `InternalApiTypeExposureChecker` is isolated only: its diagnostic is always an error,
+ * so the plugin options can't select it as a mode, and the corpus exempts its only triggering shape.
  */
 internal object CheckerSubjects {
     private val severities = WatchdogDiagnosticSeverities.DEFAULT
@@ -180,6 +181,10 @@ internal object CheckerSubjects {
             listOf("COMPANION_API_WITHOUT_JVM_STATIC", "COMPANION_PROPERTY_WITHOUT_STATIC_ACCESS"),
         ) { ofCallable(CompanionJvmExposureChecker(severities)) },
 
+        CheckerSubject("InternalApiTypeExposureChecker", emptyList(), isolatedOnly = true) {
+            ofBasic(InternalApiTypeExposureChecker())
+        },
+
         CheckerSubject("ExemptingCheckers", emptyList(), isolatedOnly = true) { environment ->
             exemptingCheckers(environment)
         },
@@ -188,8 +193,10 @@ internal object CheckerSubjects {
         },
     )
 
+    private val exemptionSubjects = setOf("ExemptingCheckers", "RedundantExemptionProbingChecker")
+
     private fun exemptingCheckers(environment: CheckerEnvironment): IsolatedCheckers {
-        val created = all.filter { !it.isolatedOnly }.map { it.createCheckers(environment).declarations }
+        val created = all.filter { it.name !in exemptionSubjects }.map { it.createCheckers(environment).declarations }
         fun <C : Any> exempting(select: (DeclarationCheckers) -> Set<C>): Set<C> =
             created.flatMapTo(linkedSetOf()) { checkers -> select(checkers).filter { it is ExemptingChecker } }
         return IsolatedCheckers(

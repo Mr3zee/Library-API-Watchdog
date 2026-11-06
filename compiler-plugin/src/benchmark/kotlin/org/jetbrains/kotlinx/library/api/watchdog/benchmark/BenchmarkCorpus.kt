@@ -52,17 +52,31 @@ internal object BenchmarkCorpus {
         appendLine("import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyBooleanParameter")
         appendLine("import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDataClass")
         appendLine("import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyExhaustive")
+        appendLine("import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyExposedInternalApiForBackwardsCompatibility")
         appendLine("import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyFunctionTypeAlias")
         appendLine("import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyMangledJvmName")
         appendLine("import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyMutableCollection")
         appendLine("import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyOpen")
         appendLine("import watchdog.bench.support.BenchDsl")
         appendLine("import watchdog.bench.support.BenchExperimental")
+        appendLine("import watchdog.bench.support.BenchInternal")
+        appendLine("import watchdog.bench.support.InternalRegistry")
         appendLine()
     }
 
     private fun supportFile(): String = """
         package watchdog.bench.support
+
+        import org.jetbrains.kotlinx.library.api.watchdog.InternalAnnotationMarker
+
+        /** Marks bench declarations that are public only for technical reasons. */
+        @InternalAnnotationMarker
+        @Retention(AnnotationRetention.BINARY)
+        public annotation class BenchInternal
+
+        /** Internal registry that a published signature still exposes. */
+        @BenchInternal
+        public class InternalRegistry
 
         /** Guards experimental bench API extension points. */
         @RequiresOptIn(message = "Experimental bench API.", level = RequiresOptIn.Level.WARNING)
@@ -110,8 +124,15 @@ internal object BenchmarkCorpus {
         public data class Extent$i(val width: Int, val height: Int)
     """.trimIndent() + "\n"
 
-    /** Triggers OPEN_API_WITHOUT_SUBCLASS_OPT_IN and SUBCLASS_OPT_IN_WITHOUT_MARKERS. */
+    /**
+     * Triggers OPEN_API_WITHOUT_SUBCLASS_OPT_IN and SUBCLASS_OPT_IN_WITHOUT_MARKERS. The exempted
+     * registry accessor gives `InternalApiTypeExposureChecker` and the redundancy probes an exemption to read.
+     */
     private fun servicesFile(i: Int): String = header(i, null) + """
+        /** Published accessor of the internal registry, kept for the 1.x users. */
+        @IntentionallyExposedInternalApiForBackwardsCompatibility
+        public fun registry$i(): InternalRegistry = InternalRegistry()
+
         /** Contract for key resolvers. External implementations must opt in. */
         @SubclassOptInRequired(BenchExperimental::class)
         public interface Resolver$i {
