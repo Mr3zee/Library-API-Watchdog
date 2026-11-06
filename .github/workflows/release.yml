@@ -78,17 +78,10 @@ jobs:
     name: Prepare the release pull request
     needs: check
     runs-on: ubuntu-latest
-    permissions:
-      # The job pushes the release branch. The GitHub API of the generated release notes also needs write access.
-      contents: write
-      # The label of the pull request is an issue label.
-      issues: write
-      pull-requests: write
     outputs:
       sha: ${{ steps.branch.outputs.sha }}
       pr: ${{ steps.pr.outputs.pr }}
     env:
-      GH_TOKEN: ${{ github.token }}
       TAGGED: ${{ needs.check.outputs.tagged }}
       NEXT_PART: ${{ needs.check.outputs.next_part }}
     steps:
@@ -102,10 +95,22 @@ jobs:
         with:
           node-version: '22'
 
+      # The Watchdog bot (CONTRIBUTING.md) pushes the branch and opens the pull request, because a pull request of
+      # GITHUB_TOKEN starts `pull_request` runs that wait for an approval. The test workflows skip the `pull_request`
+      # runs of the bot, and this workflow calls them itself.
+      - name: Get the token of the Watchdog bot
+        id: bot
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.WATCHDOG_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.WATCHDOG_BOT_PRIVATE_KEY }}
+
       # The release branch has one commit on top of the commit of this run. A new run for a later commit, for example
       # with a fix for a failed test, makes the branch again. After the tag exists, every run uses the tagged commit.
       - name: Create or reuse the release branch
         id: branch
+        env:
+          GH_TOKEN: ${{ steps.bot.outputs.token }}
         run: |
           if git fetch --quiet origin "+refs/heads/$RELEASE_BRANCH:refs/remotes/origin/$RELEASE_BRANCH" 2> /dev/null; then
             tip="$(git rev-parse "origin/$RELEASE_BRANCH")"
@@ -134,6 +139,7 @@ jobs:
       - name: Open or find the pull request
         id: pr
         env:
+          GH_TOKEN: ${{ steps.bot.outputs.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           pr="$(gh pr list --head "$RELEASE_BRANCH" --base "$GITHUB_REF_NAME" --state all --json number,state \
@@ -297,10 +303,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      issues: write
       pull-requests: write
     env:
-      GH_TOKEN: ${{ github.token }}
       CHANGELOG_BRANCH: release-changelog/${{ inputs.version }}
     steps:
       - name: Checkout repository
@@ -314,7 +318,17 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Open and squash-merge the pull request
+      - name: Get the token of the Watchdog bot
+        id: bot
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.WATCHDOG_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.WATCHDOG_BOT_PRIVATE_KEY }}
+
+      - name: Open or find the pull request
+        id: pr
+        env:
+          GH_TOKEN: ${{ steps.bot.outputs.token }}
         run: |
           pr="$(gh pr list --head "$CHANGELOG_BRANCH" --base main --state all --json number,state \
             --jq 'map(select(.state != "CLOSED")) | first | .number // empty')"
@@ -334,8 +348,16 @@ jobs:
               --body "The changelog section of the $LIBRARY_VERSION release from $GITHUB_REF_NAME."
             pr="$(gh pr view "$CHANGELOG_BRANCH" --json number --jq .number)"
           fi
-          if [[ "$(gh pr view "$pr" --json state --jq .state)" != MERGED ]]; then
-            gh pr merge "$pr" --squash --subject "Add the $LIBRARY_VERSION changelog section (#$pr)" --body ''
+          echo "pr=$pr" >> "$GITHUB_OUTPUT"
+
+      - name: Squash-merge the pull request
+        if: steps.pr.outputs.pr != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ steps.pr.outputs.pr }}
+        run: |
+          if [[ "$(gh pr view "$PR" --json state --jq .state)" != MERGED ]]; then
+            gh pr merge "$PR" --squash --subject "Add the $LIBRARY_VERSION changelog section (#$PR)" --body ''
           fi
           gh api --method DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$CHANGELOG_BRANCH" 2> /dev/null \
             || echo "$CHANGELOG_BRANCH is deleted."

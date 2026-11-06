@@ -54,6 +54,10 @@ npm run build                       # the site build, fails on a broken link or 
   run of `docs.yml` on `main` with the `version` input deploys the website. The `Release` workflow starts it.
 - A pull request doesn't edit `CHANGELOG.md`. The `Release` workflow writes the section of a release from the GitHub
   generated release notes, after the text of an optional `## Unreleased` section.
+- The `Dev kit update` and `Release` workflows push their branches and open their pull requests as the Watchdog bot, a
+  GitHub App (CONTRIBUTING.md, "Watchdog bot"). A pull request of `GITHUB_TOKEN` starts `pull_request` runs that wait
+  for an approval. The test workflows skip the `pull_request` runs of `WATCHDOG_BOT_LOGIN`. The merges use
+  `GITHUB_TOKEN`, so a merge of a bot pull request starts no workflow on `main`.
 - A project of an included build depends on the root build's projects, and the reverse, by coordinates
   (`"$group:<name>:$version"`), never with `project(...)`. Composite substitution resolves them.
 - `diagnostics.json` is the single source of truth for diagnostic texts. The build generates

@@ -7,7 +7,9 @@ name: Dev kit update
 # 2. Runs every test and the benchmark check on the commit.
 # 3. Squash-merges the pull request when all of them pass. When a check fails, the pull request stays open.
 #
-# A pull request of GITHUB_TOKEN doesn't start other workflows, so this workflow calls the test workflows itself.
+# The Watchdog bot (CONTRIBUTING.md) pushes the branch and opens the pull request, because a pull request of
+# GITHUB_TOKEN starts `pull_request` runs that wait for an approval. The test workflows skip the `pull_request` runs of
+# the bot, and this workflow calls them itself.
 on:
   schedule:
     - cron: '0 6 * * *'
@@ -24,30 +26,27 @@ permissions:
 env:
   UPDATE_BRANCH: devkit-update
   METADATA_URL: https://packages.jetbrains.team/maven/p/compiler-plugin-dev-kit/eap/org/jetbrains/kotlin/compiler/plugin/devkit/settings/maven-metadata.xml
-  # The author of a commit that GITHUB_TOKEN makes through the GitHub API.
-  BOT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
 
 jobs:
   update:
     name: Update the dev kit
     runs-on: ubuntu-latest
-    permissions:
-      # The job pushes the update branch.
-      contents: write
-      pull-requests: write
     outputs:
       version: ${{ steps.versions.outputs.latest }}
       sha: ${{ steps.branch.outputs.sha }}
       pr: ${{ steps.pr.outputs.pr }}
-    env:
-      GH_TOKEN: ${{ github.token }}
     steps:
-      # The branch check compares the update branch with main, so the job needs the history of both.
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
           ref: main
-          fetch-depth: 0
+
+      - name: Get the token of the Watchdog bot
+        id: bot
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.WATCHDOG_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.WATCHDOG_BOT_PRIVATE_KEY }}
 
       - name: Find the newest dev kit version
         id: versions
@@ -77,11 +76,14 @@ jobs:
         id: branch
         if: steps.versions.outputs.latest != ''
         env:
+          GH_TOKEN: ${{ steps.bot.outputs.token }}
+          BOT: ${{ steps.bot.outputs.app-slug }}[bot]
           LATEST: ${{ steps.versions.outputs.latest }}
         run: |
           pr="$(gh pr list --head "$UPDATE_BRANCH" --base main --state open --json number --jq 'first | .number // empty')"
           if [[ -n "$pr" ]]; then
-            others="$(git log --format=%ae "origin/main..origin/$UPDATE_BRANCH" | grep -vxF "$BOT_EMAIL" || true)"
+            others="$(gh api "repos/$GITHUB_REPOSITORY/compare/main...$UPDATE_BRANCH" \
+              --jq '.commits[] | .author.login // "an unknown user"' | grep -vxF "$BOT" || true)"
             if [[ -n "$others" ]]; then
               echo "::warning::$UPDATE_BRANCH has commits of other authors, so the workflow doesn't replace it. Merge or close pull request #$pr."
               exit 0
@@ -100,6 +102,7 @@ jobs:
         id: pr
         if: steps.branch.outputs.sha != ''
         env:
+          GH_TOKEN: ${{ steps.bot.outputs.token }}
           PR: ${{ steps.branch.outputs.pr }}
           CURRENT: ${{ steps.versions.outputs.current }}
           LATEST: ${{ steps.versions.outputs.latest }}

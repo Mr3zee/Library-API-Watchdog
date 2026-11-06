@@ -124,6 +124,33 @@ LIBRARY_VERSION=0.2.0-dev-1 ./gradlew assemble
 The override doesn't change any source file. The build ignores `-Pversion`.
 An empty or invalid value fails the build.
 
+## Watchdog bot
+
+The Dev kit update and the Release workflows push their branches and open their pull requests as the Watchdog bot, a
+GitHub App. A pull request of `GITHUB_TOKEN` starts `pull_request` runs that wait for an approval
+([Events that trigger workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request)).
+GitHub signs the commits of the bot, because the workflows make them through the GraphQL API.
+
+Register the app in **Settings > Developer settings > GitHub Apps** of the repository owner:
+
+| Setting | Value |
+|---|---|
+| Webhook | Off |
+| Repository permissions | Contents: read and write. Issues: read and write (the `release` label). Pull requests: read and write. |
+| Where can this GitHub App be installed? | Only on this account |
+
+Then generate a private key, install the app on this repository, and add the repository settings:
+
+| Name | Kind | Value |
+|---|---|---|
+| `WATCHDOG_BOT_CLIENT_ID` | Variable | The client ID of the app |
+| `WATCHDOG_BOT_PRIVATE_KEY` | Secret | The private key, the content of the `.pem` file |
+| `WATCHDOG_BOT_LOGIN` | Variable | The user of the app, `<app slug>[bot]`, for example `library-api-watchdog[bot]` |
+
+The Dev kit update and the Release workflows check the commit of their pull request themselves. So the compiler plugin
+tests, the Gradle tests, and the benchmark check skip a `pull_request` run of `WATCHDOG_BOT_LOGIN`. A push of another
+user to the branch runs them.
+
 ## Dependency updates
 
 Renovate reads [.github/renovate.json](.github/renovate.json).
@@ -137,7 +164,8 @@ Renovate skips the compiler-plugin-dev-kit. [Dev kit update](.github/workflows/d
 day at 6:00 Berlin time, or when you run the workflow:
 
 1. The workflow compares the `devkit` entry of the version catalog on `main` with the newest version in the Space
-   repository. When they differ, it commits the newest version to the `devkit-update` branch and opens a pull request.
+   repository. When they differ, it commits the newest version to the `devkit-update` branch and opens a pull request
+   as the [Watchdog bot](#watchdog-bot).
 2. The workflow runs the compiler plugin tests, the Gradle tests, and the benchmark check on that commit.
 3. When all of them pass, the workflow squash-merges the pull request. When one fails, the pull request stays open.
 
@@ -188,8 +216,8 @@ Run [Release](.github/workflows/release.yml) with the `version` input, for examp
 The workflow does these steps:
 
 1. Checks the version against the release tags, the version alignment, and the Space credentials.
-2. Pushes the `prepare-release/<version>` branch and opens a pull request into the branch of the run. The commit
-   adds the changelog section of the release. It also sets the next development version: the next minor version from
+2. Pushes the `prepare-release/<version>` branch and opens a pull request into the branch of the run, as the
+   [Watchdog bot](#watchdog-bot). The commit adds the changelog section of the release. It also sets the next development version: the next minor version from
    `main`, the next patch version from a maintenance branch.
 3. Runs the [compiler plugin tests](.github/workflows/compiler-plugin-tests.yml) and the
    [Gradle tests](.github/workflows/gradle-tests.yml) on the commit of the pull request.
@@ -203,9 +231,8 @@ The workflow does these steps:
 The release is the state of the branch when the run starts. The workflow doesn't handle a change of the target
 branch during the run.
 
-The workflow uses `GITHUB_TOKEN`, so the repository setting **Allow GitHub Actions to create and approve pull
-requests** must be on. A pull request or a merge with `GITHUB_TOKEN` doesn't start other workflows, so the release
-runs the tests and the docs deploy itself.
+The merges use `GITHUB_TOKEN`, and a merge with `GITHUB_TOKEN` doesn't start other workflows, so the release runs the
+docs deploy itself.
 
 ### Recovery
 

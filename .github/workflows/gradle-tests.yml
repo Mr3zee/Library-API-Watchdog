@@ -57,7 +57,10 @@ env:
   DEVELOCITY_CACHE_PUSH: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
 
 jobs:
+  # A `pull_request` run of the Watchdog bot skips the tests. The Dev kit update and the Release workflows call this
+  # workflow on the commit of their pull request.
   functional-test-matrix:
+    if: github.event_name != 'pull_request' || github.actor != vars.WATCHDOG_BOT_LOGIN
     runs-on: ubuntu-latest
     outputs:
       tasks: ${{ steps.matrix.outputs.tasks }}
@@ -88,6 +91,7 @@ jobs:
 
   library-checks:
     name: Unit tests and ABI checks
+    if: github.event_name != 'pull_request' || github.actor != vars.WATCHDOG_BOT_LOGIN
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -132,6 +136,7 @@ jobs:
           retention-days: 7
 
   exempts-fixer-tests:
+    if: github.event_name != 'pull_request' || github.actor != vars.WATCHDOG_BOT_LOGIN
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
