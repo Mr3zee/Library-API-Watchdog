@@ -1,6 +1,7 @@
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import {remarkCodeHike, type CodeHikeConfig} from 'codehike/mdx';
+import llmsTxt from './plugins/llms-txt.mjs';
 import {remarkCodeSamples} from './plugins/remark-code-samples.mjs';
 import {kotlinVersion, projectVersion, remarkProjectVersion} from './plugins/remark-project-version.mjs';
 import {variables} from './variables.mjs';
@@ -51,6 +52,8 @@ const config: Config = {
       } satisfies Preset.Options,
     ],
   ],
+
+  plugins: [llmsTxt],
 
   themeConfig: {
     image: 'img/logo.svg',

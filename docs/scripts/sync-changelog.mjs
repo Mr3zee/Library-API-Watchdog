@@ -24,6 +24,7 @@ if (args.length > 1 || args.some((arg) => arg !== '--check')) {
     '---',
     'title: Changelog',
     'slug: /changelog',
+    'description: The changes of each release.',
     'custom_edit_url: https://github.com/Mr3zee/Library-API-Watchdog/edit/main/CHANGELOG.md',
     // The release sections are GitHub generated notes. MDX can't parse a pull request title with `<` or `{`.
     'mdx:',

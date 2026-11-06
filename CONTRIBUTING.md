@@ -75,6 +75,10 @@ npm run check:diagnostic-exemptions # the exemption wording in the check pages m
 npm run build                       # the site build, fails on a broken link or anchor
 ```
 
+The build also writes the Markdown form of the site for LLM readers: `llms.txt` (the page index),
+`llms-full.txt` (every page), and a `.md` file next to each page. `docs/plugins/llms-txt.mjs`
+renders them from the page sources.
+
 Only a manual run of `docs.yml` on `main` deploys the site. The run needs the `version` input, a release version with
 a tag, and the code samples show that version. The Release workflow starts this run after each release.
 
