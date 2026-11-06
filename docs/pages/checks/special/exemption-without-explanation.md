@@ -50,8 +50,9 @@ public open class Widget
 
 - The check inspects declaration and type-usage exemptions, including both `expect` and `actual`
   usages.
-- `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` doesn't have a `reason` parameter and
-  doesn't need a `description`.
+- `@IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility` and
+  `@IntentionallyExposedInternalApiForBackwardsCompatibility` don't have a `reason` parameter and
+  don't need a `description`.
 
 ## See also
 

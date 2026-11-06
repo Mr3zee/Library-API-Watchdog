@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
+import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirMemberDeclaration
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
 import org.jetbrains.kotlin.fir.resolve.getContainingClassSymbol
@@ -16,10 +17,21 @@ import org.jetbrains.kotlin.fir.types.abbreviatedType
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 
-internal class InternalApiTypeExposureChecker : PublicSignatureTypeChecker<InternalApiExposure>() {
+/** [collecting] reports the diagnostic as a warning, so the collection mode of `exemptExistingApi` compiles. */
+internal class InternalApiTypeExposureChecker(
+    private val collecting: Boolean = false,
+) : PublicSignatureTypeChecker<InternalApiExposure>(exemption = WatchdogClassIds.IntentionallyExposedInternalApiForBackwardsCompatibility) {
+    override val enclosingClassExemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyExposedInternalApiForBackwardsCompatibility)
+
     context(context: CheckerContext)
     override fun isCheckedDeclaration(declaration: FirMemberDeclaration): Boolean =
         declaration.isWatchedPublicSourceApi()
+
+    /** An exemption on an enclosing class covers every member. */
+    context(context: CheckerContext)
+    override fun isDeclarationExempt(declaration: FirDeclaration): Boolean =
+        super.isDeclarationExempt(declaration) ||
+                enclosingClassHasAnnotation(WatchdogClassIds.IntentionallyExposedInternalApiForBackwardsCompatibility)
 
     /** The alias itself can carry the marker, so it isn't expanded here. */
     context(context: CheckerContext)
@@ -49,7 +61,11 @@ internal class InternalApiTypeExposureChecker : PublicSignatureTypeChecker<Inter
         name: Name,
         violation: InternalApiExposure,
     ) {
-        val factory = WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API
+        val factory = if (collecting) {
+            WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API_COLLECTED
+        } else {
+            WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API
+        }
         reporter.reportOn(
             source = source,
             factory = factory,

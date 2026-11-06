@@ -1,0 +1,54 @@
+Module: common
+FILE: common.kt
+    package foo.bar
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/InternalAnnotationMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|)]) public final annotation class LibInternal : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/LibInternal| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|foo/bar/LibInternal|() public final class Hidden : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Hidden| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final expect fun leak(): R|foo/bar/Hidden|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final expect fun exempted(): R|foo/bar/Hidden|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final expect fun plain(): R|kotlin/Int|
+    public final expect class Holder : R|kotlin/Any| {
+        public expect constructor(): R|foo/bar/Holder|
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final expect fun exemptedMember(): R|foo/bar/Hidden|
+
+        public final expect fun leakedMember(): R|foo/bar/Hidden|
+
+    }
+Module: jvm
+FILE: jvm.kt
+    package foo.bar
+
+    public final actual fun leak(): R|foo/bar/Hidden| {
+        ^leak R|foo/bar/Hidden.Hidden|()
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final actual fun exempted(): R|foo/bar/Hidden| {
+        ^exempted R|foo/bar/Hidden.Hidden|()
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final actual fun plain(): R|kotlin/Int| {
+        ^plain Int(0)
+    }
+    public final actual class Holder : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Holder| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final actual fun exemptedMember(): R|foo/bar/Hidden| {
+            ^exemptedMember R|foo/bar/Hidden.Hidden|()
+        }
+
+        public final actual fun leakedMember(): R|foo/bar/Hidden| {
+            ^leakedMember R|foo/bar/Hidden.Hidden|()
+        }
+
+    }

@@ -1081,6 +1081,69 @@ class ExemptionFixerTest {
     }
 
     @Test
+    fun `internal API exposure fix goes on the reported declaration without arguments`() {
+        @Language("kotlin")
+        val text = """
+            package com.example
+
+            /** Marks internal API. */
+            @InternalAnnotationMarker
+            public annotation class InternalApi
+
+            /** An internal type. */
+            @InternalApi
+            public open class Model
+
+            /** Returns a model. */
+            public fun load(): Model = Model()
+
+            /** Reads a model. */
+            public val current: Model = Model()
+
+            /** Takes two models. */
+            public fun store(first: Model, second: Model) {}
+
+            /** Holds a model. */
+            public class Holder(public val model: Model, count: Int)
+
+            /** Extends a model. */
+            public class Special : Model()
+
+            /** Names a model. */
+            public typealias Alias = Model
+
+            /** Bounds a model. */
+            public fun <T : Model> bound(value: T) {}
+        """.trimIndent()
+
+        val result = fix(
+            text,
+            diagnostic("PUBLIC_TYPE_WITH_INTERNAL_API", text, "Model = Model()\n\n/** Reads"),
+            diagnostic("PUBLIC_TYPE_WITH_INTERNAL_API", text, "Model = Model()\n\n/** Takes"),
+            diagnostic("PUBLIC_TYPE_WITH_INTERNAL_API", text, "Model, second"),
+            diagnostic("PUBLIC_TYPE_WITH_INTERNAL_API", text, "Model) {}\n\n/** Holds"),
+            diagnostic("PUBLIC_TYPE_WITH_INTERNAL_API", text, "Model, count"),
+            diagnostic("PUBLIC_TYPE_WITH_INTERNAL_API", text, "Model()\n\n/** Names"),
+            diagnostic("PUBLIC_TYPE_WITH_INTERNAL_API", text, "Model\n\n/** Bounds"),
+            diagnostic("PUBLIC_TYPE_WITH_INTERNAL_API", text, "Model> bound"),
+        )
+
+        val newText = result.newText!!
+        val annotation = "@IntentionallyExposedInternalApiForBackwardsCompatibility"
+        assertContains(newText, "$annotation\npublic fun load(): Model")
+        assertContains(newText, "$annotation\npublic val current: Model")
+        // Two parameters of one function get one annotation on the function.
+        assertEquals(1, newText.split("$annotation\npublic fun store(").size - 1)
+        assertContains(newText, "public class Holder($annotation public val model: Model, count: Int)")
+        assertContains(newText, "$annotation\npublic class Special : Model()")
+        assertContains(newText, "$annotation\npublic typealias Alias = Model")
+        assertContains(newText, "$annotation\npublic fun <T : Model> bound(value: T) {}")
+        assertContains(newText, "import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyExposedInternalApiForBackwardsCompatibility")
+        assertTrue(newText.lines().none { "ExemptionReason" in it })
+        assertEquals(emptyList(), result.skipped)
+    }
+
+    @Test
     fun `DslMarker fix carries no arguments`() {
         @Language("kotlin")
         val text = """

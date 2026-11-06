@@ -17,7 +17,6 @@ import org.jetbrains.kotlin.compiler.plugin.devkit.test.pluginUnderTestVersion
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.EXEMPTION_WITHOUT_EXPLANATION
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.OPEN_API_WITHOUT_SUBCLASS_OPT_IN
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
-import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PUBLIC_TYPE_WITH_INTERNAL_API
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.UNDOCUMENTED_PUBLIC_API
 import org.jetbrains.kotlinx.library.api.watchdog.Severity.ERROR
 import org.jetbrains.kotlinx.library.api.watchdog.Severity.NONE
@@ -398,9 +397,49 @@ class ExemptExistingApiTest {
 
         project.buildAndFail("compileKotlin").assertErrors(
             EXEMPTION_WITHOUT_EXPLANATION,
-            PUBLIC_TYPE_WITH_INTERNAL_API,
             PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY,
         )
+    }
+
+    @Test
+    fun `internal API exposure is exempted for backwards compatibility`() {
+        val project = jvmProject {
+            apiWatchdog { severity(NONE, UNDOCUMENTED_PUBLIC_API) }
+            source(internalApiExposureFile, "exposure", "test.consumer")
+        }
+
+        val updateResult = project.build(EXEMPT_TASK)
+
+        updateResult.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+        updateResult.assertOutputHas("backwards-compatibility exemption(s)")
+        val fixedText = project.file("src/main/kotlin/test/consumer/exposure.kt").readText()
+        val annotation = "@IntentionallyExposedInternalApiForBackwardsCompatibility"
+        assertContains(fixedText, "$annotation\n    public fun loadModel(): InternalModel")
+        assertContains(fixedText, "$annotation\n    public fun useModels(first: InternalModel, second: InternalModel)")
+        assertContains(fixedText, "public class Holder($annotation public val model: InternalModel)")
+        assertContains(fixedText, "$annotation\npublic class Special : InternalModel()")
+        assertFalse(fixedText.contains("$annotation("))
+        assertFalse(fixedText.contains("@IntentionallyExposedInternalApiForBackwardsCompatibility\n    public fun supported()"))
+
+        val report = project.report().readText()
+        assertReportGroup(report, "IntentionallyExposedInternalApiForBackwardsCompatibility", 4)
+
+        project.build("build").assertNoWatchdogDiagnostics()
+    }
+
+    @Test
+    fun `redundant internal API exposure exemption is removed`() {
+        val project = jvmProject {
+            apiWatchdog { severity(NONE, UNDOCUMENTED_PUBLIC_API) }
+            source(redundantInternalApiExemptionFile, "redundant", "test.consumer")
+        }
+
+        project.build(EXEMPT_TASK).assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
+
+        val fixedText = project.file("src/main/kotlin/test/consumer/redundant.kt").readText()
+        assertContains(fixedText, "@IntentionallyExposedInternalApiForBackwardsCompatibility\npublic fun needed(): InternalModel")
+        assertContains(fixedText, "/** Returns a supported type. */\npublic fun supported(): String")
+        project.build("build").assertNoWatchdogDiagnostics()
     }
 
     @Test
@@ -1045,11 +1084,58 @@ private val unfixableFile = """
     public fun processTag(tag: @ScopedDsl String) { }
 """.trimIndent()
 
-/** The always-error diagnostics, which the task skips. */
+/** The always-error diagnostics without an automatic fix, which the task skips. */
 @Language("kotlin")
 private val alwaysErrorDiagnosticsFile = """
     import test.model.ExternalModel
 
+    /** Existing open API with an invalid, unfixable exemption. */
+    @IntentionallyOpen
+    public open class ExistingOpenApi
+
+    /** Public entry points that expose non-transitive types. */
+    public object Api {
+        /** Leaks a type consumers can't obtain transitively. */
+        public fun loadExternalModel(): ExternalModel = ExternalModel()
+
+        /** Carries an invalid type-use exemption handled by the dedicated type checker. */
+        public fun loadMutable(): @IntentionallyMutableCollection MutableList<String> = mutableListOf()
+    }
+""".trimIndent()
+
+/** Internal API types in public signatures, which the task exempts for backwards compatibility. */
+@Language("kotlin")
+private val internalApiExposureFile = """
+    /** Marks declarations that are public only for technical reasons. */
+    @InternalAnnotationMarker
+    @Target(AnnotationTarget.CLASS)
+    public annotation class InternalLibApi
+
+    @InternalLibApi
+    public open class InternalModel
+
+    /** Public entry points that expose an unsupported type. */
+    public object Api {
+        /** Leaks an explicitly unsupported type. */
+        public fun loadModel(): InternalModel = InternalModel()
+
+        /** Leaks it twice in one signature. */
+        public fun useModels(first: InternalModel, second: InternalModel) {}
+
+        /** Exposes nothing unsupported. */
+        public fun supported(): String = ""
+    }
+
+    /** Holds an unsupported type in a constructor property. */
+    public class Holder(public val model: InternalModel)
+
+    /** Extends an unsupported type. */
+    public class Special : InternalModel()
+""".trimIndent()
+
+/** A needed and a redundant exemption of the internal API exposure check. */
+@Language("kotlin")
+private val redundantInternalApiExemptionFile = """
     /** Marks declarations that are public only for technical reasons. */
     @InternalAnnotationMarker
     @Target(AnnotationTarget.CLASS)
@@ -1058,21 +1144,13 @@ private val alwaysErrorDiagnosticsFile = """
     @InternalLibApi
     public class InternalModel
 
-    /** Existing open API with an invalid, unfixable exemption. */
-    @IntentionallyOpen
-    public open class ExistingOpenApi
+    /** Returns an unsupported type. */
+    @IntentionallyExposedInternalApiForBackwardsCompatibility
+    public fun needed(): InternalModel = InternalModel()
 
-    /** Public entry points that expose unsupported and non-transitive types. */
-    public object Api {
-        /** Leaks an explicitly unsupported type. */
-        public fun loadInternalModel(): InternalModel = InternalModel()
-
-        /** Leaks a type consumers can't obtain transitively. */
-        public fun loadExternalModel(): ExternalModel = ExternalModel()
-
-        /** Carries an invalid type-use exemption handled by the dedicated type checker. */
-        public fun loadMutable(): @IntentionallyMutableCollection MutableList<String> = mutableListOf()
-    }
+    /** Returns a supported type. */
+    @IntentionallyExposedInternalApiForBackwardsCompatibility
+    public fun supported(): String = ""
 """.trimIndent()
 
 @Language("kotlin")

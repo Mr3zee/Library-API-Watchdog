@@ -110,3 +110,76 @@ public class InternalApiContainer {
 }
 
 public fun supported(value: SupportedType): List<SupportedType> = listOf(value)
+
+// FILE: exempted.kt
+package consumer.exempted
+
+import lib.api.InternalAlias
+import lib.api.InternalBase
+import lib.api.InternalLibApi
+import lib.api.InternalType
+import org.jetbrains.kotlinx.library.api.watchdog.IntentionallyExposedInternalApiForBackwardsCompatibility
+
+// The exemption covers the declaration, a parameter, a type parameter, or a type usage.
+
+@IntentionallyExposedInternalApiForBackwardsCompatibility
+public fun exemptedReturn(): InternalType = InternalType()
+
+@IntentionallyExposedInternalApiForBackwardsCompatibility(description = "Shipped in 1.0.")
+public val exemptedProperty: InternalType = InternalType()
+
+@IntentionallyExposedInternalApiForBackwardsCompatibility
+public val InternalType.exemptedReceiver: String
+    get() = ""
+
+public fun exemptedParameter(
+    @IntentionallyExposedInternalApiForBackwardsCompatibility first: InternalType,
+    second: <!PUBLIC_TYPE_WITH_INTERNAL_API!>InternalType<!>,
+) {}
+
+context(@IntentionallyExposedInternalApiForBackwardsCompatibility value: InternalType)
+public fun exemptedContextParameter() {}
+
+public fun exemptedTypeUsage(): List<@IntentionallyExposedInternalApiForBackwardsCompatibility InternalType> = emptyList()
+
+public fun <@IntentionallyExposedInternalApiForBackwardsCompatibility T : InternalType> exemptedBound(value: T) {}
+
+public class ExemptedConstructor(@IntentionallyExposedInternalApiForBackwardsCompatibility value: InternalType)
+
+public class ExemptedConstructorProperty(
+    @IntentionallyExposedInternalApiForBackwardsCompatibility public val value: InternalType,
+    public val other: <!PUBLIC_TYPE_WITH_INTERNAL_API!>InternalType<!>,
+)
+
+public class ExemptedPropertyTarget(
+    @property:IntentionallyExposedInternalApiForBackwardsCompatibility public val value: InternalType,
+)
+
+@IntentionallyExposedInternalApiForBackwardsCompatibility
+public class ExemptedSupertype : InternalBase()
+
+@IntentionallyExposedInternalApiForBackwardsCompatibility
+public class ExemptedClassBound<T : InternalType>
+
+@IntentionallyExposedInternalApiForBackwardsCompatibility
+public typealias ExemptedAlias = InternalAlias
+
+// An exemption on a class covers every nested declaration.
+
+@IntentionallyExposedInternalApiForBackwardsCompatibility
+public class ExemptedHolder {
+    public fun member(value: InternalType): InternalType = value
+
+    public val property: InternalType = InternalType()
+
+    public class Nested : InternalBase() {
+        public fun deep(): InternalType = InternalType()
+    }
+}
+
+public class UnexemptedHolder {
+    @IntentionallyExposedInternalApiForBackwardsCompatibility
+    public fun member(): InternalType = InternalType()
+
+    public fun other(): <!PUBLIC_TYPE_WITH_INTERNAL_API!>InternalType<!> = InternalType()
+}

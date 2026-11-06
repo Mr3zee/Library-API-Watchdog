@@ -37,7 +37,8 @@ internal class FuzzProgram(val index: Int, val header: String, val files: List<F
  * - One declaration never carries the same exemption twice (declaration and parameter, parameter
  *   and its type), because the declaration-level one covers the others.
  * - A class-level exemption that covers the members (`MangledJvmName`, `KotlinOnlyApi`,
- *   `NonStaticCompanionApi`) never repeats inside the class.
+ *   `NonStaticCompanionApi`, `ExposedInternalApiForBackwardsCompatibility`) never repeats inside
+ *   the class.
  * - No `IntentionallyInconsistentParameterOrder`, because the check reads the exemptions of the
  *   other overloads too. No `IntentionallyNonTransitiveDependency`, because the check needs a
  *   dependency setup.
@@ -81,6 +82,10 @@ public annotation class Unstable
 @InternalAnnotationMarker
 public annotation class Hidden
 
+/** An internal API type, so a public signature with it needs `IntentionallyExposedInternalApiForBackwardsCompatibility`. */
+@Hidden
+public class HiddenType
+
 @JvmInline
 public value class Id(public val raw: Int)
 """
@@ -90,35 +95,45 @@ private object Pools {
         "IntentionallyOpen", "IntentionallyExhaustive", "IntentionallyUndocumented", "IntentionallyDataClass",
         "IntentionallyWithoutEquals", "IntentionallyWithoutHashCode", "IntentionallyWithoutToString",
         "IntentionallyWithoutEqualsHashCodeOrToString", "IntentionallyMangledJvmName", "IntentionallyKotlinOnlyApi",
-        "IntentionallyNonStaticCompanionApi",
+        "IntentionallyNonStaticCompanionApi", "IntentionallyExposedInternalApiForBackwardsCompatibility",
     )
     val annotationClassOnly = listOf("IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility")
-    val typeAlias = listOf("IntentionallyUndocumented", "IntentionallyFunctionTypeAlias")
+    val typeAlias = listOf("IntentionallyUndocumented", "IntentionallyFunctionTypeAlias", "IntentionallyExposedInternalApiForBackwardsCompatibility")
     val function = listOf(
         "IntentionallyUndocumented", "IntentionallyMutableCollection", "IntentionallyPairOrTriple",
         "IntentionallyBooleanParameter", "IntentionallyNullableBoolean", "IntentionallyRequiredParameterAfterOptional",
         "IntentionallyInlinedLogic", "IntentionallyMangledJvmName", "IntentionallyKotlinOnlyApi",
         "IntentionallyNonStaticCompanionApi", "IntentionallyWithoutJvmOverloads",
+        "IntentionallyExposedInternalApiForBackwardsCompatibility",
     )
     val property = listOf(
         "IntentionallyUndocumented", "IntentionallyMutableCollection", "IntentionallyPairOrTriple",
         "IntentionallyNullableBoolean", "IntentionallyInlinedLogic", "IntentionallyMangledJvmName",
-        "IntentionallyNonStaticCompanionApi",
+        "IntentionallyNonStaticCompanionApi", "IntentionallyExposedInternalApiForBackwardsCompatibility",
     )
     val constructor = listOf(
         "IntentionallyUndocumented", "IntentionallyMutableCollection", "IntentionallyPairOrTriple",
         "IntentionallyNullableBoolean", "IntentionallyRequiredParameterAfterOptional", "IntentionallyMangledJvmName",
-        "IntentionallyWithoutJvmOverloads",
+        "IntentionallyWithoutJvmOverloads", "IntentionallyExposedInternalApiForBackwardsCompatibility",
     )
     val valueParameter = listOf(
         "IntentionallyMutableCollection", "IntentionallyPairOrTriple", "IntentionallyBooleanParameter",
-        "IntentionallyNullableBoolean", "IntentionallyMangledJvmName",
+        "IntentionallyNullableBoolean", "IntentionallyMangledJvmName", "IntentionallyExposedInternalApiForBackwardsCompatibility",
     )
-    val typeParameter = listOf("IntentionallyMutableCollection", "IntentionallyPairOrTriple", "IntentionallyNullableBoolean")
+    val typeParameter = listOf(
+        "IntentionallyMutableCollection", "IntentionallyPairOrTriple", "IntentionallyNullableBoolean",
+        "IntentionallyExposedInternalApiForBackwardsCompatibility",
+    )
     val typeUsage = typeParameter
 
     /** The class-level exemptions that cover every member. */
-    val enclosing = setOf("IntentionallyMangledJvmName", "IntentionallyKotlinOnlyApi", "IntentionallyNonStaticCompanionApi")
+    val enclosing = setOf(
+        "IntentionallyMangledJvmName", "IntentionallyKotlinOnlyApi", "IntentionallyNonStaticCompanionApi",
+        "IntentionallyExposedInternalApiForBackwardsCompatibility",
+    )
+
+    /** The exemptions without a `reason` parameter. */
+    val withoutReason = setOf("IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility", "IntentionallyExposedInternalApiForBackwardsCompatibility")
 }
 
 /** A type with an expression of that type. */
@@ -135,6 +150,8 @@ private val simpleTypes = listOf(
     TypeSpec("Pair<Int, Int>", "0 to 0"),
     TypeSpec("Triple<Int, Int, Int>?", "null"),
     TypeSpec("Id", "Id(0)"),
+    TypeSpec("HiddenType", "HiddenType()"),
+    TypeSpec("HiddenType?", "null"),
     TypeSpec("() -> Unit", "{}"),
     TypeSpec("suspend () -> Int", "{ 0 }"),
     TypeSpec("Int.() -> Int", "{ this }"),
@@ -144,7 +161,7 @@ private val simpleTypes = listOf(
 /** The element types that a type-usage exemption can annotate inside `List<...>`. */
 private val innerTypes = listOf(
     TypeSpec("MutableSet<Int>", ""), TypeSpec("Set<Int>", ""), TypeSpec("Pair<Int, Int>", ""),
-    TypeSpec("Boolean?", ""), TypeSpec("Int", ""), TypeSpec("MutableList<String>?", ""),
+    TypeSpec("Boolean?", ""), TypeSpec("Int", ""), TypeSpec("MutableList<String>?", ""), TypeSpec("HiddenType", ""),
 )
 
 private enum class ClassKind(val keyword: String) {
@@ -167,7 +184,7 @@ private class FileBuilder(val name: String) {
 
     fun exemption(annotation: String, siteTarget: String = "") {
         val start = text.length
-        val args = if (annotation == "IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility") "" else REASON
+        val args = if (annotation in Pools.withoutReason) "" else REASON
         text.append('@').append(siteTarget).append(annotation).append(args)
         exemptions += FuzzExemption(name, annotation, start, text.length)
     }
@@ -336,7 +353,7 @@ private class ProgramBuilder(private val random: Random, private val packageName
         raw("<")
         val exemption = pickExemptions(Pools.typeParameter, forbidden, max = 1).firstOrNull()
         if (exemption != null) { exemption(exemption); raw(" ") }
-        raw("T : ${pick(listOf("MutableCollection<Int>", "Collection<Int>", "Any", "Pair<Int, Int>"))}>")
+        raw("T : ${pick(listOf("MutableCollection<Int>", "Collection<Int>", "Any", "Pair<Int, Int>", "HiddenType"))}>")
     }
 
     /** Primary constructor parameters, each one a property or a plain parameter. */
@@ -444,13 +461,13 @@ private class ProgramBuilder(private val random: Random, private val packageName
             val exemption = pickExemptions(Pools.typeParameter, declarationForbidden, max = 1).firstOrNull()
             if (exemption != null) { exemption(exemption); raw(" ") }
             if (reified) raw("reified ")
-            raw("T : ${pick(listOf("MutableCollection<Int>", "Collection<Int>", "Any"))}> ")
+            raw("T : ${pick(listOf("MutableCollection<Int>", "Collection<Int>", "Any", "HiddenType"))}> ")
             typeParameterUsed = true
         }
         if (chance(10)) {
             val exemption = (Pools.typeUsage - declarationForbidden).takeIf { chance(50) }?.let(::pick)
             if (exemption != null) { exemption(exemption); raw(" ") }
-            raw(pick(listOf("MutableList<Int>", "List<Int>", "Int")) + ".")
+            raw(pick(listOf("MutableList<Int>", "List<Int>", "Int", "HiddenType")) + ".")
         }
         raw(functionName)
         val typeParameterArgument = parameters(declarationForbidden, typeParameterUsed, forceDefault = jvmOverloads, inline = isInline)

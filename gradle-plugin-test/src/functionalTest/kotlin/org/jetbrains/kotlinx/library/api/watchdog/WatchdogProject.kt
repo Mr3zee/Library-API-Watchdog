@@ -523,6 +523,7 @@ private val watchdogAnnotationImports: List<String> = listOf(
     "IntentionallyWithoutJvmOverloads",
     "IntentionallyNonTransitiveDependency",
     "IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility",
+    "IntentionallyExposedInternalApiForBackwardsCompatibility",
     "InternalAnnotationMarker",
 ).map { "$WATCHDOG_PACKAGE.$it" }
 
