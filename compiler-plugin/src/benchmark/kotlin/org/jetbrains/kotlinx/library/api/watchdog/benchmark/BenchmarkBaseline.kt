@@ -62,8 +62,8 @@ fun main(args: Array<String>) {
         retriesLeft--
         println()
         val regressed = comparison.regressions.mapTo(linkedSetOf()) { it.subject }
-        println("Regressions in $regressed. Measuring them again.")
-        val again = runner.measureSubjects(regressed)
+        println("Regressions in $regressed. Measuring them again in a new JVM.")
+        val again = runner.measureSubjects(regressed, newJvm = true)
         measured = measured.lowerOf(again)
         comparison = Comparison(baseline, measured)
     }
@@ -236,31 +236,32 @@ internal class Tolerances(val bytes: Double) {
 /**
  * Runs the isolated checker benchmark in this JVM, without JMH forks. The corpus compiles once, and
  * every checker sweeps the same FIR. Allocation per operation doesn't change between the iterations
- * of one JVM, so a fork for each checker adds a corpus compilation and no precision.
+ * of one JVM, so a fork for each checker adds a corpus compilation and no precision. It changes by up
+ * to 5% between JVMs, so the second measurement of a regressed subject runs in a JMH fork.
  */
 internal class BaselineRunner(private val settings: RunSettings) {
     private val isolatedSubjects: List<String> = listOf("none") + CheckerSubjects.all.map { it.name }
 
     fun measureAll(): Measured = measureSubjects(isolatedSubjects.mapTo(linkedSetOf()) { Measured.ISOLATED_PREFIX + it })
 
-    fun measureSubjects(subjects: Set<String>): Measured {
+    fun measureSubjects(subjects: Set<String>, newJvm: Boolean = false): Measured {
         val values = linkedMapOf<String, Double>()
         val checkers = subjects.filter { it.startsWith(Measured.ISOLATED_PREFIX) }
             .map { it.removePrefix(Measured.ISOLATED_PREFIX) }
         if (checkers.isNotEmpty()) {
-            val results = run("IsolatedCheckerBenchmark.sweepCorpus", "checker", checkers)
+            val results = run("IsolatedCheckerBenchmark.sweepCorpus", "checker", checkers, forks = if (newJvm) 1 else 0)
             values += collect(results, "checker", Measured.ISOLATED_PREFIX)
         }
         return Measured(values)
     }
 
-    private fun run(benchmark: String, parameter: String, parameterValues: List<String>): Collection<RunResult> {
+    private fun run(benchmark: String, parameter: String, parameterValues: List<String>, forks: Int): Collection<RunResult> {
         val iterationTime = TimeValue.seconds(settings.iterationSeconds.toLong())
         val options = OptionsBuilder()
             .include(".*\\.$benchmark$")
             .param(parameter, *parameterValues.toTypedArray())
             .param("corpusFiles", settings.corpusFiles.toString())
-            .forks(0)
+            .forks(forks)
             .warmupIterations(settings.warmupIterations)
             .warmupTime(iterationTime)
             .measurementIterations(settings.measurementIterations)

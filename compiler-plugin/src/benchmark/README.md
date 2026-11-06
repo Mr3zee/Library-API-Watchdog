@@ -116,14 +116,15 @@ The metrics of each subject:
 
 The time of one operation changes by up to 50% between GitHub runners of the same machine profile,
 so the baseline file holds `bytes` only. The summary shows `ms` for information. The allocation of one
-operation is the same in every iteration of one JVM, and changes by up to 4% between JVMs.
+operation is the same in every iteration of one JVM, and changes by up to 5% between JVMs.
 
 The check fails in two cases:
 
 - A measured allocation is above the baseline value plus the tolerance.
 - The baseline has a subject that the run didn't measure.
 
-When a subject regresses, the task measures it a second time and uses the lower value. A subject
+When a subject regresses, the task measures it a second time in a new JVM and uses the lower value,
+because the allocation of one operation changes by up to 5% between JVMs. A subject
 without a baseline value passes. The task writes a Markdown summary to
 `build/reports/benchmark-baseline/summary.md`, and the workflow shows it on the job summary page.
 On GitHub Actions, the task also reports each regression as an error annotation of the run.
