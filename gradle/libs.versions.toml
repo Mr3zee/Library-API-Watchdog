@@ -19,7 +19,7 @@ develocity = "4.3.3"
 buildconfig = "6.0.10"
 # https://developer.android.com/build/releases/gradle-plugin
 agp8 = "8.13.2"
-agp9 = "9.2.1"
+agp9 = "9.4.1"
 commonmark = "0.24.0"
 jsoup = "1.23.2"
 # https://github.com/SeleniumHQ/selenium
