@@ -72,28 +72,8 @@ FILE: exposure.kt
     }
     @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final typealias NeededAlias = R|lib/api/InternalType|
     @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final typealias PlainAlias = R|lib/api/SupportedType|
-    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final class NeededHolder : R|kotlin/Any| {
-        public constructor(): R|consumer/NeededHolder| {
-            super<R|kotlin/Any|>()
-        }
-
-        public final fun model(): R|lib/api/InternalType| {
-            ^model R|lib/api/InternalType.InternalType|()
-        }
-
-    }
     @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final class PlainHolder : R|kotlin/Any| {
         public constructor(): R|consumer/PlainHolder| {
-            super<R|kotlin/Any|>()
-        }
-
-        public final fun count(): R|kotlin/Int| {
-            ^count Int(1)
-        }
-
-    }
-    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final class CoveredHolder : R|kotlin/Any| {
-        public constructor(): R|consumer/CoveredHolder| {
             super<R|kotlin/Any|>()
         }
 
@@ -102,7 +82,7 @@ FILE: exposure.kt
         }
 
         public final class Nested : R|kotlin/Any| {
-            public constructor(): R|consumer/CoveredHolder.Nested| {
+            public constructor(): R|consumer/PlainHolder.Nested| {
                 super<R|kotlin/Any|>()
             }
 

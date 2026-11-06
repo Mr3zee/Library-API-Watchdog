@@ -67,25 +67,15 @@ public typealias NeededAlias = InternalType
 <!REDUNDANT_EXEMPTION!>@IntentionallyExposedInternalApiForBackwardsCompatibility<!>
 public typealias PlainAlias = SupportedType
 
-// A class exemption that a member needs isn't redundant. A member's own copy is.
-
-@IntentionallyExposedInternalApiForBackwardsCompatibility
-public class NeededHolder {
-    public fun model(): InternalType = InternalType()
-}
+// A class exemption doesn't cover the members, so a member needs its own.
 
 <!REDUNDANT_EXEMPTION!>@IntentionallyExposedInternalApiForBackwardsCompatibility<!>
 public class PlainHolder {
-    public fun count(): Int = 1
-}
-
-@IntentionallyExposedInternalApiForBackwardsCompatibility
-public class CoveredHolder {
-    <!REDUNDANT_EXEMPTION!>@IntentionallyExposedInternalApiForBackwardsCompatibility<!>
+    @IntentionallyExposedInternalApiForBackwardsCompatibility
     public fun model(): InternalType = InternalType()
 
     public class Nested {
-        <!REDUNDANT_EXEMPTION!>@IntentionallyExposedInternalApiForBackwardsCompatibility<!>
+        @IntentionallyExposedInternalApiForBackwardsCompatibility
         public fun deep(): InternalType = InternalType()
     }
 }

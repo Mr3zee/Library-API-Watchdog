@@ -62,7 +62,7 @@ public fun loadModel(): Model = Model()
 
 <!-- diagnostic-exemption: PUBLIC_TYPE_WITH_INTERNAL_API -->
 If this is intended, apply `@IntentionallyExposedInternalApiForBackwardsCompatibility` to the declaration,
-an enclosing class, a parameter, or a type usage.
+a parameter, or a type usage.
 
 Both fixes break the users of a published declaration. One removes the type from the signature.
 The other adds an internal API annotation with an opt-in requirement. The exemption doesn't have a
@@ -89,8 +89,9 @@ public class InternalModel
 public fun loadModel(): InternalModel = InternalModel()
 ```
 
-On a class, the annotation covers every nested declaration. The [`exemptExistingApi`](../../existing-libs.md)
-task adds the annotation to the reported declaration.
+On a class, the annotation covers the supertypes and the type parameter bounds, not the members.
+Each member that exposes an internal type needs its own annotation, so a new member stays checked.
+The [`exemptExistingApi`](../../existing-libs.md) task adds the annotation to the reported declaration.
 
 ## Configuration
 

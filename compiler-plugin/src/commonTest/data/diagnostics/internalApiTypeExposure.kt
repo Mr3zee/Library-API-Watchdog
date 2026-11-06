@@ -164,16 +164,16 @@ public class ExemptedClassBound<T : InternalType>
 @IntentionallyExposedInternalApiForBackwardsCompatibility
 public typealias ExemptedAlias = InternalAlias
 
-// An exemption on a class covers every nested declaration.
+// An exemption on a class covers its own signature only, not the members.
 
 @IntentionallyExposedInternalApiForBackwardsCompatibility
-public class ExemptedHolder {
-    public fun member(value: InternalType): InternalType = value
+public class ExemptedHolder : InternalBase() {
+    public fun member(value: <!PUBLIC_TYPE_WITH_INTERNAL_API!>InternalType<!>): <!PUBLIC_TYPE_WITH_INTERNAL_API!>InternalType<!> = value
 
-    public val property: InternalType = InternalType()
+    public val property: <!PUBLIC_TYPE_WITH_INTERNAL_API!>InternalType<!> = InternalType()
 
-    public class Nested : InternalBase() {
-        public fun deep(): InternalType = InternalType()
+    public class Nested : <!PUBLIC_TYPE_WITH_INTERNAL_API!>InternalBase<!>() {
+        public fun deep(): <!PUBLIC_TYPE_WITH_INTERNAL_API!>InternalType<!> = InternalType()
     }
 }
 

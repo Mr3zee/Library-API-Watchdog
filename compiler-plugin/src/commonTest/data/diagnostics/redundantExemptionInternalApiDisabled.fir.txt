@@ -8,7 +8,7 @@ FILE: internalTypes.kt
         }
 
     }
-    @R|lib/api/InternalLibApi|() public final class InternalType : R|kotlin/Any| {
+    @R|lib/api/InternalLibApi|() public open class InternalType : R|kotlin/Any| {
         public constructor(): R|lib/api/InternalType| {
             super<R|kotlin/Any|>()
         }
@@ -29,13 +29,9 @@ FILE: exposure.kt
     public final fun exemptedNested(): R|kotlin/collections/List<@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|()  lib/api/InternalType>| {
         ^exemptedNested R|kotlin/collections/emptyList|<R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|()  lib/api/InternalType|>()
     }
-    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final class ExemptedHolder : R|kotlin/Any| {
-        public constructor(): R|consumer/ExemptedHolder| {
-            super<R|kotlin/Any|>()
-        }
-
-        public final fun model(): R|lib/api/InternalType| {
-            ^model R|lib/api/InternalType.InternalType|()
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final class ExemptedSubtype : R|lib/api/InternalType| {
+        public constructor(): R|consumer/ExemptedSubtype| {
+            super<R|lib/api/InternalType|>()
         }
 
     }

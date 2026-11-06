@@ -201,9 +201,9 @@ FILE: exempted.kt
 
     }
     @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final typealias ExemptedAlias = R|{lib/api/InternalAlias=} kotlin/String|
-    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final class ExemptedHolder : R|kotlin/Any| {
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final class ExemptedHolder : R|lib/api/InternalBase| {
         public constructor(): R|consumer/exempted/ExemptedHolder| {
-            super<R|kotlin/Any|>()
+            super<R|lib/api/InternalBase|>()
         }
 
         public final fun member(value: R|lib/api/InternalType|): R|lib/api/InternalType| {

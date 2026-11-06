@@ -37,8 +37,7 @@ internal class FuzzProgram(val index: Int, val header: String, val files: List<F
  * - One declaration never carries the same exemption twice (declaration and parameter, parameter
  *   and its type), because the declaration-level one covers the others.
  * - A class-level exemption that covers the members (`MangledJvmName`, `KotlinOnlyApi`,
- *   `NonStaticCompanionApi`, `ExposedInternalApiForBackwardsCompatibility`) never repeats inside
- *   the class.
+ *   `NonStaticCompanionApi`) never repeats inside the class.
  * - No `IntentionallyInconsistentParameterOrder`, because the check reads the exemptions of the
  *   other overloads too. No `IntentionallyNonTransitiveDependency`, because the check needs a
  *   dependency setup.
@@ -127,10 +126,7 @@ private object Pools {
     val typeUsage = typeParameter
 
     /** The class-level exemptions that cover every member. */
-    val enclosing = setOf(
-        "IntentionallyMangledJvmName", "IntentionallyKotlinOnlyApi", "IntentionallyNonStaticCompanionApi",
-        "IntentionallyExposedInternalApiForBackwardsCompatibility",
-    )
+    val enclosing = setOf("IntentionallyMangledJvmName", "IntentionallyKotlinOnlyApi", "IntentionallyNonStaticCompanionApi")
 
     /** The exemptions without a `reason` parameter. */
     val withoutReason = setOf("IntentionallyWrongDslMarkerTargetsForBackwardsCompatibility", "IntentionallyExposedInternalApiForBackwardsCompatibility")

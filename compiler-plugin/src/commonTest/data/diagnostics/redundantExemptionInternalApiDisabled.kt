@@ -16,7 +16,7 @@ import org.jetbrains.kotlinx.library.api.watchdog.InternalAnnotationMarker
 public annotation class InternalLibApi
 
 @InternalLibApi
-public class InternalType
+public open class InternalType
 
 // MODULE: main(lib)
 // FILE: exposure.kt
@@ -35,6 +35,4 @@ public fun exemptedParameter(<!REDUNDANT_EXEMPTION!>@IntentionallyExposedInterna
 public fun exemptedNested(): List<<!REDUNDANT_EXEMPTION!>@IntentionallyExposedInternalApiForBackwardsCompatibility<!> InternalType> = emptyList()
 
 <!REDUNDANT_EXEMPTION!>@IntentionallyExposedInternalApiForBackwardsCompatibility<!>
-public class ExemptedHolder {
-    public fun model(): InternalType = InternalType()
-}
+public class ExemptedSubtype : InternalType()

@@ -501,7 +501,7 @@ public annotation class IntentionallyWrongDslMarkerTargetsForBackwardsCompatibil
 /**
  * Exempts the annotated declaration, parameter, or type usage from
  * [Public types marked as internal API](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api).
- * On a class, the annotation covers every nested declaration.
+ * On a class, it covers the supertypes and the type parameter bounds, not the members.
  *
  * Apply it to a published declaration. Both fixes break its users: the removal of the type from
  * the signature, and the internal API annotation on the declaration. A new declaration must not

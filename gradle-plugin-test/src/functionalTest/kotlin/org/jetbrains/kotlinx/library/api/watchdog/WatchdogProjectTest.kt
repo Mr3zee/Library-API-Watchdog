@@ -318,14 +318,15 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun `internal API exposure exemption on a class covers only that class`() {
+    fun `internal API exposure exemption on a class doesn't cover its members`() {
         val project = jvmProject { source(partiallyExemptedInternalApiExposureFile, "partiallyExempted") }
 
         val result = project.buildAndFail("build")
 
         result.assertErrors(PUBLIC_TYPE_WITH_INTERNAL_API)
-        result.assertOutputHas("The function `loadModel` publicly exposes `test.InternalModel`")
-        result.assertOutputLacks("`member` publicly exposes")
+        result.assertOutputHas("The function `member` publicly exposes `test.InternalModel`")
+        result.assertOutputLacks("`Exempted` publicly exposes")
+        result.assertNotReported(REDUNDANT_EXEMPTION)
     }
 
     @Test
@@ -1925,10 +1926,11 @@ private val exemptedInternalApiExposureFile = """
         public fun listModels(): List<@IntentionallyExposedInternalApiForBackwardsCompatibility InternalModel> = emptyList()
     }
 
-    /** A published subclass of an unsupported type whose exemption covers every member. */
+    /** A published subclass of an unsupported type. */
     @IntentionallyExposedInternalApiForBackwardsCompatibility(description = "Shipped in 1.0.")
     public class Special : InternalModel() {
-        /** Returns the unsupported type. */
+        /** Returns the unsupported type, with its own exemption. */
+        @IntentionallyExposedInternalApiForBackwardsCompatibility
         public fun model(): InternalModel = InternalModel()
     }
 """.trimIndent()
@@ -1941,19 +1943,13 @@ private val partiallyExemptedInternalApiExposureFile = """
     public annotation class InternalLibApi
 
     @InternalLibApi
-    public class InternalModel
+    public open class InternalModel
 
-    /** A published holder whose exemption covers its members. */
+    /** A published subclass whose exemption covers the supertype only. */
     @IntentionallyExposedInternalApiForBackwardsCompatibility
-    public class Exempted {
-        /** Returns the unsupported type. */
+    public class Exempted : InternalModel() {
+        /** Returns the unsupported type without an exemption of its own. */
         public fun member(): InternalModel = InternalModel()
-    }
-
-    /** A holder outside the exempted class. */
-    public object Api {
-        /** Leaks an explicitly unsupported type. */
-        public fun loadModel(): InternalModel = InternalModel()
     }
 """.trimIndent()
 

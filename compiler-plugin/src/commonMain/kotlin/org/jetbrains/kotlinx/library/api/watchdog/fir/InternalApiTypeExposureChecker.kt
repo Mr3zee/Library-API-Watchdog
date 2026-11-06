@@ -4,7 +4,6 @@ import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
-import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirMemberDeclaration
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
 import org.jetbrains.kotlin.fir.resolve.getContainingClassSymbol
@@ -21,17 +20,9 @@ import org.jetbrains.kotlin.name.Name
 internal class InternalApiTypeExposureChecker(
     private val collecting: Boolean = false,
 ) : PublicSignatureTypeChecker<InternalApiExposure>(exemption = WatchdogClassIds.IntentionallyExposedInternalApiForBackwardsCompatibility) {
-    override val enclosingClassExemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyExposedInternalApiForBackwardsCompatibility)
-
     context(context: CheckerContext)
     override fun isCheckedDeclaration(declaration: FirMemberDeclaration): Boolean =
         declaration.isWatchedPublicSourceApi()
-
-    /** An exemption on an enclosing class covers every member. */
-    context(context: CheckerContext)
-    override fun isDeclarationExempt(declaration: FirDeclaration): Boolean =
-        super.isDeclarationExempt(declaration) ||
-                enclosingClassHasAnnotation(WatchdogClassIds.IntentionallyExposedInternalApiForBackwardsCompatibility)
 
     /** The alias itself can carry the marker, so it isn't expanded here. */
     context(context: CheckerContext)
