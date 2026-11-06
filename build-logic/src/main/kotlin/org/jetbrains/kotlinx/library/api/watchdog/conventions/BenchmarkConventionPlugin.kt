@@ -17,6 +17,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.JavaExec
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.jvm.tasks.Jar
 import org.gradle.process.CommandLineArgumentProvider
@@ -102,9 +103,10 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                 description = "Generates the JMH benchmark wrappers from the compiled benchmark classes."
                 mainClass.set("org.openjdk.jmh.generators.bytecode.JmhBytecodeGenerator")
                 classpath = files(jmhBytecodeGenerator, benchmarkRuntimeClasspath)
-                inputs.files(benchmarkKotlinClasses)
+                inputs.files(benchmarkKotlinClasses).withPathSensitivity(PathSensitivity.RELATIVE)
                 outputs.dir(benchmarkGeneratedSources)
                 outputs.dir(benchmarkGeneratedResources)
+                outputs.cacheIf { true }
                 argumentProviders.add(
                     CommandLineArgumentProvider {
                         listOf(
@@ -272,7 +274,7 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                 dependsOn(compileBenchmarkJmhSources)
                 configureWatchdogBenchmarkInputs(this)
                 outputs.upToDateWhen { false }
-                // JMH forks inherit the fixed heap, so the GC behavior is the same between runs.
+                // The measurement runs in this JVM. The fixed heap keeps the GC behavior the same between runs.
                 jvmArgs("-Xms2g", "-Xmx2g")
 
                 val flags = mapOf(
@@ -282,9 +284,9 @@ class BenchmarkConventionPlugin : Plugin<Project> {
                     providers.gradleProperty(property).map { if (it.toBoolean()) flag else null }
                 }
                 val valued = mapOf(
-                    "benchmark.baseline.forks" to "--forks",
                     "benchmark.baseline.warmup" to "--warmup",
                     "benchmark.baseline.measurement" to "--measurement",
+                    "benchmark.baseline.iterationSeconds" to "--iteration-seconds",
                     "benchmark.baseline.corpusFiles" to "--corpus-files",
                     "benchmark.baseline.retries" to "--retries",
                 ).mapValues { (property, option) ->
