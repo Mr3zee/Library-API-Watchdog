@@ -51,13 +51,16 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  DEVELOCITY_CACHE_PUSH: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+
 jobs:
   # A `pull_request` run of the Watchdog bot skips the check. The Dev kit update workflow calls this workflow on the
   # commit of its pull request, and a release pull request changes no compiler code.
   benchmark:
     if: github.event_name != 'pull_request' || github.actor != vars.WATCHDOG_BOT_LOGIN
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    timeout-minutes: 20
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5

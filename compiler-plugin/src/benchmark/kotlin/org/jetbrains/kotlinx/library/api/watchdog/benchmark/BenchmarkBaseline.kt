@@ -16,6 +16,7 @@ import org.openjdk.jmh.profile.GCProfiler
 import org.openjdk.jmh.results.RunResult
 import org.openjdk.jmh.runner.Runner
 import org.openjdk.jmh.runner.options.OptionsBuilder
+import org.openjdk.jmh.runner.options.TimeValue
 import org.openjdk.jmh.runner.options.VerboseMode
 
 /** The entry point of the Gradle `benchmarkBaseline` task. The benchmark README describes the check. */
@@ -23,7 +24,7 @@ fun main(args: Array<String>) {
     val options = BaselineOptions.parse(args)
     val machine = MachineProfile.current()
     val baselineFile = options.baselineDirectory.resolve("${machine.id}.properties")
-    val settings = RunSettings(options.forks, options.warmupIterations, options.measurementIterations, options.corpusFiles)
+    val settings = RunSettings(options.warmupIterations, options.measurementIterations, options.iterationSeconds, options.corpusFiles)
     println("Machine profile: ${machine.id}")
     machine.details.forEach { (key, value) -> println("  $key = $value") }
     println("Baseline file: $baselineFile")
@@ -61,8 +62,8 @@ fun main(args: Array<String>) {
         retriesLeft--
         println()
         val regressed = comparison.regressions.mapTo(linkedSetOf()) { it.subject }
-        println("Regressions in $regressed. Measuring them again.")
-        val again = runner.measureSubjects(regressed)
+        println("Regressions in $regressed. Measuring them again in a new JVM.")
+        val again = runner.measureSubjects(regressed, newJvm = true)
         measured = measured.lowerOf(again)
         comparison = Comparison(baseline, measured)
     }
@@ -86,9 +87,9 @@ internal class BaselineOptions(
     val summaryFile: Path,
     val record: Boolean,
     val allowMissing: Boolean,
-    val forks: Int,
     val warmupIterations: Int,
     val measurementIterations: Int,
+    val iterationSeconds: Int,
     val corpusFiles: Int,
     val retries: Int,
 ) {
@@ -101,7 +102,7 @@ internal class BaselineOptions(
                 val arg = args[index]
                 when (arg) {
                     "--record", "--allow-missing" -> flags += arg
-                    "--baseline-dir", "--summary", "--forks", "--warmup", "--measurement", "--corpus-files", "--retries" -> {
+                    "--baseline-dir", "--summary", "--warmup", "--measurement", "--iteration-seconds", "--corpus-files", "--retries" -> {
                         values[arg] = args.getOrNull(index + 1) ?: error("Option $arg needs a value.")
                         index++
                     }
@@ -116,9 +117,9 @@ internal class BaselineOptions(
                 summaryFile = Path.of(required("--summary")),
                 record = "--record" in flags,
                 allowMissing = "--allow-missing" in flags,
-                forks = int("--forks", 2),
                 warmupIterations = int("--warmup", 3),
                 measurementIterations = int("--measurement", 5),
+                iterationSeconds = int("--iteration-seconds", 1),
                 corpusFiles = int("--corpus-files", 200),
                 retries = int("--retries", 1),
             )
@@ -127,15 +128,15 @@ internal class BaselineOptions(
 }
 
 internal class RunSettings(
-    val forks: Int,
     val warmupIterations: Int,
     val measurementIterations: Int,
+    val iterationSeconds: Int,
     val corpusFiles: Int,
 ) {
     val asProperties: Map<String, String> = mapOf(
-        "settings.forks" to forks.toString(),
         "settings.warmupIterations" to warmupIterations.toString(),
         "settings.measurementIterations" to measurementIterations.toString(),
+        "settings.iterationSeconds" to iterationSeconds.toString(),
         "settings.corpusFiles" to corpusFiles.toString(),
     )
 }
@@ -212,19 +213,10 @@ internal class Measured(val values: Map<String, Double>) {
 
     fun ms(subject: String): Double? = values["$subject.$MS"]
 
-    /** The time of a whole-compilation mode divided by the time of `noPlugin`. */
-    fun overhead(subject: String): Double? {
-        if (!subject.startsWith(WHOLE_PREFIX) || subject == WHOLE_PREFIX + "noPlugin") return null
-        val noPlugin = ms(WHOLE_PREFIX + "noPlugin") ?: return null
-        return ms(subject)?.div(noPlugin)
-    }
-
     companion object {
-        const val WHOLE_PREFIX = "whole."
         const val ISOLATED_PREFIX = "isolated."
         const val BYTES = "bytes"
         const val MS = "ms"
-        val WHOLE_MODES = listOf("noPlugin", "pluginBaseline", "allCheckers")
 
         fun subjectOf(key: String): String = key.substringBeforeLast('.')
 
@@ -241,39 +233,39 @@ internal class Tolerances(val bytes: Double) {
     }
 }
 
+/**
+ * Runs the isolated checker benchmark in this JVM, without JMH forks. The corpus compiles once, and
+ * every checker sweeps the same FIR. Allocation per operation doesn't change between the iterations
+ * of one JVM, so a fork for each checker adds a corpus compilation and no precision. It changes by up
+ * to 5% between JVMs, so the second measurement of a regressed subject runs in a JMH fork.
+ */
 internal class BaselineRunner(private val settings: RunSettings) {
     private val isolatedSubjects: List<String> = listOf("none") + CheckerSubjects.all.map { it.name }
 
-    fun measureAll(): Measured = measureSubjects(
-        isolatedSubjects.mapTo(linkedSetOf()) { Measured.ISOLATED_PREFIX + it } +
-            Measured.WHOLE_MODES.map { Measured.WHOLE_PREFIX + it },
-    )
+    fun measureAll(): Measured = measureSubjects(isolatedSubjects.mapTo(linkedSetOf()) { Measured.ISOLATED_PREFIX + it })
 
-    fun measureSubjects(subjects: Set<String>): Measured {
+    fun measureSubjects(subjects: Set<String>, newJvm: Boolean = false): Measured {
         val values = linkedMapOf<String, Double>()
         val checkers = subjects.filter { it.startsWith(Measured.ISOLATED_PREFIX) }
             .map { it.removePrefix(Measured.ISOLATED_PREFIX) }
-        val modes = subjects.filter { it.startsWith(Measured.WHOLE_PREFIX) }
-            .map { it.removePrefix(Measured.WHOLE_PREFIX) }
         if (checkers.isNotEmpty()) {
-            val results = run("IsolatedCheckerBenchmark.sweepCorpus", "checker", checkers)
+            val results = run("IsolatedCheckerBenchmark.sweepCorpus", "checker", checkers, forks = if (newJvm) 1 else 0)
             values += collect(results, "checker", Measured.ISOLATED_PREFIX)
-        }
-        if (modes.isNotEmpty()) {
-            val results = run("WholeCompilationBenchmark.compile", "mode", modes)
-            values += collect(results, "mode", Measured.WHOLE_PREFIX)
         }
         return Measured(values)
     }
 
-    private fun run(benchmark: String, parameter: String, parameterValues: List<String>): Collection<RunResult> {
+    private fun run(benchmark: String, parameter: String, parameterValues: List<String>, forks: Int): Collection<RunResult> {
+        val iterationTime = TimeValue.seconds(settings.iterationSeconds.toLong())
         val options = OptionsBuilder()
             .include(".*\\.$benchmark$")
             .param(parameter, *parameterValues.toTypedArray())
             .param("corpusFiles", settings.corpusFiles.toString())
-            .forks(settings.forks)
+            .forks(forks)
             .warmupIterations(settings.warmupIterations)
+            .warmupTime(iterationTime)
             .measurementIterations(settings.measurementIterations)
+            .measurementTime(iterationTime)
             .addProfiler(GCProfiler::class.java)
             .shouldFailOnError(true)
             .verbosity(VerboseMode.NORMAL)
@@ -347,7 +339,7 @@ internal object BaselineFile {
             pinned = entries.filterKeys { it.startsWith("machine.") },
             settings = entries.filterKeys { it.startsWith("settings.") },
             tolerances = Tolerances(bytesTolerance),
-            values = entries.filterKeys { it.startsWith(Measured.ISOLATED_PREFIX) || it.startsWith(Measured.WHOLE_PREFIX) }
+            values = entries.filterKeys { it.startsWith(Measured.ISOLATED_PREFIX) }
                 .filterKeys { Measured.metricOf(it) == Measured.BYTES }
                 .mapValues { (_, value) -> value.toDouble() },
         )
@@ -439,10 +431,10 @@ internal object Summary {
         appendLine()
         appendLine("### Time per operation")
         appendLine()
-        appendLine("| Subject | Median, ms | Overhead |")
-        appendLine("|---|--:|--:|")
+        appendLine("| Subject | Median, ms |")
+        appendLine("|---|--:|")
         for (subject in measured.subjects) {
-            appendLine("| `$subject` | ${measured.ms(subject)?.let(::decimal).orEmpty()} | ${measured.overhead(subject)?.let(::decimal).orEmpty()} |")
+            appendLine("| `$subject` | ${measured.ms(subject)?.let(::decimal).orEmpty()} |")
         }
     }
 
@@ -458,13 +450,10 @@ internal object Summary {
     }
 
     private fun StringBuilder.appendMeasured(measured: Measured) {
-        appendLine("| Subject | Allocation, bytes | Median time, ms | Overhead |")
-        appendLine("|---|--:|--:|--:|")
+        appendLine("| Subject | Allocation, bytes | Median time, ms |")
+        appendLine("|---|--:|--:|")
         for (subject in measured.subjects) {
-            appendLine(
-                "| `$subject` | ${measured.bytes(subject)?.let(::bytes).orEmpty()} | ${measured.ms(subject)?.let(::decimal).orEmpty()} | " +
-                    "${measured.overhead(subject)?.let(::decimal).orEmpty()} |",
-            )
+            appendLine("| `$subject` | ${measured.bytes(subject)?.let(::bytes).orEmpty()} | ${measured.ms(subject)?.let(::decimal).orEmpty()} |")
         }
     }
 

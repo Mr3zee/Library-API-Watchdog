@@ -77,7 +77,7 @@ a real build. Its `mode` parameter selects what is enabled:
 Checker costs are small relative to a whole compilation, so expect noise in this benchmark. It
 answers "does the plugin visibly slow a build down", not "which checker allocates what".
 
-`IsolatedCheckerBenchmark` compiles the corpus to resolved FIR once per trial (without the
+`IsolatedCheckerBenchmark` compiles the corpus to resolved FIR once per JVM (without the
 watchdog), then each operation sweeps all FIR files with the compiler's checker-running
 collector visitor wired to exactly one checker. The `checker` parameter names the checker.
 `none` runs the traversal with zero checkers and is the baseline to subtract. This is the
@@ -85,9 +85,9 @@ low-noise, per-checker view: no plugin loading, no message rendering, no backend
 
 ## Baseline check
 
-The `benchmarkBaseline` task runs a fixed subset of the benchmarks and compares the allocation with a
-baseline file. The `Benchmark baseline` workflow runs it on every pull request and push to `main`
-that changes the compiler plugin.
+The `benchmarkBaseline` task runs `IsolatedCheckerBenchmark` with every `checker` value and compares
+the allocation with a baseline file. The `Benchmark baseline` workflow runs it on every pull request
+and push to `main` that changes the compiler plugin.
 
 ```bash
 # Compare with the baseline of this machine profile. Fails on a regression or without a baseline file.
@@ -100,11 +100,12 @@ that changes the compiler plugin.
 ./gradlew :kotlin-library-api-watchdog-compiler-plugin:benchmarkBaseline -Pbenchmark.baseline.record=true
 ```
 
-The subset:
+The task runs the benchmark in its own JVM, without JMH forks, so the corpus compiles once and every
+checker sweeps the same FIR. `RedundantExemptionProbingChecker` is `ExemptingCheckers` wrapped in the
+redundancy probes, so their difference is the cost of the probes.
 
-- `IsolatedCheckerBenchmark` with every `checker` value. `RedundantExemptionProbingChecker` is
-  `ExemptingCheckers` wrapped in the redundancy probes, so their difference is the cost of the probes.
-- `WholeCompilationBenchmark` with `noPlugin`, `pluginBaseline`, and `allCheckers`.
+`WholeCompilationBenchmark` isn't part of the check. The plugin allocates about 4% of a whole
+compilation. That is below the tolerance, so a regression of the plugin can't fail that comparison.
 
 The metrics of each subject:
 
@@ -114,15 +115,16 @@ The metrics of each subject:
 | `ms` | Median time of one operation over all measurement iterations. | No. |
 
 The time of one operation changes by up to 50% between GitHub runners of the same machine profile,
-so the baseline file holds `bytes` only. The summary shows `ms`, and the `overhead` of each
-whole-compilation mode: its `ms` divided by the `ms` of `noPlugin`.
+so the baseline file holds `bytes` only. The summary shows `ms` for information. The allocation of one
+operation is the same in every iteration of one JVM, and changes by up to 5% between JVMs.
 
 The check fails in two cases:
 
 - A measured allocation is above the baseline value plus the tolerance.
 - The baseline has a subject that the run didn't measure.
 
-When a subject regresses, the task measures it a second time and uses the lower value. A subject
+When a subject regresses, the task measures it a second time in a new JVM and uses the lower value,
+because the allocation of one operation changes by up to 5% between JVMs. A subject
 without a baseline value passes. The task writes a Markdown summary to
 `build/reports/benchmark-baseline/summary.md`, and the workflow shows it on the job summary page.
 On GitHub Actions, the task also reports each regression as an error annotation of the run.
@@ -149,11 +151,13 @@ The run settings and their Gradle properties:
 
 | Property | Default | In the baseline |
 |---|---|---|
-| `benchmark.baseline.forks` | 2 | Yes |
 | `benchmark.baseline.warmup` | 3 iterations | Yes |
 | `benchmark.baseline.measurement` | 5 iterations | Yes |
+| `benchmark.baseline.iterationSeconds` | 1 | Yes |
 | `benchmark.baseline.corpusFiles` | 200 | Yes |
 | `benchmark.baseline.retries` | 1 | No |
+
+With the defaults, the task measures for about 4 minutes on the CI runner.
 
 ## The corpus
 
