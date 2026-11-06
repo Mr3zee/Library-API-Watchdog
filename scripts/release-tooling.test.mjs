@@ -44,6 +44,10 @@ function fixture(t) {
     '',
   ].join('\n'));
   fs.writeFileSync(path.join(directory, 'CHANGELOG.md'), '# Changelog\n\n## 1.2.3\n\n- Historical release.\n');
+  fs.writeFileSync(path.join(directory, 'diagnostics.json'), JSON.stringify({diagnostics: [
+    {name: 'LONG_NAME', docs: 'checks/long-name'},
+    {name: 'LONG_NAME_SUFFIX', docs: 'checks/special/long-name-suffix'},
+  ]}) + '\n');
   fs.writeFileSync(path.join(directory, 'docs/package.json'), JSON.stringify({
     name: 'docs', version: '1.2.3', dependencies: {other: '1.2.3'},
   }, null, 2) + '\n');
@@ -143,6 +147,25 @@ test('changelog checks reject missing or stale pages and never rewrite them', (t
   assert.equal(runScript(directory, script, '--check').status, 1);
   assert.equal(runScript(directory, script).status, 0);
   assert.equal(runScript(directory, script, '--check').status, 0);
+});
+
+test('the website changelog links a bare diagnostic name to its check page', (t) => {
+  const directory = fixture(t);
+  fs.writeFileSync(path.join(directory, 'CHANGELOG.md'), [
+    '# Changelog', '', '## 1.2.3', '',
+    '* Add LONG_NAME_SUFFIX and LONG_NAME by @user in https://github.com/example/repo/pull/1',
+    '- `LONG_NAME` in code, [LONG_NAME](https://example.com/LONG_NAME) in a link, and NOT_LONG_NAME.',
+    '- [Long name](https://mr3zee.github.io/Library-API-Watchdog/checks/long-name) LONG_NAME',
+    '```', 'LONG_NAME', '```', '',
+  ].join('\n'));
+  assert.equal(runScript(directory, 'docs/scripts/sync-changelog.mjs').status, 0);
+  const page = fs.readFileSync(path.join(directory, 'docs/pages/changelog.md'), 'utf8');
+  assert.deepEqual(page.split('\n').slice(-7, -1), [
+    '* Add [LONG_NAME_SUFFIX](checks/special/long-name-suffix.md) and [LONG_NAME](checks/long-name.md) by @user in https://github.com/example/repo/pull/1',
+    '- `LONG_NAME` in code, [LONG_NAME](https://example.com/LONG_NAME) in a link, and NOT_LONG_NAME.',
+    '- [Long name](checks/long-name.md) [LONG_NAME](checks/long-name.md)',
+    '```', 'LONG_NAME', '```',
+  ]);
 });
 
 test('changelog sections print the entries of one release heading', (t) => {
