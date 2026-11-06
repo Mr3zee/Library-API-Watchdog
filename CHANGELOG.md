@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.2.0 - 2026-11-06
+
+<!-- Release notes generated using configuration in .github/release.yml at 20a11d69284725b68705ed22ee65497b1f61bdd9 -->
+
+### What's Changed
+* Update the dev kit to 0.0.4-dev-356 by @github-actions[bot] in https://github.com/Mr3zee/Library-API-Watchdog/pull/27
+* Open the bot pull requests with a GitHub App token by @Mr3zee in https://github.com/Mr3zee/Library-API-Watchdog/pull/28
+* Update Gradle plugins, AGP, and the docs tooltip, and ignore Kotlin in Renovate by @Mr3zee in https://github.com/Mr3zee/Library-API-Watchdog/pull/30
+* Run the benchmark baseline check in one JVM by @Mr3zee in https://github.com/Mr3zee/Library-API-Watchdog/pull/29
+* Move the changelog after the checks in the docs sidebar by @Mr3zee in https://github.com/Mr3zee/Library-API-Watchdog/pull/32
+* Write llms.txt and a Markdown copy of each docs page by @Mr3zee in https://github.com/Mr3zee/Library-API-Watchdog/pull/33
+* Add the backwards compatibility exemption of PUBLIC_TYPE_WITH_INTERNAL_API by @Mr3zee in https://github.com/Mr3zee/Library-API-Watchdog/pull/31
+* Link diagnostic names in the website changelog by @Mr3zee in https://github.com/Mr3zee/Library-API-Watchdog/pull/35
+
+
+**Full Changelog**: https://github.com/Mr3zee/Library-API-Watchdog/compare/v0.1.1...v0.2.0
+
 ## 0.1.1 - 2026-11-05
 
 ### Changed
