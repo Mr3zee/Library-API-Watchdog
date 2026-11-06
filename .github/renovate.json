@@ -6,9 +6,9 @@
   "rebaseWhen": "behind-base-branch",
   "packageRules": [
     {
+      "description": "A Kotlin update is manual, because it needs new test-data dumps and a dev kit that supports the version.",
       "matchPackageNames": ["/^org\\.jetbrains\\.kotlin[.:]/"],
-      "groupName": "Kotlin",
-      "separateMajorMinor": false
+      "enabled": false
     },
     {
       "description": "The Dev kit update workflow updates the dev kit.",
@@ -25,12 +25,25 @@
       "groupName": "GitHub Actions"
     },
     {
+      "matchDepNames": ["agp8", "agp9"],
+      "groupName": "Android Gradle plugin"
+    },
+    {
       "matchDepNames": ["agp8"],
       "allowedVersions": "/^8\\./"
     },
     {
       "matchDepNames": ["agp9"],
       "allowedVersions": "/^9\\./"
+    },
+    {
+      "description": "The Gradle wrapper and the Gradle plugins of Gradle Inc.",
+      "matchManagers": ["gradle-wrapper"],
+      "groupName": "Gradle"
+    },
+    {
+      "matchPackageNames": ["/^com\\.gradle[.:]/"],
+      "groupName": "Gradle"
     }
   ],
   "customManagers": [
