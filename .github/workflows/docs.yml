@@ -30,16 +30,22 @@ on:
         description: 'The release version that the website shows, MAJOR.MINOR.PATCH. Its tag must exist.'
         required: true
         type: string
+  # A called run builds the website and doesn't deploy it.
+  workflow_call:
+    inputs:
+      ref:
+        description: 'The commit to check. Empty checks the commit of the caller.'
+        type: string
+        default: ''
 
-# Runs of one event and branch don't overlap. A newer push cancels the run of a pull request. Other runs aren't
-# cancelled, so a deploy to GitHub Pages never stops half way.
+# Runs of one event, branch, and checked commit don't overlap. A newer push cancels the run of a pull request. Other
+# runs aren't cancelled, so a deploy to GitHub Pages never stops half way. In a called workflow, `github` is the
+# context of the caller, so the group starts with the name of this file and has the `ref` input.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  group: docs-${{ github.event_name }}-${{ github.ref }}-${{ inputs.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
-  id-token: write
-  pages: write
   contents: read
 
 env:
@@ -49,14 +55,21 @@ env:
   ASSEMBLE_DIR: '__docs_assembled'
   ASSEMBLE_ARTIFACT: 'assembled.zip'
   WEBSITE_VERSION: ${{ inputs.version }}
+  # In a called workflow, `github.event_name` and `github.workflow` are those of the caller. So a manual run of this
+  # file has the version input, and a call from the Release workflow doesn't.
+  MANUAL_RUN: ${{ github.event_name == 'workflow_dispatch' && github.workflow == 'Build docs website' }}
 
 jobs:
+  # A `pull_request` run of the Watchdog bot skips the checks. The Release workflow calls this workflow on the commit of
+  # its pull request.
   build:
+    if: github.event_name != 'pull_request' || github.actor != vars.WATCHDOG_BOT_LOGIN
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
+          ref: ${{ inputs.ref }}
           fetch-depth: 0
 
       - name: Set up Node
@@ -67,7 +80,7 @@ jobs:
           cache-dependency-path: docs/package-lock.json
 
       - name: Check the website version
-        if: github.event_name == 'workflow_dispatch'
+        if: env.MANUAL_RUN == 'true'
         run: |
           if [[ ! "$WEBSITE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] \
             || ! git rev-parse --quiet --verify "refs/tags/v$WEBSITE_VERSION" > /dev/null; then
@@ -152,12 +165,16 @@ jobs:
           retention-days: 7
 
   deploy:
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    # A job condition can't read `env`, so this is the condition of MANUAL_RUN.
+    if: github.event_name == 'workflow_dispatch' && github.workflow == 'Build docs website' && github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     needs: [ build ]
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      pages: write
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v6

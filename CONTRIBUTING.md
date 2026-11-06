@@ -152,8 +152,8 @@ Then generate a private key, install the app on this repository, and add the rep
 | `WATCHDOG_BOT_LOGIN` | Variable | The user of the app, `<app slug>[bot]`, for example `library-api-watchdog[bot]` |
 
 The Dev kit update and the Release workflows check the commit of their pull request themselves. So the compiler plugin
-tests, the Gradle tests, and the benchmark check skip a `pull_request` run of `WATCHDOG_BOT_LOGIN`. A push of another
-user to the branch runs them.
+tests, the Gradle tests, the docs checks, the version alignment check, and the benchmark check skip a `pull_request`
+run of `WATCHDOG_BOT_LOGIN`. A push of another user to the branch runs them.
 
 ## Dependency updates
 
@@ -223,10 +223,13 @@ The workflow does these steps:
 2. Pushes the `prepare-release/<version>` branch and opens a pull request into the branch of the run, as the
    [Watchdog bot](#watchdog-bot). The commit adds the changelog section of the release. It also sets the next development version: the next minor version from
    `main`, the next patch version from a maintenance branch.
-3. Runs the [compiler plugin tests](.github/workflows/compiler-plugin-tests.yml) and the
-   [Gradle tests](.github/workflows/gradle-tests.yml) on the commit of the pull request.
-4. Builds all publications on macOS and creates the tag `v<version>` on the commit of the pull request. Then uploads
-   all modules to the Space EAP repository with the release version.
+3. Runs every check workflow on the commit of the pull request and waits for all of them:
+   [compiler plugin tests](.github/workflows/compiler-plugin-tests.yml),
+   [Gradle tests](.github/workflows/gradle-tests.yml), [docs checks](.github/workflows/docs.yml),
+   [version alignment](.github/workflows/version-alignment.yml), and the
+   [benchmark baseline](.github/workflows/benchmark-baseline.yml).
+4. Builds all publications and creates the tag `v<version>` on the commit of the pull request. Then uploads all
+   modules to the Space EAP repository with the release version.
 5. Creates the GitHub release with the changelog section as its notes. A backport isn't the latest GitHub release.
 6. Squash-merges the pull request. The tag isn't in the history of the target branch.
 7. For a release from a maintenance branch, adds its changelog section to `main` through a second pull request.
