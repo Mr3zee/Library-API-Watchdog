@@ -129,9 +129,12 @@ internal object BenchmarkCorpus {
      * registry accessor gives `InternalApiTypeExposureChecker` and the redundancy probes an exemption to read.
      */
     private fun servicesFile(i: Int): String = header(i, null) + """
-        /** Published accessor of the internal registry, kept for the 1.x users. */
-        @IntentionallyExposedInternalApiForBackwardsCompatibility
-        public fun registry$i(): InternalRegistry = InternalRegistry()
+        /** Access to the internal registry. A top-level function would add a facade diagnostic to this file. */
+        public object Registries$i {
+            /** Published accessor of the internal registry, kept for the 1.x users. */
+            @IntentionallyExposedInternalApiForBackwardsCompatibility
+            public fun current(): InternalRegistry = InternalRegistry()
+        }
 
         /** Contract for key resolvers. External implementations must opt in. */
         @SubclassOptInRequired(BenchExperimental::class)
