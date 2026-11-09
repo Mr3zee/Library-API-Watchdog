@@ -37,9 +37,11 @@ plugins {
 }
 ```
 
-The checks run only in a module with
+## Explicit API mode
+
+By default, the plugin requires
 [explicit API mode](https://kotlinlang.org/docs/api-guidelines-simplicity.html#use-explicit-api-mode)
-on. Turn it on:
+to be enabled in the project. Turn it on:
 
 ```kotlin build.gradle.kts
 kotlin {
@@ -47,10 +49,25 @@ kotlin {
 }
 ```
 
-`explicitApiWarning()` and the `-Xexplicit-api` compiler flag also count. Without explicit API
-mode the plugin doesn't register any checks. `explicitApi()` reaches the `main` compilations, the metadata
-compilations, and the Android variants. A custom compilation such as `testFixtures` doesn't have checks
-without the `-Xexplicit-api` flag.
+`explicitApiWarning()` and the `-Xexplicit-api` compiler flag also count. `explicitApi()` reaches the
+`main` compilations, the metadata compilations, and the Android variants. A custom compilation such as
+`testFixtures` doesn't have checks without the `-Xexplicit-api` flag.
+
+`explicitApiRequirement` in the `apiWatchdog` extension sets what the plugin does when explicit API mode
+is off. It holds an `ExplicitApiRequirement`. Without explicit API mode, a declaration without a
+visibility modifier is public, and the checks report it:
+
+| Value  | Effect                                                                                                                                                                         |
+|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `FAIL` | The build fails when the task graph has a compilation that the watchdog checks. `help`, IDE sync, `exemptExistingApi`, and `generateApiWatchdogReport` still run. The default. |
+| `WARN` | The plugin logs a warning after Gradle evaluates the project. The checks run.                                                                                                  |
+| `SKIP` | The checks run without a message.                                                                                                                                              |
+
+```kotlin build.gradle.kts
+apiWatchdog {
+    explicitApiRequirement = ExplicitApiRequirement.WARN
+}
+```
 
 ## What applying does
 
@@ -59,7 +76,7 @@ Applying the plugin:
 - Registers the compiler plugin for every compilation except test compilations.
 - Adds the `org.jetbrains.kotlinx:kotlin-library-api-watchdog-plugin-annotations` dependency,
   the library with the `@Intentionally*` exemption annotations.
-- Warns when explicit API mode is off.
+- Requires explicit API mode, see [Explicit API mode](#explicit-api-mode).
 - Warns when binary compatibility validation is off, with a setup snippet.
   [Binary compatibility validation suggestion](./abi-validation-suggestion.md) gives the details.
 
@@ -71,6 +88,8 @@ The sample lists every property. A severity or a switch shows its default value:
 apiWatchdog {
     // !link[/enabled/] /configuration#disabling-the-watchdog
     enabled = true
+    // !link[/explicitApiRequirement/] /configuration#explicit-api-mode
+    explicitApiRequirement = ExplicitApiRequirement.FAIL
     // !link[/suggestAbiValidation/] /abi-validation-suggestion
     suggestAbiValidation = true
     // !link[/publicTypesMustBeTransitiveDependencies/] /checks/special/public-type-from-non-transitive-dependency
@@ -342,6 +361,7 @@ A direct compiler call configures the plugin with `-P` options of this form:
 | `internalApiAnnotation`     | `<annotation class name>`. Repeatable.                 | `internalApiAnnotations`      |
 | `publicTypeWithInternalApi` | `true` or `false`.                                     | `publicTypeWithInternalApi`   |
 | `reportUndocumentedClassProperties` | `true` or `false`.                             | `reportUndocumentedClassProperties` |
+| `requireExplicitApi`        | `true` or `false`. `false` runs the checks without explicit API mode. | `explicitApiRequirement` |
 
 `<NAME>` is a diagnostic name from the [Property reference](#property-reference), except the two
 checks that a Boolean property turns off: the option rejects them. `<severity>` is
@@ -354,6 +374,7 @@ value of each option:
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:internalApiAnnotation=com.example.dependency.InternalDependencyApi
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:publicTypeWithInternalApi=false
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:reportUndocumentedClassProperties=true
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:requireExplicitApi=false
 ```
 
 [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md)

@@ -6,6 +6,8 @@ class ApiWatchdogBlock internal constructor() {
 
     var enabled: Boolean? = null
 
+    var explicitApiRequirement: ExplicitApiRequirement? = null
+
     var suggestAbiValidation: Boolean? = null
 
     var publicTypeWithInternalApi: Boolean? = null
@@ -73,6 +75,7 @@ class ApiWatchdogBlock internal constructor() {
     internal fun render(): String = buildString {
         appendLine("apiWatchdog {")
         enabled?.let { appendLine("    enabled = $it") }
+        explicitApiRequirement?.let { appendLine("    explicitApiRequirement = ExplicitApiRequirement.$it") }
         suggestAbiValidation?.let { appendLine("    suggestAbiValidation = $it") }
         publicTypeWithInternalApi?.let { appendLine("    publicTypeWithInternalApi = $it") }
         publicTypesMustBeTransitiveDependencies?.let {
@@ -111,3 +114,5 @@ class ApiWatchdogBlock internal constructor() {
         internal val isNotEmpty: Boolean get() = enabled != null || lines.isNotEmpty()
     }
 }
+
+enum class ExplicitApiRequirement { FAIL, WARN, SKIP }

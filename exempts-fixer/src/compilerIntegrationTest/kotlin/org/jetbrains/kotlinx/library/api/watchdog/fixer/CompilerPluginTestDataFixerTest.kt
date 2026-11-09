@@ -300,6 +300,10 @@ private object WatchdogTestDirectives : SimpleDirectivesContainer() {
     val EXEMPTING_EXISTING_API by directive(
         description = "The collection mode of exemptExistingApi (exemptingExistingApi=true)",
     )
+
+    val REQUIRE_EXPLICIT_API_OFF by directive(
+        description = "The checks run without explicit API mode (requireExplicitApi=false)",
+    )
 }
 
 private class WatchdogOptionsConfigurator(testServices: TestServices) : EnvironmentConfigurator(testServices) {
@@ -335,6 +339,9 @@ private class WatchdogOptionsConfigurator(testServices: TestServices) : Environm
         }
         if (WatchdogTestDirectives.EXEMPTING_EXISTING_API in module.directives) {
             configuration.put(WatchdogConfigurationKeys.UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS, true)
+        }
+        if (WatchdogTestDirectives.REQUIRE_EXPLICIT_API_OFF in module.directives) {
+            configuration.put(WatchdogConfigurationKeys.REQUIRE_EXPLICIT_API, false)
         }
     }
 }

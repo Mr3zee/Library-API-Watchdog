@@ -41,6 +41,11 @@ object WatchdogTestDirectives : SimpleDirectivesContainer() {
         description = "The collection mode of exemptExistingApi (exemptingExistingApi=true)",
     )
 
+    /** `// REQUIRE_EXPLICIT_API_OFF` */
+    val REQUIRE_EXPLICIT_API_OFF by directive(
+        description = "The checks run without explicit API mode (requireExplicitApi=false)",
+    )
+
     /** One `<NAME>:<severity>` pair for each override. */
     val DIAGNOSTIC_SEVERITIES by stringDirective(
         description = "Severity overrides in the form of the diagnosticSeverity option",
@@ -86,6 +91,10 @@ class WatchdogOptionsConfigurator(testServices: TestServices) : EnvironmentConfi
 
         if (WatchdogTestDirectives.EXEMPTING_EXISTING_API in module.directives) {
             configuration.put(WatchdogConfigurationKeys.UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS, true)
+        }
+
+        if (WatchdogTestDirectives.REQUIRE_EXPLICIT_API_OFF in module.directives) {
+            configuration.put(WatchdogConfigurationKeys.REQUIRE_EXPLICIT_API, false)
         }
 
         val severities = module.directives[WatchdogTestDirectives.DIAGNOSTIC_SEVERITIES]

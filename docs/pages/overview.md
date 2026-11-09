@@ -61,7 +61,7 @@ plugins {
 }
 
 kotlin {
-    explicitApi() // Required to enable checks
+    explicitApi() // Required by default
 }
 ```
 
