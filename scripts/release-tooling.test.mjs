@@ -499,14 +499,19 @@ test('signed commits send the changes of the tracked files to the GitHub API, on
   const created = push();
   assert.equal(created.status, 0, created.stderr);
   assert.equal(created.stdout, 'commit-hash\n');
-  const [lookup, create, mutation] = callLines();
-  assert.equal(lookup, 'api repos/example/watchdog/git/ref/heads/release/1.0 --silent');
-  assert.equal(create, `api --method POST repos/example/watchdog/git/refs -f ref=refs/heads/release/1.0 -f sha=${head} --silent`);
+  // The commit goes to a staging branch at HEAD, and the branch moves to the commit. A force-move of the branch to
+  // HEAD closes its open pull request.
+  const [lookupStaging, createStaging, mutation, lookup, create, deleteStaging] = callLines();
+  assert.equal(lookupStaging, 'api repos/example/watchdog/git/ref/heads/release/1.0-staging --silent');
+  assert.equal(createStaging, `api --method POST repos/example/watchdog/git/refs -f ref=refs/heads/release/1.0-staging -f sha=${head} --silent`);
   assert.match(mutation, /^api graphql --input \S+ --jq \.data\.createCommitOnBranch\.commit\.oid$/);
+  assert.equal(lookup, 'api repos/example/watchdog/git/ref/heads/release/1.0 --silent');
+  assert.equal(create, 'api --method POST repos/example/watchdog/git/refs -f ref=refs/heads/release/1.0 -f sha=commit-hash --silent');
+  assert.equal(deleteStaging, 'api --method DELETE repos/example/watchdog/git/refs/heads/release/1.0-staging --silent');
   const body = JSON.parse(fs.readFileSync(request, 'utf8'));
   assert.match(body.query, /createCommitOnBranch\(input: \$input\)/);
   assert.deepEqual(body.variables.input, {
-    branch: {repositoryNameWithOwner: 'example/watchdog', branchName: 'release/1.0'},
+    branch: {repositoryNameWithOwner: 'example/watchdog', branchName: 'release/1.0-staging'},
     message: {headline: 'Release 1.0'},
     expectedHeadOid: head,
     fileChanges: {
@@ -520,7 +525,8 @@ test('signed commits send the changes of the tracked files to the GitHub API, on
 
   const moved = push(undefined, {BRANCH_EXISTS: '1'});
   assert.equal(moved.status, 0, moved.stderr);
-  assert.equal(callLines()[1], `api --method PATCH repos/example/watchdog/git/refs/heads/release/1.0 -f sha=${head} -F force=true --silent`);
+  assert.equal(callLines()[1], `api --method PATCH repos/example/watchdog/git/refs/heads/release/1.0-staging -f sha=${head} -F force=true --silent`);
+  assert.equal(callLines()[4], 'api --method PATCH repos/example/watchdog/git/refs/heads/release/1.0 -f sha=commit-hash -F force=true --silent');
 
   fs.chmodSync(path.join(directory, 'a.txt'), 0o755);
   const executable = push();
