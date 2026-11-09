@@ -55,9 +55,9 @@ kotlin {
 }
 ```
 
-The checks run only in modules with explicit API mode. Without it the plugin doesn't register any checks,
-and the Gradle plugin fails the build. `explicitApiRequirement` in the `apiWatchdog` extension changes
-the failure to a warning (`WARN`) or to nothing (`SKIP`).
+Without explicit API mode the build fails. See
+[Explicit API mode](https://mr3zee.github.io/Library-API-Watchdog/configuration#explicit-api-mode) for
+more details about the `explicitApiRequirement` setting.
 
 The Gradle plugin registers the compiler plugin for every compilation except test compilations
 and adds the dependency with the `@Intentionally*` exemption annotations.
@@ -246,11 +246,10 @@ run only in JVM compilations. A Kotlin-only library turns off the group with
 
 ### Build-level suggestions
 
-The Gradle plugin reports these, not the compiler:
+Checks run by the Gradle plugin:
 
 - [Explicit API mode](https://mr3zee.github.io/Library-API-Watchdog/configuration#explicit-api-mode) -
-  explicit API mode is off, so the watchdog doesn't register any checks. A failure by default,
-  `explicitApiRequirement` makes it a warning or nothing.
+  explicit API mode is off. A failure by default.
 - [Binary compatibility validation suggestion](https://mr3zee.github.io/Library-API-Watchdog/abi-validation-suggestion) -
   neither the ABI validation of the Kotlin Gradle plugin nor the Binary Compatibility Validator
   plugin is on.

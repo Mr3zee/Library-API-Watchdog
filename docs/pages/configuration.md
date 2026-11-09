@@ -39,9 +39,9 @@ plugins {
 
 ## Explicit API mode
 
-The checks run only in a module with
+The plugin requires
 [explicit API mode](https://kotlinlang.org/docs/api-guidelines-simplicity.html#use-explicit-api-mode)
-on. Turn it on:
+in a module, because a library author decides the visibility of each declaration with it. Turn it on:
 
 ```kotlin build.gradle.kts
 kotlin {
@@ -54,13 +54,14 @@ kotlin {
 `testFixtures` doesn't have checks without the `-Xexplicit-api` flag.
 
 `explicitApiRequirement` in the `apiWatchdog` extension sets what the plugin does when explicit API mode
-is off. It holds an `ExplicitApiRequirement`:
+is off. It holds an `ExplicitApiRequirement`. Without explicit API mode, a declaration without a
+visibility modifier is public, and the checks report it:
 
 | Value  | Effect                                                                                                                                                                         |
 |--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `FAIL` | The build fails when the task graph has a compilation that the watchdog checks. `help`, IDE sync, `exemptExistingApi`, and `generateApiWatchdogReport` still run. The default. |
-| `WARN` | The plugin logs a warning after Gradle evaluates the project. The build runs without checks.                                                                                   |
-| `SKIP` | The build runs without checks and without a message.                                                                                                                           |
+| `WARN` | The plugin logs a warning after Gradle evaluates the project. The checks run.                                                                                                  |
+| `SKIP` | The checks run without a message.                                                                                                                                              |
 
 ```kotlin build.gradle.kts
 apiWatchdog {
@@ -75,7 +76,7 @@ Applying the plugin:
 - Registers the compiler plugin for every compilation except test compilations.
 - Adds the `org.jetbrains.kotlinx:kotlin-library-api-watchdog-plugin-annotations` dependency,
   the library with the `@Intentionally*` exemption annotations.
-- Fails the build when explicit API mode is off, see [Explicit API mode](#explicit-api-mode).
+- Requires explicit API mode, see [Explicit API mode](#explicit-api-mode).
 - Warns when binary compatibility validation is off, with a setup snippet.
   [Binary compatibility validation suggestion](./abi-validation-suggestion.md) gives the details.
 
@@ -360,6 +361,7 @@ A direct compiler call configures the plugin with `-P` options of this form:
 | `internalApiAnnotation`     | `<annotation class name>`. Repeatable.                 | `internalApiAnnotations`      |
 | `publicTypeWithInternalApi` | `true` or `false`.                                     | `publicTypeWithInternalApi`   |
 | `reportUndocumentedClassProperties` | `true` or `false`.                             | `reportUndocumentedClassProperties` |
+| `requireExplicitApi`        | `true` or `false`. `false` runs the checks without explicit API mode. | `explicitApiRequirement` |
 
 `<NAME>` is a diagnostic name from the [Property reference](#property-reference), except the two
 checks that a Boolean property turns off: the option rejects them. `<severity>` is
@@ -372,6 +374,7 @@ value of each option:
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:internalApiAnnotation=com.example.dependency.InternalDependencyApi
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:publicTypeWithInternalApi=false
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:reportUndocumentedClassProperties=true
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:requireExplicitApi=false
 ```
 
 [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md)

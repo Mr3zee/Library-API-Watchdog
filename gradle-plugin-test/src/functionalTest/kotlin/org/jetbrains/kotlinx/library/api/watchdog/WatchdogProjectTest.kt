@@ -472,15 +472,15 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun `silent without explicit API mode when the requirement is SKIP`() {
+    fun `checks run without explicit API mode when the requirement is SKIP`() {
         val project = jvmProject {
             explicitApi = false
             apiWatchdog { explicitApiRequirement = ExplicitApiRequirement.SKIP }
             source(unacknowledgedFile)
         }
 
-        val result = project.build("build")
-        result.assertNoWatchdogDiagnostics()
+        val result = project.buildAndFail("build")
+        result.assertErrors(OPEN_API_WITHOUT_SUBCLASS_OPT_IN, EXHAUSTIVE_PUBLIC_API, MUTABLE_COLLECTION_PUBLIC_API)
         result.assertOutputLacks("doesn't enable explicit API mode")
     }
 
@@ -1503,11 +1503,11 @@ class WatchdogProjectTest {
             source(unacknowledgedFile)
         }
 
-        val result = project.build("build")
+        val result = project.buildAndFail("build")
         result.assertOutputHas("doesn't enable explicit API mode")
         result.assertOutputHas("explicitApi()")
         result.assertOutputLacks("ExplicitApiRequirement.WARN")
-        result.assertNoWatchdogDiagnostics()
+        result.assertErrors(OPEN_API_WITHOUT_SUBCLASS_OPT_IN, EXHAUSTIVE_PUBLIC_API, MUTABLE_COLLECTION_PUBLIC_API)
     }
 
     @Test

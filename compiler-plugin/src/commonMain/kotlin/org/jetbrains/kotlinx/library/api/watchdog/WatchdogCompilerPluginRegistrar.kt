@@ -28,6 +28,7 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
             configuration[WatchdogConfigurationKeys.UPDATING_BACKWARDS_COMPATIBILITY_EXEMPTS, false]
         val reportUndocumentedClassProperties =
             configuration[WatchdogConfigurationKeys.REPORT_UNDOCUMENTED_CLASS_PROPERTIES, false]
+        val requireExplicitApi = configuration[WatchdogConfigurationKeys.REQUIRE_EXPLICIT_API, true]
         val dependencyExposure = configuration[WatchdogConfigurationKeys.COMPILE_DEPENDENCY_PATHS]
             ?.let { compileDependencies ->
                 DependencyExposureCheckConfiguration(
@@ -48,6 +49,7 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
                 publicTypeWithInternalApiEnabled = publicTypeWithInternalApiEnabled,
                 exemptingExistingApi = exemptingExistingApi,
                 reportUndocumentedClassProperties = reportUndocumentedClassProperties,
+                requireExplicitApi = requireExplicitApi,
             ),
         )
     }

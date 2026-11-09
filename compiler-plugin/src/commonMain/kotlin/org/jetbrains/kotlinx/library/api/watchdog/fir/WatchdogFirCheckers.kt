@@ -20,9 +20,10 @@ import org.jetbrains.kotlin.fir.moduleData
 import org.jetbrains.kotlin.platform.jvm.isJvm
 
 /**
- * Registers the checkers in a module compiled with explicit API mode, `strict` or `warning`.
- * A contract-shape check reports on the `expect` declaration. An implementation or JVM check
- * reports on the `actual` declaration and accepts annotations of the matched `expect`.
+ * Registers the checkers in a module compiled with explicit API mode, `strict` or `warning`, or
+ * in every module when [requireExplicitApi] is off. A contract-shape check reports on the `expect`
+ * declaration. An implementation or JVM check reports on the `actual` declaration and accepts
+ * annotations of the matched `expect`.
  */
 class WatchdogFirCheckers internal constructor(
     session: FirSession,
@@ -33,9 +34,10 @@ class WatchdogFirCheckers internal constructor(
     publicTypeWithInternalApiEnabled: Boolean = true,
     exemptingExistingApi: Boolean = false,
     reportUndocumentedClassProperties: Boolean = false,
+    requireExplicitApi: Boolean = true,
 ) : FirAdditionalCheckersExtension(session) {
-    private val enabled =
-        session.languageVersionSettings.getFlag(AnalysisFlags.explicitApiMode) != ExplicitApiMode.DISABLED
+    private val enabled = !requireExplicitApi ||
+            session.languageVersionSettings.getFlag(AnalysisFlags.explicitApiMode) != ExplicitApiMode.DISABLED
 
     override val declarationCheckers: DeclarationCheckers = object : DeclarationCheckers() {
         private fun <C : Any> C.onlyOnJvm(): C? = takeIf { session.moduleData.platform.isJvm() }

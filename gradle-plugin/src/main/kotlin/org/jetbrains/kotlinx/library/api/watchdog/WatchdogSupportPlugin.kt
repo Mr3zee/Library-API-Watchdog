@@ -352,6 +352,12 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                     ),
                 )
                 add(SubpluginOption("exemptingExistingApi", lazy { collect.get().toString() }))
+                add(
+                    SubpluginOption(
+                        "requireExplicitApi",
+                        lazy { (extension.explicitApiRequirement.get() == ExplicitApiRequirement.FAIL).toString() },
+                    ),
+                )
                 add(SubpluginOption("publicTypeWithInternalApi", lazy { extension.publicTypeWithInternalApi.get().toString() }))
                 add(
                     SubpluginOption(
@@ -626,14 +632,14 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
 
         private fun missingExplicitApiMessage(projectPath: String, requirement: ExplicitApiRequirement): String {
             val hint = if (requirement == ExplicitApiRequirement.FAIL) {
-                "\n|\n|To build without the checks, set `explicitApiRequirement` in the `apiWatchdog` block to\n" +
-                        "|`ExplicitApiRequirement.WARN` or `ExplicitApiRequirement.SKIP`."
+                "\n|\n|To run the checks without explicit API mode, set `explicitApiRequirement` in the `apiWatchdog`\n" +
+                        "|block to `ExplicitApiRequirement.WARN` or `ExplicitApiRequirement.SKIP`."
             } else {
                 ""
             }
             return """
-                |Project '$projectPath' applies library-api-watchdog but doesn't enable explicit API mode, so the
-                |watchdog doesn't register any checks. Enable it in the build script of the module:
+                |Project '$projectPath' applies library-api-watchdog but doesn't enable explicit API mode.
+                |Enable it in the build script of the module:
                 |
                 |    kotlin {
                 |        explicitApi()
