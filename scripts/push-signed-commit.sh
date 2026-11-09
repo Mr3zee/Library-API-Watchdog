@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Commits the changes of the tracked files against HEAD to BRANCH on GitHub, and prints the hash of the commit. The
-# parent of the commit is HEAD. The script creates BRANCH at HEAD, or force-moves BRANCH to HEAD.
+# parent of the commit is HEAD. The script creates BRANCH at the commit, or force-moves BRANCH to the commit.
 #
 # The main ruleset accepts only signed commits, and `git commit` on a runner makes an unsigned commit. GitHub signs a
 # commit of the GraphQL `createCommitOnBranch` mutation. The mutation sets no file mode, so each changed file must be a
@@ -16,6 +16,7 @@ if [[ "$#" -ne 2 || -z "$1" || -z "$2" ]]; then
   exit 1
 fi
 branch="$1"
+staging="$branch-staging"
 message="$2"
 : "${GITHUB_REPOSITORY:?Set GITHUB_REPOSITORY to OWNER/REPOSITORY.}"
 
@@ -46,7 +47,7 @@ if [[ ! -s "$additions" && ! -s "$deletions" ]]; then
 fi
 
 jq --null-input \
-  --arg repository "$GITHUB_REPOSITORY" --arg branch "$branch" --arg message "$message" --arg head "$head" \
+  --arg repository "$GITHUB_REPOSITORY" --arg branch "$staging" --arg message "$message" --arg head "$head" \
   --slurpfile additions "$additions" --slurpfile deletions "$deletions" '{
     query: "mutation($input: CreateCommitOnBranchInput!) { createCommitOnBranch(input: $input) { commit { oid } } }",
     variables: {input: {
@@ -57,9 +58,20 @@ jq --null-input \
     }}
   }' > "$payload"
 
-if gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$branch" --silent 2> /dev/null; then
-  gh api --method PATCH "repos/$GITHUB_REPOSITORY/git/refs/heads/$branch" -f "sha=$head" -F force=true --silent
-else
-  gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" -f "ref=refs/heads/$branch" -f "sha=$head" --silent
-fi
-gh api graphql --input "$payload" --jq .data.createCommitOnBranch.commit.oid
+# Creates the branch NAME at SHA, or force-moves it to SHA.
+set_branch() {
+  if gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$1" --silent 2> /dev/null; then
+    gh api --method PATCH "repos/$GITHUB_REPOSITORY/git/refs/heads/$1" -f "sha=$2" -F force=true --silent
+  else
+    gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" -f "ref=refs/heads/$1" -f "sha=$2" --silent
+  fi
+}
+
+# The mutation adds the commit to a branch at `expectedHeadOid`, so the commit goes to a staging branch at HEAD. A
+# force-move of BRANCH to HEAD leaves its open pull request without commits, and GitHub closes such a pull request.
+# The staging branch of a failed run stays, and the next run moves it.
+set_branch "$staging" "$head"
+commit="$(gh api graphql --input "$payload" --jq .data.createCommitOnBranch.commit.oid)"
+set_branch "$branch" "$commit"
+gh api --method DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$staging" --silent
+echo "$commit"
