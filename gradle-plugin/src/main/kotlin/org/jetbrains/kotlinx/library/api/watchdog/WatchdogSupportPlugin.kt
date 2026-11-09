@@ -2,6 +2,7 @@ package org.jetbrains.kotlinx.library.api.watchdog
 
 import java.io.File
 import org.gradle.api.Action
+import org.gradle.api.GradleException
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
@@ -49,6 +50,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompileTool
 public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO) {
     private lateinit var collectDiagnosticsForExempts: Property<Boolean>
     private lateinit var enabled: Property<Boolean>
+    private lateinit var exemptsTaskPaths: List<String>
+
+    /** The compile tasks that have checks when the project turns explicit API mode on. */
+    private val checkedCompileTaskPaths = mutableSetOf<String>()
 
     /**
      * KGP calls it after `afterEvaluate`, so `apiWatchdog.enabled` is final here. A raw
@@ -82,14 +87,25 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 project.addExemptionAnnotationsWithoutChecks()
                 return@afterEvaluate
             }
-            if (!project.explicitApiWarningSuppressed() && !project.hasExplicitApiMode()) {
-                project.logger.warn(missingExplicitApiWarning(project.path))
-            }
+            project.requireExplicitApiMode(extension.explicitApiRequirement.get())
             if (extension.suggestAbiValidation.get() && !project.hasAbiValidation()) {
                 project.logger.warn(
                     abiValidationSuggestion(project.path, project.kotlinPluginVersion()),
                 )
             }
+        }
+    }
+
+    private fun Project.requireExplicitApiMode(requirement: ExplicitApiRequirement) {
+        if (requirement == ExplicitApiRequirement.SKIP || hasExplicitApiMode()) return
+        when (requirement) {
+            ExplicitApiRequirement.WARN -> logger.warn(missingExplicitApiMessage(path, requirement))
+            ExplicitApiRequirement.FAIL -> gradle.taskGraph.whenReady { graph ->
+                // The exemption tasks turn explicit API mode on themselves.
+                val checksSkipped = checkedCompileTaskPaths.any(graph::hasTask) && exemptsTaskPaths.none(graph::hasTask)
+                if (checksSkipped) throw GradleException(missingExplicitApiMessage(path, requirement))
+            }
+            ExplicitApiRequirement.SKIP -> Unit
         }
     }
 
@@ -190,6 +206,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         // IDE sync realizes every task, so task realization can't be the signal.
         val exemptTaskPath = taskPath(EXEMPT_EXISTING_API_TASK_NAME)
         val exemptsTaskPaths = listOf(exemptTaskPath, taskPath(GENERATE_REPORT_TASK_NAME))
+        this@WatchdogSupportPlugin.exemptsTaskPaths = exemptsTaskPaths
         gradle.taskGraph.whenReady { graph ->
             collectDiagnostics.set(exemptsTaskPaths.any(graph::hasTask))
         }
@@ -246,6 +263,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         )
 
         if (feedsReport) {
+            checkedCompileTaskPaths += taskPath(kotlinCompilation.compileKotlinTaskName)
             val exemptTask = tasks.named(
                 EXEMPT_EXISTING_API_TASK_NAME,
                 ExemptExistingApiTask::class.java,
@@ -559,15 +577,6 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
 
         private const val DISABLED_TASK_REASON = "apiWatchdog.enabled is true"
 
-        /** Undocumented. `true` silences the warning for a project where the explicit API detection is wrong. */
-        private const val SUPPRESS_EXPLICIT_API_WARNING_PROPERTY =
-            "org.jetbrains.kotlin.library.api-watchdog.suppressExplicitApiWarning"
-
-        private fun Project.explicitApiWarningSuppressed(): Boolean =
-            providers.gradleProperty(SUPPRESS_EXPLICIT_API_WARNING_PROPERTY)
-                .map(String::toBoolean)
-                .getOrElse(false)
-
         private fun Project.kotlinPluginVersion(): String =
             plugins.withType(KotlinBasePlugin::class.java)
                 .firstOrNull()?.pluginVersion
@@ -615,16 +624,24 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             return ABI_VALIDATION_TASK_NAMES.any(tasks.names::contains)
         }
 
-        private fun missingExplicitApiWarning(projectPath: String): String = """
-            |Project '$projectPath' applies library-api-watchdog but doesn't enable explicit API mode, so the
-            |watchdog doesn't register any checks. Enable it in the build script of the module:
-            |
-            |    kotlin {
-            |        explicitApi()
-            |    }
-            |
-            |The `explicitApiWarning()` variant and the `-Xexplicit-api` compiler flag also count.
-        """.trimMargin()
+        private fun missingExplicitApiMessage(projectPath: String, requirement: ExplicitApiRequirement): String {
+            val hint = if (requirement == ExplicitApiRequirement.FAIL) {
+                "\n|\n|To build without the checks, set `explicitApiRequirement` in the `apiWatchdog` block to\n" +
+                        "|`ExplicitApiRequirement.WARN` or `ExplicitApiRequirement.SKIP`."
+            } else {
+                ""
+            }
+            return """
+                |Project '$projectPath' applies library-api-watchdog but doesn't enable explicit API mode, so the
+                |watchdog doesn't register any checks. Enable it in the build script of the module:
+                |
+                |    kotlin {
+                |        explicitApi()
+                |    }
+                |
+                |The `explicitApiWarning()` variant and the `-Xexplicit-api` compiler flag also count.$hint
+            """.trimMargin()
+        }
 
         private fun abiValidationSuggestion(projectPath: String, kotlinVersion: String): String {
             val setupSnippet = if (kotlinVersion.usesLegacyAbiValidationDsl()) {

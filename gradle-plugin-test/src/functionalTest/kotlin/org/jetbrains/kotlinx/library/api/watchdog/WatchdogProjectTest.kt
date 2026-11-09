@@ -436,13 +436,52 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun `silent without explicit API mode`() {
+    fun `fails without explicit API mode`() {
         val project = jvmProject {
             explicitApi = false
             source(unacknowledgedFile)
         }
 
-        project.build("build").assertNoWatchdogDiagnostics()
+        val result = project.buildAndFail("build")
+        result.assertOutputHas("doesn't enable explicit API mode")
+        result.assertOutputHas("explicitApi()")
+        result.assertOutputHas("ExplicitApiRequirement.WARN")
+        result.assertNoWatchdogDiagnostics()
+        assertFalse(result.output.contains("Task :compileKotlin"), result.output)
+    }
+
+    @Test
+    fun `fails without explicit API mode in a multiplatform project`() {
+        val project = kmpProject {
+            explicitApi = false
+            source(unacknowledgedFile)
+        }
+
+        project.buildAndFail("compileKotlinJvm").assertOutputHas("doesn't enable explicit API mode")
+    }
+
+    @Test
+    fun `explicit API requirement lets help and the exemption tasks run`() {
+        val project = jvmProject {
+            explicitApi = false
+            source(unacknowledgedFile)
+        }
+
+        project.build("help").assertOutputLacks("doesn't enable explicit API mode")
+        project.build("generateApiWatchdogReport").assertOutputLacks("doesn't enable explicit API mode")
+    }
+
+    @Test
+    fun `silent without explicit API mode when the requirement is SKIP`() {
+        val project = jvmProject {
+            explicitApi = false
+            apiWatchdog { explicitApiRequirement = ExplicitApiRequirement.SKIP }
+            source(unacknowledgedFile)
+        }
+
+        val result = project.build("build")
+        result.assertNoWatchdogDiagnostics()
+        result.assertOutputLacks("doesn't enable explicit API mode")
     }
 
     @Test
@@ -1457,35 +1496,33 @@ class WatchdogProjectTest {
     }
 
     @Test
-    fun `warns when explicit API mode isn't enabled`() {
-        val project = jvmProject { explicitApi = false }
+    fun `warns when explicit API mode isn't enabled and the requirement is WARN`() {
+        val project = jvmProject {
+            explicitApi = false
+            apiWatchdog { explicitApiRequirement = ExplicitApiRequirement.WARN }
+            source(unacknowledgedFile)
+        }
 
-        val result = project.build("help")
+        val result = project.build("build")
         result.assertOutputHas("doesn't enable explicit API mode")
         result.assertOutputHas("explicitApi()")
+        result.assertOutputLacks("ExplicitApiRequirement.WARN")
+        result.assertNoWatchdogDiagnostics()
     }
 
     @Test
-    fun `explicit API warning is silent when explicit API mode is enabled`() {
-        jvmProject().build("help").assertOutputLacks("doesn't enable explicit API mode")
+    fun `explicit API requirement is silent when explicit API mode is enabled`() {
+        jvmProject().build("compileKotlin").assertOutputLacks("doesn't enable explicit API mode")
     }
 
     @Test
-    fun `explicit API warning sees the raw compiler flag`() {
+    fun `explicit API requirement sees the raw compiler flag`() {
         val project = jvmProject {
             explicitApi = false
             buildScript("""kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=strict") } }""")
         }
 
-        project.build("help").assertOutputLacks("doesn't enable explicit API mode")
-    }
-
-    @Test
-    fun `explicit API warning can be suppressed with a Gradle property`() {
-        val project = jvmProject { explicitApi = false }
-
-        project.build("help", "-Porg.jetbrains.kotlin.library.api-watchdog.suppressExplicitApiWarning=true")
-            .assertOutputLacks("doesn't enable explicit API mode")
+        project.build("compileKotlin").assertOutputLacks("doesn't enable explicit API mode")
     }
 
     @Test

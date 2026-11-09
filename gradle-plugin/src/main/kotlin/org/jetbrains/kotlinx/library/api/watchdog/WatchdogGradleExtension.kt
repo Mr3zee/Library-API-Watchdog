@@ -31,6 +31,15 @@ public open class WatchdogGradleExtension @Inject internal constructor(
     public val enabled: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(true)
 
     /**
+     * What the plugin does when the project doesn't turn explicit API mode on, see
+     * [ExplicitApiRequirement]. Default is [ExplicitApiRequirement.FAIL].
+     *
+     * See [Explicit API mode](https://mr3zee.github.io/Library-API-Watchdog/configuration#explicit-api-mode) for more details.
+     */
+    public val explicitApiRequirement: Property<ExplicitApiRequirement> =
+        objectFactory.property(ExplicitApiRequirement::class.java).convention(ExplicitApiRequirement.FAIL)
+
+    /**
      * Severity of `OPEN_API_WITHOUT_SUBCLASS_OPT_IN`: unrestricted external subclassing.
      *
      * See [Open API without subclass opt-in](https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in) for more details.

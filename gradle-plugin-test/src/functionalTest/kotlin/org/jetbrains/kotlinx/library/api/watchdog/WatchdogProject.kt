@@ -163,6 +163,7 @@ open class ModuleSpec internal constructor(
 
     fun apiWatchdog(block: ApiWatchdogBlock.() -> Unit) {
         imports += "$WATCHDOG_PACKAGE.WatchdogSeverity"
+        imports += "$WATCHDOG_PACKAGE.ExplicitApiRequirement"
         imports += "$WATCHDOG_PACKAGE.WatchdogChecks"
         scriptParts += ApiWatchdogBlock().apply(block).render()
     }
