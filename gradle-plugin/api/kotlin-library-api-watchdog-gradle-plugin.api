@@ -6,6 +6,15 @@ public abstract class org/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogRepo
 public abstract class org/jetbrains/kotlinx/library/api/watchdog/ExemptExistingApiTask : org/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogReportTask {
 }
 
+public final class org/jetbrains/kotlinx/library/api/watchdog/ExplicitApiRequirement : java/lang/Enum {
+	public static final field FAIL Lorg/jetbrains/kotlinx/library/api/watchdog/ExplicitApiRequirement;
+	public static final field SKIP Lorg/jetbrains/kotlinx/library/api/watchdog/ExplicitApiRequirement;
+	public static final field WARN Lorg/jetbrains/kotlinx/library/api/watchdog/ExplicitApiRequirement;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lorg/jetbrains/kotlinx/library/api/watchdog/ExplicitApiRequirement;
+	public static fun values ()[Lorg/jetbrains/kotlinx/library/api/watchdog/ExplicitApiRequirement;
+}
+
 public abstract class org/jetbrains/kotlinx/library/api/watchdog/GenerateApiWatchdogReportTask : org/jetbrains/kotlinx/library/api/watchdog/ApiWatchdogReportTask {
 }
 
@@ -52,6 +61,7 @@ public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension 
 	public final fun getDslMarkerWithoutExplicitTargets ()Lorg/gradle/api/provider/Property;
 	public final fun getEnabled ()Lorg/gradle/api/provider/Property;
 	public final fun getExhaustivePublicApi ()Lorg/gradle/api/provider/Property;
+	public final fun getExplicitApiRequirement ()Lorg/gradle/api/provider/Property;
 	public final fun getFunctionTypeAliasPublicApi ()Lorg/gradle/api/provider/Property;
 	public final fun getInconsistentParameterOrderInOverloads ()Lorg/gradle/api/provider/Property;
 	public final fun getInlineFunctionWithLogic ()Lorg/gradle/api/provider/Property;

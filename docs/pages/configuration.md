@@ -39,9 +39,9 @@ plugins {
 
 ## Explicit API mode
 
-The plugin requires
+By default, the plugin requires
 [explicit API mode](https://kotlinlang.org/docs/api-guidelines-simplicity.html#use-explicit-api-mode)
-in a module, because a library author decides the visibility of each declaration with it. Turn it on:
+to be enabled in the project. Turn it on:
 
 ```kotlin build.gradle.kts
 kotlin {
