@@ -115,11 +115,7 @@ class WatchdogFirCheckers internal constructor(
 
         /** The Gradle plugin passes the dependencies to platform compilations only. */
         private val dependencyExposureChecker = dependencyExposure
-            ?.let { configuration ->
-                val shared = sourceSetOwnership.transitiveDependenciesOf(session.moduleData)
-                if (shared == null) configuration else configuration.copy(transitiveDependencies = shared)
-            }
-            ?.let { NonTransitiveDependencyChecker(session, it) }
+            ?.let { NonTransitiveDependencyChecker(session, it, sourceSetOwnership::transitiveDependenciesOf) }
             ?.takeIf { enabled && !exemptingExistingApi }
 
         private val plainBasicDeclarationCheckers: Set<FirBasicDeclarationChecker> = basic.active + setOfNotNull(
@@ -221,6 +217,8 @@ class WatchdogFirCheckers internal constructor(
                 enclosing = enclosingExemptionProbes,
                 recorder = recorder,
                 scopeOf = sourceSetOwnership::scopeOf,
+                // A metadata compilation doesn't run these checkers.
+                platformOnly = { checker -> checker === dependencyExposureChecker || jvmOnly.any { it === checker } },
             ).takeIf { allChecks },
         )).wrapped(basic.disabled + internalApiTypeExposureDisabled) + setOfNotNull(
             // The compilation that checks a parent source set doesn't see the `actual` declarations of this one.

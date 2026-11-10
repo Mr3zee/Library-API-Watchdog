@@ -316,6 +316,14 @@ private object WatchdogTestDirectives : SimpleDirectivesContainer() {
     val REQUIRE_EXPLICIT_API_OFF by directive(
         description = "The checks run without explicit API mode (requireExplicitApi=false)",
     )
+
+    val SOURCE_SETS_CHECKED_ELSEWHERE by stringDirective(
+        description = "Common modules that another compilation checks (sourceSetsCheckedElsewhere option)",
+    )
+
+    val SOURCE_SETS_WITH_PLATFORM_CHECKS by stringDirective(
+        description = "Common modules with the platform checks (sourceSetsWithPlatformChecks option)",
+    )
 }
 
 private class WatchdogOptionsConfigurator(testServices: TestServices) : EnvironmentConfigurator(testServices) {
@@ -362,6 +370,14 @@ private class WatchdogOptionsConfigurator(testServices: TestServices) : Environm
         }
         if (WatchdogTestDirectives.REQUIRE_EXPLICIT_API_OFF in module.directives) {
             configuration.put(WatchdogConfigurationKeys.REQUIRE_EXPLICIT_API, false)
+        }
+        val checkedElsewhere = module.directives[WatchdogTestDirectives.SOURCE_SETS_CHECKED_ELSEWHERE]
+        if (checkedElsewhere.isNotEmpty()) {
+            configuration.put(WatchdogConfigurationKeys.SOURCE_SETS_CHECKED_ELSEWHERE, checkedElsewhere.toSet())
+        }
+        val platformChecked = module.directives[WatchdogTestDirectives.SOURCE_SETS_WITH_PLATFORM_CHECKS]
+        if (platformChecked.isNotEmpty()) {
+            configuration.put(WatchdogConfigurationKeys.SOURCE_SETS_WITH_PLATFORM_CHECKS, platformChecked.toSet())
         }
     }
 }

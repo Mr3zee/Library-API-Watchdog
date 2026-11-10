@@ -105,8 +105,8 @@ build in the same order reports them for a shared source set:
   A dependency counts as transitive for a shared source set when every target that compiles the
   source set publishes it with `api` or exempts it.
 - [`REDUNDANT_EXEMPTION`](./checks/special/redundant-exemption.md) on an `expect` declaration, when
-  the verdict depends on the `actual` declarations. The compilation sees only its own `actual`
-  declarations.
+  the verdict depends on the `actual` declarations or on the checks of the first two items. The
+  compilation sees only its own `actual` declarations.
 
 ## The `apiWatchdog` extension
 
