@@ -13,6 +13,7 @@ import kotlin.test.assertTrue
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome.FAILED
 import org.gradle.testkit.runner.TaskOutcome.SKIPPED
+import org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import org.intellij.lang.annotations.Language
 import org.jetbrains.kotlin.compiler.plugin.devkit.test.KotlinPlugins
 import org.jetbrains.kotlin.compiler.plugin.devkit.test.TEST_COMPILER_VERSION
@@ -906,9 +907,14 @@ class WatchdogProjectTest {
         }
 
         val result = project.buildAndFail("compileKotlinJvm", "compileKotlinJs", "--continue")
+        // The JVM compilation reports the common source set, so the JS compilation passes.
         result.assertTaskOutcome(":compileKotlinJvm", FAILED)
-        result.assertTaskOutcome(":compileKotlinJs", FAILED)
+        result.assertTaskOutcome(":compileKotlinJs", SUCCESS)
         result.assertNonTransitiveExposureReported("test.model.ExternalModel")
+
+        val js = project.buildAndFail("compileKotlinJs")
+        js.assertTaskOutcome(":compileKotlinJs", FAILED)
+        js.assertNonTransitiveExposureReported("test.model.ExternalModel")
     }
 
     @Test
@@ -1332,11 +1338,14 @@ class WatchdogProjectTest {
             dependencies(implementation(LIFECYCLE_RUNTIME))
         }
 
-        val result = kmpAndroidProject(target, lifecycleHooks)
-            .buildAndFail(target.mainCompileTask, "compileKotlinJvm", "--continue")
-        result.assertNonTransitiveExposureReported("androidx.lifecycle.LifecycleRegistry")
-        result.assertTaskOutcome(":${target.mainCompileTask}", FAILED)
-        result.assertTaskOutcome(":compileKotlinJvm", FAILED)
+        // A build of both targets reports the common source set in the JVM compilation only.
+        val project = kmpAndroidProject(target, lifecycleHooks)
+        val android = project.buildAndFail(target.mainCompileTask)
+        android.assertNonTransitiveExposureReported("androidx.lifecycle.LifecycleRegistry")
+        android.assertTaskOutcome(":${target.mainCompileTask}", FAILED)
+        val jvm = project.buildAndFail("compileKotlinJvm")
+        jvm.assertNonTransitiveExposureReported("androidx.lifecycle.LifecycleRegistry")
+        jvm.assertTaskOutcome(":compileKotlinJvm", FAILED)
 
         kmpAndroidProject(target) { lifecycleHooks(); buildScript(exemptScript(LIFECYCLE_RUNTIME)) }
             .build(target.mainCompileTask, "compileKotlinJvm")

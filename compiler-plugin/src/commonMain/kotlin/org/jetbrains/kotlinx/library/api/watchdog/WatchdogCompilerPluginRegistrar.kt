@@ -57,7 +57,10 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
                 sourceSetOwnership = SourceSetOwnership(
                     checkedElsewhere =
                         configuration[WatchdogConfigurationKeys.SOURCE_SETS_CHECKED_ELSEWHERE, emptySet()],
-                    jvmChecked = configuration[WatchdogConfigurationKeys.SOURCE_SETS_WITH_JVM_CHECKS, emptySet()],
+                    platformChecked =
+                        configuration[WatchdogConfigurationKeys.SOURCE_SETS_WITH_PLATFORM_CHECKS, emptySet()],
+                    transitiveDependencies =
+                        configuration[WatchdogConfigurationKeys.SOURCE_SET_TRANSITIVE_DEPENDENCY_PATHS, emptyMap()],
                 ),
             ),
         )

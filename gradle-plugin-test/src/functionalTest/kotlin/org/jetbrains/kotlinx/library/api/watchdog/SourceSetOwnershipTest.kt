@@ -24,8 +24,9 @@ class SourceSetOwnershipTest {
 
         val result = project.build("compileKotlinJvm", "compileKotlinJs", "compileKotlinWasmJs")
 
-        result.assertTaskOutcome(":compileCommonMainKotlinMetadata", SUCCESS)
-        result.assertTaskOutcome(":compileWebMainKotlinMetadata", SUCCESS)
+        // The build runs no metadata compilation, so the JVM compilation reports commonMain and the JS one webMain.
+        result.assertTaskOutcome(":compileCommonMainKotlinMetadata", null)
+        result.assertTaskOutcome(":compileWebMainKotlinMetadata", null)
         result.assertReportedIn(OPEN_API_WITHOUT_SUBCLASS_OPT_IN, "SharedApi.kt", "WebApi.kt", "JvmApi.kt")
         // A metadata compilation can't run a JVM-only check, so the JVM compilation runs it on the shared source set.
         result.assertReportedIn(TOP_LEVEL_API_WITHOUT_JVM_NAME, "SharedApi.kt", "JvmApi.kt")
@@ -39,7 +40,8 @@ class SourceSetOwnershipTest {
         }
 
         val js = project.build("compileKotlinJs")
-        js.assertTaskOutcome(":compileCommonMainKotlinMetadata", SUCCESS)
+        // The JS compilation is the only one in the build, so it checks the common source set itself.
+        js.assertTaskOutcome(":compileCommonMainKotlinMetadata", null)
         js.assertReportedIn(OPEN_API_WITHOUT_SUBCLASS_OPT_IN, "SharedApi.kt")
         js.assertNotReported(TOP_LEVEL_API_WITHOUT_JVM_NAME)
 
@@ -56,8 +58,8 @@ class SourceSetOwnershipTest {
 
         val result = project.buildAndFail("compileKotlinJs")
 
-        result.assertTaskOutcome(":compileCommonMainKotlinMetadata", FAILED)
-        result.assertTaskOutcome(":compileKotlinJs", null)
+        result.assertTaskOutcome(":compileCommonMainKotlinMetadata", null)
+        result.assertTaskOutcome(":compileKotlinJs", FAILED)
         result.assertReportedIn(OPEN_API_WITHOUT_SUBCLASS_OPT_IN, "SharedApi.kt")
     }
 
@@ -128,11 +130,8 @@ class SourceSetOwnershipTest {
 
         project.build("compileKotlinJvm", target.mainCompileTask, "compileKotlinJs")
             .assertReportedOnce("SharedApi.kt", "AndroidApi.kt", "JvmApi.kt")
-        // The JVM compilation runs the JVM-only checks on the common source set.
-        project.build(target.mainCompileTask, "--rerun-tasks").apply {
-            assertReportedIn(OPEN_API_WITHOUT_SUBCLASS_OPT_IN, "SharedApi.kt", "AndroidApi.kt")
-            assertReportedIn(TOP_LEVEL_API_WITHOUT_JVM_NAME, "AndroidApi.kt")
-        }
+        // The Android compilation is the only one in the build, so it runs every check on the common source set.
+        project.build(target.mainCompileTask, "--rerun-tasks").assertReportedOnce("SharedApi.kt", "AndroidApi.kt")
     }
 
     @Test

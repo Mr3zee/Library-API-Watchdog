@@ -82,32 +82,31 @@ Applying the plugin:
 
 ## Multiplatform projects
 
-A platform compilation compiles its shared source sets again. One compilation reports the diagnostics
-of a source set, so the build output has each diagnostic once:
+A platform compilation compiles its shared source sets again. One compilation of a build reports the
+diagnostics of a source set, so the build output has each diagnostic once. Among the compilations that
+the build runs, the first of these reports them:
 
-| Source set | Compilation that reports it |
-|------------|-----------------------------|
-| A source set of one target, such as `jvmMain`. | The compilation of the target. |
-| A shared source set with a metadata compilation, such as `commonMain`. | The metadata compilation, such as `compileCommonMainKotlinMetadata`. |
-| A shared source set without a metadata compilation. | Every platform compilation that compiles it. |
+1. The metadata compilation of the source set, such as `compileCommonMainKotlinMetadata`.
+2. The compilation of a `jvm` target, then of an Android target, then of the other targets by name.
 
-Kotlin doesn't compile the metadata of a source set that only JVM and Android targets share, so each
-of these targets reports it.
+So `compileKotlinJs` alone reports the diagnostics of `commonMain`, and `build` reports them in
+`compileCommonMainKotlinMetadata`. A build doesn't compile anything extra for the checks.
 
-Each platform compile task depends on the metadata compile tasks of its shared source sets. A build of
-one target, such as `compileKotlinJvm`, still checks `commonMain`, and an error there fails the build.
+Kotlin doesn't compile the metadata of a source set that only JVM and Android targets share. Then the
+JVM compilation reports the diagnostics, or the Android compilation when the build doesn't compile
+the JVM target.
 
-Three kinds of diagnostics come from a platform compilation, because a metadata compilation can't
-report them:
+A metadata compilation can't report three kinds of diagnostics. The first platform compilation of the
+build in the same order reports them for a shared source set:
 
-- The [Java interop checks](./checks/java-interop/java-interop.md) of a shared source set. One JVM
-  compilation reports them: the `main` compilation of a `jvm` target, or of an Android target when the
-  project doesn't have a `jvm` target.
+- The [Java interop checks](./checks/java-interop/java-interop.md). Only a JVM or an Android
+  compilation reports them.
+- [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md).
+  A dependency counts as transitive for a shared source set when every target that compiles the
+  source set publishes it with `api` or exempts it.
 - [`REDUNDANT_EXEMPTION`](./checks/special/redundant-exemption.md) on an `expect` declaration, when
-  the verdict depends on the `actual` declarations. Each platform compilation reports it.
-- [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md)
-  on a shared source set, because the check reads the dependencies of a platform. Each platform
-  compilation reports it.
+  the verdict depends on the `actual` declarations. The compilation sees only its own `actual`
+  declarations.
 
 ## The `apiWatchdog` extension
 

@@ -7,6 +7,7 @@ import org.jetbrains.kotlin.diagnostics.KtDiagnostic
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticWithSource
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.FirAnnotationContainer
+import org.jetbrains.kotlin.fir.FirModuleData
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
@@ -306,7 +307,9 @@ internal class EnclosingExemptionRedundancyChecker(
 }
 
 /**
- * Judges the exemptions of `expect` declarations. A checker with [PairSide.EXPECT] decides on the
+ * Judges the exemptions of `expect` declarations. [scopeOf] gives the role of this compilation for the
+ * source set of the declaration: the owner reports every verdict, and a [CheckScope.PLATFORM] compilation
+ * reports only the verdicts that need the `actual` declarations. A checker with [PairSide.EXPECT] decides on the
  * `expect` alone. A checker with [PairSide.ACTUAL] or [PairSide.BOTH] reads the exemption through the
  * `actual` declarations. So this checker runs in the platform session, where the symbol provider finds
  * them. Without a visible `actual`, such an exemption stays. The common compilation and the IDE report
@@ -325,6 +328,7 @@ internal class ExpectExemptionRedundancyChecker(
     private val disabled: Collection<ExemptingChecker>,
     private val enclosing: EnclosingExemptionProbes,
     private val recorder: WatchdogDiagnosticsRecorder? = null,
+    private val scopeOf: (FirModuleData) -> CheckScope = { CheckScope.ALL },
 ) : FirBasicDeclarationChecker(MppCheckerKind.Platform) {
     private val probes: List<EnclosingExemptionProbes.Probe> = buildList {
         fun <D : FirDeclaration> register(checkers: Collection<FirDeclarationChecker<D>>, accepts: (FirDeclaration) -> Boolean) {
@@ -344,37 +348,55 @@ internal class ExpectExemptionRedundancyChecker(
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirDeclaration) {
         if (declaration !is FirMemberDeclaration || !declaration.hasProbedShape() || !declaration.isExpectedDeclaration()) return
+        val scope = scopeOf(declaration.moduleData)
+        // Another platform compilation reports the source set. Its `actual` declarations differ, so in
+        // collection mode this compilation still records its own verdicts for the fixer, without output.
+        if (scope == CheckScope.NONE && recorder == null) return
+        val actualOnly = scope != CheckScope.ALL
         val candidates = declaration.exemptionCandidates(allExemptions)
         val classExemptions = (declaration as? FirRegularClass)?.let { enclosing.classExemptions(it) }.orEmpty()
         if (candidates.isEmpty() && classExemptions.isEmpty()) return
 
+        val output = if (scope == CheckScope.NONE) recordingOnly(reporter, recorder!!) else reporter
         val actuals: List<FirDeclaration>? by lazy { declaration.findActuals() }
         for (candidate in candidates) {
-            if (declaration.verdict(candidate, candidates) { actuals } == false) {
-                reportRedundantExemption(candidate.annotation, candidate.kind)
+            if (declaration.verdict(candidate, candidates, actualOnly) { actuals } == false) {
+                context(context, output) { reportRedundantExemption(candidate.annotation, candidate.kind) }
                 recordRedundantCopies(candidate, candidate.kind) { actuals }
             }
         }
         if (declaration !is FirRegularClass) return
         for (exemption in classExemptions) {
-            if (declaration.classVerdict(exemption) { actuals } == false) {
-                reportRedundantExemption(exemption.annotation, "classAndMembers")
+            if (declaration.classVerdict(exemption, actualOnly) { actuals } == false) {
+                context(context, output) { reportRedundantExemption(exemption.annotation, "classAndMembers") }
                 recordRedundantClassCopies(exemption) { actuals }
             }
         }
     }
 
-    /** Whether the `expect` needs [candidate]. Null means unknown. */
+    /** Records a diagnostic for the fixer without passing it to the compiler output. */
+    private fun recordingOnly(reporter: DiagnosticReporter, recorder: WatchdogDiagnosticsRecorder): DiagnosticReporter =
+        delegatingDiagnosticReporter(reporter) { diagnostic, diagnosticContext ->
+            if (diagnostic != null && !diagnosticContext.isDiagnosticSuppressed(diagnostic)) {
+                recorder.record(diagnostic, diagnosticContext)
+            }
+        }
+
+    /**
+     * Whether the `expect` needs [candidate]. Null means unknown. With [actualOnly], a verdict that the
+     * `expect` alone decides is null, because the owner of the source set reports it.
+     */
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun FirMemberDeclaration.verdict(
         candidate: ExemptionCandidate,
         candidates: List<ExemptionCandidate>,
+        actualOnly: Boolean,
         actuals: () -> List<FirDeclaration>?,
     ): Boolean? {
         val readers = probes.filter { it.accepts(this) && candidate.isReadBy(it.exempting, this) }
-        if (readers.isEmpty()) return if (disabled.any { candidate.isReadBy(it, this) }) false else null
+        if (readers.isEmpty()) return if (!actualOnly && disabled.any { candidate.isReadBy(it, this) }) false else null
         if (readers.any { it.checker.needs(this, candidate, candidates, it.checker.probedDiagnostics(this)) }) return true
-        if (readers.all { it.exempting.pairSide == PairSide.EXPECT }) return false
+        if (readers.all { it.exempting.pairSide == PairSide.EXPECT }) return if (actualOnly) null else false
         // Other checkers read an `actual typealias` and the property of a `val` constructor parameter.
         return actuals()?.any { actual ->
             (listOf(actual) + actual.valParameterProperty(candidate)).any { probed ->
@@ -442,15 +464,16 @@ internal class ExpectExemptionRedundancyChecker(
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun FirRegularClass.classVerdict(
         exemption: EnclosingExemptionProbes.ClassExemption,
+        actualOnly: Boolean,
         actuals: () -> List<FirDeclaration>?,
     ): Boolean? {
-        if (exemption.probes.isEmpty()) return false
+        if (exemption.probes.isEmpty()) return if (actualOnly) null else false
         val ignored = buildList {
             add(exemption.annotation)
             enclosing.collectNestedExemptions(this@classVerdict, exemption.classId, this)
         }
         if (enclosing.isNeeded(this, ignored, exemption.probes)) return true
-        if (exemption.probes.all { it.exempting.pairSide == PairSide.EXPECT }) return false
+        if (exemption.probes.all { it.exempting.pairSide == PairSide.EXPECT }) return if (actualOnly) null else false
         val actualClasses = actuals()?.filterIsInstance<FirRegularClass>() ?: return null
         val ignoredWithCopies = buildList {
             addAll(ignored)

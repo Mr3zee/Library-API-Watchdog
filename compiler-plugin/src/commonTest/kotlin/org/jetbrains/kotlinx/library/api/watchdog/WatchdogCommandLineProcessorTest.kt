@@ -139,13 +139,33 @@ class WatchdogCommandLineProcessorTest {
     @Test
     fun `source set options split names and ignore the blank placeholder`() {
         process(WatchdogCommandLineProcessor.SOURCE_SETS_CHECKED_ELSEWHERE_OPTION, "commonMain:nativeMain")
-        process(WatchdogCommandLineProcessor.SOURCE_SETS_WITH_JVM_CHECKS_OPTION, "")
+        process(WatchdogCommandLineProcessor.SOURCE_SETS_WITH_PLATFORM_CHECKS_OPTION, "")
 
         assertEquals(
             setOf("commonMain", "nativeMain"),
             configuration[WatchdogConfigurationKeys.SOURCE_SETS_CHECKED_ELSEWHERE],
         )
-        assertEquals(emptySet(), configuration[WatchdogConfigurationKeys.SOURCE_SETS_WITH_JVM_CHECKS])
+        assertEquals(emptySet(), configuration[WatchdogConfigurationKeys.SOURCE_SETS_WITH_PLATFORM_CHECKS])
+    }
+
+    @Test
+    fun `source set transitive paths split entries and paths`() {
+        val separator = java.io.File.pathSeparator
+        process(
+            WatchdogCommandLineProcessor.SOURCE_SET_TRANSITIVE_DEPENDENCY_PATHS_OPTION,
+            "commonMain=a.jar${separator}b=c.jar\twebMain=",
+        )
+
+        assertEquals(
+            mapOf("commonMain" to setOf("a.jar", "b=c.jar"), "webMain" to emptySet()),
+            configuration[WatchdogConfigurationKeys.SOURCE_SET_TRANSITIVE_DEPENDENCY_PATHS],
+        )
+        assertInvalid(
+            WatchdogCommandLineProcessor.SOURCE_SET_TRANSITIVE_DEPENDENCY_PATHS_OPTION,
+            "commonMain",
+            "Invalid value for watchdog option 'sourceSetTransitiveDependencyPaths': " +
+                    "expected tab-separated <source set>=<paths> entries.",
+        )
     }
 
     @Test

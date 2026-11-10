@@ -54,6 +54,13 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
     /** The compile tasks that have checks when the project turns explicit API mode on. */
     private val checkedCompileTaskPaths = mutableSetOf<String>()
 
+    /** The enabled tasks of this project in the task graph. Null before the graph is ready. */
+    @Volatile
+    private var tasksInGraph: Set<String>? = null
+
+    /** The published and the exempt dependency views of each compilation, by compile task name. */
+    private val publishedDependencyViews = mutableMapOf<String, PublishedDependencyViews>()
+
     /**
      * KGP calls it after `afterEvaluate`, so `apiWatchdog.enabled` is final here. A raw
      * `-Xexplicit-api` flag turns explicit API mode on for test compilations too, so the
@@ -208,6 +215,13 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         this@WatchdogSupportPlugin.exemptsTaskPaths = exemptsTaskPaths
         gradle.taskGraph.whenReady { graph ->
             collectDiagnostics.set(exemptsTaskPaths.any(graph::hasTask))
+            // Project isolation forbids reading the tasks of other projects from the graph.
+            val kotlin = extensions.findByName("kotlin") as? KotlinTargetsContainer
+            tasksInGraph = kotlin?.targets.orEmpty().asSequence()
+                .flatMap { it.compilations }
+                .map { it.compileKotlinTaskName }
+                .filter { name -> graph.hasTask(taskPath(name)) && tasks.findByName(name)?.enabled == true }
+                .mapTo(hashSetOf()) { taskPath(it) }
         }
         // Both tasks write the report data file. When the build requests `exemptExistingApi`, the report
         // artifact comes from that run, not from a second compilation in `generateApiWatchdogReport`.
@@ -260,12 +274,10 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         val reportFile = layout.buildDirectory.file(
             "reports/api-watchdog/diagnostics/${kotlinCompilation.compileKotlinTaskName}.tsv"
         )
-        // KGP creates the metadata compilations late, so every read of them is lazy.
-        val metadataCompilations = lazy { metadataCompilationsOf(kotlinCompilation) }
-        // A build of one target still checks the shared source sets.
-        kotlinCompilation.compileTaskProvider.configure { task ->
-            task.dependsOn(provider { metadataCompilations.value.map { it.compileTaskProvider } })
-        }
+        publishedDependencyViews[kotlinCompilation.compileKotlinTaskName] =
+            PublishedDependencyViews(transitiveDependencies, exemptNonTransitiveDependencies)
+        // The task graph decides the roles, so they are read when the compile task runs.
+        val roles = lazy { sourceSetRoles(kotlinCompilation, collect.get()) }
 
         if (feedsReport) {
             checkedCompileTaskPaths += taskPath(kotlinCompilation.compileKotlinTaskName)
@@ -320,7 +332,10 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         // Native compile tasks read the option list at configuration time, before the task graph
         // is ready. So the set of options is fixed and each value that depends on collection is
         // lazy. The compiler plugin ignores a blank value.
-        val checkDependencyExposure = extension.publicTypesMustBeTransitiveDependencies.map { it && !collect.get() }
+        // The metadata classpath holds transformed klibs, so the check can't classify a type there.
+        val checkDependencyExposure = extension.publicTypesMustBeTransitiveDependencies.map {
+            it && !collect.get() && kotlinCompilation.platformType != KotlinPlatformType.common
+        }
         val compilesForAndroid = compileDependencies.map { kotlinCompilation.compilesForAndroid(it) }
         return providers.provider {
             buildList {
@@ -415,16 +430,25 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 add(
                     SubpluginOption(
                         "sourceSetsCheckedElsewhere",
-                        lazy { metadataCompilations.value.joinToString(":") { it.name } },
+                        lazy { roles.value.checkedElsewhere.joinToString(":") },
                     ),
                 )
                 add(
                     SubpluginOption(
-                        "sourceSetsWithJvmChecks",
+                        "sourceSetsWithPlatformChecks",
+                        lazy { roles.value.platformChecks.joinToString(":") },
+                    ),
+                )
+                add(
+                    SubpluginOption(
+                        "sourceSetTransitiveDependencyPaths",
                         lazy {
-                            metadataCompilations.value.map { it.name }
-                                .filter { jvmCheckOwner(it) == kotlinCompilation }
-                                .joinToString(":")
+                            if (!checkDependencyExposure.get()) return@lazy ""
+                            val android = compilesForAndroid.get()
+                            roles.value.dependencyChecked.joinToString("\t") { sourceSet ->
+                                val files = sharedTransitiveFiles(sourceSet, compileDependencies.get(), android)
+                                "$sourceSet=" + files.joinToString(File.pathSeparator, transform = File::getPath)
+                            }
                         },
                     ),
                 )
@@ -485,42 +509,119 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
     }
 
     /**
-     * The metadata compilations of the source sets of [kotlinCompilation]. A metadata compilation has
-     * the name of its source set, and it is the only compilation that checks the source set. KGP
-     * creates one only for a source set that several targets share. KGP disables its task when the
-     * host can't compile it and when only JVM and Android targets share the source set
-     * (`KotlinMetadataTargetConfigurator.isMetadataCompilationSupported`).
+     * The roles of [kotlinCompilation] for its parent source sets. Each source set has an owner among
+     * the compilations that run checks and whose task is in the task graph, the first of:
+     *
+     * 1. A metadata compilation. KGP creates one only for a source set that several targets share. It
+     *    disables the task when the host can't compile it and when only JVM and Android targets share
+     *    the source set (`KotlinMetadataTargetConfigurator.isMetadataCompilationSupported`).
+     * 2. A `jvm` target, then an Android target, then the other targets by name.
+     * 3. The `main` compilation, then the other compilations by name.
+     *
+     * The first platform compilation in the same order runs the checks that a metadata compilation
+     * can't run: the Java interop checks, the dependency check, and the redundancy verdicts that need
+     * the `actual` declarations. Before the task graph is ready (IDE sync) and for a task outside the
+     * graph, the compilation checks every source set.
      */
-    private fun Project.metadataCompilationsOf(kotlinCompilation: KotlinCompilation<*>): List<KotlinCompilation<*>> {
-        if (kotlinCompilation.platformType == KotlinPlatformType.common) return emptyList()
-        val kotlin = extensions.findByName("kotlin") as? KotlinTargetsContainer ?: return emptyList()
-        val metadata = kotlin.targets.findByName(METADATA_TARGET_NAME) ?: return emptyList()
-        return kotlinCompilation.allKotlinSourceSets
-            .mapNotNull { metadata.compilations.findByName(it.name) }
-            .filter { isApplicable(it) && it.compileTaskProvider.get().enabled }
+    private fun Project.sourceSetRoles(kotlinCompilation: KotlinCompilation<*>, collecting: Boolean): SourceSetRoles {
+        val parents = kotlinCompilation.allKotlinSourceSets.map { it.name } - kotlinCompilation.defaultSourceSet.name
+        val graph = tasksInGraph
+        val kotlin = extensions.findByName("kotlin") as? KotlinTargetsContainer
+        if (parents.isEmpty() || graph == null || kotlin == null ||
+            taskPath(kotlinCompilation.compileKotlinTaskName) !in graph
+        ) {
+            return SourceSetRoles(emptyList(), emptyList(), parents)
+        }
+        val running = checkingCompilations(kotlin, collecting)
+            .filter { taskPath(it.compileKotlinTaskName) in graph }
+        val order = ownerOrder()
+        val checkedElsewhere = mutableListOf<String>()
+        val platformChecks = mutableListOf<String>()
+        val dependencyChecked = mutableListOf<String>()
+        for (sourceSet in parents) {
+            // A metadata compilation gets its parent source sets as klibs (`-Xrefines-paths`), not as sources.
+            val candidates = running.filter { compilation ->
+                if (compilation.platformType == KotlinPlatformType.common) {
+                    compilation.defaultSourceSet.name == sourceSet
+                } else {
+                    compilation.allKotlinSourceSets.any { it.name == sourceSet }
+                }
+            }
+            val owner = candidates.minWithOrNull(order) ?: kotlinCompilation
+            val platformOwner = candidates.filter { it.platformType != KotlinPlatformType.common }.minWithOrNull(order)
+            if (owner != kotlinCompilation) checkedElsewhere += sourceSet
+            if (owner != kotlinCompilation && platformOwner == kotlinCompilation) platformChecks += sourceSet
+            if (platformOwner == kotlinCompilation) dependencyChecked += sourceSet
+        }
+        return SourceSetRoles(checkedElsewhere, platformChecks, dependencyChecked)
     }
 
+    /** The compilations whose compiler plugin runs the checks. */
+    private fun Project.checkingCompilations(kotlin: KotlinTargetsContainer, collecting: Boolean): List<KotlinCompilation<*>> {
+        val extension = extensions.getByType(WatchdogGradleExtension::class.java)
+        val explicitApiRequired = extension.explicitApiRequirement.get() == ExplicitApiRequirement.FAIL
+        return kotlin.targets.flatMap { it.compilations }.filter { compilation ->
+            // KGP skips the `main` metadata compilation (`onlyIf { false }`).
+            val skippedMetadata = compilation.platformType == KotlinPlatformType.common &&
+                    compilation.name == KotlinCompilation.MAIN_COMPILATION_NAME
+            val hasExplicitApi = (compilation.hasExplicitApiFromExtension() || hasRawExplicitApiFlag()) &&
+                    (hasExplicitApiMode() || collecting)
+            isApplicable(compilation) && !skippedMetadata && (!explicitApiRequired || hasExplicitApi)
+        }
+    }
+
+    private fun Project.ownerOrder(): Comparator<KotlinCompilation<*>> = compareBy(
+        { it.platformType != KotlinPlatformType.common },
+        { it.platformType != KotlinPlatformType.jvm && it.platformType != KotlinPlatformType.androidJvm },
+        { it.compilesForAndroid(configurations.getByName(it.compileDependencyConfigurationName)) },
+        { it.target.name },
+        { it.name != KotlinCompilation.MAIN_COMPILATION_NAME },
+        { it.name },
+    )
+
     /**
-     * The compilation that runs the JVM-only checks on the shared source set [sourceSetName], because
-     * a metadata compilation can't run them. The first of: a `jvm` target before an Android target,
-     * the target name, the `main` compilation, the compilation name.
+     * The files of [compileDependencies] that every target compiling [sourceSet] publishes
+     * transitively or exempts. A consumer of each of these targets then gets the types of the
+     * source set. A Kotlin Multiplatform library resolves to a platform module through
+     * `available-at`, so the comparison uses the root module.
      */
-    private fun Project.jvmCheckOwner(sourceSetName: String): KotlinCompilation<*>? {
-        val kotlin = extensions.findByName("kotlin") as? KotlinTargetsContainer ?: return null
-        return kotlin.targets.asSequence()
-            .filter { it.platformType == KotlinPlatformType.jvm || it.platformType == KotlinPlatformType.androidJvm }
-            .flatMap { it.compilations }
-            .filter { compilation ->
-                isApplicable(compilation) && compilation.allKotlinSourceSets.any { it.name == sourceSetName }
+    private fun Project.sharedTransitiveFiles(
+        sourceSet: String,
+        compileDependencies: Configuration,
+        android: Boolean,
+    ): List<File> {
+        val kotlin = extensions.findByName("kotlin") as? KotlinTargetsContainer ?: return emptyList()
+        val targets = kotlin.targets.flatMap { it.compilations }.filter { compilation ->
+            isApplicable(compilation) && compilation.platformType != KotlinPlatformType.common &&
+                    compilation.allKotlinSourceSets.any { it.name == sourceSet }
+        }
+        val shared = targets.map { compilation ->
+            val views = publishedDependencyViews[compilation.compileKotlinTaskName] ?: return emptyList()
+            rootComponents(views.transitive.get()) + rootComponents(views.exempt.get())
+        }.reduceOrNull { all, next -> all intersect next } ?: return emptyList()
+        val roots = externalVariantRoots(compileDependencies)
+        return dependencyArtifacts(compileDependencies, android).artifacts
+            .filter { artifact ->
+                val component = artifact.id.componentIdentifier
+                (roots[component] ?: component) in shared
             }
-            .minWithOrNull(
-                compareBy<KotlinCompilation<*>>(
-                    { it.compilesForAndroid(configurations.getByName(it.compileDependencyConfigurationName)) },
-                    { it.target.name },
-                    { it.name != KotlinCompilation.MAIN_COMPILATION_NAME },
-                    { it.name },
-                ),
-            )
+            .map { it.file }
+    }
+
+    private fun rootComponents(configuration: Configuration): Set<ComponentIdentifier> {
+        val roots = externalVariantRoots(configuration)
+        return configuration.incoming.resolutionResult.allComponents.mapTo(hashSetOf()) { roots[it.id] ?: it.id }
+    }
+
+    /** Maps the component of each `available-at` platform module to the root module that points to it. */
+    private fun externalVariantRoots(configuration: Configuration): Map<ComponentIdentifier, ComponentIdentifier> {
+        val roots = HashMap<ComponentIdentifier, ComponentIdentifier>()
+        for (component in configuration.incoming.resolutionResult.allComponents) {
+            for (variant in component.variants) {
+                variant.externalVariant.ifPresent { roots[it.owner] = component.id }
+            }
+        }
+        return roots
     }
 
     /** The `com.android.kotlin.multiplatform.library` target of AGP 8 reports platform type `jvm`. */
@@ -618,6 +719,22 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
 
     private fun Project.taskPath(taskName: String): String = if (path == ":") ":$taskName" else "$path:$taskName"
 
+    /**
+     * - [checkedElsewhere]: the parent source sets that another compilation checks.
+     * - [platformChecks]: the subset that gets the platform-only checks here.
+     * - [dependencyChecked]: the parent source sets that get the dependency check here.
+     */
+    private class SourceSetRoles(
+        val checkedElsewhere: List<String>,
+        val platformChecks: List<String>,
+        val dependencyChecked: List<String>,
+    )
+
+    private class PublishedDependencyViews(
+        val transitive: NamedDomainObjectProvider<Configuration>,
+        val exempt: NamedDomainObjectProvider<Configuration>,
+    )
+
     private fun AttributeContainer.copyFrom(source: AttributeContainer) {
         for (key in source.keySet()) {
             @Suppress("UNCHECKED_CAST")
@@ -633,7 +750,6 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         private const val SARIF_REPORT_FILE = "reports/api-watchdog/report.sarif"
         private const val REPORT_DATA_FILE = "reports/api-watchdog/report.data"
         private const val ANDROID_CLASSES_JAR = "android-classes-jar"
-        private const val METADATA_TARGET_NAME = "metadata"
         internal const val EXEMPT_NON_TRANSITIVE_CONFIGURATION_NAME = "apiWatchdogExemptNonTransitive"
 
         private const val TEST_COMPILATION_NAME_SUFFIX = "Test"

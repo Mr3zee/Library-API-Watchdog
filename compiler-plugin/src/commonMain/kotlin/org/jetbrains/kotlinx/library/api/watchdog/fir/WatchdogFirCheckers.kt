@@ -40,11 +40,11 @@ class WatchdogFirCheckers internal constructor(
     private val checksOn = !requireExplicitApi ||
             session.languageVersionSettings.getFlag(AnalysisFlags.explicitApiMode) != ExplicitApiMode.DISABLED
 
-    private val scope = sourceSetOwnership.scopeOf(session)
+    private val scope = sourceSetOwnership.scopeOf(session.moduleData)
 
     private val enabled = checksOn && scope != CheckScope.NONE
 
-    /** The checks without a severity setting don't run in [CheckScope.JVM_ONLY]. */
+    /** The checks without a severity setting don't run in [CheckScope.PLATFORM]. */
     private val allChecks = enabled && scope == CheckScope.ALL
 
     override val declarationCheckers: DeclarationCheckers = object : DeclarationCheckers() {
@@ -113,12 +113,14 @@ class WatchdogFirCheckers internal constructor(
         private val internalApiTypeExposureDisabled: List<ExemptingChecker> =
             listOf(internalApiTypeExposure).takeIf { allChecks && !publicTypeWithInternalApiEnabled }.orEmpty()
 
-        /**
-         * Runs in every scope. The metadata compilation of a shared source set doesn't have the
-         * dependency files of a platform, so the check doesn't report anything there.
-         */
-        private val dependencyExposureChecker = dependencyExposure?.let { NonTransitiveDependencyChecker(session, it) }
-            ?.takeIf { checksOn && !exemptingExistingApi }
+        /** The Gradle plugin passes the dependencies to platform compilations only. */
+        private val dependencyExposureChecker = dependencyExposure
+            ?.let { configuration ->
+                val shared = sourceSetOwnership.transitiveDependenciesOf(session.moduleData)
+                if (shared == null) configuration else configuration.copy(transitiveDependencies = shared)
+            }
+            ?.let { NonTransitiveDependencyChecker(session, it) }
+            ?.takeIf { enabled && !exemptingExistingApi }
 
         private val plainBasicDeclarationCheckers: Set<FirBasicDeclarationChecker> = basic.active + setOfNotNull(
             ExemptionExplanationChecker.declarationChecker
@@ -198,7 +200,7 @@ class WatchdogFirCheckers internal constructor(
 
         override val classCheckers: Set<FirClassChecker> = (classes.active + setOfNotNull(
             EnclosingExemptionRedundancyChecker(enclosingExemptionProbes)
-                .takeIf { enabled || dependencyExposureChecker != null },
+                .takeIf { enabled },
         )).wrapped(classes.disabled)
 
         override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> = (plainBasicDeclarationCheckers + setOfNotNull(
@@ -218,6 +220,7 @@ class WatchdogFirCheckers internal constructor(
                 },
                 enclosing = enclosingExemptionProbes,
                 recorder = recorder,
+                scopeOf = sourceSetOwnership::scopeOf,
             ).takeIf { allChecks },
         )).wrapped(basic.disabled + internalApiTypeExposureDisabled) + setOfNotNull(
             // The compilation that checks a parent source set doesn't see the `actual` declarations of this one.
