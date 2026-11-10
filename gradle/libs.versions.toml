@@ -6,7 +6,7 @@ kotlinIdeMin = "262"
 # https://github.com/Kotlin/compiler-plugin-dev-kit
 devkit = "0.0.4-dev-375"
 # https://github.com/Kotlin/dokka
-dokka = "2.2.0"
+dokka = "2.3.0"
 # https://github.com/GradleUp/shadow
 shadow = "9.6.1"
 # https://github.com/vanniktech/gradle-maven-publish-plugin
