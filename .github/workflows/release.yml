@@ -35,7 +35,7 @@ jobs:
     steps:
       # The plan reads the release tags.
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -86,7 +86,7 @@ jobs:
       NEXT_PART: ${{ needs.check.outputs.next_part }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -218,7 +218,7 @@ jobs:
     steps:
       # The token can write to the repository, so only the tag step gets it, not the build.
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: ${{ needs.prepare.outputs.sha }}
           persist-credentials: false
@@ -274,7 +274,7 @@ jobs:
     steps:
       # The notes are the changelog section of the release commit.
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: ${{ needs.prepare.outputs.sha }}
 
@@ -333,7 +333,7 @@ jobs:
       CHANGELOG_BRANCH: release-changelog/${{ inputs.version }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: main
           fetch-depth: 0

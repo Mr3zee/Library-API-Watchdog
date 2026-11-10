@@ -66,7 +66,7 @@ jobs:
       tasks: ${{ steps.matrix.outputs.tasks }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
 
@@ -95,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
 
@@ -140,7 +140,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
 
@@ -183,7 +183,7 @@ jobs:
         task: ${{ fromJSON(needs.functional-test-matrix.outputs.tasks) }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
 
