@@ -102,6 +102,7 @@ open class ModuleSpec internal constructor(
     internal val scriptParts = mutableListOf<String>()
     internal val imports = linkedSetOf<String>()
     internal var plugins: List<Plugin>? = null
+    internal val extraPlugins = mutableListOf<Plugin>()
 
     /**
      * A Kotlin file of [code] with a package statement and imports. [defaultImports] imports the
@@ -170,6 +171,11 @@ open class ModuleSpec internal constructor(
 
     fun imports(vararg imports: String) {
         this.imports += imports
+    }
+
+    /** Plugins after the default plugins. A plugin of a subproject needs its version, because the root doesn't declare it. */
+    fun withPlugins(vararg plugins: Plugin) {
+        extraPlugins += plugins
     }
 
     /** Replaces the default plugins and removes the default Kotlin script. */
@@ -288,11 +294,11 @@ internal class WatchdogFixture(
         if (spec.plugins != null) return renderCustom(spec, subprojectKotlinPlugins())
         when (kind) {
             ProjectKind.Jvm -> {
-                plugins(KotlinPlugins.jvm(kotlinVersion), pluginUnderTest)
+                plugins(listOf(KotlinPlugins.jvm(kotlinVersion), pluginUnderTest) + spec.extraPlugins)
                 finish(spec, explicitApiBlock())
             }
             is ProjectKind.Kmp -> {
-                plugins(KotlinPlugins.multiplatform(kotlinVersion), pluginUnderTest)
+                plugins(listOf(KotlinPlugins.multiplatform(kotlinVersion), pluginUnderTest) + spec.extraPlugins)
                 finish(spec, explicitApiBlock() + kotlinBlock(kind.targets), sourceSetPrefix = "commonMain")
             }
             is ProjectKind.AndroidLibrary -> {
@@ -324,11 +330,11 @@ internal class WatchdogFixture(
         if (module.plugins != null) return renderCustom(module)
         when {
             module.jvm || kind is ProjectKind.Jvm || kind is ProjectKind.KmpAndroid -> {
-                plugins(Plugin(KOTLIN_JVM_PLUGIN_ID), pluginUnderTest)
+                plugins(listOf(Plugin(KOTLIN_JVM_PLUGIN_ID), pluginUnderTest) + module.extraPlugins)
                 finish(module, explicitApiBlock())
             }
             kind is ProjectKind.Kmp -> {
-                plugins(Plugin(KOTLIN_MULTIPLATFORM_PLUGIN_ID), pluginUnderTest)
+                plugins(listOf(Plugin(KOTLIN_MULTIPLATFORM_PLUGIN_ID), pluginUnderTest) + module.extraPlugins)
                 finish(module, explicitApiBlock() + kotlinBlock(kind.targets), sourceSetPrefix = "commonMain")
             }
             kind is ProjectKind.AndroidLibrary -> {
@@ -542,6 +548,13 @@ private fun packagePath(text: String): String =
 
 private val testAgp8Version: String? = System.getProperty("watchdog.test.agp8Version")
 private val testAgp9Version: String? = System.getProperty("watchdog.test.agp9Version")
+private val testBcvVersion: String? = System.getProperty("watchdog.test.bcvVersion")
+
+/** The Binary Compatibility Validator plugin in the version of the version catalog. */
+val binaryCompatibilityValidatorPlugin: Plugin
+    get() = Plugin(BCV_PLUGIN_ID, requiredProperty(testBcvVersion))
+
+internal const val BCV_PLUGIN_ID = "org.jetbrains.kotlinx.binary-compatibility-validator"
 private val testAndroidSdkPath: String? = System.getProperty("watchdog.test.androidHome")
 
 fun assumeAndroidBuildEnvironment() {

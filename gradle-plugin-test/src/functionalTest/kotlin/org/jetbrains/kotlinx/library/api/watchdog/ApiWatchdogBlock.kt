@@ -10,6 +10,8 @@ class ApiWatchdogBlock internal constructor() {
 
     var suggestAbiValidation: Boolean? = null
 
+    var useAbiValidationFilters: Boolean? = null
+
     var publicTypeWithInternalApi: Boolean? = null
 
     var publicTypesMustBeTransitiveDependencies: Boolean? = null
@@ -77,6 +79,7 @@ class ApiWatchdogBlock internal constructor() {
         enabled?.let { appendLine("    enabled = $it") }
         explicitApiRequirement?.let { appendLine("    explicitApiRequirement = ExplicitApiRequirement.$it") }
         suggestAbiValidation?.let { appendLine("    suggestAbiValidation = $it") }
+        useAbiValidationFilters?.let { appendLine("    useAbiValidationFilters = $it") }
         publicTypeWithInternalApi?.let { appendLine("    publicTypeWithInternalApi = $it") }
         publicTypesMustBeTransitiveDependencies?.let {
             appendLine("    publicTypesMustBeTransitiveDependencies = $it")

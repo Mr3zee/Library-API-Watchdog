@@ -281,6 +281,18 @@ private object WatchdogTestDirectives : SimpleDirectivesContainer() {
         description = "Annotation FQ names configured as internal API markers (internalApiAnnotation option)",
     )
 
+    val EXCLUDED_NAMES by stringDirective(
+        description = "Name patterns of the declarations that the checks skip (excludedName option)",
+    )
+
+    val INCLUDED_NAMES by stringDirective(
+        description = "Name patterns of the only declarations that the checks cover (includedName option)",
+    )
+
+    val INCLUDED_ANNOTATIONS by stringDirective(
+        description = "Annotation name patterns of the only declarations that the checks cover (includedAnnotation option)",
+    )
+
     val IGNORE_WHEN_ANNOTATED by stringDirective(
         description = "Annotation ignore rules in the form of the ignoreWhenAnnotated option",
     )
@@ -314,6 +326,14 @@ private class WatchdogOptionsConfigurator(testServices: TestServices) : Environm
         val annotations = module.directives[WatchdogTestDirectives.INTERNAL_API_ANNOTATIONS]
         if (annotations.isNotEmpty()) {
             configuration.put(WatchdogConfigurationKeys.INTERNAL_API_ANNOTATIONS, annotations.toSet())
+        }
+        for ((directive, key) in listOf(
+            WatchdogTestDirectives.EXCLUDED_NAMES to WatchdogConfigurationKeys.EXCLUDED_NAMES,
+            WatchdogTestDirectives.INCLUDED_NAMES to WatchdogConfigurationKeys.INCLUDED_NAMES,
+            WatchdogTestDirectives.INCLUDED_ANNOTATIONS to WatchdogConfigurationKeys.INCLUDED_ANNOTATIONS,
+        )) {
+            val patterns = module.directives[directive]
+            if (patterns.isNotEmpty()) configuration.put(key, patterns.toSet())
         }
         val ignoreRules = module.directives[WatchdogTestDirectives.IGNORE_WHEN_ANNOTATED]
         if (ignoreRules.isNotEmpty()) {

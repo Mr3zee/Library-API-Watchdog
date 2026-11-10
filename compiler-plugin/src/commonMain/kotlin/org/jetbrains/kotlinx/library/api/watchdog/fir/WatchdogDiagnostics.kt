@@ -161,14 +161,14 @@ object WatchdogDiagnostics : KtDiagnosticsContainer() {
     /** Parameters: declaration kind, declaration name, exposed type FQ name, exemption snippet. */
     val PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY by error4<KtElement, String, Name, String, String>()
 
-    /** Parameters: declaration kind, declaration name, internal type FQ name, annotation name. */
-    val PUBLIC_TYPE_WITH_INTERNAL_API by error4<KtElement, String, Name, String, Name>()
+    /** Parameters: declaration kind, declaration name, internal type FQ name, the cause and the fix in words. */
+    val PUBLIC_TYPE_WITH_INTERNAL_API by error4<KtElement, String, Name, String, String>()
 
     /**
      * [PUBLIC_TYPE_WITH_INTERNAL_API] as a warning, under the same name, for the collection mode of
      * `exemptExistingApi`. The compilation then passes and the fixer reads the recorded diagnostic.
      */
-    val PUBLIC_TYPE_WITH_INTERNAL_API_COLLECTED: KtDiagnosticFactory4<String, Name, String, Name> = KtDiagnosticFactory4(
+    val PUBLIC_TYPE_WITH_INTERNAL_API_COLLECTED: KtDiagnosticFactory4<String, Name, String, String> = KtDiagnosticFactory4(
         PUBLIC_TYPE_WITH_INTERNAL_API.name,
         Severity.WARNING,
         SourceElementPositioningStrategies.DEFAULT,
@@ -367,14 +367,14 @@ private object WatchdogErrorMessages : BaseDiagnosticRendererFactory() {
             rendererA = STRING,
             rendererB = NAME,
             rendererC = STRING,
-            rendererD = NAME,
+            rendererD = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API_COLLECTED,
             rendererA = STRING,
             rendererB = NAME,
             rendererC = STRING,
-            rendererD = NAME,
+            rendererD = STRING,
         )
         map.put(
             diagnostic = WatchdogDiagnostics.DSL_MARKER_NOOP_TARGET,

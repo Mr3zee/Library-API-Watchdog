@@ -1,4 +1,4 @@
-# Public types marked as internal API
+# Internal API types in public API
 
 |                  |                                                                                    |
 |------------------|------------------------------------------------------------------------------------|
@@ -9,8 +9,18 @@
 
 ## What it reports
 
-A type marked with an [internal API
-annotation](../../exemptions.md#internal-api-annotations) in a public API signature:
+An internal API type in a public API signature. An internal API type is one of these:
+
+- A type with an [internal API annotation](../../exemptions.md#internal-api-annotations), or a type
+  nested in it.
+- A type of the module that an exclusion name rule of the [API filters](../../exemptions.md#api-filters)
+  matches, or a type nested in it. The rule can come from the filters of the binary compatibility
+  validation of the project, such as `ignoredPackages`.
+
+The check doesn't report a type only because no inclusion rule of the API filters matches it, and a
+name rule doesn't apply to a type of a dependency.
+
+A type with an internal API annotation:
 
 ```kotlin
 // !hide-focused
@@ -27,14 +37,19 @@ public class InternalModel
 
 // !hide-focused
 /** Loads the current model. */
-// !diag[/InternalModel/] PUBLIC_TYPE_WITH_INTERNAL_API ["$function","loadModel","InternalModel","InternalLibApi"]
+// !diag[/InternalModel/] PUBLIC_TYPE_WITH_INTERNAL_API ["$function","loadModel","InternalModel","$markedInternal(InternalLibApi)"]
 public fun loadModel(): InternalModel = InternalModel()
 ```
+
+With the exclusion name rule `com.example.internal.**`, the check reports a public function that
+returns `com.example.internal.Model`.
 
 ## Rationale
 
 Callers must use the types in a supported declaration's signature. An internal API type has no
-supported compatibility contract, so changes can break those callers.
+supported compatibility contract, so changes can break those callers. The same is true for a type
+that an exclusion rule matches, because binary compatibility validation doesn't report a change of
+that type.
 
 Expose a supported type instead:
 
@@ -54,9 +69,9 @@ public fun loadModel(): Model = Model()
 ## Notes
 
 - The check skips `@PublishedApi internal` signatures.
-- An internal API annotation on an enclosing class also marks its nested types.
 - Type aliases don't hide internal API annotations on the alias or its expanded type.
-- If the exposing declaration is also internal API, mark it with the internal API annotation.
+- If the exposing declaration is also internal API, mark it with the internal API annotation, or
+  exclude it with a name rule.
 
 ## Exemption
 
@@ -64,10 +79,16 @@ public fun loadModel(): Model = Model()
 If this is intended, apply `@IntentionallyExposedInternalApiForBackwardsCompatibility` to the declaration,
 a parameter, or a type usage.
 
-Both fixes break the users of a published declaration. One removes the type from the signature.
-The other adds an internal API annotation with an opt-in requirement. The exemption doesn't have a
-`reason` parameter, because backwards compatibility is the only valid reason. Its `description` is
-optional:
+Two of the three fixes break the users of a published declaration:
+
+- Remove the type from the signature. This breaks the users.
+- Add an internal API annotation with an opt-in requirement to the declaration. This breaks the
+  users.
+- Exclude the declaration with a name rule. Binary compatibility validation then doesn't check the
+  declaration either.
+
+The exemption doesn't have a `reason` parameter, because backwards compatibility is the only valid
+reason. Its `description` is optional:
 
 ```kotlin
 // !hide-focused

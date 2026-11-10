@@ -82,6 +82,7 @@ public class org/jetbrains/kotlinx/library/api/watchdog/WatchdogGradleExtension 
 	public final fun getSubclassOptInWithoutMarkers ()Lorg/gradle/api/provider/Property;
 	public final fun getSuggestAbiValidation ()Lorg/gradle/api/provider/Property;
 	public final fun getUndocumentedPublicApi ()Lorg/gradle/api/provider/Property;
+	public final fun getUseAbiValidationFilters ()Lorg/gradle/api/provider/Property;
 	public final fun ignore (Ljava/util/List;Ljava/lang/String;)V
 	public final fun ignore (Ljava/util/List;Ljava/lang/String;Z)V
 	public final fun ignore (Ljava/util/List;Ljava/util/List;)V

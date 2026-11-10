@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- [API filters](https://mr3zee.github.io/Library-API-Watchdog/exemptions#api-filters): the watchdog doesn't
+  check a declaration that the binary compatibility validation leaves out of the ABI dump. It copies the
+  filters of the ABI validation of the Kotlin Gradle plugin or of the Binary Compatibility Validator plugin
+  while the tool validates the project. When both tools validate the project, the watchdog uses the filters
+  of the Kotlin Gradle plugin only.
+
+### Changed
+
+- The filters of an existing validation setup apply after the upgrade, so a build that passed can fail:
+  - [Internal API types in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api)
+    reports a checked declaration that exposes a type of an exclusion filter, such as a type of
+    `ignoredPackages` or a type with a `nonPublicMarkers` annotation.
+  - [Redundant exemptions](https://mr3zee.github.io/Library-API-Watchdog/checks/special/redundant-exemption)
+    reports an `@Intentionally*` annotation on a declaration that the filters remove from the checks.
+    `exemptExistingApi` removes such an annotation.
+
+  To keep the previous behavior, set `apiWatchdog { useAbiValidationFilters = false }`.
+- The check "Public types marked as internal API" has the new title "Internal API types in public API". The
+  diagnostic name and the page address don't change.
+
 ## 0.2.0 - 2026-11-06
 
 <!-- Release notes generated using configuration in .github/release.yml at 20a11d69284725b68705ed22ee65497b1f61bdd9 -->

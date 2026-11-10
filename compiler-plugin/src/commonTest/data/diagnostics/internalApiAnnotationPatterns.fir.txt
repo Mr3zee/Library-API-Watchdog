@@ -1,0 +1,91 @@
+FILE: markers.kt
+    package third.party.markers
+
+    public final annotation class InternalApi : R|kotlin/Annotation| {
+        public constructor(): R|third/party/markers/InternalApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final annotation class InternalCoroutinesApi : R|kotlin/Annotation| {
+        public constructor(): R|third/party/markers/InternalCoroutinesApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final object Internal : R|kotlin/Any| {
+        private constructor(): R|third/party/markers/Internal| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final annotation class Marker : R|kotlin/Annotation| {
+            public constructor(): R|third/party/markers/Internal.Marker| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+FILE: exact.kt
+    package third.party
+
+    public final annotation class Exact1 : R|kotlin/Annotation| {
+        public constructor(): R|third/party/Exact1| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final annotation class Exact : R|kotlin/Annotation| {
+        public constructor(): R|third/party/Exact| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final annotation class InternalInRootPackage : R|kotlin/Annotation| {
+        public constructor(): R|third/party/InternalInRootPackage| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+FILE: usage.kt
+    package consumer
+
+    @R|third/party/markers/InternalApi|() public open class MarkedInternal : R|kotlin/Any| {
+        public constructor(): R|consumer/MarkedInternal| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|third/party/markers/InternalCoroutinesApi|() public open class MarkedInternalCoroutines : R|kotlin/Any| {
+        public constructor(): R|consumer/MarkedInternalCoroutines| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|third/party/Exact1|() public open class MarkedExact : R|kotlin/Any| {
+        public constructor(): R|consumer/MarkedExact| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|third/party/markers/Internal.Marker|() public final class MarkedWithNested : R|kotlin/Any| {
+        public constructor(): R|consumer/MarkedWithNested| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|third/party/Exact|() public final class MarkedWithShorterName : R|kotlin/Any| {
+        public constructor(): R|consumer/MarkedWithShorterName| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|third/party/InternalInRootPackage|() public final class MarkedInRootPackage : R|kotlin/Any| {
+        public constructor(): R|consumer/MarkedInRootPackage| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun leaked(): R|consumer/MarkedInternal| {
+        ^leaked R|consumer/MarkedInternal.MarkedInternal|()
+    }

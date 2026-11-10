@@ -100,6 +100,8 @@ apiWatchdog {
     reportUndocumentedClassProperties = false
     // !link[/internalApiAnnotations/] /configuration#internal-api-annotations
     internalApiAnnotations.add("com.example.dependency.InternalDependencyApi")
+    // !link[/useAbiValidationFilters/] /configuration#api-filters
+    useAbiValidationFilters = true
     // !link[/ignore/] /configuration#annotation-ignore-rules
     ignore(WatchdogChecks.STATEFUL_CLASS_WITHOUT_EQUALS, whenAnnotatedWith = listOf("com.example.GeneratedValueMembers"))
     // !link[/reports/] /report#selecting-the-formats
@@ -217,7 +219,8 @@ for more details about when to use a rule.
 ## Internal API annotations
 
 `internalApiAnnotations` lists annotation classes by their fully qualified
-names. A listed annotation counts as an internal API annotation:
+names or by [name patterns](./exemptions.md#filter-names). A listed annotation counts as an
+internal API annotation:
 
 ```kotlin build.gradle.kts
 apiWatchdog {
@@ -226,6 +229,22 @@ apiWatchdog {
 ```
 
 See [Internal API annotations](./exemptions.md#internal-api-annotations) for more details.
+
+## API filters
+
+`useAbiValidationFilters` controls the API filters. Default is `true`: the watchdog copies the
+filters of the [ABI validation](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html) of the Kotlin Gradle plugin or of the
+[Binary Compatibility Validator](https://github.com/Kotlin/binary-compatibility-validator) plugin, while the tool validates the project. When both tools
+validate the project, the watchdog uses the filters of the Kotlin Gradle plugin only. To turn the
+filters off:
+
+```kotlin build.gradle.kts
+apiWatchdog {
+    useAbiValidationFilters = false
+}
+```
+
+See [API filters](./exemptions.md#api-filters) for more details about the rules and the name format.
 
 ## Exempt non-transitive dependencies
 
@@ -293,7 +312,7 @@ Each configurable check, its property, and its diagnostic name:
 | [Open API without subclass opt-in](./checks/open-api-without-subclass-opt-in.md)                                        | `openApiWithoutSubclassOptIn`                           | `OPEN_API_WITHOUT_SUBCLASS_OPT_IN`           |
 | [Pair and Triple in public API](./checks/pair-or-triple-public-api.md)                                                  | `pairOrTriplePublicApi`                                 | `PAIR_OR_TRIPLE_PUBLIC_API`                  |
 | [Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md)         | `publicTypesMustBeTransitiveDependencies`               | `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY` |
-| [Public types marked as internal API](./checks/special/public-type-with-internal-api.md)                                | `publicTypeWithInternalApi`                             | `PUBLIC_TYPE_WITH_INTERNAL_API`              |
+| [Internal API types in public API](./checks/special/public-type-with-internal-api.md)                                | `publicTypeWithInternalApi`                             | `PUBLIC_TYPE_WITH_INTERNAL_API`              |
 | [Required parameters after optional ones](./checks/required-parameter-after-optional.md)                                | `requiredParameterAfterOptional`                        | `REQUIRED_PARAMETER_AFTER_OPTIONAL`          |
 | [Stateful classes without equals, hashCode, and toString](./checks/stateful-class-without-equals-hashcode-to-string.md) | `statefulClassWithoutEquals`                            | `STATEFUL_CLASS_WITHOUT_EQUALS`              |
 | [Stateful classes without equals, hashCode, and toString](./checks/stateful-class-without-equals-hashcode-to-string.md) | `statefulClassWithoutHashCode`                          | `STATEFUL_CLASS_WITHOUT_HASH_CODE`           |
@@ -358,20 +377,26 @@ A direct compiler call configures the plugin with `-P` options of this form:
 |-----------------------------|--------------------------------------------------------|-------------------------------|
 | `diagnosticSeverity`        | `<NAME>:<severity>`. Repeatable.                       | The severity property.        |
 | `ignoreWhenAnnotated`       | `<NAME>:<annotation class name>[:recursive]`. Repeatable. | `ignore`                   |
-| `internalApiAnnotation`     | `<annotation class name>`. Repeatable.                 | `internalApiAnnotations`      |
+| `internalApiAnnotation`     | `<annotation name pattern>`. Repeatable.               | `internalApiAnnotations`, and `exclude.annotatedWith` of the [API filters](./exemptions.md#api-filters) |
+| `excludedName`              | `<declaration name pattern>`. Repeatable.              | `exclude.byNames` of the API filters |
+| `includedName`              | `<declaration name pattern>`. Repeatable.              | `include.byNames` of the API filters |
+| `includedAnnotation`        | `<annotation name pattern>`. Repeatable.               | `include.annotatedWith` of the API filters |
 | `publicTypeWithInternalApi` | `true` or `false`.                                     | `publicTypeWithInternalApi`   |
 | `reportUndocumentedClassProperties` | `true` or `false`.                             | `reportUndocumentedClassProperties` |
 | `requireExplicitApi`        | `true` or `false`. `false` runs the checks without explicit API mode. | `explicitApiRequirement` |
 
 `<NAME>` is a diagnostic name from the [Property reference](#property-reference), except the two
 checks that a Boolean property turns off: the option rejects them. `<severity>` is
-`error`, `warning`, or `none`. A diagnostic that no option names has its default severity. One
-value of each option:
+`error`, `warning`, or `none`. A diagnostic that no option names has its default severity. A name
+pattern has the [format of an API filter](./exemptions.md#filter-names). One value of each option:
 
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:error
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:ignoreWhenAnnotated=STATEFUL_CLASS_WITHOUT_EQUALS:com.example.GeneratedValueMembers
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:internalApiAnnotation=com.example.dependency.InternalDependencyApi
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:excludedName=com.example.internal.**
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:includedName=com.example.api.**
+-P plugin:org.jetbrains.kotlinx.library.api.watchdog:includedAnnotation=com.example.PublicApi
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:publicTypeWithInternalApi=false
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:reportUndocumentedClassProperties=true
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:requireExplicitApi=false

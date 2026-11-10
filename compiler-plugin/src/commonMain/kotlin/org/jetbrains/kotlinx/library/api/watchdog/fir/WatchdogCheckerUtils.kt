@@ -23,6 +23,7 @@ import org.jetbrains.kotlin.fir.declarations.findArgumentByName
 import org.jetbrains.kotlin.fir.declarations.getSingleMatchedExpectForActualOrNull
 import org.jetbrains.kotlin.fir.declarations.getStringArgument
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
+import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
 import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
 import org.jetbrains.kotlin.fir.declarations.toAnnotationClassLikeSymbol
 import org.jetbrains.kotlin.fir.declarations.utils.effectiveVisibility
@@ -34,13 +35,17 @@ import org.jetbrains.kotlin.fir.declarations.utils.visibility
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
 import org.jetbrains.kotlin.fir.resolve.FirSamResolver
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
+import org.jetbrains.kotlin.fir.resolve.getContainingClassSymbol
+import org.jetbrains.kotlin.fir.resolve.providers.firProvider
 import org.jetbrains.kotlin.fir.resolve.toClassSymbol
 import org.jetbrains.kotlin.fir.resolve.transformers.publishedApiEffectiveVisibility
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
+import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirConstructorSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirFileSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirTypeParameterSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
@@ -247,9 +252,9 @@ internal fun FirFunction.reportedName(): Name? = when (this) {
 }
 
 /**
- * Whether the declaration is in the public or `@PublishedApi` binary API and isn't marked as
- * internal API. A property from a constructor parameter has a fake source but is hand-written
- * API, so it counts as real.
+ * Whether the declaration is in the public or `@PublishedApi` binary API, isn't marked as
+ * internal API, and passes [ConfiguredApiFilters]. A property from a constructor parameter has a
+ * fake source but is hand-written API, so it counts as real.
  */
 context(context: CheckerContext)
 internal fun FirMemberDeclaration.isWatchedPublicApi(): Boolean {
@@ -266,7 +271,51 @@ internal fun FirMemberDeclaration.isWatchedPublicApi(): Boolean {
         return false
     }
 
-    return !isMarkedAsInternalApi()
+    return !isMarkedAsInternalApi() && passesApiFilters()
+}
+
+/** [ConfiguredApiFilters] gives the rules. */
+context(context: CheckerContext)
+private fun FirMemberDeclaration.passesApiFilters(): Boolean {
+    val filters = context.session.configuredApiFilters ?: return true
+    val symbol = symbol
+    val chain = enclosingDeclarationsWithFile() + symbol
+    if (chain.any { filters.excludingPattern(it) != null }) return false
+    if (!filters.hasInclusionRules) return true
+    return chain.any(filters::includes) || symbol is FirClassSymbol<*> && symbol.hasIncludedApiMember(filters)
+}
+
+/** A file checker doesn't have the file in the enclosing declarations of its context. */
+context(context: CheckerContext)
+private fun enclosingDeclarationsWithFile(): List<FirBasedSymbol<*>> {
+    val enclosing = context.containingDeclarations
+    val file = context.containingFileSymbol ?: return enclosing
+    return if (file in enclosing) enclosing else enclosing + file
+}
+
+/**
+ * Whether an inclusion rule matches a function, a property, an enum entry, or a constructor of
+ * the class that is in the public API itself. A nested class doesn't count.
+ */
+context(context: CheckerContext)
+private fun FirClassSymbol<*>.hasIncludedApiMember(filters: ConfiguredApiFilters): Boolean {
+    var included = false
+    processAllDeclarations(context.session) { member ->
+        if (!included && member is FirCallableSymbol<*> && member.isIncludedApiMember(filters)) included = true
+    }
+    return included
+}
+
+@OptIn(SymbolInternals::class)
+context(context: CheckerContext)
+private fun FirCallableSymbol<*>.isIncludedApiMember(filters: ConfiguredApiFilters): Boolean {
+    val sourceKind = source?.kind
+    if (sourceKind != KtRealSourceElementKind && sourceKind != KtFakeSourceElementKind.PropertyFromParameter) {
+        return false
+    }
+    val publicApi = effectiveVisibility.publicApi ||
+            (fir as? FirMemberDeclaration)?.publishedApiEffectiveVisibility?.publicApi == true
+    return publicApi && filters.includes(this) && filters.excludingPattern(this) == null && !hasInternalApiMarker()
 }
 
 /**
@@ -279,7 +328,7 @@ internal fun FirMemberDeclaration.isWatchedPublicSourceApi(): Boolean =
 
 context(context: CheckerContext)
 private fun FirMemberDeclaration.isMarkedAsInternalApi(): Boolean =
-    symbol.hasInternalApiMarker() || context.containingDeclarations.any { it.hasInternalApiMarker() }
+    symbol.hasInternalApiMarker() || enclosingDeclarationsWithFile().any { it.hasInternalApiMarker() }
 
 context(context: CheckerContext)
 internal fun FirBasedSymbol<*>.hasInternalApiMarker(): Boolean = internalApiAnnotation() != null
@@ -445,15 +494,29 @@ private fun FirProperty.hasAnnotationWithUseSiteTarget(
 }
 
 /**
- * [isWatchedPublicSourceApi] for an overload sibling. The check of the declaration under check
- * already vets the containers, so only the state of the sibling counts. A library symbol has no
- * real source, so a dependency never passes.
+ * [isWatchedPublicSourceApi] for an overload sibling. The sibling can be a member of another
+ * class or a function of another file, so its own enclosing classes and file give the internal
+ * API marker and the filter verdict. A library symbol has no real source, so a dependency never
+ * passes.
  */
 context(context: CheckerContext)
-internal fun FirCallableSymbol<*>.isWatchedPublicSourceApiSibling(): Boolean =
-    source?.kind == KtRealSourceElementKind &&
-            effectiveVisibility.publicApi &&
-            !hasInternalApiMarker()
+internal fun FirCallableSymbol<*>.isWatchedPublicSourceApiSibling(): Boolean {
+    if (source?.kind != KtRealSourceElementKind || !effectiveVisibility.publicApi) return false
+    val chain = generateSequence<FirBasedSymbol<*>>(this) { it.getContainingClassSymbol() }.toMutableList()
+    chain.last().sourceFileSymbol()?.let(chain::add)
+    return chain.none { it.hasInternalApiMarker() } &&
+            context.session.configuredApiFilters?.watches(chain) != false
+}
+
+/** The file of a top-level source declaration, or null. */
+private fun FirBasedSymbol<*>.sourceFileSymbol(): FirFileSymbol? {
+    val provider = moduleData.session.firProvider
+    return when (this) {
+        is FirClassLikeSymbol<*> -> provider.getFirClassifierContainerFileIfAny(this)
+        is FirCallableSymbol<*> -> provider.getFirCallableContainerFile(this)
+        else -> null
+    }?.symbol
+}
 
 private val reasonParameter = Name.identifier("reason")
 private val descriptionParameter = Name.identifier("description")

@@ -63,17 +63,37 @@ internal class InternalApiTypeExposureChecker(
             a = WatchdogDiagnosticMessages.parameterValueFor(factory.name, kind),
             b = name,
             c = violation.type.asSingleFqName().asString(),
-            d = violation.annotation.shortClassName,
+            d = when (violation) {
+                is InternalApiExposure.Marked -> WatchdogDiagnosticMessages.parameterValueFor(
+                    factory.name,
+                    "markedInternal",
+                    violation.annotation.shortClassName.asString(),
+                )
+                is InternalApiExposure.ExcludedByName -> WatchdogDiagnosticMessages.parameterValueFor(
+                    factory.name,
+                    "excludedByName",
+                    violation.pattern,
+                )
+            },
         )
     }
 
+    /**
+     * A marker or an exclusion rule on an enclosing class covers the nested class. A name rule
+     * describes the API of this module, so it doesn't count for a class of a dependency.
+     */
     context(context: CheckerContext)
     private fun FirClassLikeSymbol<*>.internalApiExposure(): InternalApiExposure? {
+        val filters = context.session.configuredApiFilters
         var current: FirClassLikeSymbol<*>? = this
         while (current != null) {
             val annotation = current.internalApiAnnotation()
             if (annotation != null) {
-                return InternalApiExposure(current.classId, annotation)
+                return InternalApiExposure.Marked(current.classId, annotation)
+            }
+            val pattern = filters?.takeIf { current.isFromModuleOf(context.session) }?.excludingPattern(current)
+            if (pattern != null) {
+                return InternalApiExposure.ExcludedByName(current.classId, pattern)
             }
             current = current.getContainingClassSymbol()
         }
@@ -81,4 +101,12 @@ internal class InternalApiTypeExposureChecker(
     }
 }
 
-internal data class InternalApiExposure(val type: ClassId, val annotation: ClassId)
+/** [type] is the class that carries the marker or matches the rule: the exposed type or a class that encloses it. */
+internal sealed class InternalApiExposure {
+    abstract val type: ClassId
+
+    data class Marked(override val type: ClassId, val annotation: ClassId) : InternalApiExposure()
+
+    /** [pattern] is the `excludedName` rule as configured. */
+    data class ExcludedByName(override val type: ClassId, val pattern: String) : InternalApiExposure()
+}

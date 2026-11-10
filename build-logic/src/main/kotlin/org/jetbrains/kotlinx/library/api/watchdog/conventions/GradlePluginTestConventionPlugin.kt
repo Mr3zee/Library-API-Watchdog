@@ -44,10 +44,12 @@ class GradlePluginTestConventionPlugin : Plugin<Project> {
 
             val agp8Version = catalogVersion("agp8")
             val agp9Version = catalogVersion("agp9")
+            val bcvVersion = catalogVersion("bcv")
             val androidSdk = androidSdkDirOrNull(target)
             tasks.withType(Test::class.java).configureEach {
                 systemProperty("watchdog.test.agp8Version", agp8Version)
                 systemProperty("watchdog.test.agp9Version", agp9Version)
+                systemProperty("watchdog.test.bcvVersion", bcvVersion)
                 androidSdk?.let { sdk ->
                     systemProperty("watchdog.test.androidHome", sdk.absolutePath)
                 }

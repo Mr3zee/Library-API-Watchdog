@@ -20,6 +20,8 @@ buildconfig = "6.0.10"
 # https://developer.android.com/build/releases/gradle-plugin
 agp8 = "8.13.2"
 agp9 = "9.4.1"
+# https://github.com/Kotlin/binary-compatibility-validator, for the functional tests only
+bcv = "0.18.2"
 commonmark = "0.24.0"
 jsoup = "1.23.2"
 # https://github.com/SeleniumHQ/selenium
@@ -28,6 +30,8 @@ selenium = "4.52.0"
 chromeForTesting = "157.0.8103.38"
 
 [libraries]
+# The functional tests apply the plugin by its id. The entry lets Renovate update the version.
+binary-compatibility-validator = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version.ref = "bcv" }
 commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 selenium-chrome-driver = { module = "org.seleniumhq.selenium:selenium-chrome-driver", version.ref = "selenium" }

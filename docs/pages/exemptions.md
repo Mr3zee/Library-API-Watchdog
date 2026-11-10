@@ -1,12 +1,13 @@
 # Exemptions and internal API
 
-Four mechanisms exclude a declaration from a check while the check stays enabled for the project:
+Five mechanisms exclude a declaration from a check while the check stays enabled for the project:
 
 | Mechanism                                           | Excludes                                              | From                       |
 |-----------------------------------------------------|-------------------------------------------------------|----------------------------|
 | [Exemption annotation](#exemption-annotations)      | One declaration                                       | One check                  |
 | [Dependency exemption](#dependency-exemptions)      | Every use of a dependency's types in the module       | One check                  |
 | [Internal API annotation](#internal-api-annotations) | One declaration and the declarations nested in it     | Every public API check     |
+| [API filter](#api-filters)                          | Every declaration that the name and annotation rules leave out | Every public API check |
 | [Annotation ignore rule](#annotation-ignore-rules)  | Every declaration with a given annotation             | One configurable check     |
 
 ## Exemption annotations
@@ -173,12 +174,12 @@ nested in it. Four checks still run there, because they check every visibility:
 The marker annotation class itself is public API and stays watched.
 
 A public declaration without the annotation must not use an internal API type in its signature.
-[Public types marked as internal API](./checks/special/public-type-with-internal-api.md) reports
+[Internal API types in public API](./checks/special/public-type-with-internal-api.md) reports
 the declaration as an error.
 
 An annotation class from a dependency can't carry `@InternalAnnotationMarker`. List its fully
 qualified name in `internalApiAnnotations` instead. The plugin then treats it like a marked
-annotation:
+annotation. The name can have the [wildcards of an API filter](#filter-names):
 
 ```kotlin build.gradle.kts
 apiWatchdog {
@@ -187,6 +188,119 @@ apiWatchdog {
 ```
 
 See [Without Gradle](./configuration.md#without-gradle) for more details about the compiler option.
+
+## API filters
+
+An API filter removes declarations from every public API check, by name or by annotation. The
+watchdog doesn't have filters of its own. It copies the filters of the binary compatibility
+validation of the project, so it doesn't check a declaration that the validation leaves out of the
+ABI dump.
+
+"A validation tool" on this page is the [ABI validation](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html) of the Kotlin Gradle plugin or the
+[Binary Compatibility Validator](https://github.com/Kotlin/binary-compatibility-validator) plugin. The watchdog reads the filters of a tool only while
+the tool validates the project:
+
+| Tool                                       | Validates the project when                                                                                                          | Filters that the watchdog reads                                      |
+|--------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
+| ABI validation of the Kotlin Gradle plugin | The build script calls `abiValidation()` or `abiValidation { }`. On Kotlin 2.2 and 2.3, `enabled` is `true`.                        | The `filters` block of `abiValidation`.                              |
+| Binary Compatibility Validator plugin      | The plugin is applied to the project or to a parent project, the project isn't in `ignoredProjects`, and `validationDisabled` is `false`. | The sets of the `apiValidation` block of the project that applies the plugin. |
+
+When both tools validate the project, the watchdog copies the filters of the ABI validation of the
+Kotlin Gradle plugin only. It doesn't merge the filters of the two tools.
+
+The rules on this page have the names of the `filters` block of `abiValidation`. Each set of the
+Binary Compatibility Validator plugin is one kind of rule:
+
+| Plugin set         | Watchdog rule                                    |
+|--------------------|--------------------------------------------------|
+| `ignoredPackages`  | `exclude.byNames`, a package `p` as `p.**`       |
+| `ignoredClasses`   | `exclude.byNames`, a `$` as a `.`                |
+| `nonPublicMarkers` | `exclude.annotatedWith`                          |
+| `publicPackages`   | `include.byNames`, a package `p` as `p.**`       |
+| `publicClasses`    | `include.byNames`, a `$` as a `.`                |
+| `publicMarkers`    | `include.annotatedWith`                          |
+
+`useAbiValidationFilters = false` in the `apiWatchdog` extension turns the filters off. Default is
+`true`.
+
+### Filter rules
+
+| Rule                                       | Effect                                                                                                        |
+|--------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| `exclude.byNames`                          | The watchdog doesn't check a matched declaration or the declarations nested in it.                            |
+| `exclude.annotatedWith`                    | The annotation is an [internal API annotation](#internal-api-annotations).                                    |
+| `include.byNames`, `include.annotatedWith` | When one of the two sets has a rule, the watchdog checks only a matched declaration and the declarations nested in it. |
+
+More rules:
+
+- An exclusion rule has priority over an inclusion rule.
+- The watchdog also checks a class with an included function, property, enum entry, or constructor
+  that is public API. It doesn't check the other members of the class. An included nested class
+  doesn't include the enclosing class.
+- An annotation on a file counts for every declaration of the file.
+- The four checks that run on every visibility don't use the filters. See
+  [Internal API annotations](#internal-api-annotations) for more details about these checks.
+- [Internal API types in public API](./checks/special/public-type-with-internal-api.md) reports a
+  checked declaration that exposes a type that an exclusion rule matches. A name rule applies only
+  to the types of the module. The check doesn't report a type only because no inclusion rule
+  matches it.
+- [Redundant exemptions](./checks/special/redundant-exemption.md) reports an `@Intentionally*`
+  annotation on a declaration that the filters remove from the checks.
+
+An annotation rule reads these positions:
+
+| Annotation position                 | `include.annotatedWith`    | `exclude.annotatedWith`                |
+|-------------------------------------|----------------------------|----------------------------------------|
+| The declaration                     | Counts.                    | Counts.                                |
+| An enclosing class or the file      | Counts.                    | Counts.                                |
+| A property accessor (`@get:`, `@set:`) | Counts for the property. | Doesn't count for the property.        |
+| The `expect` declaration            | Also includes the `actual`. | Doesn't count for the `actual`.       |
+
+A name rule gives an `expect` declaration and its `actual` declaration the same result, because
+they have the same name. Put an `include.annotatedWith` annotation on the `expect` declaration.
+
+### Filter names
+
+A name is fully qualified. A `.` separates all parts, also a nested class and a member:
+
+| Declaration                                 | Name                              |
+|---------------------------------------------|-----------------------------------|
+| Class or type alias                         | `com.example.Container`           |
+| Nested class                                | `com.example.Container.Value`     |
+| Companion object                            | `com.example.Container.Companion` |
+| Member function, property, or enum entry    | `com.example.Container.member`    |
+| Top-level function or property              | `com.example.topLevelFunction`    |
+
+A function name matches every overload. A constructor, an accessor, and a parameter don't have a
+name of their own. The rule of the class, the property, or the function applies to them.
+
+A name can have wildcards:
+
+| Wildcard | Matches                    |
+|----------|----------------------------|
+| `**`     | Any characters.            |
+| `*`      | Any characters except `.`. |
+| `?`      | One character.             |
+
+### Differences from the ABI dump
+
+The watchdog checks Kotlin declarations, and the validation tools read class files and klibs.
+So some rules have another effect in the watchdog:
+
+- A rule on a class also applies to its nested classes. The validation tools match each class by
+  itself.
+- A name rule doesn't match the JVM facade class of a file, such as `com.example.UtilsKt`. Use a
+  package pattern.
+- On JVM, the validation tools match a name rule only against class names. A rule with the name of
+  a function, a property, or an enum entry changes only the watchdog there.
+- An annotation on a file also applies to the classes of the file. In a JVM dump it applies only to
+  the top-level functions and properties.
+- The validation tools don't read an annotation with `SOURCE` retention. The watchdog does.
+- The Binary Compatibility Validator plugin uses `publicPackages`, `publicClasses`, and
+  `publicMarkers` only for a JVM dump. The watchdog uses them for every target.
+- The watchdog doesn't read `ignoredProjects`, `validationDisabled`, or the `klib` settings of the
+  Binary Compatibility Validator plugin. To turn the watchdog off for such a project, set
+  `apiWatchdog { enabled = false }`.
 
 ## Annotation ignore rules
 
