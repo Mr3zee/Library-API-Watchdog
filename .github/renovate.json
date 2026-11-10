@@ -16,13 +16,30 @@
       "enabled": false
     },
     {
+      "description": "The version is the one that the dev kit requires. Update it after a dev kit update.",
+      "matchPackageNames": ["/^com\\.github\\.gmazzo\\.buildconfig[.:]/"],
+      "enabled": false
+    },
+    {
+      "description": "The JDK, Node, and runner updates get separate pull requests. A JDK or runner update needs a new benchmark baseline.",
+      "matchManagers": ["github-actions"],
+      "matchDepTypes": ["action"],
+      "groupName": "GitHub Actions"
+    },
+    {
       "matchPackageNames": ["/^@docusaurus\\//"],
+      "matchUpdateTypes": ["major"],
       "groupName": "Docusaurus"
     },
     {
-      "matchManagers": ["github-actions"],
+      "matchManagers": ["npm"],
       "matchUpdateTypes": ["minor", "patch"],
-      "groupName": "GitHub Actions"
+      "groupName": "docs dependencies"
+    },
+    {
+      "matchManagers": ["gradle", "gradle-wrapper"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "Gradle and JVM dependencies"
     },
     {
       "matchDepNames": ["agp8", "agp9"],
@@ -35,15 +52,6 @@
     {
       "matchDepNames": ["agp9"],
       "allowedVersions": "/^9\\./"
-    },
-    {
-      "description": "The Gradle wrapper and the Gradle plugins of Gradle Inc.",
-      "matchManagers": ["gradle-wrapper"],
-      "groupName": "Gradle"
-    },
-    {
-      "matchPackageNames": ["/^com\\.gradle[.:]/"],
-      "groupName": "Gradle"
     }
   ],
   "customManagers": [
