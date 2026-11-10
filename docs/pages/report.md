@@ -15,11 +15,14 @@ Both tasks compile the compilations [the checks run in](./configuration.md#apply
 collection mode, except test compilations:
 
 - The `main` compilation of every target.
+- The metadata compilation of every shared source set of a multiplatform project.
 - Every enabled build variant of an Android library, with its product flavors and custom build types.
 - A custom compilation whose name doesn't end with `Test`, only with the `-Xexplicit-api` compiler
   flag.
 
-A declaration that two compilations report gets one entry.
+A declaration that two compilations report gets one entry. See
+[Multiplatform projects](./configuration.md#multiplatform-projects) for more details about the
+compilation that reports a shared source set.
 [Collection mode](./existing-libs.md#collection-mode) lists what collection mode changes.
 
 ## Formats

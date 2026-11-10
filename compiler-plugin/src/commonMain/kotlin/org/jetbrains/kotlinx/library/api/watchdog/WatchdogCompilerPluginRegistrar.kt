@@ -7,6 +7,7 @@ import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
 import org.jetbrains.kotlinx.library.api.watchdog.fir.AnnotationBasedCheckExclusions
 import org.jetbrains.kotlinx.library.api.watchdog.fir.DependencyExposureCheckConfiguration
+import org.jetbrains.kotlinx.library.api.watchdog.fir.SourceSetOwnership
 import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnosticSeverities
 import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnosticsRecorder
 import org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogFirExtensionRegistrar
@@ -53,6 +54,11 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
                 excludedNames = configuration[WatchdogConfigurationKeys.EXCLUDED_NAMES, emptySet()],
                 includedNames = configuration[WatchdogConfigurationKeys.INCLUDED_NAMES, emptySet()],
                 includedAnnotations = configuration[WatchdogConfigurationKeys.INCLUDED_ANNOTATIONS, emptySet()],
+                sourceSetOwnership = SourceSetOwnership(
+                    checkedElsewhere =
+                        configuration[WatchdogConfigurationKeys.SOURCE_SETS_CHECKED_ELSEWHERE, emptySet()],
+                    jvmChecked = configuration[WatchdogConfigurationKeys.SOURCE_SETS_WITH_JVM_CHECKS, emptySet()],
+                ),
             ),
         )
     }

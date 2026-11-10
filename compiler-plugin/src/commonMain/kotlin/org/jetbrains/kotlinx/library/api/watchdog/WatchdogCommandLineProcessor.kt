@@ -61,6 +61,13 @@ object WatchdogConfigurationKeys {
     /** The build script declaration of each compile dependency path, for the exemption snippet. */
     internal val DEPENDENCY_DECLARATIONS: CompilerConfigurationKey<Map<String, DependencyDeclaration>> =
         CompilerConfigurationKey.create("watchdog dependency declarations")
+
+    /** @see org.jetbrains.kotlinx.library.api.watchdog.fir.SourceSetOwnership */
+    val SOURCE_SETS_CHECKED_ELSEWHERE: CompilerConfigurationKey<Set<String>> =
+        CompilerConfigurationKey.create("watchdog source sets checked elsewhere")
+
+    val SOURCE_SETS_WITH_JVM_CHECKS: CompilerConfigurationKey<Set<String>> =
+        CompilerConfigurationKey.create("watchdog source sets with JVM checks")
 }
 
 @Suppress("unused") // Instantiated reflectively by the dev-kit entry point.
@@ -81,6 +88,8 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             COMPILE_DEPENDENCY_PATHS_OPTION,
             TRANSITIVE_DEPENDENCY_PATHS_OPTION,
             DEPENDENCY_DECLARATIONS_OPTION,
+            SOURCE_SETS_CHECKED_ELSEWHERE_OPTION,
+            SOURCE_SETS_WITH_JVM_CHECKS_OPTION,
         )
 
     companion object {
@@ -222,6 +231,28 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             allowMultipleOccurrences = false,
         )
 
+        val SOURCE_SETS_CHECKED_ELSEWHERE_OPTION: CliOption = sourceSetsOption(
+            optionName = "sourceSetsCheckedElsewhere",
+            description = "Parent source sets of a multiplatform compilation that another compilation " +
+                    "checks. This compilation doesn't report watchdog diagnostics on them, except " +
+                    "PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY and REDUNDANT_EXEMPTION on an expect declaration.",
+        )
+
+        val SOURCE_SETS_WITH_JVM_CHECKS_OPTION: CliOption = sourceSetsOption(
+            optionName = "sourceSetsWithJvmChecks",
+            description = "The subset of sourceSetsCheckedElsewhere that still gets the JVM-only checks " +
+                    "in this compilation.",
+        )
+
+        private fun sourceSetsOption(optionName: String, description: String): CliOption = CliOption(
+            optionName = optionName,
+            // A comma splits the `-P` argument of the JS compiler.
+            valueDescription = "<source set names separated by colons>",
+            description = description,
+            required = false,
+            allowMultipleOccurrences = false,
+        )
+
         private fun dependencyPathsOption(optionName: String, description: String): CliOption = CliOption(
             optionName = optionName,
             valueDescription = "<paths separated by the platform path separator>",
@@ -289,12 +320,21 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             DEPENDENCY_DECLARATIONS_OPTION.optionName -> {
                 configuration.put(WatchdogConfigurationKeys.DEPENDENCY_DECLARATIONS, parseDeclarations(value))
             }
+            SOURCE_SETS_CHECKED_ELSEWHERE_OPTION.optionName -> {
+                configuration.put(WatchdogConfigurationKeys.SOURCE_SETS_CHECKED_ELSEWHERE, parseSourceSets(value))
+            }
+            SOURCE_SETS_WITH_JVM_CHECKS_OPTION.optionName -> {
+                configuration.put(WatchdogConfigurationKeys.SOURCE_SETS_WITH_JVM_CHECKS, parseSourceSets(value))
+            }
             else -> error("Unexpected config option: '${option.optionName}'")
         }
     }
 
     private fun parsePaths(value: String): Set<String> =
         value.split(File.pathSeparatorChar).filterTo(linkedSetOf(), String::isNotEmpty)
+
+    private fun parseSourceSets(value: String): Set<String> =
+        value.split(':').filterTo(linkedSetOf(), String::isNotBlank)
 
     private fun parseDeclarations(value: String): Map<String, DependencyDeclaration> {
         if (value.isEmpty()) return emptyMap()

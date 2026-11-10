@@ -260,6 +260,12 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         val reportFile = layout.buildDirectory.file(
             "reports/api-watchdog/diagnostics/${kotlinCompilation.compileKotlinTaskName}.tsv"
         )
+        // KGP creates the metadata compilations late, so every read of them is lazy.
+        val metadataCompilations = lazy { metadataCompilationsOf(kotlinCompilation) }
+        // A build of one target still checks the shared source sets.
+        kotlinCompilation.compileTaskProvider.configure { task ->
+            task.dependsOn(provider { metadataCompilations.value.map { it.compileTaskProvider } })
+        }
 
         if (feedsReport) {
             checkedCompileTaskPaths += taskPath(kotlinCompilation.compileKotlinTaskName)
@@ -406,6 +412,22 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                         },
                     ),
                 )
+                add(
+                    SubpluginOption(
+                        "sourceSetsCheckedElsewhere",
+                        lazy { metadataCompilations.value.joinToString(":") { it.name } },
+                    ),
+                )
+                add(
+                    SubpluginOption(
+                        "sourceSetsWithJvmChecks",
+                        lazy {
+                            metadataCompilations.value.map { it.name }
+                                .filter { jvmCheckOwner(it) == kotlinCompilation }
+                                .joinToString(":")
+                        },
+                    ),
+                )
             }
         }
     }
@@ -460,6 +482,45 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             ?.name
             ?: "implementation"
         return "$declaringConfiguration\t$notation"
+    }
+
+    /**
+     * The metadata compilations of the source sets of [kotlinCompilation]. A metadata compilation has
+     * the name of its source set, and it is the only compilation that checks the source set. KGP
+     * creates one only for a source set that several targets share. KGP disables its task when the
+     * host can't compile it and when only JVM and Android targets share the source set
+     * (`KotlinMetadataTargetConfigurator.isMetadataCompilationSupported`).
+     */
+    private fun Project.metadataCompilationsOf(kotlinCompilation: KotlinCompilation<*>): List<KotlinCompilation<*>> {
+        if (kotlinCompilation.platformType == KotlinPlatformType.common) return emptyList()
+        val kotlin = extensions.findByName("kotlin") as? KotlinTargetsContainer ?: return emptyList()
+        val metadata = kotlin.targets.findByName(METADATA_TARGET_NAME) ?: return emptyList()
+        return kotlinCompilation.allKotlinSourceSets
+            .mapNotNull { metadata.compilations.findByName(it.name) }
+            .filter { isApplicable(it) && it.compileTaskProvider.get().enabled }
+    }
+
+    /**
+     * The compilation that runs the JVM-only checks on the shared source set [sourceSetName], because
+     * a metadata compilation can't run them. The first of: a `jvm` target before an Android target,
+     * the target name, the `main` compilation, the compilation name.
+     */
+    private fun Project.jvmCheckOwner(sourceSetName: String): KotlinCompilation<*>? {
+        val kotlin = extensions.findByName("kotlin") as? KotlinTargetsContainer ?: return null
+        return kotlin.targets.asSequence()
+            .filter { it.platformType == KotlinPlatformType.jvm || it.platformType == KotlinPlatformType.androidJvm }
+            .flatMap { it.compilations }
+            .filter { compilation ->
+                isApplicable(compilation) && compilation.allKotlinSourceSets.any { it.name == sourceSetName }
+            }
+            .minWithOrNull(
+                compareBy<KotlinCompilation<*>>(
+                    { it.compilesForAndroid(configurations.getByName(it.compileDependencyConfigurationName)) },
+                    { it.target.name },
+                    { it.name != KotlinCompilation.MAIN_COMPILATION_NAME },
+                    { it.name },
+                ),
+            )
     }
 
     /** The `com.android.kotlin.multiplatform.library` target of AGP 8 reports platform type `jvm`. */
@@ -572,6 +633,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         private const val SARIF_REPORT_FILE = "reports/api-watchdog/report.sarif"
         private const val REPORT_DATA_FILE = "reports/api-watchdog/report.data"
         private const val ANDROID_CLASSES_JAR = "android-classes-jar"
+        private const val METADATA_TARGET_NAME = "metadata"
         internal const val EXEMPT_NON_TRANSITIVE_CONFIGURATION_NAME = "apiWatchdogExemptNonTransitive"
 
         private const val TEST_COMPILATION_NAME_SUFFIX = "Test"

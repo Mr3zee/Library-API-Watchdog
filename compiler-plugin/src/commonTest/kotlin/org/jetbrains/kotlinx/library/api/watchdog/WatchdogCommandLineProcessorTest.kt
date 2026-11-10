@@ -137,6 +137,18 @@ class WatchdogCommandLineProcessorTest {
     }
 
     @Test
+    fun `source set options split names and ignore the blank placeholder`() {
+        process(WatchdogCommandLineProcessor.SOURCE_SETS_CHECKED_ELSEWHERE_OPTION, "commonMain:nativeMain")
+        process(WatchdogCommandLineProcessor.SOURCE_SETS_WITH_JVM_CHECKS_OPTION, "")
+
+        assertEquals(
+            setOf("commonMain", "nativeMain"),
+            configuration[WatchdogConfigurationKeys.SOURCE_SETS_CHECKED_ELSEWHERE],
+        )
+        assertEquals(emptySet(), configuration[WatchdogConfigurationKeys.SOURCE_SETS_WITH_JVM_CHECKS])
+    }
+
+    @Test
     fun `invalid name patterns preserve existing patterns`() {
         for ((option, key) in namePatternOptions()) {
             process(option, "com.example.InternalApi")

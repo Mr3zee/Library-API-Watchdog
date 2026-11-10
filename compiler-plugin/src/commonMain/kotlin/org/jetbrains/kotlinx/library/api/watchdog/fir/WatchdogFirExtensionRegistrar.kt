@@ -16,6 +16,7 @@ class WatchdogFirExtensionRegistrar internal constructor(
     private val excludedNames: Set<String> = emptySet(),
     private val includedNames: Set<String> = emptySet(),
     private val includedAnnotations: Set<String> = emptySet(),
+    private val sourceSetOwnership: SourceSetOwnership = SourceSetOwnership.NONE,
 ) : FirExtensionRegistrar() {
     override fun ExtensionRegistrarContext.configurePlugin() {
         if (internalApiAnnotations.isNotEmpty()) {
@@ -37,6 +38,7 @@ class WatchdogFirExtensionRegistrar internal constructor(
                 exemptingExistingApi,
                 reportUndocumentedClassProperties,
                 requireExplicitApi,
+                sourceSetOwnership,
             )
         }
     }

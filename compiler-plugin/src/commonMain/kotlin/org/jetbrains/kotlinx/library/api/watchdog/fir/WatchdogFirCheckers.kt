@@ -35,18 +35,31 @@ class WatchdogFirCheckers internal constructor(
     exemptingExistingApi: Boolean = false,
     reportUndocumentedClassProperties: Boolean = false,
     requireExplicitApi: Boolean = true,
+    sourceSetOwnership: SourceSetOwnership = SourceSetOwnership.NONE,
 ) : FirAdditionalCheckersExtension(session) {
-    private val enabled = !requireExplicitApi ||
+    private val checksOn = !requireExplicitApi ||
             session.languageVersionSettings.getFlag(AnalysisFlags.explicitApiMode) != ExplicitApiMode.DISABLED
 
+    private val scope = sourceSetOwnership.scopeOf(session)
+
+    private val enabled = checksOn && scope != CheckScope.NONE
+
+    /** The checks without a severity setting don't run in [CheckScope.JVM_ONLY]. */
+    private val allChecks = enabled && scope == CheckScope.ALL
+
     override val declarationCheckers: DeclarationCheckers = object : DeclarationCheckers() {
-        private fun <C : Any> C.onlyOnJvm(): C? = takeIf { session.moduleData.platform.isJvm() }
+        private val jvmOnly = mutableListOf<Any>()
+
+        private fun <C : Any> C.onlyOnJvm(): C? = takeIf { session.moduleData.platform.isJvm() }?.also { jvmOnly += it }
+
+        private fun inScope(checker: Any): Boolean = scope == CheckScope.ALL || jvmOnly.any { it === checker }
 
         private fun <C : Any> partition(vararg entries: Toggled<C>?): Partition<C> {
             val active = mutableSetOf<C>()
             val disabled = mutableListOf<ExemptingChecker>()
             if (enabled) {
                 for (entry in entries.filterNotNull()) {
+                    if (!inScope(entry.checker)) continue
                     when {
                         entry.diagnostics.any(severities::isEnabled) -> active += entry.checker
                         entry.checker is ExemptingChecker -> disabled += entry.checker
@@ -98,15 +111,21 @@ class WatchdogFirCheckers internal constructor(
 
         /** The exemptions of the check turned off with `publicTypeWithInternalApi` are redundant, as with `NONE`. */
         private val internalApiTypeExposureDisabled: List<ExemptingChecker> =
-            listOf(internalApiTypeExposure).takeIf { enabled && !publicTypeWithInternalApiEnabled }.orEmpty()
+            listOf(internalApiTypeExposure).takeIf { allChecks && !publicTypeWithInternalApiEnabled }.orEmpty()
+
+        /**
+         * Runs in every scope. The metadata compilation of a shared source set doesn't have the
+         * dependency files of a platform, so the check doesn't report anything there.
+         */
+        private val dependencyExposureChecker = dependencyExposure?.let { NonTransitiveDependencyChecker(session, it) }
+            ?.takeIf { checksOn && !exemptingExistingApi }
 
         private val plainBasicDeclarationCheckers: Set<FirBasicDeclarationChecker> = basic.active + setOfNotNull(
             ExemptionExplanationChecker.declarationChecker
-                .takeIf { enabled && !exemptingExistingApi },
+                .takeIf { allChecks && !exemptingExistingApi },
             internalApiTypeExposure
-                .takeIf { enabled && publicTypeWithInternalApiEnabled },
-            dependencyExposure?.let { NonTransitiveDependencyChecker(session, it) }
-                ?.takeIf { enabled && !exemptingExistingApi },
+                .takeIf { allChecks && publicTypeWithInternalApiEnabled },
+            dependencyExposureChecker,
         )
 
         private val functions = partition<FirFunctionChecker>(
@@ -178,7 +197,8 @@ class WatchdogFirCheckers internal constructor(
         )
 
         override val classCheckers: Set<FirClassChecker> = (classes.active + setOfNotNull(
-            EnclosingExemptionRedundancyChecker(enclosingExemptionProbes).takeIf { enabled },
+            EnclosingExemptionRedundancyChecker(enclosingExemptionProbes)
+                .takeIf { enabled || dependencyExposureChecker != null },
         )).wrapped(classes.disabled)
 
         override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> = (plainBasicDeclarationCheckers + setOfNotNull(
@@ -198,9 +218,10 @@ class WatchdogFirCheckers internal constructor(
                 },
                 enclosing = enclosingExemptionProbes,
                 recorder = recorder,
-            ).takeIf { enabled },
+            ).takeIf { allChecks },
         )).wrapped(basic.disabled + internalApiTypeExposureDisabled) + setOfNotNull(
-            recorder?.let(::ExpectActualPairRecorder)?.takeIf { enabled && exemptingExistingApi },
+            // The compilation that checks a parent source set doesn't see the `actual` declarations of this one.
+            recorder?.let(::ExpectActualPairRecorder)?.takeIf { checksOn && exemptingExistingApi },
         )
 
         override val functionCheckers: Set<FirFunctionChecker> = functions.active.wrapped(functions.disabled)
@@ -216,7 +237,7 @@ class WatchdogFirCheckers internal constructor(
     override val typeCheckers: TypeCheckers = object : TypeCheckers() {
         override val resolvedTypeRefCheckers: Set<FirResolvedTypeRefChecker> = setOfNotNull(
             ExemptionExplanationChecker.typeChecker
-                .takeIf { enabled && !exemptingExistingApi },
+                .takeIf { allChecks && !exemptingExistingApi },
         ).let { checkers ->
             if (recorder == null) checkers else checkers.mapTo(mutableSetOf()) {
                 RecordingTypeChecker(it, recorder)

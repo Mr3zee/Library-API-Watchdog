@@ -60,7 +60,9 @@ Without explicit API mode the build fails. See
 more details about the `explicitApiRequirement` setting.
 
 The Gradle plugin registers the compiler plugin for every compilation except test compilations
-and adds the dependency with the `@Intentionally*` exemption annotations.
+and adds the dependency with the `@Intentionally*` exemption annotations. In a multiplatform project,
+the metadata compilation of a shared source set reports its diagnostics, so the build output has each
+diagnostic once.
 
 Every check reports a compilation error by default, except `UNDOCUMENTED_PUBLIC_API`, which
 reports a warning. The `apiWatchdog` extension changes the severity of a check or turns it off:

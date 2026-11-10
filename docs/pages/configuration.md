@@ -80,6 +80,35 @@ Applying the plugin:
 - Warns when binary compatibility validation is off, with a setup snippet.
   [Binary compatibility validation suggestion](./abi-validation-suggestion.md) gives the details.
 
+## Multiplatform projects
+
+A platform compilation compiles its shared source sets again. One compilation reports the diagnostics
+of a source set, so the build output has each diagnostic once:
+
+| Source set | Compilation that reports it |
+|------------|-----------------------------|
+| A source set of one target, such as `jvmMain`. | The compilation of the target. |
+| A shared source set with a metadata compilation, such as `commonMain`. | The metadata compilation, such as `compileCommonMainKotlinMetadata`. |
+| A shared source set without a metadata compilation. | Every platform compilation that compiles it. |
+
+Kotlin doesn't compile the metadata of a source set that only JVM and Android targets share, so each
+of these targets reports it.
+
+Each platform compile task depends on the metadata compile tasks of its shared source sets. A build of
+one target, such as `compileKotlinJvm`, still checks `commonMain`, and an error there fails the build.
+
+Three kinds of diagnostics come from a platform compilation, because a metadata compilation can't
+report them:
+
+- The [Java interop checks](./checks/java-interop/java-interop.md) of a shared source set. One JVM
+  compilation reports them: the `main` compilation of a `jvm` target, or of an Android target when the
+  project doesn't have a `jvm` target.
+- [`REDUNDANT_EXEMPTION`](./checks/special/redundant-exemption.md) on an `expect` declaration, when
+  the verdict depends on the `actual` declarations. Each platform compilation reports it.
+- [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md)
+  on a shared source set, because the check reads the dependencies of a platform. Each platform
+  compilation reports it.
+
 ## The `apiWatchdog` extension
 
 The sample lists every property. A severity or a switch shows its default value:

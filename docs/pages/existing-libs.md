@@ -54,7 +54,8 @@ A second run doesn't add anything, because an exempted declaration doesn't repor
 ## Collection mode
 
 `exemptExistingApi` and `generateApiWatchdogReport` compile every compilation except tests in
-collection mode. [The report page](./report.md) lists the compilations.
+collection mode. [The report page](./report.md) lists the compilations. The build output of both
+tasks has each diagnostic once, as in a regular build.
 When neither task is in the task graph, the compilations run as configured. Collection mode changes
 three things:
 
