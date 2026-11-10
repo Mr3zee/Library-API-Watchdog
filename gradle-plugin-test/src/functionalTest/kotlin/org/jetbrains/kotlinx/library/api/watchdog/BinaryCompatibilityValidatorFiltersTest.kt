@@ -245,6 +245,19 @@ class BinaryCompatibilityValidatorFiltersTest : ApiFiltersTestBase() {
     }
 
     @Test
+    fun `inclusion sets apply to the non-JVM compilations of a multiplatform project`() {
+        val project = kmpProject(targets = "jvm()\njs { nodejs() }") {
+            withPlugins(binaryCompatibilityValidatorPlugin)
+            buildScript(apiValidation(bcvInclusionSets))
+            inclusionSources()
+        }
+
+        for (task in listOf("compileKotlinJs", "compileCommonMainKotlinMetadata")) {
+            project.build(task).assertOnlyIncludedIsReported()
+        }
+    }
+
+    @Test
     fun `the sets work with the configuration cache`() {
         val project = jvmProject {
             withPlugins(binaryCompatibilityValidatorPlugin)

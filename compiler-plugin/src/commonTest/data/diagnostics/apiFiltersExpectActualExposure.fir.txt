@@ -1,0 +1,42 @@
+Module: common
+FILE: internal.kt
+    package test.internal
+
+    public final class CommonModel : R|kotlin/Any| {
+        public constructor(): R|test/internal/CommonModel| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final expect class ExpectedModel : R|kotlin/Any| {
+        public expect constructor(): R|test/internal/ExpectedModel|
+
+    }
+FILE: common.kt
+    package test.api
+
+    public final fun loadInCommon(): R|test/internal/CommonModel| {
+        ^loadInCommon R|test/internal/CommonModel.CommonModel|()
+    }
+    public final fun expectedInCommon(): R|test/internal/ExpectedModel| {
+        ^expectedInCommon R|test/internal/ExpectedModel.ExpectedModel|()
+    }
+Module: jvm
+FILE: actual.kt
+    package test.internal
+
+    public final actual class ExpectedModel : R|kotlin/Any| {
+        public constructor(): R|test/internal/ExpectedModel| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+FILE: jvm.kt
+    package test.api
+
+    public final fun loadOnJvm(): R|test/internal/CommonModel| {
+        ^loadOnJvm R|test/internal/CommonModel.CommonModel|()
+    }
+    public final fun expectedOnJvm(): R|test/internal/ExpectedModel| {
+        ^expectedOnJvm R|test/internal/ExpectedModel.ExpectedModel|()
+    }

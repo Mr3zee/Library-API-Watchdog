@@ -144,5 +144,21 @@ abstract class ApiFiltersTestBase {
 
         val excludedNames: List<String> =
             listOf("InternalByPackage", "InternalInSubpackage", "HiddenByAnnotation", "HiddenByName", "HiddenNested")
+
+        /** The exclusion filters of the Kotlin ABI validation that [exclusionSources] needs. */
+        const val KGP_EXCLUSION_FILTERS: String = """
+            exclude {
+                byNames.addAll("test.internal.**", "test.api.HiddenByName", "test.api.Container.HiddenNested")
+                annotatedWith.add("test.markers.Hidden")
+            }
+        """
+
+        /** The inclusion filters of the Kotlin ABI validation that [inclusionSources] needs. */
+        const val KGP_INCLUSION_FILTERS: String = """
+            include {
+                byNames.addAll("test.api.**", "test.other.IncludedClass")
+                annotatedWith.add("test.markers.PublicApi")
+            }
+        """
     }
 }

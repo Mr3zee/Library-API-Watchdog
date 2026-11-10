@@ -12,7 +12,7 @@ import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.REDUNDANT_EXEMPTION
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.UNDOCUMENTED_PUBLIC_API
 import org.junit.Test
 
-/** The `filters` block of `apiWatchdog` and the filters of the ABI validation of the Kotlin Gradle plugin. */
+/** The filters of the ABI validation of the Kotlin Gradle plugin, and `useAbiValidationFilters`. */
 class ApiFiltersTest : ApiFiltersTestBase() {
     @Test
     fun `without filters every declaration is checked`() {
@@ -317,6 +317,33 @@ class ApiFiltersTest : ApiFiltersTestBase() {
         }
 
         project.build(COMPILE).assertOnlyWatchedIsReported()
+    }
+
+    @Test
+    fun `an internal API annotation of apiWatchdog can be a name pattern`() {
+        val project = jvmProject {
+            apiWatchdog { internalApiAnnotations("test.markers.Hid*") }
+            exclusionSources()
+        }
+
+        val result = project.buildAndFail(COMPILE)
+
+        result.assertErrors(OPEN_API_WITHOUT_SUBCLASS_OPT_IN)
+        result.assertOutputLacks("`HiddenByAnnotation`")
+        result.assertOutputHas("`HiddenByName`")
+    }
+
+    @Test
+    fun `an internal API annotation of apiWatchdog with whitespace fails the build`() {
+        val project = jvmProject {
+            apiWatchdog { internalApiAnnotations("test.markers Hidden") }
+            exclusionSources()
+        }
+
+        project.buildAndFail(COMPILE).assertOutputHas(
+            "An API Watchdog internal API annotation must be a fully qualified name or a name pattern " +
+                    "without whitespace and ':': 'test.markers Hidden'",
+        )
     }
 
     @Test

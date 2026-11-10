@@ -1,0 +1,94 @@
+FILE: apiFiltersAnnotationPositions.kt
+    package test
+
+    @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.PROPERTY|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.PROPERTY_SETTER|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FIELD|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.PROPERTY|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.PROPERTY_SETTER|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FIELD|)]) public final annotation class PublicApi : R|kotlin/Annotation| {
+        public constructor(): R|test/PublicApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public open class WithAnnotatedSetter : R|kotlin/Any| {
+        public constructor(): R|test/WithAnnotatedSetter| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final var items: R|kotlin/collections/MutableList<kotlin/Int>| = R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+            public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+            @PROPERTY_SETTER:R|test/PublicApi|() public set(value: R|kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit|
+
+        public final var otherItems: R|kotlin/collections/MutableList<kotlin/Int>| = R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+            public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+            public set(value: R|kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit|
+
+    }
+    public open class Point : R|kotlin/Any| {
+        public constructor(items: R|kotlin/collections/MutableList<kotlin/Int>|, flag: R|kotlin/Boolean|, others: R|kotlin/collections/MutableList<kotlin/Int>|): R|test/Point| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val items: R|kotlin/collections/MutableList<kotlin/Int>| = R|<local>/items|
+            public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+
+    }
+    public open class Line : R|kotlin/Any| {
+        public constructor(items: R|kotlin/collections/MutableList<kotlin/Int>|, flag: R|kotlin/Boolean|, others: R|kotlin/collections/MutableList<kotlin/Int>|): R|test/Line| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|test/PublicApi|() public final val items: R|kotlin/collections/MutableList<kotlin/Int>| = R|<local>/items|
+            public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+
+    }
+    public open class WithJvmField : R|kotlin/Any| {
+        public constructor(): R|test/WithJvmField| {
+            super<R|kotlin/Any|>()
+        }
+
+        field:@FIELD:R|test/PublicApi|() @R|kotlin/jvm/JvmField|() public final var items: R|kotlin/collections/MutableList<kotlin/Int>| = R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+            public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+            public set(value: R|kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit|
+
+        field:@R|kotlin/jvm/JvmField|() public final var otherItems: R|kotlin/collections/MutableList<kotlin/Int>| = R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+            public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+            public set(value: R|kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit|
+
+    }
+    public final object WithConst : R|kotlin/Any| {
+        private constructor(): R|test/WithConst| {
+            super<R|kotlin/Any|>()
+        }
+
+        field:@FIELD:R|test/PublicApi|() public final const val VERSION: R|kotlin/Int| = Int(1)
+            public get(): R|kotlin/Int|
+
+    }
+    public open class WithLateinit : R|kotlin/Any| {
+        public constructor(): R|test/WithLateinit| {
+            super<R|kotlin/Any|>()
+        }
+
+        field:@FIELD:R|test/PublicApi|() public final lateinit var items: R|kotlin/collections/MutableList<kotlin/Int>|
+            public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+            public set(value: R|kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit|
+
+    }
+    public open class WithPrivateField : R|kotlin/Any| {
+        public constructor(): R|test/WithPrivateField| {
+            super<R|kotlin/Any|>()
+        }
+
+        field:@FIELD:R|test/PublicApi|() public final var items: R|kotlin/collections/MutableList<kotlin/Int>| = R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+            public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+            public set(value: R|kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit|
+
+    }
+    public open class WithPrivateSetterLateinit : R|kotlin/Any| {
+        public constructor(): R|test/WithPrivateSetterLateinit| {
+            super<R|kotlin/Any|>()
+        }
+
+        field:@FIELD:R|test/PublicApi|() public final lateinit var items: R|kotlin/collections/MutableList<kotlin/Int>|
+            public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+            private set(value: R|kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit|
+
+    }

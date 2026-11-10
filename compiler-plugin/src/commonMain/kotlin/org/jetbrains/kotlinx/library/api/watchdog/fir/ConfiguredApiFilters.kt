@@ -24,9 +24,10 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
  *   its other members aren't. `isWatchedPublicApi` has this rule, because it needs the checker
  *   context.
  *
- * A constructor, an accessor, and a parameter don't have a name of their own. An annotation of
- * the matched `expect` declaration includes the `actual` too, so both get the same verdict.
- * The exclusion by annotation is [ConfiguredInternalApiAnnotations].
+ * A constructor, an accessor, and a parameter don't have a name of their own. An inclusion
+ * annotation on the matched `expect` declaration or on its file includes the `actual` too, so
+ * both get the same verdict. [apiAnnotations] gives the annotations of a declaration. The exclusion
+ * by annotation is [ConfiguredInternalApiAnnotations].
  */
 internal class ConfiguredApiFilters(
     session: FirSession,
@@ -44,13 +45,19 @@ internal class ConfiguredApiFilters(
     fun excludingPattern(symbol: FirBasedSymbol<*>): String? =
         if (excludedNames.isEmpty) null else symbol.filterName()?.let(excludedNames::firstMatch)
 
-    /** Whether an inclusion rule matches the name or an annotation of [symbol]. Enclosing declarations don't count. */
+    /**
+     * Whether an inclusion rule matches the name or an annotation of [symbol]. The enclosing
+     * declarations of [symbol] don't count. The annotations of the matched `expect` declaration and
+     * of its enclosing declarations count, because the `actual` can be in another file.
+     */
     fun includes(symbol: FirBasedSymbol<*>): Boolean {
         if (!includedNames.isEmpty && symbol.filterName()?.let(includedNames::matches) == true) return true
         if (includedAnnotations.isEmpty) return false
-        return symbol.hasIncludedAnnotationOnSelfOrAccessor() ||
-                symbol.getSingleMatchedExpectForActualOrNull()?.hasIncludedAnnotationOnSelfOrAccessor() == true ||
-                symbol is FirPropertyAccessorSymbol && symbol.propertySymbol.hasIncludedAnnotationOnSelfOrAccessor()
+        if (symbol.hasIncludedAnnotationOnSelfOrAccessor()) return true
+        if (symbol is FirPropertyAccessorSymbol && symbol.propertySymbol.hasIncludedAnnotationOnSelfOrAccessor()) return true
+        val expect = symbol.getSingleMatchedExpectForActualOrNull() ?: return false
+        return expect.hasIncludedAnnotationOnSelfOrAccessor() ||
+                expect.enclosingDeclarationsOfSymbol().any { it.hasIncludedAnnotation() }
     }
 
     /** An accessor is a member of the class in the ABI dump, so `@get:` and `@set:` annotations count for the property. */
@@ -68,7 +75,7 @@ internal class ConfiguredApiFilters(
     }
 
     private fun FirBasedSymbol<*>.hasIncludedAnnotation(): Boolean =
-        resolvedAnnotationsWithClassIds.any { annotation ->
+        apiAnnotations(session).any { annotation ->
             val classId = annotation.toAnnotationClassLikeSymbol(session)?.classId ?: return@any false
             includedAnnotations.matches(classId.asSingleFqName().asString())
         }

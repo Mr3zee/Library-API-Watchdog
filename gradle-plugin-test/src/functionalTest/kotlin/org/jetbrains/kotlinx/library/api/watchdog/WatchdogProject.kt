@@ -303,7 +303,7 @@ internal class WatchdogFixture(
             }
             is ProjectKind.AndroidLibrary -> {
                 val androidSpec = spec as AndroidLibrarySpec
-                plugins(*androidLibraryPlugins(kind.agp, root = true))
+                plugins(listOf(*androidLibraryPlugins(kind.agp, root = true)) + spec.extraPlugins)
                 finish(
                     spec,
                     androidLibraryScript(
@@ -315,7 +315,7 @@ internal class WatchdogFixture(
                 )
             }
             is ProjectKind.KmpAndroid -> {
-                plugins(KotlinPlugins.multiplatform(kotlinVersion), androidPlugin(kind.target), pluginUnderTest)
+                plugins(listOf(KotlinPlugins.multiplatform(kotlinVersion), androidPlugin(kind.target), pluginUnderTest) + spec.extraPlugins)
                 finish(spec, explicitApiBlock() + kmpAndroidScript(kind.target), sourceSetPrefix = "commonMain")
             }
         }

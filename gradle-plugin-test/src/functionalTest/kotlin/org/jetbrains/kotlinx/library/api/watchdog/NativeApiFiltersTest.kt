@@ -23,16 +23,7 @@ class NativeApiFiltersTest : ApiFiltersTestBase() {
     @Test
     fun `Kotlin ABI validation inclusion filters apply`() {
         val project = kmpProject(targets = NATIVE_TARGET) {
-            buildScript(
-                kotlinAbiValidation(
-                    """
-                        include {
-                            byNames.addAll("test.api.**", "test.other.IncludedClass")
-                            annotatedWith.add("test.markers.PublicApi")
-                        }
-                    """
-                )
-            )
+            buildScript(kotlinAbiValidation(KGP_INCLUSION_FILTERS))
             inclusionSources()
         }
 
@@ -130,11 +121,5 @@ class NativeApiFiltersTest : ApiFiltersTestBase() {
     private companion object {
         const val NATIVE_TARGET = "linuxX64()"
         const val COMPILE_NATIVE = "compileKotlinLinuxX64"
-        const val KGP_EXCLUSION_FILTERS = """
-            exclude {
-                byNames.addAll("test.internal.**", "test.api.HiddenByName", "test.api.Container.HiddenNested")
-                annotatedWith.add("test.markers.Hidden")
-            }
-        """
     }
 }

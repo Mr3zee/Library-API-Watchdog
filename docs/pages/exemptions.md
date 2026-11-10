@@ -175,7 +175,9 @@ The marker annotation class itself is public API and stays watched.
 
 A public declaration without the annotation must not use an internal API type in its signature.
 [Internal API types in public API](./checks/special/public-type-with-internal-api.md) reports
-the declaration as an error.
+the declaration as an error. A class is an internal API type when the class or an enclosing class
+has the annotation. An annotation on the file doesn't make the classes of the file internal API
+types, because an incremental build reads an unchanged class without the annotations of its file.
 
 An annotation class from a dependency can't carry `@InternalAnnotationMarker`. List its fully
 qualified name in `internalApiAnnotations` instead. The plugin then treats it like a marked
@@ -237,27 +239,50 @@ More rules:
 - The watchdog also checks a class with an included function, property, enum entry, or constructor
   that is public API. It doesn't check the other members of the class. An included nested class
   doesn't include the enclosing class.
-- An annotation on a file counts for every declaration of the file.
+- An annotation on a file counts for every declaration of the file, with one exception that the
+  next item gives.
 - The four checks that run on every visibility don't use the filters. See
   [Internal API annotations](#internal-api-annotations) for more details about these checks.
 - [Internal API types in public API](./checks/special/public-type-with-internal-api.md) reports a
-  checked declaration that exposes a type that an exclusion rule matches. A name rule applies only
-  to the types of the module. The check doesn't report a type only because no inclusion rule
-  matches it.
+  checked declaration that exposes an excluded type. An excluded type is a type that an exclusion
+  name rule matches, or a type with an exclusion annotation on the type or on an enclosing class.
+  A name rule applies only to the types of the module. The check doesn't report a type only because
+  no inclusion rule matches it.
+- An exclusion annotation on a file doesn't make the classes of the file excluded types for this
+  check. An incremental build reads an unchanged class from the previous output, without the
+  annotations of its file. Put the annotation on the class itself, or use a name rule.
 - [Redundant exemptions](./checks/special/redundant-exemption.md) reports an `@Intentionally*`
   annotation on a declaration that the filters remove from the checks.
 
 An annotation rule reads these positions:
 
-| Annotation position                 | `include.annotatedWith`    | `exclude.annotatedWith`                |
-|-------------------------------------|----------------------------|----------------------------------------|
-| The declaration                     | Counts.                    | Counts.                                |
-| An enclosing class or the file      | Counts.                    | Counts.                                |
-| A property accessor (`@get:`, `@set:`) | Counts for the property. | Doesn't count for the property.        |
-| The `expect` declaration            | Also includes the `actual`. | Doesn't count for the `actual`.       |
+| Annotation position                                                                    | `include.annotatedWith`         | `exclude.annotatedWith`         |
+|----------------------------------------------------------------------------------------|---------------------------------|---------------------------------|
+| The declaration                                                                        | Counts.                         | Counts.                         |
+| An enclosing class or the file                                                         | Counts.                         | Counts.                         |
+| A property accessor (`@get:`, `@set:`)                                                 | Counts for the property.        | Doesn't count for the property. |
+| The backing field (`@field:`) of a `@JvmField`, `const`, or public `lateinit` property | Counts for the property.        | Counts for the property.        |
+| The backing field (`@field:`) of another property                                      | Doesn't count.                  | Doesn't count.                  |
+| The `expect` declaration or its file                                                   | Also includes the `actual`.     | Doesn't count for the `actual`. |
+| The `actual` declaration or its file                                                   | Doesn't count for the `expect`. | Doesn't count for the `expect`. |
+
+The backing field of a `@JvmField`, `const`, or public `lateinit` property is public API, so the
+JVM ABI dump reads its annotations. A `lateinit` property with a `private set` has a private backing
+field.
 
 A name rule gives an `expect` declaration and its `actual` declaration the same result, because
-they have the same name. Put an `include.annotatedWith` annotation on the `expect` declaration.
+they have the same name. An `actual typealias` gets the result of its `expect` class. The class that
+the typealias expands to has a name of its own, so the rules of the `expect` class don't apply to it.
+
+Put an `include.annotatedWith` annotation on the `expect` declaration or on its file. These rules
+include only the `actual` declaration and leave the `expect` declaration outside the filters:
+
+- An annotation on the `actual` declaration or on its file.
+- A name rule for a member that only the `actual` class declares.
+
+The checks that report a pair on the `expect` declaration then don't report the pair, for example
+[Open API without subclass opt-in](./checks/open-api-without-subclass-opt-in.md) and
+[Undocumented public API](./checks/undocumented-public-api.md).
 
 ### Filter names
 
@@ -293,14 +318,15 @@ So some rules have another effect in the watchdog:
   package pattern.
 - On JVM, the validation tools match a name rule only against class names. A rule with the name of
   a function, a property, or an enum entry changes only the watchdog there.
-- An annotation on a file also applies to the classes of the file. In a JVM dump it applies only to
-  the top-level functions and properties.
+- An annotation on a file also removes the classes of the file from the checks. In a JVM dump it
+  applies only to the top-level functions and properties.
 - The validation tools don't read an annotation with `SOURCE` retention. The watchdog does.
 - The Binary Compatibility Validator plugin uses `publicPackages`, `publicClasses`, and
   `publicMarkers` only for a JVM dump. The watchdog uses them for every target.
-- The watchdog doesn't read `ignoredProjects`, `validationDisabled`, or the `klib` settings of the
-  Binary Compatibility Validator plugin. To turn the watchdog off for such a project, set
-  `apiWatchdog { enabled = false }`.
+- The Binary Compatibility Validator plugin doesn't validate a project of `ignoredProjects` or a
+  project with `validationDisabled`. The watchdog still checks such a project, without the
+  filters of the plugin. To turn the watchdog off for the project, set
+  `apiWatchdog { enabled = false }`. The watchdog doesn't read the `klib` settings of the plugin.
 
 ## Annotation ignore rules
 

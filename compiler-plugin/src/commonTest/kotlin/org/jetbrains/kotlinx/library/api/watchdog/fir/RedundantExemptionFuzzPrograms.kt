@@ -10,12 +10,21 @@ internal class FuzzExemption(val file: String, val annotation: String, val start
 
 internal class FuzzFile(val name: String, val text: String, val exemptions: List<FuzzExemption>)
 
-/** A generated multi-file test-data program. [render] blanks one exemption with spaces, so offsets don't move. */
-internal class FuzzProgram(val index: Int, val header: String, val files: List<FuzzFile>) {
+/**
+ * A generated multi-file test-data program. [render] blanks one exemption with spaces, so offsets don't
+ * move. [filters] holds the filter annotations of a program for [ApiFiltersFuzzTest].
+ */
+internal class FuzzProgram(
+    val index: Int,
+    val header: String,
+    val files: List<FuzzFile>,
+    val filters: FuzzFilters? = null,
+) {
     val exemptions: List<FuzzExemption> get() = files.flatMap { it.exemptions }
 
-    fun render(blanked: FuzzExemption? = null): String = buildString {
-        append(header)
+    /** [directives] are more directive lines, each with a line break. */
+    fun render(blanked: FuzzExemption? = null, directives: String = ""): String = buildString {
+        append(header(directives))
         for (file in files) {
             append("// FILE: ").append(file.name).append('\n')
             if (blanked == null || blanked.file != file.name) {
@@ -27,10 +36,50 @@ internal class FuzzProgram(val index: Int, val header: String, val files: List<F
             }
         }
     }
+
+    /** The header ends with an empty line, so [directives] go before it. */
+    fun header(directives: String): String = header.removeSuffix("\n") + directives + "\n"
 }
 
 /**
- * Generates programs with exemptions on every target the annotations accept. Blanking one exemption
+ * The filter annotations of a generated program. `@Mark` is the exclusion annotation, and `@Keep` is the
+ * inclusion annotation. Each name is the name of a declaration with the annotation, or of a top-level
+ * declaration of a file with the annotation. A name can be a pattern that matches only that name.
+ */
+internal class FuzzFilters(
+    val packageName: String,
+    val excluded: List<String>,
+    val included: List<String>,
+    /** The fully qualified names of the top-level declarations of the program. */
+    val topLevel: List<String>,
+    /** The fully qualified names of the top-level declarations of the preamble. */
+    val preamble: List<String>,
+    val classes: List<FuzzClass>,
+)
+
+/** A top-level class of a generated program, for the oracle of an included member. */
+internal class FuzzClass(val name: String, val file: String) {
+    /** Whether the class is public API without an internal API marker. */
+    var publicApi: Boolean = false
+
+    /** The direct members with a name of their own. */
+    val members = mutableListOf<FuzzMember>()
+
+    /** The offsets of the constructors in [file]. */
+    val constructors = mutableListOf<IntRange>()
+
+    /** The offsets of the annotations of the class in [file]. */
+    var annotations: IntRange = IntRange.EMPTY
+}
+
+/** [publicApi]: a public function or property without an internal API marker. */
+internal class FuzzMember(val simpleName: String, val publicApi: Boolean)
+
+/**
+ * Generates programs with exemptions on every target the annotations accept. With [filters], it also
+ * puts `@Mark` and `@Keep` on named declarations and on files, for [ApiFiltersFuzzTest]. Without
+ * [filters], the generator makes the same random calls as without the filter code, so a seed gives
+ * the same programs in [RedundantExemptionFuzzTest]. Blanking one exemption
  * is an exact oracle only when the redundancy of each exemption is independent of the others. The
  * generator keeps it independent with these rules:
  *
@@ -43,12 +92,13 @@ internal class FuzzProgram(val index: Int, val header: String, val files: List<F
  *   dependency setup.
  * - No `@Suppress` and no annotation ignore rules, because both keep a needed exemption.
  */
-internal class FuzzProgramGenerator(private val seed: Long) {
+internal class FuzzProgramGenerator(private val seed: Long, private val filters: Boolean = false) {
     private val configurableDiagnostics: List<String> = WatchdogDiagnostics.allDiagnostics.map { it.name }
 
     fun generate(index: Int): FuzzProgram {
         val random = Random(seed * 1_000_003L + index)
-        val builder = ProgramBuilder(random, "fuzz.p$index")
+        val marks = if (filters) FilterMarks(random, "fuzz.p$index", inclusion = random.nextInt(10) < 6) else null
+        val builder = ProgramBuilder(random, "fuzz.p$index", marks)
         val header = buildString {
             appendLine("// RUN_PIPELINE_TILL: FRONTEND")
             appendLine("// DISABLE_NEXT_PHASE_SUGGESTION")
@@ -59,7 +109,7 @@ internal class FuzzProgramGenerator(private val seed: Long) {
         }
         val fileCount = if (random.nextInt(3) == 0) 2 else 1
         val files = List(fileCount) { builder.file(it) }
-        return FuzzProgram(index, header, files)
+        return FuzzProgram(index, header, files, marks?.build())
     }
 
     private fun severityOverrides(random: Random): List<String> {
@@ -88,6 +138,107 @@ public class HiddenType
 @JvmInline
 public value class Id(public val raw: Int)
 """
+
+private const val FILTER_PREAMBLE = """
+/** The exclusion annotation. */
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.TYPEALIAS, AnnotationTarget.FILE)
+public annotation class Mark
+
+/** The inclusion annotation. */
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.TYPEALIAS, AnnotationTarget.FILE)
+public annotation class Keep
+"""
+
+private val preambleNames = listOf("Unstable", "Hidden", "HiddenType", "Id", "Mark", "Keep")
+
+/**
+ * The filter annotations of one program and the names of their declarations. [path] holds the
+ * enclosing classes of the declaration that the generator writes.
+ */
+private class FilterMarks(private val random: Random, val packageName: String, val inclusion: Boolean) {
+    val path = ArrayDeque<String>()
+    private val excluded = mutableListOf<String>()
+    private val included = mutableListOf<String>()
+    private val topLevel = mutableMapOf<String, MutableList<String>>()
+    private val excludedFiles = mutableSetOf<String>()
+    private val includedFiles = mutableSetOf<String>()
+    private val classes = mutableListOf<FuzzClass>()
+
+    /** The top-level class that [path] starts with. */
+    private val currentClass: FuzzClass?
+        get() = path.firstOrNull()?.let { simpleName -> classes.lastOrNull { it.name == "$packageName.$simpleName" } }
+
+    fun topLevelClass(file: String, simpleName: String): FuzzClass =
+        FuzzClass("$packageName.$simpleName", file).also { classes += it }
+
+    /** Records a direct member of a top-level class. */
+    fun member(simpleName: String, publicApi: Boolean) {
+        if (path.size == 1) currentClass?.members?.add(FuzzMember(simpleName, publicApi))
+    }
+
+    /** Records a constructor of a top-level class: [range] while [path] holds the class only. */
+    fun constructor(range: IntRange) {
+        if (path.size == 1) currentClass?.constructors?.add(range)
+    }
+
+    private fun chance(percent: Int): Boolean = random.nextInt(100) < percent
+
+    /**
+     * The file annotations of [file]. The exposure check doesn't read an internal API annotation on a
+     * file, so `@file:Mark` doesn't go on the [first] file. That file declares the types that the
+     * signatures use.
+     */
+    fun fileAnnotations(file: String, first: Boolean): List<String> = buildList {
+        if (!first && chance(10)) {
+            add("@file:Mark")
+            excludedFiles += file
+        }
+        if (inclusion && chance(15)) {
+            add("@file:Keep")
+            includedFiles += file
+        }
+    }
+
+    fun topLevel(file: String, simpleName: String) {
+        topLevel.getOrPut(file) { mutableListOf() } += "$packageName.$simpleName"
+    }
+
+    /**
+     * The filter annotations of the declaration [simpleName] in [path], with the use-site [target].
+     * Few properties have a public backing field, so the `field:` target gets a higher chance.
+     */
+    fun annotations(simpleName: String, target: String = ""): List<String> = buildList {
+        val name = (listOf(packageName) + path + simpleName).joinToString(".")
+        val percent = if (target.isEmpty()) 10 else 35
+        if (chance(percent)) {
+            add("@${target}Mark")
+            excluded += pattern(name, simpleName)
+        }
+        if (inclusion && chance(percent + 5)) {
+            add("@${target}Keep")
+            included += pattern(name, simpleName)
+        }
+    }
+
+    /**
+     * [name] or a pattern that matches only [name]. Every simple name of the generator is unique, except
+     * the name of a companion object. `*` matches the `p<index>` part of the package.
+     */
+    private fun pattern(name: String, simpleName: String): String = when (random.nextInt(4)) {
+        0 -> name.replaceFirst("$packageName.", "${packageName.substringBefore('.')}.*.")
+        1 -> if (simpleName != "Companion" && simpleName != "Factory") "**.$simpleName" else name
+        else -> name
+    }
+
+    fun build(): FuzzFilters = FuzzFilters(
+        packageName = packageName,
+        excluded = excluded + excludedFiles.flatMap { topLevel[it].orEmpty() },
+        included = included + includedFiles.flatMap { topLevel[it].orEmpty() },
+        topLevel = topLevel.values.flatten(),
+        preamble = preambleNames.map { "$packageName.$it" },
+        classes = classes,
+    )
+}
 
 private object Pools {
     val classLevel = listOf(
@@ -173,6 +324,8 @@ private class FileBuilder(val name: String) {
     val exemptions = mutableListOf<FuzzExemption>()
     var indent = ""
 
+    val length: Int get() = text.length
+
     fun raw(s: String): FileBuilder { text.append(s); return this }
     fun line(s: String = "") { if (s.isNotEmpty()) text.append(indent).append(s); text.append('\n') }
     fun startLine() { text.append(indent) }
@@ -195,7 +348,7 @@ private class FileBuilder(val name: String) {
     fun build(): FuzzFile = FuzzFile(name, text.toString(), exemptions)
 }
 
-private class ProgramBuilder(private val random: Random, private val packageName: String) {
+private class ProgramBuilder(private val random: Random, private val packageName: String, private val marks: FilterMarks? = null) {
     private var counter = 0
     private fun name(prefix: String): String = "$prefix${++counter}"
     private fun chance(percent: Int): Boolean = random.nextInt(100) < percent
@@ -207,11 +360,18 @@ private class ProgramBuilder(private val random: Random, private val packageName
         if (chance(50)) {
             file.startLine(); file.exemption("IntentionallyDefaultFacadeName", siteTarget = "file:"); file.endLine()
         }
+        marks?.fileAnnotations(file.name, first = index == 0)?.forEach { file.line(it) }
         file.line()
         file.line("package $packageName")
         file.line()
         file.line("import org.jetbrains.kotlinx.library.api.watchdog.*")
-        if (index == 0) file.raw(PREAMBLE)
+        if (index == 0) {
+            file.raw(PREAMBLE)
+            if (marks != null) {
+                file.raw(FILTER_PREAMBLE)
+                preambleNames.forEach { marks.topLevel(file.name, it) }
+            }
+        }
         file.line()
         repeat(3 + random.nextInt(4)) {
             when (random.nextInt(10)) {
@@ -229,6 +389,20 @@ private class ProgramBuilder(private val random: Random, private val packageName
 
     private fun FileBuilder.kdoc() {
         if (chance(50)) line("/** Documented. */")
+    }
+
+    /** Writes the filter annotations of the declaration [simpleName] and records the name of a top-level declaration. */
+    private fun FileBuilder.filterAnnotations(scope: Scope, simpleName: String) {
+        val marks = marks ?: return
+        if (scope == Scope.TOP_LEVEL) marks.topLevel(name, simpleName)
+        marks.annotations(simpleName).forEach { line(it) }
+    }
+
+    /** Runs [block] with [simpleName] as the innermost enclosing class of the filter names. */
+    private inline fun inClass(simpleName: String, block: () -> Unit) {
+        marks?.path?.addLast(simpleName)
+        block()
+        marks?.path?.removeLast()
     }
 
     /** Writes each of [annotations] on its own line. */
@@ -254,9 +428,13 @@ private class ProgramBuilder(private val random: Random, private val packageName
         else -> "public"
     }
 
+    /** Whether the last [apiMarkers] wrote `@Hidden`. */
+    private var hiddenMarker = false
+
     /** `@Hidden` makes the declaration internal API. `@PublishedApi internal` makes it binary API only. */
     private fun FileBuilder.apiMarkers(): String {
-        if (chance(8)) line("@Hidden")
+        hiddenMarker = chance(8)
+        if (hiddenMarker) line("@Hidden")
         return if (chance(6)) "@PublishedApi internal" else ""
     }
 
@@ -264,7 +442,10 @@ private class ProgramBuilder(private val random: Random, private val packageName
         val kind = pick(ClassKind.entries.filter { depth == 0 || it != ClassKind.ANNOTATION })
         val className = name("C")
         kdoc()
+        val annotationsStart = length
+        filterAnnotations(scope, className)
         val published = apiMarkers()
+        val hidden = hiddenMarker
         val pool = if (kind == ClassKind.ANNOTATION) Pools.classLevel + Pools.annotationClassOnly else Pools.classLevel
         val own = pickExemptions(pool, forbidden)
         annotationLines(own)
@@ -277,36 +458,65 @@ private class ProgramBuilder(private val random: Random, private val packageName
             line("@SubclassOptInRequired(Unstable::class)")
         }
         val visibility = published.ifEmpty { visibility(scope) }
+        marks?.let { marks ->
+            if (scope == Scope.TOP_LEVEL) {
+                marks.topLevelClass(name, className).apply {
+                    publicApi = visibility == "public" && !hidden
+                    annotations = annotationsStart until length
+                }
+            } else {
+                marks.member(className, publicApi = false)
+            }
+        }
         startLine()
         raw("$visibility ${kind.keyword} $className")
         val memberForbidden = forbidden + own.filter { it in Pools.enclosing }
         val typeParameter = kind in listOf(ClassKind.FINAL, ClassKind.OPEN, ClassKind.ABSTRACT, ClassKind.INTERFACE) && chance(20)
         if (typeParameter) typeParameters(memberForbidden)
         var hasPrimaryConstructor = false
-        when (kind) {
-            ClassKind.DATA -> { propertyParameters(memberForbidden, minimum = 1, allProperties = true); hasPrimaryConstructor = true }
-            ClassKind.VALUE -> { raw("(public val raw: Int)"); hasPrimaryConstructor = true }
-            ClassKind.FINAL, ClassKind.OPEN, ClassKind.ABSTRACT, ClassKind.SEALED -> if (chance(50)) {
-                hasPrimaryConstructor = true
-                val annotated = chance(30)
-                if (annotated) { raw(" "); exemption(pick(Pools.constructor - memberForbidden)); raw(" constructor") }
-                propertyParameters(memberForbidden, minimum = 0, required = annotated)
+        val constructorStart = length
+        inClass(className) {
+            when (kind) {
+                ClassKind.DATA -> { propertyParameters(memberForbidden, minimum = 1, allProperties = true); hasPrimaryConstructor = true }
+                ClassKind.VALUE -> {
+                    raw("(public val raw: Int)"); hasPrimaryConstructor = true
+                    marks?.member("raw", publicApi = true)
+                }
+                ClassKind.FINAL, ClassKind.OPEN, ClassKind.ABSTRACT, ClassKind.SEALED -> if (chance(50)) {
+                    hasPrimaryConstructor = true
+                    val annotated = chance(30)
+                    val constructorExemption = if (annotated) pick(Pools.constructor - memberForbidden) else null
+                    if (constructorExemption != null) { raw(" "); exemption(constructorExemption); raw(" constructor") }
+                    propertyParameters(memberForbidden + listOfNotNull(constructorExemption), minimum = 0, required = annotated)
+                }
+                else -> {}
             }
-            else -> {}
+            marks?.constructor(constructorStart until length)
         }
         when (kind) {
             ClassKind.ANNOTATION, ClassKind.DATA_OBJECT -> { endLine(); return }
             ClassKind.FUN_INTERFACE -> {
                 raw(" {"); endLine()
-                indented { line("public fun ${name("call")}(x: Int): Int") }
+                val callName = name("call")
+                inClass(className) { marks?.member(callName, publicApi = true) }
+                indented { line("public fun $callName(x: Int): Int") }
                 line("}")
                 return
             }
             else -> {}
         }
         raw(" {"); endLine()
+        inClass(className) { classBody(kind, depth, memberForbidden, hasPrimaryConstructor) }
+        line("}")
+    }
+
+    private fun FileBuilder.classBody(kind: ClassKind, depth: Int, memberForbidden: Set<String>, hasPrimaryConstructor: Boolean) {
         indented {
-            if (kind == ClassKind.ENUM) line("A, B;")
+            if (kind == ClassKind.ENUM) {
+                line("A, B;")
+                marks?.member("A", publicApi = false)
+                marks?.member("B", publicApi = false)
+            }
             val memberScope = when (kind) {
                 ClassKind.OBJECT -> Scope.OBJECT
                 ClassKind.INTERFACE -> Scope.INTERFACE
@@ -327,19 +537,23 @@ private class ProgramBuilder(private val random: Random, private val packageName
                 companion(memberForbidden, inInterface = kind == ClassKind.INTERFACE)
             }
         }
-        line("}")
     }
 
     private fun FileBuilder.companion(forbidden: Set<String>, inInterface: Boolean) {
         val own = if (chance(40)) listOf("IntentionallyNonStaticCompanionApi") - forbidden else emptyList()
         annotationLines(own)
         val named = chance(30)
+        val companionName = if (named) "Factory" else "Companion"
+        filterAnnotations(Scope.COMPANION, companionName)
+        marks?.member(companionName, publicApi = false)
         line("public companion object${if (named) " Factory" else ""} {")
         val memberForbidden = forbidden + own
         val scope = if (inInterface) Scope.INTERFACE_COMPANION else Scope.COMPANION
-        indented {
-            repeat(1 + random.nextInt(3)) {
-                if (chance(50)) function(scope, memberForbidden) else property(scope, memberForbidden)
+        inClass(companionName) {
+            indented {
+                repeat(1 + random.nextInt(3)) {
+                    if (chance(50)) function(scope, memberForbidden) else property(scope, memberForbidden)
+                }
             }
         }
         line("}")
@@ -373,8 +587,14 @@ private class ProgramBuilder(private val random: Random, private val packageName
                 used += annotation
                 exemption(annotation); raw(" ")
             }
-            if (isProperty) raw("${visibility(Scope.CLASS).let { if (it == "protected") "public" else it }} ${if (chance(30)) "var" else "val"} ")
-            raw("${name("p")}: ")
+            val parameterName = name("p")
+            if (isProperty) {
+                marks?.annotations(parameterName)?.forEach { raw("$it ") }
+                val visibility = visibility(Scope.CLASS).let { if (it == "protected") "public" else it }
+                marks?.member(parameterName, publicApi = visibility == "public")
+                raw("$visibility ${if (chance(30)) "var" else "val"} ")
+            }
+            raw("$parameterName: ")
             type(forbidden + used)
             if (chance(20)) raw(" = ${lastValue}")
         }
@@ -419,7 +639,9 @@ private class ProgramBuilder(private val random: Random, private val packageName
     private fun FileBuilder.function(scope: Scope, forbidden: Set<String>, abstractAllowed: Boolean = false) {
         val functionName = name("f")
         kdoc()
+        filterAnnotations(scope, functionName)
         val published = if (scope == Scope.INTERFACE) "" else apiMarkers()
+        val hidden = scope != Scope.INTERFACE && hiddenMarker
         val own = pickExemptions(Pools.function, forbidden)
         annotationLines(own)
         val isAbstract = abstractAllowed && chance(30)
@@ -433,6 +655,7 @@ private class ProgramBuilder(private val random: Random, private val packageName
             isAbstract -> pick(listOf("public", "protected", "internal"))
             else -> visibility(scope)
         }
+        marks?.member(functionName, publicApi = visibility == "public" && !hidden)
         val jvmOverloads = !isAbstract && !isSuspend && scope != Scope.INTERFACE && chance(15)
         if (jvmOverloads) line("@JvmOverloads")
         if (scope in listOf(Scope.OBJECT, Scope.COMPANION, Scope.INTERFACE_COMPANION) && visibility == "public" && !isSuspend && chance(30)) line("@JvmStatic")
@@ -533,7 +756,9 @@ private class ProgramBuilder(private val random: Random, private val packageName
     }
 
     private fun FileBuilder.localDeclarations(forbidden: Set<String>) {
-        line("public fun ${name("outer")}() {")
+        val outerName = name("outer")
+        marks?.topLevel(name, outerName)
+        line("public fun $outerName() {")
         indented {
             val classExemption = pick(Pools.classLevel - forbidden)
             startLine(); exemption(classExemption); endLine()
@@ -549,7 +774,9 @@ private class ProgramBuilder(private val random: Random, private val packageName
     private fun FileBuilder.property(scope: Scope, forbidden: Set<String>) {
         val propertyName = name("v")
         kdoc()
+        filterAnnotations(scope, propertyName)
         val published = if (scope == Scope.INTERFACE) "" else apiMarkers()
+        val hidden = scope != Scope.INTERFACE && hiddenMarker
         val own = pickExemptions(Pools.property, forbidden)
         annotationLines(own)
         val declarationForbidden = forbidden + own
@@ -567,9 +794,14 @@ private class ProgramBuilder(private val random: Random, private val packageName
             shape == "jvmStatic" -> "public"
             else -> visibility(scope)
         }
+        marks?.member(propertyName, publicApi = visibility == "public" && !hidden)
         when (shape) {
             "jvmField" -> line("@JvmField")
             "jvmStatic" -> line("@JvmStatic")
+        }
+        // The backing field of these shapes is public API, so a `field:` annotation counts for the property.
+        if (shape == "jvmField" || shape == "const" || shape == "lateinit") {
+            marks?.annotations(propertyName, target = "field:")?.forEach { line(it) }
         }
         startLine()
         raw(visibility)
@@ -603,6 +835,7 @@ private class ProgramBuilder(private val random: Random, private val packageName
     }
 
     private fun FileBuilder.secondaryConstructor(forbidden: Set<String>) {
+        val start = length
         kdoc()
         val own = pickExemptions(Pools.constructor, forbidden)
         annotationLines(own)
@@ -610,14 +843,17 @@ private class ProgramBuilder(private val random: Random, private val packageName
         raw("${visibility(Scope.CLASS)} constructor")
         parameters(forbidden + own, typeParameterUsed = false)
         raw(" {}"); endLine()
+        marks?.constructor(start until length)
     }
 
     private fun FileBuilder.typeAlias() {
+        val aliasName = name("Alias")
         kdoc()
+        filterAnnotations(Scope.TOP_LEVEL, aliasName)
         val own = pickExemptions(Pools.typeAlias, emptySet())
         annotationLines(own)
         startLine()
-        raw("${visibility(Scope.TOP_LEVEL)} typealias ${name("Alias")} = ")
+        raw("${visibility(Scope.TOP_LEVEL)} typealias $aliasName = ")
         when (random.nextInt(3)) {
             0 -> raw("(Int) -> Unit")
             1 -> raw("suspend (String) -> Int")

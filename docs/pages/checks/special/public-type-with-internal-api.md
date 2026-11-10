@@ -70,6 +70,9 @@ public fun loadModel(): Model = Model()
 
 - The check skips `@PublishedApi internal` signatures.
 - Type aliases don't hide internal API annotations on the alias or its expanded type.
+- An internal API annotation on a file doesn't make the classes of the file internal API types. An
+  incremental build reads an unchanged class from the previous output, without the annotations of
+  its file. Put the annotation on the class itself, or exclude the class with a name rule.
 - If the exposing declaration is also internal API, mark it with the internal API annotation, or
   exclude it with a name rule.
 

@@ -7,6 +7,7 @@ import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.fir.FirAnnotationContainer
+import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
@@ -41,11 +42,14 @@ import org.jetbrains.kotlin.fir.resolve.toClassSymbol
 import org.jetbrains.kotlin.fir.resolve.transformers.publishedApiEffectiveVisibility
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
+import org.jetbrains.kotlin.fir.symbols.impl.FirBackingFieldSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirConstructorSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirFileSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirPropertyAccessorSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirTypeParameterSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
@@ -274,7 +278,11 @@ internal fun FirMemberDeclaration.isWatchedPublicApi(): Boolean {
     return !isMarkedAsInternalApi() && passesApiFilters()
 }
 
-/** [ConfiguredApiFilters] gives the rules. */
+/**
+ * [ConfiguredApiFilters] gives the rules. When an included member includes an `expect` class, its
+ * `actual` class or `actual typealias` is included too. The members of the class that a typealias
+ * expands to don't have the inclusion annotations of the `expect` members.
+ */
 context(context: CheckerContext)
 private fun FirMemberDeclaration.passesApiFilters(): Boolean {
     val filters = context.session.configuredApiFilters ?: return true
@@ -282,15 +290,38 @@ private fun FirMemberDeclaration.passesApiFilters(): Boolean {
     val chain = enclosingDeclarationsWithFile() + symbol
     if (chain.any { filters.excludingPattern(it) != null }) return false
     if (!filters.hasInclusionRules) return true
-    return chain.any(filters::includes) || symbol is FirClassSymbol<*> && symbol.hasIncludedApiMember(filters)
+    if (chain.any(filters::includes)) return true
+    if (symbol is FirClassSymbol<*> && symbol.hasIncludedApiMember(filters)) return true
+    val expectClass = (symbol as? FirClassLikeSymbol<*>)?.takeIf { it.isActual }?.getSingleMatchedExpectForActualOrNull()
+    return expectClass is FirClassSymbol<*> && expectClass.hasIncludedApiMember(filters)
 }
 
-/** A file checker doesn't have the file in the enclosing declarations of its context. */
+/**
+ * The enclosing declarations and the file of the declaration. A file checker doesn't have the file
+ * in the enclosing declarations of its context. A probe of an `actual` declaration runs in the
+ * context of its `expect` declaration, so the probe reads them from the symbol.
+ */
 context(context: CheckerContext)
-private fun enclosingDeclarationsWithFile(): List<FirBasedSymbol<*>> {
+private fun FirMemberDeclaration.enclosingDeclarationsWithFile(): List<FirBasedSymbol<*>> {
+    if (ExemptionProbe.probingActual) return symbol.enclosingDeclarationsOfSymbol()
     val enclosing = context.containingDeclarations
     val file = context.containingFileSymbol ?: return enclosing
     return if (file in enclosing) enclosing else enclosing + file
+}
+
+/**
+ * The enclosing classes and the file of a source declaration. The property of an accessor or a
+ * backing field is an enclosing declaration too.
+ */
+internal fun FirBasedSymbol<*>.enclosingDeclarationsOfSymbol(): List<FirBasedSymbol<*>> {
+    val property = when (this) {
+        is FirPropertyAccessorSymbol -> propertySymbol
+        is FirBackingFieldSymbol -> propertySymbol
+        else -> null
+    }
+    val chain = listOfNotNull<FirBasedSymbol<*>>(property) +
+            generateSequence((property ?: this).getContainingClassSymbol()) { it.getContainingClassSymbol() }
+    return chain + listOfNotNull((chain.lastOrNull() ?: this).sourceFileSymbol())
 }
 
 /**
@@ -335,13 +366,13 @@ internal fun FirBasedSymbol<*>.hasInternalApiMarker(): Boolean = internalApiAnno
 
 /**
  * The annotation on this declaration whose class carries [WatchdogClassIds.InternalAnnotationMarker]
- * or that [ConfiguredInternalApiAnnotations] lists, or null.
+ * or that [ConfiguredInternalApiAnnotations] lists, or null. [apiAnnotations] gives the annotations.
  */
 context(context: CheckerContext)
 internal fun FirBasedSymbol<*>.internalApiAnnotation(): ClassId? {
     val session = context.session
     val configured = session.configuredInternalApiAnnotations
-    return resolvedAnnotationsWithClassIds.firstNotNullOfOrNull { annotation ->
+    return apiAnnotations(session).firstNotNullOfOrNull { annotation ->
         val annotationSymbol = annotation.toAnnotationClassLikeSymbol(session)
             ?: return@firstNotNullOfOrNull null
         val classId = annotationSymbol.classId
@@ -350,6 +381,31 @@ internal fun FirBasedSymbol<*>.internalApiAnnotation(): ClassId? {
                     configured?.contains(classId) == true
         }
     }
+}
+
+/**
+ * The annotations of the declaration that the internal API annotations and the API filters read. The
+ * JVM ABI dump reads the annotations of a public backing field. So a `@field:` annotation counts for a
+ * property with such a field, and not for another property.
+ */
+internal fun FirBasedSymbol<*>.apiAnnotations(session: FirSession): List<FirAnnotation> {
+    if (this !is FirPropertySymbol) return resolvedAnnotationsWithClassIds
+    val publicField = hasPublicApiBackingField(session)
+    val own = resolvedAnnotationsWithClassIds.filter { publicField || it.useSiteTarget != AnnotationUseSiteTarget.FIELD }
+    return if (publicField) own + backingFieldSymbol?.resolvedAnnotationsWithClassIds.orEmpty() else own
+}
+
+/**
+ * The backing field of a `@JvmField` property and of a `const` property has the visibility of the
+ * property. So has the backing field of a `lateinit` property without a setter of another visibility.
+ * Resolution moves `@JvmField` to the backing field, so both carriers count.
+ */
+private fun FirPropertySymbol.hasPublicApiBackingField(session: FirSession): Boolean {
+    val status = resolvedStatus
+    return status.isConst ||
+            status.isLateInit && setterSymbol?.resolvedStatus?.visibility.let { it == null || it == status.visibility } ||
+            hasAnnotation(JvmStandardClassIds.Annotations.JvmField, session) ||
+            backingFieldSymbol?.hasAnnotation(JvmStandardClassIds.Annotations.JvmField, session) == true
 }
 
 /** Valid only for a declaration that passed [isWatchedPublicApi]. */
@@ -502,8 +558,7 @@ private fun FirProperty.hasAnnotationWithUseSiteTarget(
 context(context: CheckerContext)
 internal fun FirCallableSymbol<*>.isWatchedPublicSourceApiSibling(): Boolean {
     if (source?.kind != KtRealSourceElementKind || !effectiveVisibility.publicApi) return false
-    val chain = generateSequence<FirBasedSymbol<*>>(this) { it.getContainingClassSymbol() }.toMutableList()
-    chain.last().sourceFileSymbol()?.let(chain::add)
+    val chain = listOf(this) + enclosingDeclarationsOfSymbol()
     return chain.none { it.hasInternalApiMarker() } &&
             context.session.configuredApiFilters?.watches(chain) != false
 }
