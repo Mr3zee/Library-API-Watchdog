@@ -21,7 +21,7 @@ buildconfig = "6.0.10"
 agp8 = "8.13.2"
 agp9 = "9.4.1"
 commonmark = "0.24.0"
-jsoup = "1.23.2"
+jsoup = "1.24.1"
 # https://github.com/SeleniumHQ/selenium
 selenium = "4.52.0"
 # The Stable version of https://googlechromelabs.github.io/chrome-for-testing/
