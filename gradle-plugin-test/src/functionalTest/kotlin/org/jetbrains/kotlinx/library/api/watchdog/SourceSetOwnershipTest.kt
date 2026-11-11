@@ -15,11 +15,6 @@ import org.jetbrains.kotlinx.library.api.watchdog.Severity.NONE
 import org.jetbrains.kotlinx.library.api.watchdog.Severity.WARNING
 import org.junit.Test
 
-/**
- * One compilation of a build reports the diagnostics of a source set, so the build output has each of them
- * once. Each file of [api] has one `OPEN_API_WITHOUT_SUBCLASS_OPT_IN` and, on the JVM, one
- * `TOP_LEVEL_API_WITHOUT_JVM_NAME`.
- */
 class SourceSetOwnershipTest {
     @Test
     fun `build reports the common source set in its metadata compilation`() {
@@ -31,7 +26,7 @@ class SourceSetOwnershipTest {
         result.assertTaskOutcome(JVM, SUCCESS)
         result.assertTaskOutcome(JS, SUCCESS)
         result.assertOpenApiBy("SharedApi.kt" to COMMON_METADATA, "JvmApi.kt" to JVM, "JsApi.kt" to JS)
-        // A metadata compilation can't run a JVM-only check, so the JVM compilation runs it on the common source set.
+        // The JVM compilation runs the JVM checks on the common source set.
         result.assertJvmNameBy("SharedApi.kt" to JVM, "JvmApi.kt" to JVM)
     }
 
@@ -83,7 +78,7 @@ class SourceSetOwnershipTest {
 
         val result = project.build("compileKotlinJvm", "compileKotlinJs", PLAIN_CONSOLE)
 
-        // The JS options changed, so the JS compilation runs again. The JVM options didn't change.
+        // Only the options of the JS compilation changed.
         result.assertTaskOutcome(JVM, UP_TO_DATE)
         result.assertTaskOutcome(JS, SUCCESS)
         result.assertOpenApiBy("JsApi.kt" to JS)
@@ -430,7 +425,7 @@ class SourceSetOwnershipTest {
         all.assertOpenApiBy("SharedApi.kt" to JVM, "AndroidApi.kt" to android, "JvmApi.kt" to JVM)
         all.assertJvmNameBy("SharedApi.kt" to JVM, "AndroidApi.kt" to android, "JvmApi.kt" to JVM)
 
-        // Android goes before the other targets, so it runs the Java interop checks on the common source set.
+        // Android goes before `aJs`.
         val androidAndJs = project.build(target.mainCompileTask, "compileKotlinAJs", "--rerun-tasks", PLAIN_CONSOLE)
         androidAndJs.assertOpenApiBy("SharedApi.kt" to android, "AndroidApi.kt" to android)
         androidAndJs.assertJvmNameBy("SharedApi.kt" to android, "AndroidApi.kt" to android)
@@ -507,10 +502,6 @@ class SourceSetOwnershipTest {
         result.assertJvmNameBy("AndroidApi.kt" to ":compileDebugKotlin")
     }
 
-    /**
-     * The files of [api] in `commonMain`, and in `jvmMain` and `jsMain` with [targetSources]. With
-     * [openApi] = [ERROR], the only other check is a `TOP_LEVEL_API_WITHOUT_JVM_NAME` warning.
-     */
     private fun jvmAndJsProject(openApi: Severity = WARNING, targetSources: Boolean = true): WatchdogBuild =
         kmpProject(JVM_AND_JS_TARGETS) {
             apiWatchdog {
@@ -525,7 +516,6 @@ class SourceSetOwnershipTest {
             }
         }
 
-    /** A file with one `OPEN_API_WITHOUT_SUBCLASS_OPT_IN` and one `TOP_LEVEL_API_WITHOUT_JVM_NAME` on the JVM. */
     private fun ModuleSpec.api(name: String, sourceSet: String) {
         source(
             """
@@ -558,7 +548,6 @@ private const val INTEGRATION = ":compileIntegrationKotlinJvm"
 private const val JVM_AND_JS_TARGETS = "jvm()\njs { nodejs() }"
 private const val JVM_JS_AND_WASM_TARGETS = "jvm()\njs { nodejs() }\nwasmJs { nodejs() }"
 
-/** The `integration` compilation of the JVM target compiles `commonMain` too. */
 private const val CUSTOM_COMPILATION_TARGETS = """
     val commonMain = sourceSets.commonMain.get()
     jvm { compilations.create("integration") { defaultSourceSet.dependsOn(commonMain) } }

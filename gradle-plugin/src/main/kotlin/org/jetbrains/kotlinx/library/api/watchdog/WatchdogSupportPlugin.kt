@@ -54,11 +54,9 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
     /** The compile tasks that have checks when the project turns explicit API mode on. */
     private val checkedCompileTaskPaths = mutableSetOf<String>()
 
-    /** The enabled tasks of this project in the task graph. Null before the graph is ready. */
     @Volatile
     private var tasksInGraph: Set<String>? = null
 
-    /** The published and the exempt dependency views of each compilation, by compile task name. */
     private val publishedDependencyViews = mutableMapOf<String, PublishedDependencyViews>()
 
     /**
@@ -215,7 +213,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         this@WatchdogSupportPlugin.exemptsTaskPaths = exemptsTaskPaths
         gradle.taskGraph.whenReady { graph ->
             collectDiagnostics.set(exemptsTaskPaths.any(graph::hasTask))
-            // Project isolation forbids reading the tasks of other projects from the graph.
+            // `graph.allTasks` fails under project isolation.
             val kotlin = extensions.findByName("kotlin") as? KotlinTargetsContainer
             tasksInGraph = kotlin?.targets.orEmpty().asSequence()
                 .flatMap { it.compilations }
@@ -276,7 +274,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         )
         publishedDependencyViews[kotlinCompilation.compileKotlinTaskName] =
             PublishedDependencyViews(transitiveDependencies, exemptNonTransitiveDependencies)
-        // The task graph decides the roles, so they are read when the compile task runs.
+        // `whenReady` sets `tasksInGraph`.
         val roles = lazy { sourceSetRoles(kotlinCompilation, collect.get()) }
 
         if (feedsReport) {
@@ -508,21 +506,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         return "$declaringConfiguration\t$notation"
     }
 
-    /**
-     * The roles of [kotlinCompilation] for its parent source sets. Each source set has an owner among
-     * the compilations that run checks and whose task is in the task graph, the first of:
-     *
-     * 1. A metadata compilation. KGP creates one only for a source set that several targets share. It
-     *    disables the task when the host can't compile it and when only JVM and Android targets share
-     *    the source set (`KotlinMetadataTargetConfigurator.isMetadataCompilationSupported`).
-     * 2. A `jvm` target, then an Android target, then the other targets by name.
-     * 3. The `main` compilation, then the other compilations by name.
-     *
-     * The first platform compilation in the same order runs the checks that a metadata compilation
-     * can't run: the Java interop checks, the dependency check, and the redundancy verdicts that need
-     * the `actual` declarations. Before the task graph is ready (IDE sync) and for a task outside the
-     * graph, the compilation checks every source set.
-     */
+    /** Before the task graph is ready (IDE sync), a compilation checks every source set. */
     private fun Project.sourceSetRoles(kotlinCompilation: KotlinCompilation<*>, collecting: Boolean): SourceSetRoles {
         val parents = kotlinCompilation.allKotlinSourceSets.map { it.name } - kotlinCompilation.defaultSourceSet.name
         val graph = tasksInGraph
@@ -556,7 +540,6 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         return SourceSetRoles(checkedElsewhere, platformChecks, dependencyChecked)
     }
 
-    /** The compilations whose compiler plugin runs the checks. */
     private fun Project.checkingCompilations(kotlin: KotlinTargetsContainer, collecting: Boolean): List<KotlinCompilation<*>> {
         val extension = extensions.getByType(WatchdogGradleExtension::class.java)
         val explicitApiRequired = extension.explicitApiRequirement.get() == ExplicitApiRequirement.FAIL
@@ -579,12 +562,6 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         { it.name },
     )
 
-    /**
-     * The files of [compileDependencies] that every target compiling [sourceSet] publishes
-     * transitively or exempts. A consumer of each of these targets then gets the types of the
-     * source set. A Kotlin Multiplatform library resolves to a platform module through
-     * `available-at`, so the comparison uses the root module.
-     */
     private fun Project.sharedTransitiveFiles(
         sourceSet: String,
         compileDependencies: Configuration,
@@ -613,7 +590,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         return configuration.incoming.resolutionResult.allComponents.mapTo(hashSetOf()) { roots[it.id] ?: it.id }
     }
 
-    /** Maps the component of each `available-at` platform module to the root module that points to it. */
+    /** Maps each `available-at` platform module to its root module. */
     private fun externalVariantRoots(configuration: Configuration): Map<ComponentIdentifier, ComponentIdentifier> {
         val roots = HashMap<ComponentIdentifier, ComponentIdentifier>()
         for (component in configuration.incoming.resolutionResult.allComponents) {
@@ -719,11 +696,6 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
 
     private fun Project.taskPath(taskName: String): String = if (path == ":") ":$taskName" else "$path:$taskName"
 
-    /**
-     * - [checkedElsewhere]: the parent source sets that another compilation checks.
-     * - [platformChecks]: the subset that gets the platform-only checks here.
-     * - [dependencyChecked]: the parent source sets that get the dependency check here.
-     */
     private class SourceSetRoles(
         val checkedElsewhere: List<String>,
         val platformChecks: List<String>,

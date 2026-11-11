@@ -4,8 +4,7 @@
 // DIAGNOSTICS: -UNDOCUMENTED_PUBLIC_API -STATEFUL_CLASS_WITHOUT_EQUALS -STATEFUL_CLASS_WITHOUT_HASH_CODE -STATEFUL_CLASS_WITHOUT_TO_STRING
 // SOURCE_SETS_CHECKED_ELSEWHERE: common
 
-// Another compilation checks the common module, so this compilation reports only its own module. Each
-// declaration of the common module has a diagnostic without the option.
+// Each declaration of the common module has a diagnostic without the option.
 
 // MODULE: common
 // FILE: common.kt

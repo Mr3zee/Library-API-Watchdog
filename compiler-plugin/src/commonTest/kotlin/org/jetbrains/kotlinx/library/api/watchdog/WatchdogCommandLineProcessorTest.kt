@@ -177,7 +177,6 @@ class WatchdogCommandLineProcessorTest {
         )) {
             process(option, ":webMain::commonMain:webMain: :")
             assertEquals(listOf("webMain", "commonMain"), configuration[key]?.toList())
-            // A native compile task gets a blank value when the build has no roles.
             process(option, " ")
             assertEquals(emptySet(), configuration[key])
             assertFalse(option.allowMultipleOccurrences)

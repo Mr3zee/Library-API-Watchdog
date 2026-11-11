@@ -14,11 +14,6 @@ import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.TOP_LEVEL_API_WITHO
 import org.jetbrains.kotlinx.library.api.watchdog.Severity.WARNING
 import org.junit.Test
 
-/**
- * The owner of a shared source set in incremental, cached, multi-project, and collection-mode builds. The
- * options of a compile task depend on the task graph, so a task runs again when its role changes. An
- * up-to-date or cached task doesn't print its diagnostics again.
- */
 class SourceSetOwnershipBuildModesTest {
     @Test
     fun `compile task runs again when the build changes its role`() {
@@ -97,7 +92,6 @@ class SourceSetOwnershipBuildModesTest {
 
     @Test
     fun `native compile tasks keep their roles with the configuration cache`() {
-        // A native compile task reads the list of plugin options at configuration time.
         val project = kmpProject("jvm()\nlinuxX64()\nmacosArm64()") {
             apiWatchdog { severityOfEveryCheck(WARNING) }
             api("SharedApi", "commonMain")
@@ -139,7 +133,7 @@ class SourceSetOwnershipBuildModesTest {
 
     @Test
     fun `each project picks the owners of its own source sets with project isolation`() {
-        // The JS target of KGP applies a plugin to the root project. Project isolation forbids that.
+        // No JS target, because the `NodeJsRootPlugin` of KGP fails under project isolation.
         val project = multiProject(targets = "jvm()\nlinuxX64()")
 
         val mixed = project.build(":a:compileKotlinJvm", ":compileKotlinLinuxX64", *PROJECT_ISOLATION, PLAIN_CONSOLE)
@@ -291,7 +285,6 @@ class SourceSetOwnershipBuildModesTest {
         project.build(":a:$EXEMPT_TASK", PLAIN_CONSOLE).assertOutputHas("No watchdog errors to exempt.")
     }
 
-    /** The files of [api] in `commonMain`, `jvmMain`, and `jsMain`. */
     private fun jvmAndJsProject(): WatchdogBuild = kmpProject(JVM_AND_JS_TARGETS) {
         apiWatchdog { severityOfEveryCheck(WARNING) }
         api("SharedApi", "commonMain")
@@ -299,7 +292,6 @@ class SourceSetOwnershipBuildModesTest {
         api("JsApi", "jsMain")
     }
 
-    /** A root and an `:a` project, each with an [api] file in `commonMain`. */
     private fun multiProject(severity: Severity? = WARNING, targets: String = JVM_AND_JS_TARGETS): WatchdogBuild = kmpProject(targets) {
         if (severity != null) apiWatchdog { severityOfEveryCheck(severity) }
         api("SharedApi", "commonMain")
@@ -309,13 +301,11 @@ class SourceSetOwnershipBuildModesTest {
         }
     }
 
-    /** Changes every source file, so an incremental compilation compiles it again. */
     private fun WatchdogBuild.editSources() {
         rootDir.walkTopDown().filter { it.isFile && it.extension == "kt" && "/src/" in it.invariantSeparatorsPath }
             .forEach { it.appendText("\n// Edited.\n") }
     }
 
-    /** A file with one `OPEN_API_WITHOUT_SUBCLASS_OPT_IN` and one `TOP_LEVEL_API_WITHOUT_JVM_NAME` on the JVM. */
     private fun ModuleSpec.api(name: String, sourceSet: String) {
         source(
             """

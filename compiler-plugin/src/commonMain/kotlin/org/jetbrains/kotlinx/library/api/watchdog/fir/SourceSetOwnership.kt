@@ -2,30 +2,19 @@ package org.jetbrains.kotlinx.library.api.watchdog.fir
 
 import org.jetbrains.kotlin.fir.FirModuleData
 
-/** The checks that a session runs on its own module. */
 internal enum class CheckScope {
     ALL,
 
-    /**
-     * The checks that a metadata compilation can't run: the Java interop checks, the dependency check,
-     * and the `REDUNDANT_EXEMPTION` verdicts that need the `actual` declarations.
-     */
+    /** Only the checks that a metadata compilation can't run. */
     PLATFORM,
 
     NONE,
 }
 
 /**
- * A platform compilation compiles each parent source set again as a fragment module with the name of the
- * source set. The fragment is common (`isCommon`) and has the platform of the compilation.
- *
- * - [checkedElsewhere]: the source sets that another compilation checks.
- * - [platformChecked]: the subset that gets the [CheckScope.PLATFORM] checks in this compilation.
- * - [transitiveDependencies]: the dependency paths that every target of a parent source set publishes
- *   transitively. The dependency check of the fragment uses them instead of the paths of this compilation.
- *
- * The checkers of [org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind.Platform] come from the
- * session of the leaf module and run on every fragment, so they ask [scopeOf] for each declaration.
+ * A platform compilation compiles each parent source set again as a common fragment module named after
+ * the source set. A [org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind.Platform] checker of the
+ * leaf session checks every fragment, so it calls [scopeOf] for each declaration.
  */
 internal class SourceSetOwnership(
     private val checkedElsewhere: Set<String>,
@@ -42,7 +31,7 @@ internal class SourceSetOwnership(
         }
     }
 
-    /** The transitive dependency paths of the fragment [module], or null for the paths of the compilation. */
+    /** Null means the paths of the compilation. */
     fun transitiveDependenciesOf(module: FirModuleData): Set<String>? =
         if (module.isCommon) transitiveDependencies[module.sourceSetName] else null
 

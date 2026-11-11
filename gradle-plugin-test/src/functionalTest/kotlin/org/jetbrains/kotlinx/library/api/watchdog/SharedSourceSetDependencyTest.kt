@@ -11,11 +11,6 @@ import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PUBLIC_TYPE_FROM_NO
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.REDUNDANT_EXEMPTION
 import org.junit.Test
 
-/**
- * `PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY` on a shared source set. A dependency is transitive for the
- * source set when every target that compiles it publishes the dependency or exempts it. The first platform
- * compilation of the build runs the check, because a metadata compilation can't.
- */
 class SharedSourceSetDependencyTest {
     @Test
     fun `implementation dependency of the common source set is reported once by the first platform compilation`() {
@@ -53,7 +48,6 @@ class SharedSourceSetDependencyTest {
             exposure("JvmExposure", "jvmMain")
         }
 
-        // The JS target doesn't publish the dependency. The JVM source set keeps the JVM rule.
         val jvm = project.buildAndFail("compileKotlinJvm", PLAIN_CONSOLE)
         jvm.assertExposureBy("Exposure.kt" to JVM)
 
@@ -133,7 +127,7 @@ class SharedSourceSetDependencyTest {
         result.assertTaskOutcome(WASM, SUCCESS)
         result.assertExposureBy("Exposure.kt" to JVM)
 
-        // The JVM target compiles the common source set too, so the JS compilation reports it without the JVM one.
+        // Without the JVM compilation, the JS compilation reports the common source set.
         val web = project.buildAndFail("compileKotlinJs", "compileKotlinWasmJs", "--continue", "--rerun-tasks", PLAIN_CONSOLE)
         web.assertTaskOutcome(WASM, SUCCESS)
         web.assertExposureBy("Exposure.kt" to JS)
@@ -203,7 +197,7 @@ class SharedSourceSetDependencyTest {
         }
 
         project.build("assemble", PLAIN_CONSOLE).assertNotReported(PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY, REDUNDANT_EXEMPTION)
-        // The JVM compilation reports the common source set. It doesn't judge the exemption by its own dependencies.
+        // The JVM compilation judges the `expect` exemption by the shared dependencies, not by its own.
         project.build("compileKotlinJvm", "compileKotlinJs", "--rerun-tasks", PLAIN_CONSOLE)
             .assertNotReported(PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY, REDUNDANT_EXEMPTION)
         project.build("compileKotlinJvm", "--rerun-tasks", PLAIN_CONSOLE)
@@ -229,7 +223,6 @@ class SharedSourceSetDependencyTest {
             block()
         }
 
-    /** An `expect` class with an exempted member that exposes the model, and its `actual` classes. */
     private fun expectExposureProject(block: ProjectSpec.() -> Unit): WatchdogBuild = kmpProject(JVM_AND_JS_TARGETS) {
         source(
             """
@@ -264,7 +257,6 @@ class SharedSourceSetDependencyTest {
         block()
     }
 
-    /** A class with one public function that returns a type of the `:model` subproject. */
     private fun ModuleSpec.exposure(name: String, sourceSet: String) {
         source(EXPOSURE.replace("class Exposure", "class $name"), name, "test.consumer", sourceSet)
     }

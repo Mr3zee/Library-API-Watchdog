@@ -3,11 +3,9 @@
 // EXPLICIT_API_MODE: WARNING
 // DIAGNOSTICS: -UNDOCUMENTED_PUBLIC_API -TOP_LEVEL_API_WITHOUT_JVM_NAME -STATEFUL_CLASS_WITHOUT_EQUALS -STATEFUL_CLASS_WITHOUT_HASH_CODE -STATEFUL_CLASS_WITHOUT_TO_STRING -OPEN_API_WITHOUT_SUBCLASS_OPT_IN -PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY
 
-// The platform publishes both dependencies. Another target that compiles the common module doesn't
-// publish `models`, so the common module gets `shared` only. The verdict on the exemption of an `expect`
-// declaration uses the dependencies of its module too. As in a Gradle build, only the platform module gets
-// the dependency paths. The redundancy verdicts show the dependency check, because the fixer test replays
-// this file without dependency paths.
+// Another target compiles the common module and doesn't publish `models`, so the common module gets
+// `shared` only. The fixer test replays this file without dependency paths, so the redundancy verdicts
+// show the dependency check.
 
 // MODULE: lib
 // FILE: models.kt

@@ -6,8 +6,7 @@
 // SOURCE_SETS_CHECKED_ELSEWHERE: common
 // SOURCE_SETS_WITH_PLATFORM_CHECKS: common
 
-// A metadata compilation checks the common module. This compilation runs the checks that the metadata
-// compilation can't: the JVM checks, and the verdicts that need the `actual` declarations or a JVM check.
+// The common module gets only the checks that a metadata compilation can't run.
 
 // MODULE: common
 // FILE: common.kt

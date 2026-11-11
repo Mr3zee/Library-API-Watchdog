@@ -113,7 +113,6 @@ class WatchdogFirCheckers internal constructor(
         private val internalApiTypeExposureDisabled: List<ExemptingChecker> =
             listOf(internalApiTypeExposure).takeIf { allChecks && !publicTypeWithInternalApiEnabled }.orEmpty()
 
-        /** The Gradle plugin passes the dependencies to platform compilations only. */
         private val dependencyExposureChecker = dependencyExposure
             ?.let { NonTransitiveDependencyChecker(session, it, sourceSetOwnership::transitiveDependenciesOf) }
             ?.takeIf { enabled && !exemptingExistingApi }

@@ -38,11 +38,6 @@ internal data class DependencyDeclaration(val configuration: String, val notatio
 
 internal data class NonTransitiveType(val classId: ClassId, val origin: Path)
 
-/**
- * [sourceSetDependencies] gives the transitive dependency paths of a module, or null for the paths of
- * [configuration]. The checker reads them for the module of the checked file, because a platform checker
- * of the leaf session probes the declarations of every fragment.
- */
 internal class NonTransitiveDependencyChecker(
     session: FirSession,
     configuration: DependencyExposureCheckConfiguration,
@@ -102,7 +97,6 @@ private class DependencyExposureIndex(
     private val transitiveRoots = configuration.transitiveDependencies.mapTo(linkedSetOf(), ::normalizedPath)
     private val classification = classificationCache(transitiveRoots)
 
-    /** The roots and the classification of each set of source set paths. The keys are paths, not FIR elements. */
     private val sourceSetIndexes = ConcurrentHashMap<Set<String>, Pair<Set<Path>, FirCache<ClassId, Path?, Nothing?>>>()
 
     /** The compile classpath root that holds [symbol], or null when consumers get the class. */
@@ -118,6 +112,8 @@ private class DependencyExposureIndex(
             return null
         }
 
+        // The module of the file, not of the session, because the `expect` redundancy checker of the leaf
+        // session probes every fragment.
         val sourceSetIndex = context.containingFileSymbol?.moduleData?.let(sourceSetDependencies)?.let { paths ->
             sourceSetIndexes.getOrPut(paths) {
                 val roots = paths.mapTo(linkedSetOf(), ::normalizedPath)

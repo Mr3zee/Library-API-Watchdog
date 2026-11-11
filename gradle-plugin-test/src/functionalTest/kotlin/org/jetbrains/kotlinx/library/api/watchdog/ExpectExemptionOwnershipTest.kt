@@ -17,11 +17,6 @@ import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.STATEFUL_CLASS_WITH
 import org.jetbrains.kotlinx.library.api.watchdog.Severity.NONE
 import org.junit.Test
 
-/**
- * `REDUNDANT_EXEMPTION` on `expect` declarations. The compilation that reports the source set reports a
- * verdict that the `expect` decides. The first platform compilation reports a verdict that needs the `actual`
- * declarations and a verdict of a check that a metadata compilation can't run.
- */
 class ExpectExemptionOwnershipTest {
     @Test
     fun `verdict of the expect declaration is printed once by the compilation that reports the source set`() {
@@ -364,10 +359,6 @@ class ExpectExemptionOwnershipTest {
         project.build(EXEMPT_TASK, PLAIN_CONSOLE).assertOutputHas("No watchdog errors to exempt.")
     }
 
-    /**
-     * [common] in `commonMain/Shared.kt`, and [actual] in `jvmMain` and `jsMain` unless [jsActual] replaces it.
-     * The `actual` classes don't need `equals`, `hashCode`, and `toString`.
-     */
     private fun expectProject(
         common: String,
         actual: String,

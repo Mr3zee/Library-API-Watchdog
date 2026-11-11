@@ -70,13 +70,9 @@ fun BuildResult.assertReportedIn(diagnostic: Diagnostic, vararg files: String) {
     assertEquals(files.sorted(), reported.sorted(), "Unexpected locations of $diagnostic in build output:\n$output")
 }
 
-/** The plain console prints the `> Task` header of a task before its output. [assertReportedBy] reads the headers. */
 const val PLAIN_CONSOLE = "--console=plain"
 
-/**
- * The task and the file of each output line that reports [diagnostic], as `":compileKotlinJvm Api.kt"`.
- * A line before the first task header has the task `<none>`.
- */
+/** Each line that reports [diagnostic], as `":compileKotlinJvm Api.kt"`. */
 fun BuildResult.reportingTasks(diagnostic: Diagnostic): List<String> {
     var task = "<none>"
     val reported = mutableListOf<String>()
@@ -91,10 +87,7 @@ fun BuildResult.reportingTasks(diagnostic: Diagnostic): List<String> {
     return reported
 }
 
-/**
- * Asserts that the output reports [diagnostic] once for each `file to task` pair of [reports], in the
- * output of that task, and nowhere else. The build must run with [PLAIN_CONSOLE].
- */
+/** Each of [reports] is a `file to task` pair. The build must run with [PLAIN_CONSOLE]. */
 fun BuildResult.assertReportedBy(diagnostic: Diagnostic, vararg reports: Pair<String, String>) {
     assertFalse('\u001B' in output, "Expected the plain console:\n$output")
     assertEquals(

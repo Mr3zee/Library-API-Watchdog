@@ -62,7 +62,6 @@ object WatchdogConfigurationKeys {
     internal val DEPENDENCY_DECLARATIONS: CompilerConfigurationKey<Map<String, DependencyDeclaration>> =
         CompilerConfigurationKey.create("watchdog dependency declarations")
 
-    /** @see org.jetbrains.kotlinx.library.api.watchdog.fir.SourceSetOwnership */
     val SOURCE_SETS_CHECKED_ELSEWHERE: CompilerConfigurationKey<Set<String>> =
         CompilerConfigurationKey.create("watchdog source sets checked elsewhere")
 

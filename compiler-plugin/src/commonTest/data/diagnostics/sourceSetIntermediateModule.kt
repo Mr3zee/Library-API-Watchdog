@@ -4,7 +4,7 @@
 // DIAGNOSTICS: -UNDOCUMENTED_PUBLIC_API
 // SOURCE_SETS_CHECKED_ELSEWHERE: common
 
-// The option applies to the named common module only, not to the module between it and the platform module.
+// The option doesn't apply to `intermediate`.
 
 // MODULE: common
 // FILE: common.kt

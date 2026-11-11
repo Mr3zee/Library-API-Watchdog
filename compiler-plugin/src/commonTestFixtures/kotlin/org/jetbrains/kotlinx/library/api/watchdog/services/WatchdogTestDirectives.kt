@@ -85,19 +85,18 @@ object WatchdogTestDirectives : SimpleDirectivesContainer() {
         description = "Root, configuration, and notation triples (dependencyDeclarations option)",
     )
 
-    /** `// SOURCE_SETS_CHECKED_ELSEWHERE: common`. The name of a module is the name in its `// MODULE:` line. */
+    /** `// SOURCE_SETS_CHECKED_ELSEWHERE: common` */
     val SOURCE_SETS_CHECKED_ELSEWHERE by stringDirective(
         description = "Common modules that another compilation checks (sourceSetsCheckedElsewhere option)",
     )
 
-    /** The modules of [SOURCE_SETS_CHECKED_ELSEWHERE] that get the platform checks. */
     val SOURCE_SETS_WITH_PLATFORM_CHECKS by stringDirective(
         description = "Common modules with the platform checks (sourceSetsWithPlatformChecks option)",
     )
 
     /**
-     * `// SOURCE_SET_TRANSITIVE_DEPENDENCY_PATHS: common=nonTransitiveDependency.deps/shared`. One
-     * `<module>=<root>` pair for each root of [COMPILE_DEPENDENCY_PATHS]. `<module>=` gives a module no roots.
+     * `// SOURCE_SET_TRANSITIVE_DEPENDENCY_PATHS: common=nonTransitiveDependency.deps/shared`, one pair for
+     * each root. `common=` gives the module no roots.
      */
     val SOURCE_SET_TRANSITIVE_DEPENDENCY_PATHS by stringDirective(
         description = "Module and root pairs relative to the test data directory (sourceSetTransitiveDependencyPaths option)",

@@ -307,13 +307,9 @@ internal class EnclosingExemptionRedundancyChecker(
 }
 
 /**
- * Judges the exemptions of `expect` declarations. [scopeOf] gives the role of this compilation for the
- * source set of the declaration:
- *
- * - [CheckScope.ALL]: the owner reports every verdict.
- * - [CheckScope.PLATFORM]: the compilation reports the verdicts that need the `actual` declarations or a
- *   [platformOnly] checker. The owner is then a metadata compilation, and it doesn't run these checkers.
- * - [CheckScope.NONE]: in collection mode, the compilation records the same verdicts without output.
+ * Judges the exemptions of `expect` declarations. In [CheckScope.PLATFORM], it reports only the verdicts
+ * that need the `actual` declarations or only [platformOnly] checkers. In [CheckScope.NONE], it only
+ * records the verdicts to [recorder].
  *
  * A checker with [PairSide.EXPECT] decides on the `expect` alone. A checker with [PairSide.ACTUAL] or
  * [PairSide.BOTH] reads the exemption through the `actual` declarations. So this checker runs in the
@@ -356,8 +352,7 @@ internal class ExpectExemptionRedundancyChecker(
     override fun check(declaration: FirDeclaration) {
         if (declaration !is FirMemberDeclaration || !declaration.hasProbedShape() || !declaration.isExpectedDeclaration()) return
         val scope = scopeOf(declaration.moduleData)
-        // Another platform compilation reports the source set. Its `actual` declarations differ, so in
-        // collection mode this compilation still records its own verdicts for the fixer, without output.
+        // The `actual` declarations differ for each platform, so each compilation records its own verdicts.
         if (scope == CheckScope.NONE && recorder == null) return
         val candidates = declaration.exemptionCandidates(allExemptions)
         val classExemptions = (declaration as? FirRegularClass)?.let { enclosing.classExemptions(it) }.orEmpty()
@@ -365,8 +360,6 @@ internal class ExpectExemptionRedundancyChecker(
 
         val output = if (scope == CheckScope.NONE) recordingOnly(reporter, recorder!!) else reporter
         val actuals: List<FirDeclaration>? by lazy { declaration.findActuals() }
-        // The owner of the source set reports a verdict of the `expect` alone. Every scope records the copies
-        // on the `actual` declarations of this compilation.
         fun reportsHere(verdict: Verdict): Boolean = scope == CheckScope.ALL || verdict == Verdict.REDUNDANT_HERE
         for (candidate in candidates) {
             val verdict = declaration.verdict(candidate, candidates) { actuals }
@@ -387,14 +380,11 @@ internal class ExpectExemptionRedundancyChecker(
         }
     }
 
-    /** [REDUNDANT_FOR_OWNER]: the owner of the source set reports the verdict, because the `expect` alone decides it. */
     private enum class Verdict { NEEDED, REDUNDANT_FOR_OWNER, REDUNDANT_HERE }
 
-    /** The verdict on an exemption that only [checkers] read on the `expect`. */
     private fun redundantVerdictOf(checkers: Collection<ExemptingChecker>): Verdict =
         if (checkers.all(platformOnly)) Verdict.REDUNDANT_HERE else Verdict.REDUNDANT_FOR_OWNER
 
-    /** Records a diagnostic for the fixer without passing it to the compiler output. */
     private fun recordingOnly(reporter: DiagnosticReporter, recorder: WatchdogDiagnosticsRecorder): DiagnosticReporter =
         delegatingDiagnosticReporter(reporter) { diagnostic, diagnosticContext ->
             if (diagnostic != null && !diagnosticContext.isDiagnosticSuppressed(diagnostic)) {
