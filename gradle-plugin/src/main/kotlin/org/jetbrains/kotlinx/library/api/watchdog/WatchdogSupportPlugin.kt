@@ -619,7 +619,6 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                     target.platformType == KotlinPlatformType.common ||
                     target.platformType == KotlinPlatformType.androidJvm
 
-        /** The project that applies the Binary Compatibility Validator plugin counts, whatever its settings. */
         private fun Project.hasAbiValidation(): Boolean =
             pluginManager.hasPlugin(BCV_PLUGIN_ID) || activeBinaryCompatibilityValidator() != null ||
                     activeKotlinAbiValidation() != null

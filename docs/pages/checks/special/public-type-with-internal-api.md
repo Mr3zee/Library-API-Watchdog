@@ -41,9 +41,6 @@ public class InternalModel
 public fun loadModel(): InternalModel = InternalModel()
 ```
 
-With the exclusion name rule `com.example.internal.**`, the check reports a public function that
-returns `com.example.internal.Model`.
-
 ## Rationale
 
 Callers must use the types in a supported declaration's signature. An internal API type has no
@@ -70,9 +67,8 @@ public fun loadModel(): Model = Model()
 
 - The check skips `@PublishedApi internal` signatures.
 - Type aliases don't hide internal API annotations on the alias or its expanded type.
-- An internal API annotation on a file doesn't make the classes of the file internal API types. An
-  incremental build reads an unchanged class from the previous output, without the annotations of
-  its file. Put the annotation on the class itself, or exclude the class with a name rule.
+- An internal API annotation on a file doesn't make the classes of the file internal API types.
+  Put the annotation on the class itself, or exclude the class with a name rule.
 - If the exposing declaration is also internal API, mark it with the internal API annotation, or
   exclude it with a name rule.
 
@@ -82,7 +78,7 @@ public fun loadModel(): Model = Model()
 If this is intended, apply `@IntentionallyExposedInternalApiForBackwardsCompatibility` to the declaration,
 a parameter, or a type usage.
 
-Two of the three fixes break the users of a published declaration:
+Possible fixes of a published declaration:
 
 - Remove the type from the signature. This breaks the users.
 - Add an internal API annotation with an opt-in requirement to the declaration. This breaks the

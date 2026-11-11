@@ -176,8 +176,7 @@ The marker annotation class itself is public API and stays watched.
 A public declaration without the annotation must not use an internal API type in its signature.
 [Internal API types in public API](./checks/special/public-type-with-internal-api.md) reports
 the declaration as an error. A class is an internal API type when the class or an enclosing class
-has the annotation. An annotation on the file doesn't make the classes of the file internal API
-types, because an incremental build reads an unchanged class without the annotations of its file.
+has the annotation.
 
 An annotation class from a dependency can't carry `@InternalAnnotationMarker`. List its fully
 qualified name in `internalApiAnnotations` instead. The plugin then treats it like a marked
@@ -192,6 +191,7 @@ apiWatchdog {
 See [Without Gradle](./configuration.md#without-gradle) for more details about the compiler option.
 
 ## API filters
+
 
 An API filter removes declarations from every public API check, by name or by annotation. The
 watchdog doesn't have filters of its own. It copies the filters of the binary compatibility
@@ -249,8 +249,7 @@ More rules:
   A name rule applies only to the types of the module. The check doesn't report a type only because
   no inclusion rule matches it.
 - An exclusion annotation on a file doesn't make the classes of the file excluded types for this
-  check. An incremental build reads an unchanged class from the previous output, without the
-  annotations of its file. Put the annotation on the class itself, or use a name rule.
+  check. Put the annotation on the class itself, or use a name rule.
 - [Redundant exemptions](./checks/special/redundant-exemption.md) reports an `@Intentionally*`
   annotation on a declaration that the filters remove from the checks.
 

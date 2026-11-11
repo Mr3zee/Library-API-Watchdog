@@ -196,10 +196,7 @@ public open class WatchdogGradleExtension @Inject internal constructor(
      * Fully qualified names of annotation classes that mark internal API, besides those that
      * carry `@InternalAnnotationMarker`. The watchdog skips the declarations under such an
      * annotation, and `PUBLIC_TYPE_WITH_INTERNAL_API` reports a public declaration that exposes
-     * a type marked with it. A name can have the wildcards `**`, `*`, and `?` of the ABI
-     * validation filters. The watchdog also treats the annotations of the exclusion filters of the
-     * validation tool ([useAbiValidationFilters]) as internal API annotations. Use the property for
-     * the internal-API annotation of a dependency:
+     * a type marked with it. Use it for the internal-API annotation of a dependency:
      *
      * ```kotlin
      * apiWatchdog {
@@ -234,18 +231,8 @@ public open class WatchdogGradleExtension @Inject internal constructor(
     public val suggestAbiValidation: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(true)
 
     /**
-     * Whether the watchdog applies the filters of the validation tool of the project, so it doesn't
-     * check a declaration that the tool leaves out of the ABI dump. Default is `true`. The watchdog
-     * copies the filters of the first tool of this list that validates the project:
-     *
-     * 1. The ABI validation of the Kotlin Gradle plugin, when the build script turns it on. The
-     *    watchdog reads its `filters` block.
-     * 2. The Binary Compatibility Validator plugin, when the plugin is applied to the project or to
-     *    a parent project, the project isn't in `ignoredProjects`, and `validationDisabled` is
-     *    `false`. The watchdog reads the filter sets of its `apiValidation` block.
-     *
-     * An exclusion filter can add `PUBLIC_TYPE_WITH_INTERNAL_API` errors, because a checked
-     * declaration must not expose an excluded type.
+     * Whether the watchdog applies the filters of the ABI validation of the Kotlin Gradle plugin or
+     * of the Binary Compatibility Validator plugin. Default is `true`.
      *
      * See [API filters](https://mr3zee.github.io/Library-API-Watchdog/exemptions#api-filters) for more details.
      */

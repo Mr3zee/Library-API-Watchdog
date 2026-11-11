@@ -234,7 +234,7 @@ See [Internal API annotations](./exemptions.md#internal-api-annotations) for mor
 
 `useAbiValidationFilters` controls the API filters. Default is `true`: the watchdog copies the
 filters of the [ABI validation](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html) of the Kotlin Gradle plugin or of the
-[Binary Compatibility Validator](https://github.com/Kotlin/binary-compatibility-validator) plugin, while the tool validates the project. When both tools
+[Binary Compatibility Validator](https://github.com/Kotlin/binary-compatibility-validator) plugin. When both tools
 validate the project, the watchdog uses the filters of the Kotlin Gradle plugin only. To turn the
 filters off:
 

@@ -4,17 +4,12 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Provider
 
-/** Filter rules in the name grammar of the compiler plugin options. */
 internal data class ApiFilterRules(
     val excludedNames: Set<String> = emptySet(),
     val excludedAnnotations: Set<String> = emptySet(),
     val includedNames: Set<String> = emptySet(),
     val includedAnnotations: Set<String> = emptySet(),
 ) {
-    /**
-     * The rules without those that the compiler plugin rejects. Such a rule comes from another
-     * tool, so it doesn't fail the build.
-     */
     fun withoutUnusableRules(): ApiFilterRules = ApiFilterRules(
         excludedNames.usableRules(),
         excludedAnnotations.usableRules(),
@@ -29,11 +24,6 @@ internal data class ApiFilterRules(
     }
 }
 
-/**
- * The filters of one validation tool, without a merge. When both tools validate the project, the ABI
- * validation of the Kotlin Gradle plugin wins. Call it after the build scripts of the project and of
- * its parent projects ran, because the Binary Compatibility Validator plugin has plain mutable sets.
- */
 internal fun Project.abiValidationFilterRules(): ApiFilterRules =
     (kotlinAbiValidationFilterRules() ?: binaryCompatibilityValidatorFilterRules() ?: ApiFilterRules())
         .withoutUnusableRules()
@@ -75,14 +65,8 @@ internal fun Project.activeKotlinAbiValidation(): Any? {
 }
 
 /**
- * The `apiValidation` extension when the Binary Compatibility Validator plugin validates this
- * project, or null. The plugin validates the project that applies it and the projects below it,
- * with the extension of the applying project, which is the nearest parent project with the
- * extension. It doesn't register the `apiCheck` task for a project of `ignoredProjects`, and
- * `validationDisabled` turns the tasks off.
- *
- * The function reads a parent project only when this project has the task, so a build without the
- * plugin stays compatible with project isolation.
+ * Reads a parent project only when this project has the `apiCheck` task, so a build without the
+ * Binary Compatibility Validator plugin stays compatible with project isolation.
  */
 internal fun Project.activeBinaryCompatibilityValidator(): Any? {
     if (BCV_CHECK_TASK_NAME !in tasks.names) return null
@@ -104,10 +88,8 @@ private fun Project.binaryCompatibilityValidatorFilterRules(): ApiFilterRules? {
     )
 }
 
-/** The plugin matches a package and its subpackages. */
 private fun packageRule(packageName: String): String = if (packageName.isBlank()) packageName else "$packageName.**"
 
-/** The plugin separates a nested class with `$`. */
 private fun dottedName(binaryName: String): String = binaryName.replace('$', '.')
 
 private fun Any.property(getterName: String): Any? = runCatching {

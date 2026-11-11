@@ -15,25 +15,16 @@ mdx:
 
 ### Added
 
-- [API filters](exemptions.md#api-filters): the watchdog doesn't
-  check a declaration that the binary compatibility validation leaves out of the ABI dump. It copies the
-  filters of the ABI validation of the Kotlin Gradle plugin or of the Binary Compatibility Validator plugin
-  while the tool validates the project. When both tools validate the project, the watchdog uses the filters
-  of the Kotlin Gradle plugin only.
+- [API filters](exemptions.md#api-filters): the watchdog applies the
+  filters of the binary compatibility validation of the project.
 
 ### Changed
 
-- The filters of an existing validation setup apply after the upgrade, so a build that passed can fail:
-  - [Internal API types in public API](checks/special/public-type-with-internal-api.md)
-    reports a checked declaration that exposes a type of an exclusion filter, such as a type of
-    `ignoredPackages` or a type with a `nonPublicMarkers` annotation.
-  - [Redundant exemptions](checks/special/redundant-exemption.md)
-    reports an `@Intentionally*` annotation on a declaration that the filters remove from the checks.
-    `exemptExistingApi` removes such an annotation.
-
-  To keep the previous behavior, set `apiWatchdog { useAbiValidationFilters = false }`.
-- The check "Public types marked as internal API" has the new title "Internal API types in public API". The
-  diagnostic name and the page address don't change.
+- The filters of an existing validation setup can add errors of
+  [Internal API types in public API](checks/special/public-type-with-internal-api.md)
+  and warnings of [Redundant exemptions](checks/special/redundant-exemption.md).
+  `apiWatchdog { useAbiValidationFilters = false }` turns the filters off.
+- The check "Public types marked as internal API" has the new title "Internal API types in public API".
 
 ## 0.2.0 - 2026-11-06
 
