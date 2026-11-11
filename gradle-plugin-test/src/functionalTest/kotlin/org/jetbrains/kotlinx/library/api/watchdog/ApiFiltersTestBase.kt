@@ -109,6 +109,32 @@ abstract class ApiFiltersTestBase {
         )
     }
 
+    protected fun ModuleSpec.facadeClassSources() {
+        kotlinFile(
+            "Utils",
+            text = """
+                package test.api
+
+                public fun hiddenUtility() {}
+            """.trimIndent(),
+        )
+        kotlinFile(
+            "Api",
+            text = """
+                @file:JvmName("Api")
+
+                package test.api
+
+                public fun watchedFunction() {}
+            """.trimIndent(),
+        )
+    }
+
+    protected fun BuildResult.assertFacadeClassIsExcluded() {
+        assertWarning("`watchedFunction` doesn't have `KDoc`")
+        assertOutputLacks("`hiddenUtility`")
+    }
+
     protected fun kotlinAbiValidation(filters: String): String =
         """
             kotlin {

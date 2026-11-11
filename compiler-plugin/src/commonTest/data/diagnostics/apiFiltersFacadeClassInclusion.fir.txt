@@ -1,0 +1,19 @@
+FILE: Api.kt
+    package test
+
+    public final fun includedFunction(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public final class NotIncluded : R|kotlin/Any| {
+        public constructor(): R|test/NotIncluded| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun member(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+FILE: Other.kt
+    package test
+
+    public final fun notIncludedFunction(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }

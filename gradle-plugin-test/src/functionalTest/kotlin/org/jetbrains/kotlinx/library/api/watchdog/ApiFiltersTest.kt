@@ -62,6 +62,16 @@ class ApiFiltersTest : ApiFiltersTestBase() {
     }
 
     @Test
+    fun `a name rule for a facade class excludes the top-level functions of the file`() {
+        val project = jvmProject {
+            buildScript(kotlinAbiValidation("""exclude { byNames.add("test.api.UtilsKt") }"""))
+            facadeClassSources()
+        }
+
+        project.build(COMPILE).assertFacadeClassIsExcluded()
+    }
+
+    @Test
     fun `Kotlin ABI validation inclusion filters apply`() {
         val project = jvmProject {
             buildScript(

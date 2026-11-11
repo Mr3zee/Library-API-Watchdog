@@ -40,5 +40,5 @@ public open class Annotated {
     }
 }
 
-// A name rule doesn't match the JVM facade class of the file.
-public fun <!TOP_LEVEL_API_WITHOUT_JVM_NAME, UNDOCUMENTED_PUBLIC_API!>facadeFunction<!>() {}
+// The exclusion rule for the JVM facade class of the file wins over the inclusion rule for the function.
+public fun facadeFunction() {}

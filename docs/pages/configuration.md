@@ -219,7 +219,7 @@ for more details about when to use a rule.
 ## Internal API annotations
 
 `internalApiAnnotations` lists annotation classes by their fully qualified
-names or by [name patterns](./exemptions.md#filter-names). A listed annotation counts as an
+names or by [name patterns](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html#configure-filters). A listed annotation counts as an
 internal API annotation:
 
 ```kotlin build.gradle.kts
@@ -244,7 +244,7 @@ apiWatchdog {
 }
 ```
 
-See [API filters](./exemptions.md#api-filters) for more details about the rules and the name format.
+See [API filters](./exemptions.md#api-filters) for more details.
 
 ## Exempt non-transitive dependencies
 
@@ -388,7 +388,7 @@ A direct compiler call configures the plugin with `-P` options of this form:
 `<NAME>` is a diagnostic name from the [Property reference](#property-reference), except the two
 checks that a Boolean property turns off: the option rejects them. `<severity>` is
 `error`, `warning`, or `none`. A diagnostic that no option names has its default severity. A name
-pattern has the [format of an API filter](./exemptions.md#filter-names). One value of each option:
+pattern has the [format of the ABI validation filters](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html#configure-filters). One value of each option:
 
 ```
 -P plugin:org.jetbrains.kotlinx.library.api.watchdog:diagnosticSeverity=UNDOCUMENTED_PUBLIC_API:error

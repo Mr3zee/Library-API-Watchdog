@@ -287,9 +287,9 @@ private fun FirMemberDeclaration.passesApiFilters(): Boolean {
     val filters = context.session.configuredApiFilters ?: return true
     val symbol = symbol
     val chain = enclosingDeclarationsWithFile() + symbol
-    if (chain.any { filters.excludingPattern(it) != null }) return false
+    if (filters.excludes(chain)) return false
     if (!filters.hasInclusionRules) return true
-    if (chain.any(filters::includes)) return true
+    if (filters.includesAny(chain)) return true
     if (symbol is FirClassSymbol<*> && symbol.hasIncludedApiMember(filters)) return true
     val expectClass = (symbol as? FirClassLikeSymbol<*>)?.takeIf { it.isActual }?.getSingleMatchedExpectForActualOrNull()
     return expectClass is FirClassSymbol<*> && expectClass.hasIncludedApiMember(filters)

@@ -48,6 +48,17 @@ class BinaryCompatibilityValidatorFiltersTest : ApiFiltersTestBase() {
     }
 
     @Test
+    fun `a facade class of ignoredClasses excludes the top-level functions of the file`() {
+        val project = jvmProject {
+            withPlugins(binaryCompatibilityValidatorPlugin)
+            buildScript(apiValidation("""ignoredClasses.add("test.api.UtilsKt")"""))
+            facadeClassSources()
+        }
+
+        project.build(COMPILE).assertFacadeClassIsExcluded()
+    }
+
+    @Test
     fun `the sets of the root project apply to a subproject`() {
         val project = jvmProject {
             withPlugins(binaryCompatibilityValidatorPlugin)

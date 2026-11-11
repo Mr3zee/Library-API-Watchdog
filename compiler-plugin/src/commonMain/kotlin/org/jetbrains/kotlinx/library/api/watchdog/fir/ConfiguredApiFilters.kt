@@ -1,17 +1,25 @@
 package org.jetbrains.kotlinx.library.api.watchdog.fir
 
 import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.declarations.getAnnotationByClassId
 import org.jetbrains.kotlin.fir.declarations.getSingleMatchedExpectForActualOrNull
+import org.jetbrains.kotlin.fir.declarations.getStringArgument
 import org.jetbrains.kotlin.fir.declarations.toAnnotationClassLikeSymbol
 import org.jetbrains.kotlin.fir.extensions.FirExtensionSessionComponent
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
+import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirEnumEntrySymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirFieldSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirFileSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertyAccessorSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
+import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils
+import org.jetbrains.kotlin.name.JvmStandardClassIds
+import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.platform.jvm.isJvm
 
 /**
  * The filters of the watched API, with the semantics of the ABI validation filters of the Kotlin
@@ -55,9 +63,34 @@ internal class ConfiguredApiFilters(
                 (getterSymbol?.hasIncludedAnnotation() == true || setterSymbol?.hasIncludedAnnotation() == true)
 
     /** [chain] is the declaration, its enclosing declarations, and its file. */
-    fun watches(chain: List<FirBasedSymbol<*>>): Boolean {
-        if (chain.any { excludingPattern(it) != null }) return false
-        return !hasInclusionRules || chain.any(::includes)
+    fun watches(chain: List<FirBasedSymbol<*>>): Boolean =
+        !excludes(chain) && (!hasInclusionRules || includesAny(chain))
+
+    fun excludes(chain: List<FirBasedSymbol<*>>): Boolean =
+        !excludedNames.isEmpty &&
+                (chain.any { excludingPattern(it) != null } || facadeClassName(chain)?.let(excludedNames::matches) == true)
+
+    fun includesAny(chain: List<FirBasedSymbol<*>>): Boolean =
+        chain.any(::includes) || !includedNames.isEmpty && facadeClassName(chain)?.let(includedNames::matches) == true
+
+    /**
+     * The JVM facade class of a top-level function or property. The validation tools match a name
+     * rule against it in a JVM dump. A declaration of a common module is also in the klib dumps,
+     * which don't have the class, so it gets null.
+     */
+    @OptIn(SymbolInternals::class)
+    private fun facadeClassName(chain: List<FirBasedSymbol<*>>): String? {
+        if (chain.any { it is FirClassLikeSymbol<*> }) return null
+        if (chain.none { it is FirNamedFunctionSymbol || it is FirPropertySymbol }) return null
+        val fileSymbol = chain.firstNotNullOfOrNull { it as? FirFileSymbol } ?: return null
+        val module = fileSymbol.moduleData
+        if (!module.platform.isJvm() || module.isCommon) return null
+        val file = fileSymbol.fir
+        val name = fileSymbol.resolvedAnnotationsWithArguments
+            .getAnnotationByClassId(JvmStandardClassIds.Annotations.JvmName, session)
+            ?.getStringArgument(Name.identifier("name"))
+            ?: PackagePartClassUtils.getFilePartShortName(file.name)
+        return file.packageDirective.packageFqName.child(Name.identifier(name)).asString()
     }
 
     private fun FirBasedSymbol<*>.hasIncludedAnnotation(): Boolean =
