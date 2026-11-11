@@ -532,6 +532,71 @@ class WatchdogProjectTest {
     }
 
     @Test
+    fun `exemption annotations aren't a runtime dependency of a JVM library`() =
+        jvmAnnotationScopesCase(enabled = true)
+
+    @Test
+    fun `disabled watchdog adds exemption annotations that aren't a runtime dependency`() =
+        jvmAnnotationScopesCase(enabled = false)
+
+    private fun jvmAnnotationScopesCase(enabled: Boolean) {
+        val project = jvmProject {
+            if (!enabled) apiWatchdog { this.enabled = false }
+            source(exemptedOpenClassFile)
+            testOnlySource()
+            buildScript(
+                printAnnotationScopes("compileClasspath", "testCompileClasspath", "apiElements", "runtimeElements"),
+            )
+        }
+
+        val result = project.build("compileTestKotlin", PRINT_ANNOTATION_SCOPES_TASK)
+        result.assertNoWatchdogDiagnostics()
+        result.assertOutputHas("$ANNOTATION_SCOPE compileClasspath=true")
+        result.assertOutputHas("$ANNOTATION_SCOPE testCompileClasspath=true")
+        result.assertOutputHas("$ANNOTATION_SCOPE apiElements=false")
+        result.assertOutputHas("$ANNOTATION_SCOPE runtimeElements=false")
+    }
+
+    @Test
+    fun `exemption annotations are an implementation dependency of klib targets only`() {
+        // Two Linux targets give the shared native source sets `nativeMain` and `linuxMain`.
+        val project = kmpProject("jvm()\njs { nodejs() }\nlinuxX64()\nlinuxArm64()") {
+            source(exemptedOpenClassFile)
+            source(exemptedOpenClassFile.replace("DeliberatelyOpenClass", "NativeOpenClass"), sourceSet = "nativeMain")
+            buildScript(
+                printAnnotationScopes(
+                    "jvmCompileClasspath",
+                    "jvmApiElements",
+                    "jvmRuntimeElements",
+                    "jsApiElements",
+                    "jsRuntimeElements",
+                    "linuxX64ApiElements",
+                    "metadataApiElements",
+                ),
+            )
+        }
+
+        val result = project.build(
+            "compileCommonMainKotlinMetadata",
+            "compileNativeMainKotlinMetadata",
+            "compileTestKotlinJvm",
+            "compileTestKotlinJs",
+            "compileKotlinLinuxX64",
+            PRINT_ANNOTATION_SCOPES_TASK,
+        )
+        result.assertNoWatchdogDiagnostics()
+        result.assertOutputLacks("A compileOnly dependency is used in targets")
+        result.assertOutputHas("$ANNOTATION_SCOPE jvmCompileClasspath=true")
+        result.assertOutputHas("$ANNOTATION_SCOPE jvmApiElements=false")
+        result.assertOutputHas("$ANNOTATION_SCOPE jvmRuntimeElements=false")
+        result.assertOutputHas("$ANNOTATION_SCOPE jsApiElements=false")
+        result.assertOutputHas("$ANNOTATION_SCOPE jsRuntimeElements=true")
+        // KGP publishes the `implementation` dependencies of a Native target in its API variant.
+        result.assertOutputHas("$ANNOTATION_SCOPE linuxX64ApiElements=true")
+        result.assertOutputHas("$ANNOTATION_SCOPE metadataApiElements=false")
+    }
+
+    @Test
     fun `test sources aren't checked`() {
         val project = jvmProject {
             source(cleanMainFile)
@@ -1670,6 +1735,33 @@ private const val REPORT_ALL_WARNINGS_FLAG =
     """kotlin { compilerOptions { freeCompilerArgs.add("-Xreport-all-warnings") } }"""
 
 private const val JVM_AND_JS_TARGETS = "jvm()\njs { nodejs() }"
+
+private const val PRINT_ANNOTATION_SCOPES_TASK = "printAnnotationScopes"
+private const val ANNOTATION_SCOPE = "ANNOTATION_SCOPE"
+
+/**
+ * A `printAnnotationScopes` task. For each of [configurations], it prints `ANNOTATION_SCOPE <name>=<true|false>`:
+ * `true` when the declared dependencies of the configuration, inherited ones included, have the annotations library.
+ */
+private fun printAnnotationScopes(vararg configurations: String): String = """
+    tasks.register("$PRINT_ANNOTATION_SCOPES_TASK") {
+        val scopes = provider {
+            listOf(${configurations.joinToString { "\"$it\"" }}).map { name ->
+                val dependencies = configurations.getByName(name).allDependencies
+                name + "=" + dependencies.any { it.name == "kotlin-library-api-watchdog-plugin-annotations" }
+            }
+        }
+        doLast { scopes.get().forEach { println("$ANNOTATION_SCOPE " + it) } }
+    }
+"""
+
+/** A documented open class with an exemption, so it has no diagnostic. */
+@Language("kotlin")
+private val exemptedOpenClassFile = """
+    /** A base class for subclasses outside the library. */
+    @IntentionallyOpen(reason = ExemptionReason.API_DESIGN)
+    public open class DeliberatelyOpenClass
+""".trimIndent()
 
 private const val DEFAULT_FACADE_NAME_FILE_ANNOTATION =
     "@file:org.jetbrains.kotlinx.library.api.watchdog.IntentionallyDefaultFacadeName(" +

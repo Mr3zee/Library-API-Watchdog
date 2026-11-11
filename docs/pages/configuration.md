@@ -75,7 +75,9 @@ Applying the plugin:
 
 - Registers the compiler plugin for every compilation except test compilations.
 - Adds the `org.jetbrains.kotlinx:kotlin-library-api-watchdog-plugin-annotations` dependency,
-  the library with the `@Intentionally*` exemption annotations.
+  the library with the `@Intentionally*` exemption annotations. Every compilation can use it. The
+  published JVM and Android variants don't depend on it. The published JS, Wasm, and Native variants
+  depend on it as `implementation`, because a consumer links every library that a klib references.
 - Requires explicit API mode, see [Explicit API mode](#explicit-api-mode).
 - Warns when binary compatibility validation is off, with a setup snippet.
   [Binary compatibility validation suggestion](./abi-validation-suggestion.md) gives the details.

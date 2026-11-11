@@ -70,6 +70,12 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             configuration.description = "Dependencies whose types the public API can expose " +
                     "although they aren't published transitively"
         }
+        val annotations = target.configurations.register(EXEMPTION_ANNOTATIONS_CONFIGURATION_NAME) { configuration ->
+            configuration.isCanBeConsumed = false
+            configuration.isCanBeResolved = false
+            configuration.description = "The exemption annotations, for compilation only"
+            info.companionLibraryCoordinates.forEach { configuration.dependencies.add(target.dependencies.create(it)) }
+        }
         val extension = target.extensions.create(
             "apiWatchdog",
             WatchdogGradleExtension::class.java,
@@ -83,10 +89,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         collectDiagnosticsForExempts = collectDiagnostics
         target.registerExemptionTasks(extension, collectDiagnostics)
         target.afterEvaluate { project ->
-            if (!extension.enabled.get()) {
-                project.addExemptionAnnotationsWithoutChecks()
-                return@afterEvaluate
-            }
+            project.addExemptionAnnotations(annotations)
+            if (!extension.enabled.get()) return@afterEvaluate
             project.requireExplicitApiMode(extension.explicitApiRequirement.get())
             if (extension.suggestAbiValidation.get() && !project.hasAbiValidation()) {
                 project.logger.warn(
@@ -109,17 +113,41 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         }
     }
 
-    /** KGP adds the annotations library only through [applyToCompilation], which a disabled watchdog never reaches. */
-    private fun Project.addExemptionAnnotationsWithoutChecks() {
-        val compilations = when (val kotlin = extensions.findByName("kotlin")) {
-            is KotlinJvmExtension -> kotlin.target.compilations
-            is KotlinAndroidExtension -> kotlin.target.compilations
-            is KotlinTargetsContainer -> kotlin.targets.flatMap { it.compilations }
-            else -> return
+    /** The dev kit adds the annotations library as `implementation`. [addExemptionAnnotations] adds it instead. */
+    override fun Project.shouldAddRuntimeDependency(): Boolean = false
+
+    /**
+     * Every compile classpath gets [annotations]. Only the main compilations of JS, Wasm, and Native
+     * publish the annotations library, as `implementation`, because a consumer links every library
+     * that a klib references. The annotations have binary retention, so a JVM program doesn't need them.
+     *
+     * The plugin doesn't declare `compileOnly`. A `compileOnly` dependency of `commonMain` reaches the
+     * JS compilation, and KGP warns about it when the JS target doesn't publish it as `api`.
+     *
+     * A metadata compilation resolves its dependencies through the source set configuration
+     * `<sourceSet>ResolvableDependenciesMetadata`. KGP doesn't give a public name for it.
+     */
+    private fun Project.addExemptionAnnotations(annotations: NamedDomainObjectProvider<Configuration>) {
+        forEachKotlinCompilation { compilation ->
+            if (compilation.platformType == KotlinPlatformType.common) return@forEachKotlinCompilation
+            configurations.matching { it.name == compilation.compileDependencyConfigurationName }
+                .configureEach { it.extendsFrom(annotations.get()) }
+            if (compilation.platformType in KLIB_PLATFORMS && !compilation.isTestCompilation()) {
+                compilation.defaultSourceSet.dependencies {
+                    info.companionLibraryCoordinates.forEach(::implementation)
+                }
+            }
         }
-        compilations.filterNot { it.isTestCompilation() }.forEach { compilation ->
-            compilation.defaultSourceSet.dependencies {
-                info.companionLibraryCoordinates.forEach(::implementation)
+        configurations.matching { it.name.endsWith(SOURCE_SET_METADATA_CONFIGURATION_SUFFIX) }
+            .configureEach { it.extendsFrom(annotations.get()) }
+    }
+
+    private fun Project.forEachKotlinCompilation(action: (KotlinCompilation<*>) -> Unit) {
+        when (val kotlin = extensions.findByName("kotlin")) {
+            is KotlinJvmExtension -> kotlin.target.compilations.configureEach { action(it) }
+            is KotlinAndroidExtension -> kotlin.target.compilations.configureEach { action(it) }
+            is KotlinTargetsContainer -> kotlin.targets.configureEach { target ->
+                target.compilations.configureEach { action(it) }
             }
         }
     }
@@ -573,6 +601,10 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
          */
         private fun KotlinCompilation<*>.isTestCompilation(): Boolean =
             name == KotlinCompilation.TEST_COMPILATION_NAME || name.endsWith(TEST_COMPILATION_NAME_SUFFIX)
+
+        private const val EXEMPTION_ANNOTATIONS_CONFIGURATION_NAME = "apiWatchdogExemptionAnnotations"
+        private const val SOURCE_SET_METADATA_CONFIGURATION_SUFFIX = "ResolvableDependenciesMetadata"
+        private val KLIB_PLATFORMS = setOf(KotlinPlatformType.js, KotlinPlatformType.wasm, KotlinPlatformType.native)
 
         private const val FIXER_ARTIFACT_ID = "kotlin-library-api-watchdog-exempts-fixer"
         private const val FIXER_CLASSPATH_CONFIGURATION_NAME = "apiWatchdogExemptsFixerClasspath"
