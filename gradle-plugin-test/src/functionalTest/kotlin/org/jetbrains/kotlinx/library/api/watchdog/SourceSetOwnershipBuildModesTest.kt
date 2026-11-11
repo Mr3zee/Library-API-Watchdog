@@ -2,12 +2,10 @@
 
 package org.jetbrains.kotlinx.library.api.watchdog
 
-import com.autonomousapps.kit.gradle.Dependency.Companion.implementation
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome.FROM_CACHE
-import org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.OPEN_API_WITHOUT_SUBCLASS_OPT_IN
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.TOP_LEVEL_API_WITHOUT_JVM_NAME
@@ -16,119 +14,56 @@ import org.junit.Test
 
 class SourceSetOwnershipBuildModesTest {
     @Test
-    fun `compile task runs again when the build changes its role`() {
+    fun `compile task stays up to date when the task set changes`() {
         val project = jvmAndJsProject()
         project.build("assemble", PLAIN_CONSOLE)
 
         val jvm = project.build("compileKotlinJvm", PLAIN_CONSOLE)
-        jvm.assertTaskOutcome(JVM, SUCCESS)
-        jvm.assertOpenApiBy("SharedApi.kt" to JVM, "JvmApi.kt" to JVM)
-        jvm.assertJvmNameBy("SharedApi.kt" to JVM, "JvmApi.kt" to JVM)
+        jvm.assertTaskOutcome(JVM, UP_TO_DATE)
+        jvm.assertNoWatchdogDiagnostics()
 
         val assemble = project.build("assemble", PLAIN_CONSOLE)
         assemble.assertTaskOutcome(COMMON_METADATA, UP_TO_DATE)
-        assemble.assertTaskOutcome(JVM, SUCCESS)
+        assemble.assertTaskOutcome(JVM, UP_TO_DATE)
         assemble.assertTaskOutcome(JS, UP_TO_DATE)
-        assemble.assertOpenApiBy("JvmApi.kt" to JVM)
-        assemble.assertJvmNameBy("SharedApi.kt" to JVM, "JvmApi.kt" to JVM)
-
-        project.build("assemble", PLAIN_CONSOLE).assertTaskOutcome(JVM, UP_TO_DATE)
     }
 
     @Test
-    fun `cached compile task of another role isn't reused`() {
+    fun `cached compile task serves a build with another task set`() {
         val project = jvmAndJsProject()
         project.file("settings.gradle.kts").appendText("\nbuildCache { local { directory = file(\"build-cache\") } }\n")
         project.build("assemble", "--build-cache", PLAIN_CONSOLE)
 
-        val cached = project.build("clean", "assemble", "--build-cache", PLAIN_CONSOLE)
-        cached.assertTaskOutcome(COMMON_METADATA, FROM_CACHE)
-        cached.assertTaskOutcome(JVM, FROM_CACHE)
-        cached.assertTaskOutcome(JS, FROM_CACHE)
-        cached.assertNoWatchdogDiagnostics()
-
         val jvm = project.build("clean", "compileKotlinJvm", "--build-cache", PLAIN_CONSOLE)
-        jvm.assertTaskOutcome(JVM, SUCCESS)
-        jvm.assertOpenApiBy("SharedApi.kt" to JVM, "JvmApi.kt" to JVM)
-        jvm.assertJvmNameBy("SharedApi.kt" to JVM, "JvmApi.kt" to JVM)
 
-        project.build("clean", "compileKotlinJvm", "--build-cache", PLAIN_CONSOLE).assertTaskOutcome(JVM, FROM_CACHE)
-        project.build("clean", "assemble", "--build-cache", PLAIN_CONSOLE).assertTaskOutcome(JVM, FROM_CACHE)
+        jvm.assertTaskOutcome(JVM, FROM_CACHE)
+        jvm.assertNoWatchdogDiagnostics()
     }
 
     @Test
-    fun `configuration cache keeps the roles of its task graph`() {
+    fun `report task prints shared diagnostics once with the configuration cache`() {
         val project = jvmAndJsProject()
-        val platforms = arrayOf("compileKotlinJvm", "compileKotlinJs", *CONFIGURATION_CACHE, PLAIN_CONSOLE)
+        val report = arrayOf(REPORT_TASK, *CONFIGURATION_CACHE, PLAIN_CONSOLE)
 
-        val stored = project.build(*platforms)
+        val stored = project.build(*report)
         stored.assertOutputHas("Configuration cache entry stored.")
-        stored.assertOpenApiBy("SharedApi.kt" to JVM, "JvmApi.kt" to JVM, "JsApi.kt" to JS)
+        stored.assertOpenApiBy("SharedApi.kt" to COMMON_METADATA, "JvmApi.kt" to JVM, "JsApi.kt" to JS)
+        stored.assertJvmNameBy("SharedApi.kt" to JVM, "JvmApi.kt" to JVM)
 
-        project.editSources()
-        val reused = project.build(*platforms)
+        val reused = project.build(*report)
         reused.assertOutputHas("Configuration cache entry reused.")
-        reused.assertOpenApiBy("SharedApi.kt" to JVM, "JvmApi.kt" to JVM, "JsApi.kt" to JS)
+        reused.assertOpenApiBy("SharedApi.kt" to COMMON_METADATA, "JvmApi.kt" to JVM, "JsApi.kt" to JS)
         reused.assertJvmNameBy("SharedApi.kt" to JVM, "JvmApi.kt" to JVM)
-
-        val js = project.build("compileKotlinJs", *CONFIGURATION_CACHE, PLAIN_CONSOLE)
-        js.assertOutputHas("Configuration cache entry stored.")
-        js.assertTaskOutcome(JS, SUCCESS)
-        js.assertOpenApiBy("SharedApi.kt" to JS, "JsApi.kt" to JS)
-
-        project.editSources()
-        val reusedAgain = project.build(*platforms)
-        reusedAgain.assertOutputHas("Configuration cache entry reused.")
-        reusedAgain.assertOpenApiBy("SharedApi.kt" to JVM, "JvmApi.kt" to JVM, "JsApi.kt" to JS)
-
-        val assemble = arrayOf("assemble", *CONFIGURATION_CACHE, PLAIN_CONSOLE)
-        project.build(*assemble).assertOpenApiBy("SharedApi.kt" to COMMON_METADATA, "JvmApi.kt" to JVM)
-        project.editSources()
-        val reusedAssemble = project.build(*assemble)
-        reusedAssemble.assertOutputHas("Configuration cache entry reused.")
-        reusedAssemble.assertOpenApiBy("SharedApi.kt" to COMMON_METADATA, "JvmApi.kt" to JVM, "JsApi.kt" to JS)
-        reusedAssemble.assertJvmNameBy("SharedApi.kt" to JVM, "JvmApi.kt" to JVM)
-    }
-
-    @Test
-    fun `native compile tasks keep their roles with the configuration cache`() {
-        val project = kmpProject("jvm()\nlinuxX64()\nmacosArm64()") {
-            apiWatchdog { severityOfEveryCheck(WARNING) }
-            api("SharedApi", "commonMain")
-            api("NativeApi", "nativeMain")
-        }
-        val native = arrayOf("compileKotlinMacosArm64", "compileKotlinLinuxX64", *CONFIGURATION_CACHE, PLAIN_CONSOLE)
-
-        project.build(*native).assertOpenApiBy("SharedApi.kt" to LINUX, "NativeApi.kt" to LINUX)
-        project.editSources()
-        val reused = project.build(*native)
-        reused.assertOutputHas("Configuration cache entry reused.")
-        reused.assertOpenApiBy("SharedApi.kt" to LINUX, "NativeApi.kt" to LINUX)
-
-        val assemble = arrayOf("assemble", *CONFIGURATION_CACHE, PLAIN_CONSOLE)
-        project.build(*assemble)
-            .assertOpenApiBy("SharedApi.kt" to COMMON_METADATA, "NativeApi.kt" to ":compileNativeMainKotlinMetadata")
-        project.editSources()
-        val reusedAssemble = project.build(*assemble)
-        reusedAssemble.assertOutputHas("Configuration cache entry reused.")
-        reusedAssemble.assertOpenApiBy("SharedApi.kt" to COMMON_METADATA, "NativeApi.kt" to ":compileNativeMainKotlinMetadata")
-        reusedAssemble.assertJvmNameBy("SharedApi.kt" to JVM)
     }
 
     @Test
     fun `each project picks the owners of its own source sets`() {
         val project = multiProject()
 
-        val mixed = project.build(":a:compileKotlinJvm", ":compileKotlinJs", PLAIN_CONSOLE)
-        mixed.assertOpenApiBy("SharedApi.kt" to JS, "ASharedApi.kt" to ":a$JVM")
-        mixed.assertJvmNameBy("ASharedApi.kt" to ":a$JVM")
+        val result = project.build(REPORT_TASK, PLAIN_CONSOLE)
 
-        val subproject = project.build(":a:compileKotlinJs", PLAIN_CONSOLE)
-        subproject.assertOpenApiBy("ASharedApi.kt" to ":a$JS")
-
-        val assemble = project.build("assemble", PLAIN_CONSOLE)
-        assemble.assertOpenApiBy("SharedApi.kt" to COMMON_METADATA, "ASharedApi.kt" to ":a$COMMON_METADATA")
-        assemble.assertJvmNameBy("SharedApi.kt" to JVM, "ASharedApi.kt" to ":a$JVM")
+        result.assertOpenApiBy("SharedApi.kt" to COMMON_METADATA, "ASharedApi.kt" to ":a$COMMON_METADATA")
+        result.assertJvmNameBy("SharedApi.kt" to JVM, "ASharedApi.kt" to ":a$JVM")
     }
 
     @Test
@@ -136,14 +71,11 @@ class SourceSetOwnershipBuildModesTest {
         // No JS target, because the `NodeJsRootPlugin` of KGP fails under project isolation.
         val project = multiProject(targets = "jvm()\nlinuxX64()")
 
-        val mixed = project.build(":a:compileKotlinJvm", ":compileKotlinLinuxX64", *PROJECT_ISOLATION, PLAIN_CONSOLE)
-        mixed.assertOutputHas("Configuration cache entry stored.")
-        mixed.assertOpenApiBy("SharedApi.kt" to ":compileKotlinLinuxX64", "ASharedApi.kt" to ":a$JVM")
-        mixed.assertJvmNameBy("ASharedApi.kt" to ":a$JVM")
+        val result = project.build(REPORT_TASK, *PROJECT_ISOLATION, PLAIN_CONSOLE)
 
-        val assemble = project.build("assemble", *PROJECT_ISOLATION, PLAIN_CONSOLE)
-        assemble.assertOpenApiBy("SharedApi.kt" to COMMON_METADATA, "ASharedApi.kt" to ":a$COMMON_METADATA")
-        assemble.assertJvmNameBy("SharedApi.kt" to JVM, "ASharedApi.kt" to ":a$JVM")
+        result.assertOutputHas("Configuration cache entry stored.")
+        result.assertOpenApiBy("SharedApi.kt" to COMMON_METADATA, "ASharedApi.kt" to ":a$COMMON_METADATA")
+        result.assertJvmNameBy("SharedApi.kt" to JVM, "ASharedApi.kt" to ":a$JVM")
     }
 
     @Test
@@ -153,37 +85,10 @@ class SourceSetOwnershipBuildModesTest {
         included.rootDir.copyRecursively(project.file("components/lib"))
         project.file("settings.gradle.kts").appendText("\nincludeBuild(\"components/lib\") { name = \"lib\" }\n")
 
-        val platforms = project.build(":lib:compileKotlinJvm", ":lib:compileKotlinJs", PLAIN_CONSOLE)
-        platforms.assertOpenApiBy("SharedApi.kt" to ":lib$JVM", "JvmApi.kt" to ":lib$JVM", "JsApi.kt" to ":lib$JS")
+        val result = project.build(":lib:$REPORT_TASK", PLAIN_CONSOLE)
 
-        val js = project.build(":lib:compileKotlinJs", PLAIN_CONSOLE)
-        js.assertOpenApiBy("SharedApi.kt" to ":lib$JS", "JsApi.kt" to ":lib$JS")
-
-        val assemble = project.build(":lib:assemble", PLAIN_CONSOLE)
-        // The JS options changed, so the JS compilation runs again.
-        assemble.assertOpenApiBy("SharedApi.kt" to ":lib$COMMON_METADATA", "JvmApi.kt" to ":lib$JVM", "JsApi.kt" to ":lib$JS")
-        assemble.assertJvmNameBy("SharedApi.kt" to ":lib$JVM", "JvmApi.kt" to ":lib$JVM")
-    }
-
-    @Test
-    fun `included build compiles only the target that a consumer resolves`() {
-        val included = kmpProject(JVM_AND_JS_TARGETS) {
-            buildScript("group = \"sample.lib\"")
-            apiWatchdog { severityOfEveryCheck(WARNING) }
-            api("SharedApi", "commonMain")
-        }
-        val project = jvmProject {
-            apiWatchdog { suggestAbiValidation = false }
-            dependencies(implementation("sample.lib:the-project"))
-        }
-        included.rootDir.copyRecursively(project.file("components/lib"))
-        project.file("settings.gradle.kts").appendText("\nincludeBuild(\"components/lib\") { name = \"lib\" }\n")
-
-        val result = project.build("compileKotlin", PLAIN_CONSOLE)
-
-        result.assertTaskOutcome(":lib$COMMON_METADATA", null)
-        result.assertOpenApiBy("SharedApi.kt" to ":lib$JVM")
-        result.assertJvmNameBy("SharedApi.kt" to ":lib$JVM")
+        result.assertOpenApiBy("SharedApi.kt" to ":lib$COMMON_METADATA", "JvmApi.kt" to ":lib$JVM", "JsApi.kt" to ":lib$JS")
+        result.assertJvmNameBy("SharedApi.kt" to ":lib$JVM", "JvmApi.kt" to ":lib$JVM")
     }
 
     @Test
@@ -301,11 +206,6 @@ class SourceSetOwnershipBuildModesTest {
         }
     }
 
-    private fun WatchdogBuild.editSources() {
-        rootDir.walkTopDown().filter { it.isFile && it.extension == "kt" && "/src/" in it.invariantSeparatorsPath }
-            .forEach { it.appendText("\n// Edited.\n") }
-    }
-
     private fun ModuleSpec.api(name: String, sourceSet: String) {
         source(
             """
@@ -331,12 +231,12 @@ class SourceSetOwnershipBuildModesTest {
 private val OPEN_EXEMPTION = Regex(Regex.escape("@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)"))
 
 private const val EXEMPT_TASK = "exemptExistingApi"
+private const val REPORT_TASK = "generateApiWatchdogReport"
 private const val JVM = ":compileKotlinJvm"
 private const val JS = ":compileKotlinJs"
 private const val WASM = ":compileKotlinWasmJs"
 private const val COMMON_METADATA = ":compileCommonMainKotlinMetadata"
 private const val WEB_METADATA = ":compileWebMainKotlinMetadata"
-private const val LINUX = ":compileKotlinLinuxX64"
 private const val JVM_AND_JS_TARGETS = "jvm()\njs { nodejs() }"
 private const val JVM_JS_AND_WASM_TARGETS = "jvm()\njs { nodejs() }\nwasmJs { nodejs() }"
 

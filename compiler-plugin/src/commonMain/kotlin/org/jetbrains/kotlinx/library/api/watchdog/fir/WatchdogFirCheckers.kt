@@ -113,16 +113,13 @@ class WatchdogFirCheckers internal constructor(
         private val internalApiTypeExposureDisabled: List<ExemptingChecker> =
             listOf(internalApiTypeExposure).takeIf { allChecks && !publicTypeWithInternalApiEnabled }.orEmpty()
 
-        private val dependencyExposureChecker = dependencyExposure
-            ?.let { NonTransitiveDependencyChecker(session, it, sourceSetOwnership::transitiveDependenciesOf) }
-            ?.takeIf { enabled && !exemptingExistingApi }
-
         private val plainBasicDeclarationCheckers: Set<FirBasicDeclarationChecker> = basic.active + setOfNotNull(
             ExemptionExplanationChecker.declarationChecker
                 .takeIf { allChecks && !exemptingExistingApi },
             internalApiTypeExposure
                 .takeIf { allChecks && publicTypeWithInternalApiEnabled },
-            dependencyExposureChecker,
+            dependencyExposure?.let { NonTransitiveDependencyChecker(session, it) }
+                ?.takeIf { allChecks && !exemptingExistingApi },
         )
 
         private val functions = partition<FirFunctionChecker>(
@@ -194,8 +191,7 @@ class WatchdogFirCheckers internal constructor(
         )
 
         override val classCheckers: Set<FirClassChecker> = (classes.active + setOfNotNull(
-            EnclosingExemptionRedundancyChecker(enclosingExemptionProbes)
-                .takeIf { enabled },
+            EnclosingExemptionRedundancyChecker(enclosingExemptionProbes).takeIf { enabled },
         )).wrapped(classes.disabled)
 
         override val basicDeclarationCheckers: Set<FirBasicDeclarationChecker> = (plainBasicDeclarationCheckers + setOfNotNull(
@@ -217,7 +213,7 @@ class WatchdogFirCheckers internal constructor(
                 recorder = recorder,
                 scopeOf = sourceSetOwnership::scopeOf,
                 // A metadata compilation doesn't run these checkers.
-                platformOnly = { checker -> checker === dependencyExposureChecker || jvmOnly.any { it === checker } },
+                platformOnly = { checker -> jvmOnly.any { it === checker } },
             ).takeIf { allChecks },
         )).wrapped(basic.disabled + internalApiTypeExposureDisabled) + setOfNotNull(
             // The compilation that checks a parent source set doesn't see the `actual` declarations of this one.

@@ -33,14 +33,12 @@ public class Connection
   - A check that reports `expect` declarations, such as
     [Undocumented public API](../undocumented-public-api.md) or
     [Boolean parameters in public API](../boolean-parameter-public-api.md), decides from the `expect`
-    declaration. The compilation that reports the source set and the IDE report the exemption.
+    declaration. Every compilation and the IDE report the exemption.
   - A check that reports `actual` declarations, such as
     [Data classes in public API](../data-class-public-api.md) or
     [Mangled JVM names in public API](../java-interop/mangled-jvm-name-public-api.md), needs them. A
-    platform compilation reports the exemption when its own `actual` declaration doesn't need it. One
-    platform compilation of a build reports it, see
-    [Multiplatform projects](../../configuration.md#multiplatform-projects). The common compilation and
-    the IDE don't see `actual` declarations, so they don't report it.
+    platform compilation reports the exemption when its own `actual` declaration doesn't need it. The
+    common compilation and the IDE don't see `actual` declarations, so they don't report it.
 
   The copy of the exemption on an `actual` declaration isn't reported while the `expect` declaration
   has the exemption. After you remove the exemption from the `expect` declaration, the copy is an

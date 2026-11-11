@@ -20,9 +20,7 @@ collection mode, except test compilations:
 - A custom compilation whose name doesn't end with `Test`, only with the `-Xexplicit-api` compiler
   flag.
 
-A declaration that two compilations report gets one entry. See
-[Multiplatform projects](./configuration.md#multiplatform-projects) for more details about the
-compilation that reports a shared source set.
+A declaration that two compilations report gets one entry.
 [Collection mode](./existing-libs.md#collection-mode) lists what collection mode changes.
 
 ## Formats

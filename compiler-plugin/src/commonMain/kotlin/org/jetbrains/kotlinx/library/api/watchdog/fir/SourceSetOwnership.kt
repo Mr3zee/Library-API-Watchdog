@@ -19,7 +19,6 @@ internal enum class CheckScope {
 internal class SourceSetOwnership(
     private val checkedElsewhere: Set<String>,
     private val platformChecked: Set<String>,
-    private val transitiveDependencies: Map<String, Set<String>> = emptyMap(),
 ) {
     fun scopeOf(module: FirModuleData): CheckScope {
         if (checkedElsewhere.isEmpty() || !module.isCommon) return CheckScope.ALL
@@ -30,10 +29,6 @@ internal class SourceSetOwnership(
             else -> CheckScope.NONE
         }
     }
-
-    /** Null means the paths of the compilation. */
-    fun transitiveDependenciesOf(module: FirModuleData): Set<String>? =
-        if (module.isCommon) transitiveDependencies[module.sourceSetName] else null
 
     private val FirModuleData.sourceSetName: String get() = name.asString().removeSurrounding("<", ">")
 

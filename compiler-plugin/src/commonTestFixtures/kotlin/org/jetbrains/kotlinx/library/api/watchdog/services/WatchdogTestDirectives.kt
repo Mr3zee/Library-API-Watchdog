@@ -93,14 +93,6 @@ object WatchdogTestDirectives : SimpleDirectivesContainer() {
     val SOURCE_SETS_WITH_PLATFORM_CHECKS by stringDirective(
         description = "Common modules with the platform checks (sourceSetsWithPlatformChecks option)",
     )
-
-    /**
-     * `// SOURCE_SET_TRANSITIVE_DEPENDENCY_PATHS: common=nonTransitiveDependency.deps/shared`, one pair for
-     * each root. `common=` gives the module no roots.
-     */
-    val SOURCE_SET_TRANSITIVE_DEPENDENCY_PATHS by stringDirective(
-        description = "Module and root pairs relative to the test data directory (sourceSetTransitiveDependencyPaths option)",
-    )
 }
 
 class WatchdogOptionsConfigurator(testServices: TestServices) : EnvironmentConfigurator(testServices) {
@@ -172,14 +164,6 @@ class WatchdogOptionsConfigurator(testServices: TestServices) : EnvironmentConfi
                     absolutePath(root) to DependencyDeclaration(dependencyConfiguration, notation)
                 },
             )
-            val sourceSetRoots = module.directives[WatchdogTestDirectives.SOURCE_SET_TRANSITIVE_DEPENDENCY_PATHS]
-            if (sourceSetRoots.isNotEmpty()) {
-                configuration.put(
-                    WatchdogConfigurationKeys.SOURCE_SET_TRANSITIVE_DEPENDENCY_PATHS,
-                    sourceSetRoots.groupBy({ it.substringBefore('=') }) { it.substringAfter('=') }
-                        .mapValues { (_, roots) -> roots.filter(String::isNotEmpty).mapTo(linkedSetOf(), ::absolutePath) },
-                )
-            }
         }
 
         val checkedElsewhere = module.directives[WatchdogTestDirectives.SOURCE_SETS_CHECKED_ELSEWHERE]

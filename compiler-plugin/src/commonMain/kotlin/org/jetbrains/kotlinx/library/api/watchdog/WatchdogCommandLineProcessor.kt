@@ -67,9 +67,6 @@ object WatchdogConfigurationKeys {
 
     val SOURCE_SETS_WITH_PLATFORM_CHECKS: CompilerConfigurationKey<Set<String>> =
         CompilerConfigurationKey.create("watchdog source sets with platform checks")
-
-    val SOURCE_SET_TRANSITIVE_DEPENDENCY_PATHS: CompilerConfigurationKey<Map<String, Set<String>>> =
-        CompilerConfigurationKey.create("watchdog source set transitive dependency paths")
 }
 
 @Suppress("unused") // Instantiated reflectively by the dev-kit entry point.
@@ -92,7 +89,6 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             DEPENDENCY_DECLARATIONS_OPTION,
             SOURCE_SETS_CHECKED_ELSEWHERE_OPTION,
             SOURCE_SETS_WITH_PLATFORM_CHECKS_OPTION,
-            SOURCE_SET_TRANSITIVE_DEPENDENCY_PATHS_OPTION,
         )
 
     companion object {
@@ -237,26 +233,15 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
         val SOURCE_SETS_CHECKED_ELSEWHERE_OPTION: CliOption = sourceSetsOption(
             optionName = "sourceSetsCheckedElsewhere",
             description = "Parent source sets of a multiplatform compilation that another compilation " +
-                    "checks. This compilation doesn't report watchdog diagnostics on them, except " +
-                    "PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY and REDUNDANT_EXEMPTION on an expect declaration.",
+                    "checks. This compilation reports watchdog diagnostics on such a source set only when " +
+                    "sourceSetsWithPlatformChecks also lists it.",
         )
 
         val SOURCE_SETS_WITH_PLATFORM_CHECKS_OPTION: CliOption = sourceSetsOption(
             optionName = "sourceSetsWithPlatformChecks",
             description = "The subset of sourceSetsCheckedElsewhere that still gets the checks that a " +
-                    "metadata compilation can't run in this compilation: the Java interop checks, " +
-                    "PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY, and the REDUNDANT_EXEMPTION verdicts " +
-                    "that need the actual declarations.",
-        )
-
-        val SOURCE_SET_TRANSITIVE_DEPENDENCY_PATHS_OPTION: CliOption = CliOption(
-            optionName = "sourceSetTransitiveDependencyPaths",
-            valueDescription = "<source set>=<paths separated by the platform path separator>\\t...",
-            description = "Tab-separated entries of a parent source set and the dependency paths that every " +
-                    "target compiling it publishes transitively. PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY " +
-                    "uses them for the source set instead of transitiveDependencyPaths.",
-            required = false,
-            allowMultipleOccurrences = false,
+                    "metadata compilation can't run in this compilation: the Java interop checks and the " +
+                    "REDUNDANT_EXEMPTION verdicts that need the actual declarations.",
         )
 
         private fun sourceSetsOption(optionName: String, description: String): CliOption = CliOption(
@@ -341,12 +326,6 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             SOURCE_SETS_WITH_PLATFORM_CHECKS_OPTION.optionName -> {
                 configuration.put(WatchdogConfigurationKeys.SOURCE_SETS_WITH_PLATFORM_CHECKS, parseSourceSets(value))
             }
-            SOURCE_SET_TRANSITIVE_DEPENDENCY_PATHS_OPTION.optionName -> {
-                configuration.put(
-                    WatchdogConfigurationKeys.SOURCE_SET_TRANSITIVE_DEPENDENCY_PATHS,
-                    parseSourceSetPaths(value),
-                )
-            }
             else -> error("Unexpected config option: '${option.optionName}'")
         }
     }
@@ -356,17 +335,6 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
 
     private fun parseSourceSets(value: String): Set<String> =
         value.split(':').filterTo(linkedSetOf(), String::isNotBlank)
-
-    private fun parseSourceSetPaths(value: String): Map<String, Set<String>> =
-        value.split('\t').filter(String::isNotBlank).associate { entry ->
-            if ('=' !in entry) {
-                throw CliOptionProcessingException(
-                    "Invalid value for watchdog option '${SOURCE_SET_TRANSITIVE_DEPENDENCY_PATHS_OPTION.optionName}': " +
-                            "expected tab-separated <source set>=<paths> entries.",
-                )
-            }
-            entry.substringBefore('=') to parsePaths(entry.substringAfter('='))
-        }
 
     private fun parseDeclarations(value: String): Map<String, DependencyDeclaration> {
         if (value.isEmpty()) return emptyMap()

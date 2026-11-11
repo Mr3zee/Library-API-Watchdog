@@ -59,8 +59,6 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
                         configuration[WatchdogConfigurationKeys.SOURCE_SETS_CHECKED_ELSEWHERE, emptySet()],
                     platformChecked =
                         configuration[WatchdogConfigurationKeys.SOURCE_SETS_WITH_PLATFORM_CHECKS, emptySet()],
-                    transitiveDependencies =
-                        configuration[WatchdogConfigurationKeys.SOURCE_SET_TRANSITIVE_DEPENDENCY_PATHS, emptyMap()],
                 ),
             ),
         )

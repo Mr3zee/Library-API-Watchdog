@@ -37,10 +37,7 @@ class ExpectExemptionOwnershipTest {
             """,
         )
 
-        project.build("assemble", PLAIN_CONSOLE).assertRedundantBy("Shared.kt" to COMMON_METADATA)
-        project.build("compileKotlinJvm", "compileKotlinJs", "--rerun-tasks", PLAIN_CONSOLE)
-            .assertRedundantBy("Shared.kt" to JVM)
-        project.build("compileKotlinJs", "--rerun-tasks", PLAIN_CONSOLE).assertRedundantBy("Shared.kt" to JS)
+        project.build(REPORT_TASK, PLAIN_CONSOLE).assertRedundantBy("Shared.kt" to COMMON_METADATA)
     }
 
     @Test
@@ -72,13 +69,7 @@ class ExpectExemptionOwnershipTest {
             """,
         )
 
-        val assemble = project.build("assemble", PLAIN_CONSOLE)
-        assemble.assertRedundantBy("Shared.kt" to JVM, "Shared.kt" to JVM)
-
-        project.build("compileKotlinJs", "compileKotlinJvm", "--rerun-tasks", PLAIN_CONSOLE)
-            .assertRedundantBy("Shared.kt" to JVM, "Shared.kt" to JVM)
-        // The JS compilation doesn't run the Java interop checks.
-        project.build("compileKotlinJs", "--rerun-tasks", PLAIN_CONSOLE).assertRedundantBy("Shared.kt" to JS)
+        project.build(REPORT_TASK, PLAIN_CONSOLE).assertRedundantBy("Shared.kt" to JVM, "Shared.kt" to JVM)
     }
 
     @Test
@@ -103,8 +94,7 @@ class ExpectExemptionOwnershipTest {
         )
 
         // Each platform compilation judges by its own `actual`.
-        project.build("assemble", PLAIN_CONSOLE).assertRedundantBy("Shared.kt" to JVM)
-        project.build("compileKotlinJs", "--rerun-tasks", PLAIN_CONSOLE).assertNotReported(REDUNDANT_EXEMPTION, DATA_CLASS_PUBLIC_API)
+        project.build(REPORT_TASK, PLAIN_CONSOLE).assertRedundantBy("Shared.kt" to JVM)
     }
 
     @Test
@@ -128,10 +118,7 @@ class ExpectExemptionOwnershipTest {
             """,
         )
 
-        project.build("assemble", PLAIN_CONSOLE).assertNotReported(REDUNDANT_EXEMPTION, DATA_CLASS_PUBLIC_API)
-        project.build("compileKotlinJvm", "compileKotlinJs", "--rerun-tasks", PLAIN_CONSOLE)
-            .assertNotReported(REDUNDANT_EXEMPTION, DATA_CLASS_PUBLIC_API)
-        project.build("compileKotlinJs", "--rerun-tasks", PLAIN_CONSOLE).assertRedundantBy("Shared.kt" to JS)
+        project.build(REPORT_TASK, PLAIN_CONSOLE).assertNotReported(REDUNDANT_EXEMPTION, DATA_CLASS_PUBLIC_API)
     }
 
     @Test
@@ -165,9 +152,7 @@ class ExpectExemptionOwnershipTest {
             """,
         )
 
-        project.build("assemble", PLAIN_CONSOLE).assertRedundantBy("Shared.kt" to JVM)
-        project.build("compileKotlinJvm", "compileKotlinJs", "--rerun-tasks", PLAIN_CONSOLE)
-            .assertRedundantBy("Shared.kt" to JVM)
+        project.build(REPORT_TASK, PLAIN_CONSOLE).assertRedundantBy("Shared.kt" to JVM)
     }
 
     @Test
@@ -203,10 +188,7 @@ class ExpectExemptionOwnershipTest {
         )
 
         // The metadata compilation doesn't run the Java interop checks.
-        project.build("assemble", PLAIN_CONSOLE).assertRedundantBy("Shared.kt" to JVM, "Shared.kt" to JVM)
-        project.build("compileKotlinJvm", "compileKotlinJs", "--rerun-tasks", PLAIN_CONSOLE)
-            .assertRedundantBy("Shared.kt" to JVM, "Shared.kt" to JVM)
-        project.build("compileKotlinJs", "--rerun-tasks", PLAIN_CONSOLE).assertNotReported(REDUNDANT_EXEMPTION)
+        project.build(REPORT_TASK, PLAIN_CONSOLE).assertRedundantBy("Shared.kt" to JVM, "Shared.kt" to JVM)
     }
 
     @Test
@@ -238,8 +220,7 @@ class ExpectExemptionOwnershipTest {
         val assemble = project.build("assemble", PLAIN_CONSOLE)
         assemble.assertTaskOutcome(WEB_METADATA, SUCCESS)
         assemble.assertNotReported(REDUNDANT_EXEMPTION, DATA_CLASS_PUBLIC_API)
-        project.build("compileKotlinJs", "compileKotlinWasmJs", "--rerun-tasks", PLAIN_CONSOLE)
-            .assertNotReported(REDUNDANT_EXEMPTION, DATA_CLASS_PUBLIC_API)
+        project.build(REPORT_TASK, PLAIN_CONSOLE).assertNotReported(REDUNDANT_EXEMPTION, DATA_CLASS_PUBLIC_API)
     }
 
     @Test
@@ -393,7 +374,6 @@ private val SOURCE_PATHS = listOf(
 )
 
 private const val JVM = ":compileKotlinJvm"
-private const val JS = ":compileKotlinJs"
 private const val COMMON_METADATA = ":compileCommonMainKotlinMetadata"
 private const val WEB_METADATA = ":compileWebMainKotlinMetadata"
 private const val JVM_AND_JS_TARGETS = "jvm()\njs { nodejs() }"

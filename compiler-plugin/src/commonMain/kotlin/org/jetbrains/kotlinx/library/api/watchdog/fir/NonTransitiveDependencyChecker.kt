@@ -3,15 +3,12 @@ package org.jetbrains.kotlinx.library.api.watchdog.fir
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.concurrent.ConcurrentHashMap
 import java.util.jar.JarFile
 import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
-import org.jetbrains.kotlin.fir.FirModuleData
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
-import org.jetbrains.kotlin.fir.caches.FirCache
 import org.jetbrains.kotlin.fir.caches.createCache
 import org.jetbrains.kotlin.fir.caches.firCachesFactory
 import org.jetbrains.kotlin.fir.caches.getValue
@@ -41,11 +38,10 @@ internal data class NonTransitiveType(val classId: ClassId, val origin: Path)
 internal class NonTransitiveDependencyChecker(
     session: FirSession,
     configuration: DependencyExposureCheckConfiguration,
-    sourceSetDependencies: (FirModuleData) -> Set<String>? = { null },
 ) : PublicSignatureTypeChecker<NonTransitiveType>(exemption = WatchdogClassIds.IntentionallyNonTransitiveDependency) {
     override val enclosingClassExemptions: Set<ClassId> = setOf(WatchdogClassIds.IntentionallyNonTransitiveDependency)
 
-    private val dependencyIndex = DependencyExposureIndex(session, configuration, sourceSetDependencies)
+    private val dependencyIndex = DependencyExposureIndex(session, configuration)
     private val dependencyDeclarations = configuration.dependencyDeclarations
         .mapKeys { (path, _) -> normalizedPath(path) }
 
@@ -89,15 +85,12 @@ internal class NonTransitiveDependencyChecker(
 }
 
 private class DependencyExposureIndex(
-    private val session: FirSession,
+    session: FirSession,
     configuration: DependencyExposureCheckConfiguration,
-    private val sourceSetDependencies: (FirModuleData) -> Set<String>?,
 ) {
     private val compileRoots = configuration.compileDependencies.mapTo(linkedSetOf(), ::normalizedPath)
     private val transitiveRoots = configuration.transitiveDependencies.mapTo(linkedSetOf(), ::normalizedPath)
-    private val classification = classificationCache(transitiveRoots)
-
-    private val sourceSetIndexes = ConcurrentHashMap<Set<String>, Pair<Set<Path>, FirCache<ClassId, Path?, Nothing?>>>()
+    private val classification = session.firCachesFactory.createCache(::classifyByContents)
 
     /** The compile classpath root that holds [symbol], or null when consumers get the class. */
     fun nonTransitiveOrigin(symbol: FirClassSymbol<*>, context: CheckerContext): Path? {
@@ -112,18 +105,9 @@ private class DependencyExposureIndex(
             return null
         }
 
-        // The module of the file, not of the session, because the `expect` redundancy checker of the leaf
-        // session probes every fragment.
-        val sourceSetIndex = context.containingFileSymbol?.moduleData?.let(sourceSetDependencies)?.let { paths ->
-            sourceSetIndexes.getOrPut(paths) {
-                val roots = paths.mapTo(linkedSetOf(), ::normalizedPath)
-                roots to classificationCache(roots)
-            }
-        }
-        val moduleTransitiveRoots = sourceSetIndex?.first ?: transitiveRoots
         val origin = symbol.dependencyPath()
         if (origin != null) {
-            if (moduleTransitiveRoots.any { it.containsOrigin(origin) }) {
+            if (transitiveRoots.any { it.containsOrigin(origin) }) {
                 return null
             }
             compileRoots.firstOrNull { it.containsOrigin(origin) }?.let { return it }
@@ -131,14 +115,11 @@ private class DependencyExposureIndex(
 
         // A project artifact is a jar in one configuration and a classes directory in another,
         // and a Java class doesn't have a Kotlin container source.
-        return (sourceSetIndex?.second ?: classification).getValue(symbol.classId)
+        return classification.getValue(symbol.classId)
     }
 
-    private fun classificationCache(transitiveRoots: Set<Path>): FirCache<ClassId, Path?, Nothing?> =
-        session.firCachesFactory.createCache { classId: ClassId -> classifyByContents(classId, transitiveRoots) }
-
     // JDK and compiler built-ins aren't Gradle dependencies, so no root holds them.
-    private fun classifyByContents(classId: ClassId, transitiveRoots: Set<Path>): Path? =
+    private fun classifyByContents(classId: ClassId): Path? =
         if (transitiveRoots.any { it.containsClass(classId) }) {
             null
         } else {
