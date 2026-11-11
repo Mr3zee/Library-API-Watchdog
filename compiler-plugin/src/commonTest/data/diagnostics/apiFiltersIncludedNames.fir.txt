@@ -1,0 +1,150 @@
+FILE: api.kt
+    package test.api
+
+    public final class InIncludedPackage : R|kotlin/Any| {
+        public constructor(): R|test/api/InIncludedPackage| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun member(): R|kotlin/Unit| {
+        }
+
+        public final class Nested : R|kotlin/Any| {
+            public constructor(): R|test/api/InIncludedPackage.Nested| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+    public final fun inIncludedPackage(): R|kotlin/Unit| {
+    }
+    public final fun usesNotIncluded(value: R|test/other/NotIncluded|): R|kotlin/Unit| {
+    }
+FILE: internal.kt
+    package test.api.internal
+
+    public open class ExcludedInIncludedPackage : R|kotlin/Any| {
+        public constructor(): R|test/api/internal/ExcludedInIncludedPackage| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun excludedInIncludedPackage(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+FILE: other.kt
+    package test.other
+
+    public final class Included : R|kotlin/Any| {
+        public constructor(): R|test/other/Included| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun member(): R|kotlin/Unit| {
+        }
+
+        public final class Nested : R|kotlin/Any| {
+            public constructor(): R|test/other/Included.Nested| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+        public open class Excluded : R|kotlin/Any| {
+            public constructor(): R|test/other/Included.Excluded| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+    public open class NotIncluded : R|kotlin/Any| {
+        public constructor(): R|test/other/NotIncluded| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun member(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    public open class Shell : R|kotlin/Any| {
+        public constructor(flag: R|kotlin/Boolean|): R|test/other/Shell| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun member(): R|kotlin/Unit| {
+        }
+
+        public final fun otherMember(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+        public final val property: R|kotlin/collections/MutableList<kotlin/Int>| = R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+            public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+
+        public final val otherProperty: R|kotlin/collections/MutableList<kotlin/Int>| = R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+            public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+
+        public open class Nested : R|kotlin/Any| {
+            public constructor(): R|test/other/Shell.Nested| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+    public final fun topLevel(): R|kotlin/Unit| {
+    }
+    public final fun otherTopLevel(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public open class Outer : R|kotlin/Any| {
+        public constructor(): R|test/other/Outer| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final class Inner : R|kotlin/Any| {
+            public constructor(): R|test/other/Outer.Inner| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun member(): R|kotlin/Unit| {
+            }
+
+        }
+
+        public final fun member(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    public final enum class Levels : R|kotlin/Enum<test/other/Levels>| {
+        private constructor(): R|test/other/Levels| {
+            super<R|kotlin/Enum<test/other/Levels>|>()
+        }
+
+        public final static enum entry HIGH: R|test/other/Levels|
+        public final static enum entry LOW: R|test/other/Levels|
+        public final static fun values(): R|kotlin/Array<test/other/Levels>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|test/other/Levels| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<test/other/Levels>|
+            public static get(): R|kotlin/enums/EnumEntries<test/other/Levels>|
+
+    }
+    public final enum class OtherLevels : R|kotlin/Enum<test/other/OtherLevels>| {
+        private constructor(): R|test/other/OtherLevels| {
+            super<R|kotlin/Enum<test/other/OtherLevels>|>()
+        }
+
+        public final static enum entry HIGH: R|test/other/OtherLevels|
+        public final static fun values(): R|kotlin/Array<test/other/OtherLevels>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|test/other/OtherLevels| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<test/other/OtherLevels>|
+            public static get(): R|kotlin/enums/EnumEntries<test/other/OtherLevels>|
+
+    }

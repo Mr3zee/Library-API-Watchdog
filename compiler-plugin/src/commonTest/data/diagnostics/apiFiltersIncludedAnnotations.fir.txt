@@ -1,0 +1,162 @@
+FILE: markers.kt
+    package test.markers
+
+    @R|kotlin/annotation/Retention|(value = Q|kotlin/annotation/AnnotationRetention|.R|kotlin/annotation/AnnotationRetention.BINARY| [evaluated = Q|kotlin/annotation/AnnotationRetention|.R|kotlin/annotation/AnnotationRetention.BINARY|]) @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.PROPERTY|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.PROPERTY_GETTER|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CONSTRUCTOR|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FILE|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.PROPERTY|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.PROPERTY_GETTER|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CONSTRUCTOR|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FILE|)]) public final annotation class PublicApi : R|kotlin/Annotation| {
+        public constructor(): R|test/markers/PublicApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final annotation class VeryStable : R|kotlin/Annotation| {
+        public constructor(): R|test/markers/VeryStable| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final annotation class Unrelated : R|kotlin/Annotation| {
+        public constructor(): R|test/markers/Unrelated| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final object Markers : R|kotlin/Any| {
+        private constructor(): R|test/markers/Markers| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final annotation class Nested : R|kotlin/Annotation| {
+            public constructor(): R|test/markers/Markers.Nested| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+    public final typealias Api = R|test/markers/PublicApi|
+FILE: api.kt
+    package test.api
+
+    @R|test/markers/PublicApi|() public final class Annotated : R|kotlin/Any| {
+        public constructor(): R|test/api/Annotated| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun member(): R|kotlin/Unit| {
+        }
+
+        public final class Nested : R|kotlin/Any| {
+            public constructor(): R|test/api/Annotated.Nested| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+    public open class NotAnnotated : R|kotlin/Any| {
+        public constructor(): R|test/api/NotAnnotated| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun member(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    @R|test/markers/Unrelated|() public open class WithUnrelatedAnnotation : R|kotlin/Any| {
+        public constructor(): R|test/api/WithUnrelatedAnnotation| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|test/markers/VeryStable|() public final class WithWildcardAnnotation : R|kotlin/Any| {
+        public constructor(): R|test/api/WithWildcardAnnotation| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|test/markers/Markers.Nested|() public final class WithNestedAnnotation : R|kotlin/Any| {
+        public constructor(): R|test/api/WithNestedAnnotation| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|{test/markers/Api=} test/markers/PublicApi|() public final class WithAliasedAnnotation : R|kotlin/Any| {
+        public constructor(): R|test/api/WithAliasedAnnotation| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final class ByName : R|kotlin/Any| {
+        public constructor(): R|test/api/ByName| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public open class Shell : R|kotlin/Any| {
+        public constructor(): R|test/api/Shell| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|test/markers/PublicApi|() public final fun member(): R|kotlin/Unit| {
+        }
+
+        public final fun otherMember(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+        public open class Nested : R|kotlin/Any| {
+            public constructor(): R|test/api/Shell.Nested| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+    public final class WithAnnotatedConstructor : R|kotlin/Any| {
+        @R|test/markers/PublicApi|() public constructor(items: R|kotlin/collections/MutableList<kotlin/Int>|): R|test/api/WithAnnotatedConstructor| {
+            super<R|kotlin/Any|>()
+        }
+
+        public constructor(items: R|kotlin/collections/MutableList<kotlin/Int>|, count: R|kotlin/Int|): R|test/api/WithAnnotatedConstructor| {
+            this<R|test/api/WithAnnotatedConstructor|>(R|<local>/items|)
+        }
+
+    }
+    public open class WithAnnotatedGetter : R|kotlin/Any| {
+        public constructor(): R|test/api/WithAnnotatedGetter| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val items: R|kotlin/collections/MutableList<kotlin/Int>| = R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+            @PROPERTY_GETTER:R|test/markers/PublicApi|() public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+
+        public final val otherItems: R|kotlin/collections/MutableList<kotlin/Int>| = R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+            public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+
+    }
+    @R|test/markers/PublicApi|() public final fun annotatedFunction(): R|kotlin/Unit| {
+    }
+    public final fun otherFunction(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    @R|test/markers/PublicApi|() public final val annotatedProperty: R|kotlin/collections/MutableList<kotlin/Int>| = R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+        public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+    public final val otherProperty: R|kotlin/collections/MutableList<kotlin/Int>| = R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+        public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+    @R|test/markers/PublicApi|() public final fun mixed(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun mixed(y: R|kotlin/Int|, x: R|kotlin/Int|, scale: R|kotlin/Double|): R|kotlin/Unit| {
+    }
+    @R|test/markers/PublicApi|() public final fun both(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    @R|test/markers/PublicApi|() public final fun both(y: R|kotlin/Int|, x: R|kotlin/Int|, scale: R|kotlin/Double|): R|kotlin/Unit| {
+    }
+FILE: file.kt
+    @FILE:R|test/markers/PublicApi|()
+    package test.api
+
+    public final class InAnnotatedFile : R|kotlin/Any| {
+        public constructor(): R|test/api/InAnnotatedFile| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun inAnnotatedFile(): R|kotlin/Unit| {
+    }

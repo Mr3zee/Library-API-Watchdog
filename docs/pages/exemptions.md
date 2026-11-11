@@ -1,12 +1,13 @@
 # Exemptions and internal API
 
-Four mechanisms exclude a declaration from a check while the check stays enabled for the project:
+Five mechanisms exclude a declaration from a check while the check stays enabled for the project:
 
 | Mechanism                                           | Excludes                                              | From                       |
 |-----------------------------------------------------|-------------------------------------------------------|----------------------------|
 | [Exemption annotation](#exemption-annotations)      | One declaration                                       | One check                  |
 | [Dependency exemption](#dependency-exemptions)      | Every use of a dependency's types in the module       | One check                  |
 | [Internal API annotation](#internal-api-annotations) | One declaration and the declarations nested in it     | Every public API check     |
+| [API filter](#api-filters)                          | Every declaration that the name and annotation rules leave out | Every public API check |
 | [Annotation ignore rule](#annotation-ignore-rules)  | Every declaration with a given annotation             | One configurable check     |
 
 ## Exemption annotations
@@ -173,12 +174,14 @@ nested in it. Four checks still run there, because they check every visibility:
 The marker annotation class itself is public API and stays watched.
 
 A public declaration without the annotation must not use an internal API type in its signature.
-[Public types marked as internal API](./checks/special/public-type-with-internal-api.md) reports
-the declaration as an error.
+[Internal API types in public API](./checks/special/public-type-with-internal-api.md) reports
+the declaration as an error. A class is an internal API type when the class or an enclosing class
+has the annotation.
 
 An annotation class from a dependency can't carry `@InternalAnnotationMarker`. List its fully
 qualified name in `internalApiAnnotations` instead. The plugin then treats it like a marked
-annotation:
+annotation. The name can have the
+[wildcards of the ABI validation filters](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html#configure-filters):
 
 ```kotlin build.gradle.kts
 apiWatchdog {
@@ -187,6 +190,55 @@ apiWatchdog {
 ```
 
 See [Without Gradle](./configuration.md#without-gradle) for more details about the compiler option.
+
+## API filters
+
+The watchdog respects filters set by [ABI validation](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html) of the Kotlin Gradle plugin or the
+[Binary Compatibility Validator](https://github.com/Kotlin/binary-compatibility-validator).
+
+When both tools validate the project, the watchdog copies the filters of the ABI validation of the
+Kotlin Gradle plugin only.
+
+The tools define the filter rules and the name format:
+
+- [Filters of the ABI validation](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html#configure-filters)
+- [Filters of the Binary Compatibility Validator](https://github.com/Kotlin/binary-compatibility-validator#optional-parameters)
+
+The filters have these effects on the checks:
+
+- An exclusion annotation is an [internal API annotation](#internal-api-annotations).
+- The four checks that run on every visibility don't use the filters. See
+  [Internal API annotations](#internal-api-annotations) for more details about these checks.
+- [Internal API types in public API](./checks/special/public-type-with-internal-api.md) reports a
+  checked declaration that exposes an excluded type.
+- An exclusion annotation on a file removes the classes of the file from the checks, but it doesn't
+  make them excluded types: the check doesn't report a declaration that exposes such a class. To
+  make a class an excluded type, put the annotation on the class itself, or use a name rule.
+- [Redundant exemptions](./checks/special/redundant-exemption.md) reports an `@Intentionally*`
+  annotation on a declaration that the filters remove from the checks.
+
+### Differences from the ABI dump
+
+The watchdog checks Kotlin declarations, and the validation tools read class files and klibs.
+So some rules have another effect in the watchdog:
+
+- A rule on a class also applies to its nested classes. The validation tools match each class by
+  itself.
+- The watchdog applies a name rule for a function, a property, or an enum entry on every target.
+  In a JVM dump, such a rule has no effect, because the validation tools match only class names
+  there.
+- An annotation on a file applies to every declaration of the file, also to its classes. In a JVM
+  dump it applies only to the top-level functions and properties.
+- An inclusion annotation on a property accessor (`@get:`, `@set:`) includes the property. An
+  exclusion annotation on an accessor doesn't exclude the property. The validation tools apply both
+  to the accessor only.
+- The validation tools don't read an annotation with `SOURCE` retention. The watchdog does.
+- The Binary Compatibility Validator plugin uses `publicPackages`, `publicClasses`, and
+  `publicMarkers` only for a JVM dump. The watchdog uses them for every target.
+- The Binary Compatibility Validator plugin doesn't validate a project of `ignoredProjects` or a
+  project with `validationDisabled`. The watchdog still checks such a project, without the
+  filters of the plugin. To turn the watchdog off for the project, set
+  `apiWatchdog { enabled = false }`. The watchdog doesn't read the `klib` settings of the plugin.
 
 ## Annotation ignore rules
 

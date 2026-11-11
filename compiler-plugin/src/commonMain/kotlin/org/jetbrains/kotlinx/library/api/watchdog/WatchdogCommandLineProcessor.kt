@@ -21,9 +21,18 @@ object WatchdogConfigurationKeys {
     val ANNOTATION_IGNORE_RULES: CompilerConfigurationKey<Map<String, Set<AnnotationIgnoreRule>>> =
         CompilerConfigurationKey.create("watchdog annotation ignore rules")
 
-    /** FQ names of annotation classes that mark internal API without `@InternalAnnotationMarker`. */
+    /** Name patterns of annotation classes that mark internal API without `@InternalAnnotationMarker`. */
     val INTERNAL_API_ANNOTATIONS: CompilerConfigurationKey<Set<String>> =
         CompilerConfigurationKey.create("watchdog internal API annotations")
+
+    val EXCLUDED_NAMES: CompilerConfigurationKey<Set<String>> =
+        CompilerConfigurationKey.create("watchdog excluded names")
+
+    val INCLUDED_NAMES: CompilerConfigurationKey<Set<String>> =
+        CompilerConfigurationKey.create("watchdog included names")
+
+    val INCLUDED_ANNOTATIONS: CompilerConfigurationKey<Set<String>> =
+        CompilerConfigurationKey.create("watchdog included annotations")
 
     /** @see org.jetbrains.kotlinx.library.api.watchdog.fir.WatchdogDiagnosticsRecorder */
     val DIAGNOSTICS_OUTPUT_FILE: CompilerConfigurationKey<String> =
@@ -61,6 +70,9 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
             DIAGNOSTIC_SEVERITY_OPTION,
             IGNORE_WHEN_ANNOTATED_OPTION,
             INTERNAL_API_ANNOTATION_OPTION,
+            EXCLUDED_NAME_OPTION,
+            INCLUDED_NAME_OPTION,
+            INCLUDED_ANNOTATION_OPTION,
             PUBLIC_TYPE_WITH_INTERNAL_API_OPTION,
             EXEMPTING_EXISTING_API_OPTION,
             REPORT_UNDOCUMENTED_CLASS_PROPERTIES_OPTION,
@@ -72,6 +84,10 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
         )
 
     companion object {
+        private const val NAME_PATTERN_DESCRIPTION =
+            "The value is a fully qualified name or a pattern: '**' matches any characters, " +
+                    "'*' matches any characters except '.', and '?' matches one character."
+
         val DIAGNOSTIC_SEVERITY_OPTION: CliOption = CliOption(
             optionName = "diagnosticSeverity",
             valueDescription = "<diagnostic name>:error|warning|none",
@@ -94,10 +110,45 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
 
         val INTERNAL_API_ANNOTATION_OPTION: CliOption = CliOption(
             optionName = "internalApiAnnotation",
-            valueDescription = "<annotation fully qualified name>",
+            valueDescription = "<annotation name pattern>",
             description = "Treat a declaration with the annotation as internal API, as if the " +
                     "annotation class had @InternalAnnotationMarker. " +
-                    "For annotations that the library can't mark itself.",
+                    "For annotations that the library can't mark itself. " +
+                    NAME_PATTERN_DESCRIPTION,
+            required = false,
+            allowMultipleOccurrences = true,
+        )
+
+        val EXCLUDED_NAME_OPTION: CliOption = CliOption(
+            optionName = "excludedName",
+            valueDescription = "<declaration name pattern>",
+            description = "Don't check a declaration with the name or the declarations nested in it. " +
+                    "PUBLIC_TYPE_WITH_INTERNAL_API reports a checked declaration that exposes a type " +
+                    "with the name. A name is fully qualified and has '.' between all parts, such as " +
+                    "'com.example.Container.Value' or 'com.example.topLevelFunction'. " +
+                    NAME_PATTERN_DESCRIPTION,
+            required = false,
+            allowMultipleOccurrences = true,
+        )
+
+        val INCLUDED_NAME_OPTION: CliOption = CliOption(
+            optionName = "includedName",
+            valueDescription = "<declaration name pattern>",
+            description = "Check only a declaration with the name, the declarations nested in it, and a " +
+                    "class with a function, property, or enum entry of that name, without its other " +
+                    "members. The includedAnnotation option adds declarations. The name format is the " +
+                    "same as in excludedName, and excludedName has priority.",
+            required = false,
+            allowMultipleOccurrences = true,
+        )
+
+        val INCLUDED_ANNOTATION_OPTION: CliOption = CliOption(
+            optionName = "includedAnnotation",
+            valueDescription = "<annotation name pattern>",
+            description = "Check only a declaration with the annotation, the declarations nested in it, " +
+                    "and a class with a function, property, enum entry, or constructor that has the " +
+                    "annotation, without its other members. The includedName option adds declarations. " +
+                    NAME_PATTERN_DESCRIPTION,
             required = false,
             allowMultipleOccurrences = true,
         )
@@ -188,7 +239,16 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
                 processAnnotationIgnoreRule(value, configuration)
             }
             INTERNAL_API_ANNOTATION_OPTION.optionName -> {
-                processInternalApiAnnotation(value, configuration)
+                processNamePattern(option, value, WatchdogConfigurationKeys.INTERNAL_API_ANNOTATIONS, configuration)
+            }
+            EXCLUDED_NAME_OPTION.optionName -> {
+                processNamePattern(option, value, WatchdogConfigurationKeys.EXCLUDED_NAMES, configuration)
+            }
+            INCLUDED_NAME_OPTION.optionName -> {
+                processNamePattern(option, value, WatchdogConfigurationKeys.INCLUDED_NAMES, configuration)
+            }
+            INCLUDED_ANNOTATION_OPTION.optionName -> {
+                processNamePattern(option, value, WatchdogConfigurationKeys.INCLUDED_ANNOTATIONS, configuration)
             }
             DIAGNOSTICS_OUTPUT_FILE_OPTION.optionName -> {
                 // The Gradle plugin passes a blank value outside collection.
@@ -281,19 +341,23 @@ internal class WatchdogCommandLineProcessor : DevKitCLP {
         configuration.put(key, severities)
     }
 
-    private fun processInternalApiAnnotation(value: String, configuration: CompilerConfiguration) {
-        val annotationName = value.trim()
-        if (annotationName.isEmpty() || annotationName.any { it.isWhitespace() || it == ':' }) {
+    private fun processNamePattern(
+        option: AbstractCliOption,
+        value: String,
+        key: CompilerConfigurationKey<Set<String>>,
+        configuration: CompilerConfiguration,
+    ) {
+        val pattern = value.trim()
+        if (pattern.isEmpty() || pattern.any { it.isWhitespace() || it == ':' }) {
             throw CliOptionProcessingException(
-                "Invalid value '$value' for watchdog option '${INTERNAL_API_ANNOTATION_OPTION.optionName}': " +
-                        "expected a fully qualified annotation class name.",
+                "Invalid value '$value' for watchdog option '${option.optionName}': " +
+                        "expected a fully qualified name or a name pattern without whitespace and ':'.",
             )
         }
 
-        val key = WatchdogConfigurationKeys.INTERNAL_API_ANNOTATIONS
-        val annotations = LinkedHashSet(configuration[key, emptySet()])
-        annotations.add(annotationName)
-        configuration.put(key, annotations)
+        val patterns = LinkedHashSet(configuration[key, emptySet()])
+        patterns.add(pattern)
+        configuration.put(key, patterns)
     }
 
     private fun processAnnotationIgnoreRule(value: String, configuration: CompilerConfiguration) {

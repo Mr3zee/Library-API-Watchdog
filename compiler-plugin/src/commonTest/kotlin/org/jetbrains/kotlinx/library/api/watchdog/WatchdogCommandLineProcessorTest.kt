@@ -137,35 +137,52 @@ class WatchdogCommandLineProcessorTest {
     }
 
     @Test
-    fun `invalid internal API annotations preserve existing annotations`() {
-        val option = WatchdogCommandLineProcessor.INTERNAL_API_ANNOTATION_OPTION
-        process(option, "com.example.InternalApi")
+    fun `invalid name patterns preserve existing patterns`() {
+        for ((option, key) in namePatternOptions()) {
+            process(option, "com.example.InternalApi")
 
-        for (value in listOf("", " \t", "com.example.Internal Api", "com.example.\tInternalApi", "com.example:InternalApi")) {
-            assertInvalid(
-                option,
-                value,
-                "Invalid value '$value' for watchdog option 'internalApiAnnotation': " +
-                        "expected a fully qualified annotation class name.",
-            )
-            assertEquals(setOf("com.example.InternalApi"), configuration[WatchdogConfigurationKeys.INTERNAL_API_ANNOTATIONS])
+            for (value in listOf("", " \t", "com.example.Internal Api", "com.example.\tInternalApi", "com.example:InternalApi")) {
+                assertInvalid(
+                    option,
+                    value,
+                    "Invalid value '$value' for watchdog option '${option.optionName}': " +
+                            "expected a fully qualified name or a name pattern without whitespace and ':'.",
+                )
+                assertEquals(setOf("com.example.InternalApi"), configuration[key])
+            }
         }
     }
 
     @Test
-    fun `internal API annotations trim accumulate and deduplicate`() {
-        val option = WatchdogCommandLineProcessor.INTERNAL_API_ANNOTATION_OPTION
-        process(option, " com.example.InternalApi\t")
-        val original = configuration[WatchdogConfigurationKeys.INTERNAL_API_ANNOTATIONS]
-        process(option, "com.example.OtherInternalApi")
-        process(option, "com.example.InternalApi")
+    fun `name patterns trim accumulate and deduplicate`() {
+        for ((option, key) in namePatternOptions()) {
+            process(option, " com.example.InternalApi\t")
+            val original = configuration[key]
+            process(option, "com.example.**")
+            process(option, "com.example.InternalApi")
+            process(option, "com.*.Internal?")
 
-        assertEquals(setOf("com.example.InternalApi"), original)
-        assertEquals(
-            setOf("com.example.InternalApi", "com.example.OtherInternalApi"),
-            configuration[WatchdogConfigurationKeys.INTERNAL_API_ANNOTATIONS],
-        )
+            assertEquals(setOf("com.example.InternalApi"), original)
+            assertEquals(setOf("com.example.InternalApi", "com.example.**", "com.*.Internal?"), configuration[key])
+        }
     }
+
+    @Test
+    fun `each name pattern option has its own key`() {
+        val options = namePatternOptions()
+        options.forEachIndexed { index, (option, _) -> process(option, "com.example.Name$index") }
+
+        options.forEachIndexed { index, (_, key) ->
+            assertEquals(setOf("com.example.Name$index"), configuration[key])
+        }
+    }
+
+    private fun namePatternOptions() = listOf(
+        WatchdogCommandLineProcessor.INTERNAL_API_ANNOTATION_OPTION to WatchdogConfigurationKeys.INTERNAL_API_ANNOTATIONS,
+        WatchdogCommandLineProcessor.EXCLUDED_NAME_OPTION to WatchdogConfigurationKeys.EXCLUDED_NAMES,
+        WatchdogCommandLineProcessor.INCLUDED_NAME_OPTION to WatchdogConfigurationKeys.INCLUDED_NAMES,
+        WatchdogCommandLineProcessor.INCLUDED_ANNOTATION_OPTION to WatchdogConfigurationKeys.INCLUDED_ANNOTATIONS,
+    )
 
     @Test
     fun `invalid ignore annotations preserve existing rules`() {

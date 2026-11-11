@@ -579,12 +579,20 @@
     },
     {
       "name": "PUBLIC_TYPE_WITH_INTERNAL_API",
-      "title": "Public types marked as internal API",
+      "title": "Internal API types in public API",
       "docs": "checks/special/public-type-with-internal-api",
+      "parameterValues": {
+        "markedInternal": [
+          "that type is marked as internal API with `@{0}`. Remove the internal type from the public",
+          "signature, or mark the exposing declaration with an internal API annotation too."
+        ],
+        "excludedByName": [
+          "the API filter rule `{0}` excludes that type from the API checks. Remove the type from the public",
+          "signature, or exclude the exposing declaration too."
+        ]
+      },
       "message": [
-        "The {0} `{1}` publicly exposes `{2}`, but that type is marked as internal API with `@{3}`. Remove",
-        "the internal type from the public signature, or mark the exposing declaration with an internal API",
-        "annotation too.",
+        "The {0} `{1}` publicly exposes `{2}`, but {3}",
         "",
         "If this is intended, apply `@IntentionallyExposedInternalApiForBackwardsCompatibility` to the declaration,",
         "a parameter, or a type usage."

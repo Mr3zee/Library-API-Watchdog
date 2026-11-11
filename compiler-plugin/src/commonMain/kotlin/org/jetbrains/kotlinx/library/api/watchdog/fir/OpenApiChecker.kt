@@ -26,6 +26,7 @@ import org.jetbrains.kotlin.fir.expressions.FirAnnotation
 import org.jetbrains.kotlin.fir.expressions.unwrapAndFlattenArgument
 import org.jetbrains.kotlin.fir.moduleData
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedClass
+import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirConstructorSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.name.Name
@@ -167,11 +168,11 @@ internal class OpenApiTypeAliasChecker(
 }
 
 /**
- * Whether this class belongs to the module of [session] or to one of its `dependsOn` modules. Such a class can
- * come from a binary: an incremental compilation reads the unchanged classes from the previous output, and a
- * metadata compilation reads the `dependsOn` source sets from klibs.
+ * Whether this declaration belongs to the module of [session] or to one of its `dependsOn` modules. Such a
+ * declaration can come from a binary: an incremental compilation reads the unchanged classes from the previous
+ * output, and a metadata compilation reads the `dependsOn` source sets from klibs.
  */
-private fun FirRegularClassSymbol.isFromModuleOf(session: FirSession): Boolean =
+internal fun FirBasedSymbol<*>.isFromModuleOf(session: FirSession): Boolean =
     moduleData == session.moduleData || moduleData in session.moduleData.allDependsOnDependencies
 
 /** `isPublicAPI` includes the `protected` constructor of a Java class. */

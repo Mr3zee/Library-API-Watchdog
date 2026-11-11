@@ -29,8 +29,9 @@ import org.opentest4j.MultipleFailuresError
  *
  * - `watchdog.fuzz.programs`: the number of programs.
  * - `watchdog.fuzz.seed`: the seed. A failure message holds the seed and the program.
- * - `watchdog.fuzz.file`: a test-data file. The test compiles only that file, prints its diagnostics,
- *   and writes the marked-up text of the framework next to it as `<path>.actual`.
+ * - `watchdog.fuzz.file`: test-data files, separated by `,`. The test compiles only these files,
+ *   prints their diagnostics, and writes the marked-up text of the framework next to each file as
+ *   `<path>.actual`.
  */
 class RedundantExemptionFuzzTest {
     private val seed: Long = System.getProperty("watchdog.fuzz.seed")?.toLong() ?: 20261029L
@@ -47,70 +48,71 @@ class RedundantExemptionFuzzTest {
 
     @Test
     fun `the checker agrees with blanking each exemption`() {
-        System.getProperty("watchdog.fuzz.file")?.let { debugFile ->
-            FuzzDiagnosticsSink.begin()
-            runner.initTestInfo(KotlinTestInfo(className = javaClass.name, methodName = "debug", tags = emptySet()))
-            var actual: String? = null
-            val failureSummary = StringBuilder()
-            try {
-                runner.runTest(debugFile)
-            } catch (failure: Throwable) {
-                val failures = (failure as? MultipleFailuresError)?.failures ?: listOf(failure)
-                actual = failures.filterIsInstance<AssertionFailedError>().firstOrNull { it.isActualDefined }?.actual?.stringRepresentation
-                for (each in failures) {
-                    if (each is AssertionFailedError && each.isActualDefined) continue
-                    failureSummary.append(each.toString().lines().take(3).joinToString("\n")).append('\n')
-                    each.stackTrace.take(12).forEach { failureSummary.append("    at ").append(it).append('\n') }
+        System.getProperty("watchdog.fuzz.file")?.let { debugFiles ->
+            val report = debugFiles.split(',').map(String::trim).filter(String::isNotEmpty).joinToString("\n\n") { debugFile ->
+                FuzzDiagnosticsSink.begin()
+                runner.initTestInfo(KotlinTestInfo(className = javaClass.name, methodName = "debug", tags = emptySet()))
+                var actual: String? = null
+                val failureSummary = StringBuilder()
+                try {
+                    runner.runTest(debugFile)
+                } catch (failure: Throwable) {
+                    val failures = (failure as? MultipleFailuresError)?.failures ?: listOf(failure)
+                    actual = failures.filterIsInstance<AssertionFailedError>().firstOrNull { it.isActualDefined }?.actual?.stringRepresentation
+                    for (each in failures) {
+                        if (each is AssertionFailedError && each.isActualDefined) continue
+                        failureSummary.append(each.toString().lines().take(3).joinToString("\n")).append('\n')
+                        each.stackTrace.take(12).forEach { failureSummary.append("    at ").append(it).append('\n') }
+                    }
                 }
+                val diagnostics = FuzzDiagnosticsSink.end()
+                Files.writeString(Path.of("$debugFile.actual"), actual ?: Files.readString(Path.of(debugFile)))
+                "Diagnostics of $debugFile:\n${diagnostics.sortedWith(compareBy({ it.file }, { it.start })).joinToString("\n")}\n\nOther failures:\n$failureSummary"
             }
-            val diagnostics = FuzzDiagnosticsSink.end()
-            Files.writeString(Path.of("$debugFile.actual"), actual ?: Files.readString(Path.of(debugFile)))
-            fail("Diagnostics of $debugFile:\n${diagnostics.sortedWith(compareBy({ it.file }, { it.start })).joinToString("\n")}\n\nOther failures:\n$failureSummary")
+            fail(report)
         }
         val generator = FuzzProgramGenerator(seed)
+        val oracle = BlankingOracle(runner, directory, seed, javaClass.name)
         val mismatches = mutableListOf<String>()
         for (index in 0 until programs) {
-            val program = generator.generate(index)
-            mismatches += check(program)
+            mismatches += oracle.mismatches(generator.generate(index))
         }
         if (mismatches.isNotEmpty()) {
             fail("${mismatches.size} mismatch(es) with seed $seed:\n\n${mismatches.joinToString("\n\n")}")
         }
     }
+}
 
-    private fun check(program: FuzzProgram): List<String> {
-        val baseline = compile("p${program.index}", program.render())
+/**
+ * Compares the `REDUNDANT_EXEMPTION` verdict on each exemption of a program with the effect of
+ * blanking the exemption.
+ */
+internal class BlankingOracle(
+    private val runner: FuzzDiagnosticRunner,
+    private val directory: Path,
+    private val seed: Long,
+    private val testClass: String,
+) {
+    fun mismatches(program: FuzzProgram, directives: String = ""): List<String> {
+        val label = "p${program.index}" + if (directives.isEmpty()) "" else "f"
+        val baseline = compile(label, program.render(directives = directives))
         // The framework prepends the header to the first file and the `// FILE:` line to each later file.
         // The offsets of a file shift by the length difference.
-        val bases: Map<String, Int> = program.files.associate { file ->
-            val analyzed = FuzzDiagnosticsSink.lastFileTexts[file.name]
-                ?: fail("The framework didn't analyze ${file.name} of program ${program.index} of seed $seed")
-            if (!analyzed.endsWith(file.text)) {
-                fail("The analyzed ${file.name} doesn't end with the generated text in program ${program.index} of seed $seed:\n$analyzed")
-            }
-            file.name to analyzed.length - file.text.length
-        }
+        val bases = program.bases(seed)
         fun ReportedDiagnostic.matches(exemption: FuzzExemption): Boolean =
             file == exemption.file && start - bases.getValue(file) == exemption.start && end - bases.getValue(file) == exemption.end
 
-        val errors = baseline.filter { it.severity == Severity.ERROR && it.name !in comparedDiagnostics }
-        if (errors.isNotEmpty()) {
-            val snippets = errors.joinToString("\n") { error ->
-                val text = FuzzDiagnosticsSink.lastFileTexts[error.file].orEmpty()
-                "$error: ...${text.substring((error.start - 1500).coerceAtLeast(0), (error.end + 120).coerceAtMost(text.length)).replace("\n", "⏎")}..."
-            }
-            return listOf("Program ${program.index} doesn't compile (a generator bug):\n$snippets\n${program.render()}")
-        }
+        program.compileErrors(baseline, directives)?.let { return listOf(it) }
         val reportedRedundant = baseline.filter { it.name == WatchdogDiagnostics.REDUNDANT_EXEMPTION.name }
         val unmatched = reportedRedundant.filter { reported -> program.exemptions.none { reported.matches(it) } }
         if (unmatched.isNotEmpty()) {
-            fail("REDUNDANT_EXEMPTION outside the generated exemptions in program ${program.index} of seed $seed: $unmatched\n${program.render()}")
+            fail("REDUNDANT_EXEMPTION outside the generated exemptions in program ${program.index} of seed $seed: $unmatched\n${program.render(directives = directives)}")
         }
 
         val mismatches = mutableListOf<String>()
         program.exemptions.forEachIndexed { exemptionIndex, exemption ->
             val reported = reportedRedundant.any { it.matches(exemption) }
-            val variant = compile("p${program.index}e$exemptionIndex", program.render(blanked = exemption))
+            val variant = compile("${label}e$exemptionIndex", program.render(blanked = exemption, directives = directives))
             // A blanked annotation at the start of an element moves the start of the element's range to the
             // next token. Both runs skip the blanks of the variant, so the same diagnostic has the same key.
             val variantTexts = FuzzDiagnosticsSink.lastFileTexts
@@ -123,18 +125,18 @@ class RedundantExemptionFuzzTest {
                     appendLine("Program ${program.index}, @${exemption.annotation} in ${exemption.file} at ${exemption.start}..${exemption.end}: $verdict.")
                     appendLine("  gone:  ${(baselineKeys - variantKeys).sorted()}")
                     appendLine("  new:   ${(variantKeys - baselineKeys).sorted()}")
-                    append(program.renderMarked(exemption))
+                    append(program.renderMarked(exemption, directives))
                 }
             }
         }
         return mismatches
     }
 
-    private fun compile(label: String, text: String): List<ReportedDiagnostic> {
+    fun compile(label: String, text: String): List<ReportedDiagnostic> {
         val path = directory.resolve("$label.kt")
         Files.writeString(path, text)
         FuzzDiagnosticsSink.begin()
-        runner.initTestInfo(KotlinTestInfo(className = javaClass.name, methodName = label, tags = emptySet()))
+        runner.initTestInfo(KotlinTestInfo(className = testClass, methodName = label, tags = emptySet()))
         try {
             runner.runTest(path.toString())
         } catch (failure: AssertionError) {
@@ -146,7 +148,7 @@ class RedundantExemptionFuzzTest {
 
     /** The watchdog diagnostics that count as the output, keyed by range after the whitespace of [texts]. */
     private fun List<ReportedDiagnostic>.comparable(texts: Map<String, String>): Set<String> =
-        filter { it.name in comparedDiagnostics }.mapTo(hashSetOf()) { diagnostic ->
+        filter { it.name in watchdogDiagnosticNames }.mapTo(hashSetOf()) { diagnostic ->
             val text = texts[diagnostic.file]
             var start = diagnostic.start
             if (text != null) {
@@ -154,18 +156,40 @@ class RedundantExemptionFuzzTest {
             }
             "${diagnostic.file}:$start..${diagnostic.end} ${diagnostic.name}"
         }
-
-    private companion object {
-        val comparedDiagnostics: Set<String> = buildSet {
-            WatchdogDiagnostics.allDiagnostics.mapTo(this) { it.name }
-            add(WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API.name)
-            add(WatchdogDiagnostics.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY.name)
-        }
-    }
 }
 
-private fun FuzzProgram.renderMarked(exemption: FuzzExemption): String = buildString {
-    append(header)
+internal val watchdogDiagnosticNames: Set<String> = buildSet {
+    WatchdogDiagnostics.allDiagnostics.mapTo(this) { it.name }
+    add(WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API.name)
+    add(WatchdogDiagnostics.PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY.name)
+}
+
+/**
+ * The length of the header and the `// FILE:` line that the framework puts before each file of the
+ * last compilation. Fails when the framework didn't analyze a file as generated.
+ */
+internal fun FuzzProgram.bases(seed: Long): Map<String, Int> = files.associate { file ->
+    val analyzed = FuzzDiagnosticsSink.lastFileTexts[file.name]
+        ?: fail("The framework didn't analyze ${file.name} of program $index of seed $seed")
+    if (!analyzed.endsWith(file.text)) {
+        fail("The analyzed ${file.name} doesn't end with the generated text in program $index of seed $seed:\n$analyzed")
+    }
+    file.name to analyzed.length - file.text.length
+}
+
+/** A failure message with the compiler errors in [diagnostics], or null. */
+internal fun FuzzProgram.compileErrors(diagnostics: List<ReportedDiagnostic>, directives: String): String? {
+    val errors = diagnostics.filter { it.severity == Severity.ERROR && it.name !in watchdogDiagnosticNames }
+    if (errors.isEmpty()) return null
+    val snippets = errors.joinToString("\n") { error ->
+        val text = FuzzDiagnosticsSink.lastFileTexts[error.file].orEmpty()
+        "$error: ...${text.substring((error.start - 1500).coerceAtLeast(0), (error.end + 120).coerceAtMost(text.length)).replace("\n", "⏎")}..."
+    }
+    return "Program $index doesn't compile (a generator bug):\n$snippets\n${render(directives = directives)}"
+}
+
+private fun FuzzProgram.renderMarked(exemption: FuzzExemption, directives: String): String = buildString {
+    append(header(directives))
     for (file in files) {
         append("// FILE: ").append(file.name).append('\n')
         if (file.name != exemption.file) {
@@ -197,9 +221,13 @@ internal object FuzzDiagnosticsSink {
         var completed: Boolean = false,
     )
 
-    /** The text of each file of the last run as the framework analyzed it, by file name. */
-    var lastFileTexts: Map<String, String> = emptyMap()
-        private set
+    /**
+     * The text of each file of the last run on this thread as the framework analyzed it, by file name.
+     * The fuzz tests run in parallel, so a shared value can come from the run of another test.
+     */
+    val lastFileTexts: Map<String, String> get() = last.get().orEmpty()
+
+    private val last = ThreadLocal<Map<String, String>>()
 
     fun fileText(name: String, text: String) {
         current.get()?.fileTexts?.put(name, text)
@@ -224,7 +252,7 @@ internal object FuzzDiagnosticsSink {
     fun end(): List<ReportedDiagnostic> {
         val run = current.get() ?: return emptyList()
         current.remove()
-        lastFileTexts = run.fileTexts
+        last.set(run.fileTexts)
         return run.diagnostics
     }
 }

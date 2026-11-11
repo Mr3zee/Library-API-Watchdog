@@ -21,6 +21,21 @@ object WatchdogTestDirectives : SimpleDirectivesContainer() {
         description = "Annotation FQ names configured as internal API markers (internalApiAnnotation option)",
     )
 
+    /** `// EXCLUDED_NAMES: test.internal.** test.Container.Hidden` */
+    val EXCLUDED_NAMES by stringDirective(
+        description = "Name patterns of the declarations that the checks skip (excludedName option)",
+    )
+
+    /** `// INCLUDED_NAMES: test.api.**` */
+    val INCLUDED_NAMES by stringDirective(
+        description = "Name patterns of the only declarations that the checks cover (includedName option)",
+    )
+
+    /** `// INCLUDED_ANNOTATIONS: test.PublicApi` */
+    val INCLUDED_ANNOTATIONS by stringDirective(
+        description = "Annotation name patterns of the only declarations that the checks cover (includedAnnotation option)",
+    )
+
     /** `// REPORT_UNDOCUMENTED_CLASS_PROPERTIES` */
     val REPORT_UNDOCUMENTED_CLASS_PROPERTIES by directive(
         description = "Member properties of a class without KDoc are reported (reportUndocumentedClassProperties=true)",
@@ -79,6 +94,14 @@ class WatchdogOptionsConfigurator(testServices: TestServices) : EnvironmentConfi
         val annotations = module.directives[WatchdogTestDirectives.INTERNAL_API_ANNOTATIONS]
         if (annotations.isNotEmpty()) {
             configuration.put(WatchdogConfigurationKeys.INTERNAL_API_ANNOTATIONS, annotations.toSet())
+        }
+        for ((directive, key) in listOf(
+            WatchdogTestDirectives.EXCLUDED_NAMES to WatchdogConfigurationKeys.EXCLUDED_NAMES,
+            WatchdogTestDirectives.INCLUDED_NAMES to WatchdogConfigurationKeys.INCLUDED_NAMES,
+            WatchdogTestDirectives.INCLUDED_ANNOTATIONS to WatchdogConfigurationKeys.INCLUDED_ANNOTATIONS,
+        )) {
+            val patterns = module.directives[directive]
+            if (patterns.isNotEmpty()) configuration.put(key, patterns.toSet())
         }
 
         if (WatchdogTestDirectives.REPORT_UNDOCUMENTED_CLASS_PROPERTIES in module.directives) {

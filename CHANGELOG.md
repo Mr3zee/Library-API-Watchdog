@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- [API filters](https://mr3zee.github.io/Library-API-Watchdog/exemptions#api-filters): the watchdog applies the
+  filters of the binary compatibility validation of the project.
+
+### Changed
+
+- The filters of an existing validation setup can add errors of
+  [Internal API types in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api)
+  and warnings of [Redundant exemptions](https://mr3zee.github.io/Library-API-Watchdog/checks/special/redundant-exemption).
+  `apiWatchdog { useAbiValidationFilters = false }` turns the filters off.
+- The check "Public types marked as internal API" has the new title "Internal API types in public API".
+
 ## 0.2.0 - 2026-11-06
 
 <!-- Release notes generated using configuration in .github/release.yml at 20a11d69284725b68705ed22ee65497b1f61bdd9 -->

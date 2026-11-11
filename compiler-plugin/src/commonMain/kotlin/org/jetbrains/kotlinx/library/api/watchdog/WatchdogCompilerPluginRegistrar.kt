@@ -50,6 +50,9 @@ class WatchdogComponentRegistrar : DevKitComponentRegistrar {
                 exemptingExistingApi = exemptingExistingApi,
                 reportUndocumentedClassProperties = reportUndocumentedClassProperties,
                 requireExplicitApi = requireExplicitApi,
+                excludedNames = configuration[WatchdogConfigurationKeys.EXCLUDED_NAMES, emptySet()],
+                includedNames = configuration[WatchdogConfigurationKeys.INCLUDED_NAMES, emptySet()],
+                includedAnnotations = configuration[WatchdogConfigurationKeys.INCLUDED_ANNOTATIONS, emptySet()],
             ),
         )
     }

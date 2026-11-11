@@ -6,10 +6,12 @@ import org.jetbrains.kotlin.name.ClassId
 
 internal class ConfiguredInternalApiAnnotations(
     session: FirSession,
-    private val annotationNames: Set<String>,
+    annotationNames: Set<String>,
 ) : FirExtensionSessionComponent(session) {
+    private val patterns = NamePatterns(annotationNames)
+
     fun contains(annotationClassId: ClassId): Boolean =
-        annotationClassId.asSingleFqName().asString() in annotationNames
+        patterns.matches(annotationClassId.asSingleFqName().asString())
 }
 
 internal val FirSession.configuredInternalApiAnnotations: ConfiguredInternalApiAnnotations?

@@ -128,5 +128,5 @@ an `implementation` or `compileOnly` declaration.
 
 ## See also
 
-- [Public types marked as internal API](./public-type-with-internal-api.md)
+- [Internal API types in public API](./public-type-with-internal-api.md)
 - [Exemptions and internal API](../../exemptions.md)

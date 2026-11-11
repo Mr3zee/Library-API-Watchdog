@@ -21,6 +21,9 @@ import org.jetbrains.kotlin.test.services.KotlinTestInfo
  *   The test blanks an exemption of an `expect` and its copy on the `actual` together. The original on the
  *   `expect` gets the verdict, and the copy is never reported.
  *   An exemption that reads the sibling overloads isn't judged.
+ *
+ * The second test runs both oracles with random API filters in all three compilations: name rules and
+ * the inclusion annotation `@Keep` on the `expect` declaration or on both halves.
  */
 class ExpectActualFuzzTest {
     private val seed: Long = System.getProperty("watchdog.fuzz.seed")?.toLong() ?: 20261104L
@@ -37,9 +40,17 @@ class ExpectActualFuzzTest {
 
     @Test
     fun `a multiplatform program reports the diagnostics of its views`() {
-        val generator = ExpectActualProgramGenerator(seed)
+        checkPrograms(ExpectActualProgramGenerator(seed), programs)
+    }
+
+    @Test
+    fun `a multiplatform program with API filters reports the diagnostics of its views`() {
+        checkPrograms(ExpectActualProgramGenerator(seed, filters = true), (programs + 1) / 2)
+    }
+
+    private fun checkPrograms(generator: ExpectActualProgramGenerator, count: Int) {
         val mismatches = mutableListOf<String>()
-        for (index in 0 until programs) {
+        for (index in 0 until count) {
             mismatches += check(generator.generate(index))
         }
         if (mismatches.isNotEmpty()) {

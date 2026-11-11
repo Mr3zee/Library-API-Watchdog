@@ -176,7 +176,7 @@ public open class WatchdogGradleExtension @Inject internal constructor(
      * Whether `PUBLIC_TYPE_WITH_INTERNAL_API` runs. Default is `true`. A violation is always an error.
      * `@IntentionallyExposedInternalApiForBackwardsCompatibility` exempts a published declaration.
      *
-     * See [Public types marked as internal API](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api)
+     * See [Internal API types in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api)
      * for more details.
      */
     public val publicTypeWithInternalApi: Property<Boolean> =
@@ -229,6 +229,14 @@ public open class WatchdogGradleExtension @Inject internal constructor(
      * See [Binary compatibility validation suggestion](https://mr3zee.github.io/Library-API-Watchdog/abi-validation-suggestion) for more details.
      */
     public val suggestAbiValidation: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(true)
+
+    /**
+     * Whether the watchdog applies the filters of the ABI validation of the Kotlin Gradle plugin or
+     * of the Binary Compatibility Validator plugin. Default is `true`.
+     *
+     * See [API filters](https://mr3zee.github.io/Library-API-Watchdog/exemptions#api-filters) for more details.
+     */
+    public val useAbiValidationFilters: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(true)
 
     /** The Java-interop diagnostics, see [WatchdogJavaInteropExtension]. */
     public val javaInterop: WatchdogJavaInteropExtension =

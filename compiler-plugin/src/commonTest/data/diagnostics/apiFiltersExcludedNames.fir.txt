@@ -1,0 +1,220 @@
+FILE: internal.kt
+    package test.internal
+
+    public open class InternalByPackage : R|kotlin/Any| {
+        public constructor(): R|test/internal/InternalByPackage| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun member(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+        public final class Nested : R|kotlin/Any| {
+            public constructor(): R|test/internal/InternalByPackage.Nested| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+    public final fun internalFunction(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public final val internalProperty: R|kotlin/collections/MutableList<kotlin/Int>| = R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+        public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+    public final typealias InternalCallback = R|() -> kotlin/Unit|
+    public final typealias InternalName = R|kotlin/String|
+FILE: deeper.kt
+    package test.internal.deeper
+
+    public open class InDeeperPackage : R|kotlin/Any| {
+        public constructor(): R|test/internal/deeper/InDeeperPackage| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+FILE: similar.kt
+    package test.internals
+
+    public final class InSimilarPackage : R|kotlin/Any| {
+        public constructor(): R|test/internals/InSimilarPackage| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+FILE: api.kt
+    package test.api
+
+    public open class Hidden : R|kotlin/Any| {
+        public constructor(): R|test/api/Hidden| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun member(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    public final class HiddenNot : R|kotlin/Any| {
+        public constructor(): R|test/api/HiddenNot| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final class Container : R|kotlin/Any| {
+        public constructor(): R|test/api/Container| {
+            super<R|kotlin/Any|>()
+        }
+
+        public open class Nested : R|kotlin/Any| {
+            public constructor(): R|test/api/Container.Nested| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun deep(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+            }
+
+        }
+
+        public final class WatchedNested : R|kotlin/Any| {
+            public constructor(): R|test/api/Container.WatchedNested| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+        public final fun hiddenMember(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+        public final fun watchedMember(): R|kotlin/Unit| {
+        }
+
+        public final val hiddenProperty: R|kotlin/collections/MutableList<kotlin/Int>| = R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+            public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+
+        public final val watchedProperty: R|kotlin/collections/MutableList<kotlin/Int>| = R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+            public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+
+    }
+    public final fun hiddenFunction(): R|kotlin/Unit| {
+    }
+    public final fun hiddenFunction(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public final fun hiddenFunctionNot(): R|kotlin/Unit| {
+    }
+    public final val hiddenProperty: R|kotlin/collections/MutableList<kotlin/Int>| = R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+        public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+    public final typealias HiddenAlias = R|() -> kotlin/Unit|
+    public open class DefaultImpl : R|kotlin/Any| {
+        public constructor(): R|test/api/DefaultImpl| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final class ImplHolder : R|kotlin/Any| {
+        public constructor(): R|test/api/ImplHolder| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final class NestedImpl : R|kotlin/Any| {
+            public constructor(): R|test/api/ImplHolder.NestedImpl| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+    public open class Shape1 : R|kotlin/Any| {
+        public constructor(): R|test/api/Shape1| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final class Shape : R|kotlin/Any| {
+        public constructor(): R|test/api/Shape| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final class Shape12 : R|kotlin/Any| {
+        public constructor(): R|test/api/Shape12| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun leakedReturn(): R|test/internal/InternalByPackage| {
+        ^leakedReturn R|test/internal/InternalByPackage.InternalByPackage|()
+    }
+    public final fun leakedNested(value: R|test/internal/InternalByPackage.Nested|): R|kotlin/Unit| {
+    }
+    public final fun leakedAlias(name: R|{test/internal/InternalName=} kotlin/String|): R|kotlin/Unit| {
+    }
+    public final fun leakedArgument(): R|kotlin/collections/List<test/api/Hidden>| {
+        ^leakedArgument R|kotlin/collections/emptyList|<R|test/api/Hidden|>()
+    }
+    public final class LeakedSupertype : R|test/internal/InternalByPackage| {
+        public constructor(): R|test/api/LeakedSupertype| {
+            super<R|test/internal/InternalByPackage|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyExposedInternalApiForBackwardsCompatibility|() public final fun exemptedLeak(): R|test/internal/InternalByPackage| {
+        ^exemptedLeak R|test/internal/InternalByPackage.InternalByPackage|()
+    }
+    public final class Shape2 : R|kotlin/Any| {
+        public constructor(value: R|test/internal/InternalByPackage|): R|test/api/Shape2| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val value: R|test/internal/InternalByPackage| = R|<local>/value|
+            public get(): R|test/internal/InternalByPackage|
+
+    }
+    public final class Canvas : R|kotlin/Any| {
+        public constructor(): R|test/api/Canvas| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun paint(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
+        }
+
+        public final fun stroke(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
+        }
+
+    }
+    public final fun R|test/api/Canvas|.paint(y: R|kotlin/Int|, x: R|kotlin/Int|, scale: R|kotlin/Double|): R|kotlin/Unit| {
+    }
+    public final fun R|test/api/Canvas|.stroke(y: R|kotlin/Int|, x: R|kotlin/Int|, scale: R|kotlin/Double|): R|kotlin/Unit| {
+    }
+    public final class Factory : R|kotlin/Any| {
+        public constructor(): R|test/api/Factory| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|test/api/Factory.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun create(): R|test/api/Factory| {
+                ^create R|test/api/Factory.Factory|()
+            }
+
+        }
+
+    }
+    public final class WatchedFactory : R|kotlin/Any| {
+        public constructor(): R|test/api/WatchedFactory| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|test/api/WatchedFactory.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun create(): R|test/api/WatchedFactory| {
+                ^create R|test/api/WatchedFactory.WatchedFactory|()
+            }
+
+        }
+
+    }

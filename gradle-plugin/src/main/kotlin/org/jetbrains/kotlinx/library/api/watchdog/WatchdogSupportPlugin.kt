@@ -24,7 +24,6 @@ import org.gradle.api.attributes.Usage
 import org.gradle.api.attributes.java.TargetJvmEnvironment
 import org.gradle.api.attributes.java.TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE
 import org.gradle.api.file.FileCollection
-import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
@@ -338,13 +337,23 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                 extension.annotationIgnoreRules().get().forEach { rule ->
                     add(SubpluginOption("ignoreWhenAnnotated", rule))
                 }
-                extension.internalApiAnnotations.get().forEach { annotationName ->
-                    require(annotationName.isNotBlank() && annotationName.none { it.isWhitespace() || it == ':' }) {
-                        "An API Watchdog internal API annotation must be a non-blank fully qualified " +
-                                "class name: '$annotationName'"
+                val internalApiAnnotations = extension.internalApiAnnotations.get()
+                internalApiAnnotations.forEach { annotationName ->
+                    require(ApiFilterRules.isUsableRule(annotationName)) {
+                        "An API Watchdog internal API annotation must be a fully qualified name or a name " +
+                                "pattern without whitespace and ':': '$annotationName'"
                     }
-                    add(SubpluginOption("internalApiAnnotation", annotationName))
                 }
+                // KGP reads this provider after the build script of the project ran. A filter that an
+                // `afterEvaluate` block adds later can be absent for a Native compilation.
+                val filterRules =
+                    if (extension.useAbiValidationFilters.get()) abiValidationFilterRules() else ApiFilterRules()
+                (internalApiAnnotations + filterRules.excludedAnnotations).forEach {
+                    add(SubpluginOption("internalApiAnnotation", it))
+                }
+                filterRules.excludedNames.forEach { add(SubpluginOption("excludedName", it)) }
+                filterRules.includedNames.forEach { add(SubpluginOption("includedName", it)) }
+                filterRules.includedAnnotations.forEach { add(SubpluginOption("includedAnnotation", it)) }
                 add(
                     SubpluginOption(
                         "diagnosticsOutputFile",
@@ -579,8 +588,6 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         private const val FIXER_ARTIFACT_CONFIGURATION_NAME = "apiWatchdogExemptsFixerArtifact"
         private const val BCV_PLUGIN_ID = "org.jetbrains.kotlinx.binary-compatibility-validator"
 
-        private val ABI_VALIDATION_TASK_NAMES = listOf("checkKotlinAbi", "checkLegacyAbi")
-
         private const val DISABLED_TASK_REASON = "apiWatchdog.enabled is true"
 
         private fun Project.kotlinPluginVersion(): String =
@@ -612,23 +619,9 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                     target.platformType == KotlinPlatformType.common ||
                     target.platformType == KotlinPlatformType.androidJvm
 
-        private fun Project.hasAbiValidation(): Boolean {
-            if (pluginManager.hasPlugin(BCV_PLUGIN_ID)) return true
-            val kotlin = extensions.findByName("kotlin") as? ExtensionAware ?: return false
-            // Kotlin 2.2 and 2.3 opt in with the `enabled` flag of the `abiValidation`
-            // sub-extension. The compiled-against API deprecates the flag for removal, so
-            // reflection reads it.
-            val legacyAbiValidation = kotlin.extensions.findByName("abiValidation")
-            if (legacyAbiValidation != null) {
-                val enabled = runCatching {
-                    legacyAbiValidation.javaClass.getMethod("getEnabled").invoke(legacyAbiValidation)
-                }.getOrNull()
-                return (enabled as? Provider<*>)?.orNull == true
-            }
-            // The `abiValidation` getter of Kotlin 2.4 and later activates ABI validation, so
-            // don't call it. The registered tasks show the activation.
-            return ABI_VALIDATION_TASK_NAMES.any(tasks.names::contains)
-        }
+        private fun Project.hasAbiValidation(): Boolean =
+            pluginManager.hasPlugin(BCV_PLUGIN_ID) || activeBinaryCompatibilityValidator() != null ||
+                    activeKotlinAbiValidation() != null
 
         private fun missingExplicitApiMessage(projectPath: String, requirement: ExplicitApiRequirement): String {
             val hint = if (requirement == ExplicitApiRequirement.FAIL) {

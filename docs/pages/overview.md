@@ -112,8 +112,8 @@ details.
 - [Undocumented public API](./checks/undocumented-public-api.md): public declarations without KDoc.
 - [Public types from non-transitive dependencies](./checks/special/public-type-from-non-transitive-dependency.md):
   dependency types in public signatures that consumers don't get transitively.
-- [Public types marked as internal API](./checks/special/public-type-with-internal-api.md): public
-  signatures that expose types marked as internal API.
+- [Internal API types in public API](./checks/special/public-type-with-internal-api.md): public
+  signatures that expose types marked as internal API or excluded by an API filter.
 
 ### Java interop checks
 

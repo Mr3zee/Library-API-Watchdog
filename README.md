@@ -85,12 +85,16 @@ and the compiler flags for a build without Gradle.
 
 ## Exemptions
 
-Four ways to exempt API from the checks:
+Five ways to exempt API from the checks:
 
 - **[Internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions)**: every check
   skips the declarations under an internal-API annotation. Mark the library's own annotation with
   `@InternalAnnotationMarker`. For an annotation from a dependency, use
   `apiWatchdog { internalApiAnnotations.add("com.example.InternalApi") }`.
+- **[API filters](https://mr3zee.github.io/Library-API-Watchdog/exemptions#api-filters)**: every
+  check skips the declarations that the filters of the ABI validation of the Kotlin Gradle plugin
+  or of the Binary Compatibility Validator plugin remove from the ABI dump. The watchdog copies the
+  filters of the tool that validates the project.
 - **[One declaration](https://mr3zee.github.io/Library-API-Watchdog/exemptions)**: apply the
   matching `@Intentionally*` annotation with an `ExemptionReason`. A reason other than
   `FOR_BACKWARDS_COMPATIBILITY`, `API_DESIGN`, or `FOR_DEPRECATION` also needs a description.
@@ -199,7 +203,7 @@ See [Report generation](https://mr3zee.github.io/Library-API-Watchdog/report) fo
 - [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency) -
   dependency types in public signatures that consumers don't get transitively.
 - [`PUBLIC_TYPE_WITH_INTERNAL_API`](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api) -
-  public signatures that expose types marked as internal API.
+  public signatures that expose types marked as internal API or excluded by an API filter.
 
 ### Java interop
 

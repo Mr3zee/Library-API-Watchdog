@@ -11,6 +11,21 @@ mdx:
 
 # Changelog
 
+## Unreleased
+
+### Added
+
+- [API filters](exemptions.md#api-filters): the watchdog applies the
+  filters of the binary compatibility validation of the project.
+
+### Changed
+
+- The filters of an existing validation setup can add errors of
+  [Internal API types in public API](checks/special/public-type-with-internal-api.md)
+  and warnings of [Redundant exemptions](checks/special/redundant-exemption.md).
+  `apiWatchdog { useAbiValidationFilters = false }` turns the filters off.
+- The check "Public types marked as internal API" has the new title "Internal API types in public API".
+
 ## 0.2.0 - 2026-11-06
 
 <!-- Release notes generated using configuration in .github/release.yml at 20a11d69284725b68705ed22ee65497b1f61bdd9 -->

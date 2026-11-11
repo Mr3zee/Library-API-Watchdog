@@ -87,6 +87,12 @@ public value class Id(public val raw: Int)
 public class HiddenType
 """
 
+private const val FILTER_PREAMBLE = """
+/** The inclusion annotation. */
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.TYPEALIAS)
+public annotation class Keep
+"""
+
 private enum class Origin { PAIR, COMMON_ONLY, JVM_ONLY }
 
 private var annotationCount = 0
@@ -108,6 +114,7 @@ private sealed class Decl(val id: String) {
     var origin: Origin = Origin.PAIR
     var doc: Side? = null
     var hidden: Boolean = false
+    var keep: Side? = null
     var visibility: String = "public"
     val exemptions: MutableList<Ann> = mutableListOf()
 }
@@ -240,7 +247,7 @@ private object Exemptions {
  * As in [FuzzProgramGenerator], one declaration never has the same exemption twice, and a member
  * never repeats an exemption of its class that covers the members.
  */
-internal class ExpectActualProgramGenerator(private val seed: Long) {
+internal class ExpectActualProgramGenerator(private val seed: Long, private val filters: Boolean = false) {
     private val configurableDiagnostics: List<String> = WatchdogDiagnostics.allDiagnostics.map { it.name }
 
     fun generate(index: Int): ExpectActualProgram {
@@ -249,8 +256,9 @@ internal class ExpectActualProgramGenerator(private val seed: Long) {
         val directives = buildString {
             val overrides = severityOverrides(random)
             if (overrides.isNotEmpty()) appendLine("// DIAGNOSTIC_SEVERITIES: ${overrides.joinToString(" ")}")
+            if (filters) append(FilterRules(random, "fuzz.ea$index").directives(model))
         }
-        val renderer = Renderer(model, "fuzz.ea$index")
+        val renderer = Renderer(model, "fuzz.ea$index", filters)
         return ExpectActualProgram(
             index = index,
             directives = directives,
@@ -265,6 +273,50 @@ internal class ExpectActualProgramGenerator(private val seed: Long) {
         if (random.nextInt(10) < 7) return emptyList()
         return configurableDiagnostics.shuffled(random).take(1 + random.nextInt(3)).map { name ->
             "$name:${listOf("none", "warning", "error")[random.nextInt(3)]}"
+        }
+    }
+}
+
+/**
+ * Random name rules and `@Keep` annotations for a model. A rule and the annotation give both halves of a
+ * pair the same verdict, so the views stay equivalent. The `@Keep` of a pair is on the `expect` or on
+ * both halves. An inclusion doesn't match a JVM-only member of a pair class. Such a rule
+ * includes the `actual` class without its `expect` class. The checks that report the pair on the
+ * `expect` class then don't run in the multiplatform program, but they run in the JVM view.
+ */
+private class FilterRules(private val random: Random, private val packageName: String) {
+    private val excluded = mutableListOf<String>()
+    private val included = mutableListOf<String>()
+    private var annotated = false
+
+    private fun chance(percent: Int): Boolean = random.nextInt(100) < percent
+
+    fun directives(model: Model): String {
+        for (decl in model.decls) visit(decl, packageName, inPairClass = false)
+        return buildString {
+            if (excluded.isNotEmpty()) appendLine("// EXCLUDED_NAMES: ${excluded.distinct().joinToString(" ")}")
+            if (included.isNotEmpty()) appendLine("// INCLUDED_NAMES: ${included.distinct().joinToString(" ")}")
+            if (annotated) appendLine("// INCLUDED_ANNOTATIONS: $packageName.Keep")
+        }
+    }
+
+    private fun visit(decl: Decl, prefix: String, inPairClass: Boolean) {
+        val simpleName = when (decl) {
+            is Fn -> decl.name
+            is Cls -> if (decl.kind == Kind.COMPANION) "Companion" else decl.id
+            else -> decl.id
+        }
+        val name = "$prefix.$simpleName"
+        val inclusionAllowed = !(inPairClass && decl.origin == Origin.JVM_ONLY)
+        if (chance(6)) excluded += name
+        if (inclusionAllowed && chance(10)) included += name
+        if (inclusionAllowed && chance(10)) {
+            decl.keep = if (decl.origin == Origin.PAIR && random.nextBoolean()) Side.EXPECT else Side.BOTH
+            annotated = true
+        }
+        if (decl is Cls) {
+            for (member in decl.members) visit(member, name, inPairClass = decl.origin == Origin.PAIR)
+            for (entry in decl.entries + decl.extraEntries) if (chance(6)) excluded += "$name.${entry.name}"
         }
     }
 }
@@ -653,7 +705,7 @@ private class Out(val name: String, val record: Boolean) {
     fun build(): RenderedFile = RenderedFile(name, text.toString(), spans, exemptions)
 }
 
-private class Renderer(private val model: Model, private val packageName: String) {
+private class Renderer(private val model: Model, private val packageName: String, private val filters: Boolean) {
     /** [commonModule] selects the common-only declarations of [Form.JVM_VIEW] instead of the pairs and the JVM-only ones. */
     fun file(name: String, form: Form, commonModule: Boolean = false): RenderedFile {
         val mpp = form == Form.EXPECT || form == Form.ACTUAL
@@ -670,7 +722,10 @@ private class Renderer(private val model: Model, private val packageName: String
         out.line("package $packageName")
         out.line()
         out.line("import org.jetbrains.kotlinx.library.api.watchdog.*")
-        if (common) out.raw(PREAMBLE)
+        if (common) {
+            out.raw(PREAMBLE)
+            if (filters) out.raw(FILTER_PREAMBLE)
+        }
         out.line()
         for (decl in model.decls) {
             // A pair renders in its form. A common-only or JVM-only declaration is the same plain text everywhere.
@@ -727,6 +782,10 @@ private class Renderer(private val model: Model, private val packageName: String
             if (side != null && present(side)) out.line("/** Documented. */")
         }
 
+        fun keep(decl: Decl) {
+            decl.keep?.let { if (present(it)) out.line("@Keep") }
+        }
+
         fun keyword(decl: Decl, topLevel: Boolean): String = when {
             !keywords || !isPairHalf(decl) -> ""
             form == Form.EXPECT -> if (topLevel) "expect " else ""
@@ -755,6 +814,7 @@ private class Renderer(private val model: Model, private val packageName: String
         fun alias(alias: Alias, path: String) {
             owner = path
             doc(alias.doc)
+            keep(alias)
             annotationLines(alias.exemptions)
             out.span(path) { out.startLine(); out.raw("${alias.visibility} typealias ${alias.id} = ${alias.target}"); out.endLine() }
         }
@@ -804,6 +864,7 @@ private class Renderer(private val model: Model, private val packageName: String
         fun function(fn: Fn, path: String, topLevel: Boolean) {
             owner = path
             doc(fn.doc)
+            keep(fn)
             if (fn.hidden) out.line("@Hidden")
             annotationLines(fn.exemptions)
             if (jvmSide(fn)) fn.jvmAnnotations.forEach { out.line(it) }
@@ -842,6 +903,7 @@ private class Renderer(private val model: Model, private val packageName: String
         fun property(prop: Prop, path: String, topLevel: Boolean) {
             owner = path
             doc(prop.doc)
+            keep(prop)
             if (prop.hidden) out.line("@Hidden")
             annotationLines(prop.exemptions)
             if (jvmSide(prop)) prop.jvmAnnotations.forEach { out.line(it) }
@@ -885,6 +947,7 @@ private class Renderer(private val model: Model, private val packageName: String
             val stubHalf = pairHalf && form == Form.COMMON_VIEW
             owner = path
             doc(cls.doc)
+            keep(cls)
             if (cls.hidden) out.line("@Hidden")
             annotationLines(cls.exemptions)
             cls.optIn?.let { if (presentForJvm(it)) out.line("@SubclassOptInRequired(Unstable::class)") }
@@ -966,15 +1029,18 @@ private class Renderer(private val model: Model, private val packageName: String
             when (actualForm) {
                 is ActualForm.OwnAlias -> {
                     doc(cls.doc)
+                    keep(cls)
                     out.span(path) { out.startLine(); out.raw("${cls.visibility} ${keyword}typealias ${cls.id} = ${actualForm.impl.id}"); out.endLine() }
                 }
                 is ActualForm.JdkAlias -> if (form == Form.ACTUAL) {
                     doc(cls.doc)
+                    keep(cls)
                     annotationLines(cls.exemptions)
                     out.span(path) { out.startLine(); out.raw("${cls.visibility} actual typealias ${cls.id} = ${actualForm.target}"); out.endLine() }
                 } else {
                     // A JVM consumer sees the JDK class under the name of the `expect`, with the exemptions of the `expect`.
                     doc(cls.doc)
+                    keep(cls)
                     annotationLines(cls.exemptions)
                     out.span(path) {
                         out.startLine(); out.raw("${cls.visibility} ${actualForm.stub} ${cls.id}")

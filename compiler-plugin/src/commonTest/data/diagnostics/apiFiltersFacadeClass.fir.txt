@@ -1,0 +1,28 @@
+FILE: Hidden.kt
+    package test
+
+    public final fun hiddenFunction(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public final val hiddenProperty: R|kotlin/collections/MutableList<kotlin/Int>| = R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+        public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+    public final class InHiddenFile : R|kotlin/Any| {
+        public constructor(): R|test/InHiddenFile| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun member(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+FILE: Named.kt
+    @FILE:R|kotlin/jvm/JvmName|(name = String(Renamed) [evaluated = String(Renamed)])
+    package test
+
+    public final fun renamedFunction(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+FILE: Other.kt
+    @FILE:R|kotlin/jvm/JvmName|(name = String(Other) [evaluated = String(Other)])
+    package test
+
+    public final fun watchedFunction(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }

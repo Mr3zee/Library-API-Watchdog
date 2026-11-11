@@ -28,6 +28,11 @@ kotlin {
 On Kotlin 2.2 and 2.3, the snippet has `abiValidation { enabled.set(true) }` instead of the
 `abiValidation()` call.
 
+## Filters
+
+While a validation tool validates the project, the watchdog applies its filters, so it doesn't check
+a declaration that the tool leaves out of the ABI dump. See [API filters](./exemptions.md#api-filters) for more details.
+
 ## Disable it
 
 Set `suggestAbiValidation` in the `apiWatchdog` extension. Default is `true`.

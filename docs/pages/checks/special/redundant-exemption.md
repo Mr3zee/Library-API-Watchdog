@@ -22,6 +22,8 @@ public class Connection
 ## Notes
 
 - The [report](../../report.md) tags the annotation as **Redundant**.
+- An [API filter](../../exemptions.md#api-filters) removes a declaration from the checks, so the
+  exemptions on that declaration are redundant.
 - A check set to `NONE` doesn't report anything, so its exemptions are redundant.
   [`exemptExistingApi`](../../existing-libs.md) removes them. To keep them, turn the check on
   before you run the task.

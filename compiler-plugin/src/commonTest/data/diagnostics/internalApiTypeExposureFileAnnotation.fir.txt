@@ -1,0 +1,69 @@
+FILE: markers.kt
+    package test.markers
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/InternalAnnotationMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FILE|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FILE|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|)]) public final annotation class Hidden : R|kotlin/Annotation| {
+        public constructor(): R|test/markers/Hidden| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FILE|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FILE|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|)]) public final annotation class Excluded : R|kotlin/Annotation| {
+        public constructor(): R|test/markers/Excluded| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+FILE: hiddenFile.kt
+    @FILE:R|test/markers/Hidden|()
+    package test.hidden
+
+    public open class InHiddenFile : R|kotlin/Any| {
+        public constructor(): R|test/hidden/InHiddenFile| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+FILE: excludedFile.kt
+    @FILE:R|test/markers/Excluded|()
+    package test.excluded
+
+    public open class InExcludedFile : R|kotlin/Any| {
+        public constructor(): R|test/excluded/InExcludedFile| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+FILE: marked.kt
+    package test.marked
+
+    @R|test/markers/Hidden|() public open class MarkedClass : R|kotlin/Any| {
+        public constructor(): R|test/marked/MarkedClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+FILE: named.kt
+    package test.named
+
+    public open class ExcludedByName : R|kotlin/Any| {
+        public constructor(): R|test/named/ExcludedByName| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+FILE: api.kt
+    @FILE:R|kotlin/jvm/JvmName|(name = String(Api) [evaluated = String(Api)])
+    package test.api
+
+    public final fun loadFromHiddenFile(): R|test/hidden/InHiddenFile| {
+        ^loadFromHiddenFile R|test/hidden/InHiddenFile.InHiddenFile|()
+    }
+    public final fun loadFromExcludedFile(): R|test/excluded/InExcludedFile| {
+        ^loadFromExcludedFile R|test/excluded/InExcludedFile.InExcludedFile|()
+    }
+    public final fun loadMarked(): R|test/marked/MarkedClass| {
+        ^loadMarked R|test/marked/MarkedClass.MarkedClass|()
+    }
+    public final fun loadNamed(): R|test/named/ExcludedByName| {
+        ^loadNamed R|test/named/ExcludedByName.ExcludedByName|()
+    }
