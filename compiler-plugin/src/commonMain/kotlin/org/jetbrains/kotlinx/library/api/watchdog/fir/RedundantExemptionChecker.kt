@@ -307,19 +307,15 @@ internal class EnclosingExemptionRedundancyChecker(
 }
 
 /**
- * Judges the exemptions of `expect` declarations. In [CheckScope.PLATFORM], it reports only the verdicts
- * that need the `actual` declarations or only [platformOnly] checkers. In [CheckScope.NONE], it only
- * records the verdicts to [recorder].
- *
- * A checker with [PairSide.EXPECT] decides on the `expect` alone. A checker with [PairSide.ACTUAL] or
- * [PairSide.BOTH] reads the exemption through the `actual` declarations. So this checker runs in the
- * platform session, where the symbol provider finds them. Without a visible `actual`, such an exemption
- * stays. The common compilation and the IDE report only what the `expect` decides, because the IDE runs
- * every checker in the module's own session.
+ * Judges the exemptions of `expect` declarations. A checker with [PairSide.EXPECT] decides on the
+ * `expect` alone. A checker with [PairSide.ACTUAL] or [PairSide.BOTH] reads the exemption through the
+ * `actual` declarations. So this checker runs in the platform session, where the symbol provider finds
+ * them. Without a visible `actual`, such an exemption stays. The common compilation and the IDE report
+ * only what the `expect` decides, because the IDE runs every checker in the module's own session.
  *
  * A copy of the exemption on an `actual` ([expectOrigins]) is never reported while its original exists.
  * [recorder] gets the copies of a redundant original as [WatchdogDiagnosticsRecorder.REDUNDANT_COPY]
- * lines in every scope, so the fixer removes them with the original.
+ * lines, so the fixer removes them with the original.
  */
 internal class ExpectExemptionRedundancyChecker(
     basicCheckers: Collection<FirBasicDeclarationChecker>,
@@ -739,7 +735,6 @@ private fun propertyParameterSymbols(constructor: FirConstructor): Set<FirValueP
     return result
 }
 
-/** [fromLibrary] marks an `expect` declaration from a klib. Its annotations have no source. */
 private class ExemptionCandidateCollector(
     private val session: FirSession,
     private val exemptions: Set<ClassId>,

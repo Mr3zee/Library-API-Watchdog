@@ -164,7 +164,6 @@ class SourceSetOwnershipBuildModesTest {
 
     @Test
     fun `exemptExistingApi without explicit API mode exempts each declaration once`() {
-        // Collection mode turns explicit API mode on, so every compilation runs the checks.
         val project = kmpProject(JVM_AND_JS_TARGETS) {
             explicitApi = false
             api("SharedApi", "commonMain")

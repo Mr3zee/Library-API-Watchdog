@@ -11,11 +11,7 @@ internal enum class CheckScope {
     NONE,
 }
 
-/**
- * A platform compilation compiles each parent source set again as a common fragment module named after
- * the source set. A [org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind.Platform] checker of the
- * leaf session checks every fragment, so it calls [scopeOf] for each declaration.
- */
+/** A platform compilation compiles each parent source set again as a common module named after the source set. */
 internal class SourceSetOwnership(
     private val checkedElsewhere: Set<String>,
     private val platformChecked: Set<String>,

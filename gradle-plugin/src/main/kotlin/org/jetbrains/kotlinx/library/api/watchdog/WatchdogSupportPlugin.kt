@@ -271,7 +271,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         val reportFile = layout.buildDirectory.file(
             "reports/api-watchdog/diagnostics/${kotlinCompilation.compileKotlinTaskName}.tsv"
         )
-        // Only a collection run has roles. `whenReady` sets `tasksInGraph`.
+        // `whenReady` sets `tasksInGraph`.
         val roles = lazy { if (collect.get()) sourceSetRoles(kotlinCompilation) else SourceSetRoles.NONE }
 
         if (feedsReport) {

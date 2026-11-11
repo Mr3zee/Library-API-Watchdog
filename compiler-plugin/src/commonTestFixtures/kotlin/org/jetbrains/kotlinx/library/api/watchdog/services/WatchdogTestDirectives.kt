@@ -85,7 +85,6 @@ object WatchdogTestDirectives : SimpleDirectivesContainer() {
         description = "Root, configuration, and notation triples (dependencyDeclarations option)",
     )
 
-    /** `// SOURCE_SETS_CHECKED_ELSEWHERE: common` */
     val SOURCE_SETS_CHECKED_ELSEWHERE by stringDirective(
         description = "Common modules that another compilation checks (sourceSetsCheckedElsewhere option)",
     )

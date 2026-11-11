@@ -872,7 +872,6 @@ class ExemptExistingApiTest {
         result.assertTaskOutcome(":$EXEMPT_TASK", SUCCESS)
         result.assertTaskOutcome(":compileKotlinJvm", SUCCESS)
         result.assertTaskOutcome(":compileKotlinJs", SUCCESS)
-        // The metadata compilations report the common declaration and the intermediate one.
         result.assertOutputHas("3 backwards-compatibility exemption(s) in 3 file(s)")
         project.assertExempted("src/commonMain/kotlin/test/sharedApi.kt", "SharedApi")
         project.assertExempted("src/jvmAndJs/kotlin/test/jvmAndJsApi.kt", "JvmAndJsApi")

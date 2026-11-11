@@ -22,7 +22,6 @@ class SourceSetOwnershipTest {
 
         result.assertTaskOutcome(COMMON_METADATA, SUCCESS)
         result.assertOpenApiBy("SharedApi.kt" to COMMON_METADATA, "JvmApi.kt" to JVM, "JsApi.kt" to JS)
-        // The JVM compilation runs the Java interop checks on the common source set.
         result.assertJvmNameBy("SharedApi.kt" to JVM, "JvmApi.kt" to JVM)
         val html = project.file("build/reports/api-watchdog/report.html").readText()
         for (expected in listOf("SharedApi", "JvmApi", "JsApi", "sharedApi", "jvmApi")) {
@@ -201,7 +200,6 @@ class SourceSetOwnershipTest {
         val result = project.build(REPORT_TASK, PLAIN_CONSOLE)
 
         result.assertOpenApiBy("SharedApi.kt" to COMMON_METADATA, "JvmApi.kt" to JVM, *android)
-        // The `jvm` target goes before the Android target.
         result.assertJvmNameBy("SharedApi.kt" to JVM, "JvmApi.kt" to JVM, *android)
     }
 
@@ -242,7 +240,6 @@ class SourceSetOwnershipTest {
         else -> arrayOf("AndroidApi.kt" to ":$mainCompileTask")
     }
 
-    /** With [openApi] = [ERROR], the only other check is a `TOP_LEVEL_API_WITHOUT_JVM_NAME` warning. */
     private fun jvmAndJsProject(openApi: Severity = WARNING): WatchdogBuild =
         kmpProject(JVM_AND_JS_TARGETS) {
             apiWatchdog {

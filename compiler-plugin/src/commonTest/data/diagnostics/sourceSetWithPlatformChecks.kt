@@ -6,8 +6,6 @@
 // SOURCE_SETS_CHECKED_ELSEWHERE: common
 // SOURCE_SETS_WITH_PLATFORM_CHECKS: common
 
-// The common module gets only the checks that a metadata compilation can't run.
-
 // MODULE: common
 // FILE: common.kt
 

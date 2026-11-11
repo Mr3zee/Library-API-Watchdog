@@ -44,7 +44,6 @@ class WatchdogFirCheckers internal constructor(
 
     private val enabled = checksOn && scope != CheckScope.NONE
 
-    /** The checks without a severity setting don't run in [CheckScope.PLATFORM]. */
     private val allChecks = enabled && scope == CheckScope.ALL
 
     override val declarationCheckers: DeclarationCheckers = object : DeclarationCheckers() {
@@ -212,7 +211,6 @@ class WatchdogFirCheckers internal constructor(
                 enclosing = enclosingExemptionProbes,
                 recorder = recorder,
                 scopeOf = sourceSetOwnership::scopeOf,
-                // A metadata compilation doesn't run these checkers.
                 platformOnly = { checker -> jvmOnly.any { it === checker } },
             ).takeIf { allChecks },
         )).wrapped(basic.disabled + internalApiTypeExposureDisabled) + setOfNotNull(

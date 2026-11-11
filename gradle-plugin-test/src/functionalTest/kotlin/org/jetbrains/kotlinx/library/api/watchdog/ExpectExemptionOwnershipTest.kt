@@ -93,7 +93,6 @@ class ExpectExemptionOwnershipTest {
             """,
         )
 
-        // Each platform compilation judges by its own `actual`.
         project.build(REPORT_TASK, PLAIN_CONSOLE).assertRedundantBy("Shared.kt" to JVM)
     }
 
@@ -187,7 +186,6 @@ class ExpectExemptionOwnershipTest {
             """,
         )
 
-        // The metadata compilation doesn't run the Java interop checks.
         project.build(REPORT_TASK, PLAIN_CONSOLE).assertRedundantBy("Shared.kt" to JVM, "Shared.kt" to JVM)
     }
 
