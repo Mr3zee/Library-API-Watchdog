@@ -354,7 +354,7 @@ internal class ExpectExemptionRedundancyChecker(
         val classExemptions = (declaration as? FirRegularClass)?.let { enclosing.classExemptions(it) }.orEmpty()
         if (candidates.isEmpty() && classExemptions.isEmpty()) return
 
-        val output = if (scope == CheckScope.NONE) recordingOnly(reporter, recorder!!) else reporter
+        val output = if (scope == CheckScope.NONE) recordingDiagnosticReporter(reporter, recorder!!, print = false) else reporter
         val actuals: List<FirDeclaration>? by lazy { declaration.findActuals() }
         fun reportsHere(verdict: Verdict): Boolean = scope == CheckScope.ALL || verdict == Verdict.REDUNDANT_HERE
         for (candidate in candidates) {
@@ -380,13 +380,6 @@ internal class ExpectExemptionRedundancyChecker(
 
     private fun redundantVerdictOf(checkers: Collection<ExemptingChecker>): Verdict =
         if (checkers.all(platformOnly)) Verdict.REDUNDANT_HERE else Verdict.REDUNDANT_FOR_OWNER
-
-    private fun recordingOnly(reporter: DiagnosticReporter, recorder: WatchdogDiagnosticsRecorder): DiagnosticReporter =
-        delegatingDiagnosticReporter(reporter) { diagnostic, diagnosticContext ->
-            if (diagnostic != null && !diagnosticContext.isDiagnosticSuppressed(diagnostic)) {
-                recorder.record(diagnostic, diagnosticContext)
-            }
-        }
 
     /** Whether the `expect` needs [candidate]. Null means unknown. */
     context(context: CheckerContext, reporter: DiagnosticReporter)

@@ -3,7 +3,6 @@
 package org.jetbrains.kotlinx.library.api.watchdog
 
 import kotlin.test.assertTrue
-import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome.SKIPPED
 import org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.OPEN_API_WITHOUT_SUBCLASS_OPT_IN
@@ -13,7 +12,7 @@ import org.jetbrains.kotlinx.library.api.watchdog.Severity.NONE
 import org.jetbrains.kotlinx.library.api.watchdog.Severity.WARNING
 import org.junit.Test
 
-class SourceSetOwnershipTest {
+class SourceSetOwnershipTest : SourceSetOwnershipTestBase() {
     @Test
     fun `report task prints shared source set diagnostics once`() {
         val project = jvmAndJsProject(ERROR)
@@ -251,39 +250,9 @@ class SourceSetOwnershipTest {
             api("JvmApi", "jvmMain")
             api("JsApi", "jsMain")
         }
-
-    private fun ModuleSpec.api(name: String, sourceSet: String) {
-        source(
-            """
-                /** An open API. */
-                public open class $name
-
-                /** A top-level function. */
-                public fun ${name.replaceFirstChar(Char::lowercase)}(): Int = 0
-            """,
-            name,
-            sourceSet = sourceSet,
-            defaultImports = false,
-        )
-    }
-
-    private fun BuildResult.assertOpenApiBy(vararg reports: Pair<String, String>) =
-        assertReportedBy(OPEN_API_WITHOUT_SUBCLASS_OPT_IN, *reports)
-
-    private fun BuildResult.assertJvmNameBy(vararg reports: Pair<String, String>) =
-        assertReportedBy(TOP_LEVEL_API_WITHOUT_JVM_NAME, *reports)
 }
 
-private const val REPORT_TASK = "generateApiWatchdogReport"
-private const val JVM = ":compileKotlinJvm"
-private const val JS = ":compileKotlinJs"
-private const val WASM = ":compileKotlinWasmJs"
-private const val COMMON_METADATA = ":compileCommonMainKotlinMetadata"
-private const val WEB_METADATA = ":compileWebMainKotlinMetadata"
 private const val INTEGRATION = ":compileIntegrationKotlinJvm"
-
-private const val JVM_AND_JS_TARGETS = "jvm()\njs { nodejs() }"
-private const val JVM_JS_AND_WASM_TARGETS = "jvm()\njs { nodejs() }\nwasmJs { nodejs() }"
 
 private const val CUSTOM_COMPILATION_TARGETS = """
     val commonMain = sourceSets.commonMain.get()

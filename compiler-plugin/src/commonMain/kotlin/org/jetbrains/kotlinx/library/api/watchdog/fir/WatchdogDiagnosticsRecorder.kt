@@ -140,14 +140,18 @@ internal class RecordingTypeChecker<T : FirTypeRef>(
     }
 }
 
-private fun recordingDiagnosticReporter(delegate: DiagnosticReporter, recorder: WatchdogDiagnosticsRecorder) =
+internal fun recordingDiagnosticReporter(
+    delegate: DiagnosticReporter,
+    recorder: WatchdogDiagnosticsRecorder,
+    print: Boolean = true,
+): DiagnosticReporter =
     delegatingDiagnosticReporter(delegate) { diagnostic, context ->
         // A `@Suppress` on an element the checkers haven't visited yet resolves later in the
         // pending reporter. The recorder then records a diagnostic the compiler doesn't report.
         if (diagnostic != null && !context.isDiagnosticSuppressed(diagnostic)) {
             recorder.record(diagnostic, context)
         }
-        delegate.report(diagnostic, context)
+        if (print) delegate.report(diagnostic, context)
     }
 
 /**

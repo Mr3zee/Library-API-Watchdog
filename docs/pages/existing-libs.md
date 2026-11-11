@@ -72,7 +72,8 @@ four things:
     declare the dependency with `api` in the build script. This doesn't break any consumer.
 - In a multiplatform project, one compilation prints the diagnostics of a shared source set, so the
   build output has each of them once. A regular build prints them in every compilation of the source
-  set.
+  set. With an `androidTarget()`, a diagnostic in `androidMain` still prints once for each build
+  variant.
 
 `exemptExistingApi` removes a [redundant exemption](./checks/special/redundant-exemption.md), and
 `generateApiWatchdogReport` tags it as redundant. In a multiplatform project, the task removes the

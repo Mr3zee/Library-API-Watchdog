@@ -6,6 +6,7 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import org.gradle.testkit.runner.BuildResult
+import org.gradle.testkit.runner.TaskOutcome.SKIPPED
 import org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.BOOLEAN_PARAMETER_PUBLIC_API
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.DATA_CLASS_PUBLIC_API
@@ -15,9 +16,10 @@ import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.STATEFUL_CLASS_WITH
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.STATEFUL_CLASS_WITHOUT_HASH_CODE
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.STATEFUL_CLASS_WITHOUT_TO_STRING
 import org.jetbrains.kotlinx.library.api.watchdog.Severity.NONE
+import org.junit.Assume.assumeFalse
 import org.junit.Test
 
-class ExpectExemptionOwnershipTest {
+class ExpectExemptionOwnershipTest : SourceSetOwnershipTestBase() {
     @Test
     fun `verdict of the expect declaration is printed once by the compilation that reports the source set`() {
         val project = expectProject(
@@ -118,6 +120,38 @@ class ExpectExemptionOwnershipTest {
         )
 
         project.build(REPORT_TASK, PLAIN_CONSOLE).assertNotReported(REDUNDANT_EXEMPTION, DATA_CLASS_PUBLIC_API)
+    }
+
+    @Test
+    fun `native compilation that the host skips isn't the first platform compilation`() {
+        assumeFalse("A macOS host compiles every native target", System.getProperty("os.name").startsWith("Mac"))
+        val actual = """
+            $DATA_CLASS_EXEMPTION
+            public actual class Record actual constructor(public actual val value: Int)
+        """
+        val project = kmpProject("iosArm64()\nlinuxX64()") {
+            apiWatchdog {
+                severity(NONE, STATEFUL_CLASS_WITHOUT_EQUALS, STATEFUL_CLASS_WITHOUT_HASH_CODE, STATEFUL_CLASS_WITHOUT_TO_STRING)
+            }
+            source(
+                """
+                    /** A record. */
+                    $DATA_CLASS_EXEMPTION
+                    public expect class Record(value: Int) {
+                        /** The value. */
+                        public val value: Int
+                    }
+                """,
+                "Shared",
+            )
+            source(actual, "PlatformIos", sourceSet = "iosArm64Main")
+            source(actual, "PlatformLinux", sourceSet = "linuxX64Main")
+        }
+
+        val result = project.build(REPORT_TASK, "-Pkotlin.native.enableKlibsCrossCompilation=false", PLAIN_CONSOLE)
+
+        result.assertTaskOutcome(":compileKotlinIosArm64", SKIPPED)
+        result.assertRedundantBy("Shared.kt" to ":compileKotlinLinuxX64")
     }
 
     @Test
@@ -363,16 +397,8 @@ private const val KOTLIN_ONLY_EXEMPTION =
     "@IntentionallyKotlinOnlyApi(description = \"Coroutine-first API.\", reason = ExemptionReason.IGNORE_JAVA_INTEROP)"
 private const val MANGLED_NAME_EXEMPTION = "@IntentionallyMangledJvmName(reason = ExemptionReason.API_DESIGN)"
 
-private const val EXEMPT_TASK = "exemptExistingApi"
-private const val REPORT_TASK = "generateApiWatchdogReport"
 private val SOURCE_PATHS = listOf(
     "src/commonMain/kotlin/test/Shared.kt",
     "src/jvmMain/kotlin/test/PlatformJvm.kt",
     "src/jsMain/kotlin/test/PlatformJs.kt",
 )
-
-private const val JVM = ":compileKotlinJvm"
-private const val COMMON_METADATA = ":compileCommonMainKotlinMetadata"
-private const val WEB_METADATA = ":compileWebMainKotlinMetadata"
-private const val JVM_AND_JS_TARGETS = "jvm()\njs { nodejs() }"
-private const val JVM_JS_AND_WASM_TARGETS = "jvm()\njs { nodejs() }\nwasmJs { nodejs() }"

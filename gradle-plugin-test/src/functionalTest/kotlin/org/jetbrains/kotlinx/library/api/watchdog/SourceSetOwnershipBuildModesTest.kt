@@ -4,15 +4,12 @@ package org.jetbrains.kotlinx.library.api.watchdog
 
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
-import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome.FROM_CACHE
 import org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
-import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.OPEN_API_WITHOUT_SUBCLASS_OPT_IN
-import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.TOP_LEVEL_API_WITHOUT_JVM_NAME
 import org.jetbrains.kotlinx.library.api.watchdog.Severity.WARNING
 import org.junit.Test
 
-class SourceSetOwnershipBuildModesTest {
+class SourceSetOwnershipBuildModesTest : SourceSetOwnershipTestBase() {
     @Test
     fun `compile task stays up to date when the task set changes`() {
         val project = jvmAndJsProject()
@@ -204,40 +201,9 @@ class SourceSetOwnershipBuildModesTest {
             api("ASharedApi", "commonMain")
         }
     }
-
-    private fun ModuleSpec.api(name: String, sourceSet: String) {
-        source(
-            """
-                /** An open API. */
-                public open class $name
-
-                /** A top-level function. */
-                public fun ${name.replaceFirstChar(Char::lowercase)}(): Int = 0
-            """,
-            name,
-            sourceSet = sourceSet,
-            defaultImports = false,
-        )
-    }
-
-    private fun BuildResult.assertOpenApiBy(vararg reports: Pair<String, String>) =
-        assertReportedBy(OPEN_API_WITHOUT_SUBCLASS_OPT_IN, *reports)
-
-    private fun BuildResult.assertJvmNameBy(vararg reports: Pair<String, String>) =
-        assertReportedBy(TOP_LEVEL_API_WITHOUT_JVM_NAME, *reports)
 }
 
 private val OPEN_EXEMPTION = Regex(Regex.escape("@IntentionallyOpen(reason = ExemptionReason.FOR_BACKWARDS_COMPATIBILITY)"))
-
-private const val EXEMPT_TASK = "exemptExistingApi"
-private const val REPORT_TASK = "generateApiWatchdogReport"
-private const val JVM = ":compileKotlinJvm"
-private const val JS = ":compileKotlinJs"
-private const val WASM = ":compileKotlinWasmJs"
-private const val COMMON_METADATA = ":compileCommonMainKotlinMetadata"
-private const val WEB_METADATA = ":compileWebMainKotlinMetadata"
-private const val JVM_AND_JS_TARGETS = "jvm()\njs { nodejs() }"
-private const val JVM_JS_AND_WASM_TARGETS = "jvm()\njs { nodejs() }\nwasmJs { nodejs() }"
 
 private val CONFIGURATION_CACHE = arrayOf(
     "--configuration-cache",

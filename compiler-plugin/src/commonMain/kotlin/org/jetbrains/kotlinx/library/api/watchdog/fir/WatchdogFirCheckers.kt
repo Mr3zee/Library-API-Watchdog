@@ -51,7 +51,9 @@ class WatchdogFirCheckers internal constructor(
 
         private fun <C : Any> C.onlyOnJvm(): C? = takeIf { session.moduleData.platform.isJvm() }?.also { jvmOnly += it }
 
-        private fun inScope(checker: Any): Boolean = scope == CheckScope.ALL || jvmOnly.any { it === checker }
+        private fun isJvmOnly(checker: Any): Boolean = jvmOnly.any { it === checker }
+
+        private fun inScope(checker: Any): Boolean = scope == CheckScope.ALL || isJvmOnly(checker)
 
         private fun <C : Any> partition(vararg entries: Toggled<C>?): Partition<C> {
             val active = mutableSetOf<C>()
@@ -211,7 +213,7 @@ class WatchdogFirCheckers internal constructor(
                 enclosing = enclosingExemptionProbes,
                 recorder = recorder,
                 scopeOf = sourceSetOwnership::scopeOf,
-                platformOnly = { checker -> jvmOnly.any { it === checker } },
+                platformOnly = ::isJvmOnly,
             ).takeIf { allChecks },
         )).wrapped(basic.disabled + internalApiTypeExposureDisabled) + setOfNotNull(
             // The compilation that checks a parent source set doesn't see the `actual` declarations of this one.

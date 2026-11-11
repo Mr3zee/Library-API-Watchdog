@@ -217,9 +217,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             val kotlin = extensions.findByName("kotlin") as? KotlinTargetsContainer
             tasksInGraph = kotlin?.targets.orEmpty().asSequence()
                 .flatMap { it.compilations }
-                .map { it.compileKotlinTaskName }
-                .filter { name -> graph.hasTask(taskPath(name)) && tasks.findByName(name)?.enabled == true }
-                .mapTo(hashSetOf()) { taskPath(it) }
+                .filter { graph.hasTask(taskPath(it.compileKotlinTaskName)) && runsCompileTask(it) }
+                .mapTo(hashSetOf()) { taskPath(it.compileKotlinTaskName) }
         }
         // Both tasks write the report data file. When the build requests `exemptExistingApi`, the report
         // artifact comes from that run, not from a second compilation in `generateApiWatchdogReport`.
@@ -517,6 +516,12 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         }
         return SourceSetRoles(checkedElsewhere, platformChecks)
     }
+
+    private fun Project.runsCompileTask(compilation: KotlinCompilation<*>): Boolean =
+        tasks.findByName(compilation.compileKotlinTaskName)?.enabled == true &&
+                // When the host can't compile a native target, KGP skips the compile task with `onlyIf`,
+                // and `enabled` stays true.
+                (compilation.platformType != KotlinPlatformType.native || compilation.target.publishable)
 
     private fun Project.collectingCompilations(kotlin: KotlinTargetsContainer): List<KotlinCompilation<*>> =
         kotlin.targets.flatMap { it.compilations }.filter { compilation ->
