@@ -78,10 +78,7 @@ internal class InternalApiTypeExposureChecker(
         )
     }
 
-    /**
-     * A marker or an exclusion rule on an enclosing class covers the nested class. A name rule
-     * describes the API of this module, so it doesn't count for a class of a dependency.
-     */
+    /** A name rule describes the API of this module, so it doesn't count for a class of a dependency. */
     context(context: CheckerContext)
     private fun FirClassLikeSymbol<*>.internalApiExposure(): InternalApiExposure? {
         val filters = context.session.configuredApiFilters
@@ -107,6 +104,5 @@ internal sealed class InternalApiExposure {
 
     data class Marked(override val type: ClassId, val annotation: ClassId) : InternalApiExposure()
 
-    /** [pattern] is the `excludedName` rule as configured. */
     data class ExcludedByName(override val type: ClassId, val pattern: String) : InternalApiExposure()
 }

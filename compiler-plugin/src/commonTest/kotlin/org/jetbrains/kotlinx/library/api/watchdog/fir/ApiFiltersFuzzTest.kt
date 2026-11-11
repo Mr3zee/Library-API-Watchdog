@@ -9,29 +9,23 @@ import kotlin.test.fail
 
 /**
  * A differential fuzz test of the API filters. The generator of [RedundantExemptionFuzzTest] puts the
- * exclusion annotation `@Mark` and the inclusion annotation `@Keep` on random named declarations and
- * files. A `@JvmField`, `const`, or `lateinit` property can also get them with the `field:` target,
- * because its backing field has the visibility of the property. The test compiles each program
- * several times with the same text and other filter options. The oracles:
+ * exclusion annotation `@Mark` and the inclusion annotation `@Keep` on random named declarations,
+ * backing fields, and files. The test compiles one program text with other filter options. The oracles:
  *
  * - Annotation and name rules: an annotation rule and a name rule that match the same declarations
- *   give the same diagnostics. The test compiles each combination of an exclusion by the internal
- *   API annotation `@Mark` or by names with an inclusion by `@Keep` or by names.
+ *   give the same diagnostics.
  * - Everything included: an inclusion rule that matches every top-level declaration gives the
  *   diagnostics of no inclusion rule.
  * - Complement: an inclusion of some top-level declarations gives the diagnostics of an exclusion of
- *   the other top-level declarations. The included declarations always hold the preamble. Only the
- *   preamble types are in signatures, and the exposure check reports an excluded type, but not a type
- *   outside the inclusion rules.
+ *   the other top-level declarations. The preamble is always included, because the exposure check
+ *   reports an excluded type, but not a type outside the inclusion rules.
  * - Included member: an inclusion of a public member of a top-level class gives the diagnostics of an
  *   inclusion of the class with an exclusion of its other members. A constructor doesn't have a name
- *   of its own, so it is outside the filters in the first case only. The comparison skips the
- *   diagnostics in the constructors. It also skips `REDUNDANT_EXEMPTION` on the annotations of the
- *   class, because a class exemption can cover the constructors.
- * - Blanking: the `REDUNDANT_EXEMPTION` oracle of [RedundantExemptionFuzzTest] with the filters of a
- *   random combination.
+ *   of its own, so the comparison skips the diagnostics in the constructors. It also skips
+ *   `REDUNDANT_EXEMPTION` on the annotations of the class, because a class exemption can cover the
+ *   constructors.
+ * - Blanking: the oracle of [RedundantExemptionFuzzTest] with the filters of a random combination.
  *
- * A comparison uses the names and the ranges of the watchdog diagnostics.
  * `PUBLIC_TYPE_WITH_INTERNAL_API` has another message for an exclusion by name, so the test doesn't
  * compare the messages. The generator avoids these cases, because the oracles aren't exact for them:
  *
@@ -42,8 +36,7 @@ import kotlin.test.fail
  * - Two declarations with one simple name, other than companion objects. So a name rule matches one
  *   declaration, and a function name doesn't match other overloads.
  *
- * Gradle forwards the `watchdog.fuzz.programs` and `watchdog.fuzz.seed` project properties as system
- * properties, as for [RedundantExemptionFuzzTest].
+ * The KDoc of [RedundantExemptionFuzzTest] lists the Gradle properties of the test.
  */
 class ApiFiltersFuzzTest {
     private val seed: Long = System.getProperty("watchdog.fuzz.seed")?.toLong() ?: 20261110L
@@ -154,7 +147,6 @@ class ApiFiltersFuzzTest {
         override fun toString(): String = "$file:$start..$end $name"
     }
 
-    /** A directive line, or nothing without [values]. */
     private fun directive(name: String, values: List<String>): String =
         if (values.isEmpty()) "" else "// $name: ${values.distinct().joinToString(" ")}\n"
 

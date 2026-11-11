@@ -85,7 +85,7 @@ class RedundantExemptionFuzzTest {
 
 /**
  * Compares the `REDUNDANT_EXEMPTION` verdict on each exemption of a program with the effect of
- * blanking the exemption. [directives] of [mismatches] go into the header of every compilation.
+ * blanking the exemption.
  */
 internal class BlankingOracle(
     private val runner: FuzzDiagnosticRunner,
@@ -158,7 +158,6 @@ internal class BlankingOracle(
         }
 }
 
-/** The names of the diagnostics that the watchdog reports. */
 internal val watchdogDiagnosticNames: Set<String> = buildSet {
     WatchdogDiagnostics.allDiagnostics.mapTo(this) { it.name }
     add(WatchdogDiagnostics.PUBLIC_TYPE_WITH_INTERNAL_API.name)
@@ -178,7 +177,7 @@ internal fun FuzzProgram.bases(seed: Long): Map<String, Int> = files.associate {
     file.name to analyzed.length - file.text.length
 }
 
-/** A failure message with the errors of the compiler in [diagnostics] of the last compilation, or null without errors. */
+/** A failure message with the compiler errors in [diagnostics], or null. */
 internal fun FuzzProgram.compileErrors(diagnostics: List<ReportedDiagnostic>, directives: String): String? {
     val errors = diagnostics.filter { it.severity == Severity.ERROR && it.name !in watchdogDiagnosticNames }
     if (errors.isEmpty()) return null

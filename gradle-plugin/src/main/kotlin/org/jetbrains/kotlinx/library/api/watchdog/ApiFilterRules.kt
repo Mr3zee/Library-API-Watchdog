@@ -4,7 +4,7 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Provider
 
-/** The filter rules of one compilation, in the name grammar of the compiler plugin options. */
+/** Filter rules in the name grammar of the compiler plugin options. */
 internal data class ApiFilterRules(
     val excludedNames: Set<String> = emptySet(),
     val excludedAnnotations: Set<String> = emptySet(),
@@ -30,11 +30,9 @@ internal data class ApiFilterRules(
 }
 
 /**
- * The filters of the validation tool that validates this project, copied rule by rule. When both
- * tools validate the project, the ABI validation of the Kotlin Gradle plugin wins, and the
- * function doesn't read the Binary Compatibility Validator plugin. Call it after the build scripts
- * of the project and of its parent projects ran, because the Binary Compatibility Validator plugin
- * has plain mutable sets.
+ * The filters of one validation tool, without a merge. When both tools validate the project, the ABI
+ * validation of the Kotlin Gradle plugin wins. Call it after the build scripts of the project and of
+ * its parent projects ran, because the Binary Compatibility Validator plugin has plain mutable sets.
  */
 internal fun Project.abiValidationFilterRules(): ApiFilterRules =
     (kotlinAbiValidationFilterRules() ?: binaryCompatibilityValidatorFilterRules() ?: ApiFilterRules())
@@ -112,7 +110,6 @@ private fun packageRule(packageName: String): String = if (packageName.isBlank()
 /** The plugin separates a nested class with `$`. */
 private fun dottedName(binaryName: String): String = binaryName.replace('$', '.')
 
-/** The value of the getter [getterName], or null when the object doesn't have the getter or the getter throws. */
 private fun Any.property(getterName: String): Any? = runCatching {
     javaClass.getMethod(getterName).invoke(this)
 }.getOrNull()

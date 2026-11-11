@@ -26,13 +26,17 @@ FILE: apiFiltersFieldAnnotations.kt
             public get(): R|kotlin/collections/MutableList<test/InternalModel>|
             public set(value: R|kotlin/collections/MutableList<test/InternalModel>|): R|kotlin/Unit|
 
-        field:@FIELD:R|test/Hidden|() public final var watched: R|kotlin/collections/MutableList<test/InternalModel>| = R|kotlin/collections/mutableListOf|<R|test/InternalModel|>()
+        field:@FIELD:R|test/Hidden|() public final var excludedPrivateField: R|kotlin/collections/MutableList<test/InternalModel>| = R|kotlin/collections/mutableListOf|<R|test/InternalModel|>()
             public get(): R|kotlin/collections/MutableList<test/InternalModel>|
             public set(value: R|kotlin/collections/MutableList<test/InternalModel>|): R|kotlin/Unit|
 
-        field:@FIELD:R|test/Hidden|() public final lateinit var watchedLateinit: R|kotlin/collections/MutableList<test/InternalModel>|
+        field:@FIELD:R|test/Hidden|() public final lateinit var excludedPrivateSetter: R|kotlin/collections/MutableList<test/InternalModel>|
             public get(): R|kotlin/collections/MutableList<test/InternalModel>|
             private set(value: R|kotlin/collections/MutableList<test/InternalModel>|): R|kotlin/Unit|
+
+        public final var watched: R|kotlin/collections/MutableList<test/InternalModel>| = R|kotlin/collections/mutableListOf|<R|test/InternalModel|>()
+            public get(): R|kotlin/collections/MutableList<test/InternalModel>|
+            public set(value: R|kotlin/collections/MutableList<test/InternalModel>|): R|kotlin/Unit|
 
     }
     field:@FIELD:R|test/Hidden|() public final const val EXCLUDED_CONSTANT: R|kotlin/Int| = Int(1)

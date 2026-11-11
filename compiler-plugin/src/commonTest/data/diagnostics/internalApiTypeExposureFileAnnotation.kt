@@ -4,10 +4,9 @@
 // EXCLUDED_NAMES: test.named.**
 // DIAGNOSTICS: -STATEFUL_CLASS_WITHOUT_EQUALS -STATEFUL_CLASS_WITHOUT_HASH_CODE -STATEFUL_CLASS_WITHOUT_TO_STRING
 
-// An internal API annotation on a file excludes the declarations of the file from the checks, but
-// it doesn't make the classes of the file internal API types for the exposure check. An incremental
-// build reads an unchanged class from the previous output, without the annotations of its file. An
-// annotation on the class itself or a name rule makes the class an internal API type.
+// An internal API annotation on a file doesn't make the classes of the file internal API types,
+// because an incremental build reads an unchanged class without the annotations of its file. An
+// annotation on the class itself or a name rule does.
 
 // FILE: markers.kt
 package test.markers

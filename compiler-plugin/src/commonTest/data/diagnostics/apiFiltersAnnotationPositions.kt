@@ -4,8 +4,6 @@
 // INCLUDED_NAMES: test.Point.items
 // DIAGNOSTICS: -STATEFUL_CLASS_WITHOUT_EQUALS -STATEFUL_CLASS_WITHOUT_HASH_CODE -STATEFUL_CLASS_WITHOUT_TO_STRING
 
-// The positions of an inclusion annotation and a name rule on a property.
-
 package test
 
 /** Includes a declaration. */
@@ -33,8 +31,7 @@ public open class <!OPEN_API_WITHOUT_SUBCLASS_OPT_IN, UNDOCUMENTED_PUBLIC_API!>P
 // The same with an annotation.
 public open class <!OPEN_API_WITHOUT_SUBCLASS_OPT_IN, UNDOCUMENTED_PUBLIC_API!>Line<!>(@PublicApi public val items: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int><!>, flag: Boolean, others: MutableList<Int>)
 
-// A `field:` annotation counts for a property with a public backing field: a `@JvmField`, a `const`,
-// or a public `lateinit` property.
+// A `field:` annotation counts for the property.
 public open class <!OPEN_API_WITHOUT_SUBCLASS_OPT_IN, UNDOCUMENTED_PUBLIC_API!>WithJvmField<!> {
     /** Included. */
     @field:PublicApi
@@ -56,14 +53,13 @@ public open class <!OPEN_API_WITHOUT_SUBCLASS_OPT_IN, UNDOCUMENTED_PUBLIC_API!>W
     public lateinit var items: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int><!>
 }
 
-// A `field:` annotation doesn't count for a property with a private backing field.
-public open class WithPrivateField {
+public open class <!OPEN_API_WITHOUT_SUBCLASS_OPT_IN, UNDOCUMENTED_PUBLIC_API!>WithPrivateField<!> {
     @field:PublicApi
-    public var items: MutableList<Int> = mutableListOf()
+    public var items: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int><!> = mutableListOf()
 }
 
-public open class WithPrivateSetterLateinit {
+public open class <!OPEN_API_WITHOUT_SUBCLASS_OPT_IN, UNDOCUMENTED_PUBLIC_API!>WithPrivateSetterLateinit<!> {
     @field:PublicApi
-    public lateinit var items: MutableList<Int>
+    public lateinit var items: <!MUTABLE_COLLECTION_PUBLIC_API!>MutableList<Int><!>
         private set
 }

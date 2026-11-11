@@ -550,7 +550,6 @@ private val testAgp8Version: String? = System.getProperty("watchdog.test.agp8Ver
 private val testAgp9Version: String? = System.getProperty("watchdog.test.agp9Version")
 private val testBcvVersion: String? = System.getProperty("watchdog.test.bcvVersion")
 
-/** The Binary Compatibility Validator plugin in the version of the version catalog. */
 val binaryCompatibilityValidatorPlugin: Plugin
     get() = Plugin(BCV_PLUGIN_ID, requiredProperty(testBcvVersion))
 

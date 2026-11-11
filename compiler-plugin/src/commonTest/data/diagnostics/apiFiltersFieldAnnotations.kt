@@ -3,9 +3,7 @@
 // INTERNAL_API_ANNOTATIONS: test.Hidden
 // DIAGNOSTICS: -STATEFUL_CLASS_WITHOUT_EQUALS -STATEFUL_CLASS_WITHOUT_HASH_CODE -STATEFUL_CLASS_WITHOUT_TO_STRING -TOP_LEVEL_API_WITHOUT_JVM_NAME
 
-// An exclusion annotation with the `field:` target counts for a property with a public backing
-// field: a `@JvmField`, a `const`, or a public `lateinit` property. It doesn't count for a property
-// with a private backing field.
+// An exclusion annotation with the `field:` target excludes the property.
 
 package test
 
@@ -28,14 +26,17 @@ public class Holder {
     @field:Hidden
     public lateinit var excludedLateinit: MutableList<InternalModel>
 
-    /** The backing field is private, so the annotation doesn't count. */
+    /** Excluded with a private backing field. */
     @field:Hidden
-    public var watched: <!MUTABLE_COLLECTION_PUBLIC_API, PUBLIC_TYPE_WITH_INTERNAL_API!>MutableList<InternalModel><!> = mutableListOf()
+    public var excludedPrivateField: MutableList<InternalModel> = mutableListOf()
 
-    /** The setter is private, so the backing field is private too. */
+    /** Excluded with a private setter. */
     @field:Hidden
-    public lateinit var watchedLateinit: <!MUTABLE_COLLECTION_PUBLIC_API, PUBLIC_TYPE_WITH_INTERNAL_API!>MutableList<InternalModel><!>
+    public lateinit var excludedPrivateSetter: MutableList<InternalModel>
         private set
+
+    /** Watched. */
+    public var watched: <!MUTABLE_COLLECTION_PUBLIC_API, PUBLIC_TYPE_WITH_INTERNAL_API!>MutableList<InternalModel><!> = mutableListOf()
 }
 
 @field:Hidden

@@ -5,8 +5,6 @@
 // EXCLUDED_NAMES: test.Levels.HIGH test.ApiFiltersNameCasesKt
 // DIAGNOSTICS: -STATEFUL_CLASS_WITHOUT_EQUALS -STATEFUL_CLASS_WITHOUT_HASH_CODE -STATEFUL_CLASS_WITHOUT_TO_STRING
 
-// Name rules on an enum entry, on a companion object, and on the JVM facade class of the file.
-
 package test
 
 /** Includes a declaration. */

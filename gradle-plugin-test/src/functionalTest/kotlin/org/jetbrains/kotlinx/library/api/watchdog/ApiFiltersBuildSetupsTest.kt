@@ -10,7 +10,6 @@ import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.OPEN_API_WITHOUT_SU
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PUBLIC_TYPE_WITH_INTERNAL_API
 import org.junit.Test
 
-/** The API filters with project isolation, in included builds, in the reports, and in multiplatform compilations. */
 class ApiFiltersBuildSetupsTest : ApiFiltersTestBase() {
     @Test
     fun `Kotlin ABI validation filters of a subproject apply with project isolation`() {
@@ -144,7 +143,7 @@ class ApiFiltersBuildSetupsTest : ApiFiltersTestBase() {
         }
     }
 
-    /** A root build without plugins that includes a build of [block] with the name `included-lib`. */
+    /** The included build has the name `included-lib`. */
     private fun includedBuildProject(block: ProjectSpec.() -> Unit): WatchdogBuild {
         val included = jvmProject(block)
         val project = jvmProject { plugins() }

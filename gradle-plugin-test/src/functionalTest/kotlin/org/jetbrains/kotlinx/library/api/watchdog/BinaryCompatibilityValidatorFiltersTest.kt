@@ -7,8 +7,8 @@ import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PUBLIC_TYPE_WITH_IN
 import org.junit.Test
 
 /**
- * The filters of the real Binary Compatibility Validator plugin. The plugin validates the project
- * that applies it and the projects below it, so most builds apply it to the root project.
+ * The Binary Compatibility Validator plugin validates the project that applies it and the projects
+ * below it, so most builds apply it to the root project.
  */
 class BinaryCompatibilityValidatorFiltersTest : ApiFiltersTestBase() {
     @Test

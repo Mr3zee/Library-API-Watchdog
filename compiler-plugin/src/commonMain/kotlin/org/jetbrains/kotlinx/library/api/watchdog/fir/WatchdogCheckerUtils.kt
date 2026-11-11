@@ -7,7 +7,6 @@ import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.fir.FirAnnotationContainer
-import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
@@ -279,9 +278,9 @@ internal fun FirMemberDeclaration.isWatchedPublicApi(): Boolean {
 }
 
 /**
- * [ConfiguredApiFilters] gives the rules. When an included member includes an `expect` class, its
- * `actual` class or `actual typealias` is included too. The members of the class that a typealias
- * expands to don't have the inclusion annotations of the `expect` members.
+ * When an included member includes an `expect` class, its `actual` class or `actual typealias` is
+ * included too. The members of the class that a typealias expands to don't have the inclusion
+ * annotations of the `expect` members.
  */
 context(context: CheckerContext)
 private fun FirMemberDeclaration.passesApiFilters(): Boolean {
@@ -297,9 +296,9 @@ private fun FirMemberDeclaration.passesApiFilters(): Boolean {
 }
 
 /**
- * The enclosing declarations and the file of the declaration. A file checker doesn't have the file
- * in the enclosing declarations of its context. A probe of an `actual` declaration runs in the
- * context of its `expect` declaration, so the probe reads them from the symbol.
+ * A file checker doesn't have the file in the enclosing declarations of its context. A probe of an
+ * `actual` declaration runs in the context of its `expect` declaration, so the probe reads them
+ * from the symbol.
  */
 context(context: CheckerContext)
 private fun FirMemberDeclaration.enclosingDeclarationsWithFile(): List<FirBasedSymbol<*>> {
@@ -309,10 +308,7 @@ private fun FirMemberDeclaration.enclosingDeclarationsWithFile(): List<FirBasedS
     return if (file in enclosing) enclosing else enclosing + file
 }
 
-/**
- * The enclosing classes and the file of a source declaration. The property of an accessor or a
- * backing field is an enclosing declaration too.
- */
+/** The enclosing classes and the file of a source declaration. */
 internal fun FirBasedSymbol<*>.enclosingDeclarationsOfSymbol(): List<FirBasedSymbol<*>> {
     val property = when (this) {
         is FirPropertyAccessorSymbol -> propertySymbol
@@ -324,10 +320,7 @@ internal fun FirBasedSymbol<*>.enclosingDeclarationsOfSymbol(): List<FirBasedSym
     return chain + listOfNotNull((chain.lastOrNull() ?: this).sourceFileSymbol())
 }
 
-/**
- * Whether an inclusion rule matches a function, a property, an enum entry, or a constructor of
- * the class that is in the public API itself. A nested class doesn't count.
- */
+/** A nested class doesn't count. */
 context(context: CheckerContext)
 private fun FirClassSymbol<*>.hasIncludedApiMember(filters: ConfiguredApiFilters): Boolean {
     var included = false
@@ -366,13 +359,13 @@ internal fun FirBasedSymbol<*>.hasInternalApiMarker(): Boolean = internalApiAnno
 
 /**
  * The annotation on this declaration whose class carries [WatchdogClassIds.InternalAnnotationMarker]
- * or that [ConfiguredInternalApiAnnotations] lists, or null. [apiAnnotations] gives the annotations.
+ * or that [ConfiguredInternalApiAnnotations] lists, or null.
  */
 context(context: CheckerContext)
 internal fun FirBasedSymbol<*>.internalApiAnnotation(): ClassId? {
     val session = context.session
     val configured = session.configuredInternalApiAnnotations
-    return apiAnnotations(session).firstNotNullOfOrNull { annotation ->
+    return apiAnnotations().firstNotNullOfOrNull { annotation ->
         val annotationSymbol = annotation.toAnnotationClassLikeSymbol(session)
             ?: return@firstNotNullOfOrNull null
         val classId = annotationSymbol.classId
@@ -384,29 +377,16 @@ internal fun FirBasedSymbol<*>.internalApiAnnotation(): ClassId? {
 }
 
 /**
- * The annotations of the declaration that the internal API annotations and the API filters read. The
- * JVM ABI dump reads the annotations of a public backing field. So a `@field:` annotation counts for a
- * property with such a field, and not for another property.
+ * The annotations that the internal API annotations and the API filters read. The validation tools
+ * copy the annotations of the backing field to the accessors, so a `@field:` annotation counts for
+ * the property.
  */
-internal fun FirBasedSymbol<*>.apiAnnotations(session: FirSession): List<FirAnnotation> {
-    if (this !is FirPropertySymbol) return resolvedAnnotationsWithClassIds
-    val publicField = hasPublicApiBackingField(session)
-    val own = resolvedAnnotationsWithClassIds.filter { publicField || it.useSiteTarget != AnnotationUseSiteTarget.FIELD }
-    return if (publicField) own + backingFieldSymbol?.resolvedAnnotationsWithClassIds.orEmpty() else own
-}
-
-/**
- * The backing field of a `@JvmField` property and of a `const` property has the visibility of the
- * property. So has the backing field of a `lateinit` property without a setter of another visibility.
- * Resolution moves `@JvmField` to the backing field, so both carriers count.
- */
-private fun FirPropertySymbol.hasPublicApiBackingField(session: FirSession): Boolean {
-    val status = resolvedStatus
-    return status.isConst ||
-            status.isLateInit && setterSymbol?.resolvedStatus?.visibility.let { it == null || it == status.visibility } ||
-            hasAnnotation(JvmStandardClassIds.Annotations.JvmField, session) ||
-            backingFieldSymbol?.hasAnnotation(JvmStandardClassIds.Annotations.JvmField, session) == true
-}
+internal fun FirBasedSymbol<*>.apiAnnotations(): List<FirAnnotation> =
+    if (this is FirPropertySymbol) {
+        resolvedAnnotationsWithClassIds + backingFieldSymbol?.resolvedAnnotationsWithClassIds.orEmpty()
+    } else {
+        resolvedAnnotationsWithClassIds
+    }
 
 /** Valid only for a declaration that passed [isWatchedPublicApi]. */
 internal fun FirMemberDeclaration.isPublishedApiOnly(): Boolean = !effectiveVisibility.publicApi

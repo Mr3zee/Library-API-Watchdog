@@ -10,7 +10,7 @@ import org.jetbrains.kotlinx.library.api.watchdog.KmpAndroidTarget.LIBRARY_AGP9
 import org.junit.Test
 
 /**
- * The API filters in Android compilations. The tests skip themselves without an Android SDK.
+ * The validation tools in an Android project:
  *
  * - `kotlin-android` of AGP 8 and the built-in Kotlin of AGP 9 have the `abiValidation` block, and
  *   the Kotlin Gradle plugin registers `checkKotlinAbi` for both.

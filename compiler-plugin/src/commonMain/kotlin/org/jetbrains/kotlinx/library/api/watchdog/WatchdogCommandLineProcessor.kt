@@ -25,15 +25,12 @@ object WatchdogConfigurationKeys {
     val INTERNAL_API_ANNOTATIONS: CompilerConfigurationKey<Set<String>> =
         CompilerConfigurationKey.create("watchdog internal API annotations")
 
-    /** Name patterns of the declarations that the checks skip. */
     val EXCLUDED_NAMES: CompilerConfigurationKey<Set<String>> =
         CompilerConfigurationKey.create("watchdog excluded names")
 
-    /** Name patterns of the declarations that the checks are limited to, together with [INCLUDED_ANNOTATIONS]. */
     val INCLUDED_NAMES: CompilerConfigurationKey<Set<String>> =
         CompilerConfigurationKey.create("watchdog included names")
 
-    /** Name patterns of the annotations that limit the checks to their declarations, together with [INCLUDED_NAMES]. */
     val INCLUDED_ANNOTATIONS: CompilerConfigurationKey<Set<String>> =
         CompilerConfigurationKey.create("watchdog included annotations")
 

@@ -114,8 +114,6 @@ private sealed class Decl(val id: String) {
     var origin: Origin = Origin.PAIR
     var doc: Side? = null
     var hidden: Boolean = false
-
-    /** The inclusion annotation `@Keep`. */
     var keep: Side? = null
     var visibility: String = "public"
     val exemptions: MutableList<Ann> = mutableListOf()
@@ -282,7 +280,7 @@ internal class ExpectActualProgramGenerator(private val seed: Long, private val 
 /**
  * Random name rules and `@Keep` annotations for a model. A rule and the annotation give both halves of a
  * pair the same verdict, so the views stay equivalent. The `@Keep` of a pair is on the `expect` or on
- * both halves, as the docs say. An inclusion doesn't match a JVM-only member of a pair class. Such a rule
+ * both halves. An inclusion doesn't match a JVM-only member of a pair class. Such a rule
  * includes the `actual` class without its `expect` class. The checks that report the pair on the
  * `expect` class then don't run in the multiplatform program, but they run in the JVM view.
  */

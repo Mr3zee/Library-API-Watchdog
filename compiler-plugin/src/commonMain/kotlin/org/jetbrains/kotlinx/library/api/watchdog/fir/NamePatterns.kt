@@ -1,15 +1,6 @@
 package org.jetbrains.kotlinx.library.api.watchdog.fir
 
-/**
- * Fully qualified names and name patterns in the grammar of the ABI validation filters of the
- * Kotlin Gradle plugin. A `.` separates all parts of a name, also a nested class and a member.
- *
- * | Wildcard | Matches                      |
- * |----------|------------------------------|
- * | `**`     | Any characters.              |
- * | `*`      | Any characters except `.`.   |
- * | `?`      | One character.               |
- */
+/** Names and name patterns in the grammar of the ABI validation filters of the Kotlin Gradle plugin. */
 internal class NamePatterns(patterns: Set<String>) {
     private val names: Set<String> = patterns.filterNotTo(linkedSetOf(), String::hasWildcard)
     private val wildcards: List<Pair<String, Regex>> =

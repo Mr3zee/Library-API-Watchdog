@@ -14,20 +14,10 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirPropertyAccessorSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 
 /**
- * The name and annotation filters of the watched API, in the semantics of the ABI validation
- * filters of the Kotlin Gradle plugin. [NamePatterns] gives the grammar.
- *
- * - An exclusion rule has priority over an inclusion rule.
- * - Without inclusion rules, every declaration that isn't excluded is watched.
- * - A rule on a declaration covers the declarations nested in it.
- * - A class with an included function, property, enum entry, or constructor is included, but
- *   its other members aren't. `isWatchedPublicApi` has this rule, because it needs the checker
- *   context.
- *
- * A constructor, an accessor, and a parameter don't have a name of their own. An inclusion
- * annotation on the matched `expect` declaration or on its file includes the `actual` too, so
- * both get the same verdict. [apiAnnotations] gives the annotations of a declaration. The exclusion
- * by annotation is [ConfiguredInternalApiAnnotations].
+ * The filters of the watched API, with the semantics of the ABI validation filters of the Kotlin
+ * Gradle plugin. The exclusion by annotation is [ConfiguredInternalApiAnnotations].
+ * `isWatchedPublicApi` adds the rule for a class with an included member, because the rule needs
+ * the checker context.
  */
 internal class ConfiguredApiFilters(
     session: FirSession,
@@ -41,14 +31,13 @@ internal class ConfiguredApiFilters(
 
     val hasInclusionRules: Boolean = !this.includedNames.isEmpty || !this.includedAnnotations.isEmpty
 
-    /** The exclusion pattern that matches the name of [symbol], or null. Enclosing declarations don't count. */
+    /** Enclosing declarations don't count. */
     fun excludingPattern(symbol: FirBasedSymbol<*>): String? =
         if (excludedNames.isEmpty) null else symbol.filterName()?.let(excludedNames::firstMatch)
 
     /**
-     * Whether an inclusion rule matches the name or an annotation of [symbol]. The enclosing
-     * declarations of [symbol] don't count. The annotations of the matched `expect` declaration and
-     * of its enclosing declarations count, because the `actual` can be in another file.
+     * The enclosing declarations of [symbol] don't count. The annotations of the matched `expect`
+     * declaration and of its enclosing declarations count, because the `actual` can be in another file.
      */
     fun includes(symbol: FirBasedSymbol<*>): Boolean {
         if (!includedNames.isEmpty && symbol.filterName()?.let(includedNames::matches) == true) return true
@@ -65,17 +54,14 @@ internal class ConfiguredApiFilters(
         hasIncludedAnnotation() || this is FirPropertySymbol &&
                 (getterSymbol?.hasIncludedAnnotation() == true || setterSymbol?.hasIncludedAnnotation() == true)
 
-    /**
-     * Whether the filters leave a declaration in the watched API. [chain] is the declaration, its
-     * enclosing declarations, and its file.
-     */
+    /** [chain] is the declaration, its enclosing declarations, and its file. */
     fun watches(chain: List<FirBasedSymbol<*>>): Boolean {
         if (chain.any { excludingPattern(it) != null }) return false
         return !hasInclusionRules || chain.any(::includes)
     }
 
     private fun FirBasedSymbol<*>.hasIncludedAnnotation(): Boolean =
-        apiAnnotations(session).any { annotation ->
+        apiAnnotations().any { annotation ->
             val classId = annotation.toAnnotationClassLikeSymbol(session)?.classId ?: return@any false
             includedAnnotations.matches(classId.asSingleFqName().asString())
         }

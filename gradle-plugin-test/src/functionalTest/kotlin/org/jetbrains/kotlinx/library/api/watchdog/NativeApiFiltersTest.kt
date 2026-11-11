@@ -6,8 +6,8 @@ import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.OPEN_API_WITHOUT_SU
 import org.junit.Test
 
 /**
- * The API filters in a Kotlin/Native compilation. A Native compile task reads the compiler plugin
- * options when Gradle configures the task, not when it runs. `linuxX64` compiles on every host.
+ * A Native compile task reads the compiler plugin options when Gradle configures the task, not when
+ * it runs. `linuxX64` compiles on every host.
  */
 class NativeApiFiltersTest : ApiFiltersTestBase() {
     @Test

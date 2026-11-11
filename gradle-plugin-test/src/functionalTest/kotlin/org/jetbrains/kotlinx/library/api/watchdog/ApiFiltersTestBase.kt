@@ -6,8 +6,8 @@ import org.gradle.testkit.runner.BuildResult
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.OPEN_API_WITHOUT_SUBCLASS_OPT_IN
 
 /**
- * The sources and the assertions of the API filter tests. An open class fails the build when the
- * watchdog checks it, so a passing build shows that the filters removed it.
+ * An open class fails the build when the watchdog checks it, so a passing build shows that the
+ * filters removed it.
  */
 abstract class ApiFiltersTestBase {
     protected fun BuildResult.assertOnlyWatchedIsReported() {
@@ -121,21 +121,18 @@ abstract class ApiFiltersTestBase {
             }
         """
 
-    /** The exclusion rules of the Binary Compatibility Validator plugin that [exclusionSources] needs. */
     protected val bcvExclusionSets: String = """
         ignoredPackages.add("test.internal")
         ignoredClasses.addAll(listOf("test.api.HiddenByName", "test.api.Container\${'$'}HiddenNested"))
         nonPublicMarkers.add("test.markers.Hidden")
     """
 
-    /** The inclusion rules of the Binary Compatibility Validator plugin that [inclusionSources] needs. */
     protected val bcvInclusionSets: String = """
         publicPackages.add("test.api")
         publicClasses.add("test.other.IncludedClass")
         publicMarkers.add("test.markers.PublicApi")
     """
 
-    /** The `apiValidation` block of the Binary Compatibility Validator plugin. */
     protected fun apiValidation(sets: String): String =
         "apiValidation {\n" + sets.trimIndent().prependIndent("    ") + "\n}"
 
@@ -145,7 +142,6 @@ abstract class ApiFiltersTestBase {
         val excludedNames: List<String> =
             listOf("InternalByPackage", "InternalInSubpackage", "HiddenByAnnotation", "HiddenByName", "HiddenNested")
 
-        /** The exclusion filters of the Kotlin ABI validation that [exclusionSources] needs. */
         const val KGP_EXCLUSION_FILTERS: String = """
             exclude {
                 byNames.addAll("test.internal.**", "test.api.HiddenByName", "test.api.Container.HiddenNested")
@@ -153,7 +149,6 @@ abstract class ApiFiltersTestBase {
             }
         """
 
-        /** The inclusion filters of the Kotlin ABI validation that [inclusionSources] needs. */
         const val KGP_INCLUSION_FILTERS: String = """
             include {
                 byNames.addAll("test.api.**", "test.other.IncludedClass")

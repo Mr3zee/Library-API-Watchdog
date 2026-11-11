@@ -261,14 +261,9 @@ An annotation rule reads these positions:
 | The declaration                                                                        | Counts.                         | Counts.                         |
 | An enclosing class or the file                                                         | Counts.                         | Counts.                         |
 | A property accessor (`@get:`, `@set:`)                                                 | Counts for the property.        | Doesn't count for the property. |
-| The backing field (`@field:`) of a `@JvmField`, `const`, or public `lateinit` property | Counts for the property.        | Counts for the property.        |
-| The backing field (`@field:`) of another property                                      | Doesn't count.                  | Doesn't count.                  |
+| The backing field (`@field:`)                                                          | Counts for the property.        | Counts for the property.        |
 | The `expect` declaration or its file                                                   | Also includes the `actual`.     | Doesn't count for the `actual`. |
 | The `actual` declaration or its file                                                   | Doesn't count for the `expect`. | Doesn't count for the `expect`. |
-
-The backing field of a `@JvmField`, `const`, or public `lateinit` property is public API, so the
-JVM ABI dump reads its annotations. A `lateinit` property with a `private set` has a private backing
-field.
 
 A name rule gives an `expect` declaration and its `actual` declaration the same result, because
 they have the same name. An `actual typealias` gets the result of its `expect` class. The class that

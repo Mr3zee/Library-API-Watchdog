@@ -12,7 +12,7 @@ internal class FuzzFile(val name: String, val text: String, val exemptions: List
 
 /**
  * A generated multi-file test-data program. [render] blanks one exemption with spaces, so offsets don't
- * move. [filters] holds the filter annotations of a program for [ApiFiltersFuzzTest].
+ * move.
  */
 internal class FuzzProgram(
     val index: Int,
@@ -42,17 +42,15 @@ internal class FuzzProgram(
 }
 
 /**
- * The filter annotations of a generated program. `@Mark` is the exclusion annotation, and `@Keep` is the
- * inclusion annotation. Each name is the name of a declaration with the annotation, or of a top-level
- * declaration of a file with the annotation. A name can be a pattern that matches only that name.
+ * [excluded] names the declarations with the exclusion annotation `@Mark`, and [included] the
+ * declarations with the inclusion annotation `@Keep`. A file annotation gives the names of the
+ * top-level declarations of the file. A name can be a pattern that matches only that name.
  */
 internal class FuzzFilters(
     val packageName: String,
     val excluded: List<String>,
     val included: List<String>,
-    /** The fully qualified names of the top-level declarations of the program. */
     val topLevel: List<String>,
-    /** The fully qualified names of the top-level declarations of the preamble. */
     val preamble: List<String>,
     val classes: List<FuzzClass>,
 )
@@ -77,9 +75,9 @@ internal class FuzzMember(val simpleName: String, val publicApi: Boolean)
 
 /**
  * Generates programs with exemptions on every target the annotations accept. With [filters], it also
- * puts `@Mark` and `@Keep` on named declarations and on files, for [ApiFiltersFuzzTest]. Without
- * [filters], the generator makes the same random calls as without the filter code, so a seed gives
- * the same programs in [RedundantExemptionFuzzTest]. Blanking one exemption
+ * writes the filter annotations of [ApiFiltersFuzzTest]. Without [filters], the generator makes the
+ * same random calls as without the filter code, so a seed gives the same programs in
+ * [RedundantExemptionFuzzTest]. Blanking one exemption
  * is an exact oracle only when the redundancy of each exemption is independent of the others. The
  * generator keeps it independent with these rules:
  *
@@ -151,10 +149,7 @@ public annotation class Keep
 
 private val preambleNames = listOf("Unstable", "Hidden", "HiddenType", "Id", "Mark", "Keep")
 
-/**
- * The filter annotations of one program and the names of their declarations. [path] holds the
- * enclosing classes of the declaration that the generator writes.
- */
+/** [path] holds the enclosing classes of the declaration that the generator writes. */
 private class FilterMarks(private val random: Random, val packageName: String, val inclusion: Boolean) {
     val path = ArrayDeque<String>()
     private val excluded = mutableListOf<String>()
@@ -203,18 +198,13 @@ private class FilterMarks(private val random: Random, val packageName: String, v
         topLevel.getOrPut(file) { mutableListOf() } += "$packageName.$simpleName"
     }
 
-    /**
-     * The filter annotations of the declaration [simpleName] in [path], with the use-site [target].
-     * Few properties have a public backing field, so the `field:` target gets a higher chance.
-     */
     fun annotations(simpleName: String, target: String = ""): List<String> = buildList {
         val name = (listOf(packageName) + path + simpleName).joinToString(".")
-        val percent = if (target.isEmpty()) 10 else 35
-        if (chance(percent)) {
+        if (chance(10)) {
             add("@${target}Mark")
             excluded += pattern(name, simpleName)
         }
-        if (inclusion && chance(percent + 5)) {
+        if (inclusion && chance(15)) {
             add("@${target}Keep")
             included += pattern(name, simpleName)
         }
@@ -391,14 +381,12 @@ private class ProgramBuilder(private val random: Random, private val packageName
         if (chance(50)) line("/** Documented. */")
     }
 
-    /** Writes the filter annotations of the declaration [simpleName] and records the name of a top-level declaration. */
     private fun FileBuilder.filterAnnotations(scope: Scope, simpleName: String) {
         val marks = marks ?: return
         if (scope == Scope.TOP_LEVEL) marks.topLevel(name, simpleName)
         marks.annotations(simpleName).forEach { line(it) }
     }
 
-    /** Runs [block] with [simpleName] as the innermost enclosing class of the filter names. */
     private inline fun inClass(simpleName: String, block: () -> Unit) {
         marks?.path?.addLast(simpleName)
         block()
@@ -799,8 +787,7 @@ private class ProgramBuilder(private val random: Random, private val packageName
             "jvmField" -> line("@JvmField")
             "jvmStatic" -> line("@JvmStatic")
         }
-        // The backing field of these shapes is public API, so a `field:` annotation counts for the property.
-        if (shape == "jvmField" || shape == "const" || shape == "lateinit") {
+        if (shape in setOf("plain", "const", "jvmField", "jvmStatic", "lateinit")) {
             marks?.annotations(propertyName, target = "field:")?.forEach { line(it) }
         }
         startLine()
