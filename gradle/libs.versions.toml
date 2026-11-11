@@ -4,7 +4,7 @@ kotlin = "2.4.0"
 kotlinCliMin = "2.4.0"
 kotlinIdeMin = "262"
 # https://github.com/Kotlin/compiler-plugin-dev-kit
-devkit = "0.0.4-dev-375"
+devkit = "0.0.4-dev-376"
 # https://github.com/Kotlin/dokka
 dokka = "2.2.0"
 # https://github.com/GradleUp/shadow
