@@ -4,7 +4,7 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.UntrackedTask
 
 /**
- * The `generateApiWatchdogReport` task. It writes the [API Watchdog report](https://mr3zee.github.io/Library-API-Watchdog/report)
+ * The `generateApiWatchdogReport` task. It writes the [API Watchdog report](https://kotlin.github.io/Library-API-Watchdog/report)
  * of the project: the applied `@Intentionally*` annotations and the diagnostics without one.
  * It doesn't change any source.
  */

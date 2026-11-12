@@ -11,8 +11,8 @@ class PluginPortalPublishingConventionPlugin : Plugin<Project> {
             // The release of a plugin goes to the Gradle Plugin Portal, not to Maven Central.
             excludeFromArtifactLists()
             extensions.configure(GradlePluginDevelopmentExtension::class.java) {
-                website.set("https://mr3zee.github.io/Library-API-Watchdog/")
-                vcsUrl.set("https://github.com/Mr3zee/Library-API-Watchdog")
+                website.set("https://kotlin.github.io/Library-API-Watchdog/")
+                vcsUrl.set("https://github.com/Kotlin/Library-API-Watchdog")
                 plugins.configureEach {
                     tags.set(listOf("kotlin", "api", "static-analysis", "library"))
                 }

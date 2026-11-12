@@ -7,7 +7,7 @@ const source = path.join(repositoryDirectory, 'CHANGELOG.md');
 const destination = path.join(repositoryDirectory, 'docs/pages/changelog.md');
 const diagnosticsFile = path.join(repositoryDirectory, 'diagnostics.json');
 const args = process.argv.slice(2);
-const websiteUrl = 'https://mr3zee.github.io/Library-API-Watchdog/';
+const websiteUrl = 'https://kotlin.github.io/Library-API-Watchdog/';
 
 // A link to the website becomes a link to the page file, so the docs build checks that the page exists.
 function websiteLinks(markdown) {
@@ -59,7 +59,7 @@ if (args.length > 1 || args.some((arg) => arg !== '--check')) {
     'title: Changelog',
     'slug: /changelog',
     'description: The changes of each release.',
-    'custom_edit_url: https://github.com/Mr3zee/Library-API-Watchdog/edit/main/CHANGELOG.md',
+    'custom_edit_url: https://github.com/Kotlin/Library-API-Watchdog/edit/main/CHANGELOG.md',
     // The release sections are GitHub generated notes. MDX can't parse a pull request title with `<` or `{`.
     'mdx:',
     '  format: md',

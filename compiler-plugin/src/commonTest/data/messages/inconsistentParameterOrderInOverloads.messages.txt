@@ -14,7 +14,7 @@
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
 
 /inconsistentParameterOrderInOverloads.kt:9:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
     Shared parameters have different positions in these overloads:
@@ -32,7 +32,7 @@
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
 
 /inconsistentParameterOrderInOverloads.kt:11:14: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
     Shared parameters have different positions in these overloads:
@@ -50,7 +50,7 @@
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the constructor.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
 
 /inconsistentParameterOrderInOverloads.kt:12:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
     Shared parameters have different positions in these overloads:
@@ -68,7 +68,7 @@
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the constructor.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
 
 /inconsistentParameterOrderInOverloads.kt:15:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
     Shared parameters have different positions in these overloads:
@@ -85,7 +85,7 @@
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
 
 /inconsistentParameterOrderInOverloads.kt:17:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
     Shared parameters have different positions in these overloads:
@@ -102,7 +102,7 @@
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
 
 /inconsistentParameterOrderInOverloads.kt:19:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
     Shared parameters have different positions in these overloads:
@@ -121,7 +121,7 @@
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
 
 /inconsistentParameterOrderInOverloads.kt:21:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
     Shared parameters have different positions in these overloads:
@@ -140,7 +140,7 @@
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
 
 /inconsistentParameterOrderInOverloads.kt:23:14: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
     Shared parameters have different positions in these overloads:
@@ -157,7 +157,7 @@
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the constructor.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
 
 /inconsistentParameterOrderInOverloads.kt:24:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
     Shared parameters have different positions in these overloads:
@@ -174,7 +174,7 @@
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the constructor.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
 
 /inconsistentParameterOrderInOverloads.kt:27:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
     Shared parameters have different positions in these overloads:
@@ -196,7 +196,7 @@
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
 
 /inconsistentParameterOrderInOverloads.kt:29:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
     Shared parameters have different positions in these overloads:
@@ -218,4 +218,4 @@
 
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads

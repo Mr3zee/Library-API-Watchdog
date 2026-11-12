@@ -3,11 +3,11 @@
 
     If this is intended, apply `@IntentionallyExposedInternalApiForBackwardsCompatibility` to the declaration, a parameter, or a type usage.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api
 
 /exposure.kt:22:35: error: PUBLIC_TYPE_WITH_INTERNAL_API
     The parameter `value` publicly exposes `lib.api.Hidden`, but the API filter rule `lib.api.Hidden` excludes that type from the API checks. Remove the type from the public signature, or exclude the exposing declaration too.
 
     If this is intended, apply `@IntentionallyExposedInternalApiForBackwardsCompatibility` to the declaration, a parameter, or a type usage.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api

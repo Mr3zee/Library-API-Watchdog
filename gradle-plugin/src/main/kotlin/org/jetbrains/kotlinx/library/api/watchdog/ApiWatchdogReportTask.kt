@@ -24,7 +24,7 @@ import org.gradle.work.DisableCachingByDefault
 
 /**
  * The base of [ExemptExistingApiTask] and [GenerateApiWatchdogReportTask]. Both write the
- * [API Watchdog report](https://mr3zee.github.io/Library-API-Watchdog/report).
+ * [API Watchdog report](https://kotlin.github.io/Library-API-Watchdog/report).
  */
 @DisableCachingByDefault(because = "Reads diagnostic reports that Kotlin compile tasks don't declare as outputs")
 public abstract class ApiWatchdogReportTask internal constructor() : DefaultTask() {

@@ -4,7 +4,7 @@ package org.jetbrains.kotlinx.library.api.watchdog
  * What the Gradle plugin does when a project applies the watchdog without
  * [explicit API mode](https://kotlinlang.org/docs/api-guidelines-simplicity.html#use-explicit-api-mode).
  *
- * See [Explicit API mode](https://mr3zee.github.io/Library-API-Watchdog/configuration#explicit-api-mode) for more details.
+ * See [Explicit API mode](https://kotlin.github.io/Library-API-Watchdog/configuration#explicit-api-mode) for more details.
  */
 public enum class ExplicitApiRequirement {
     /**

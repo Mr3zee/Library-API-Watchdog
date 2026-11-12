@@ -147,7 +147,7 @@ test('the website changelog links a bare diagnostic name to its check page', (t)
     '# Changelog', '', '## 1.2.3', '',
     '* Add LONG_NAME_SUFFIX and LONG_NAME by @user in https://github.com/example/repo/pull/1',
     '- `LONG_NAME` in code, [LONG_NAME](https://example.com/LONG_NAME) in a link, and NOT_LONG_NAME.',
-    '- [Long name](https://mr3zee.github.io/Library-API-Watchdog/checks/long-name) LONG_NAME',
+    '- [Long name](https://kotlin.github.io/Library-API-Watchdog/checks/long-name) LONG_NAME',
     '```', 'LONG_NAME', '```', '',
   ].join('\n'));
   assert.equal(runScript(directory, 'docs/scripts/sync-changelog.mjs').status, 0);

@@ -412,4 +412,4 @@ without Gradle.
 - [Exemptions and internal API](./exemptions.md)
 - [Report generation](./report.md)
 - [Binary compatibility validation suggestion](./abi-validation-suggestion.md)
-- [API reference](https://mr3zee.github.io/Library-API-Watchdog/api/)
+- [API reference](https://kotlin.github.io/Library-API-Watchdog/api/)

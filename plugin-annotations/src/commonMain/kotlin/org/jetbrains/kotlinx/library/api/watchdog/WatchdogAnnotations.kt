@@ -7,7 +7,7 @@ package org.jetbrains.kotlinx.library.api.watchdog
  * own. Every other reason needs a `description` that names the constraint, or the compiler reports
  * `EXEMPTION_WITHOUT_EXPLANATION`.
  *
- * See [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions) for more details.
+ * See [Exemptions and internal API](https://kotlin.github.io/Library-API-Watchdog/exemptions) for more details.
  */
 public enum class ExemptionReason {
     /** The shape stays for compatibility with existing users. */
@@ -49,7 +49,7 @@ public enum class ExemptionReason {
 
 /**
  * Exempts the annotated class, interface, or `actual typealias` from
- * [Open API without subclass opt-in](https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in).
+ * [Open API without subclass opt-in](https://kotlin.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in).
  *
  * Apply it when unrestricted subclassing outside the library is part of the API contract.
  * The annotation on an `expect` class also exempts its `actual` class or `actual typealias`.
@@ -67,7 +67,7 @@ public annotation class IntentionallyOpen(
 
 /**
  * Exempts the annotated enum or sealed hierarchy from
- * [Exhaustive public API](https://mr3zee.github.io/Library-API-Watchdog/checks/exhaustive-public-api).
+ * [Exhaustive public API](https://kotlin.github.io/Library-API-Watchdog/checks/exhaustive-public-api).
  *
  * Apply it when the set of entries or subtypes is a stable part of the API contract.
  *
@@ -84,7 +84,7 @@ public annotation class IntentionallyExhaustive(
 
 /**
  * Exempts the annotated declaration from
- * [Undocumented public API](https://mr3zee.github.io/Library-API-Watchdog/checks/undocumented-public-api).
+ * [Undocumented public API](https://kotlin.github.io/Library-API-Watchdog/checks/undocumented-public-api).
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
  *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
@@ -105,7 +105,7 @@ public annotation class IntentionallyUndocumented(
 
 /**
  * Exempts the annotated type alias from
- * [Function type aliases in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/function-type-alias-public-api).
+ * [Function type aliases in public API](https://kotlin.github.io/Library-API-Watchdog/checks/function-type-alias-public-api).
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
  *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
@@ -120,7 +120,7 @@ public annotation class IntentionallyFunctionTypeAlias(
 
 /**
  * Exempts the annotated data class from
- * [Data classes in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/data-class-public-api).
+ * [Data classes in public API](https://kotlin.github.io/Library-API-Watchdog/checks/data-class-public-api).
  *
  * Apply it when the generated declarations are a stable part of the API contract.
  *
@@ -137,7 +137,7 @@ public annotation class IntentionallyDataClass(
 
 /**
  * Exempts the annotated class from `STATEFUL_CLASS_WITHOUT_EQUALS`, one of the checks of
- * [Stateful classes without equals, hashCode, and toString](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string).
+ * [Stateful classes without equals, hashCode, and toString](https://kotlin.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string).
  *
  * Apply it when identity equality is intended.
  *
@@ -154,7 +154,7 @@ public annotation class IntentionallyWithoutEquals(
 
 /**
  * Exempts the annotated class from `STATEFUL_CLASS_WITHOUT_HASH_CODE`, one of the checks of
- * [Stateful classes without equals, hashCode, and toString](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string).
+ * [Stateful classes without equals, hashCode, and toString](https://kotlin.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string).
  *
  * Apply it when identity hashing is intended.
  *
@@ -171,7 +171,7 @@ public annotation class IntentionallyWithoutHashCode(
 
 /**
  * Exempts the annotated class from `STATEFUL_CLASS_WITHOUT_TO_STRING`, one of the checks of
- * [Stateful classes without equals, hashCode, and toString](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string).
+ * [Stateful classes without equals, hashCode, and toString](https://kotlin.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string).
  *
  * Apply it when the default `toString` output is intended.
  *
@@ -188,7 +188,7 @@ public annotation class IntentionallyWithoutToString(
 
 /**
  * Exempts the annotated class from all three checks of
- * [Stateful classes without equals, hashCode, and toString](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string).
+ * [Stateful classes without equals, hashCode, and toString](https://kotlin.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string).
  *
  * Use [IntentionallyWithoutEquals], [IntentionallyWithoutHashCode], or
  * [IntentionallyWithoutToString] when only one inherited implementation is intended.
@@ -206,7 +206,7 @@ public annotation class IntentionallyWithoutEqualsHashCodeOrToString(
 
 /**
  * Exempts the annotated declaration, parameter, or type usage from
- * [Mutable collections in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/mutable-collection-public-api).
+ * [Mutable collections in public API](https://kotlin.github.io/Library-API-Watchdog/checks/mutable-collection-public-api).
  *
  * Apply it when the shared mutable collection is part of the API contract.
  *
@@ -230,7 +230,7 @@ public annotation class IntentionallyMutableCollection(
 
 /**
  * Exempts the annotated declaration, parameter, or type usage from
- * [Pair and Triple in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/pair-or-triple-public-api).
+ * [Pair and Triple in public API](https://kotlin.github.io/Library-API-Watchdog/checks/pair-or-triple-public-api).
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
  *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
@@ -252,7 +252,7 @@ public annotation class IntentionallyPairOrTriple(
 
 /**
  * Exempts the annotated function or parameter from
- * [Boolean parameters in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/boolean-parameter-public-api).
+ * [Boolean parameters in public API](https://kotlin.github.io/Library-API-Watchdog/checks/boolean-parameter-public-api).
  *
  * Apply it when the function name makes the parameter unmistakable, as in
  * `setEnabled(enabled: Boolean)`.
@@ -273,7 +273,7 @@ public annotation class IntentionallyBooleanParameter(
 
 /**
  * Exempts the annotated declaration, parameter, or type usage from
- * [Nullable Booleans in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/nullable-boolean-public-api).
+ * [Nullable Booleans in public API](https://kotlin.github.io/Library-API-Watchdog/checks/nullable-boolean-public-api).
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
  *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
@@ -295,7 +295,7 @@ public annotation class IntentionallyNullableBoolean(
 
 /**
  * Exempts the annotated function or constructor from
- * [Required parameters after optional ones](https://mr3zee.github.io/Library-API-Watchdog/checks/required-parameter-after-optional).
+ * [Required parameters after optional ones](https://kotlin.github.io/Library-API-Watchdog/checks/required-parameter-after-optional).
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
  *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
@@ -310,7 +310,7 @@ public annotation class IntentionallyRequiredParameterAfterOptional(
 
 /**
  * Exempts the annotated function or constructor from
- * [Inconsistent parameter order in overloads](https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads).
+ * [Inconsistent parameter order in overloads](https://kotlin.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads).
  *
  * @param description Why the exemption is applied. Can be empty when [reason] is
  *   [ExemptionReason.FOR_BACKWARDS_COMPATIBILITY], [ExemptionReason.API_DESIGN], or
@@ -325,7 +325,7 @@ public annotation class IntentionallyInconsistentParameterOrder(
 
 /**
  * Exempts the annotated inline function, or the inline accessors of the annotated property, from
- * [Inline functions with logic](https://mr3zee.github.io/Library-API-Watchdog/checks/inline-function-with-logic).
+ * [Inline functions with logic](https://kotlin.github.io/Library-API-Watchdog/checks/inline-function-with-logic).
  *
  * Apply it when a lambda must run inline for non-local returns, or when a hot path must avoid a
  * call.
@@ -343,7 +343,7 @@ public annotation class IntentionallyInlinedLogic(
 
 /**
  * Exempts the annotated declaration from
- * [Mangled JVM names in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api).
+ * [Mangled JVM names in public API](https://kotlin.github.io/Library-API-Watchdog/checks/java-interop/mangled-jvm-name-public-api).
  * On a class, it covers every nested declaration.
  *
  * Apply it when the declaration is Kotlin-only. Otherwise, give it a Java-callable shape with
@@ -368,7 +368,7 @@ public annotation class IntentionallyMangledJvmName(
 
 /**
  * Exempts the annotated function from
- * [Kotlin-only API without JvmSynthetic](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic).
+ * [Kotlin-only API without JvmSynthetic](https://kotlin.github.io/Library-API-Watchdog/checks/java-interop/kotlin-only-api-without-jvm-synthetic).
  * On a class, it covers every function in the class.
  *
  * Apply it when Java sources must see the Kotlin-only function. Otherwise, hide it with
@@ -387,9 +387,9 @@ public annotation class IntentionallyKotlinOnlyApi(
 
 /**
  * Exempts the annotated companion object member from
- * [Companion function without JvmStatic](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-api-without-jvm-static)
+ * [Companion function without JvmStatic](https://kotlin.github.io/Library-API-Watchdog/checks/java-interop/companion-api-without-jvm-static)
  * and
- * [Companion property without static access](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/companion-property-without-static-access).
+ * [Companion property without static access](https://kotlin.github.io/Library-API-Watchdog/checks/java-interop/companion-property-without-static-access).
  * On a companion object or a class, it covers every member.
  *
  * Apply it when Java callers must use the companion instance. Otherwise, add static access
@@ -408,7 +408,7 @@ public annotation class IntentionallyNonStaticCompanionApi(
 
 /**
  * Exempts the annotated file from
- * [Top-level API without JvmName](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/top-level-api-without-jvm-name).
+ * [Top-level API without JvmName](https://kotlin.github.io/Library-API-Watchdog/checks/java-interop/top-level-api-without-jvm-name).
  *
  * Apply it as `@file:IntentionallyDefaultFacadeName(...)`.
  *
@@ -425,7 +425,7 @@ public annotation class IntentionallyDefaultFacadeName(
 
 /**
  * Exempts the annotated function or constructor from
- * [Default parameters without JvmOverloads](https://mr3zee.github.io/Library-API-Watchdog/checks/java-interop/default-parameters-without-jvm-overloads).
+ * [Default parameters without JvmOverloads](https://kotlin.github.io/Library-API-Watchdog/checks/java-interop/default-parameters-without-jvm-overloads).
  *
  * Apply it when Java callers must pass every argument.
  *
@@ -442,7 +442,7 @@ public annotation class IntentionallyWithoutJvmOverloads(
 
 /**
  * Exempts the annotated declaration, parameter, or type usage from
- * [Public types from non-transitive dependencies](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency).
+ * [Public types from non-transitive dependencies](https://kotlin.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency).
  * On a class, it covers every nested declaration.
  *
  * Apply it when the environment that loads the library has the dependency on its classpath. A
@@ -451,7 +451,7 @@ public annotation class IntentionallyWithoutJvmOverloads(
  *
  * To exempt every type of the dependency, declare it on the `apiWatchdogExemptNonTransitive`
  * configuration instead
- * ([Exempting a dependency](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency#exempting-a-dependency)):
+ * ([Exempting a dependency](https://kotlin.github.io/Library-API-Watchdog/checks/special/public-type-from-non-transitive-dependency#exempting-a-dependency)):
  *
  * ```kotlin
  * dependencies {
@@ -482,9 +482,9 @@ public annotation class IntentionallyNonTransitiveDependency(
 
 /**
  * Exempts the annotated DSL marker from
- * [DSL markers with no-op targets](https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target)
+ * [DSL markers with no-op targets](https://kotlin.github.io/Library-API-Watchdog/checks/special/dsl-marker-noop-target)
  * and
- * [DSL markers without explicit targets](https://mr3zee.github.io/Library-API-Watchdog/checks/special/dsl-marker-without-explicit-targets).
+ * [DSL markers without explicit targets](https://kotlin.github.io/Library-API-Watchdog/checks/special/dsl-marker-without-explicit-targets).
  *
  * Apply it to a published marker, because a change of its targets breaks user code. A new marker
  * must declare effective targets. Backwards compatibility is the only accepted reason, so the
@@ -500,7 +500,7 @@ public annotation class IntentionallyWrongDslMarkerTargetsForBackwardsCompatibil
 
 /**
  * Exempts the annotated declaration, parameter, or type usage from
- * [Internal API types in public API](https://mr3zee.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api).
+ * [Internal API types in public API](https://kotlin.github.io/Library-API-Watchdog/checks/special/public-type-with-internal-api).
  * On a class, it covers the supertypes and the type parameter bounds, not the members.
  *
  * Apply it to a published declaration. Both fixes break its users: the removal of the type from
@@ -534,7 +534,7 @@ public annotation class IntentionallyExposedInternalApiForBackwardsCompatibility
  * Apply it to an annotation that marks declarations which are public for technical reasons but
  * not supported API (see [Shared internals](https://github.com/Kotlin/KEEP/blob/main/proposals/KEEP-0451-shared-internals.md)).
  *
- * See [Exemptions and internal API](https://mr3zee.github.io/Library-API-Watchdog/exemptions) for more details.
+ * See [Exemptions and internal API](https://kotlin.github.io/Library-API-Watchdog/exemptions) for more details.
  */
 @Target(AnnotationTarget.ANNOTATION_CLASS)
 @Retention(AnnotationRetention.BINARY)

@@ -3,18 +3,18 @@
 
     If this is intended, apply `@IntentionallyExhaustive` to the enum class.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/exhaustive-public-api
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/exhaustive-public-api
 
 /exhaustiveApi.kt:11:21: error: EXHAUSTIVE_PUBLIC_API
     Users can match the class `Shape` exhaustively, so adding a subtype later breaks their `when` expressions. Replace the sealed hierarchy with an open class or interface marked with `@SubclassOptInRequired`.
 
     If this is intended, apply `@IntentionallyExhaustive` to the class.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/exhaustive-public-api
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/exhaustive-public-api
 
 /exhaustiveApi.kt:15:25: error: EXHAUSTIVE_PUBLIC_API
     Users can match the interface `Event` exhaustively, so adding a subtype later breaks their `when` expressions. Replace the sealed hierarchy with an open class or interface marked with `@SubclassOptInRequired`.
 
     If this is intended, apply `@IntentionallyExhaustive` to the interface.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/exhaustive-public-api
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/exhaustive-public-api

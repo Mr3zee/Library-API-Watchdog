@@ -3,4 +3,4 @@
 
     If this is intended, apply `@IntentionallyFunctionTypeAlias` to the type alias.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/function-type-alias-public-api
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/function-type-alias-public-api

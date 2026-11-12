@@ -43,7 +43,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompileTool
 /**
  * The `org.jetbrains.kotlin.library.api-watchdog` plugin.
  *
- * See [Configuration](https://mr3zee.github.io/Library-API-Watchdog/configuration) for more details.
+ * See [Configuration](https://kotlin.github.io/Library-API-Watchdog/configuration) for more details.
  */
 @Suppress("unused")
 public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO) {
