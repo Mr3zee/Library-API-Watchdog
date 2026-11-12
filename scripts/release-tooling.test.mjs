@@ -7,8 +7,6 @@ import test from 'node:test';
 import {fileURLToPath} from 'node:url';
 
 const repositoryDirectory = fileURLToPath(new URL('../', import.meta.url));
-const portalVariables = ['GRADLE_PUBLISH_KEY', 'GRADLE_PUBLISH_SECRET'];
-const spaceVariables = ['KOTLIN_LIBRARY_SPACE_USERNAME', 'KOTLIN_LIBRARY_SPACE_PASSWORD'];
 
 function fixture(t) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'watchdog-release-'));
@@ -423,32 +421,6 @@ test('release notes are the GitHub changes since the highest earlier stable tag,
     const rejected = notes(version);
     assert.equal(rejected.status, 1, version);
     assert.equal(fs.existsSync(ghArguments), false, version);
-  }
-});
-
-test('publication preflight requires each selected credential without printing values', () => {
-  for (const [target, required] of [
-    ['gradle-plugin-portal', portalVariables],
-    ['space', spaceVariables],
-  ]) {
-    const env = {...process.env};
-    for (const name of [...portalVariables, ...spaceVariables]) delete env[name];
-    const run = () => spawnSync('bash', ['scripts/check-publication-env.sh', target], {
-      cwd: repositoryDirectory, env, encoding: 'utf8',
-    });
-    assert.equal(run().status, 1);
-    for (const name of required) env[name] = 'test-credential-never-log';
-    const valid = run();
-    assert.equal(valid.status, 0, valid.stderr);
-    assert.doesNotMatch(valid.stdout + valid.stderr, /test-credential-never-log/);
-    for (const name of required) {
-      env[name] = ' \t ';
-      const blank = run();
-      assert.equal(blank.status, 1);
-      assert.ok(blank.stderr.includes(name));
-      assert.doesNotMatch(blank.stdout + blank.stderr, /test-credential-never-log/);
-      env[name] = 'test-credential-never-log';
-    }
   }
 });
 

@@ -46,7 +46,7 @@ jobs:
           echo "$plan"
           echo "$plan" >> "$GITHUB_OUTPUT"
 
-      # The workflow creates the GitHub release after the upload, so the GitHub release marks a finished upload.
+      # The workflow creates the GitHub release after the tag, so the GitHub release marks a finished tag job.
       - name: Find the GitHub release
         id: release
         env:
@@ -57,12 +57,6 @@ jobs:
           else
             echo 'published=false' >> "$GITHUB_OUTPUT"
           fi
-
-      - name: Check publication credentials
-        env:
-          KOTLIN_LIBRARY_SPACE_USERNAME: ${{ secrets.KOTLIN_LIBRARY_SPACE_USERNAME }}
-          KOTLIN_LIBRARY_SPACE_PASSWORD: ${{ secrets.KOTLIN_LIBRARY_SPACE_PASSWORD }}
-        run: ./scripts/check-publication-env.sh space
 
       - name: Set up Node
         uses: actions/setup-node@v6
@@ -193,6 +187,15 @@ jobs:
     with:
       ref: ${{ needs.prepare.outputs.sha }}
 
+  artifact-lists:
+    name: Artifact lists
+    needs: [check, prepare]
+    if: needs.check.outputs.tagged != 'true'
+    uses: ./.github/workflows/artifact-lists.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+    secrets: inherit
+
   benchmark:
     name: Benchmark baseline
     needs: [check, prepare]
@@ -203,11 +206,19 @@ jobs:
     secrets: inherit
 
   # The job builds every publication before it creates the tag. So a build failure leaves no tag, and a new run with a
-  # fix makes the release branch again. After the tag, an upload failure needs no code change, and every run uploads the
-  # tagged commit. The Space repository accepts a second upload of a version, so a rerun uploads every module again.
-  publish:
-    name: Tag and publish to Space
-    needs: [check, prepare, compiler-plugin-tests, gradle-tests, docs-checks, release-tooling-checks, benchmark]
+  # fix makes the release branch again. The job doesn't upload the publications. The Maven Central and Gradle Plugin
+  # Portal publications run outside GitHub Actions, from the tag.
+  tag:
+    name: Build the publications and tag
+    needs:
+      - check
+      - prepare
+      - compiler-plugin-tests
+      - gradle-tests
+      - docs-checks
+      - release-tooling-checks
+      - artifact-lists
+      - benchmark
     # The checks skip a tagged commit, because the tag comes after them. Without a status function, a skipped check job
     # skips this job too.
     if: ${{ !cancelled() && !failure() && needs.check.outputs.published != 'true' }}
@@ -255,17 +266,11 @@ jobs:
             echo "Created v$LIBRARY_VERSION at $SHA."
           fi
 
-      - name: Upload to Space
-        env:
-          KOTLIN_LIBRARY_SPACE_USERNAME: ${{ secrets.KOTLIN_LIBRARY_SPACE_USERNAME }}
-          KOTLIN_LIBRARY_SPACE_PASSWORD: ${{ secrets.KOTLIN_LIBRARY_SPACE_PASSWORD }}
-        run: ./gradlew publishAllPublicationsToSpaceRepository
-
-  # The tag points to the published commit of the release branch. The squash merge makes another commit, so the tag
+  # The tag points to the commit of the release branch. The squash merge makes another commit, so the tag
   # isn't in the history of the target branch.
   github-release:
     name: Create the GitHub release
-    needs: [check, prepare, publish]
+    needs: [check, prepare, tag]
     if: ${{ !cancelled() && !failure() }}
     runs-on: ubuntu-latest
     permissions:

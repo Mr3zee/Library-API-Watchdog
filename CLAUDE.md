@@ -44,9 +44,10 @@ npm run build                       # the site build, fails on a broken link or 
   compiler plugin, the fixer, and the functional tests (`:gradle-plugin-test`). `gradle-plugin` (with
   `report-aggregation`) and `plugin-annotations` are included builds. Address their tasks with the build name first:
   `:gradle-plugin:test`. The root `check`, `dumpArtifacts`, and publication tasks also run in the included builds.
-- GitHub Actions doesn't upload to Maven Central. The upload runs outside this repository. It takes the modules from
-  the `Build` repository (`build/repo`) after `validateLocalMavenRepo` compares them with the `artifacts/` lists of the
-  three builds. A build signs its publications only when the Gradle property `libs.sign.key.private` is set. After a
+- GitHub Actions doesn't publish a release. The Maven Central and Gradle Plugin Portal publications run outside this
+  repository, from the release tag. Space gets development versions only, from `publish-snapshot.yml`. The Maven
+  Central upload takes the modules from the `Build` repository (`build/repo`) after `validateLocalMavenRepo` compares
+  them with the `artifacts/` lists of the three builds. A build signs its publications only when the Gradle property `libs.sign.key.private` is set. After a
   change of a publication, run `./gradlew dumpArtifacts` and commit the lists. A change of `kotlinCliMin` is such a
   change, because the lists of the compiler plugin and the fixer have that version in an artifact name (`-k240`).
 - `library.properties` holds `group` and `version`, not `gradle.properties`, because an included build doesn't read

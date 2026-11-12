@@ -20,7 +20,6 @@ on:
       - 'scripts/release-plan.sh'
       - 'scripts/release-notes.sh'
       - 'scripts/push-signed-commit.sh'
-      - 'scripts/check-publication-env.sh'
       - 'scripts/release-tooling.test.mjs'
       - '.github/workflows/docs.yml'
   # Only a manual run on main deploys the website. The Release workflow starts one after each release.

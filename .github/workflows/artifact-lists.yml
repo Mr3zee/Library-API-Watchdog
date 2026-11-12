@@ -1,0 +1,75 @@
+name: Artifact lists
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/build.gradle.kts'
+      - '**/settings.gradle.kts'
+      - '**/artifacts/**'
+      - 'build-logic/**'
+      - 'build-logic-settings/**'
+      - 'gradle.properties'
+      - 'library.properties'
+      - 'gradle/**'
+      - 'gradlew'
+      - '.github/workflows/artifact-lists.yml'
+  pull_request:
+    paths:
+      - '**/build.gradle.kts'
+      - '**/settings.gradle.kts'
+      - '**/artifacts/**'
+      - 'build-logic/**'
+      - 'build-logic-settings/**'
+      - 'gradle.properties'
+      - 'library.properties'
+      - 'gradle/**'
+      - 'gradlew'
+      - '.github/workflows/artifact-lists.yml'
+  workflow_call:
+    inputs:
+      ref:
+        description: 'The commit to check. Empty checks the commit of the caller.'
+        type: string
+        default: ''
+
+# A newer run of the same event, branch, and checked commit cancels the older run. In a called workflow, `github` is the
+# context of the caller, so the group starts with the name of this file and has the `ref` input.
+concurrency:
+  group: artifact-lists-${{ github.event_name }}-${{ github.ref }}-${{ inputs.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DEVELOCITY_CACHE_PUSH: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+
+jobs:
+  # A `pull_request` run of the Watchdog bot skips the check. The Dev kit update and the Release workflows call this
+  # workflow on the commit of their pull request.
+  check:
+    if: github.event_name != 'pull_request' || github.actor != vars.WATCHDOG_BOT_LOGIN
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+
+      # The task compares the publications of every build with the lists in its `artifacts` directory. It doesn't build
+      # the artifacts.
+      - name: Check the artifact lists
+        run: ./gradlew checkArtifacts

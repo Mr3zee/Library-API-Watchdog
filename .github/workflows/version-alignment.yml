@@ -21,7 +21,6 @@ on:
       - 'scripts/push-signed-commit.sh'
       - 'scripts/lib/project-version.sh'
       - 'scripts/release-tooling.test.mjs'
-      - 'scripts/check-publication-env.sh'
       - '.github/workflows/version-alignment.yml'
   pull_request:
     paths:
@@ -41,7 +40,6 @@ on:
       - 'scripts/push-signed-commit.sh'
       - 'scripts/lib/project-version.sh'
       - 'scripts/release-tooling.test.mjs'
-      - 'scripts/check-publication-env.sh'
       - '.github/workflows/version-alignment.yml'
   workflow_call:
     inputs:
