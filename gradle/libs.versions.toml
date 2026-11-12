@@ -6,7 +6,7 @@ kotlinIdeMin = "262"
 # https://github.com/Kotlin/compiler-plugin-dev-kit
 devkit = "0.0.4-dev-380"
 # https://github.com/Kotlin/dokka
-dokka = "2.2.0"
+dokka = "2.3.0"
 # https://github.com/GradleUp/shadow
 shadow = "9.6.1"
 # https://github.com/vanniktech/gradle-maven-publish-plugin
@@ -14,7 +14,7 @@ publish = "0.37.0"
 # https://plugins.gradle.org/plugin/com.gradle.plugin-publish
 pluginPublish = "2.2.1"
 # https://plugins.gradle.org/plugin/com.gradle.develocity
-develocity = "4.6.0"
+develocity = "4.6.1"
 # https://github.com/gmazzo/gradle-buildconfig-plugin, the version that the dev kit uses
 buildconfig = "6.0.10"
 # https://developer.android.com/build/releases/gradle-plugin
@@ -22,8 +22,8 @@ agp8 = "8.13.2"
 agp9 = "9.4.1"
 # https://github.com/Kotlin/binary-compatibility-validator, for the functional tests only
 bcv = "0.18.2"
-commonmark = "0.24.0"
-jsoup = "1.23.2"
+commonmark = "0.32.0"
+jsoup = "1.24.1"
 # https://github.com/SeleniumHQ/selenium
 selenium = "4.52.0"
 # The Stable version of https://googlechromelabs.github.io/chrome-for-testing/
