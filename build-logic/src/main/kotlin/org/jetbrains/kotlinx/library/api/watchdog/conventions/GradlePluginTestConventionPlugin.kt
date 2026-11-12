@@ -29,6 +29,9 @@ class GradlePluginTestConventionPlugin : Plugin<Project> {
                 dependsOn(":kotlin-library-api-watchdog-exempts-fixer:installForFunctionalTest")
             }
 
+            // The publication of this project goes only to the repository of the functional tests.
+            excludeFromArtifactLists()
+
             val pluginDevKit = extensions.getByType(GradlePluginConfigExtension::class.java)
             tasks.register("printCiFunctionalTestMatrix") {
                 group = "help"

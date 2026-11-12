@@ -21,7 +21,6 @@ on:
       - 'scripts/push-signed-commit.sh'
       - 'scripts/lib/project-version.sh'
       - 'scripts/release-tooling.test.mjs'
-      - 'scripts/check-publication-env.sh'
       - '.github/workflows/version-alignment.yml'
   pull_request:
     paths:
@@ -41,7 +40,6 @@ on:
       - 'scripts/push-signed-commit.sh'
       - 'scripts/lib/project-version.sh'
       - 'scripts/release-tooling.test.mjs'
-      - 'scripts/check-publication-env.sh'
       - '.github/workflows/version-alignment.yml'
   workflow_call:
     inputs:
@@ -54,8 +52,8 @@ permissions:
   contents: read
 
 jobs:
-  # A `pull_request` run of the Watchdog bot skips the checks. The Release workflow calls this workflow on the commit of
-  # its pull request.
+  # A `pull_request` run of the Watchdog bot skips the checks. The Pre-release workflow calls this workflow on the
+  # commit of its pull request.
   verify:
     if: github.event_name != 'pull_request' || github.actor != vars.WATCHDOG_BOT_LOGIN
     runs-on: ubuntu-latest

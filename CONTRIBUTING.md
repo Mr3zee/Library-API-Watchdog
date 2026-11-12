@@ -20,8 +20,9 @@ The repository is a composite build:
 
 A task name on the command line runs the task in the root build only. To run a task of an included build, put the
 build name first: `./gradlew :gradle-plugin:test`. The root `check` task also runs `check` in `gradle-plugin` and
-`plugin-annotations`. The root `publishToMavenCentral`, `publishAllPublicationsToSpaceRepository`, and
-`publishPlugins` tasks also run the publication tasks of the included builds.
+`plugin-annotations`. The root `publishAllPublicationsToSpaceRepository` and `publishPlugins` tasks also run the
+publication tasks of the included builds. The root `publishAllPublicationsToBuildRepository`, `dumpArtifacts`, and
+`checkArtifacts` tasks also run in `plugin-annotations`, but not in `gradle-plugin`.
 
 ## Tests
 
@@ -64,6 +65,18 @@ The benchmarks and the baseline check are in
 - [`:gradle-plugin:kotlin-library-api-watchdog-report-aggregation`](gradle-plugin/report-aggregation/src): combines
   the reports of several projects. Plugin id `org.jetbrains.kotlin.library.api-watchdog-report-aggregation`.
 
+## Artifact lists
+
+The [artifacts validator plugin](https://github.com/Kotlin/artifacts-validator-plugin) compares the published files of
+each Maven Central module with a list in the `artifacts` directory of its build: the root build and
+`plugin-annotations`. `./gradlew checkArtifacts` fails when a publication doesn't match its list. The
+[artifact lists](.github/workflows/artifact-lists.yml) workflow runs the task.
+
+After a change of a publication, run `./gradlew dumpArtifacts` and commit the lists. A change of `kotlinCliMin` in the
+version catalog is such a change, because the lists of the compiler plugin and the fixer have that version in an
+artifact name, for example `-k240`. `dumpArtifacts` and `checkArtifacts` fail in the same Gradle invocation, so run
+them separately.
+
 ## Documentation site
 
 The site is a [Docusaurus](https://docusaurus.io/) project in [docs](docs), built by
@@ -80,7 +93,7 @@ The build also writes the Markdown form of the site for LLM readers: `llms.txt` 
 renders them from the page sources.
 
 Only a manual run of `docs.yml` on `main` deploys the site. The run needs the `version` input, a release version with
-a tag, and the code samples show that version. The Release workflow starts this run after each release.
+a tag, and the code samples show that version. The Post-publish workflow starts this run after each release.
 
 ## Build scans and cache
 
@@ -110,7 +123,7 @@ CI on `main` sets `DEVELOCITY_CACHE_PUSH=true` to write cache entries.
 ## Version
 
 `library.properties` sets the next development version, for example `0.3.0` after the `0.2.0` release.
-Local builds and the development builds of `main` use it. The Release workflow sets it after each release.
+Local builds and the development builds of `main` use it. The release commit of the Pre-release workflow sets it.
 To change the build and website package versions by hand, run:
 
 ```bash
@@ -130,7 +143,8 @@ An empty or invalid value fails the build.
 
 ## Watchdog bot
 
-The Dev kit update and the Release workflows push their branches and open their pull requests as the Watchdog bot, a
+The Dev kit update, Pre-release, and Post-publish workflows push their branches and open their pull requests as the
+Watchdog bot, a
 GitHub App. A pull request of `GITHUB_TOKEN` starts `pull_request` runs that wait for an approval
 ([Events that trigger workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request)).
 GitHub signs the commits of the bot, because the workflows make them through the GraphQL API.
@@ -151,9 +165,9 @@ Then generate a private key, install the app on this repository, and add the rep
 | `WATCHDOG_BOT_PRIVATE_KEY` | Secret | The private key, the content of the `.pem` file |
 | `WATCHDOG_BOT_LOGIN` | Variable | The user of the app, `<app slug>[bot]`, for example `library-api-watchdog[bot]` |
 
-The Dev kit update and the Release workflows check the commit of their pull request themselves. So the compiler plugin
-tests, the Gradle tests, the docs checks, the version alignment check, and the benchmark check skip a `pull_request`
-run of `WATCHDOG_BOT_LOGIN`. A push of another user to the branch runs them.
+The Dev kit update and the Pre-release workflows check the commit of their pull request themselves. So the compiler plugin
+tests, the Gradle tests, the docs checks, the version alignment check, the artifact list check, and the benchmark
+check skip a `pull_request` run of `WATCHDOG_BOT_LOGIN`. A push of another user to the branch runs them.
 
 ## Dependency updates
 
@@ -170,7 +184,8 @@ day at 6:00 Berlin time, or when you run the workflow:
 1. The workflow compares the `devkit` entry of the version catalog on `main` with the newest version in the Space
    repository. When they differ, it commits the newest version to the `devkit-update` branch and opens a pull request
    as the [Watchdog bot](#watchdog-bot).
-2. The workflow runs the compiler plugin tests, the Gradle tests, and the benchmark check on that commit.
+2. The workflow runs the compiler plugin tests, the Gradle tests, the artifact list check, and the benchmark check on
+   that commit.
 3. When all of them pass, the workflow squash-merges the pull request. When one fails, the pull request stays open.
 
 Each run makes the branch again from `main`. When the branch of the open pull request has a commit of another author,
@@ -189,7 +204,7 @@ npm exec --yes --package=node@24 --package=renovate@44.164.6 -- renovate-config-
 
 ## Changelog
 
-The Release workflow writes the section of each release in [CHANGELOG.md](CHANGELOG.md), so a pull request doesn't
+The Pre-release workflow writes the section of each release in [CHANGELOG.md](CHANGELOG.md), so a pull request doesn't
 edit the changelog. The section holds the GitHub generated release notes: the pull requests since the previous release
 tag. The title of a pull request is its changelog entry. The notes skip the pull requests with the `release` label of
 [.github/release.yml](.github/release.yml).
@@ -208,83 +223,6 @@ npm run sync:changelog
 CI checks that the website changelog matches the root file.
 The version script leaves historical changelog entries and dependency versions unchanged.
 
-## Stable release
+## Release
 
-Run [Release](.github/workflows/release.yml) with the `version` input, for example `0.2.0`:
-
-- From `main` for a version later than every release.
-- From `release/<MAJOR>.<MINOR>.x` for a backport. Create the branch from the latest release tag of the line, and
-  cherry-pick the fixes. The generated notes list pull requests only, so merge the cherry-picked fixes through a pull
-  request into the branch, or describe them in `## Unreleased`. The run uses the workflow files of that branch.
-
-The workflow does these steps:
-
-1. Checks the version against the release tags, the version alignment, and the Space credentials.
-2. Pushes the `prepare-release/<version>` branch and opens a pull request into the branch of the run, as the
-   [Watchdog bot](#watchdog-bot). The commit adds the changelog section of the release. It also sets the next development version: the next minor version from
-   `main`, the next patch version from a maintenance branch.
-3. Runs every check workflow on the commit of the pull request and waits for all of them:
-   [compiler plugin tests](.github/workflows/compiler-plugin-tests.yml),
-   [Gradle tests](.github/workflows/gradle-tests.yml), [docs checks](.github/workflows/docs.yml),
-   [version alignment](.github/workflows/version-alignment.yml), and the
-   [benchmark baseline](.github/workflows/benchmark-baseline.yml).
-4. Builds all publications and creates the tag `v<version>` on the commit of the pull request. Then uploads all
-   modules to the Space EAP repository with the release version.
-5. Creates the GitHub release with the changelog section as its notes. A backport isn't the latest GitHub release.
-6. Squash-merges the pull request. The tag isn't in the history of the target branch.
-7. For a release from a maintenance branch, adds its changelog section to `main` through a second pull request.
-8. Runs [docs.yml](.github/workflows/docs.yml) on `main` with the highest release version and waits for the deploy.
-
-The release is the state of the branch when the run starts. The workflow doesn't handle a change of the target
-branch during the run.
-
-The merges use `GITHUB_TOKEN`, and a merge with `GITHUB_TOKEN` doesn't start other workflows, so the release runs the
-docs deploy itself.
-
-### Recovery
-
-Each job finds its finished work and skips it. **Re-run failed jobs** and a new run with the same version both
-continue a failed release:
-
-- Before the tag, a new run makes the release branch again when the branch of the run has a new commit. After a
-  failed test or a failed build of the publications, push the fix to the branch of the release and run the workflow
-  again.
-- After the tag, every run uses the tagged commit and doesn't test it again. A run uploads to Space again until the
-  GitHub release exists. Then it continues with the merges and the docs deploy.
-
-## Release publication
-
-Run [Publish to Maven Central](.github/workflows/publish-maven-central.yml) or
-[Publish to Gradle Plugin Portal](.github/workflows/publish-gradle-plugin-portal.yml) with the GitHub Actions **Run workflow** button.
-The `version` input is a release version with a tag. The workflow publishes the commit of the tag `v<version>`.
-Both workflows fail when a credential is absent or blank.
-
-Configure these repository secrets:
-
-| Target | Secret | Value |
-|---|---|---|
-| Maven Central | `MAVEN_CENTRAL_USERNAME` | Central Portal token username |
-| Maven Central | `MAVEN_CENTRAL_PASSWORD` | Central Portal token password |
-| Maven Central | `MAVEN_CENTRAL_SIGNING_KEY` | ASCII-armored private PGP key |
-| Maven Central | `MAVEN_CENTRAL_SIGNING_PASSWORD` | Private key password |
-| Gradle Plugin Portal | `GRADLE_PUBLISH_KEY` | Portal API key |
-| Gradle Plugin Portal | `GRADLE_PUBLISH_SECRET` | Portal API secret |
-| Space | `KOTLIN_LIBRARY_SPACE_USERNAME` | Space username |
-| Space | `KOTLIN_LIBRARY_SPACE_PASSWORD` | Space token |
-
-The Maven Central workflow uploads all modules, including the annotation platform variants, as draft deployments.
-Each build makes its own deployment: the root build, `gradle-plugin`, and `plugin-annotations`.
-Approve all three in [Central Portal](https://central.sonatype.com/publishing/deployments) before the Plugin Portal run.
-The Plugin Portal workflow publishes the watchdog and report aggregation plugins.
-Plugin Portal doesn't have a draft deployment mode. A successful run submits both plugin versions for publication.
-
-For a local Maven Central upload, set the environment variables below, then run `./gradlew publishToMavenCentral`:
-
-| Environment variable | Repository secret |
-|---|---|
-| `ORG_GRADLE_PROJECT_mavenCentralUsername` | `MAVEN_CENTRAL_USERNAME` |
-| `ORG_GRADLE_PROJECT_mavenCentralPassword` | `MAVEN_CENTRAL_PASSWORD` |
-| `ORG_GRADLE_PROJECT_signingInMemoryKey` | `MAVEN_CENTRAL_SIGNING_KEY` |
-| `ORG_GRADLE_PROJECT_signingInMemoryKeyPassword` | `MAVEN_CENTRAL_SIGNING_PASSWORD` |
-
-For a local Plugin Portal upload, set `GRADLE_PUBLISH_KEY` and `GRADLE_PUBLISH_SECRET`, then run `./gradlew publishPlugins`.
+See [Release](RELEASE.md) for more details about the release process.

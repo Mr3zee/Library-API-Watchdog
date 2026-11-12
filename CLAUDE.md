@@ -43,18 +43,26 @@ npm run build                       # the site build, fails on a broken link or 
 - The repository is a composite build, as in the dev kit's `compiler-plugin-template`. The root build has the
   compiler plugin, the fixer, and the functional tests (`:gradle-plugin-test`). `gradle-plugin` (with
   `report-aggregation`) and `plugin-annotations` are included builds. Address their tasks with the build name first:
-  `:gradle-plugin:test`. The root `check` and publication tasks also run in the included builds. A Maven Central
-  publication makes one deployment for each build.
+  `:gradle-plugin:test`. The root `check` and publication tasks also run in the included builds.
+- GitHub Actions doesn't publish a release. The Maven Central and Gradle Plugin Portal publications run outside this
+  repository, between the `Pre-release` and `Post-publish` workflows. Space gets development versions only. RELEASE.md
+  has the process.
+- The `artifacts/` lists of the root build and `plugin-annotations` hold the published files of the Maven Central
+  modules. After a change of a publication, run `./gradlew dumpArtifacts` and commit the lists. A change of
+  `kotlinCliMin` is such a change, because the lists of the compiler plugin and the fixer have that version in an
+  artifact name (`-k240`). The Gradle plugin and the report aggregation plugin go to the Gradle Plugin Portal only, so
+  they have no list, and the root `publishAllPublicationsToBuildRepository` task leaves them out.
 - `library.properties` holds `group` and `version`, not `gradle.properties`, because an included build doesn't read
   the root `gradle.properties`. The `devkit` settings plugin in `build-logic-settings` sets both in every build. The dev
   kit version is the `devkit` entry of the version catalog. The daily `Dev kit update` workflow updates it, not
   Renovate.
 - `version` in `library.properties` is the next development version, not the latest release. The release build and
   the docs deploy get the release version from `LIBRARY_VERSION`, so the README has no plugin version. Only a manual
-  run of `docs.yml` on `main` with the `version` input deploys the website. The `Release` workflow starts it.
-- A pull request doesn't edit `CHANGELOG.md`. The `Release` workflow writes the section of a release from the GitHub
+  run of `docs.yml` on `main` with the `version` input deploys the website. The `Post-publish` workflow starts it.
+- A pull request doesn't edit `CHANGELOG.md`. The `Pre-release` workflow writes the section of a release from the GitHub
   generated release notes, after the text of an optional `## Unreleased` section.
-- The `Dev kit update` and `Release` workflows push their branches and open their pull requests as the Watchdog bot, a
+- The `Dev kit update`, `Pre-release`, and `Post-publish` workflows push their branches and open their pull requests as
+  the Watchdog bot, a
   GitHub App (CONTRIBUTING.md, "Watchdog bot"). A pull request of `GITHUB_TOKEN` starts `pull_request` runs that wait
   for an approval. The test workflows skip the `pull_request` runs of `WATCHDOG_BOT_LOGIN`. The merges use
   `GITHUB_TOKEN`, so a merge of a bot pull request starts no workflow on `main`.

@@ -1,4 +1,4 @@
-# The configuration of the GitHub generated release notes. The Release workflow labels its own pull requests `release`.
+# The configuration of the GitHub generated release notes. The Pre-release and Post-publish workflows label their pull requests `release`.
 changelog:
   exclude:
     labels:

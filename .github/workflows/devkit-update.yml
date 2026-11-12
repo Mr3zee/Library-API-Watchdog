@@ -144,6 +144,15 @@ jobs:
     with:
       ref: ${{ needs.update.outputs.sha }}
 
+  artifact-lists:
+    name: Artifact lists
+    needs: update
+    if: needs.update.outputs.sha != ''
+    uses: ./.github/workflows/artifact-lists.yml
+    with:
+      ref: ${{ needs.update.outputs.sha }}
+    secrets: inherit
+
   benchmark:
     name: Benchmark baseline
     needs: update
@@ -156,7 +165,7 @@ jobs:
   # A skipped or failed job in `needs` skips this job.
   merge:
     name: Merge the pull request
-    needs: [update, compiler-plugin-tests, gradle-tests, version-alignment, benchmark]
+    needs: [update, compiler-plugin-tests, gradle-tests, version-alignment, artifact-lists, benchmark]
     runs-on: ubuntu-latest
     permissions:
       contents: write

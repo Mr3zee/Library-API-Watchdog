@@ -260,5 +260,5 @@ Checks run by the Gradle plugin:
 
 ## Contributing
 
-[CONTRIBUTING.md](CONTRIBUTING.md) has the build, the tests, the modules, the version update, and the
-release steps.
+[CONTRIBUTING.md](CONTRIBUTING.md) has the build, the tests, the modules, and the version update.
+[RELEASE.md](RELEASE.md) has the release process.

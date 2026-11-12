@@ -1,0 +1,73 @@
+name: Artifact lists
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/build.gradle.kts'
+      - '**/settings.gradle.kts'
+      - '**/artifacts/**'
+      - 'build-logic/**'
+      - 'build-logic-settings/**'
+      - 'gradle.properties'
+      - 'library.properties'
+      - 'gradle/**'
+      - 'gradlew'
+      - '.github/workflows/artifact-lists.yml'
+  pull_request:
+    paths:
+      - '**/build.gradle.kts'
+      - '**/settings.gradle.kts'
+      - '**/artifacts/**'
+      - 'build-logic/**'
+      - 'build-logic-settings/**'
+      - 'gradle.properties'
+      - 'library.properties'
+      - 'gradle/**'
+      - 'gradlew'
+      - '.github/workflows/artifact-lists.yml'
+  workflow_call:
+    inputs:
+      ref:
+        description: 'The commit to check. Empty checks the commit of the caller.'
+        type: string
+        default: ''
+
+# In a called workflow, `github` is the context of the caller, so the group has the name of this file and the `ref`
+# input.
+concurrency:
+  group: artifact-lists-${{ github.event_name }}-${{ github.ref }}-${{ inputs.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DEVELOCITY_CACHE_PUSH: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+
+jobs:
+  # A `pull_request` run of the Watchdog bot skips the check. The Dev kit update and the Pre-release workflows call this
+  # workflow on the commit of their pull request.
+  check:
+    if: github.event_name != 'pull_request' || github.actor != vars.WATCHDOG_BOT_LOGIN
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+
+      - name: Check the artifact lists
+        run: ./gradlew checkArtifacts
