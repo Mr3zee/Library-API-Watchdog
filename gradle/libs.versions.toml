@@ -19,7 +19,7 @@ develocity = "4.6.0"
 buildconfig = "6.0.10"
 # https://developer.android.com/build/releases/gradle-plugin
 agp8 = "8.13.2"
-agp9 = "9.4.1"
+agp9 = "9.5.1"
 # https://github.com/Kotlin/binary-compatibility-validator, for the functional tests only
 bcv = "0.18.2"
 commonmark = "0.24.0"
