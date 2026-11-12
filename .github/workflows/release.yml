@@ -67,7 +67,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: '26'
 
       - name: Check release metadata
         run: |
@@ -93,7 +93,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: '26'
 
       # The Watchdog bot (CONTRIBUTING.md) pushes the branch and opens the pull request, because a pull request of
       # GITHUB_TOKEN starts `pull_request` runs that wait for an approval. The test workflows skip the `pull_request`
@@ -341,7 +341,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: '26'
 
       - name: Get the token of the Watchdog bot
         id: bot

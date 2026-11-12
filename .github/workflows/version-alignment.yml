@@ -68,7 +68,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: '26'
 
       - name: Test release tooling
         run: node --test scripts/*.test.mjs
