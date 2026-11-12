@@ -44,8 +44,9 @@ npm run build                       # the site build, fails on a broken link or 
   compiler plugin, the fixer, and the functional tests (`:gradle-plugin-test`). `gradle-plugin` (with
   `report-aggregation`) and `plugin-annotations` are included builds. Address their tasks with the build name first:
   `:gradle-plugin:test`. The root `check` and publication tasks also run in the included builds.
-- GitHub Actions doesn't publish a release. The Maven Central and Gradle Plugin Portal publications run outside this
-  repository, from the release tag. Space gets development versions only, from `publish-snapshot.yml`. The Maven
+- A release has three parts. The `Pre-release` workflow makes the `release/<version>` branch and checks it. The Maven
+  Central and Gradle Plugin Portal publications run outside this repository, from that branch. Then the
+  `Post-publish` workflow creates the tag and the GitHub release, merges the branch, and deploys the docs. Space gets development versions only, from `publish-snapshot.yml`. The Maven
   Central upload takes the modules from the `Build` repository (`build/repo`) after `validateLocalMavenRepo` compares
   them with the `artifacts/` lists of the root build and `plugin-annotations`. The Gradle plugin and the report
   aggregation plugin go to the Gradle Plugin Portal only. So they have no list, and the root
@@ -58,10 +59,11 @@ npm run build                       # the site build, fails on a broken link or 
   Renovate.
 - `version` in `library.properties` is the next development version, not the latest release. The release build and
   the docs deploy get the release version from `LIBRARY_VERSION`, so the README has no plugin version. Only a manual
-  run of `docs.yml` on `main` with the `version` input deploys the website. The `Release` workflow starts it.
-- A pull request doesn't edit `CHANGELOG.md`. The `Release` workflow writes the section of a release from the GitHub
+  run of `docs.yml` on `main` with the `version` input deploys the website. The `Post-publish` workflow starts it.
+- A pull request doesn't edit `CHANGELOG.md`. The `Pre-release` workflow writes the section of a release from the GitHub
   generated release notes, after the text of an optional `## Unreleased` section.
-- The `Dev kit update` and `Release` workflows push their branches and open their pull requests as the Watchdog bot, a
+- The `Dev kit update`, `Pre-release`, and `Post-publish` workflows push their branches and open their pull requests as
+  the Watchdog bot, a
   GitHub App (CONTRIBUTING.md, "Watchdog bot"). A pull request of `GITHUB_TOKEN` starts `pull_request` runs that wait
   for an approval. The test workflows skip the `pull_request` runs of `WATCHDOG_BOT_LOGIN`. The merges use
   `GITHUB_TOKEN`, so a merge of a bot pull request starts no workflow on `main`.

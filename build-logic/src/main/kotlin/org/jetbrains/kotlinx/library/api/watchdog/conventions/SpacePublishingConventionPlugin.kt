@@ -9,8 +9,8 @@ import org.gradle.api.publish.PublishingExtension
 
 /**
  * Adds two publishing repositories: `Space`, the EAP repository of the development versions, and `Build`, the
- * `build/repo` directory of the repository root. The Release workflow publishes to `Build` to build every publication
- * before it creates the tag. The Maven Central upload takes the publications from `Build`, so the root
+ * `build/repo` directory of the repository root. The Pre-release workflow publishes to `Build` to build every
+ * publication before the publication of the release starts. The Maven Central upload takes the publications from `Build`, so the root
  * `publishAllPublicationsToBuildRepository` task leaves out the Gradle plugin projects.
  */
 class SpacePublishingConventionPlugin : Plugin<Project> {

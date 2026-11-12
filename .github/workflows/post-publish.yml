@@ -1,0 +1,280 @@
+name: Post-publish
+
+# The second half of a release. Run it after the Maven Central and Gradle Plugin Portal publications of the
+# `release/<version>` branch. The publication build can start it. Each job finds its finished work and skips it, so
+# "Re-run failed jobs" or a new run with the same version continues a failed run.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'The published version, MAJOR.MINOR.PATCH. The Pre-release workflow made its release/<version> branch.'
+        required: true
+        type: string
+      sha:
+        description: 'The published commit. The run fails when release/<version> is at another commit. Empty skips the check.'
+        required: false
+        type: string
+        default: ''
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  LIBRARY_VERSION: ${{ inputs.version }}
+  RELEASE_BRANCH: release/${{ inputs.version }}
+
+jobs:
+  check:
+    name: Find the release
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.commit.outputs.sha }}
+      pr: ${{ steps.pr.outputs.pr }}
+      base: ${{ steps.pr.outputs.base }}
+      published: ${{ steps.release.outputs.published }}
+      from_main: ${{ steps.plan.outputs.from_main }}
+      latest: ${{ steps.plan.outputs.latest }}
+      docs_version: ${{ steps.plan.outputs.docs_version }}
+    steps:
+      # The plan reads the release tags.
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # The run can start from any branch. The pull request of the Pre-release workflow gives the target branch.
+      - name: Find the pull request
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pr="$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$RELEASE_BRANCH" --state all \
+            --json number,state,baseRefName \
+            --jq 'map(select(.state != "CLOSED")) | first | if . then "\(.number) \(.baseRefName)" else empty end')"
+          if [[ -z "$pr" ]]; then
+            echo "No open or merged pull request is from $RELEASE_BRANCH. Run the Pre-release workflow first." >&2
+            exit 1
+          fi
+          echo "pr=${pr%% *}" >> "$GITHUB_OUTPUT"
+          echo "base=${pr#* }" >> "$GITHUB_OUTPUT"
+
+      # Before the tag, the release commit is the head of the release branch. After the tag, it is the tagged commit,
+      # and the merge job deleted the branch.
+      - name: Find the release commit
+        id: commit
+        env:
+          PUBLISHED_SHA: ${{ inputs.sha }}
+        run: |
+          if sha="$(git rev-parse --verify --quiet "refs/tags/v$LIBRARY_VERSION^{commit}")"; then
+            echo "v$LIBRARY_VERSION is at $sha."
+          elif sha="$(git rev-parse --verify --quiet "refs/remotes/origin/$RELEASE_BRANCH^{commit}")"; then
+            echo "$RELEASE_BRANCH is at $sha."
+          else
+            echo "Neither v$LIBRARY_VERSION nor $RELEASE_BRANCH exists. Run the Pre-release workflow first." >&2
+            exit 1
+          fi
+          if [[ -n "$PUBLISHED_SHA" && "$PUBLISHED_SHA" != "$sha" ]]; then
+            echo "The published commit is $PUBLISHED_SHA, but the release commit is $sha." >&2
+            exit 1
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Plan the release
+        id: plan
+        env:
+          BASE: ${{ steps.pr.outputs.base }}
+        run: |
+          plan="$(./scripts/release-plan.sh "$LIBRARY_VERSION" "$BASE")"
+          echo "$plan"
+          echo "$plan" >> "$GITHUB_OUTPUT"
+
+      # The workflow creates the GitHub release after the tag, so the GitHub release marks a finished tag job.
+      - name: Find the GitHub release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "v$LIBRARY_VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo 'published=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'published=false' >> "$GITHUB_OUTPUT"
+          fi
+
+  # The tag points to the commit of the release branch. The squash merge makes another commit, so the tag isn't in the
+  # history of the target branch.
+  tag:
+    name: Create the tag
+    needs: check
+    if: needs.check.outputs.published != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      # The job creates the tag.
+      contents: write
+    steps:
+      - name: Create the tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ needs.check.outputs.sha }}
+        run: |
+          if tagged="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v$LIBRARY_VERSION" --jq .object.sha 2> /dev/null)"; then
+            if [[ "$tagged" != "$SHA" ]]; then
+              echo "v$LIBRARY_VERSION is at $tagged, but the release commit is $SHA." >&2
+              exit 1
+            fi
+            echo "v$LIBRARY_VERSION exists at $SHA."
+          else
+            gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" -f "ref=refs/tags/v$LIBRARY_VERSION" -f "sha=$SHA" --silent
+            echo "Created v$LIBRARY_VERSION at $SHA."
+          fi
+
+  github-release:
+    name: Create the GitHub release
+    needs: [check, tag]
+    if: ${{ !cancelled() && !failure() }}
+    runs-on: ubuntu-latest
+    permissions:
+      # The job creates the GitHub release.
+      contents: write
+    steps:
+      # The notes are the changelog section of the release commit.
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.check.outputs.sha }}
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LATEST: ${{ needs.check.outputs.latest }}
+        run: |
+          if gh release view "v$LIBRARY_VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "The GitHub release v$LIBRARY_VERSION exists."
+            exit 0
+          fi
+          ./scripts/changelog-section.sh "$LIBRARY_VERSION" > "$RUNNER_TEMP/release-notes.md"
+          {
+            echo "# Release notes of $LIBRARY_VERSION"
+            echo
+            cat "$RUNNER_TEMP/release-notes.md"
+          } >> "$GITHUB_STEP_SUMMARY"
+          gh release create "v$LIBRARY_VERSION" --repo "$GITHUB_REPOSITORY" --verify-tag --latest="$LATEST" \
+            --title "$LIBRARY_VERSION" --notes-file "$RUNNER_TEMP/release-notes.md"
+
+  merge:
+    name: Merge the release pull request
+    needs: [check, github-release]
+    if: ${{ !cancelled() && !failure() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR: ${{ needs.check.outputs.pr }}
+      SHA: ${{ needs.check.outputs.sha }}
+    steps:
+      - name: Squash-merge the pull request
+        run: |
+          if [[ "$(gh pr view "$PR" --repo "$GITHUB_REPOSITORY" --json state --jq .state)" == MERGED ]]; then
+            echo "Pull request #$PR is merged."
+          else
+            gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --squash --match-head-commit "$SHA" \
+              --subject "Release $LIBRARY_VERSION (#$PR)" --body ''
+          fi
+          gh api --method DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$RELEASE_BRANCH" 2> /dev/null \
+            || echo "$RELEASE_BRANCH is deleted."
+
+  # A release from a maintenance branch adds its changelog section to main through a second pull request.
+  main-changelog:
+    name: Add the changelog section to main
+    needs: [check, merge]
+    if: ${{ !cancelled() && !failure() && needs.check.outputs.from_main != 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      CHANGELOG_BRANCH: release-changelog/${{ inputs.version }}
+      BASE: ${{ needs.check.outputs.base }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Get the token of the Watchdog bot
+        id: bot
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.WATCHDOG_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.WATCHDOG_BOT_PRIVATE_KEY }}
+
+      - name: Open or find the pull request
+        id: pr
+        env:
+          GH_TOKEN: ${{ steps.bot.outputs.token }}
+        run: |
+          pr="$(gh pr list --head "$CHANGELOG_BRANCH" --base main --state all --json number,state \
+            --jq 'map(select(.state != "CLOSED")) | first | .number // empty')"
+          if [[ -z "$pr" ]]; then
+            git show "v$LIBRARY_VERSION:CHANGELOG.md" > "$RUNNER_TEMP/released-changelog.md"
+            ./scripts/insert-changelog-section.sh "$LIBRARY_VERSION" "$RUNNER_TEMP/released-changelog.md"
+            node docs/scripts/sync-changelog.mjs
+            if git diff --quiet; then
+              echo "The changelog of main has the $LIBRARY_VERSION section."
+              exit 0
+            fi
+            ./scripts/push-signed-commit.sh "$CHANGELOG_BRANCH" "Add the $LIBRARY_VERSION changelog section"
+            gh label create release --color 5319e7 --force \
+              --description 'A pull request of the release workflows. The release notes skip it.'
+            gh pr create --base main --head "$CHANGELOG_BRANCH" --label release \
+              --title "Add the $LIBRARY_VERSION changelog section" \
+              --body "The changelog section of the $LIBRARY_VERSION release from $BASE."
+            pr="$(gh pr view "$CHANGELOG_BRANCH" --json number --jq .number)"
+          fi
+          echo "pr=$pr" >> "$GITHUB_OUTPUT"
+
+      - name: Squash-merge the pull request
+        if: steps.pr.outputs.pr != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ steps.pr.outputs.pr }}
+        run: |
+          if [[ "$(gh pr view "$PR" --json state --jq .state)" != MERGED ]]; then
+            gh pr merge "$PR" --squash --subject "Add the $LIBRARY_VERSION changelog section (#$PR)" --body ''
+          fi
+          gh api --method DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$CHANGELOG_BRANCH" 2> /dev/null \
+            || echo "$CHANGELOG_BRANCH is deleted."
+
+  # A merge with GITHUB_TOKEN doesn't start other workflows, so the job starts the docs deploy on main and waits for it.
+  docs-deploy:
+    name: Deploy the docs website
+    needs: [check, merge, main-changelog]
+    if: ${{ !cancelled() && !failure() }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DOCS_VERSION: ${{ needs.check.outputs.docs_version }}
+    steps:
+      - name: Run the docs workflow
+        run: |
+          output="$(gh workflow run docs.yml --repo "$GITHUB_REPOSITORY" --ref main -f version="$DOCS_VERSION")"
+          echo "$output"
+          run_url="$(grep -Eo 'https://[^[:space:]]+/actions/runs/[0-9]+' <<< "$output" | tail -n 1 || true)"
+          if [[ -z "$run_url" ]]; then
+            echo "gh didn't print the URL of the docs run. Find the run of Build docs website and check it." >&2
+            exit 1
+          fi
+          gh run watch "${run_url##*/}" --repo "$GITHUB_REPOSITORY" --exit-status --interval 30

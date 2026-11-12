@@ -22,7 +22,7 @@ on:
       - 'scripts/push-signed-commit.sh'
       - 'scripts/release-tooling.test.mjs'
       - '.github/workflows/docs.yml'
-  # Only a manual run on main deploys the website. The Release workflow starts one after each release.
+  # Only a manual run on main deploys the website. The Post-publish workflow starts one after each release.
   workflow_dispatch:
     inputs:
       version:
@@ -55,11 +55,11 @@ env:
   ASSEMBLE_ARTIFACT: 'assembled.zip'
   WEBSITE_VERSION: ${{ inputs.version }}
   # In a called workflow, `github.event_name` and `github.workflow` are those of the caller. So a manual run of this
-  # file has the version input, and a call from the Release workflow doesn't.
+  # file has the version input, and a call from the Pre-release workflow doesn't.
   MANUAL_RUN: ${{ github.event_name == 'workflow_dispatch' && github.workflow == 'Build docs website' }}
 
 jobs:
-  # A `pull_request` run of the Watchdog bot skips the checks. The Release workflow calls this workflow on the commit of
+  # A `pull_request` run of the Watchdog bot skips the checks. The Pre-release workflow calls this workflow on the commit of
   # its pull request.
   build:
     if: github.event_name != 'pull_request' || github.actor != vars.WATCHDOG_BOT_LOGIN

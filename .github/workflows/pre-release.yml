@@ -1,0 +1,225 @@
+name: Pre-release
+
+# The first half of a release. A run makes the `release/<version>` branch with the release commit, opens its pull
+# request, and checks the commit. The Maven Central and Gradle Plugin Portal publications run outside GitHub Actions,
+# from that branch. Then the Post-publish workflow finishes the release.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Stable version, MAJOR.MINOR.PATCH. Run from main, or from release/MAJOR.MINOR.x for a backport.'
+        required: true
+        type: string
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  LIBRARY_VERSION: ${{ inputs.version }}
+  RELEASE_BRANCH: release/${{ inputs.version }}
+
+jobs:
+  check:
+    name: Check the release
+    runs-on: ubuntu-latest
+    outputs:
+      next_part: ${{ steps.plan.outputs.next_part }}
+    steps:
+      # The plan reads the release tags.
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # The Post-publish workflow creates the tag after the publication, so a tag marks a published version.
+      - name: Plan the release
+        id: plan
+        run: |
+          plan="$(./scripts/release-plan.sh "$LIBRARY_VERSION" "$GITHUB_REF_NAME")"
+          echo "$plan"
+          echo "$plan" >> "$GITHUB_OUTPUT"
+          if grep -qx 'tagged=true' <<< "$plan"; then
+            echo "v$LIBRARY_VERSION exists, so the version is published. Run the Post-publish workflow to continue." >&2
+            exit 1
+          fi
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Check release metadata
+        run: |
+          ./scripts/verify-version-alignment.sh
+          node docs/scripts/sync-changelog.mjs --check
+
+  prepare:
+    name: Prepare the release branch and pull request
+    needs: check
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.branch.outputs.sha }}
+      pr: ${{ steps.pr.outputs.pr }}
+    env:
+      NEXT_PART: ${{ needs.check.outputs.next_part }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      # The Watchdog bot (CONTRIBUTING.md) pushes the branch and opens the pull request, because a pull request of
+      # GITHUB_TOKEN starts `pull_request` runs that wait for an approval. The test workflows skip the `pull_request`
+      # runs of the bot, and this workflow calls them itself.
+      - name: Get the token of the Watchdog bot
+        id: bot
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.WATCHDOG_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.WATCHDOG_BOT_PRIVATE_KEY }}
+
+      # The release branch has one commit on top of the commit of this run. A new run for a later commit, for example
+      # with a fix for a failed test, makes the branch again. Don't start such a run after the publication of the
+      # branch started, because the published commit leaves the branch.
+      - name: Create or reuse the release branch
+        id: branch
+        env:
+          GH_TOKEN: ${{ steps.bot.outputs.token }}
+        run: |
+          if git fetch --quiet origin "+refs/heads/$RELEASE_BRANCH:refs/remotes/origin/$RELEASE_BRANCH" 2> /dev/null; then
+            tip="$(git rev-parse "origin/$RELEASE_BRANCH")"
+            if [[ "$(git rev-parse "$tip^")" == "$GITHUB_SHA" ]]; then
+              echo "Reusing $RELEASE_BRANCH at $tip."
+              echo "sha=$tip" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "$RELEASE_BRANCH doesn't start at $GITHUB_SHA. Making it again."
+          fi
+          ./scripts/release-notes.sh "$LIBRARY_VERSION" > "$RUNNER_TEMP/release-notes.md"
+          ./scripts/prepare-release.sh "$LIBRARY_VERSION" "$NEXT_PART" "$RUNNER_TEMP/release-notes.md"
+          sha="$(./scripts/push-signed-commit.sh "$RELEASE_BRANCH" "Release $LIBRARY_VERSION")"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Open or find the pull request
+        id: pr
+        env:
+          GH_TOKEN: ${{ steps.bot.outputs.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          pr="$(gh pr list --head "$RELEASE_BRANCH" --base "$GITHUB_REF_NAME" --state open --json number \
+            --jq 'first | .number // empty')"
+          if [[ -z "$pr" ]]; then
+            gh label create release --color 5319e7 --force \
+              --description 'A pull request of the release workflows. The release notes skip it.'
+            gh pr create --base "$GITHUB_REF_NAME" --head "$RELEASE_BRANCH" --label release \
+              --title "Release $LIBRARY_VERSION" \
+              --body "The [Pre-release workflow]($RUN_URL) made this pull request. The Post-publish workflow merges it after the publication. Don't merge it by hand."
+            pr="$(gh pr view "$RELEASE_BRANCH" --json number --jq .number)"
+          fi
+          echo "pr=$pr" >> "$GITHUB_OUTPUT"
+
+  compiler-plugin-tests:
+    name: Compiler plugin tests
+    needs: [check, prepare]
+    uses: ./.github/workflows/compiler-plugin-tests.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+    secrets: inherit
+
+  gradle-tests:
+    name: Gradle tests
+    needs: [check, prepare]
+    uses: ./.github/workflows/gradle-tests.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+    secrets: inherit
+
+  docs-checks:
+    name: Docs checks
+    needs: [check, prepare]
+    uses: ./.github/workflows/docs.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+    secrets: inherit
+
+  release-tooling-checks:
+    name: Release tooling checks
+    needs: [check, prepare]
+    uses: ./.github/workflows/version-alignment.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+
+  artifact-lists:
+    name: Artifact lists
+    needs: [check, prepare]
+    uses: ./.github/workflows/artifact-lists.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+    secrets: inherit
+
+  benchmark:
+    name: Benchmark baseline
+    needs: [check, prepare]
+    uses: ./.github/workflows/benchmark-baseline.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+    secrets: inherit
+
+  # The job builds every publication, so a build failure stops the release before the publication starts.
+  build:
+    name: Build the publications
+    needs:
+      - check
+      - prepare
+      - compiler-plugin-tests
+      - gradle-tests
+      - docs-checks
+      - release-tooling-checks
+      - artifact-lists
+      - benchmark
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+          cache-disabled: true
+
+      # The Build repository is build/repo of the repository root. The root task builds the Maven Central modules only,
+      # so the step names the tasks of the Gradle plugin projects.
+      - name: Build the publications
+        run: |
+          ./gradlew publishAllPublicationsToBuildRepository \
+            :gradle-plugin:publishAllPublicationsToBuildRepository \
+            :gradle-plugin:kotlin-library-api-watchdog-report-aggregation:publishAllPublicationsToBuildRepository
+
+      - name: Summarize
+        env:
+          SHA: ${{ needs.prepare.outputs.sha }}
+          PR: ${{ needs.prepare.outputs.pr }}
+        run: |
+          {
+            echo "\`$RELEASE_BRANCH\` is ready for the publication of $LIBRARY_VERSION at \`$SHA\`, pull request #$PR."
+            echo
+            echo "After the publication, run the Post-publish workflow with the version \`$LIBRARY_VERSION\` and the commit \`$SHA\`."
+          } >> "$GITHUB_STEP_SUMMARY"

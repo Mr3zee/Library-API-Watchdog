@@ -58,7 +58,7 @@ env:
   LATEST_KOTLIN_ONLY: ${{ github.event_name == 'schedule' && github.workflow == 'Compiler plugin tests' }}
 
 jobs:
-  # A `pull_request` run of the Watchdog bot skips the tests. The Dev kit update and the Release workflows call this
+  # A `pull_request` run of the Watchdog bot skips the tests. The Dev kit update and the Pre-release workflows call this
   # workflow on the commit of their pull request.
   test:
     if: github.event_name != 'pull_request' || github.actor != vars.WATCHDOG_BOT_LOGIN

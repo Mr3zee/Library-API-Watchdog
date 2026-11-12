@@ -55,7 +55,7 @@ env:
   DEVELOCITY_CACHE_PUSH: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
 
 jobs:
-  # A `pull_request` run of the Watchdog bot skips the check. The Dev kit update and the Release workflows call this
+  # A `pull_request` run of the Watchdog bot skips the check. The Dev kit update and the Pre-release workflows call this
   # workflow on the commit of their pull request.
   benchmark:
     if: github.event_name != 'pull_request' || github.actor != vars.WATCHDOG_BOT_LOGIN
