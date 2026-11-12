@@ -24,8 +24,13 @@ pluginDevKit {
     versionHierarchy {
         splitDev(2, 3)
         splitDev(2, 3, 20)
-        groupVersions("post2320Pre24Dev") { it.toKotlinVersion() in KotlinVersion(2, 3, 20)..<KotlinVersion(2, 4) }
+        // The IDE builds of a version have a part of its compiler API only.
+        split("2.3.20")
+        groupVersions("post2320DevPre240") {
+            it.toKotlinVersion() >= KotlinVersion(2, 3, 20) && it < KotlinToolingVersion("2.4.0")
+        }
         splitDev(2, 4)
+        post("2.4.0")
         splitDev(2, 5)
 
         val pathKlibVersion = KotlinToolingVersion("2.4.20-Beta2")

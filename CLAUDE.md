@@ -80,6 +80,9 @@ npm run build                       # the site build, fails on a broken link or 
   declares each API that differs between the versions. The `actual` declarations are in the version source sets of
   `versionHierarchy` (`pre2320DevMain`, `post24DevMain`, ...). The code can't name the class `FirNamedFunction`,
   because its name is `FirSimpleFunction` before Kotlin 2.3.20. Use `isNamedFunction()`.
+- An IDE build (`2.3.20-ij253-119`) or a dev build of a version has only a part of the compiler API of the release.
+  A `Dev` source set (`post2320DevMain`) has these builds, and a source set without `Dev` (`post2320Main`) starts at
+  the release. Compile every target to find the side that an API needs.
 - A test handler goes into the step with `useHandlersAtFirst`. Before Kotlin 2.4.0, the test framework doesn't run
   the handlers that follow `NoFirCompilationErrorsHandler` when the module has an error. The test then passes without
   a check.

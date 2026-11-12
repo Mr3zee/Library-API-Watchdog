@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirTypeParameterSymbol
 import org.jetbrains.kotlin.fir.types.ConeClassLikeLookupTag
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
+import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.fir.types.ConeTypeParameterType
 import org.jetbrains.kotlin.name.Name
 
@@ -36,6 +37,9 @@ internal fun ConeClassLikeType.toClassSymbolCompat(session: FirSession): FirClas
 
 /** Kotlin 2.4.0 hides `getStringArgument` with a session and adds the overload without one. */
 internal expect fun FirAnnotation.getStringArgumentCompat(name: Name, session: FirSession): String?
+
+/** `renderReadable` shows a function type as `Function1<String, Boolean>` before Kotlin 2.3.20. */
+internal expect fun ConeKotlinType.renderReadableCompat(): String
 
 internal expect val ConeTypeParameterType.typeParameterSymbol: FirTypeParameterSymbol
 

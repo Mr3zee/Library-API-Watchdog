@@ -1,0 +1,104 @@
+FILE: markers.kt
+    package test.markers
+
+    @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FILE|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FILE|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|)]) public final annotation class PublicApi : R|kotlin/Annotation| {
+        public constructor(): R|test/markers/PublicApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/InternalAnnotationMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|) [evaluated = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|)]) public final annotation class HiddenApi : R|kotlin/Annotation| {
+        public constructor(): R|test/markers/HiddenApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+FILE: annotatedFile.kt
+    @FILE:R|test/markers/PublicApi|()
+    package test.api
+
+    public final fun draw(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
+    }
+    public final fun draw(y: R|kotlin/Int|, x: R|kotlin/Int|, scale: R|kotlin/Double|): R|kotlin/Unit| {
+    }
+FILE: members.kt
+    package test.api
+
+    public open class PublicMember : R|kotlin/Any| {
+        public constructor(): R|test/api/PublicMember| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun createPublic(): R|kotlin/Unit| {
+        }
+
+    }
+    public open class PrivateMember : R|kotlin/Any| {
+        public constructor(): R|test/api/PrivateMember| {
+            super<R|kotlin/Any|>()
+        }
+
+        private final fun createPrivate(): R|kotlin/Unit| {
+        }
+
+    }
+    public open class InternalMember : R|kotlin/Any| {
+        public constructor(): R|test/api/InternalMember| {
+            super<R|kotlin/Any|>()
+        }
+
+        internal final fun createInternal(): R|kotlin/Unit| {
+        }
+
+    }
+    public open class ExcludedMember : R|kotlin/Any| {
+        public constructor(): R|test/api/ExcludedMember| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun createExcluded(): R|kotlin/Unit| {
+        }
+
+    }
+    public open class HiddenMember : R|kotlin/Any| {
+        public constructor(): R|test/api/HiddenMember| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|test/markers/HiddenApi|() public final fun createHidden(): R|kotlin/Unit| {
+        }
+
+    }
+    public open class Outer : R|kotlin/Any| {
+        public constructor(): R|test/api/Outer| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|test/api/Outer.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun make(): R|test/api/Outer| {
+                ^make R|test/api/Outer.Outer|()
+            }
+
+        }
+
+    }
+    public final enum class Levels : R|kotlin/Enum<test/api/Levels>| {
+        private constructor(): R|test/api/Levels| {
+            super<R|kotlin/Enum<test/api/Levels>|>()
+        }
+
+        public final static enum entry HIGH: R|test/api/Levels|
+        public final static fun values(): R|kotlin/Array<test/api/Levels>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|test/api/Levels| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<test/api/Levels>|
+            public get(): R|kotlin/enums/EnumEntries<test/api/Levels>|
+
+    }
