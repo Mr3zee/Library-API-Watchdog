@@ -44,15 +44,14 @@ npm run build                       # the site build, fails on a broken link or 
   compiler plugin, the fixer, and the functional tests (`:gradle-plugin-test`). `gradle-plugin` (with
   `report-aggregation`) and `plugin-annotations` are included builds. Address their tasks with the build name first:
   `:gradle-plugin:test`. The root `check` and publication tasks also run in the included builds.
-- A release has three parts. The `Pre-release` workflow makes the `release/<version>` branch and checks it. The Maven
-  Central and Gradle Plugin Portal publications run outside this repository, from that branch. Then the
-  `Post-publish` workflow creates the tag and the GitHub release, merges the branch, and deploys the docs. Space gets development versions only, from `publish-snapshot.yml`. The Maven
-  Central upload takes the modules from the `Build` repository (`build/repo`) after `validateLocalMavenRepo` compares
-  them with the `artifacts/` lists of the root build and `plugin-annotations`. The Gradle plugin and the report
-  aggregation plugin go to the Gradle Plugin Portal only. So they have no list, and the root
-  `publishAllPublicationsToBuildRepository`, `dumpArtifacts`, and `checkArtifacts` tasks don't run in `gradle-plugin`. A build signs its publications only when the Gradle property `libs.sign.key.private` is set. After a
-  change of a publication, run `./gradlew dumpArtifacts` and commit the lists. A change of `kotlinCliMin` is such a
-  change, because the lists of the compiler plugin and the fixer have that version in an artifact name (`-k240`).
+- GitHub Actions doesn't publish a release. The Maven Central and Gradle Plugin Portal publications run outside this
+  repository, between the `Pre-release` and `Post-publish` workflows. Space gets development versions only. RELEASE.md
+  has the process.
+- The `artifacts/` lists of the root build and `plugin-annotations` hold the published files of the Maven Central
+  modules. After a change of a publication, run `./gradlew dumpArtifacts` and commit the lists. A change of
+  `kotlinCliMin` is such a change, because the lists of the compiler plugin and the fixer have that version in an
+  artifact name (`-k240`). The Gradle plugin and the report aggregation plugin go to the Gradle Plugin Portal only, so
+  they have no list, and the root `publishAllPublicationsToBuildRepository` task leaves them out.
 - `library.properties` holds `group` and `version`, not `gradle.properties`, because an included build doesn't read
   the root `gradle.properties`. The `devkit` settings plugin in `build-logic-settings` sets both in every build. The dev
   kit version is the `devkit` entry of the version catalog. The daily `Dev kit update` workflow updates it, not

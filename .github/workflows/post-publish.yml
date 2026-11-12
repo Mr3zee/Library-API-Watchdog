@@ -1,17 +1,17 @@
 name: Post-publish
 
-# The second half of a release. Run it after the Maven Central and Gradle Plugin Portal publications of the
-# `release/<version>` branch. The publication build can start it. Each job finds its finished work and skips it, so
-# "Re-run failed jobs" or a new run with the same version continues a failed run.
+# The last part of a release. Run it after the publication of the `release/<version>` branch. RELEASE.md has the
+# process. Each job finds its finished work and skips it, so "Re-run failed jobs" or a new run with the same version
+# continues a failed run.
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'The published version, MAJOR.MINOR.PATCH. The Pre-release workflow made its release/<version> branch.'
+        description: 'The published version, MAJOR.MINOR.PATCH.'
         required: true
         type: string
       sha:
-        description: 'The published commit. The run fails when release/<version> is at another commit. Empty skips the check.'
+        description: 'The published commit. The run fails when release/<version> is at another commit.'
         required: false
         type: string
         default: ''
@@ -40,13 +40,13 @@ jobs:
       latest: ${{ steps.plan.outputs.latest }}
       docs_version: ${{ steps.plan.outputs.docs_version }}
     steps:
-      # The plan reads the release tags.
+      # The next steps read the release tags and the release branch.
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      # The run can start from any branch. The pull request of the Pre-release workflow gives the target branch.
+      # The run can start from any branch, so the pull request gives the target branch.
       - name: Find the pull request
         id: pr
         env:
@@ -62,8 +62,7 @@ jobs:
           echo "pr=${pr%% *}" >> "$GITHUB_OUTPUT"
           echo "base=${pr#* }" >> "$GITHUB_OUTPUT"
 
-      # Before the tag, the release commit is the head of the release branch. After the tag, it is the tagged commit,
-      # and the merge job deleted the branch.
+      # The tag comes first, because the merge job deletes the release branch.
       - name: Find the release commit
         id: commit
         env:
@@ -112,7 +111,6 @@ jobs:
     if: needs.check.outputs.published != 'true'
     runs-on: ubuntu-latest
     permissions:
-      # The job creates the tag.
       contents: write
     steps:
       - name: Create the tag
@@ -137,10 +135,8 @@ jobs:
     if: ${{ !cancelled() && !failure() }}
     runs-on: ubuntu-latest
     permissions:
-      # The job creates the GitHub release.
       contents: write
     steps:
-      # The notes are the changelog section of the release commit.
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
@@ -188,7 +184,6 @@ jobs:
           gh api --method DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$RELEASE_BRANCH" 2> /dev/null \
             || echo "$RELEASE_BRANCH is deleted."
 
-  # A release from a maintenance branch adds its changelog section to main through a second pull request.
   main-changelog:
     name: Add the changelog section to main
     needs: [check, merge]

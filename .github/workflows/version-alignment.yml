@@ -52,8 +52,8 @@ permissions:
   contents: read
 
 jobs:
-  # A `pull_request` run of the Watchdog bot skips the checks. The Pre-release workflow calls this workflow on the commit of
-  # its pull request.
+  # A `pull_request` run of the Watchdog bot skips the checks. The Pre-release workflow calls this workflow on the
+  # commit of its pull request.
   verify:
     if: github.event_name != 'pull_request' || github.actor != vars.WATCHDOG_BOT_LOGIN
     runs-on: ubuntu-latest

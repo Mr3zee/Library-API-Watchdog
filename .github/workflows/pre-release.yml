@@ -1,8 +1,7 @@
 name: Pre-release
 
-# The first half of a release. A run makes the `release/<version>` branch with the release commit, opens its pull
-# request, and checks the commit. The Maven Central and Gradle Plugin Portal publications run outside GitHub Actions,
-# from that branch. Then the Post-publish workflow finishes the release.
+# The first part of a release. The publication runs outside GitHub Actions, from the `release/<version>` branch of this
+# workflow. Then the Post-publish workflow finishes the release. RELEASE.md has the process.
 on:
   workflow_dispatch:
     inputs:
@@ -35,7 +34,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # The Post-publish workflow creates the tag after the publication, so a tag marks a published version.
       - name: Plan the release
         id: plan
         run: |
@@ -88,8 +86,7 @@ jobs:
           private-key: ${{ secrets.WATCHDOG_BOT_PRIVATE_KEY }}
 
       # The release branch has one commit on top of the commit of this run. A new run for a later commit, for example
-      # with a fix for a failed test, makes the branch again. Don't start such a run after the publication of the
-      # branch started, because the published commit leaves the branch.
+      # with a fix for a failed test, makes the branch again.
       - name: Create or reuse the release branch
         id: branch
         env:
@@ -174,7 +171,7 @@ jobs:
       ref: ${{ needs.prepare.outputs.sha }}
     secrets: inherit
 
-  # The job builds every publication, so a build failure stops the release before the publication starts.
+  # A build failure stops the release before the publication starts.
   build:
     name: Build the publications
     needs:
@@ -205,8 +202,7 @@ jobs:
           develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
           cache-disabled: true
 
-      # The Build repository is build/repo of the repository root. The root task builds the Maven Central modules only,
-      # so the step names the tasks of the Gradle plugin projects.
+      # The root task builds the Maven Central modules only, so the step names the tasks of the Gradle plugin projects.
       - name: Build the publications
         run: |
           ./gradlew publishAllPublicationsToBuildRepository \
