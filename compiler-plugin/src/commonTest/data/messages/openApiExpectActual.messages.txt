@@ -3,11 +3,11 @@
 
     If this is intended, apply `@IntentionallyOpen` to the type alias.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in
 
 /jvm.kt:22:25: error: OPEN_API_WITHOUT_SUBCLASS_OPT_IN
     Users can subclass `Session` outside the library. The `actual typealias` expands to an open Java class or interface of this module. Apply `@SubclassOptInRequired` to the Java declaration.
 
     If this is intended, apply `@IntentionallyOpen` to the type alias.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/open-api-without-subclass-opt-in

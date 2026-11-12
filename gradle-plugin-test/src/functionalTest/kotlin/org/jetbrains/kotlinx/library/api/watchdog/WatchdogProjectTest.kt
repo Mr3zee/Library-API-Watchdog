@@ -61,7 +61,7 @@ class WatchdogProjectTest {
         result.assertWarnings(UNDOCUMENTED_PUBLIC_API)
         result.assertError("Poko (https://github.com/drewhamilton/Poko)")
         result.assertError(
-            "Poko (https://mr3zee.github.io/Library-API-Watchdog/checks/" +
+            "Poko (https://kotlin.github.io/Library-API-Watchdog/checks/" +
                     "stateful-class-without-equals-hashcode-to-string#poko)",
         )
         result.assertError("press `${ideaGenerateShortcut()}`")

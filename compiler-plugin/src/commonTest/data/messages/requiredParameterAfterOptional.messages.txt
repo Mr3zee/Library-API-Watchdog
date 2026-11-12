@@ -3,11 +3,11 @@
 
     If this is intended, apply `@IntentionallyRequiredParameterAfterOptional` to the function.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/required-parameter-after-optional
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/required-parameter-after-optional
 
 /requiredParameterAfterOptional.kt:9:37: error: REQUIRED_PARAMETER_AFTER_OPTIONAL
     The parameter `host` of `Server` is required but declared after an optional parameter. Move it in front of the optional parameters.
 
     If this is intended, apply `@IntentionallyRequiredParameterAfterOptional` to the constructor.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/required-parameter-after-optional
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/required-parameter-after-optional

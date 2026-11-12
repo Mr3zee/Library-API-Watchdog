@@ -20,7 +20,7 @@ const config: Config = {
 
   url: variables.host,
   baseUrl: '/Library-API-Watchdog/',
-  organizationName: 'Mr3zee',
+  organizationName: 'Kotlin',
   projectName: 'Library API Watchdog',
   trailingSlash: false,
 

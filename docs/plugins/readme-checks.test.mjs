@@ -79,7 +79,7 @@ function listItems(lines) {
 function checkPath(target) {
   return target
     .replace(/^\.\//, '')
-    .replace(/^https:\/\/mr3zee\.github\.io\/Library-API-Watchdog\//, '')
+    .replace(/^https:\/\/kotlin\.github\.io\/Library-API-Watchdog\//, '')
     .replace(/\.md$/, '');
 }
 

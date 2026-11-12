@@ -9,8 +9,8 @@ class PluginPortalPublishingConventionPlugin : Plugin<Project> {
         with(target) {
             pluginManager.apply("com.gradle.plugin-publish")
             extensions.configure(GradlePluginDevelopmentExtension::class.java) {
-                website.set("https://mr3zee.github.io/Library-API-Watchdog/")
-                vcsUrl.set("https://github.com/Mr3zee/Library-API-Watchdog")
+                website.set("https://kotlin.github.io/Library-API-Watchdog/")
+                vcsUrl.set("https://github.com/Kotlin/Library-API-Watchdog")
                 plugins.configureEach {
                     tags.set(listOf("kotlin", "api", "static-analysis", "library"))
                 }

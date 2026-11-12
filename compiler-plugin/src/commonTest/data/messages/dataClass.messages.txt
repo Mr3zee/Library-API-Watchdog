@@ -3,4 +3,4 @@
 
     If this is intended, apply `@IntentionallyDataClass` to the class.
 
-    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/data-class-public-api
+    See more: https://kotlin.github.io/Library-API-Watchdog/checks/data-class-public-api

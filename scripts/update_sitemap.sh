@@ -39,7 +39,7 @@ head -n 1 "$sitemap_file" | sed -En 's/<\/urlset>//p' > "$temp_file"
 find "$api_docs_dir" -type f -name "*.html" | while read -r html_file; do
   url_path="${html_file/#$api_docs_dir/api}"
 
-  url="https://mr3zee.github.io/Library-API-Watchdog/$url_path"
+  url="https://kotlin.github.io/Library-API-Watchdog/$url_path"
 
   cat >> "$temp_file" << EOF
     <url>

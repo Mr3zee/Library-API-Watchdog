@@ -20,8 +20,8 @@ import org.gradle.api.attributes.Usage
  * Source paths are relative to this build's root directory.
  * `exemptExistingApi` in the root project writes the aggregate reports after the same task of the declared projects.
  *
- * See [Multi-project builds](https://mr3zee.github.io/Library-API-Watchdog/report#multi-project-builds) and
- * [Included builds](https://mr3zee.github.io/Library-API-Watchdog/report#included-builds) for more details.
+ * See [Multi-project builds](https://kotlin.github.io/Library-API-Watchdog/report#multi-project-builds) and
+ * [Included builds](https://kotlin.github.io/Library-API-Watchdog/report#included-builds) for more details.
  */
 public class WatchdogReportAggregationPlugin : Plugin<Project> {
     override fun apply(target: Project) {

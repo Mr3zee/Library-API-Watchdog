@@ -60,7 +60,7 @@ class MavenCentralPublishingConventionPlugin : Plugin<Project> {
                     pom {
                         name.set(target.name)
                         description.set("Public API checks, exemptions, and reports for Kotlin libraries.")
-                        url.set("https://mr3zee.github.io/Library-API-Watchdog/")
+                        url.set("https://kotlin.github.io/Library-API-Watchdog/")
                         licenses {
                             license {
                                 name.set("Apache License, Version 2.0")
@@ -77,9 +77,9 @@ class MavenCentralPublishingConventionPlugin : Plugin<Project> {
                             }
                         }
                         scm {
-                            url.set("https://github.com/Mr3zee/Library-API-Watchdog")
-                            connection.set("scm:git:https://github.com/Mr3zee/Library-API-Watchdog.git")
-                            developerConnection.set("scm:git:ssh://git@github.com/Mr3zee/Library-API-Watchdog.git")
+                            url.set("https://github.com/Kotlin/Library-API-Watchdog")
+                            connection.set("scm:git:https://github.com/Kotlin/Library-API-Watchdog.git")
+                            developerConnection.set("scm:git:ssh://git@github.com/Kotlin/Library-API-Watchdog.git")
                         }
                     }
                 }

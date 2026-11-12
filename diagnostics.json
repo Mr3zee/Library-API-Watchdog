@@ -26,7 +26,7 @@
     "  - Don't write the documentation link. The generator adds 'See more: <docsBaseUrl><docs>'.",
     "  - Write a link as [text](url). The generator rewrites it to 'text (url)' for compiler output."
   ],
-  "docsBaseUrl": "https://mr3zee.github.io/Library-API-Watchdog/",
+  "docsBaseUrl": "https://kotlin.github.io/Library-API-Watchdog/",
   "sharedParameterValues": {
     "class": [
       "class"
@@ -177,7 +177,7 @@
       "parameterValues": {
         "generationHint": [
           "Use",
-          "[Poko](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string#poko)",
+          "[Poko](https://kotlin.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string#poko)",
           "to generate `equals`, `hashCode`, and `toString` together."
         ],
         "ideaGenerateShortcut": [
@@ -203,7 +203,7 @@
       "parameterValues": {
         "generationHint": [
           "Use",
-          "[Poko](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string#poko)",
+          "[Poko](https://kotlin.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string#poko)",
           "to generate `equals`, `hashCode`, and `toString` together."
         ],
         "ideaGenerateShortcut": [
@@ -229,7 +229,7 @@
       "parameterValues": {
         "generationHint": [
           "Use",
-          "[Poko](https://mr3zee.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string#poko)",
+          "[Poko](https://kotlin.github.io/Library-API-Watchdog/checks/stateful-class-without-equals-hashcode-to-string#poko)",
           "to generate `equals`, `hashCode`, and `toString` together."
         ],
         "ideaGenerateShortcut": [
