@@ -51,5 +51,7 @@ kotlin {
 
     applyDefaultHierarchyTemplate()
 
-    abiValidation()
+    abiValidation {
+        enabled.set(true)
+    }
 }

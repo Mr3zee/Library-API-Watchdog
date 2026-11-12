@@ -122,7 +122,7 @@ jobs:
           ./gradlew \
             :gradle-plugin:checkKotlinAbi \
             :gradle-plugin:kotlin-library-api-watchdog-report-aggregation:checkKotlinAbi \
-            :plugin-annotations:checkKotlinAbi
+            :plugin-annotations:checkLegacyAbi
 
       - name: Save test reports
         if: failure()

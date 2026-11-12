@@ -8,7 +8,6 @@ import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFunctionChecker
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirFunction
-import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirValueParameter
 import org.jetbrains.kotlin.fir.declarations.isLegacyContextReceiver
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
@@ -30,7 +29,7 @@ internal class BooleanParameterChecker(
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirFunction) {
-        if (declaration !is FirNamedFunction || declaration.isActualizedDeclaration() ||
+        if (!declaration.isNamedFunction() || declaration.isActualizedDeclaration() ||
             declaration.isOverride || declaration.isConstructorFunction()
         ) {
             return
@@ -52,7 +51,7 @@ internal class BooleanParameterChecker(
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun checkParameter(
         parameter: FirValueParameter,
-        declaration: FirNamedFunction,
+        declaration: FirFunction,
         factory: KtDiagnosticFactory2<Name, Name>,
     ) {
         if (parameter.isLegacyContextReceiver() || parameter.isExempt()) return
@@ -61,14 +60,14 @@ internal class BooleanParameterChecker(
         reporter.reportOn(
             source = parameter.source ?: declaration.source,
             factory = factory,
-            a = declaration.name,
+            a = declaration.symbol.name,
             b = parameter.sourceName,
         )
     }
 
     /** A constructor function is named after the declared return type, the alias when the source names one. */
-    private fun FirNamedFunction.isConstructorFunction(): Boolean =
-        returnTypeRef.coneType.abbreviatedTypeOrSelf.classId?.shortClassName == name
+    private fun FirFunction.isConstructorFunction(): Boolean =
+        returnTypeRef.coneType.abbreviatedTypeOrSelf.classId?.shortClassName == symbol.name
 
     /** The type of one argument: the element type for a `vararg` parameter. */
     context(context: CheckerContext)

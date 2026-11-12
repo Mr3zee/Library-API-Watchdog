@@ -7,13 +7,15 @@ import org.jetbrains.kotlinx.library.api.watchdog.AgpVersion.AGP9
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.OPEN_API_WITHOUT_SUBCLASS_OPT_IN
 import org.jetbrains.kotlinx.library.api.watchdog.KmpAndroidTarget.LIBRARY_AGP8
 import org.jetbrains.kotlinx.library.api.watchdog.KmpAndroidTarget.LIBRARY_AGP9
+import org.junit.Assume.assumeFalse
 import org.junit.Test
 
 /**
  * The validation tools in an Android project:
  *
  * - `kotlin-android` of AGP 8 and the built-in Kotlin of AGP 9 have the `abiValidation` block, and
- *   the Kotlin Gradle plugin registers `checkKotlinAbi` for both.
+ *   the Kotlin Gradle plugin registers `checkKotlinAbi` for both. Before Kotlin 2.4.0, the built-in
+ *   Kotlin doesn't have the block.
  * - The Binary Compatibility Validator plugin registers `apiCheck` for `kotlin-android` and for a
  *   multiplatform project, but not for the built-in Kotlin of AGP 9.
  */
@@ -22,7 +24,10 @@ class AndroidApiFiltersTest : ApiFiltersTestBase() {
     fun `Kotlin ABI validation filters apply to an Android library`() = kotlinAbiValidationCase(AGP8)
 
     @Test
-    fun `Kotlin ABI validation filters apply to an Android library with built-in Kotlin`() = kotlinAbiValidationCase(AGP9)
+    fun `Kotlin ABI validation filters apply to an Android library with built-in Kotlin`() {
+        assumeBuiltInKotlinHasAbiValidation()
+        kotlinAbiValidationCase(AGP9)
+    }
 
     private fun kotlinAbiValidationCase(agp: AgpVersion) {
         val project = androidLibrary(agp) {
@@ -35,6 +40,7 @@ class AndroidApiFiltersTest : ApiFiltersTestBase() {
 
     @Test
     fun `Kotlin ABI validation inclusion filters apply to an Android library with built-in Kotlin`() {
+        assumeBuiltInKotlinHasAbiValidation()
         val project = androidLibrary(AGP9) {
             buildScript(kotlinAbiValidation(KGP_INCLUSION_FILTERS))
             inclusionSources()
@@ -73,6 +79,10 @@ class AndroidApiFiltersTest : ApiFiltersTestBase() {
 
     @Test
     fun `Kotlin ABI validation filters apply to the multiplatform Android target on AGP 9`() = kmpKotlinAbiValidationCase(LIBRARY_AGP9)
+
+    private fun assumeBuiltInKotlinHasAbiValidation() {
+        assumeFalse("The built-in Kotlin has no `abiValidation` block before Kotlin 2.4.0", legacyAbiValidationDsl)
+    }
 
     private fun kmpKotlinAbiValidationCase(target: KmpAndroidTarget) {
         val project = kmpAndroidProject(target) {

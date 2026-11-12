@@ -76,6 +76,16 @@ npm run build                       # the site build, fails on a broken link or 
   erasure removes it. So a custom positioning strategy is impossible: its `mark` override never binds in the
   embeddable compiler, and the default strategy marks the whole declaration. A checker reports on a child source
   element from `KtSourceElement.getChild` with a `Set` of token types instead.
+- The compiler plugin and the fixer compile against every Kotlin version from `kotlinCliMin` (2.2.20). `FirApiCompat.kt`
+  declares each API that differs between the versions. The `actual` declarations are in the version source sets of
+  `versionHierarchy` (`pre2320DevMain`, `post24DevMain`, ...). The code can't name the class `FirNamedFunction`,
+  because its name is `FirSimpleFunction` before Kotlin 2.3.20. Use `isNamedFunction()`.
+- An IDE build (`2.3.20-ij253-119`) or a dev build of a version has only a part of the compiler API of the release.
+  A `Dev` source set (`post2320DevMain`) has these builds, and a source set without `Dev` (`post2320Main`) starts at
+  the release. Compile every target to find the side that an API needs.
+- A test handler goes into the step with `useHandlersAtFirst`. Before Kotlin 2.4.0, the test framework doesn't run
+  the handlers that follow `NoFirCompilationErrorsHandler` when the module has an error. The test then passes without
+  a check.
 - The fixer uses K2 PSI entry points only, with unrelocated `com.intellij` imports, and compile-only dependencies.
   The Gradle task runs it in a separate JVM with the `kotlin-compiler` artifact of the project's Kotlin version.
 - The Gradle plugin checks the task graph in `gradle.taskGraph.whenReady`, never on task realization, because IDE
@@ -92,6 +102,8 @@ npm run build                       # the site build, fails on a broken link or 
 - The benchmark baseline (`compiler-plugin/src/benchmark/baseline/`) is valid for one machine profile. Record it
   with the `Benchmark baseline` workflow (`record` input), never on a developer machine. The check compares `bytes`
   only.
+- `plugin-annotations` applies the Kotlin Gradle plugin of `kotlinCliMin`, so its ABI tasks have the names
+  `checkLegacyAbi` and `updateLegacyAbi`, not `checkKotlinAbi` and `updateKotlinAbi`.
 - `library-api-watchdog.jvm-target-conventions` sets the bytecode level of a published module. The annotations
   target Java 8. The Gradle plugin and the report aggregation target Java 17, because the dev kit's
   `gradle-plugin-runtime` is a Java 17 library. The compiler plugin and the fixer don't apply the convention. The

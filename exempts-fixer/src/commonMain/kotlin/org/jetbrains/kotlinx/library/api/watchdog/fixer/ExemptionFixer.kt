@@ -9,13 +9,13 @@ import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtAnnotated
 import org.jetbrains.kotlin.psi.KtAnnotation
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
-import org.jetbrains.kotlin.psi.KtAnnotationsContainer
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtEnumEntry
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtFileAnnotationList
 import org.jetbrains.kotlin.psi.KtImportDirective
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtParameter
@@ -489,7 +489,7 @@ private fun PlannedFix.annotationCall(imports: ImportResolver): String {
     return "$name$arguments"
 }
 
-private fun KtAnnotationsContainer.hasAnnotationNamed(shortName: String): Boolean =
+private fun KtFileAnnotationList.hasAnnotationNamed(shortName: String): Boolean =
     annotationEntries.any { it.shortName?.asString() == shortName }
 
 private fun KtAnnotated.hasAnnotationNamed(shortName: String): Boolean =

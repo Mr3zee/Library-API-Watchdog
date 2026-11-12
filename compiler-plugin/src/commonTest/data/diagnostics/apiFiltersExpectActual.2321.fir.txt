@@ -1,0 +1,96 @@
+Module: common
+FILE: common.kt
+    package test
+
+    @R|kotlin/annotation/Retention|(value = Q|kotlin/annotation/AnnotationRetention|.R|kotlin/annotation/AnnotationRetention.SOURCE|) public final annotation class PublicApi : R|kotlin/Annotation| {
+        public constructor(): R|test/PublicApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public open expect class Excluded : R|kotlin/Any| {
+        public expect constructor(): R|test/Excluded|
+
+        public final expect fun member(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+
+    }
+    public final expect fun excludedFunction(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+    public open expect class Partly : R|kotlin/Any| {
+        public expect constructor(): R|test/Partly|
+
+        public final expect fun excludedMember(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+
+        public final expect fun watchedMember(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+
+    }
+    public open expect class IncludedByName : R|kotlin/Any| {
+        public expect constructor(): R|test/IncludedByName|
+
+    }
+    public final expect fun includedByName(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+    @R|test/PublicApi|() public open expect class IncludedByAnnotation : R|kotlin/Any| {
+        public expect constructor(): R|test/IncludedByAnnotation|
+
+    }
+    @R|test/PublicApi|() public final expect fun includedByAnnotation(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+    public open expect class NotIncluded : R|kotlin/Any| {
+        public expect constructor(): R|test/NotIncluded|
+
+        public final expect fun member(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+
+    }
+    public final expect fun notIncluded(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+Module: jvm
+FILE: jvm.kt
+    package test
+
+    public open actual class Excluded : R|kotlin/Any| {
+        public constructor(): R|test/Excluded| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual fun member(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    public final actual fun excludedFunction(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public open actual class Partly : R|kotlin/Any| {
+        public constructor(): R|test/Partly| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual fun excludedMember(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+        public final actual fun watchedMember(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    public open actual class IncludedByName : R|kotlin/Any| {
+        public constructor(): R|test/IncludedByName| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final actual fun includedByName(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public open actual class IncludedByAnnotation : R|kotlin/Any| {
+        public constructor(): R|test/IncludedByAnnotation| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final actual fun includedByAnnotation(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public open actual class NotIncluded : R|kotlin/Any| {
+        public constructor(): R|test/NotIncluded| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual fun member(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    public final actual fun notIncluded(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }

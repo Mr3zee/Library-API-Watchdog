@@ -1,6 +1,6 @@
 // RUN_PIPELINE_TILL: FRONTEND
 // EXPLICIT_API_MODE: WARNING
-// DIAGNOSTICS: -UNDOCUMENTED_PUBLIC_API -TOP_LEVEL_API_WITHOUT_JVM_NAME
+// DIAGNOSTICS: -UNDOCUMENTED_PUBLIC_API -TOP_LEVEL_API_WITHOUT_JVM_NAME -KOTLIN_ONLY_API_WITHOUT_JVM_SYNTHETIC
 
 package foo.bar
 
@@ -51,3 +51,18 @@ public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>subscribeGroup<!>(topic:
 public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>subscribeGroup<!>(topic: String, retries: Int, handler: (String) -> Boolean) {}
 
 public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>subscribeGroup<!>(handler: (String) -> Boolean, topic: String, retries: Long) {}
+
+public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>transformGroup<!>(
+    name: String,
+    onEach: suspend (Int) -> Unit,
+    configure: StringBuilder.(Int) -> Unit,
+    fallback: (() -> Unit)?,
+) {}
+
+public fun <!INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS!>transformGroup<!>(
+    onEach: suspend (Int) -> Unit,
+    name: String,
+    steps: List<(String) -> Int>,
+    wrap: ((Int) -> Int) -> (Int) -> Int,
+    decorate: (() -> Unit).() -> Unit,
+) {}

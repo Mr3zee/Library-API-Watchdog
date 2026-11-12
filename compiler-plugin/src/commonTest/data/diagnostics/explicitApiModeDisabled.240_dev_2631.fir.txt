@@ -1,0 +1,60 @@
+FILE: explicitApiModeDisabled.kt
+    package foo.bar
+
+    public open class UnprotectedOpenClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/UnprotectedOpenClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public abstract class UnprotectedAbstractClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/UnprotectedAbstractClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public abstract interface UnprotectedInterface : R|kotlin/Any| {
+    }
+    public final enum class UnmarkedEnum : R|kotlin/Enum<foo/bar/UnmarkedEnum>| {
+        private constructor(): R|foo/bar/UnmarkedEnum| {
+            super<R|kotlin/Enum<foo/bar/UnmarkedEnum>|>()
+        }
+
+        public final static enum entry A: R|foo/bar/UnmarkedEnum|
+        public final static enum entry B: R|foo/bar/UnmarkedEnum|
+        public final static fun values(): R|kotlin/Array<foo/bar/UnmarkedEnum>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/UnmarkedEnum| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/UnmarkedEnum>|
+            public get(): R|kotlin/enums/EnumEntries<foo/bar/UnmarkedEnum>|
+
+    }
+    public sealed class UnmarkedSealedClass : R|kotlin/Any| {
+        protected constructor(): R|foo/bar/UnmarkedSealedClass| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final class Only : R|foo/bar/UnmarkedSealedClass| {
+            public constructor(): R|foo/bar/UnmarkedSealedClass.Only| {
+                super<R|foo/bar/UnmarkedSealedClass|>()
+            }
+
+        }
+
+    }
+    public final class UndocumentedClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/UndocumentedClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final object UndocumentedObject : R|kotlin/Any| {
+        private constructor(): R|foo/bar/UndocumentedObject| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final typealias UnacknowledgedCallback = R|(kotlin/Int) -> kotlin/Unit|

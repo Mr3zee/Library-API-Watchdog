@@ -3,7 +3,9 @@
 package org.jetbrains.kotlinx.library.api.watchdog
 
 import org.gradle.testkit.runner.BuildResult
+import org.jetbrains.kotlin.compiler.plugin.devkit.test.TEST_COMPILER_VERSION
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.OPEN_API_WITHOUT_SUBCLASS_OPT_IN
+import org.junit.Assume.assumeFalse
 
 /**
  * An open class fails the build when the watchdog checks it, so a passing build shows that the
@@ -135,17 +137,29 @@ abstract class ApiFiltersTestBase {
         assertOutputLacks("`hiddenUtility`")
     }
 
-    protected fun kotlinAbiValidation(filters: String): String =
-        """
+    /**
+     * The `abiValidation` block in the DSL of the Kotlin version under test. [filters] has the block
+     * names of Kotlin 2.3.20 and later. Before Kotlin 2.4.0, [enabled] sets the `enabled` flag.
+     */
+    protected fun kotlinAbiValidation(filters: String, enabled: Boolean = true): String {
+        val versionFilters = if (legacyAbiFilterNames) filters.replace(filterBlockName, "$1d") else filters
+        val enabledFlag = if (legacyAbiValidationDsl && enabled) "enabled.set(true)" else ""
+        return """
             kotlin {
                 @OptIn(org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation::class)
                 abiValidation {
+                    $enabledFlag
                     filters {
-                        ${filters.trimIndent().prependIndent("                        ").trimStart()}
+                        ${versionFilters.trimIndent().prependIndent("                        ").trimStart()}
                     }
                 }
             }
         """
+    }
+
+    protected fun assumeCheckTaskShowsActiveValidation() {
+        assumeFalse("Kotlin 2.3.20 and 2.3.21 register `checkKotlinAbi` in every project", legacyAbiValidationDsl)
+    }
 
     protected val bcvExclusionSets: String = """
         ignoredPackages.add("test.internal")
@@ -165,6 +179,8 @@ abstract class ApiFiltersTestBase {
     companion object {
         const val COMPILE: String = "compileKotlin"
 
+        private val filterBlockName = Regex("""\b(exclude|include)(?=\s*\{)""")
+
         val excludedNames: List<String> =
             listOf("InternalByPackage", "InternalInSubpackage", "HiddenByAnnotation", "HiddenByName", "HiddenNested")
 
@@ -183,3 +199,15 @@ abstract class ApiFiltersTestBase {
         """
     }
 }
+
+/**
+ * Kotlin 2.2 and 2.3 register `abiValidation` as an extension, and its `enabled` flag turns the
+ * validation on. Kotlin 2.4.0 and later turn the validation on with a call of `abiValidation`.
+ */
+internal val legacyAbiValidationDsl: Boolean
+    get() = TEST_COMPILER_VERSION.major == 2 && TEST_COMPILER_VERSION.minor < 4
+
+/** The filter blocks have the names `excluded` and `included` before Kotlin 2.3.20. */
+internal val legacyAbiFilterNames: Boolean
+    get() = TEST_COMPILER_VERSION.major == 2 &&
+        (TEST_COMPILER_VERSION.minor < 3 || TEST_COMPILER_VERSION.minor == 3 && TEST_COMPILER_VERSION.patch < 20)

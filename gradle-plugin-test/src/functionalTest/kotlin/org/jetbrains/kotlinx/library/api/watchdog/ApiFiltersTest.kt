@@ -10,6 +10,7 @@ import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.OPEN_API_WITHOUT_SU
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.PUBLIC_TYPE_WITH_INTERNAL_API
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.REDUNDANT_EXEMPTION
 import org.jetbrains.kotlinx.library.api.watchdog.Diagnostic.UNDOCUMENTED_PUBLIC_API
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 
 /** The filters of the ABI validation of the Kotlin Gradle plugin, and `useAbiValidationFilters`. */
@@ -59,6 +60,20 @@ class ApiFiltersTest : ApiFiltersTestBase() {
         }
 
         project.build(COMPILE).assertOnlyWatchedIsReported()
+    }
+
+    @Test
+    fun `Kotlin ABI validation filters don't apply without the enabled flag`() {
+        assumeTrue("Kotlin 2.4.0 and later have no `enabled` flag", legacyAbiValidationDsl)
+        val project = jvmProject {
+            buildScript(kotlinAbiValidation(KGP_EXCLUSION_FILTERS, enabled = false))
+            exclusionSources()
+        }
+
+        val result = project.buildAndFail(COMPILE)
+
+        result.assertErrors(OPEN_API_WITHOUT_SUBCLASS_OPT_IN)
+        for (name in excludedNames) result.assertOutputHas("`$name`")
     }
 
     @Test
@@ -157,6 +172,7 @@ class ApiFiltersTest : ApiFiltersTestBase() {
 
     @Test
     fun `the watchdog doesn't activate the Kotlin ABI validation`() {
+        assumeCheckTaskShowsActiveValidation()
         val project = jvmProject {
             apiWatchdog { severityOfEveryCheck(Severity.WARNING) }
             buildScript(

@@ -11,7 +11,6 @@ import org.jetbrains.kotlin.fir.analysis.getChild
 import org.jetbrains.kotlin.fir.analysis.checkers.unsubstitutedScope
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirFunction
-import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
 import org.jetbrains.kotlin.fir.declarations.utils.isActual
 import org.jetbrains.kotlin.fir.declarations.utils.isExpect
@@ -24,7 +23,6 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirConstructorSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
 import org.jetbrains.kotlin.fir.types.coneType
-import org.jetbrains.kotlin.fir.types.renderReadable
 import org.jetbrains.kotlin.fir.unwrapFakeOverrides
 import org.jetbrains.kotlin.lexer.KtToken
 import org.jetbrains.kotlin.lexer.KtTokens
@@ -46,7 +44,7 @@ internal class OverloadParameterOrderChecker(
     override fun check(declaration: FirFunction) {
         val factory = severities[WatchdogDiagnostics.INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS] ?: return
 
-        if (declaration !is FirConstructor && declaration !is FirNamedFunction) {
+        if (declaration !is FirConstructor && !declaration.isNamedFunction()) {
             return
         }
 
@@ -101,10 +99,10 @@ internal class OverloadParameterOrderChecker(
                 }
             }
 
-            this !is FirNamedFunction -> Unit
+            !isNamedFunction() -> Unit
 
             else -> {
-                val name = this.name
+                val name = symbol.name
                 if (containingClass != null) {
                     containingClass.forEachMemberNamed(name, action)
                 } else {
@@ -250,7 +248,7 @@ internal class OverloadParameterOrderChecker(
 
     private fun List<FirValueParameterSymbol>.signature(callableName: Name): String =
         joinToString(prefix = "$callableName(", postfix = ")") {
-            "${it.name}: ${it.resolvedReturnType.renderReadable()}"
+            "${it.name}: ${it.resolvedReturnType.renderReadableCompat()}"
         }
 
     context(context: CheckerContext)

@@ -1,0 +1,241 @@
+FILE: mutableCollection.kt
+    package foo.bar
+
+    public final fun produce(): R|kotlin/collections/MutableList<kotlin/String>| {
+        ^produce R|kotlin/collections/mutableListOf|<R|kotlin/String|>()
+    }
+    public final fun consume(items: R|kotlin/collections/MutableSet<kotlin/Int>|): R|kotlin/Unit| {
+        R|<local>/items|.R|SubstitutionOverride<kotlin/collections/MutableSet.clear: R|kotlin/Unit|>|()
+    }
+    public final fun cursor(): R|kotlin/collections/MutableIterator<kotlin/Int>| {
+        ^cursor R|kotlin/TODO|()
+    }
+    public final val registry: R|kotlin/collections/MutableMap<kotlin/String, kotlin/Int>| = R|kotlin/collections/mutableMapOf|<R|kotlin/String|, R|kotlin/Int|>()
+        public get(): R|kotlin/collections/MutableMap<kotlin/String, kotlin/Int>|
+    public final var handles: R|kotlin/collections/MutableCollection<kotlin/Int>| = R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+        public get(): R|kotlin/collections/MutableCollection<kotlin/Int>|
+        public set(value: R|kotlin/collections/MutableCollection<kotlin/Int>|): R|kotlin/Unit|
+    public final class Holder : R|kotlin/Any| {
+        public constructor(items: R|kotlin/collections/MutableList<kotlin/Int>|): R|foo/bar/Holder| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val items: R|kotlin/collections/MutableList<kotlin/Int>| = R|<local>/items|
+            public get(): R|kotlin/collections/MutableList<kotlin/Int>|
+
+    }
+    public final class Sink : R|kotlin/Any| {
+        public constructor(buffer: R|kotlin/collections/MutableList<kotlin/Int>|): R|foo/bar/Sink| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/PublishedApi|() internal final fun stash(): R|kotlin/collections/MutableList<kotlin/Int>| {
+        ^stash R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+    }
+    public final fun nested(): R|kotlin/collections/List<kotlin/collections/MutableList<kotlin/Int>>| {
+        ^nested R|kotlin/collections/emptyList|<R|kotlin/collections/MutableList<kotlin/Int>|>()
+    }
+    public final typealias Bag = R|kotlin/collections/MutableList<kotlin/Int>|
+    public final fun aliased(): R|{foo/bar/Bag=} kotlin/collections/MutableList<kotlin/Int>| {
+        ^aliased R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+    }
+    public final val makeBuffer: R|() -> kotlin/collections/MutableList<kotlin/Int>| = fun <anonymous>(): R|kotlin/collections/MutableList<kotlin/Int>| <inline=NoInline>  {
+        ^ R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+    }
+
+        public get(): R|() -> kotlin/collections/MutableList<kotlin/Int>|
+    public final fun onBatch(action: R|(kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun provider(factory: R|() -> kotlin/collections/MutableSet<kotlin/String>|): R|kotlin/Unit| {
+    }
+    public final fun schedule(task: R|suspend () -> kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit| {
+    }
+    public final fun callbackFactory(): R|(kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit| {
+        ^callbackFactory fun <anonymous>(it: R|kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit| <inline=NoInline>  {
+            ^ Unit
+        }
+
+    }
+    public final fun assemble(block: R|kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit|): R|kotlin/collections/List<kotlin/Int>| {
+        ^assemble R|kotlin/collections/mutableListOf|<R|kotlin/Int|>().R|kotlin/apply|<R|kotlin/collections/MutableList<kotlin/Int>|>(R|<local>/block|).R|kotlin/collections/toList|<R|kotlin/Int|>()
+    }
+    public final fun buildInto(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() block: R|(kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit|): R|kotlin/collections/List<kotlin/Int>| {
+        ^buildInto R|kotlin/collections/mutableListOf|<R|kotlin/Int|>().R|kotlin/also|<R|kotlin/collections/MutableList<kotlin/Int>|>(R|<local>/block|).R|kotlin/collections/toList|<R|kotlin/Int|>()
+    }
+    public final fun receiverCallbackFactory(): R|kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit| {
+        ^receiverCallbackFactory fun R|kotlin/collections/MutableList<kotlin/Int>|.<anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+            ^ Unit
+        }
+
+    }
+    public final val receiverCallback: R|kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit| = fun R|kotlin/collections/MutableList<kotlin/Int>|.<anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+        ^ Unit
+    }
+
+        public get(): R|kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit|
+    public final typealias CollectionBuilder = R|kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit|
+    public final fun aliasedBuilder(block: R|{foo/bar/CollectionBuilder=} kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun nestedBuilders(blocks: R|kotlin/collections/List<kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit>|): R|kotlin/Unit| {
+    }
+    public final fun nestedReceiverBuilder(block: R|kotlin/collections/List<kotlin/collections/MutableList<kotlin/Int>>.() -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun suspendBuilder(block: R|suspend kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun receiverWithMutableParameter(block: R|kotlin/collections/MutableList<kotlin/Int>.(kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun receiverWithMutableReturn(block: R|kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit| {
+    }
+    public final fun contextualBuilder(block: R|@ContextFunctionTypeParams(1) context(kotlin/String) kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun mutableContextBuilder(block: R|@ContextFunctionTypeParams(1) context(kotlin/collections/MutableList<kotlin/Int>) kotlin/collections/MutableList<kotlin/Int>.() -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun onEachBatch(action: R|(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|()  kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun drainWith(action: R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|()  (kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() public final fun batchCallbackFactory(): R|(kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit| {
+        ^batchCallbackFactory fun <anonymous>(it: R|kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit| <inline=NoInline>  {
+            ^ Unit
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() public final val batchSink: R|(kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit| = fun <anonymous>(it: R|kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit| <inline=NoInline>  {
+        ^ Unit
+    }
+
+        public get(): R|(kotlin/collections/MutableList<kotlin/Int>) -> kotlin/Unit|
+    public final fun transform(f: R|(kotlin/collections/List<kotlin/Int>) -> kotlin/collections/Set<kotlin/String>|): R|kotlin/Unit| {
+    }
+    public final fun grow(): R|{kotlin/collections/ArrayList<kotlin/String>=} java/util/ArrayList<kotlin/String>| {
+        ^grow R|java/util/ArrayList.ArrayList|<R|kotlin/String|>()
+    }
+    public abstract class IntBuffer : R|kotlin/collections/MutableList<kotlin/Int>| {
+        public constructor(): R|foo/bar/IntBuffer| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun buffer(): R|foo/bar/IntBuffer| {
+        ^buffer R|kotlin/TODO|()
+    }
+    public abstract interface BufferMarker : R|kotlin/Any| {
+    }
+    public abstract class BranchedBuffer : R|foo/bar/BufferMarker|, R|kotlin/collections/MutableCollection<kotlin/Int>| {
+        public constructor(): R|foo/bar/BranchedBuffer| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public abstract class SpecializedBuffer : R|foo/bar/BranchedBuffer| {
+        public constructor(): R|foo/bar/SpecializedBuffer| {
+            super<R|foo/bar/BranchedBuffer|>()
+        }
+
+    }
+    public abstract class ReadOnlyBuffer : R|kotlin/collections/Collection<kotlin/Int>| {
+        public constructor(): R|foo/bar/ReadOnlyBuffer| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun branchedBuffer(): R|foo/bar/BranchedBuffer| {
+        ^branchedBuffer R|kotlin/TODO|()
+    }
+    public final fun specializedBuffer(): R|foo/bar/SpecializedBuffer| {
+        ^specializedBuffer R|kotlin/TODO|()
+    }
+    public final fun readOnlyBuffer(): R|foo/bar/ReadOnlyBuffer| {
+        ^readOnlyBuffer R|kotlin/TODO|()
+    }
+    public final typealias ReadOnlyBox<T> = R|kotlin/collections/List<T>|
+    public final fun boxedBuffer(): R|{foo/bar/ReadOnlyBox<kotlin/collections/MutableList<kotlin/Int>>=} kotlin/collections/List<kotlin/collections/MutableList<kotlin/Int>>| {
+        ^boxedBuffer R|kotlin/collections/emptyList|<R|kotlin/collections/MutableList<kotlin/Int>|>()
+    }
+    public final fun table(): R|kotlin/Array<kotlin/String>| {
+        ^table R|kotlin/arrayOf|<R|kotlin/String|>()
+    }
+    public final fun bytes(): R|kotlin/ByteArray| {
+        ^bytes R|kotlin/ByteArray.ByteArray|(Int(0))
+    }
+    public final fun joined(vararg parts: R|kotlin/Array<out kotlin/String>|): R|kotlin/String| {
+        ^joined R|<local>/parts|.R|kotlin/collections/joinToString|<R|kotlin/String|>()
+    }
+    public final fun batches(vararg groups: R|kotlin/Array<out kotlin/collections/MutableList<kotlin/Int>>|): R|kotlin/Unit| {
+    }
+    public final fun <T : R|kotlin/collections/MutableList<kotlin/Int>|> drain(source: R|T|): R|kotlin/collections/List<kotlin/Int>| {
+        ^drain R|<local>/source|.R|kotlin/collections/toList|<R|kotlin/Int|>()
+    }
+    public final fun <T : R|kotlin/collections/MutableSet<kotlin/String>|> constrain(value: R|T|): R|T| {
+        ^constrain R|<local>/value|
+    }
+    public final class Depot<T : R|kotlin/collections/MutableCollection<kotlin/Int>|> : R|kotlin/Any| {
+        public constructor<T : R|kotlin/collections/MutableCollection<kotlin/Int>|>(): R|foo/bar/Depot<T>| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final val <T : R|kotlin/collections/MutableList<kotlin/Int>|> R|T|.lastItem: R|kotlin/Int|
+        public get(): R|kotlin/Int| {
+            ^ this@R|foo/bar/lastItem|.R|kotlin/collections/last|<R|kotlin/Int|>()
+        }
+    public final fun <@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() C : R|kotlin/collections/MutableCollection<kotlin/Int>|> fillAll(destination: R|C|): R|C| {
+        R|<local>/destination|.R|SubstitutionOverride<kotlin/collections/MutableCollection.add: R|kotlin/Boolean|>|(Int(1))
+        ^fillAll R|<local>/destination|
+    }
+    public final class Silo<@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() T : R|kotlin/collections/MutableSet<kotlin/String>|> : R|kotlin/Any| {
+        public constructor<@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() T : R|kotlin/collections/MutableSet<kotlin/String>|>(): R|foo/bar/Silo<T>| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() public final fun <T : R|kotlin/collections/MutableList<kotlin/Int>|> drainExempt(source: R|T|): R|kotlin/collections/List<kotlin/Int>| {
+        ^drainExempt R|<local>/source|.R|kotlin/collections/toList|<R|kotlin/Int|>()
+    }
+    public final fun snapshots(): R|kotlin/collections/List<@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|()  kotlin/collections/MutableList<kotlin/Int>>| {
+        ^snapshots R|kotlin/collections/emptyList|<R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|()  kotlin/collections/MutableList<kotlin/Int>|>()
+    }
+    public final fun buffered(): R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|()  kotlin/collections/MutableList<kotlin/Int>| {
+        ^buffered R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+    }
+    public final fun R|kotlin/collections/MutableList<kotlin/Int>|.compact(): R|kotlin/collections/List<kotlin/Int>| {
+        ^compact this@R|foo/bar/compact|.R|kotlin/collections/toList|<R|kotlin/Int|>()
+    }
+    public abstract interface Producer : R|kotlin/Any| {
+        public abstract fun produceAll(): R|kotlin/collections/MutableList<kotlin/Int>|
+
+    }
+    public final class DefaultProducer : R|foo/bar/Producer| {
+        public constructor(): R|foo/bar/DefaultProducer| {
+            super<R|kotlin/Any|>()
+        }
+
+        public open override fun produceAll(): R|kotlin/collections/MutableList<kotlin/Int>| {
+            ^produceAll R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() public final fun sharedRegistry(): R|kotlin/collections/MutableList<kotlin/String>| {
+        ^sharedRegistry R|kotlin/collections/mutableListOf|<R|kotlin/String|>()
+    }
+    public final fun fill(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() target: R|kotlin/collections/MutableList<kotlin/Int>|): R|kotlin/Unit| {
+        R|<local>/target|.R|SubstitutionOverride<kotlin/collections/MutableList.add: R|kotlin/Boolean|>|(Int(1))
+    }
+    public final class Pipeline : R|kotlin/Any| {
+        public constructor(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() stages: R|kotlin/collections/MutableList<kotlin/String>|): R|foo/bar/Pipeline| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyMutableCollection|() public final val stages: R|kotlin/collections/MutableList<kotlin/String>| = R|<local>/stages|
+            public get(): R|kotlin/collections/MutableList<kotlin/String>|
+
+    }
+    public final fun snapshot(items: R|kotlin/collections/List<kotlin/Int>|): R|kotlin/collections/Map<kotlin/String, kotlin/collections/Set<kotlin/Int>>| {
+        ^snapshot R|kotlin/collections/mapOf|<R|kotlin/String|, R|kotlin/collections/Set<kotlin/Int>|>(String(all).R|kotlin/to|<R|kotlin/String|, R|kotlin/collections/Set<kotlin/Int>|>(R|<local>/items|.R|kotlin/collections/toSet|<R|kotlin/Int|>()))
+    }
+    internal final fun scratch(): R|kotlin/collections/MutableList<kotlin/Int>| {
+        ^scratch R|kotlin/collections/mutableListOf|<R|kotlin/Int|>()
+    }
+    private final val cache: R|kotlin/collections/MutableMap<kotlin/String, kotlin/Int>| = R|kotlin/collections/mutableMapOf|<R|kotlin/String|, R|kotlin/Int|>()
+        private get(): R|kotlin/collections/MutableMap<kotlin/String, kotlin/Int>|

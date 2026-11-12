@@ -199,6 +199,10 @@ The watchdog respects filters set by [ABI validation](https://kotlinlang.org/doc
 When both tools validate the project, the watchdog copies the filters of the ABI validation of the
 Kotlin Gradle plugin only.
 
+On Kotlin 2.2 and 2.3, the ABI validation of the Kotlin Gradle plugin is off until
+`abiValidation { enabled.set(true) }` turns it on. While it is off, the watchdog doesn't copy its
+filters.
+
 The tools define the filter rules and the name format:
 
 - [Filters of the ABI validation](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html#configure-filters)

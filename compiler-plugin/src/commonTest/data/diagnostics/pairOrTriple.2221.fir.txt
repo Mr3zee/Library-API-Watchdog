@@ -1,0 +1,126 @@
+FILE: pairOrTriple.kt
+    package foo.bar
+
+    public final fun locate(): R|kotlin/Pair<kotlin/Int, kotlin/Int>| {
+        ^locate Int(0).R|kotlin/to|<R|kotlin/Int|, R|kotlin/Int|>(Int(0))
+    }
+    public final fun dimensions(): R|kotlin/Triple<kotlin/Int, kotlin/Int, kotlin/Int>| {
+        ^dimensions R|kotlin/Triple.Triple|<R|kotlin/Int|, R|kotlin/Int|, R|kotlin/Int|>(Int(0), Int(0), Int(0))
+    }
+    public final fun plot(point: R|kotlin/Pair<kotlin/Int, kotlin/Int>|): R|kotlin/Unit| {
+    }
+    public final val origin: R|kotlin/Pair<kotlin/Int, kotlin/Int>| = Int(0).R|kotlin/to|<R|kotlin/Int|, R|kotlin/Int|>(Int(0))
+        public get(): R|kotlin/Pair<kotlin/Int, kotlin/Int>|
+    public final var bounds: R|kotlin/Triple<kotlin/Int, kotlin/Int, kotlin/Int>| = R|kotlin/Triple.Triple|<R|kotlin/Int|, R|kotlin/Int|, R|kotlin/Int|>(Int(0), Int(0), Int(0))
+        public get(): R|kotlin/Triple<kotlin/Int, kotlin/Int, kotlin/Int>|
+        public set(value: R|kotlin/Triple<kotlin/Int, kotlin/Int, kotlin/Int>|): R|kotlin/Unit|
+    public final class Anchor : R|kotlin/Any| {
+        public constructor(position: R|kotlin/Pair<kotlin/Int, kotlin/Int>|): R|foo/bar/Anchor| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val position: R|kotlin/Pair<kotlin/Int, kotlin/Int>| = R|<local>/position|
+            public get(): R|kotlin/Pair<kotlin/Int, kotlin/Int>|
+
+    }
+    public final class Plotter : R|kotlin/Any| {
+        public constructor(seed: R|kotlin/Pair<kotlin/Int, kotlin/Int>|): R|foo/bar/Plotter| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/PublishedApi|() internal final fun corner(): R|kotlin/Pair<kotlin/Int, kotlin/Int>| {
+        ^corner Int(0).R|kotlin/to|<R|kotlin/Int|, R|kotlin/Int|>(Int(0))
+    }
+    public final fun edges(): R|kotlin/collections/List<kotlin/Pair<kotlin/Int, kotlin/Int>>| {
+        ^edges R|kotlin/collections/emptyList|<R|kotlin/Pair<kotlin/Int, kotlin/Int>|>()
+    }
+    public final typealias Point = R|kotlin/Pair<kotlin/Int, kotlin/Int>|
+    public final fun aliased(): R|{foo/bar/Point=} kotlin/Pair<kotlin/Int, kotlin/Int>| {
+        ^aliased Int(0).R|kotlin/to|<R|kotlin/Int|, R|kotlin/Int|>(Int(0))
+    }
+    public final fun onMove(callback: R|(kotlin/Pair<kotlin/Int, kotlin/Int>) -> kotlin/Unit|): R|kotlin/Unit| {
+    }
+    public final fun pointFactory(): R|() -> kotlin/Pair<kotlin/Int, kotlin/Int>| {
+        ^pointFactory fun <anonymous>(): R|kotlin/Pair<kotlin/Int, kotlin/Int>| <inline=Unknown>  {
+            ^ Int(0).R|kotlin/to|<R|kotlin/Int|, R|kotlin/Int|>(Int(0))
+        }
+
+    }
+    public final fun path(vararg points: R|kotlin/Array<out kotlin/Pair<kotlin/Int, kotlin/Int>>|): R|kotlin/Unit| {
+    }
+    public final fun <T : R|kotlin/Pair<kotlin/Int, kotlin/Int>|> firstOf(value: R|T|): R|kotlin/Int| {
+        ^firstOf R|<local>/value|.R|SubstitutionOverride<kotlin/Pair.first: R|kotlin/Int|>|
+    }
+    public final fun <T : R|kotlin/Triple<kotlin/Int, kotlin/Int, kotlin/Int>|> lastOf(value: R|T|): R|kotlin/Int| {
+        ^lastOf R|<local>/value|.R|SubstitutionOverride<kotlin/Triple.third: R|kotlin/Int|>|
+    }
+    public final class Grid<T : R|kotlin/Pair<kotlin/Int, kotlin/Int>|> : R|kotlin/Any| {
+        public constructor<T : R|kotlin/Pair<kotlin/Int, kotlin/Int>|>(): R|foo/bar/Grid<T>| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun <@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|() P : R|kotlin/Pair<kotlin/Int, kotlin/Int>|> render(value: R|P|): R|kotlin/Int| {
+        ^render R|<local>/value|.R|SubstitutionOverride<kotlin/Pair.first: R|kotlin/Int|>|
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|() public final fun <T : R|kotlin/Pair<kotlin/Int, kotlin/Int>|> renderExempt(value: R|T|): R|kotlin/Int| {
+        ^renderExempt R|<local>/value|.R|SubstitutionOverride<kotlin/Pair.first: R|kotlin/Int|>|
+    }
+    public final fun corners(): R|kotlin/collections/List<@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|()  kotlin/Pair<kotlin/Int, kotlin/Int>>| {
+        ^corners R|kotlin/collections/emptyList|<R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|()  kotlin/Pair<kotlin/Int, kotlin/Int>|>()
+    }
+    public final fun anchorPoint(): R|@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|()  kotlin/Pair<kotlin/Int, kotlin/Int>| {
+        ^anchorPoint Int(0).R|kotlin/to|<R|kotlin/Int|, R|kotlin/Int|>(Int(0))
+    }
+    public final fun R|kotlin/Pair<kotlin/Int, kotlin/Int>|.manhattanLength(): R|kotlin/Int| {
+        ^manhattanLength this@R|foo/bar/manhattanLength|.R|SubstitutionOverride<kotlin/Pair.first: R|kotlin/Int|>|.R|kotlin/Int.plus|(this@R|foo/bar/manhattanLength|.R|SubstitutionOverride<kotlin/Pair.second: R|kotlin/Int|>|)
+    }
+    public abstract interface Positioned : R|kotlin/Any| {
+        public abstract fun position(): R|kotlin/Pair<kotlin/Int, kotlin/Int>|
+
+    }
+    public final class Dot : R|foo/bar/Positioned| {
+        public constructor(): R|foo/bar/Dot| {
+            super<R|kotlin/Any|>()
+        }
+
+        public open override fun position(): R|kotlin/Pair<kotlin/Int, kotlin/Int>| {
+            ^position Int(0).R|kotlin/to|<R|kotlin/Int|, R|kotlin/Int|>(Int(0))
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|() public final fun rawLocation(): R|kotlin/Pair<kotlin/Int, kotlin/Int>| {
+        ^rawLocation Int(0).R|kotlin/to|<R|kotlin/Int|, R|kotlin/Int|>(Int(0))
+    }
+    public final fun draw(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|() at: R|kotlin/Pair<kotlin/Int, kotlin/Int>|): R|kotlin/Unit| {
+    }
+    public final class Route : R|kotlin/Any| {
+        public constructor(@R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|() waypoint: R|kotlin/Pair<kotlin/Int, kotlin/Int>|): R|foo/bar/Route| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyPairOrTriple|() public final val waypoint: R|kotlin/Pair<kotlin/Int, kotlin/Int>| = R|<local>/waypoint|
+            public get(): R|kotlin/Pair<kotlin/Int, kotlin/Int>|
+
+    }
+    public final class Coordinates : R|kotlin/Any| {
+        public constructor(x: R|kotlin/Int|, y: R|kotlin/Int|): R|foo/bar/Coordinates| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val x: R|kotlin/Int| = R|<local>/x|
+            public get(): R|kotlin/Int|
+
+        public final val y: R|kotlin/Int| = R|<local>/y|
+            public get(): R|kotlin/Int|
+
+    }
+    public final fun locateNamed(): R|foo/bar/Coordinates| {
+        ^locateNamed R|foo/bar/Coordinates.Coordinates|(Int(0), Int(0))
+    }
+    internal final fun scratchPoint(): R|kotlin/Pair<kotlin/Int, kotlin/Int>| {
+        ^scratchPoint Int(0).R|kotlin/to|<R|kotlin/Int|, R|kotlin/Int|>(Int(0))
+    }
+    private final val hidden: R|kotlin/Pair<kotlin/Int, kotlin/Int>| = Int(0).R|kotlin/to|<R|kotlin/Int|, R|kotlin/Int|>(Int(0))
+        private get(): R|kotlin/Pair<kotlin/Int, kotlin/Int>|

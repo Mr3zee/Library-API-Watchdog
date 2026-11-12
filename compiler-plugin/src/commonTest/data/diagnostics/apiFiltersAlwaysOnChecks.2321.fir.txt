@@ -1,0 +1,58 @@
+FILE: internal.kt
+    package test.internal
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|() public open class Excluded : R|kotlin/Any| {
+        public constructor(): R|test/internal/Excluded| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/DslMarker|() public final annotation class ExcludedDefaultTargetsDsl : R|kotlin/Annotation| {
+        public constructor(): R|test/internal/ExcludedDefaultTargetsDsl| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/DslMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.TYPE|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|)) public final annotation class ExcludedDsl : R|kotlin/Annotation| {
+        public constructor(): R|test/internal/ExcludedDsl| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public open class ExcludedTag : R|kotlin/Any| {
+        public constructor(): R|test/internal/ExcludedTag| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun excludedProcess(tag: R|@R|test/internal/ExcludedDsl|()  test/internal/ExcludedTag|): R|kotlin/Unit| {
+    }
+FILE: other.kt
+    package test.other
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyOpen|() public open class NotIncluded : R|kotlin/Any| {
+        public constructor(): R|test/other/NotIncluded| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/DslMarker|() public final annotation class NotIncludedDefaultTargetsDsl : R|kotlin/Annotation| {
+        public constructor(): R|test/other/NotIncludedDefaultTargetsDsl| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/DslMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.TYPE|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|)) public final annotation class NotIncludedDsl : R|kotlin/Annotation| {
+        public constructor(): R|test/other/NotIncludedDsl| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public open class NotIncludedTag : R|kotlin/Any| {
+        public constructor(): R|test/other/NotIncludedTag| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun notIncludedProcess(tag: R|@R|test/other/NotIncludedDsl|()  test/other/NotIncludedTag|): R|kotlin/Unit| {
+    }

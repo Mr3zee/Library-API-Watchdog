@@ -58,6 +58,7 @@ class NativeApiFiltersTest : ApiFiltersTestBase() {
 
     @Test
     fun `the watchdog doesn't activate the Kotlin ABI validation`() {
+        assumeCheckTaskShowsActiveValidation()
         val project = kmpProject(targets = NATIVE_TARGET) {
             buildScript(
                 """

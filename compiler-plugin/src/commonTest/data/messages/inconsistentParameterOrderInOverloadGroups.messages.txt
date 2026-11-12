@@ -364,3 +364,39 @@
     If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
 
     See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:55:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  transformGroup(name: String, onEach: suspend (Int) -> Unit, configure: StringBuilder.(Int) -> Unit, fallback: (() -> Unit)?)
+        Other overload: transformGroup(onEach: suspend (Int) -> Unit, name: String, steps: List<(String) -> Int>, wrap: ((Int) -> Int) -> (Int) -> Int, decorate: (() -> Unit).() -> Unit)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Other overload
+        name      | 1st           | 2nd
+        onEach    | 2nd           | 1st
+
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads
+
+/inconsistentParameterOrderInOverloadGroups.kt:62:12: error: INCONSISTENT_PARAMETER_ORDER_IN_OVERLOADS
+    Shared parameters have different positions in these overloads:
+
+        This overload:  transformGroup(onEach: suspend (Int) -> Unit, name: String, steps: List<(String) -> Int>, wrap: ((Int) -> Int) -> (Int) -> Int, decorate: (() -> Unit).() -> Unit)
+        Other overload: transformGroup(name: String, onEach: suspend (Int) -> Unit, configure: StringBuilder.(Int) -> Unit, fallback: (() -> Unit)?)
+
+    Shared parameters with different positions:
+
+        Parameter | This overload | Other overload
+        onEach    | 1st           | 2nd
+        name      | 2nd           | 1st
+
+    Use the same positions for shared parameters, and put extra parameters after them. A trailing lambda parameter can stay last.
+
+    If this is intended, apply `@IntentionallyInconsistentParameterOrder` to the function.
+
+    See more: https://mr3zee.github.io/Library-API-Watchdog/checks/inconsistent-parameter-order-in-overloads

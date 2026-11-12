@@ -1,0 +1,48 @@
+FILE: apiFiltersFieldAnnotations.kt
+    package test
+
+    @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FIELD|)) public final annotation class Hidden : R|kotlin/Annotation| {
+        public constructor(): R|test/Hidden| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|test/Hidden|() public final class InternalModel : R|kotlin/Any| {
+        public constructor(): R|test/InternalModel| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final class Holder : R|kotlin/Any| {
+        public constructor(): R|test/Holder| {
+            super<R|kotlin/Any|>()
+        }
+
+        field:@FIELD:R|test/Hidden|() @R|kotlin/jvm/JvmField|() public final var excludedJvmField: R|kotlin/collections/MutableList<test/InternalModel>| = R|kotlin/collections/mutableListOf|<R|test/InternalModel|>()
+            public get(): R|kotlin/collections/MutableList<test/InternalModel>|
+            public set(value: R|kotlin/collections/MutableList<test/InternalModel>|): R|kotlin/Unit|
+
+        field:@FIELD:R|test/Hidden|() public final lateinit var excludedLateinit: R|kotlin/collections/MutableList<test/InternalModel>|
+            public get(): R|kotlin/collections/MutableList<test/InternalModel>|
+            public set(value: R|kotlin/collections/MutableList<test/InternalModel>|): R|kotlin/Unit|
+
+        field:@FIELD:R|test/Hidden|() public final var excludedPrivateField: R|kotlin/collections/MutableList<test/InternalModel>| = R|kotlin/collections/mutableListOf|<R|test/InternalModel|>()
+            public get(): R|kotlin/collections/MutableList<test/InternalModel>|
+            public set(value: R|kotlin/collections/MutableList<test/InternalModel>|): R|kotlin/Unit|
+
+        field:@FIELD:R|test/Hidden|() public final lateinit var excludedPrivateSetter: R|kotlin/collections/MutableList<test/InternalModel>|
+            public get(): R|kotlin/collections/MutableList<test/InternalModel>|
+            private set(value: R|kotlin/collections/MutableList<test/InternalModel>|): R|kotlin/Unit|
+
+        public final var watched: R|kotlin/collections/MutableList<test/InternalModel>| = R|kotlin/collections/mutableListOf|<R|test/InternalModel|>()
+            public get(): R|kotlin/collections/MutableList<test/InternalModel>|
+            public set(value: R|kotlin/collections/MutableList<test/InternalModel>|): R|kotlin/Unit|
+
+    }
+    field:@FIELD:R|test/Hidden|() public final const val EXCLUDED_CONSTANT: R|kotlin/Int| = Int(1)
+        public get(): R|kotlin/Int|
+    public final const val WATCHED_CONSTANT: R|kotlin/Int| = Int(2)
+        public get(): R|kotlin/Int|
+    public final fun loadHolder(): R|test/Holder| {
+        ^loadHolder R|test/Holder.Holder|()
+    }

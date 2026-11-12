@@ -25,7 +25,7 @@ class WatchdogDiagnosticMessagesHandler(testServices: TestServices) : FirAnalysi
         for (part in info.partsForDependsOnModules) {
             val currentModule = part.module
             for (file in currentModule.files) {
-                val firFile = info.mainFirFilesByTestFile[file] ?: continue
+                val firFile = info.mainFirFilesByTestFileCompat[file] ?: continue
                 val diagnostics = diagnosticsPerFile[firFile]
                     .map { it.diagnostic }
                     .filter {

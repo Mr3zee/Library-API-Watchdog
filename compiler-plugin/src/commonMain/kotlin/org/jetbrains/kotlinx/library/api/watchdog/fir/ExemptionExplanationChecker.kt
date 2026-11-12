@@ -52,7 +52,7 @@ internal object ExemptionExplanationChecker {
             return
         }
 
-        val unexplainedReason = annotation.unexplainedExemptionReason() ?: return
+        val unexplainedReason = annotation.unexplainedExemptionReason(context.session) ?: return
 
         reporter.reportOn(
             source = annotation.source,

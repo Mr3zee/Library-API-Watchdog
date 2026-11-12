@@ -1,0 +1,59 @@
+Module: lib
+FILE: libInternal.kt
+    package lib.internal
+
+    public open class LibInternal : R|kotlin/Any| {
+        public constructor(): R|lib/internal/LibInternal| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+Module: main
+FILE: ownInternal.kt
+    package app.internal
+
+    public open class OwnInternal : R|kotlin/Any| {
+        public constructor(): R|app/internal/OwnInternal| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|kotlin/PublishedApi|() internal final fun publishedInternal(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/InternalAnnotationMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FILE|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|)) public final annotation class HiddenApi : R|kotlin/Annotation| {
+        public constructor(): R|app/internal/HiddenApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+FILE: hidden.kt
+    @FILE:R|app/internal/HiddenApi|()
+    package app.hidden
+
+    public final fun hiddenTopLevel(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+FILE: api.kt
+    @FILE:R|kotlin/jvm/JvmName|(name = String(Api))
+    package app.api
+
+    public final fun exposesDependencyType(): R|lib/internal/LibInternal| {
+        ^exposesDependencyType R|lib/internal/LibInternal.LibInternal|()
+    }
+    public final fun exposesOwnType(): R|app/internal/OwnInternal| {
+        ^exposesOwnType R|app/internal/OwnInternal.OwnInternal|()
+    }
+    public final typealias WatchedAlias = R|app/internal/OwnInternal|
+    public final fun exposesThroughAlias(): R|{app/api/WatchedAlias=} app/internal/OwnInternal| {
+        ^exposesThroughAlias R|app/internal/OwnInternal.OwnInternal|()
+    }
+    @R|app/internal/HiddenApi|() public final class Canvas : R|kotlin/Any| {
+        public constructor(): R|app/api/Canvas| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun paint(x: R|kotlin/Int|, y: R|kotlin/Int|): R|kotlin/Unit| {
+        }
+
+    }
+    public final fun R|app/api/Canvas|.paint(y: R|kotlin/Int|, x: R|kotlin/Int|, scale: R|kotlin/Double|): R|kotlin/Unit| {
+    }
