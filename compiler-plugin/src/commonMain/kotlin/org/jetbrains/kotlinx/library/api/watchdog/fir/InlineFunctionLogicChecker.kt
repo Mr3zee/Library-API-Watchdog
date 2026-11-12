@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirCallableDeclarationChecker
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
-import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
+import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirPropertyAccessor
 import org.jetbrains.kotlin.fir.declarations.utils.isInline
@@ -61,14 +61,14 @@ internal class InlineFunctionLogicChecker(
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(declaration: FirCallableDeclaration) {
         when (declaration) {
-            is FirNamedFunction -> checkFunction(declaration)
+            is FirFunction if declaration.isNamedFunction() -> checkFunction(declaration)
             is FirProperty -> checkProperty(declaration)
             else -> return
         }
     }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun checkFunction(declaration: FirNamedFunction) {
+    private fun checkFunction(declaration: FirFunction) {
         if (declaration.isExpectedDeclaration() || !declaration.isInline ||
             !declaration.isWatchedPublicApi() || declaration.isExempt()
         ) {
@@ -85,7 +85,7 @@ internal class InlineFunctionLogicChecker(
             source = declaration.source,
             factory = factory,
             a = WatchdogDiagnosticMessages.parameterValueFor(factory.name, "inlineFunction"),
-            b = declaration.name,
+            b = declaration.symbol.name,
         )
     }
 

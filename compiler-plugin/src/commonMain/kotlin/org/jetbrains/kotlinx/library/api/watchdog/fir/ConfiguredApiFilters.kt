@@ -3,7 +3,6 @@ package org.jetbrains.kotlinx.library.api.watchdog.fir
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.getAnnotationByClassId
 import org.jetbrains.kotlin.fir.declarations.getSingleMatchedExpectForActualOrNull
-import org.jetbrains.kotlin.fir.declarations.getStringArgument
 import org.jetbrains.kotlin.fir.declarations.toAnnotationClassLikeSymbol
 import org.jetbrains.kotlin.fir.extensions.FirExtensionSessionComponent
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
@@ -88,7 +87,7 @@ internal class ConfiguredApiFilters(
         val file = fileSymbol.fir
         val name = fileSymbol.resolvedAnnotationsWithArguments
             .getAnnotationByClassId(JvmStandardClassIds.Annotations.JvmName, session)
-            ?.getStringArgument(Name.identifier("name"))
+            ?.getStringArgumentCompat(Name.identifier("name"), session)
             ?: PackagePartClassUtils.getFilePartShortName(file.name)
         return file.packageDirective.packageFqName.child(Name.identifier(name)).asString()
     }

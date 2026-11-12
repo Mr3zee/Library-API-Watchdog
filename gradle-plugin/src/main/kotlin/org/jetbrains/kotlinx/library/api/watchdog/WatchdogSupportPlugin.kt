@@ -264,7 +264,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         val collect = collectDiagnosticsForExempts.map { it && feedsReport }
         // KGP already sets `-Xexplicit-api`. A different value causes a warning about repeated flags.
         val forceExplicitApi = collect.map { it && !hasExplicitApiMode() }
-        val compileDependencies = configurations.named(kotlinCompilation.compileDependencyConfigurationName)
+        val compileDependencies = configurations.named(compileDependenciesName(kotlinCompilation))
         val transitiveDependencies = transitiveDependenciesFor(kotlinCompilation, compileDependencies)
         val exemptNonTransitiveDependencies = exemptNonTransitiveDependenciesFor(kotlinCompilation, compileDependencies)
         val reportFile = layout.buildDirectory.file(
@@ -620,6 +620,20 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             configuration.attributes.copyFrom(compileClasspath.attributes)
             @Suppress("UnstableApiUsage")
             configuration.shouldResolveConsistentlyWith(compileClasspath)
+        }
+    }
+
+    private fun Project.compileDependenciesName(kotlinCompilation: KotlinCompilation<*>): String {
+        // Before Kotlin 2.3.20, the configuration of an `androidTarget()` compilation lacks the
+        // build-type and flavor dependencies. The classpath of the Android variant has them.
+        val androidCompileClasspathName = "${kotlinCompilation.name}CompileClasspath"
+        return if (
+            kotlinCompilation.platformType == KotlinPlatformType.androidJvm &&
+            androidCompileClasspathName in configurations.names
+        ) {
+            androidCompileClasspathName
+        } else {
+            kotlinCompilation.compileDependencyConfigurationName
         }
     }
 

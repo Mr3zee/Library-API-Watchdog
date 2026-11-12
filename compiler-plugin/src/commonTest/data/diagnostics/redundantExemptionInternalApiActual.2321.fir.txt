@@ -1,0 +1,51 @@
+Module: common
+FILE: common.kt
+    package test
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/InternalAnnotationMarker|() @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FILE|)) public final annotation class Hidden : R|kotlin/Annotation| {
+        public constructor(): R|test/Hidden| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutJvmOverloads|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect fun encode(v: R|kotlin/Int|, compact: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+    public final expect class Outer : R|kotlin/Any| {
+        public expect constructor(): R|test/Outer|
+
+        public final expect class Inner : R|kotlin/Any| {
+            public expect constructor(): R|test/Outer.Inner|
+
+            @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutJvmOverloads|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect fun encode(v: R|kotlin/Int|, compact: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutJvmOverloads|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect fun decode(v: R|kotlin/Int|, compact: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+Module: jvm
+FILE: hiddenFile.kt
+    @FILE:R|test/Hidden|()
+    package test
+
+    public final actual fun encode(v: R|kotlin/Int|, compact: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+FILE: jvm.kt
+    package test
+
+    @R|test/Hidden|() public final actual class Outer : R|kotlin/Any| {
+        public constructor(): R|test/Outer| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual class Inner : R|kotlin/Any| {
+            public constructor(): R|test/Outer.Inner| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final actual fun encode(v: R|kotlin/Int|, compact: R|kotlin/Boolean|): R|kotlin/Unit| {
+            }
+
+        }
+
+    }
+    public final actual fun decode(v: R|kotlin/Int|, compact: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }

@@ -5,10 +5,10 @@ import java.nio.file.Path
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.fail
+import org.jetbrains.kotlin.compiler.plugin.devkit.DISABLE_FIR_DUMP_HANDLER
 import org.jetbrains.kotlin.compiler.plugin.devkit.runners.DevKitJvmDiagnosticTest
 import org.jetbrains.kotlin.diagnostics.Severity
 import org.jetbrains.kotlin.test.builders.configureFirHandlersStep
-import org.jetbrains.kotlin.test.directives.FirDiagnosticsDirectives.DISABLE_FIR_DUMP_HANDLER
 import org.jetbrains.kotlin.test.frontend.fir.FirOutputArtifact
 import org.jetbrains.kotlin.test.frontend.fir.handlers.FirAnalysisHandler
 import org.jetbrains.kotlin.test.frontend.fir.handlers.firDiagnosticCollectorService
@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.services.KotlinTestInfo
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.sourceFileProvider
+import org.jetbrains.kotlinx.library.api.watchdog.handlers.mainFirFilesByTestFileCompat
 import org.jetbrains.kotlinx.library.api.watchdog.runners.configureWatchdogDiagnosticTest
 import org.opentest4j.AssertionFailedError
 import org.opentest4j.MultipleFailuresError
@@ -262,7 +263,7 @@ internal class CollectingDiagnosticsHandler(testServices: TestServices) : FirAna
         val diagnosticsPerFile = testServices.firDiagnosticCollectorService.getFrontendDiagnosticsForModule(info)
         for (part in info.partsForDependsOnModules) {
             for (file in part.module.files) {
-                val firFile = info.mainFirFilesByTestFile[file] ?: continue
+                val firFile = info.mainFirFilesByTestFileCompat[file] ?: continue
                 FuzzDiagnosticsSink.fileText(file.name, testServices.sourceFileProvider.getOrCreateRealFileForSourceFile(file).readText())
                 for (reported in diagnosticsPerFile[firFile]) {
                     val diagnostic = reported.diagnostic
@@ -292,6 +293,8 @@ internal class FuzzDiagnosticRunner : DevKitJvmDiagnosticTest({
         +DISABLE_FIR_DUMP_HANDLER
     }
     configureFirHandlersStep {
-        useHandlers(::CollectingDiagnosticsHandler)
+        // Before Kotlin 2.4.0, the framework doesn't run the handlers that follow `NoFirCompilationErrorsHandler`
+        // when the module has an error.
+        useHandlersAtFirst(::CollectingDiagnosticsHandler)
     }
 })

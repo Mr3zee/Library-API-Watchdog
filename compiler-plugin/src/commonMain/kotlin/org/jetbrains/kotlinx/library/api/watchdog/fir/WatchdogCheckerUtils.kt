@@ -7,13 +7,13 @@ import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.fir.FirAnnotationContainer
+import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirMemberDeclaration
-import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirPropertyAccessor
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
@@ -21,7 +21,6 @@ import org.jetbrains.kotlin.fir.declarations.FirValueParameter
 import org.jetbrains.kotlin.fir.declarations.extractEnumValueArgumentInfo
 import org.jetbrains.kotlin.fir.declarations.findArgumentByName
 import org.jetbrains.kotlin.fir.declarations.getSingleMatchedExpectForActualOrNull
-import org.jetbrains.kotlin.fir.declarations.getStringArgument
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
 import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
@@ -30,12 +29,12 @@ import org.jetbrains.kotlin.fir.declarations.utils.effectiveVisibility
 import org.jetbrains.kotlin.fir.declarations.utils.isActual
 import org.jetbrains.kotlin.fir.declarations.utils.isConst
 import org.jetbrains.kotlin.fir.declarations.utils.isExpect
+import org.jetbrains.kotlin.fir.declarations.utils.isLocal
 import org.jetbrains.kotlin.fir.declarations.utils.modality
 import org.jetbrains.kotlin.fir.declarations.utils.visibility
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
 import org.jetbrains.kotlin.fir.resolve.FirSamResolver
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
-import org.jetbrains.kotlin.fir.resolve.getContainingClassSymbol
 import org.jetbrains.kotlin.fir.resolve.providers.firProvider
 import org.jetbrains.kotlin.fir.resolve.toClassSymbol
 import org.jetbrains.kotlin.fir.resolve.transformers.publishedApiEffectiveVisibility
@@ -250,8 +249,7 @@ internal fun FirDeclaration.hasAnnotationOnSelfOrEnclosingClass(classId: ClassId
 context(context: CheckerContext)
 internal fun FirFunction.reportedName(): Name? = when (this) {
     is FirConstructor -> context.containingClassSymbol?.classId?.shortClassName
-    is FirNamedFunction -> name
-    else -> null
+    else -> if (isNamedFunction()) symbol.name else null
 }
 
 /**
@@ -266,7 +264,7 @@ internal fun FirMemberDeclaration.isWatchedPublicApi(): Boolean {
         return false
     }
 
-    if (visibility == Visibilities.Local || this is FirRegularClass && isLocal) {
+    if (visibility == Visibilities.Local || this is FirRegularClass && symbol.isLocal) {
         return false
     }
 
@@ -316,7 +314,7 @@ internal fun FirBasedSymbol<*>.enclosingDeclarationsOfSymbol(): List<FirBasedSym
         else -> null
     }
     val chain = listOfNotNull<FirBasedSymbol<*>>(property) +
-            generateSequence((property ?: this).getContainingClassSymbol()) { it.getContainingClassSymbol() }
+            generateSequence((property ?: this).containingClassSymbolCompat()) { it.containingClassSymbolCompat() }
     return chain + listOfNotNull((chain.lastOrNull() ?: this).sourceFileSymbol())
 }
 
@@ -413,7 +411,7 @@ internal fun ConeKotlinType.erasedClassSymbol(): FirClassSymbol<*>? {
         type = typeParameter.resolvedBounds.firstOrNull()?.coneType?.upperBoundIfFlexible() ?: return null
     }
 
-    return (type as? ConeClassLikeType)?.fullyExpandedType()?.toClassSymbol()
+    return (type as? ConeClassLikeType)?.fullyExpandedType()?.toClassSymbolCompat(context.session)
 }
 
 /**
@@ -455,7 +453,7 @@ internal fun FirCallableDeclaration.returnValueClassIfMember(): Name? =
     if (dispatchReceiverType != null) returnTypeRef.coneType.mangledValueClass() else null
 
 context(context: CheckerContext)
-internal fun FirNamedFunction.mangledValueClassInSignature(): Name? =
+internal fun FirFunction.mangledValueClassInSignature(): Name? =
     receiverParameter?.typeRef?.coneType?.mangledValueClass()
         ?: contextParameters.firstNotNullOfOrNull { it.returnTypeRef.coneType.mangledValueClass() }
         ?: valueParameters.firstNotNullOfOrNull { it.returnTypeRef.coneType.mangledValueClass() }
@@ -475,7 +473,7 @@ internal fun FirCallableDeclaration.hasEffectiveJvmExposeBoxed(): Boolean =
  * effective `@JvmExposeBoxed` gives the function a Java-facing name.
  */
 context(context: CheckerContext)
-internal fun FirNamedFunction.hasMangledJvmName(): Boolean =
+internal fun FirFunction.hasMangledJvmName(): Boolean =
     mangledValueClassInSignature() != null &&
             !hasAnnotationOnActualOrExpect(JvmStandardClassIds.Annotations.JvmName) &&
             !hasEffectiveJvmExposeBoxed()
@@ -568,7 +566,7 @@ private val selfExplanatoryReasons = setOf(
  * The reason that doesn't explain this exemption, [otherReason] when the argument is absent, or
  * null when a reason or a description explains the exemption.
  */
-internal fun FirAnnotation.unexplainedExemptionReason(): Name? {
+internal fun FirAnnotation.unexplainedExemptionReason(session: FirSession): Name? {
     val reasonArgument = findArgumentByName(reasonParameter, returnFirstWhenNotFound = false)
     val reason = if (reasonArgument == null) {
         otherReason
@@ -580,7 +578,7 @@ internal fun FirAnnotation.unexplainedExemptionReason(): Name? {
         return null
     }
 
-    if (getStringArgument(descriptionParameter)?.isNotBlank() == true) {
+    if (getStringArgumentCompat(descriptionParameter, session)?.isNotBlank() == true) {
         return null
     }
 

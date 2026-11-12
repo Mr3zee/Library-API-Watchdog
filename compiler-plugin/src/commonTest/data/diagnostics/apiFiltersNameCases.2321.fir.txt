@@ -1,0 +1,82 @@
+FILE: apiFiltersNameCases.kt
+    package test
+
+    public final annotation class PublicApi : R|kotlin/Annotation| {
+        public constructor(): R|test/PublicApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final enum class Levels : R|kotlin/Enum<test/Levels>| {
+        private constructor(): R|test/Levels| {
+            super<R|kotlin/Enum<test/Levels>|>()
+        }
+
+        public final static enum entry HIGH: R|test/Levels|
+        public final static enum entry LOW: R|test/Levels|
+        public final static fun values(): R|kotlin/Array<test/Levels>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|test/Levels| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<test/Levels>|
+            public get(): R|kotlin/enums/EnumEntries<test/Levels>|
+
+    }
+    public open class Holder : R|kotlin/Any| {
+        public constructor(): R|test/Holder| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Factory : R|kotlin/Any| {
+            private constructor(): R|test/Holder.Factory| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun create(flag: R|kotlin/Boolean|): R|test/Holder| {
+                ^create R|test/Holder.Holder|()
+            }
+
+        }
+
+        public final fun member(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    public open class Registry : R|kotlin/Any| {
+        public constructor(): R|test/Registry| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|test/Registry.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun create(): R|test/Registry| {
+                ^create R|test/Registry.Registry|()
+            }
+
+        }
+
+    }
+    public open class Annotated : R|kotlin/Any| {
+        public constructor(): R|test/Annotated| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|test/PublicApi|() public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|test/Annotated.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final fun create(): R|test/Annotated| {
+                ^create R|test/Annotated.Annotated|()
+            }
+
+        }
+
+    }
+    public final fun facadeFunction(): R|kotlin/Unit| {
+    }

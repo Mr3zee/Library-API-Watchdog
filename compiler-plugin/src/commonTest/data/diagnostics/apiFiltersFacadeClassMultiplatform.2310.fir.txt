@@ -1,0 +1,22 @@
+Module: common
+FILE: Common.kt
+    package test
+
+    public final fun commonFunction(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+FILE: Platform.kt
+    package test
+
+    public final fun platformFunction(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+Module: jvm
+FILE: Common.kt
+    package test
+
+    public final fun commonFunction(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+FILE: Platform.kt
+    package test
+
+    public final fun platformFunction(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }

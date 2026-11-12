@@ -1,0 +1,176 @@
+Module: common
+FILE: common.kt
+    package test
+
+    public final annotation class PublicApi : R|kotlin/Annotation| {
+        public constructor(): R|test/PublicApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public open expect class MemberOnly : R|kotlin/Any| {
+        public expect constructor(): R|test/MemberOnly|
+
+        @R|test/PublicApi|() public final expect fun included(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+
+        public final expect fun other(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+
+    }
+    public final expect class Worker : R|kotlin/Any| {
+        public expect constructor(): R|test/Worker|
+
+        @R|test/PublicApi|() public final expect fun start(): R|kotlin/Unit|
+
+    }
+    public final expect class WorkerByName : R|kotlin/Any| {
+        public expect constructor(): R|test/WorkerByName|
+
+        public final expect fun start(): R|kotlin/Unit|
+
+    }
+    public final expect class NotIncluded : R|kotlin/Any| {
+        public expect constructor(): R|test/NotIncluded|
+
+        public final expect fun start(): R|kotlin/Unit|
+
+    }
+    public open expect class PlatformMember : R|kotlin/Any| {
+        public expect constructor(): R|test/PlatformMember|
+
+    }
+    public final expect class Handle : R|kotlin/Any| {
+        public expect constructor(): R|test/Handle|
+
+        @R|test/PublicApi|() public final expect fun close(flag: R|kotlin/Boolean|): R|kotlin/Unit|
+
+        public final expect fun other(flag: R|kotlin/Boolean|): R|kotlin/Unit|
+
+    }
+FILE: jvm.kt
+    package test
+
+    public open actual class MemberOnly : R|kotlin/Any| {
+        public constructor(): R|test/MemberOnly| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual fun included(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+        public final actual fun other(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    public open actual class PlatformMember : R|kotlin/Any| {
+        public constructor(): R|test/PlatformMember| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun platformOnly(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit| {
+        }
+
+    }
+    public final actual typealias Worker = R|java/lang/Thread|
+    public final actual typealias WorkerByName = R|java/lang/Thread|
+    public final actual typealias NotIncluded = R|java/lang/Thread|
+    public final actual typealias Handle = R|test/HandleImpl|
+    public final class HandleImpl : R|kotlin/Any| {
+        public constructor(): R|test/HandleImpl| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun close(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+        public final fun other(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+Module: jvm
+FILE: common.kt
+    package test
+
+    public final annotation class PublicApi : R|kotlin/Annotation| {
+        public constructor(): R|test/PublicApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public open expect class MemberOnly : R|kotlin/Any| {
+        public expect constructor(): R|test/MemberOnly|
+
+        @R|test/PublicApi|() public final expect fun included(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+
+        public final expect fun other(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+
+    }
+    public final expect class Worker : R|kotlin/Any| {
+        public expect constructor(): R|test/Worker|
+
+        @R|test/PublicApi|() public final expect fun start(): R|kotlin/Unit|
+
+    }
+    public final expect class WorkerByName : R|kotlin/Any| {
+        public expect constructor(): R|test/WorkerByName|
+
+        public final expect fun start(): R|kotlin/Unit|
+
+    }
+    public final expect class NotIncluded : R|kotlin/Any| {
+        public expect constructor(): R|test/NotIncluded|
+
+        public final expect fun start(): R|kotlin/Unit|
+
+    }
+    public open expect class PlatformMember : R|kotlin/Any| {
+        public expect constructor(): R|test/PlatformMember|
+
+    }
+    public final expect class Handle : R|kotlin/Any| {
+        public expect constructor(): R|test/Handle|
+
+        @R|test/PublicApi|() public final expect fun close(flag: R|kotlin/Boolean|): R|kotlin/Unit|
+
+        public final expect fun other(flag: R|kotlin/Boolean|): R|kotlin/Unit|
+
+    }
+FILE: jvm.kt
+    package test
+
+    public open actual class MemberOnly : R|kotlin/Any| {
+        public constructor(): R|test/MemberOnly| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual fun included(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+        public final actual fun other(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    public open actual class PlatformMember : R|kotlin/Any| {
+        public constructor(): R|test/PlatformMember| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun platformOnly(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit| {
+        }
+
+    }
+    public final actual typealias Worker = R|java/lang/Thread|
+    public final actual typealias WorkerByName = R|java/lang/Thread|
+    public final actual typealias NotIncluded = R|java/lang/Thread|
+    public final actual typealias Handle = R|test/HandleImpl|
+    public final class HandleImpl : R|kotlin/Any| {
+        public constructor(): R|test/HandleImpl| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final fun close(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+        public final fun other(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }

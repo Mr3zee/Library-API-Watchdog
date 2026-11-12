@@ -7,8 +7,8 @@ import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirBasicDeclarationChecker
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
+import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirMemberDeclaration
-import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.FirTypeAlias
@@ -58,7 +58,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
             is FirValueParameter -> return
             is FirProperty -> checkProperty(declaration)
             is FirConstructor -> checkConstructor(declaration)
-            is FirNamedFunction -> checkFunction(declaration)
+            is FirFunction if declaration.isNamedFunction() -> checkFunction(declaration)
             is FirRegularClass -> checkClass(declaration)
             is FirTypeAlias -> if (checkTypeAliases) checkTypeAlias(declaration)
             else -> return
@@ -134,16 +134,16 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
     }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun checkFunction(declaration: FirNamedFunction) {
+    private fun checkFunction(declaration: FirFunction) {
         if (!shouldCheck(declaration)) return
 
         checkTypeParameters(declaration.typeParameters)
         if (checkExtensionReceivers) {
             declaration.receiverParameter?.typeRef?.let {
-                checkType(it, "functionReceiver", declaration.name, declaration.source)
+                checkType(it, "functionReceiver", declaration.symbol.name, declaration.source)
             }
         }
-        checkType(declaration.returnTypeRef, "function", declaration.name, declaration.source)
+        checkType(declaration.returnTypeRef, "function", declaration.symbol.name, declaration.source)
         declaration.contextParameters.forEach { checkParameter(it) }
         declaration.valueParameters.forEach { checkParameter(it) }
     }
@@ -198,7 +198,7 @@ internal abstract class PublicSignatureTypeChecker<Violation : Any>(
     private fun shouldCheck(declaration: FirMemberDeclaration): Boolean =
         isCheckedDeclaration(declaration) &&
                 !(skipOverrides && declaration is FirProperty && declaration.isOverride) &&
-                !(skipOverrides && declaration is FirNamedFunction && declaration.isOverride) &&
+                !(skipOverrides && declaration.isNamedFunction() && declaration.isOverride) &&
                 !isDeclarationExempt(declaration)
 
     context(context: CheckerContext, reporter: DiagnosticReporter)

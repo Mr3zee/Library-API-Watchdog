@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFileChecker
 import org.jetbrains.kotlin.fir.declarations.DirectDeclarationsAccess
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirFile
-import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
+import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils
@@ -34,7 +34,7 @@ internal class TopLevelJvmNameChecker(
         val facadeMembers = declaration.declarations.filter { it.isJavaVisibleTopLevelCallable() }
         val firstFacadeMember = facadeMembers.firstOrNull() ?: return
         val factory = severities[WatchdogDiagnostics.TOP_LEVEL_API_WITHOUT_JVM_NAME] ?: return
-        val hasFunctions = facadeMembers.any { it is FirNamedFunction }
+        val hasFunctions = facadeMembers.any { it.isNamedFunction() }
         val hasProperties = facadeMembers.any { it is FirProperty }
         val callableKinds = when {
             hasFunctions && hasProperties -> "functionsAndProperties"
@@ -51,7 +51,7 @@ internal class TopLevelJvmNameChecker(
 
     context(context: CheckerContext)
     private fun FirDeclaration.isJavaVisibleTopLevelCallable(): Boolean = when (this) {
-        is FirNamedFunction -> !isExpectedDeclaration() &&
+        is FirFunction if isNamedFunction() -> !isExpectedDeclaration() &&
                 isWatchedPublicApi() && !isHiddenFromJavaWithJvmSynthetic()
         is FirProperty -> !isExpectedDeclaration() &&
                 isWatchedPublicApi() && !isHiddenFromJavaWithJvmSynthetic()

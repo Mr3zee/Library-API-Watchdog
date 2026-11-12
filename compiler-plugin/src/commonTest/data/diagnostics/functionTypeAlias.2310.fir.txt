@@ -1,0 +1,25 @@
+FILE: functionTypeAlias.kt
+    package foo.bar
+
+    public final typealias Callback = R|(kotlin/Int) -> kotlin/Unit|
+    public final typealias Action = R|() -> kotlin/Unit|
+    public final typealias SuspendAction = R|suspend () -> kotlin/Unit|
+    public final typealias NullableCallback = R|((kotlin/String) -> kotlin/Boolean)?|
+    public final typealias BuilderBlock = R|{kotlin/text/StringBuilder=} java/lang/StringBuilder.() -> kotlin/Unit|
+    public final typealias Transformer<T> = R|(T) -> T|
+    public final typealias CallbackAlias = R|{foo/bar/Callback=} (kotlin/Int) -> kotlin/Unit|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyFunctionTypeAlias|() public final typealias MarkedCallback = R|(kotlin/Int) -> kotlin/Unit|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyFunctionTypeAlias|() public final typealias MarkedSuspendAction = R|suspend () -> kotlin/Unit|
+    public final typealias StringList = R|kotlin/collections/List<kotlin/String>|
+    public final typealias Callbacks = R|kotlin/collections/List<kotlin/Function1<kotlin/Int, kotlin/Unit>>|
+    public final typealias FunctionReference = R|kotlin/reflect/KFunction1<kotlin/Int, kotlin/Unit>|
+    @R|kotlin/PublishedApi|() internal final class PublishedAliases : R|kotlin/Any| {
+        public constructor(): R|foo/bar/PublishedAliases| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final typealias PublishedCallback = R|(kotlin/Int) -> kotlin/Unit|
+
+    }
+    internal final typealias InternalCallback = R|(kotlin/Int) -> kotlin/Unit|
+    private final typealias PrivateCallback = R|(kotlin/Int) -> kotlin/Unit|

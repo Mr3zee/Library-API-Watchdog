@@ -1,0 +1,156 @@
+Module: common
+FILE: common.kt
+    package test
+
+    @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FILE|)) public final annotation class PublicApi : R|kotlin/Annotation| {
+        public constructor(): R|test/PublicApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public open expect class AnnotatedActual : R|kotlin/Any| {
+        public expect constructor(): R|test/AnnotatedActual|
+
+        public final expect fun member(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+
+    }
+    public final expect fun annotatedActual(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+    public open expect class InAnnotatedPlatformFile : R|kotlin/Any| {
+        public expect constructor(): R|test/InAnnotatedPlatformFile|
+
+        public final expect fun member(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+
+    }
+    public final expect fun inAnnotatedPlatformFile(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+    @R|test/PublicApi|() public final expect fun annotatedExpect(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+FILE: annotatedCommonFile.kt
+    @FILE:R|test/PublicApi|()
+    package test
+
+    public open expect class InAnnotatedCommonFile : R|kotlin/Any| {
+        public expect constructor(): R|test/InAnnotatedCommonFile|
+
+        public final expect fun member(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+
+    }
+    public final expect fun inAnnotatedCommonFile(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+FILE: jvm.kt
+    package test
+
+    @R|test/PublicApi|() public open actual class AnnotatedActual : R|kotlin/Any| {
+        public constructor(): R|test/AnnotatedActual| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual fun member(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    @R|test/PublicApi|() public final actual fun annotatedActual(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public final actual fun annotatedExpect(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public open actual class InAnnotatedCommonFile : R|kotlin/Any| {
+        public constructor(): R|test/InAnnotatedCommonFile| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual fun member(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    public final actual fun inAnnotatedCommonFile(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+FILE: annotatedPlatformFile.kt
+    @FILE:R|test/PublicApi|()
+    package test
+
+    public open actual class InAnnotatedPlatformFile : R|kotlin/Any| {
+        public constructor(): R|test/InAnnotatedPlatformFile| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual fun member(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    public final actual fun inAnnotatedPlatformFile(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+Module: jvm
+FILE: common.kt
+    package test
+
+    @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FILE|)) public final annotation class PublicApi : R|kotlin/Annotation| {
+        public constructor(): R|test/PublicApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public open expect class AnnotatedActual : R|kotlin/Any| {
+        public expect constructor(): R|test/AnnotatedActual|
+
+        public final expect fun member(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+
+    }
+    public final expect fun annotatedActual(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+    public open expect class InAnnotatedPlatformFile : R|kotlin/Any| {
+        public expect constructor(): R|test/InAnnotatedPlatformFile|
+
+        public final expect fun member(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+
+    }
+    public final expect fun inAnnotatedPlatformFile(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+    @R|test/PublicApi|() public final expect fun annotatedExpect(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+FILE: annotatedCommonFile.kt
+    @FILE:R|test/PublicApi|()
+    package test
+
+    public open expect class InAnnotatedCommonFile : R|kotlin/Any| {
+        public expect constructor(): R|test/InAnnotatedCommonFile|
+
+        public final expect fun member(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+
+    }
+    public final expect fun inAnnotatedCommonFile(flag: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+FILE: jvm.kt
+    package test
+
+    @R|test/PublicApi|() public open actual class AnnotatedActual : R|kotlin/Any| {
+        public constructor(): R|test/AnnotatedActual| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual fun member(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    @R|test/PublicApi|() public final actual fun annotatedActual(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public final actual fun annotatedExpect(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public open actual class InAnnotatedCommonFile : R|kotlin/Any| {
+        public constructor(): R|test/InAnnotatedCommonFile| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual fun member(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    public final actual fun inAnnotatedCommonFile(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+FILE: annotatedPlatformFile.kt
+    @FILE:R|test/PublicApi|()
+    package test
+
+    public open actual class InAnnotatedPlatformFile : R|kotlin/Any| {
+        public constructor(): R|test/InAnnotatedPlatformFile| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual fun member(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+        }
+
+    }
+    public final actual fun inAnnotatedPlatformFile(flag: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }

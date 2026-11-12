@@ -53,7 +53,7 @@ internal class NonTransitiveDependencyChecker(
 
     context(context: CheckerContext)
     override fun ConeKotlinType.violatingClassifier(): NonTransitiveType? {
-        val symbol = (this as? ConeClassLikeType)?.toClassSymbol() ?: return null
+        val symbol = (this as? ConeClassLikeType)?.toClassSymbolCompat(context.session) ?: return null
         val origin = dependencyIndex.nonTransitiveOrigin(symbol, context) ?: return null
         return NonTransitiveType(symbol.classId, origin)
     }

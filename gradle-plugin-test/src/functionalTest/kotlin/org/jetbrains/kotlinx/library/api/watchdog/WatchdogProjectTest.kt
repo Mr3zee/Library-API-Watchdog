@@ -1651,16 +1651,15 @@ class WatchdogProjectTest {
     /** The Poko release for a Kotlin version, from the compatibility table of the Poko README. */
     private fun pokoVersionFor(kotlin: KotlinToolingVersion): String? = when {
         kotlin.major != 2 -> null
-        kotlin.minor == 3 && kotlin.patch >= 20 -> "0.22.1"
+        kotlin.minor == 2 && kotlin.patch >= 20 -> "0.20.2"
+        kotlin.minor == 3 && kotlin.patch < 20 -> "0.21.3"
+        kotlin.minor == 3 -> "0.22.1"
         kotlin.minor == 4 -> "0.23.2"
         else -> null
     }
 
     private fun ideaGenerateShortcut(): String =
         if (System.getProperty("os.name").startsWith("Mac", ignoreCase = true)) "⌘N" else "Alt+Insert"
-
-    private val legacyAbiValidationDsl: Boolean
-        get() = TEST_COMPILER_VERSION.major <= 2 && TEST_COMPILER_VERSION.minor < 4
 }
 
 private const val EXPLICIT_API_FLAG = """kotlin { compilerOptions { freeCompilerArgs.add("-Xexplicit-api=warning") } }"""

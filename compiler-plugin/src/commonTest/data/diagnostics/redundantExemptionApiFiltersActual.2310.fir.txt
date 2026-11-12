@@ -1,0 +1,132 @@
+Module: common
+FILE: common.kt
+    package test
+
+    @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FILE|)) public final annotation class PublicApi : R|kotlin/Annotation| {
+        public constructor(): R|test/PublicApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutJvmOverloads|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect fun encode(v: R|kotlin/Int|, compact: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect class Loader : R|kotlin/Any| {
+        public expect constructor(): R|test/Loader|
+
+        public final expect suspend fun load(): R|kotlin/Int|
+
+    }
+    public final expect class Outer : R|kotlin/Any| {
+        public expect constructor(): R|test/Outer|
+
+        public final expect class Inner : R|kotlin/Any| {
+            public expect constructor(): R|test/Outer.Inner|
+
+            @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutJvmOverloads|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect fun encode(v: R|kotlin/Int|, compact: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutJvmOverloads|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect fun decode(v: R|kotlin/Int|, compact: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+FILE: annotatedFile.kt
+    @FILE:R|test/PublicApi|()
+    package test
+
+    public final actual fun encode(v: R|kotlin/Int|, compact: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public final actual class Loader : R|kotlin/Any| {
+        public constructor(): R|test/Loader| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual suspend fun load(): R|kotlin/Int| {
+            ^load Int(0)
+        }
+
+    }
+FILE: jvm.kt
+    package test
+
+    @R|test/PublicApi|() public final actual class Outer : R|kotlin/Any| {
+        public constructor(): R|test/Outer| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual class Inner : R|kotlin/Any| {
+            public constructor(): R|test/Outer.Inner| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final actual fun encode(v: R|kotlin/Int|, compact: R|kotlin/Boolean|): R|kotlin/Unit| {
+            }
+
+        }
+
+    }
+    public final actual fun decode(v: R|kotlin/Int|, compact: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+Module: jvm
+FILE: common.kt
+    package test
+
+    @R|kotlin/annotation/Target|(allowedTargets = vararg(Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.CLASS|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FUNCTION|, Q|kotlin/annotation/AnnotationTarget|.R|kotlin/annotation/AnnotationTarget.FILE|)) public final annotation class PublicApi : R|kotlin/Annotation| {
+        public constructor(): R|test/PublicApi| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutJvmOverloads|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect fun encode(v: R|kotlin/Int|, compact: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyKotlinOnlyApi|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect class Loader : R|kotlin/Any| {
+        public expect constructor(): R|test/Loader|
+
+        public final expect suspend fun load(): R|kotlin/Int|
+
+    }
+    public final expect class Outer : R|kotlin/Any| {
+        public expect constructor(): R|test/Outer|
+
+        public final expect class Inner : R|kotlin/Any| {
+            public expect constructor(): R|test/Outer.Inner|
+
+            @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutJvmOverloads|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect fun encode(v: R|kotlin/Int|, compact: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyWithoutJvmOverloads|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final expect fun decode(v: R|kotlin/Int|, compact: R|kotlin/Boolean| = Boolean(false)): R|kotlin/Unit|
+FILE: annotatedFile.kt
+    @FILE:R|test/PublicApi|()
+    package test
+
+    public final actual fun encode(v: R|kotlin/Int|, compact: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }
+    public final actual class Loader : R|kotlin/Any| {
+        public constructor(): R|test/Loader| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual suspend fun load(): R|kotlin/Int| {
+            ^load Int(0)
+        }
+
+    }
+FILE: jvm.kt
+    package test
+
+    @R|test/PublicApi|() public final actual class Outer : R|kotlin/Any| {
+        public constructor(): R|test/Outer| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final actual class Inner : R|kotlin/Any| {
+            public constructor(): R|test/Outer.Inner| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final actual fun encode(v: R|kotlin/Int|, compact: R|kotlin/Boolean|): R|kotlin/Unit| {
+            }
+
+        }
+
+    }
+    public final actual fun decode(v: R|kotlin/Int|, compact: R|kotlin/Boolean|): R|kotlin/Unit| {
+    }

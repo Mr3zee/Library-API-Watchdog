@@ -1,0 +1,102 @@
+Module: common
+FILE: common.kt
+    package foo.bar
+
+    public open class CommonOpen : R|kotlin/Any| {
+        public constructor(): R|foo/bar/CommonOpen| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun commonFunction(): R|kotlin/Int| {
+        ^commonFunction Int(0)
+    }
+FILE: intermediate.kt
+    package foo.bar
+
+    public open class IntermediateOpen : R|kotlin/Any| {
+        public constructor(): R|foo/bar/IntermediateOpen| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun intermediateFunction(): R|kotlin/Int| {
+        ^intermediateFunction Int(0)
+    }
+FILE: jvm.kt
+    package foo.bar
+
+    public open class JvmOpen : R|kotlin/Any| {
+        public constructor(): R|foo/bar/JvmOpen| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+Module: intermediate
+FILE: common.kt
+    package foo.bar
+
+    public open class CommonOpen : R|kotlin/Any| {
+        public constructor(): R|foo/bar/CommonOpen| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun commonFunction(): R|kotlin/Int| {
+        ^commonFunction Int(0)
+    }
+FILE: intermediate.kt
+    package foo.bar
+
+    public open class IntermediateOpen : R|kotlin/Any| {
+        public constructor(): R|foo/bar/IntermediateOpen| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun intermediateFunction(): R|kotlin/Int| {
+        ^intermediateFunction Int(0)
+    }
+FILE: jvm.kt
+    package foo.bar
+
+    public open class JvmOpen : R|kotlin/Any| {
+        public constructor(): R|foo/bar/JvmOpen| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+Module: jvm
+FILE: common.kt
+    package foo.bar
+
+    public open class CommonOpen : R|kotlin/Any| {
+        public constructor(): R|foo/bar/CommonOpen| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun commonFunction(): R|kotlin/Int| {
+        ^commonFunction Int(0)
+    }
+FILE: intermediate.kt
+    package foo.bar
+
+    public open class IntermediateOpen : R|kotlin/Any| {
+        public constructor(): R|foo/bar/IntermediateOpen| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final fun intermediateFunction(): R|kotlin/Int| {
+        ^intermediateFunction Int(0)
+    }
+FILE: jvm.kt
+    package foo.bar
+
+    public open class JvmOpen : R|kotlin/Any| {
+        public constructor(): R|foo/bar/JvmOpen| {
+            super<R|kotlin/Any|>()
+        }
+
+    }

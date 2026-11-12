@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirCallableDeclarationChecker
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
-import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
+import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirPropertyAccessor
 import org.jetbrains.kotlin.fir.declarations.utils.effectiveVisibility
@@ -37,7 +37,7 @@ internal class CompanionJvmExposureChecker(
             return
         }
         when (declaration) {
-            is FirNamedFunction -> checkFunction(declaration, outerClass, companionName)
+            is FirFunction if declaration.isNamedFunction() -> checkFunction(declaration, outerClass, companionName)
             is FirProperty -> checkProperty(declaration, outerClass, companionName)
             else -> return
         }
@@ -48,7 +48,7 @@ internal class CompanionJvmExposureChecker(
         hasAnnotationOnSelfOrEnclosingClass(WatchdogClassIds.IntentionallyNonStaticCompanionApi)
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun checkFunction(declaration: FirNamedFunction, outerClass: Name, companionName: Name) {
+    private fun checkFunction(declaration: FirFunction, outerClass: Name, companionName: Name) {
         if (!declaration.isWatchedPublicSourceApi()) {
             return
         }
@@ -64,7 +64,7 @@ internal class CompanionJvmExposureChecker(
             source = declaration.source,
             factory = factory,
             a = outerClass,
-            b = declaration.name,
+            b = declaration.symbol.name,
             c = companionName,
         )
     }

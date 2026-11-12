@@ -27,7 +27,6 @@ import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirFile
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirMemberDeclaration
-import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.FirResolvePhase
@@ -41,7 +40,6 @@ import org.jetbrains.kotlin.fir.declarations.toAnnotationClassIdSafe
 import org.jetbrains.kotlin.fir.declarations.utils.correspondingValueParameterFromPrimaryConstructor
 import org.jetbrains.kotlin.fir.declarations.utils.isActual
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
-import org.jetbrains.kotlin.fir.resolve.getContainingClassSymbol
 import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
@@ -174,7 +172,7 @@ private fun FirDeclaration.matchedExpect(): FirDeclaration? {
     val fir = expect.fir
     val sameKind = when (this) {
         is FirRegularClass -> fir is FirRegularClass
-        is FirNamedFunction -> fir is FirNamedFunction
+        is FirFunction if isNamedFunction() -> fir.isNamedFunction()
         is FirConstructor -> fir is FirConstructor
         is FirProperty -> fir is FirProperty
         else -> false
@@ -262,11 +260,12 @@ internal class EnclosingExemptionProbes(
                                 context(inner, reporter) { membersNeed(member, ignored, probes, actual) }
                             }
                 }
-                is FirConstructor, is FirNamedFunction, is FirProperty -> {
+                else -> if (member is FirConstructor || member.isNamedFunction() || member is FirProperty) {
                     member.symbol.lazyResolveToPhase(FirResolvePhase.BODY_RESOLVE)
                     probes.any { it.reportsNew(member, ignored, actual) }
+                } else {
+                    false
                 }
-                else -> false
             }
             if (needed) return true
         }
@@ -454,7 +453,7 @@ internal class ExpectExemptionRedundancyChecker(
         if (this !is FirConstructor || !candidate.position.startsWith("parameter:")) return emptyList()
         val index = candidate.position.substringAfter(':').substringBefore('/').toIntOrNull() ?: return emptyList()
         val parameter = valueParameters.getOrNull(index)?.symbol ?: return emptyList()
-        val constructedClass = (getContainingClassSymbol() as? FirRegularClassSymbol)?.fir ?: return emptyList()
+        val constructedClass = (containingClassSymbolCompat() as? FirRegularClassSymbol)?.fir ?: return emptyList()
         return constructedClass.declarations.filterIsInstance<FirProperty>()
             .filter { it.correspondingValueParameterFromPrimaryConstructor == parameter }
     }
@@ -502,7 +501,7 @@ internal class ExpectExemptionRedundancyChecker(
             }
         }
         val ignoredEverywhere = if ((this as ExemptingChecker).readsExemptionOnSiblings) setOf(candidate.classId) else emptySet()
-        val containingClass = (actual as? FirCallableDeclaration)?.getContainingClassSymbol()?.fir as? FirRegularClass
+        val containingClass = (actual as? FirCallableDeclaration)?.containingClassSymbolCompat()?.fir as? FirRegularClass
         val provider = context as? CheckerContextForProvider
         if (containingClass == null || provider == null) {
             return probedDiagnostics(actual, ignored, ignoredEverywhere, actual = true)
@@ -517,13 +516,15 @@ internal class ExpectExemptionRedundancyChecker(
     }
 
     /** The `actual` declarations that the session's symbol provider matches to this `expect`, or null without one. */
+    // `FirMemberDeclaration` is a sealed class before Kotlin 2.4.0.
+    @Suppress("REDUNDANT_ELSE_IN_WHEN")
     @OptIn(DirectDeclarationsAccess::class, SymbolInternals::class)
     context(context: CheckerContext)
     private fun FirMemberDeclaration.findActuals(): List<FirDeclaration>? {
         val provider = context.session.symbolProvider
         val outerClassId = when (this) {
             is FirClassLikeDeclaration -> symbol.classId.outerClassId
-            is FirCallableDeclaration -> getContainingClassSymbol()?.classId
+            is FirCallableDeclaration -> containingClassSymbolCompat()?.classId
             else -> null
         }
         // The members of the class that an `actual typealias` expands to don't inherit the exemptions.
@@ -536,7 +537,7 @@ internal class ExpectExemptionRedundancyChecker(
         val found: List<FirBasedSymbol<*>> = when (this) {
             is FirClassLikeDeclaration -> listOfNotNull(provider.getClassLikeSymbolByClassId(symbol.classId))
             is FirCallableDeclaration -> {
-                val containingClass = getContainingClassSymbol()
+                val containingClass = containingClassSymbolCompat()
                 if (containingClass == null) {
                     val callableId = symbol.callableId ?: return null
                     provider.getTopLevelCallableSymbols(callableId.packageName, callableId.callableName)
@@ -631,7 +632,7 @@ private fun reportRedundantExemption(annotation: FirAnnotation, kind: String) {
 
 private fun FirDeclaration.hasProbedShape(): Boolean {
     if (this is FirFile) return true
-    if (this !is FirRegularClass && this !is FirNamedFunction && this !is FirConstructor &&
+    if (this !is FirRegularClass && !isNamedFunction() && this !is FirConstructor &&
         this !is FirProperty && this !is FirTypeAlias
     ) {
         return false
@@ -684,7 +685,7 @@ private fun FirDeclaration.exemptionCandidates(exemptions: Set<ClassId>): List<E
             collector.typeParameters(typeParameters)
             collector.types(expandedTypeRef, position = "expanded")
         }
-        is FirNamedFunction -> {
+        is FirFunction if isNamedFunction() -> {
             collector.annotations(this, "declaration")
             collector.typeParameters(typeParameters)
             collector.types(receiverParameter?.typeRef, position = "receiver")
@@ -720,7 +721,7 @@ private fun FirDeclaration.exemptionCandidates(exemptions: Set<ClassId>): List<E
 context(context: CheckerContext)
 private fun propertyParameterSymbols(constructor: FirConstructor): Set<FirValueParameterSymbol> {
     val result = hashSetOf<FirValueParameterSymbol>()
-    (constructor.getContainingClassSymbol() as? FirClassSymbol<*>)?.processAllDeclarations(context.session) { member ->
+    (constructor.containingClassSymbolCompat() as? FirClassSymbol<*>)?.processAllDeclarations(context.session) { member ->
         if (member is FirPropertySymbol) {
             member.correspondingValueParameterFromPrimaryConstructor?.let(result::add)
         }

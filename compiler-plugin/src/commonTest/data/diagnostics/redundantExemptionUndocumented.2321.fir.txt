@@ -1,0 +1,108 @@
+FILE: declarations.kt
+    package foo.bar
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final typealias Count = R|kotlin/Int|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final typealias Size = R|kotlin/Int|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final val limit: R|kotlin/Int| = Int(1)
+        public get(): R|kotlin/Int|
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final val bound: R|kotlin/Int| = Int(1)
+        public get(): R|kotlin/Int|
+    public final class Holder : R|kotlin/Any| {
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public constructor(x: R|kotlin/Int|): R|foo/bar/Holder| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val x: R|kotlin/Int| = R|<local>/x|
+            public get(): R|kotlin/Int|
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public constructor(x: R|kotlin/String|): R|foo/bar/Holder| {
+            this<R|foo/bar/Holder|>(R|<local>/x|.R|kotlin/String.length|)
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public constructor(x: R|kotlin/Long|): R|foo/bar/Holder| {
+            this<R|foo/bar/Holder|>(R|<local>/x|.R|kotlin/Long.toInt|())
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final val member: R|kotlin/Int| = Int(1)
+            public get(): R|kotlin/Int|
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final val documentedMember: R|kotlin/Int| = Int(1)
+            public get(): R|kotlin/Int|
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|foo/bar/Holder.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final object Nested : R|kotlin/Any| {
+            private constructor(): R|foo/bar/Holder.Nested| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+    public final class NamedHolder : R|kotlin/Any| {
+        public constructor(): R|foo/bar/NamedHolder| {
+            super<R|kotlin/Any|>()
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final companion object Factory : R|kotlin/Any| {
+            private constructor(): R|foo/bar/NamedHolder.Factory| {
+                super<R|kotlin/Any|>()
+            }
+
+        }
+
+    }
+    @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final class EmptyDoc : R|kotlin/Any| {
+        public constructor(): R|foo/bar/EmptyDoc| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public abstract class Documented : R|kotlin/Any| {
+        public constructor(): R|foo/bar/Documented| {
+            super<R|kotlin/Any|>()
+        }
+
+        public abstract fun run(): R|kotlin/Unit|
+
+        public abstract fun stop(): R|kotlin/Unit|
+
+    }
+    public final class Runner : R|foo/bar/Documented| {
+        public constructor(): R|foo/bar/Runner| {
+            super<R|foo/bar/Documented|>()
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public open override fun run(): R|kotlin/Unit| {
+        }
+
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public open override fun stop(): R|kotlin/Unit| {
+        }
+
+    }
+    public final enum class Mode : R|kotlin/Enum<foo/bar/Mode>| {
+        private constructor(): R|foo/bar/Mode| {
+            super<R|kotlin/Enum<foo/bar/Mode>|>()
+        }
+
+        public final static enum entry FAST: R|foo/bar/Mode|
+        public final static enum entry SLOW: R|foo/bar/Mode|
+        @R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyUndocumented|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.API_DESIGN|) public final fun next(): R|foo/bar/Mode| {
+            ^next this@R|foo/bar/Mode|
+        }
+
+        public final static fun values(): R|kotlin/Array<foo/bar/Mode>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|foo/bar/Mode| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<foo/bar/Mode>|
+            public get(): R|kotlin/enums/EnumEntries<foo/bar/Mode>|
+
+    }

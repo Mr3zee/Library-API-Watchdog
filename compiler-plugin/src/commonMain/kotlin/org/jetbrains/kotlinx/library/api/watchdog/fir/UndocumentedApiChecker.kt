@@ -10,8 +10,8 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirBasicDeclaratio
 import org.jetbrains.kotlin.fir.analysis.getChild
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
+import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirMemberDeclaration
-import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.FirTypeAlias
@@ -89,7 +89,7 @@ internal class UndocumentedApiChecker(
         isActualizedDeclaration() -> null
         this is FirRegularClass -> if (isDefaultNamedCompanion) null else kindParameterValue
         this is FirTypeAlias -> "typeAlias"
-        this is FirNamedFunction -> if (isOverride) null else "function"
+        isNamedFunction() -> if (isOverride) null else "function"
         this is FirProperty -> when {
             isOverride -> null
             !reportClassProperties && context.containingClassSymbol != null -> null
@@ -105,7 +105,7 @@ internal class UndocumentedApiChecker(
     private fun FirMemberDeclaration.watchedName(context: CheckerContext): Name? = when (this) {
         is FirRegularClass -> name
         is FirTypeAlias -> name
-        is FirNamedFunction -> name
+        is FirFunction if isNamedFunction() -> symbol.name
         is FirProperty -> name
         is FirConstructor -> context.containingClassSymbol?.classId?.shortClassName ?: symbol.name
         else -> null

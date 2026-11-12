@@ -1,0 +1,90 @@
+FILE: markers.kt
+    package foo.bar
+
+    @R|org/jetbrains/kotlinx/library/api/watchdog/InternalAnnotationMarker|() public final annotation class MarkedInternal : R|kotlin/Annotation| {
+        public constructor(): R|foo/bar/MarkedInternal| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+FILE: privateOnly.kt
+    @FILE:R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDefaultFacadeName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|)
+    package foo.bar
+
+    private final fun hidden(): R|kotlin/Int| {
+        ^hidden Int(1)
+    }
+    internal final fun alsoHidden(): R|kotlin/Int| {
+        ^alsoHidden R|foo/bar/hidden|()
+    }
+FILE: propertyOnly.kt
+    @FILE:R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDefaultFacadeName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|)
+    package foo.bar
+
+    public final val facadeProperty: R|kotlin/Int| = Int(1)
+        public get(): R|kotlin/Int|
+FILE: constOnly.kt
+    @FILE:R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDefaultFacadeName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|)
+    package foo.bar
+
+    public final const val LIMIT: R|kotlin/Int| = Int(1)
+        public get(): R|kotlin/Int|
+FILE: publishedOnly.kt
+    @FILE:R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDefaultFacadeName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|)
+    package foo.bar
+
+    @R|kotlin/PublishedApi|() internal final fun published(): R|kotlin/Int| {
+        ^published Int(1)
+    }
+FILE: typeAliasOnly.kt
+    @FILE:R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDefaultFacadeName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|)
+    package foo.bar
+
+    public final typealias Count = R|kotlin/Int|
+FILE: markedOnly.kt
+    @FILE:R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDefaultFacadeName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|)
+    package foo.bar
+
+    @R|foo/bar/MarkedInternal|() public final fun marked(): R|kotlin/Int| {
+        ^marked Int(1)
+    }
+FILE: suspendOnly.kt
+    @FILE:R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDefaultFacadeName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|)
+    package foo.bar
+
+    public final suspend fun load(): R|kotlin/Int| {
+        ^load Int(1)
+    }
+FILE: multifile.kt
+    @FILE:R|kotlin/jvm/JvmMultifileClass|()
+    @FILE:R|kotlin/jvm/JvmName|(name = String(Shared))
+    @FILE:R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDefaultFacadeName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|)
+    package foo.bar
+
+    public final fun part(): R|kotlin/Int| {
+        ^part Int(1)
+    }
+FILE: mixed.kt
+    @FILE:R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDefaultFacadeName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|)
+    package foo.bar
+
+    public final class OnlyClass : R|kotlin/Any| {
+        public constructor(): R|foo/bar/OnlyClass| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    private final fun helper(): R|kotlin/Int| {
+        ^helper Int(1)
+    }
+    public final fun visible(): R|kotlin/Int| {
+        ^visible R|foo/bar/helper|()
+    }
+FILE: extensionOnly.kt
+    @FILE:R|org/jetbrains/kotlinx/library/api/watchdog/IntentionallyDefaultFacadeName|(reason = Q|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason|.R|org/jetbrains/kotlinx/library/api/watchdog/ExemptionReason.FOR_BACKWARDS_COMPATIBILITY|)
+    package foo.bar
+
+    public final val R|kotlin/Int|.doubled: R|kotlin/Int|
+        public get(): R|kotlin/Int| {
+            ^ this@R|foo/bar/doubled|.R|kotlin/Int.times|(Int(2))
+        }
