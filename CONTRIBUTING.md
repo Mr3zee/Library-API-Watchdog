@@ -20,8 +20,9 @@ The repository is a composite build:
 
 A task name on the command line runs the task in the root build only. To run a task of an included build, put the
 build name first: `./gradlew :gradle-plugin:test`. The root `check` task also runs `check` in `gradle-plugin` and
-`plugin-annotations`. The root `publishToMavenCentral`, `publishAllPublicationsToSpaceRepository`, and
-`publishPlugins` tasks also run the publication tasks of the included builds.
+`plugin-annotations`. The root `publishAllPublicationsToSpaceRepository`, `publishAllPublicationsToBuildRepository`,
+and `publishPlugins` tasks also run the publication tasks of the included builds. The root `dumpArtifacts` and
+`checkArtifacts` tasks also run in the included builds.
 
 ## Tests
 
@@ -254,37 +255,61 @@ continue a failed release:
 
 ## Release publication
 
-Run [Publish to Maven Central](.github/workflows/publish-maven-central.yml) or
-[Publish to Gradle Plugin Portal](.github/workflows/publish-gradle-plugin-portal.yml) with the GitHub Actions **Run workflow** button.
-The `version` input is a release version with a tag. The workflow publishes the commit of the tag `v<version>`.
-Both workflows fail when a credential is absent or blank.
+### Maven Central
 
-Configure these repository secrets:
+GitHub Actions doesn't upload to Maven Central. The upload runs outside this repository and takes the modules from
+`build/repo`, the `Build` repository. The steps before the upload:
+
+1. Publish all modules to `build/repo` with the release version and the signing key:
+
+   ```bash
+   LIBRARY_VERSION=<version> ./gradlew publishAllPublicationsToBuildRepository \
+     -Plibs.sign.key.id=<key ID> -Plibs.sign.key.private=<key> -Plibs.sign.passphrase=<password>
+   ```
+
+2. Compare `build/repo` with the artifact lists, and check the signatures and the checksums:
+
+   ```bash
+   ./gradlew validateLocalMavenRepo --artifacts-dir=build/repo \
+     --artifacts-list=artifacts:<version> \
+     --artifacts-list=gradle-plugin/artifacts:<version> \
+     --artifacts-list=plugin-annotations/artifacts:<version> \
+     --require-signatures --require-checksums=MD5,SHA1
+   ```
+
+The signing properties are Gradle properties:
+
+| Gradle property | Value |
+|---|---|
+| `libs.sign.key.id` | The ID of the PGP key |
+| `libs.sign.key.private` | ASCII-armored private PGP key |
+| `libs.sign.passphrase` | Private key password |
+
+A build without `libs.sign.key.private` doesn't sign its publications.
+
+The [artifacts validator plugin](https://github.com/Kotlin/artifacts-validator-plugin) keeps the list of the published
+files of each module in the `artifacts` directory of its build: the root build, `gradle-plugin`, and
+`plugin-annotations`. `./gradlew check` fails when a publication doesn't match its list. After a change of a
+publication, run `./gradlew dumpArtifacts` and commit the lists. The lists of the compiler plugin and the fixer have
+the oldest supported Kotlin version in an artifact name, for example `-k240`. So a change of `kotlinCliMin` in the
+version catalog is such a change.
+
+### Gradle Plugin Portal
+
+Run [Publish to Gradle Plugin Portal](.github/workflows/publish-gradle-plugin-portal.yml) with the GitHub Actions
+**Run workflow** button after the modules are on Maven Central. The `version` input is a release version with a tag.
+The workflow publishes the commit of the tag `v<version>`. The workflow fails when a credential is absent or blank.
+
+The workflow publishes the watchdog and report aggregation plugins. Plugin Portal doesn't have a draft deployment
+mode. A successful run submits both plugin versions for publication.
+
+For a local Plugin Portal upload, set `GRADLE_PUBLISH_KEY` and `GRADLE_PUBLISH_SECRET`, then run `./gradlew publishPlugins`.
+
+### Repository secrets
 
 | Target | Secret | Value |
 |---|---|---|
-| Maven Central | `MAVEN_CENTRAL_USERNAME` | Central Portal token username |
-| Maven Central | `MAVEN_CENTRAL_PASSWORD` | Central Portal token password |
-| Maven Central | `MAVEN_CENTRAL_SIGNING_KEY` | ASCII-armored private PGP key |
-| Maven Central | `MAVEN_CENTRAL_SIGNING_PASSWORD` | Private key password |
 | Gradle Plugin Portal | `GRADLE_PUBLISH_KEY` | Portal API key |
 | Gradle Plugin Portal | `GRADLE_PUBLISH_SECRET` | Portal API secret |
 | Space | `KOTLIN_LIBRARY_SPACE_USERNAME` | Space username |
 | Space | `KOTLIN_LIBRARY_SPACE_PASSWORD` | Space token |
-
-The Maven Central workflow uploads all modules, including the annotation platform variants, as draft deployments.
-Each build makes its own deployment: the root build, `gradle-plugin`, and `plugin-annotations`.
-Approve all three in [Central Portal](https://central.sonatype.com/publishing/deployments) before the Plugin Portal run.
-The Plugin Portal workflow publishes the watchdog and report aggregation plugins.
-Plugin Portal doesn't have a draft deployment mode. A successful run submits both plugin versions for publication.
-
-For a local Maven Central upload, set the environment variables below, then run `./gradlew publishToMavenCentral`:
-
-| Environment variable | Repository secret |
-|---|---|
-| `ORG_GRADLE_PROJECT_mavenCentralUsername` | `MAVEN_CENTRAL_USERNAME` |
-| `ORG_GRADLE_PROJECT_mavenCentralPassword` | `MAVEN_CENTRAL_PASSWORD` |
-| `ORG_GRADLE_PROJECT_signingInMemoryKey` | `MAVEN_CENTRAL_SIGNING_KEY` |
-| `ORG_GRADLE_PROJECT_signingInMemoryKeyPassword` | `MAVEN_CENTRAL_SIGNING_PASSWORD` |
-
-For a local Plugin Portal upload, set `GRADLE_PUBLISH_KEY` and `GRADLE_PUBLISH_SECRET`, then run `./gradlew publishPlugins`.

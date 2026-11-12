@@ -5,6 +5,7 @@ plugins {
 dependencies {
     implementation(libs.devkit.settings)
     implementation(libs.develocity.gradle.plugin)
+    implementation(libs.artifacts.validator.gradle.plugin)
 }
 
 gradlePlugin {

@@ -3,14 +3,6 @@
 set -euo pipefail
 
 case "${1:-}" in
-  maven-central)
-    required=(
-      ORG_GRADLE_PROJECT_mavenCentralUsername
-      ORG_GRADLE_PROJECT_mavenCentralPassword
-      ORG_GRADLE_PROJECT_signingInMemoryKey
-      ORG_GRADLE_PROJECT_signingInMemoryKeyPassword
-    )
-    ;;
   gradle-plugin-portal)
     required=(GRADLE_PUBLISH_KEY GRADLE_PUBLISH_SECRET)
     ;;
@@ -18,7 +10,7 @@ case "${1:-}" in
     required=(KOTLIN_LIBRARY_SPACE_USERNAME KOTLIN_LIBRARY_SPACE_PASSWORD)
     ;;
   *)
-    echo 'Usage: scripts/check-publication-env.sh maven-central|gradle-plugin-portal|space' >&2
+    echo 'Usage: scripts/check-publication-env.sh gradle-plugin-portal|space' >&2
     exit 1
     ;;
 esac

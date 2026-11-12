@@ -1,0 +1,2 @@
+org.jetbrains.kotlinx:kotlin-library-api-watchdog-exempts-fixer-k240/.jar,.module,.pom,javadoc.jar,sources.jar
+org.jetbrains.kotlinx:kotlin-library-api-watchdog-exempts-fixer/.jar,.module,.pom,javadoc.jar,kotlin-tooling-metadata.json,sources.jar

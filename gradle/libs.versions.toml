@@ -13,6 +13,8 @@ shadow = "9.6.1"
 publish = "0.37.0"
 # https://plugins.gradle.org/plugin/com.gradle.plugin-publish
 pluginPublish = "2.2.1"
+# https://github.com/Kotlin/artifacts-validator-plugin
+artifactsValidator = "0.0.2"
 # https://plugins.gradle.org/plugin/com.gradle.develocity
 develocity = "4.6.0"
 # https://github.com/gmazzo/gradle-buildconfig-plugin, the version that the dev kit uses
@@ -42,6 +44,7 @@ devkit-plugins = { module = "org.jetbrains.kotlin.compiler.plugin.devkit:plugins
 dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 maven-publish-gradle-plugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "publish" }
 plugin-publish-gradle-plugin = { module = "com.gradle.publish:plugin-publish-plugin", version.ref = "pluginPublish" }
+artifacts-validator-gradle-plugin = { module = "org.jetbrains.kotlinx:artifacts-validator-plugin", version.ref = "artifactsValidator" }
 develocity-gradle-plugin = { module = "com.gradle:develocity-gradle-plugin", version.ref = "develocity" }
 buildconfig-gradle-plugin = { module = "com.github.gmazzo.buildconfig:plugin", version.ref = "buildconfig" }
 

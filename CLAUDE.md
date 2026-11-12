@@ -43,8 +43,12 @@ npm run build                       # the site build, fails on a broken link or 
 - The repository is a composite build, as in the dev kit's `compiler-plugin-template`. The root build has the
   compiler plugin, the fixer, and the functional tests (`:gradle-plugin-test`). `gradle-plugin` (with
   `report-aggregation`) and `plugin-annotations` are included builds. Address their tasks with the build name first:
-  `:gradle-plugin:test`. The root `check` and publication tasks also run in the included builds. A Maven Central
-  publication makes one deployment for each build.
+  `:gradle-plugin:test`. The root `check`, `dumpArtifacts`, and publication tasks also run in the included builds.
+- GitHub Actions doesn't upload to Maven Central. The upload runs outside this repository. It takes the modules from
+  the `Build` repository (`build/repo`) after `validateLocalMavenRepo` compares them with the `artifacts/` lists of the
+  three builds. A build signs its publications only when the Gradle property `libs.sign.key.private` is set. After a
+  change of a publication, run `./gradlew dumpArtifacts` and commit the lists. A change of `kotlinCliMin` is such a
+  change, because the lists of the compiler plugin and the fixer have that version in an artifact name (`-k240`).
 - `library.properties` holds `group` and `version`, not `gradle.properties`, because an included build doesn't read
   the root `gradle.properties`. The `devkit` settings plugin in `build-logic-settings` sets both in every build. The dev
   kit version is the `devkit` entry of the version catalog. The daily `Dev kit update` workflow updates it, not

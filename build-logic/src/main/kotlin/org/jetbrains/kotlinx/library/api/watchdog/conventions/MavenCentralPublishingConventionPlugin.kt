@@ -6,34 +6,31 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.plugins.signing.SigningExtension
 
+/**
+ * Gives every publication what Maven Central requires: a sources artifact, a Javadoc artifact, the POM metadata, and
+ * a signature. The build doesn't upload to Maven Central. The upload takes the publications from the `Build`
+ * repository of [SpacePublishingConventionPlugin].
+ */
 class MavenCentralPublishingConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             pluginManager.apply("com.vanniktech.maven.publish.base")
 
-            val validateEnvironment = tasks.register(
-                "validateMavenCentralEnvironment",
-                ValidatePublicationEnvironment::class.java,
-            ) {
-                group = "publishing"
-                description = "Checks the credentials for Maven Central publication."
-                requiredVariables.set(
-                    listOf(
-                        "ORG_GRADLE_PROJECT_mavenCentralUsername",
-                        "ORG_GRADLE_PROJECT_mavenCentralPassword",
-                        "ORG_GRADLE_PROJECT_signingInMemoryKey",
-                        "ORG_GRADLE_PROJECT_signingInMemoryKeyPassword",
-                    ),
-                )
-            }
-
-            extensions.configure(MavenPublishBaseExtension::class.java) {
-                publishToMavenCentral(automaticRelease = false)
-                if (providers.environmentVariable("ORG_GRADLE_PROJECT_signingInMemoryKey").isPresent) {
+            // The `signing` plugin is applied only with a key. With that plugin applied,
+            // `com.gradle.plugin-publish` signs in every build, and a build that has no key fails.
+            providers.gradleProperty(SIGNING_KEY_PROPERTY).orNull?.let { key ->
+                extensions.configure(MavenPublishBaseExtension::class.java) {
                     signAllPublications()
+                }
+                extensions.configure(SigningExtension::class.java) {
+                    useInMemoryPgpKeys(
+                        providers.gradleProperty(SIGNING_KEY_ID_PROPERTY).orNull,
+                        key,
+                        providers.gradleProperty(SIGNING_PASSPHRASE_PROPERTY).orNull,
+                    )
                 }
             }
 
@@ -84,9 +81,12 @@ class MavenCentralPublishingConventionPlugin : Plugin<Project> {
                     }
                 }
             }
-            tasks.withType(PublishToMavenRepository::class.java).configureEach {
-                if (name.endsWith("ToMavenCentralRepository")) dependsOn(validateEnvironment)
-            }
         }
+    }
+
+    private companion object {
+        const val SIGNING_KEY_ID_PROPERTY = "libs.sign.key.id"
+        const val SIGNING_KEY_PROPERTY = "libs.sign.key.private"
+        const val SIGNING_PASSPHRASE_PROPERTY = "libs.sign.passphrase"
     }
 }

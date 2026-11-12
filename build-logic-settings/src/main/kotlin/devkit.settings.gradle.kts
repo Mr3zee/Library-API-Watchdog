@@ -2,6 +2,7 @@ import java.util.Properties
 
 plugins {
     kotlin("compiler.plugin.devkit")
+    id("org.jetbrains.kotlinx.artifacts-validator-plugin")
 }
 
 // Sets the group and the version of every project in this build from `library.properties` in the repository root.

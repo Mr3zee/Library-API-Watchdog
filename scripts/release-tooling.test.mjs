@@ -7,12 +7,6 @@ import test from 'node:test';
 import {fileURLToPath} from 'node:url';
 
 const repositoryDirectory = fileURLToPath(new URL('../', import.meta.url));
-const centralVariables = [
-  'ORG_GRADLE_PROJECT_mavenCentralUsername',
-  'ORG_GRADLE_PROJECT_mavenCentralPassword',
-  'ORG_GRADLE_PROJECT_signingInMemoryKey',
-  'ORG_GRADLE_PROJECT_signingInMemoryKeyPassword',
-];
 const portalVariables = ['GRADLE_PUBLISH_KEY', 'GRADLE_PUBLISH_SECRET'];
 const spaceVariables = ['KOTLIN_LIBRARY_SPACE_USERNAME', 'KOTLIN_LIBRARY_SPACE_PASSWORD'];
 
@@ -434,12 +428,11 @@ test('release notes are the GitHub changes since the highest earlier stable tag,
 
 test('publication preflight requires each selected credential without printing values', () => {
   for (const [target, required] of [
-    ['maven-central', centralVariables],
     ['gradle-plugin-portal', portalVariables],
     ['space', spaceVariables],
   ]) {
     const env = {...process.env};
-    for (const name of [...centralVariables, ...portalVariables, ...spaceVariables]) delete env[name];
+    for (const name of [...portalVariables, ...spaceVariables]) delete env[name];
     const run = () => spawnSync('bash', ['scripts/check-publication-env.sh', target], {
       cwd: repositoryDirectory, env, encoding: 'utf8',
     });
