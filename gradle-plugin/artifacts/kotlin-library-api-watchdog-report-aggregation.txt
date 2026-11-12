@@ -1,2 +1,0 @@
-org.jetbrains.kotlin.library.api-watchdog-report-aggregation:org.jetbrains.kotlin.library.api-watchdog-report-aggregation.gradle.plugin/.pom
-org.jetbrains.kotlinx:kotlin-library-api-watchdog-report-aggregation/.jar,.module,.pom,javadoc.jar,sources.jar

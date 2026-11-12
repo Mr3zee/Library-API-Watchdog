@@ -20,9 +20,9 @@ The repository is a composite build:
 
 A task name on the command line runs the task in the root build only. To run a task of an included build, put the
 build name first: `./gradlew :gradle-plugin:test`. The root `check` task also runs `check` in `gradle-plugin` and
-`plugin-annotations`. The root `publishAllPublicationsToSpaceRepository`, `publishAllPublicationsToBuildRepository`,
-and `publishPlugins` tasks also run the publication tasks of the included builds. The root `dumpArtifacts` and
-`checkArtifacts` tasks also run in the included builds.
+`plugin-annotations`. The root `publishAllPublicationsToSpaceRepository` and `publishPlugins` tasks also run the
+publication tasks of the included builds. The root `publishAllPublicationsToBuildRepository`, `dumpArtifacts`, and
+`checkArtifacts` tasks also run in `plugin-annotations`, but not in `gradle-plugin`.
 
 ## Tests
 
@@ -263,9 +263,11 @@ versions only.
 
 ### Maven Central
 
-The upload takes the modules from `build/repo`, the `Build` repository. The steps before the upload:
+Maven Central gets the compiler plugin, the exemption fixer, and the annotations. The Gradle plugin and the report
+aggregation plugin go to the Gradle Plugin Portal only. The upload takes the modules from `build/repo`, the `Build`
+repository. The steps before the upload:
 
-1. Publish all modules to `build/repo` with the release version and the signing key:
+1. Publish the Maven Central modules to `build/repo` with the release version and the signing key:
 
    ```bash
    LIBRARY_VERSION=<version> ./gradlew publishAllPublicationsToBuildRepository \
@@ -277,7 +279,6 @@ The upload takes the modules from `build/repo`, the `Build` repository. The step
    ```bash
    ./gradlew validateLocalMavenRepo --artifacts-dir=build/repo \
      --artifacts-list=artifacts:<version> \
-     --artifacts-list=gradle-plugin/artifacts:<version> \
      --artifacts-list=plugin-annotations/artifacts:<version> \
      --require-signatures --require-checksums=MD5,SHA1
    ```
@@ -293,7 +294,7 @@ The signing properties are Gradle properties:
 A build without `libs.sign.key.private` doesn't sign its publications.
 
 The [artifacts validator plugin](https://github.com/Kotlin/artifacts-validator-plugin) keeps the list of the published
-files of each module in the `artifacts` directory of its build: the root build, `gradle-plugin`, and
+files of each Maven Central module in the `artifacts` directory of its build: the root build and
 `plugin-annotations`. `./gradlew checkArtifacts` fails when a publication doesn't match its list. The
 [artifact lists](.github/workflows/artifact-lists.yml) workflow runs it. After a change of a publication, run
 `./gradlew dumpArtifacts` and commit the lists. The lists of the compiler plugin and the fixer have the oldest

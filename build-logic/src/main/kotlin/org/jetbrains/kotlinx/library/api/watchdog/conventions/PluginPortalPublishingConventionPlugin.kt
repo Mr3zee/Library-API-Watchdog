@@ -8,6 +8,8 @@ class PluginPortalPublishingConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             pluginManager.apply("com.gradle.plugin-publish")
+            // The release of a plugin goes to the Gradle Plugin Portal, not to Maven Central.
+            excludeFromArtifactLists()
             extensions.configure(GradlePluginDevelopmentExtension::class.java) {
                 website.set("https://mr3zee.github.io/Library-API-Watchdog/")
                 vcsUrl.set("https://github.com/Mr3zee/Library-API-Watchdog")

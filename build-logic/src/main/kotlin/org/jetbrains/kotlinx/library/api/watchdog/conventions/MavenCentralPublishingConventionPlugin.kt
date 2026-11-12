@@ -12,7 +12,8 @@ import org.gradle.plugins.signing.SigningExtension
 /**
  * Gives every publication what Maven Central requires: a sources artifact, a Javadoc artifact, the POM metadata, and
  * a signature. The build doesn't upload to Maven Central. The upload takes the publications from the `Build`
- * repository of [SpacePublishingConventionPlugin].
+ * repository of [SpacePublishingConventionPlugin]. The Gradle plugin projects apply this plugin too, but their release
+ * goes to the Gradle Plugin Portal only.
  */
 class MavenCentralPublishingConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {

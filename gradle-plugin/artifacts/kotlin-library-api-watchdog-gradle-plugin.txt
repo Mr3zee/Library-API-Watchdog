@@ -1,2 +1,0 @@
-org.jetbrains.kotlin.library.api-watchdog:org.jetbrains.kotlin.library.api-watchdog.gradle.plugin/.pom
-org.jetbrains.kotlinx:kotlin-library-api-watchdog-gradle-plugin/.jar,.module,.pom,javadoc.jar,sources.jar

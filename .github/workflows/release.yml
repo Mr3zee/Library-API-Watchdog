@@ -246,9 +246,13 @@ jobs:
           develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
           cache-disabled: true
 
-      # The Build repository is build/repo of the repository root.
+      # The Build repository is build/repo of the repository root. The root task builds the Maven Central modules only,
+      # so the step names the tasks of the Gradle plugin projects.
       - name: Build the publications
-        run: ./gradlew publishAllPublicationsToBuildRepository
+        run: |
+          ./gradlew publishAllPublicationsToBuildRepository \
+            :gradle-plugin:publishAllPublicationsToBuildRepository \
+            :gradle-plugin:kotlin-library-api-watchdog-report-aggregation:publishAllPublicationsToBuildRepository
 
       - name: Create the tag
         env:

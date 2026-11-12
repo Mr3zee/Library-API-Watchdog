@@ -30,7 +30,7 @@ class RootConventionPlugin : Plugin<Project> {
 
             // A task name on the command line selects the tasks of this build only. These tasks of the root project
             // add the publication tasks of the included builds, so `./gradlew publishPlugins` publishes
-            // every module.
+            // every plugin.
             for ((taskName, includedTasks) in INCLUDED_PUBLICATION_TASKS) {
                 tasks.register(taskName) {
                     group = "publishing"
@@ -47,7 +47,7 @@ class RootConventionPlugin : Plugin<Project> {
             // The settings plugin of the artifacts validator registers these tasks in every project of every build.
             for (taskName in ARTIFACT_LIST_TASKS) {
                 tasks.named(taskName) {
-                    for ((build, projectPaths) in PUBLISHED_PROJECTS) {
+                    for ((build, projectPaths) in MAVEN_CENTRAL_PROJECTS) {
                         val includedBuild = gradle.includedBuild(build)
                         for (projectPath in projectPaths) {
                             dependsOn(includedBuild.task("$projectPath:$taskName"))
@@ -63,9 +63,13 @@ private const val GRADLE_PLUGIN_BUILD = "gradle-plugin"
 private const val ANNOTATIONS_BUILD = "plugin-annotations"
 private const val REPORT_AGGREGATION_PROJECT = ":kotlin-library-api-watchdog-report-aggregation"
 
-/** For each included build, the paths of the projects that have a Maven publication. */
-private val PUBLISHED_PROJECTS: Map<String, List<String>> = mapOf(
+/** For each included build, the paths of the projects that publish a Gradle plugin. */
+private val PLUGIN_PROJECTS: Map<String, List<String>> = mapOf(
     GRADLE_PLUGIN_BUILD to listOf("", REPORT_AGGREGATION_PROJECT),
+)
+
+/** For each included build, the paths of the projects that go to Maven Central. */
+private val MAVEN_CENTRAL_PROJECTS: Map<String, List<String>> = mapOf(
     ANNOTATIONS_BUILD to listOf(""),
 )
 
@@ -73,11 +77,11 @@ private val ARTIFACT_LIST_TASKS = listOf("dumpArtifacts", "checkArtifacts")
 
 /** The task name and, for each included build, the paths of the projects that have the task. */
 private val INCLUDED_PUBLICATION_TASKS: Map<String, Map<String, List<String>>> = mapOf(
-    "publishAllPublicationsToSpaceRepository" to PUBLISHED_PROJECTS,
-    "publishAllPublicationsToBuildRepository" to PUBLISHED_PROJECTS,
-    "publishPlugins" to mapOf(
-        GRADLE_PLUGIN_BUILD to listOf("", REPORT_AGGREGATION_PROJECT),
-    ),
+    "publishAllPublicationsToSpaceRepository" to PLUGIN_PROJECTS + MAVEN_CENTRAL_PROJECTS,
+    // The `Build` repository of the root task holds the Maven Central modules only, because the Maven Central upload
+    // takes every file of that repository.
+    "publishAllPublicationsToBuildRepository" to MAVEN_CENTRAL_PROJECTS,
+    "publishPlugins" to PLUGIN_PROJECTS,
 )
 
 private val DOCUMENTED_MODULES = listOf(
