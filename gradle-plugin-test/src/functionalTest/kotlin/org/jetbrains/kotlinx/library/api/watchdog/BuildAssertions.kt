@@ -70,6 +70,33 @@ fun BuildResult.assertReportedIn(diagnostic: Diagnostic, vararg files: String) {
     assertEquals(files.sorted(), reported.sorted(), "Unexpected locations of $diagnostic in build output:\n$output")
 }
 
+const val PLAIN_CONSOLE = "--console=plain"
+
+/** Each line that reports [diagnostic], as `":compileKotlinJvm Api.kt"`. */
+fun BuildResult.reportingTasks(diagnostic: Diagnostic): List<String> {
+    var task = "<none>"
+    val reported = mutableListOf<String>()
+    for (line in output.lineSequence()) {
+        when {
+            line.startsWith("> Task ") -> task = line.removePrefix("> Task ").substringBefore(' ')
+            line.startsWith("BUILD ") || line.startsWith("FAILURE:") -> task = "<none>"
+            (line.hasSeverity("e: ") || line.hasSeverity("w: ")) && diagnostic.pattern.containsMatchIn(line) ->
+                reported += "$task ${SOURCE_FILE.find(line)?.value ?: line}"
+        }
+    }
+    return reported
+}
+
+/** Each of [reports] is a `file to task` pair. The build must run with [PLAIN_CONSOLE]. */
+fun BuildResult.assertReportedBy(diagnostic: Diagnostic, vararg reports: Pair<String, String>) {
+    assertFalse('\u001B' in output, "Expected the plain console:\n$output")
+    assertEquals(
+        reports.map { (file, task) -> "$task $file" }.sorted(),
+        reportingTasks(diagnostic).sorted(),
+        "Unexpected tasks or locations of $diagnostic in build output:\n$output",
+    )
+}
+
 /** Asserts that a compiler error line has [text]. */
 fun BuildResult.assertError(text: String) {
     assertSeverityLine("e: ", text)

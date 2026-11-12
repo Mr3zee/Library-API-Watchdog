@@ -56,7 +56,7 @@ A second run doesn't add anything, because an exempted declaration doesn't repor
 `exemptExistingApi` and `generateApiWatchdogReport` compile every compilation except tests in
 collection mode. [The report page](./report.md) lists the compilations.
 When neither task is in the task graph, the compilations run as configured. Collection mode changes
-three things:
+four things:
 
 - A module without explicit API mode compiles with `-Xexplicit-api=warning`.
 - Every enabled configurable check reports a warning, so the compilation passes. The configured
@@ -70,6 +70,10 @@ three things:
     internal type has to leave the signature.
   - [`PUBLIC_TYPE_FROM_NON_TRANSITIVE_DEPENDENCY`](./checks/special/public-type-from-non-transitive-dependency.md):
     declare the dependency with `api` in the build script. This doesn't break any consumer.
+- In a multiplatform project, one compilation prints the diagnostics of a shared source set, so the
+  build output has each of them once. A regular build prints them in every compilation of the source
+  set. With an `androidTarget()`, a diagnostic in `androidMain` still prints once for each build
+  variant.
 
 `exemptExistingApi` removes a [redundant exemption](./checks/special/redundant-exemption.md), and
 `generateApiWatchdogReport` tags it as redundant. In a multiplatform project, the task removes the

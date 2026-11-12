@@ -54,6 +54,9 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
     /** The compile tasks that have checks when the project turns explicit API mode on. */
     private val checkedCompileTaskPaths = mutableSetOf<String>()
 
+    @Volatile
+    private var tasksInGraph: Set<String>? = null
+
     /**
      * KGP calls it after `afterEvaluate`, so `apiWatchdog.enabled` is final here. A raw
      * `-Xexplicit-api` flag turns explicit API mode on for test compilations too, so the
@@ -207,7 +210,15 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         val exemptsTaskPaths = listOf(exemptTaskPath, taskPath(GENERATE_REPORT_TASK_NAME))
         this@WatchdogSupportPlugin.exemptsTaskPaths = exemptsTaskPaths
         gradle.taskGraph.whenReady { graph ->
-            collectDiagnostics.set(exemptsTaskPaths.any(graph::hasTask))
+            val collecting = exemptsTaskPaths.any(graph::hasTask)
+            collectDiagnostics.set(collecting)
+            if (!collecting) return@whenReady
+            // `graph.allTasks` fails under project isolation.
+            val kotlin = extensions.findByName("kotlin") as? KotlinTargetsContainer
+            tasksInGraph = kotlin?.targets.orEmpty().asSequence()
+                .flatMap { it.compilations }
+                .filter { graph.hasTask(taskPath(it.compileKotlinTaskName)) && runsCompileTask(it) }
+                .mapTo(hashSetOf()) { taskPath(it.compileKotlinTaskName) }
         }
         // Both tasks write the report data file. When the build requests `exemptExistingApi`, the report
         // artifact comes from that run, not from a second compilation in `generateApiWatchdogReport`.
@@ -249,8 +260,7 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         kotlinCompilation: KotlinCompilation<*>
     ): Provider<List<SubpluginOption>> {
         val extension = extensions.getByType(WatchdogGradleExtension::class.java)
-        val feedsReport = !kotlinCompilation.isTestCompilation() &&
-                (kotlinCompilation.hasExplicitApiFromExtension() || hasRawExplicitApiFlag())
+        val feedsReport = feedsReport(kotlinCompilation)
         val collect = collectDiagnosticsForExempts.map { it && feedsReport }
         // KGP already sets `-Xexplicit-api`. A different value causes a warning about repeated flags.
         val forceExplicitApi = collect.map { it && !hasExplicitApiMode() }
@@ -260,6 +270,8 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
         val reportFile = layout.buildDirectory.file(
             "reports/api-watchdog/diagnostics/${kotlinCompilation.compileKotlinTaskName}.tsv"
         )
+        // `whenReady` sets `tasksInGraph`.
+        val roles = lazy { if (collect.get()) sourceSetRoles(kotlinCompilation) else SourceSetRoles.NONE }
 
         if (feedsReport) {
             checkedCompileTaskPaths += taskPath(kotlinCompilation.compileKotlinTaskName)
@@ -406,6 +418,18 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
                         },
                     ),
                 )
+                add(
+                    SubpluginOption(
+                        "sourceSetsCheckedElsewhere",
+                        lazy { roles.value.checkedElsewhere.joinToString(":") },
+                    ),
+                )
+                add(
+                    SubpluginOption(
+                        "sourceSetsWithPlatformChecks",
+                        lazy { roles.value.platformChecks.joinToString(":") },
+                    ),
+                )
             }
         }
     }
@@ -461,6 +485,64 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
             ?: "implementation"
         return "$declaringConfiguration\t$notation"
     }
+
+    private fun Project.sourceSetRoles(kotlinCompilation: KotlinCompilation<*>): SourceSetRoles {
+        val parents = kotlinCompilation.allKotlinSourceSets.map { it.name } - kotlinCompilation.defaultSourceSet.name
+        val graph = tasksInGraph
+        val kotlin = extensions.findByName("kotlin") as? KotlinTargetsContainer
+        if (parents.isEmpty() || graph == null || kotlin == null ||
+            taskPath(kotlinCompilation.compileKotlinTaskName) !in graph
+        ) {
+            return SourceSetRoles.NONE
+        }
+        val running = collectingCompilations(kotlin).filter { taskPath(it.compileKotlinTaskName) in graph }
+        val order = ownerOrder()
+        val checkedElsewhere = mutableListOf<String>()
+        val platformChecks = mutableListOf<String>()
+        for (sourceSet in parents) {
+            // A metadata compilation gets its parent source sets as klibs (`-Xrefines-paths`), not as sources.
+            val candidates = running.filter { compilation ->
+                if (compilation.platformType == KotlinPlatformType.common) {
+                    compilation.defaultSourceSet.name == sourceSet
+                } else {
+                    compilation.allKotlinSourceSets.any { it.name == sourceSet }
+                }
+            }
+            val owner = candidates.minWithOrNull(order) ?: kotlinCompilation
+            if (owner == kotlinCompilation) continue
+            checkedElsewhere += sourceSet
+            val platformOwner = candidates.filter { it.platformType != KotlinPlatformType.common }.minWithOrNull(order)
+            if (platformOwner == kotlinCompilation) platformChecks += sourceSet
+        }
+        return SourceSetRoles(checkedElsewhere, platformChecks)
+    }
+
+    private fun Project.runsCompileTask(compilation: KotlinCompilation<*>): Boolean =
+        tasks.findByName(compilation.compileKotlinTaskName)?.enabled == true &&
+                // When the host can't compile a native target, KGP skips the compile task with `onlyIf`,
+                // and `enabled` stays true.
+                (compilation.platformType != KotlinPlatformType.native || compilation.target.publishable)
+
+    private fun Project.collectingCompilations(kotlin: KotlinTargetsContainer): List<KotlinCompilation<*>> =
+        kotlin.targets.flatMap { it.compilations }.filter { compilation ->
+            // KGP skips the `main` metadata compilation (`onlyIf { false }`).
+            val skippedMetadata = compilation.platformType == KotlinPlatformType.common &&
+                    compilation.name == KotlinCompilation.MAIN_COMPILATION_NAME
+            isApplicable(compilation) && !skippedMetadata && feedsReport(compilation)
+        }
+
+    private fun Project.feedsReport(compilation: KotlinCompilation<*>): Boolean =
+        !compilation.isTestCompilation() &&
+                (compilation.hasExplicitApiFromExtension() || hasRawExplicitApiFlag())
+
+    private fun Project.ownerOrder(): Comparator<KotlinCompilation<*>> = compareBy(
+        { it.platformType != KotlinPlatformType.common },
+        { it.platformType != KotlinPlatformType.jvm && it.platformType != KotlinPlatformType.androidJvm },
+        { it.compilesForAndroid(configurations.getByName(it.compileDependencyConfigurationName)) },
+        { it.target.name },
+        { it.name != KotlinCompilation.MAIN_COMPILATION_NAME },
+        { it.name },
+    )
 
     /** The `com.android.kotlin.multiplatform.library` target of AGP 8 reports platform type `jvm`. */
     private fun KotlinCompilation<*>.compilesForAndroid(compileDependencies: Configuration): Boolean =
@@ -556,6 +638,12 @@ public class WatchdogSupportPlugin : DevKitSupportPlugin(PluginInfo.PLUGIN_INFO)
     }
 
     private fun Project.taskPath(taskName: String): String = if (path == ":") ":$taskName" else "$path:$taskName"
+
+    private class SourceSetRoles(val checkedElsewhere: List<String>, val platformChecks: List<String>) {
+        companion object {
+            val NONE = SourceSetRoles(emptyList(), emptyList())
+        }
+    }
 
     private fun AttributeContainer.copyFrom(source: AttributeContainer) {
         for (key in source.keySet()) {

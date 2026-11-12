@@ -84,6 +84,14 @@ object WatchdogTestDirectives : SimpleDirectivesContainer() {
     val DEPENDENCY_DECLARATIONS by stringDirective(
         description = "Root, configuration, and notation triples (dependencyDeclarations option)",
     )
+
+    val SOURCE_SETS_CHECKED_ELSEWHERE by stringDirective(
+        description = "Common modules that another compilation checks (sourceSetsCheckedElsewhere option)",
+    )
+
+    val SOURCE_SETS_WITH_PLATFORM_CHECKS by stringDirective(
+        description = "Common modules with the platform checks (sourceSetsWithPlatformChecks option)",
+    )
 }
 
 class WatchdogOptionsConfigurator(testServices: TestServices) : EnvironmentConfigurator(testServices) {
@@ -155,6 +163,15 @@ class WatchdogOptionsConfigurator(testServices: TestServices) : EnvironmentConfi
                     absolutePath(root) to DependencyDeclaration(dependencyConfiguration, notation)
                 },
             )
+        }
+
+        val checkedElsewhere = module.directives[WatchdogTestDirectives.SOURCE_SETS_CHECKED_ELSEWHERE]
+        if (checkedElsewhere.isNotEmpty()) {
+            configuration.put(WatchdogConfigurationKeys.SOURCE_SETS_CHECKED_ELSEWHERE, checkedElsewhere.toSet())
+        }
+        val platformChecked = module.directives[WatchdogTestDirectives.SOURCE_SETS_WITH_PLATFORM_CHECKS]
+        if (platformChecked.isNotEmpty()) {
+            configuration.put(WatchdogConfigurationKeys.SOURCE_SETS_WITH_PLATFORM_CHECKS, platformChecked.toSet())
         }
     }
 

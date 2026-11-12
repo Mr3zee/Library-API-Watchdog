@@ -35,18 +35,32 @@ class WatchdogFirCheckers internal constructor(
     exemptingExistingApi: Boolean = false,
     reportUndocumentedClassProperties: Boolean = false,
     requireExplicitApi: Boolean = true,
+    sourceSetOwnership: SourceSetOwnership = SourceSetOwnership.NONE,
 ) : FirAdditionalCheckersExtension(session) {
-    private val enabled = !requireExplicitApi ||
+    private val checksOn = !requireExplicitApi ||
             session.languageVersionSettings.getFlag(AnalysisFlags.explicitApiMode) != ExplicitApiMode.DISABLED
 
+    private val scope = sourceSetOwnership.scopeOf(session.moduleData)
+
+    private val enabled = checksOn && scope != CheckScope.NONE
+
+    private val allChecks = enabled && scope == CheckScope.ALL
+
     override val declarationCheckers: DeclarationCheckers = object : DeclarationCheckers() {
-        private fun <C : Any> C.onlyOnJvm(): C? = takeIf { session.moduleData.platform.isJvm() }
+        private val jvmOnly = mutableListOf<Any>()
+
+        private fun <C : Any> C.onlyOnJvm(): C? = takeIf { session.moduleData.platform.isJvm() }?.also { jvmOnly += it }
+
+        private fun isJvmOnly(checker: Any): Boolean = jvmOnly.any { it === checker }
+
+        private fun inScope(checker: Any): Boolean = scope == CheckScope.ALL || isJvmOnly(checker)
 
         private fun <C : Any> partition(vararg entries: Toggled<C>?): Partition<C> {
             val active = mutableSetOf<C>()
             val disabled = mutableListOf<ExemptingChecker>()
             if (enabled) {
                 for (entry in entries.filterNotNull()) {
+                    if (!inScope(entry.checker)) continue
                     when {
                         entry.diagnostics.any(severities::isEnabled) -> active += entry.checker
                         entry.checker is ExemptingChecker -> disabled += entry.checker
@@ -98,15 +112,15 @@ class WatchdogFirCheckers internal constructor(
 
         /** The exemptions of the check turned off with `publicTypeWithInternalApi` are redundant, as with `NONE`. */
         private val internalApiTypeExposureDisabled: List<ExemptingChecker> =
-            listOf(internalApiTypeExposure).takeIf { enabled && !publicTypeWithInternalApiEnabled }.orEmpty()
+            listOf(internalApiTypeExposure).takeIf { allChecks && !publicTypeWithInternalApiEnabled }.orEmpty()
 
         private val plainBasicDeclarationCheckers: Set<FirBasicDeclarationChecker> = basic.active + setOfNotNull(
             ExemptionExplanationChecker.declarationChecker
-                .takeIf { enabled && !exemptingExistingApi },
+                .takeIf { allChecks && !exemptingExistingApi },
             internalApiTypeExposure
-                .takeIf { enabled && publicTypeWithInternalApiEnabled },
+                .takeIf { allChecks && publicTypeWithInternalApiEnabled },
             dependencyExposure?.let { NonTransitiveDependencyChecker(session, it) }
-                ?.takeIf { enabled && !exemptingExistingApi },
+                ?.takeIf { allChecks && !exemptingExistingApi },
         )
 
         private val functions = partition<FirFunctionChecker>(
@@ -198,9 +212,12 @@ class WatchdogFirCheckers internal constructor(
                 },
                 enclosing = enclosingExemptionProbes,
                 recorder = recorder,
-            ).takeIf { enabled },
+                scopeOf = sourceSetOwnership::scopeOf,
+                platformOnly = ::isJvmOnly,
+            ).takeIf { allChecks },
         )).wrapped(basic.disabled + internalApiTypeExposureDisabled) + setOfNotNull(
-            recorder?.let(::ExpectActualPairRecorder)?.takeIf { enabled && exemptingExistingApi },
+            // The compilation that checks a parent source set doesn't see the `actual` declarations of this one.
+            recorder?.let(::ExpectActualPairRecorder)?.takeIf { checksOn && exemptingExistingApi },
         )
 
         override val functionCheckers: Set<FirFunctionChecker> = functions.active.wrapped(functions.disabled)
@@ -216,7 +233,7 @@ class WatchdogFirCheckers internal constructor(
     override val typeCheckers: TypeCheckers = object : TypeCheckers() {
         override val resolvedTypeRefCheckers: Set<FirResolvedTypeRefChecker> = setOfNotNull(
             ExemptionExplanationChecker.typeChecker
-                .takeIf { enabled && !exemptingExistingApi },
+                .takeIf { allChecks && !exemptingExistingApi },
         ).let { checkers ->
             if (recorder == null) checkers else checkers.mapTo(mutableSetOf()) {
                 RecordingTypeChecker(it, recorder)

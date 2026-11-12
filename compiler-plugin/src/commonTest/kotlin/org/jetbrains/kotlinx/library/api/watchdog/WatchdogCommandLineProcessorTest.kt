@@ -4,6 +4,7 @@ import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.jetbrains.kotlin.compiler.plugin.CliOption
@@ -134,6 +135,44 @@ class WatchdogCommandLineProcessorTest {
 
         process(WatchdogCommandLineProcessor.DEPENDENCY_DECLARATIONS_OPTION, "")
         assertEquals(emptyMap(), configuration[WatchdogConfigurationKeys.DEPENDENCY_DECLARATIONS])
+    }
+
+    @Test
+    fun `source set options split names and ignore the blank placeholder`() {
+        process(WatchdogCommandLineProcessor.SOURCE_SETS_CHECKED_ELSEWHERE_OPTION, "commonMain:nativeMain")
+        process(WatchdogCommandLineProcessor.SOURCE_SETS_WITH_PLATFORM_CHECKS_OPTION, "")
+
+        assertEquals(
+            setOf("commonMain", "nativeMain"),
+            configuration[WatchdogConfigurationKeys.SOURCE_SETS_CHECKED_ELSEWHERE],
+        )
+        assertEquals(emptySet(), configuration[WatchdogConfigurationKeys.SOURCE_SETS_WITH_PLATFORM_CHECKS])
+    }
+
+    @Test
+    fun `source set options keep the order and drop empty names and duplicates`() {
+        for ((option, key) in listOf(
+            WatchdogCommandLineProcessor.SOURCE_SETS_CHECKED_ELSEWHERE_OPTION to WatchdogConfigurationKeys.SOURCE_SETS_CHECKED_ELSEWHERE,
+            WatchdogCommandLineProcessor.SOURCE_SETS_WITH_PLATFORM_CHECKS_OPTION to WatchdogConfigurationKeys.SOURCE_SETS_WITH_PLATFORM_CHECKS,
+        )) {
+            process(option, ":webMain::commonMain:webMain: :")
+            assertEquals(listOf("webMain", "commonMain"), configuration[key]?.toList())
+            process(option, " ")
+            assertEquals(emptySet(), configuration[key])
+            assertFalse(option.allowMultipleOccurrences)
+        }
+    }
+
+    @Test
+    fun `source set options are registered`() {
+        val names = processor.pluginOptions.map { it.optionName }
+        for (option in listOf(
+            WatchdogCommandLineProcessor.SOURCE_SETS_CHECKED_ELSEWHERE_OPTION,
+            WatchdogCommandLineProcessor.SOURCE_SETS_WITH_PLATFORM_CHECKS_OPTION,
+        )) {
+            assertTrue(option.optionName in names, option.optionName)
+            assertFalse(option.required, option.optionName)
+        }
     }
 
     @Test
